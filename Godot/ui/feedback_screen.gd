@@ -1,6 +1,6 @@
 class_name FeedbackScreen
 extends CanvasLayer
-## F9 feedback, for us only: it works in a run from the editor, not in an exported game. F9 stops
+## F9 (or Cmd+9) feedback, for us only: it works in a run from the editor, not in an exported game. F9 stops
 ## the game and shows a screenshot. The player draws on it, types a note and picks Bug or Idea.
 ## The report goes to <repo>/feedback/<time>_<name>/: shot.png (with the marks) and report.json
 ## (the note, the marks and what is under them, the Game state, the room and the build). With
@@ -77,7 +77,7 @@ func _input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if key == null or not key.pressed or key.echo:
 		return
-	if key.keycode == KEY_F9 and not is_open():
+	if key.is_action_pressed(&"feedback") and not is_open():
 		if OS.has_feature("editor"):
 			open()
 	elif is_open() and key.keycode == KEY_ESCAPE:

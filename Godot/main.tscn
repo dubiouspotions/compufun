@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" path="res://ui/debug_menu.tscn" id="11_ryguw"]
 [ext_resource type="PackedScene" path="res://ui/feedback_screen.tscn" id="12_d13ii"]
 [ext_resource type="PackedScene" path="res://ui/customer_calling.tscn" id="customer_calling"]
+[ext_resource type="PackedScene" path="res://ui/dev_menu.tscn" id="dev_menu"]
 
 [node name="Main" type="Node" unique_id=934000901]
 script = ExtResource("1_dg77c")
@@ -68,5 +69,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="DebugMenu" parent="." unique_id=1072510775 instance=ExtResource("11_ryguw")]
+
+[node name="DevMenu" parent="." instance=ExtResource("dev_menu")]
 
 [node name="Feedback" parent="." unique_id=842827844 instance=ExtResource("12_d13ii")]

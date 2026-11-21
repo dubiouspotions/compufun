@@ -1,6 +1,6 @@
 class_name DebugMenu
 extends CanvasLayer
-## The debug menu, F2 (debug builds only). The World tab: the time of day, the day cycle and the rain of the
+## The debug menu, F2 or Cmd+2 (debug builds only). The World tab: the time of day, the day cycle and the rain of the
 ## Outside node in the scene (the group "outside").
 
 const TIME_BUTTONS: Dictionary = {"MorningButton": Game.Daypart.MORNING, "NoonButton": Game.Daypart.MIDDAY,
@@ -30,7 +30,7 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	var key := event as InputEventKey
-	if key != null and key.pressed and not key.echo and key.keycode == KEY_F2 and OS.is_debug_build():
+	if key != null and not key.echo and key.is_action_pressed(&"debug_menu") and OS.is_debug_build():
 		toggle()
 		get_viewport().set_input_as_handled()
 
