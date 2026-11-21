@@ -38,6 +38,8 @@ const _MATCH_NEUTRAL_HEIGHT := "young_entrepreneur/portrait_irritated03.png"
 @export_range(1.0, 15.0) var talk_shakes: float = 5.0
 ## How quickly the talking follows the voice's level: higher is snappier, lower is smoother.
 @export_range(1.0, 60.0) var talk_follow: float = 25.0
+## The portrait's crown moves in steps of this many screen pixels (at 1080p); 0 moves smoothly.
+@export_range(0.0, 4.0) var motion_step: float = 1.0
 ## The Next button's text on every line but the last, and on the last.
 @export var next_text: String = "Next"
 @export var last_text: String = "OK"
@@ -57,6 +59,8 @@ var _slot_top: float
 var _slot_bottom: float
 # The pixels of the portrait's texture that are not transparent.
 var _figure: Rect2i
+# The drawn height from the hem to the crown.
+var _reach: float = 0.0
 
 @onready var _name: Label = %NameLabel
 @onready var _text: TypedLabel = %LineLabel
@@ -81,8 +85,17 @@ func _process(delta: float) -> void:
 	var sway := sway_degrees * sin(TAU * _time / sway_seconds)
 	var shake := talk_degrees * _talk * sin(TAU * _time * talk_shakes)
 	var breath := breath_rise * (0.5 + 0.5 * sin(TAU * _time / breath_seconds))
-	_portrait.rotation = deg_to_rad(sway + shake)
-	_portrait.scale = Vector2(1.0, 1.0 + breath + talk_rise * _talk)
+	_portrait.rotation = _snap(deg_to_rad(sway + shake))
+	_portrait.scale = Vector2(1.0, 1.0 + _snap(breath + talk_rise * _talk))
+
+
+# Rounds [param share], a turn in radians or a stretch as a share of the height, so the crown
+# moves by whole screen pixels.
+func _snap(share: float) -> float:
+	if motion_step <= 0.0 or _reach <= 0.0:
+		return share
+	var step := motion_step / _reach
+	return roundf(share / step) * step
 
 
 ## Starts [param conversation] of [param customer] at the first line. A null or empty
@@ -193,6 +206,7 @@ func _fit_portrait() -> void:
 	_portrait.offset_right = left + draw.x
 	_portrait.offset_top = top
 	_portrait.offset_bottom = top + draw.y
+	_reach = (hem - crown) * scale
 	# Sway, breathe and talk from the hem at the bottom centre of the slot.
 	_portrait.pivot_offset = Vector2(_portrait_slot.size.x * 0.5 - left, -top)
 
