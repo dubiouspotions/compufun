@@ -21,6 +21,9 @@ signal _any_key
 @export var hardware: Hardware
 ## What the BIOS says as it hands over to Windows.
 @export var starting_text: String = "Starting Windows 95..."
+## False stops after the BIOS, for a computer that runs a DOS program instead: no "Starting
+## Windows 95...", no splash, no startup sound.
+@export var boots_windows: bool = true
 @export var memory_test_seconds: float = 1.5
 ## How long the video card's BIOS banner shows before the POST, while the monitor warms up, in
 ## seconds.
@@ -109,14 +112,14 @@ func play() -> void:
 		await _run_summary()
 	if floppy_in_a:
 		await _disk_error()
-	if not _skipped:
+	if not _skipped and boots_windows:
 		await _run_windows()
 	for player in _players:
 		player.stop()
 	hide()
 	set_process(false)
 	finished.emit()
-	if startup_sound:
+	if startup_sound and boots_windows:
 		_sound(startup_sound).bus = Win95Desktop.SOUND_BUS
 		# The stream's length, not the player's finished: with no audio device that never fires.
 		await get_tree().create_timer(startup_sound.get_length()).timeout
