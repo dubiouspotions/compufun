@@ -30,6 +30,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
+@onready var _hand: Hand = %Hand
 
 ## Plays when a part comes into the player's hand, and when it leaves it (put in, on the mat, away).
 @export var part_take_sound: SoundSet = preload("res://sounds/part_take.tres")
@@ -65,12 +66,14 @@ func _ready() -> void:
 
 
 ## The view marker with this name, or null (with an error) when the room has none.
-## Shows every view to the camera for one frame, so that the renderer compiles each shader now and
-## not on the player's first turn (a first turn stalled for 100 to 200 ms). The camera ends where it
-## began. The loading screen awaits it while it still covers the game.
+## Shows a part in the hand, then every view, to the camera for one frame each, so that the renderer
+## compiles each shader now and not on the player's first turn or take (a first turn stalled for 100
+## to 200 ms, a first take for 90 ms). The camera ends where it began. The loading screen awaits it
+## while it still covers the game.
 func warm_up() -> void:
 	var home := _camera.global_transform
 	var home_fov := _camera.fov
+	await _hand.warm_up(Part.every()[0])
 	for node: Node in _views.get_children():
 		var marker := node as ViewMarker
 		if marker == null:

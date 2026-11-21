@@ -81,7 +81,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Mat**: The strip in front of an open computer where the player lays the pieces that they took out (`Job.mat`).
 *Avoid:* tray, bench.
 
-**Hand**: The one piece that the player holds (`Game.hand`). The label at the bottom of the screen shows it.
+**Hand**: The one piece that the player holds (`Game.hand`). Its model shows low in the view, held in front of the camera, with its name (`rooms/shop/hand.tscn`).
 *Avoid:* inventory, cursor item.
 
 **Storage View**: The close-up of the parts desk in the storage room, with one box of new parts per part. The storage door in the Left View leads there.
