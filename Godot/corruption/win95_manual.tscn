@@ -1,0 +1,72 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/win95_manual.gd" id="1_sign"]
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="2_psx"]
+[ext_resource type="Texture2D" path="res://corruption/win95_manual/cover_plain.png" id="3_plain"]
+[ext_resource type="Texture2D" path="res://corruption/win95_manual/cover_manual.png" id="4_manual"]
+[ext_resource type="Material" path="res://materials/paper.tres" id="5_paper"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cover_plain"]
+render_priority = 0
+shader = ExtResource("2_psx")
+shader_parameter/albedo_texture = ExtResource("3_plain")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cover_manual"]
+render_priority = 0
+shader = ExtResource("2_psx")
+shader_parameter/albedo_texture = ExtResource("4_manual")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_binding_plain"]
+render_priority = 0
+shader = ExtResource("2_psx")
+shader_parameter/albedo_color = Color(0.16, 0.21, 0.2, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_binding_manual"]
+render_priority = 0
+shader = ExtResource("2_psx")
+shader_parameter/albedo_color = Color(0.2, 0.45, 0.88, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_back"]
+size = Vector3(0.215, 0.004, 0.285)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pages"]
+size = Vector3(0.205, 0.024, 0.277)
+
+[sub_resource type="BoxMesh" id="BoxMesh_spine"]
+size = Vector3(0.008, 0.034, 0.285)
+
+[sub_resource type="BoxMesh" id="BoxMesh_front"]
+size = Vector3(0.215, 0.004, 0.285)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_cover"]
+size = Vector2(0.215, 0.285)
+
+[node name="Win95Manual" type="Node"]
+script = ExtResource("1_sign")
+title = "A book becomes the Windows 95 manual"
+covers = Array[Material]([SubResource("ShaderMaterial_cover_plain"), SubResource("ShaderMaterial_cover_manual")])
+bindings = Array[Material]([SubResource("ShaderMaterial_binding_plain"), SubResource("ShaderMaterial_binding_manual")])
+
+[node name="Book" type="Node3D" parent="."]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0, 0, 0)
+
+[node name="Back" type="MeshInstance3D" parent="Book"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.002, 0)
+mesh = SubResource("BoxMesh_back")
+
+[node name="Pages" type="MeshInstance3D" parent="Book"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.004, 0.016, 0)
+material_override = ExtResource("5_paper")
+mesh = SubResource("BoxMesh_pages")
+
+[node name="Spine" type="MeshInstance3D" parent="Book"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1035, 0.017, 0)
+mesh = SubResource("BoxMesh_spine")
+
+[node name="Front" type="MeshInstance3D" parent="Book"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
+mesh = SubResource("BoxMesh_front")
+
+[node name="Cover" type="MeshInstance3D" parent="Book"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0321, 0)
+mesh = SubResource("PlaneMesh_cover")
