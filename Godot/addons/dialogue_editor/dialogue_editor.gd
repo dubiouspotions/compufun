@@ -2,10 +2,12 @@
 extends VBoxContainer
 ## The Dialogue tab: every customer in customers/, its conversations and their lines, in one
 ## place. Edits change the loaded Customer resources, the same ones the inspector shows, and
-## Save (or Ctrl+S) writes them back.
+## Save (or Ctrl+S) writes them back. Play says a line in the customer's voice and the mood of its
+## pose, and renders the voice file first if it is missing.
 
 const CUSTOMERS_DIR := "res://customers/"
 const ERROR_COLOR := Color(1.0, 0.45, 0.45)
+const VOICES: Array[String] = ["male", "female", "child"]
 
 var _customers: Array[Customer] = []
 var _customer: Customer
@@ -17,6 +19,8 @@ var _status: Label
 var _customer_list: ItemList
 var _new_customer: LineEdit
 var _name_edit: LineEdit
+var _voice_picker: OptionButton
+var _preview: AudioStreamPlayer
 var _conversation_list: ItemList
 var _new_conversation: LineEdit
 var _detail: VBoxContainer
@@ -46,6 +50,15 @@ func _ready() -> void:
 	_name_edit.placeholder_text = "Name in the game"
 	_name_edit.text_changed.connect(_on_name_changed)
 	middle.add_child(_name_edit)
+	var voice_row := HBoxContainer.new()
+	middle.add_child(voice_row)
+	voice_row.add_child(_label("Voice"))
+	_voice_picker = OptionButton.new()
+	_voice_picker.size_flags_horizontal = SIZE_EXPAND_FILL
+	for voice: String in VOICES:
+		_voice_picker.add_item(voice)
+	_voice_picker.item_selected.connect(_on_voice_selected)
+	voice_row.add_child(_voice_picker)
 	middle.add_child(_button("Person, problem: open in inspector", _open_in_inspector))
 	middle.add_child(_label("Conversations"))
 	_conversation_list = _item_list(middle)
@@ -60,6 +73,8 @@ func _ready() -> void:
 	_detail = VBoxContainer.new()
 	_detail.size_flags_horizontal = SIZE_EXPAND_FILL
 	scroll.add_child(_detail)
+	_preview = AudioStreamPlayer.new()
+	add_child(_preview)
 	refresh()
 
 
@@ -146,7 +161,7 @@ func _summary(customer: Customer) -> String:
 		for line: DialogueLine in c.lines:
 			lines.append([line.text, line.pose] if line != null else null)
 		conversations.append([c.id, lines])
-	return var_to_str([customer.display_name, conversations])
+	return var_to_str([customer.display_name, customer.voice, conversations])
 
 
 func _create_customer(file_name: String) -> void:
@@ -183,6 +198,9 @@ func _select_customer(index: int) -> void:
 	_customer = _customers[index] if index >= 0 else null
 	_name_edit.editable = _customer != null
 	_name_edit.text = _customer.display_name if _customer != null else ""
+	_voice_picker.disabled = _customer == null
+	if _customer != null:
+		_voice_picker.select(VOICES.find(_customer.voice))
 	_conversation_list.clear()
 	if _customer == null:
 		_select_conversation(-1)
@@ -203,6 +221,38 @@ func _on_name_changed(text: String) -> void:
 	_customer.display_name = text
 	_customer_list.set_item_text(_customers.find(_customer), _customer_label(_customer))
 	_touch()
+
+
+func _on_voice_selected(index: int) -> void:
+	if _customer == null:
+		return
+	_customer.voice = VOICES[index]
+	_touch()
+
+
+## Says [param line] in the customer's voice. A missing voice file is rendered first, which needs
+## Chimera's path in Editor Settings > Humanerror > Voices.
+func _play_line(line: DialogueLine) -> void:
+	if line.text.strip_edges().is_empty():
+		_fail("The line has no text to say")
+		return
+	var path := Voices.path_of(line, _customer.voice)
+	if not FileAccess.file_exists(path):
+		var chimera: String = EditorInterface.get_editor_settings().get_setting(Voices.CHIMERA_SETTING)
+		var problem := Voices.chimera_problem(chimera)
+		if problem == "":
+			problem = Voices.render(line, _customer.voice, chimera)
+		if problem != "":
+			_fail(problem)
+			return
+		EditorInterface.get_resource_filesystem().scan()
+	var stream := AudioStreamWAV.load_from_file(ProjectSettings.globalize_path(path))
+	if stream == null:
+		_fail("Couldn't read the voice file %s" % path)
+		return
+	_preview.stream = stream
+	_preview.play()
+	_show_status("Playing %s (%s, %s)" % [path.get_file(), _customer.voice, line.pose])
 
 
 func _open_in_inspector() -> void:
@@ -274,11 +324,12 @@ func _line_row(index: int) -> Control:
 		_conversation.lines[index] = line
 	var row := HBoxContainer.new()
 	var side := VBoxContainer.new()
-	side.custom_minimum_size.x = 120
+	side.custom_minimum_size.x = 160
 	row.add_child(side)
 	side.add_child(_pose_picker(line))
 	var buttons := HBoxContainer.new()
 	side.add_child(buttons)
+	buttons.add_child(_button("Play", _play_line.bind(line)))
 	buttons.add_child(_button("Up", _move_line.bind(index, -1)))
 	buttons.add_child(_button("Down", _move_line.bind(index, 1)))
 	buttons.add_child(_button("X", _remove_line.bind(index)))

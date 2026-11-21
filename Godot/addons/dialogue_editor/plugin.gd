@@ -8,6 +8,11 @@ var _panel: DialogueEditor
 
 
 func _enter_tree() -> void:
+	var settings := EditorInterface.get_editor_settings()
+	if not settings.has_setting(Voices.CHIMERA_SETTING):
+		settings.set_setting(Voices.CHIMERA_SETTING, "")
+	settings.set_initial_value(Voices.CHIMERA_SETTING, "", false)
+	settings.add_property_info({"name": Voices.CHIMERA_SETTING, "type": TYPE_STRING, "hint": PROPERTY_HINT_GLOBAL_FILE})
 	_panel = DialogueEditor.new()
 	EditorInterface.get_editor_main_screen().add_child(_panel)
 	_make_visible(false)
