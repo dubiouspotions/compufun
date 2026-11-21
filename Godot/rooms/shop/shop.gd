@@ -27,9 +27,10 @@ const WORKVIEW: StringName = &"Workview"
 
 var _shown_view: StringName = &""
 var _workview_job: Job
-var _walking: bool = false
+var _walk_in_arrival: int = -1
+var _walk_out_arrival: int = -1
+var _walk_tween: Tween
 var _calling: bool = false
-var _leaving: bool = false
 var _camera_tween: Tween
 
 
@@ -89,17 +90,23 @@ func _sync() -> void:
 	var leaving := Game.visitor_state == Game.VisitorState.WALKING_OUT
 	# In with the computer on a drop-off, out with it on a pickup.
 	_body.carrying = (Game.visit == Game.Visit.DROP_OFF) != leaving
-	var walking := Game.visitor_state == Game.VisitorState.WALKING_IN
-	if walking and not _walking:
-		_walk_in()
-	_walking = walking
+	match Game.visitor_state:
+		Game.VisitorState.WALKING_IN:
+			if _walk_in_arrival != Game.arrival:
+				_walk_in()
+		Game.VisitorState.TALKING:
+			# A restore can skip the walk; the visitor still stands at the counter.
+			if _walk_tween != null:
+				_walk_tween.kill()
+			_body.rotation.y = 0.0
+			_follow.progress_ratio = 1.0
+		Game.VisitorState.WALKING_OUT:
+			if _walk_out_arrival != Game.arrival:
+				_walk_out()
 	var calling := Game.phase == Game.Phase.CALLING
 	if calling and not _calling:
 		_phone_receiver.play()
 	_calling = calling
-	if leaving and not _leaving:
-		_walk_out()
-	_leaving = leaving
 
 
 func _move_camera(view_name: StringName) -> void:
@@ -135,20 +142,27 @@ func _follow_focus() -> bool:
 
 
 func _walk_in() -> void:
+	_walk_in_arrival = Game.arrival
 	_door_bell.play()
+	if _walk_tween != null:
+		_walk_tween.kill()
 	_body.rotation.y = 0.0
 	_follow.progress_ratio = 0.0
-	var tween := create_tween()
-	tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds)
-	tween.finished.connect(Game.customer_arrived)
+	_walk_tween = create_tween()
+	_walk_tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds)
+	_walk_tween.finished.connect(Game.customer_arrived)
 
 
 # The path runs from the door to the counter, so the visitor turns around and walks it backwards.
 func _walk_out() -> void:
-	var tween := create_tween()
-	tween.tween_property(_body, "rotation:y", PI, about_face_seconds)
-	tween.tween_property(_follow, "progress_ratio", 0.0, walk_seconds)
-	tween.finished.connect(Game.customer_left)
+	_walk_out_arrival = Game.arrival
+	if _walk_tween != null:
+		_walk_tween.kill()
+	_follow.progress_ratio = 1.0
+	_walk_tween = create_tween()
+	_walk_tween.tween_property(_body, "rotation:y", PI, about_face_seconds)
+	_walk_tween.tween_property(_follow, "progress_ratio", 0.0, walk_seconds)
+	_walk_tween.finished.connect(Game.customer_left)
 
 
 func _on_hotspot_clicked(hotspot: Hotspot) -> void:

@@ -4,8 +4,8 @@ extends Node
 ## The day that starts when the game starts.
 @export var first_day: Day
 
-## True once this visit's conversation started; it starts when the player first faces the customer.
-var _conversation_started: bool = false
+## The Game.arrival whose conversation started; it starts when the player first faces the visitor.
+var _dialogue_for: int = -1
 
 @onready var _shop: Shop = %Shop
 @onready var _nav: ViewNav = %ViewNav
@@ -85,11 +85,9 @@ func _sync() -> void:
 	_post_it.visible = Game.focus != null
 	var talking := Game.visitor_state == Game.VisitorState.TALKING
 	var facing := talking and marker != null and marker.faces_customer
-	if not talking:
-		_conversation_started = false
-	elif facing and not _conversation_started:
-		_conversation_started = true
-		_dialogue.start(Game.visitor, Game.ARRIVE_CONVERSATION if Game.visit == Game.Visit.DROP_OFF else Game.PICKUP_CONVERSATION)
+	if facing and _dialogue_for != Game.arrival:
+		_dialogue_for = Game.arrival
+		_dialogue.start(Game.visitor, Game.conversation)
 	_dialogue.visible = facing
 	if talking and not facing:
 		_calling.call_out(Game.visitor)
