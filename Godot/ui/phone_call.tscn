@@ -1,68 +1,175 @@
 [gd_scene format=3]
 
-[ext_resource type="Theme" path="res://ui/theme.tres" id="theme"]
 [ext_resource type="Script" path="res://ui/phone_call.gd" id="script"]
+[ext_resource type="Script" path="res://ui/typed_label.gd" id="typed_label"]
+[ext_resource type="Script" path="res://voices/voice_player.gd" id="voice_player"]
+[ext_resource type="PackedScene" path="res://ui/phone_choice.tscn" id="choice"]
+[ext_resource type="PackedScene" path="res://props/red_phone.tscn" id="red_phone"]
+[ext_resource type="Shader" path="res://shaders/psx_post.gdshader" id="psx_post"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_regular.ttf" id="pixel"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="pixel_bold"]
 
-[node name="PhoneCall" type="PanelContainer"]
-custom_minimum_size = Vector2(560, 0)
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -280.0
-offset_top = -120.0
-offset_right = 280.0
-offset_bottom = 120.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("theme")
+[sub_resource type="StyleBoxEmpty" id="nothing"]
+
+[sub_resource type="ShaderMaterial" id="phone_look"]
+shader = ExtResource("psx_post")
+shader_parameter/color_levels = 10.0
+shader_parameter/palette_size = 0
+shader_parameter/dither = 1.0
+shader_parameter/vignette = 0.0
+
+[sub_resource type="Environment" id="phone_environment"]
+background_mode = 1
+background_color = Color(0, 0, 0, 0)
+ambient_light_source = 2
+ambient_light_color = Color(0.2, 0.17, 0.19, 1)
+
+[sub_resource type="StyleBoxFlat" id="box"]
+content_margin_left = 48.0
+content_margin_top = 28.0
+content_margin_right = 440.0
+content_margin_bottom = 16.0
+bg_color = Color(0.05, 0.05, 0.09, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.3, 0.3, 0.34, 1)
+
+[sub_resource type="StyleBoxFlat" id="next_box"]
+content_margin_left = 24.0
+content_margin_top = 8.0
+content_margin_right = 24.0
+content_margin_bottom = 8.0
+bg_color = Color(0.05, 0.05, 0.09, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.3, 0.3, 0.34, 1)
+
+[node name="PhoneCall" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 script = ExtResource("script")
+choice_scene = ExtResource("choice")
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="Box" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 120.0
+offset_top = -330.0
+offset_right = -120.0
+offset_bottom = -130.0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("box")
+
+[node name="Text" type="VBoxContainer" parent="Box"]
 layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 16
+theme_override_constants/separation = 10
 
-[node name="Column" type="VBoxContainer" parent="Margin"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Title" type="Label" parent="Margin/Column"]
+[node name="Name" type="Label" parent="Box/Text"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Call a customer"
+theme_override_colors/font_color = Color(1, 0.82, 0.45, 1)
+theme_override_fonts/font = ExtResource("pixel_bold")
+theme_override_font_sizes/font_size = 32
 
-[node name="Choices" type="VBoxContainer" parent="Margin/Column"]
+[node name="Line" type="Label" parent="Box/Text"]
 unique_name_in_owner = true
 layout_mode = 2
-
-[node name="Talk" type="VBoxContainer" parent="Margin/Column"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="YouSay" type="Label" parent="Margin/Column/Talk"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(520, 0)
-layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.96, 0.95, 0.92, 1)
+theme_override_fonts/font = ExtResource("pixel")
+theme_override_font_sizes/font_size = 32
 autowrap_mode = 3
+script = ExtResource("typed_label")
 
-[node name="TheySay" type="Label" parent="Margin/Column/Talk"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(520, 0)
-layout_mode = 2
-autowrap_mode = 3
-
-[node name="Note" type="Label" parent="Margin/Column"]
+[node name="Choices" type="VBoxContainer" parent="Box/Text"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_constants/separation = 4
 
-[node name="Action" type="Button" parent="Margin/Column"]
+[node name="PhoneClip" type="Control" parent="."]
+clip_contents = true
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -134.0
+mouse_filter = 2
+
+[node name="Phone" type="SubViewportContainer" parent="PhoneClip"]
+unique_name_in_owner = true
+texture_filter = 1
+material = SubResource("phone_look")
+layout_mode = 1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -492.0
+offset_top = -234.0
+offset_right = -180.0
+grow_horizontal = 0
+grow_vertical = 0
+pivot_offset = Vector2(156, 234)
+mouse_filter = 2
+stretch = true
+stretch_shrink = 3
+
+[node name="View" type="SubViewport" parent="PhoneClip/Phone"]
+own_world_3d = true
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(104, 78)
+render_target_update_mode = 4
+
+[node name="Environment" type="WorldEnvironment" parent="PhoneClip/Phone/View"]
+environment = SubResource("phone_environment")
+
+[node name="Sun" type="DirectionalLight3D" parent="PhoneClip/Phone/View"]
+transform = Transform3D(0.848, 0.3855, -0.3637, -0, 0.6862, 0.7274, 0.53, -0.6168, 0.5819, -0.5, 1, 0.8)
+light_energy = 1.1
+
+[node name="Camera" type="Camera3D" parent="PhoneClip/Phone/View"]
+transform = Transform3D(0.8944, 0.1397, -0.4248, -0, 0.95, 0.3124, 0.4472, -0.2794, 0.8497, -0.17, 0.19, 0.34)
+fov = 34.0
+
+[node name="RedPhone" parent="PhoneClip/Phone/View" instance=ExtResource("red_phone")]
+
+[node name="NextBox" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -340.0
+offset_top = -112.0
+offset_right = -120.0
+offset_bottom = -52.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("next_box")
+
+[node name="Next" type="Button" parent="NextBox"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 8
+theme_override_colors/font_color = Color(0.96, 0.95, 0.92, 1)
+theme_override_colors/font_hover_color = Color(1, 0.82, 0.45, 1)
+theme_override_fonts/font = ExtResource("pixel_bold")
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("nothing")
+theme_override_styles/hover = SubResource("nothing")
+theme_override_styles/pressed = SubResource("nothing")
+theme_override_styles/hover_pressed = SubResource("nothing")
+theme_override_styles/focus = SubResource("nothing")
 text = "Put down"
+
+[node name="Voice" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+script = ExtResource("voice_player")

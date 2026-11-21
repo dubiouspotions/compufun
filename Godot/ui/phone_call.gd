@@ -1,27 +1,45 @@
 class_name PhoneCall
-extends PanelContainer
-## The phone, as a whitebox: pick the customer of a fixed computer, call to say it is ready, and
-## hang up; then the customer comes for it. Opens when the player picks up the phone
-## (Shop.phone_requested); Esc puts it down before a call.
+extends Control
+## The phone: the dialogue box with a red rotary phone in it. Pick the customer of a fixed
+## computer; the phone rings, the customer answers (their PHONE conversation, or [member greeting]),
+## the player says [member you_say], and hangs up; then the customer comes for it. Opens when the
+## player picks up the phone (Shop.phone_requested); Esc puts it down before a call.
 
-## What the player says on the call; %s is the customer's name.
-@export_multiline var you_say: String = "Hello %s, this is CompuFun! Your computer is fixed. You can come and pick it up."
-## What the customer answers.
-@export_multiline var they_say: String = "Oh, great! I'll come right away."
+## The heading over the customers to call.
+@export var pick_title: String = "Call a customer"
+## What shows while the phone rings.
+@export var ringing_text: String = "Ring... ring..."
+## What a customer without a PHONE conversation says when they answer; %s is their name.
+@export var greeting: String = "Hello? %s here."
+## What the player says once the customer has spoken.
+@export var you_say: String = "Your computer is ready now!"
+## How long the phone rings before the customer answers, in seconds.
+@export_range(0.0, 10.0) var ring_seconds: float = 1.8
+## How far the phone rattles to each side while it rings, in degrees.
+@export_range(0.0, 20.0) var ring_degrees: float = 5.0
+## How many times a second it rattles.
+@export_range(1.0, 40.0) var ring_shakes: float = 18.0
+## One customer to call: a Button with Name, Number and Issue labels (unique names).
+@export var choice_scene: PackedScene
 
 var _was_calling := false
+var _call_time: float = 0.0
+var _lines: Array[DialogueLine] = []
+# Which line shows: -1 while it rings, then the customer's lines, then the player's (== size).
+var _line: int = -1
 
-@onready var _title: Label = %Title
+@onready var _name: Label = %Name
+@onready var _text: TypedLabel = %Line
 @onready var _choices: VBoxContainer = %Choices
-@onready var _talk: VBoxContainer = %Talk
-@onready var _note: Label = %Note
-@onready var _action: Button = %Action
+@onready var _next: Button = %Next
+@onready var _phone: Control = %Phone
+@onready var _voice: VoicePlayer = %Voice
 
 
 func _ready() -> void:
 	hide()
 	Game.changed.connect(_sync)
-	_action.pressed.connect(_on_action)
+	_next.pressed.connect(_on_next)
 
 
 ## Shows the phone: the call that is on, or the customers to call.
@@ -30,56 +48,124 @@ func open() -> void:
 	_sync()
 
 
+## A made-up phone number for [param customer], the same on every call.
+static func number_of(customer: Customer) -> String:
+	return "555-%04d" % (customer.resource_path.get_file().hash() % 10000)
+
+
+func _process(delta: float) -> void:
+	if not visible or not _was_calling or _line >= 0:
+		_phone.rotation = 0.0
+		return
+	_call_time += delta
+	_phone.rotation = deg_to_rad(ring_degrees * sin(TAU * _call_time * ring_shakes))
+	if _call_time >= ring_seconds:
+		_line = 0
+		_show_line()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and Game.phase != Game.Phase.CALLING and event.is_action_pressed(&"ui_cancel"):
-		hide()
+		_put_down()
 		get_viewport().set_input_as_handled()
 
 
 func _sync() -> void:
 	var calling := Game.phase == Game.Phase.CALLING and Game.calling != null
 	if _was_calling and not calling:
-		hide()  # the call ended, also by the debug skip
+		_put_down()  # the call ended, also by the debug skip
+	var started := calling and not _was_calling
 	_was_calling = calling
-	if not visible:
+	if started:
+		_ring()
+	if not visible or calling:
 		return
-	for old in _choices.get_children():
-		old.queue_free()
-	_choices.visible = not calling
-	_talk.visible = calling
-	if calling:
-		var who := Game.calling.customer.display_name
-		_title.text = "Calling %s" % who
-		(%YouSay as Label).text = "You: " + (you_say % who if you_say.contains("%s") else you_say)
-		(%TheySay as Label).text = "%s: %s" % [who, they_say]
-		_note.hide()
-		_action.text = "Hang up"
-		return
-	_title.text = "Call a customer"
-	_action.text = "Put down"
+	_show_customers()
+
+
+## The phone starts to ring for the called customer, whose lines are ready for when they answer.
+func _ring() -> void:
+	var customer := Game.calling.customer
+	if Game.conversation != null and not Game.conversation.lines.is_empty():
+		_lines = Game.conversation.lines
+	else:
+		var hello := DialogueLine.new()
+		hello.text = greeting % customer.display_name if greeting.contains("%s") else greeting
+		_lines = [hello]
+	_call_time = 0.0
+	_line = -1
+	_clear_choices()
+	_name.text = number_of(customer)
+	_text.type_out(ringing_text)
+	_next.get_parent().hide()
+
+
+func _show_line() -> void:
+	_next.get_parent().show()
+	var customer := Game.calling.customer
+	if _line < _lines.size():
+		var line := _lines[_line]
+		_name.text = customer.display_name
+		_text.type_out(line.text)
+		_voice.say(line, customer.voice, VoiceEffect.of(line, Game.conversation))
+		_next.text = "Next >"
+	else:
+		_name.text = "You"
+		_text.type_out(you_say)
+		_voice.hush()
+		_next.text = "Hang up"
+
+
+func _show_customers() -> void:
+	_clear_choices()
+	_name.text = pick_title
+	_next.get_parent().show()
+	_next.text = "Put down"
 	var jobs := Game.jobs.duplicate()
 	jobs.sort_custom(func(a: Job, b: Job) -> bool: return a.order < b.order)
 	for job: Job in jobs:
-		var button := Button.new()
-		button.text = "%s: %s%s" % [job.customer.display_name, job.problem.perceived_issue, "" if job.fixed else " (not fixed yet)"]
-		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		var button := choice_scene.instantiate() as Button
+		if button == null:
+			push_error("PhoneCall: choice_scene %s is not a Button" % choice_scene)
+			return
+		var issue := job.problem.perceived_issue + ("" if job.fixed else " (not fixed yet)")
+		for part: Array in [["%Name", job.customer.display_name], ["%Number", number_of(job.customer)], ["%Issue", issue]]:
+			(button.get_node(part[0]) as Label).text = part[1]
 		button.disabled = not (job.fixed and Game.can_call())
 		button.pressed.connect(Game.call_customer.bind(job))
 		_choices.add_child(button)
+	var note := ""
 	if Game.visitor != null:
-		_note.text = "Someone is in the shop. Call when they have left."
+		note = "Someone is in the shop. Call when they have left."
 	elif Game.phase != Game.Phase.OPEN:
-		_note.text = "The shop is closed."
+		note = "The shop is closed."
 	elif jobs.is_empty():
-		_note.text = "No computers on the counter."
+		note = "No computers on the counter."
 	elif not jobs.any(func(j: Job) -> bool: return j.fixed):
-		_note.text = "No computer is fixed yet."
+		note = "No computer is fixed yet."
+	_text.visible = note != ""
+	_text.type_out(note)
+
+
+func _clear_choices() -> void:
+	_text.show()
+	for old in _choices.get_children():
+		old.queue_free()
+
+
+func _on_next() -> void:
+	if _text.is_typing():  # a click while the line types shows the rest
+		_text.finish()
+		return
+	if not _was_calling:
+		_put_down()
+	elif _line < _lines.size():
+		_line += 1
+		_show_line()
 	else:
-		_note.text = ""
-	_note.visible = _note.text != ""
+		Game.hang_up()  # its changed signal puts the phone down
 
 
-func _on_action() -> void:
-	if Game.phase == Game.Phase.CALLING:
-		Game.hang_up()
+func _put_down() -> void:
+	_voice.hush()
 	hide()
