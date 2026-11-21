@@ -79,6 +79,36 @@ fail it. `run()` may `await`, for example `await process_frame` after adding a s
 Builds land in `Godot/build/<platform>/` (ignored by git). Exporting needs the 4.7.2 export
 templates (Editor > Manage Export Templates).
 
+### Web export on a dev Mac
+
+1. Install the templates once, without the editor: download
+   `Godot_v4.7.2-stable_export_templates.tpz` and `SHA512-SUMS.txt` from the godotengine/godot
+   release `4.7.2-stable`, check the sum, unzip, and move the zip's `templates/` folder to
+   `~/Library/Application Support/Godot/export_templates/4.7.2.stable/` (the name is the content
+   of `templates/version.txt`).
+
+   ```sh
+   gh release download 4.7.2-stable -R godotengine/godot -p 'Godot_v4.7.2-stable_export_templates.tpz' -p SHA512-SUMS.txt
+   grep 'v4.7.2-stable_export_templates.tpz' SHA512-SUMS.txt | shasum -a 512 -c
+   unzip -q Godot_v4.7.2-stable_export_templates.tpz
+   mv templates "$HOME/Library/Application Support/Godot/export_templates/4.7.2.stable"
+   ```
+
+2. Without the live voice's wasm the web build plays the WAVs. To test the live voice without
+   Rust, take the wasm that CI built: `gh run download <godot-ci run id> -n voice-ubuntu-latest`,
+   then copy its `chimera_voice.wasm` to `Godot/voices/live/`.
+3. Export from `Godot/`, into a folder outside the repo, as CI does:
+
+   ```sh
+   bash ../tools/write-build-commit.sh
+   "$GODOT" --headless --export-release "Web" /path/to/web/index.html
+   ```
+
+   Check the log for `ERROR` and that `index.wasm` and `index.pck` are there.
+4. Serve the folder with `python3 -m http.server 8060 --directory /path/to/web` and open
+   `http://127.0.0.1:8060/index.html`. The Web preset is single-threaded, so it needs no
+   cross-origin isolation headers. Read the browser's console for errors from `live_voice.js`.
+
 ## Voices
 
 **Live.** `VoicePlayer` speaks each line as it plays: in the web build Chimera runs as wasm in a
