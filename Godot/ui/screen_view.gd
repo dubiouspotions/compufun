@@ -5,11 +5,10 @@ extends Control
 ## in 1080p), where it takes the mouse and the keys. The 3D monitor shows the same buffer as its
 ## texture, so there is one desktop in one place.
 
-## The player clicked the open view outside the screen and the Fix button.
+## The player clicked the open view outside the screen.
 signal outside_clicked
 
-## The desktop that runs in the screen buffer. Its root should have the signal
-## problem_fixed(problem: Problem); without it, a placeholder Fix button appears under the screen.
+## The desktop that runs in the screen buffer. It reports software fixes to Game itself.
 @export var desktop_scene: PackedScene
 ## The seconds of the fade in and out. The main scene sets it to the camera's turn time.
 @export var fade_seconds: float = 0.35
@@ -23,18 +22,15 @@ signal outside_clicked
 @export var desktop_cursor_hotspot: Vector2 = Vector2.ZERO
 
 var _open: bool = false
-var _has_fix_signal: bool = false
 var _fade: Tween
 
 @onready var _container: SubViewportContainer = %ScreenContainer
 @onready var _buffer: SubViewport = %ScreenBuffer
-@onready var _fix: Button = %FixButton
 
 
 func _ready() -> void:
 	visible = false
 	modulate.a = 0.0
-	_fix.pressed.connect(func() -> void: Game.fix(Problem.Location.SOFTWARE))
 	_show_cursor(game_cursor, game_cursor_hotspot)
 	_container.mouse_entered.connect(_show_cursor.bind(desktop_cursor, desktop_cursor_hotspot))
 	_container.mouse_exited.connect(_show_cursor.bind(game_cursor, game_cursor_hotspot))
@@ -45,12 +41,6 @@ func _ready() -> void:
 	if desktop is Control and (desktop as Control).custom_minimum_size != Vector2(_buffer.size):
 		push_error("ScreenView: %s is %s, but the screen buffer is %s" % [desktop_scene.resource_path, (desktop as Control).custom_minimum_size, _buffer.size])
 	_buffer.add_child(desktop)
-	_has_fix_signal = desktop.has_signal(&"problem_fixed")
-	if _has_fix_signal:
-		desktop.connect(&"problem_fixed", _on_problem_fixed)
-	else:
-		push_warning("ScreenView: %s has no signal problem_fixed(problem); the placeholder Fix button stands in" % desktop_scene.resource_path)
-	_fix.visible = not _has_fix_signal
 
 
 func _exit_tree() -> void:
@@ -104,13 +94,8 @@ func follow(rect: Rect2) -> void:
 	_container.position = rect.position
 	_container.scale = rect.size / screen_size
 	_container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST if sharp else CanvasItem.TEXTURE_FILTER_LINEAR
-	_fix.position = Vector2(rect.end.x + 24.0, rect.end.y - _fix.size.y)
 
 
 # Replaces the image of the arrow shape, which Controls and the 3D world show; the hotspot hand stays.
 func _show_cursor(cursor: Texture2D, hotspot: Vector2) -> void:
 	Input.set_custom_mouse_cursor(cursor, Input.CURSOR_ARROW, hotspot)
-
-
-func _on_problem_fixed(_problem: Problem) -> void:
-	Game.fix(Problem.Location.SOFTWARE)

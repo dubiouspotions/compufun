@@ -19,7 +19,9 @@
 [ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
 [ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
 [ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="app_ms_dos_prompt"]
-[ext_resource type="PackedScene" path="res://win95/boot_sequence.tscn" id="boot_sequence"]
+[ext_resource type="Script" path="res://win95/win95.gd" id="win95"]
+[ext_resource type="Script" path="res://win95/computer_state.gd" id="computer_state"]
+[ext_resource type="PackedScene" path="res://win95/no_signal.tscn" id="no_signal"]
 
 [node name="Win95" type="Control" unique_id=1752664516]
 texture_filter = 1
@@ -28,6 +30,11 @@ custom_maximum_size = Vector2(1280, 960)
 layout_mode = 3
 anchors_preset = 0
 theme = ExtResource("1_cq1mh")
+script = ExtResource("win95")
+
+[node name="ComputerState" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("computer_state")
 
 [node name="Desktop" type="Control" parent="." unique_id=2083738143]
 layout_mode = 1
@@ -104,7 +111,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="Systray" parent="TaskBar/HBoxContainer" unique_id=1819389400 instance=ExtResource("systray")]
+unique_name_in_owner = true
 layout_mode = 2
 
-[node name="BootSequence" parent="." instance=ExtResource("boot_sequence")]
+[node name="NoSignal" parent="." instance=ExtResource("no_signal")]
+unique_name_in_owner = true
 layout_mode = 1
