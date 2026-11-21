@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes the shop's door bell, phone, keystroke and mouse button sounds as 22050 Hz mono WAVs.
+"""Synthesizes the shop's door bell, phone, keystroke, mouse button and modem sounds as 22050 Hz mono WAVs.
 Usage: make_shop_sounds.py Godot/sounds"""
 import math
 import random
@@ -108,6 +108,44 @@ def mouse_button(seed, release):
     return out
 
 
+def tone(freqs, seconds, gain=0.4):
+    return [gain * sum(math.sin(2 * math.pi * f * i / RATE) for f in freqs) for i in range(int(seconds * RATE))]
+
+
+def modem_dialup():
+    """A 14400 modem dialling out through its little speaker: the dial tone, the number, one ring,
+    the answer tone with its phase flips, the probing bongs, and the hiss of the handshake until
+    the modem turns its speaker off."""
+    random.seed(1996)
+    out = []
+    out += tone([350, 440], 0.7, 0.3)
+    keys = {"0": (941, 1336), "1": (697, 1209), "5": (770, 1336), "6": (770, 1477), "9": (852, 1477)}
+    for digit in "5550196":
+        out += dtmf(*keys[digit], 0.08) + silence(0.06)
+    out += silence(0.4) + tone([440, 480], 0.8, 0.3) + silence(0.25)
+    answer = []
+    for i in range(int(1.2 * RATE)):
+        t = i / RATE
+        flip = math.pi * int(t / 0.45)  # the answer tone reverses its phase every 450 ms
+        answer.append(0.5 * math.sin(2 * math.pi * 2100 * t + flip))
+    out += answer + silence(0.1)
+    for f in [1200, 2400, 1200, 2400]:
+        out += tone([f, f * 1.5], 0.07, 0.25) + silence(0.03)
+    chirp = []
+    for i in range(int(0.4 * RATE)):
+        t = i / RATE
+        chirp.append(0.3 * sum(math.sin(2 * math.pi * (300 + 600 * k + 900 * t) * t) for k in range(5)) / 3)
+    out += chirp
+    hiss_seconds = 1.8
+    hiss = highpass(lowpass(noise(hiss_seconds, 10.0), 3400), 300)
+    for i in range(len(hiss)):
+        t = i / RATE
+        hiss[i] = 0.8 * hiss[i] + 0.15 * math.sin(2 * math.pi * 1800 * t) * (1.0 if int(t * 8) % 2 else 0.4)
+        hiss[i] *= min(1.0, (hiss_seconds - t) / 0.3)  # the speaker turns off as it connects
+    out += hiss
+    return highpass(lowpass(out, 3400), 300)
+
+
 def write(path, samples):
     peak = max(abs(s) for s in samples)
     gain = 0.7 / peak
@@ -131,3 +169,4 @@ for take in range(1, 5):
 for take in range(1, 4):
     write(sys.argv[1] + "/mouse_down_%d.wav" % take, mouse_button(10 + take, False))
     write(sys.argv[1] + "/mouse_up_%d.wav" % take, mouse_button(20 + take, True))
+write(sys.argv[1] + "/modem_dialup.wav", modem_dialup())
