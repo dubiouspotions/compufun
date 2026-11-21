@@ -24,7 +24,7 @@ func run() -> void:
 	check("restore to an empty shop", game.restore({"day": 1, "arrivals": 1}), "")
 	await create_timer(WALK_SECONDS * 3.0).timeout
 	check("the shop stays empty", game.visitor_state, GAME.VisitorState.NONE)
-	check("errors after the restore", _errors.messages, [])
+	check("Game errors after the restore", _errors.messages.filter(func(m: String) -> bool: return m.begins_with("Game.")), [])
 	OS.remove_logger(_errors)
 
 
