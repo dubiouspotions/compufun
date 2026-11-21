@@ -20,12 +20,15 @@ const _MATCH_NEUTRAL_HEIGHT := "jonny/portrait_irritated03.png"
 var _customer: Customer
 var _lines: Array[DialogueLine] = []
 var _line: int = 0
+# False while the box shows its own error line, which has no voice.
+var _voiced: bool = false
 
 @onready var _name: Label = %NameLabel
 @onready var _text: Label = %LineLabel
 @onready var _portrait_slot: Panel = %Portrait
 @onready var _portrait: TextureRect = %PortraitTexture
 @onready var _next: Button = %NextButton
+@onready var _voice: AudioStreamPlayer = %Voice
 
 
 func _ready() -> void:
@@ -49,8 +52,10 @@ func start(customer: Customer, id: StringName) -> void:
 		var error_line := DialogueLine.new()
 		error_line.text = "ERROR: " + message
 		_lines = [error_line]
+		_voiced = false
 	else:
 		_lines = conversation.lines
+		_voiced = true
 	_show_line()
 
 
@@ -200,10 +205,29 @@ func _show_line() -> void:
 	_text.text = line.text if line != null else ""
 	_show_portrait(line.pose if line != null else _NEUTRAL)
 	_next.text = "Next" if _line < _lines.size() - 1 else "OK"
+	_speak(line)
+
+
+## Plays the voice file of [param line]. A line without one stays silent: its voice is not rendered yet.
+func _speak(line: DialogueLine) -> void:
+	_voice.stop()
+	if not _voiced or line == null or line.text.strip_edges().is_empty():
+		return
+	var path := line.voice_path(_customer.voice)
+	if not ResourceLoader.exists(path):
+		push_warning("DialogueOverlay: no voice for \"%s\" (%s). Render it: see docs/building-and-testing.md" % [line.text, path])
+		return
+	var stream := load(path) as AudioStream
+	if stream == null:
+		push_error("DialogueOverlay: can't load the voice %s" % path)
+		return
+	_voice.stream = stream
+	_voice.play()
 
 
 func _on_next() -> void:
 	if _line >= _lines.size() - 1:
+		_voice.stop()
 		finished.emit()
 		return
 	_line += 1

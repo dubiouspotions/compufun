@@ -30,6 +30,33 @@ There is no test framework yet.
 Builds land in `Godot/build/<platform>/` (ignored by git). Exporting needs the 4.7.2 export
 templates (Editor > Manage Export Templates).
 
+## Voices
+
+Each customer line plays a WAV in `Godot/voices/`, which [Chimera](https://github.com/jamesondh/chimera-vocal-synth)
+renders from the text. After you add or edit a line, or change a customer's `voice`, render the
+missing files. A line without a file is silent, and a debug run warns about it.
+
+1. Once: install [Rust](https://rustup.rs), clone Chimera outside this repo, and build its CLI.
+   The binary finds Chimera's data through the checkout, so keep the checkout where it is.
+
+   ```sh
+   git clone https://github.com/jamesondh/chimera-vocal-synth.git
+   cd chimera-vocal-synth && cargo build --release -p chimera-cli
+   ```
+
+   If the build fails with "error loading known_hosts", your git sends GitHub through SSH. Run
+   the build with `CARGO_NET_GIT_FETCH_WITH_CLI=true` in front.
+2. Render, then import:
+
+   ```sh
+   CHIMERA=/path/to/chimera-vocal-synth/target/release/chimera "$GODOT" --headless --script res://voices/render_voices.gd
+   "$GODOT" --headless --import
+   ```
+
+   On Windows, `CHIMERA` points to `chimera.exe`.
+3. Commit the new `.wav` and `.wav.import` files. The tool lists the files that no line uses any
+   more; remove those with `git rm`.
+
 ## CI
 
 `.github/workflows/godot.yml` runs on every push to `main` and `deploy`:

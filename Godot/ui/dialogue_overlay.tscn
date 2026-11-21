@@ -58,3 +58,6 @@ anchor_bottom = 1.0
 mouse_filter = 2
 texture_filter = 1
 expand_mode = 1
+
+[node name="Voice" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true

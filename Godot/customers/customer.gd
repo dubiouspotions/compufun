@@ -11,6 +11,9 @@ extends Resource
 @export var computer: Computer
 ## The trousers colour of the 3D customer. It tints the denim texture.
 @export var trousers_color: Color = Color(0.46, 0.56, 0.74)
+## The Chimera voice that speaks this customer's lines. A change needs new voice files: run
+## voices/render_voices.gd.
+@export_enum("male", "female", "child") var voice: String = "male"
 
 
 ## The conversation with [param id], or null if this customer has none.
