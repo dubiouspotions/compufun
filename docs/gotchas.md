@@ -50,6 +50,13 @@ test, every playback that a player stopped during the run is listed too (`AudioS
 with a bare `AudioStreamPlayer` as well. Any other object in the `--verbose` list of leaks is a real
 leak. — 2026-11
 
+**Every `--import` logs "resources still in use at exit", naming data scripts such as
+`customer.gd` and `win95_setup.gd`.** A script with a `static var` that other scripts reach was
+loaded: GDScript keeps the static's script and everything it depends on alive past the exit. The
+WordPad and the Calculator had one each for a corruption sign. Keep such shared state off
+statics: the signs now set metadata on the scene tree's root, which dies with the tree. To find
+the file, import copies of the project with one change removed each. — 2026-11-21
+
 **A paused `AudioStreamPlayer` reads `playing == false` and ignores `seek()`.** Check
 `stream_paused` to tell paused from stopped, and seek a paused player with `play(from)` and then
 `stream_paused = true`, as `win95/media_player.gd` does. — 2026-11

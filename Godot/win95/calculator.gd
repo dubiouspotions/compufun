@@ -4,9 +4,10 @@ extends "res://win95/window.gd"
 
 const DIVIDE_BY_ZERO: String = "Cannot divide by zero."
 
-## Every result in a computer that runs Cambion (Computer.cambion) is this number while the
-## corruption sign corruption/calc_666.tscn is on; "" shows the true result.
-static var cambion_result: String = ""
+## Metadata on the scene tree's root: while set, every result in a computer that runs Cambion
+## (Computer.cambion) is this number (the corruption sign corruption/calc_666.tscn sets it). Not a
+## static var: a GDScript static leaks the script's dependencies at exit.
+const CAMBION_RESULT_META: StringName = &"win95_cambion_result"
 
 var _entry: String = "0"
 ## True when the next digit starts a new number.
@@ -50,6 +51,7 @@ func press(key: String) -> void:
 			_accumulator = _apply(_accumulator, _pending, _entry.to_float())
 		elif _pending == "":
 			_accumulator = _entry.to_float()
+		var cambion_result: String = get_tree().root.get_meta(CAMBION_RESULT_META, "")
 		if (computed or key == "=") and _in_cambion and cambion_result != "":
 			_accumulator = cambion_result.to_float()
 		_pending = "" if key == "=" else key

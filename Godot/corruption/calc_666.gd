@@ -9,8 +9,8 @@ const _CALCULATOR := preload("res://win95/calculator.gd")
 
 
 func _apply(shown_stage: int) -> void:
-	_CALCULATOR.cambion_result = str(result) if shown_stage > 0 else ""
+	get_tree().root.set_meta(_CALCULATOR.CAMBION_RESULT_META, str(result) if shown_stage > 0 else "")
 
 
 func _exit_tree() -> void:
-	_CALCULATOR.cambion_result = ""  # the static outlives the shop
+	get_tree().root.remove_meta(_CALCULATOR.CAMBION_RESULT_META)  # the root outlives the shop
