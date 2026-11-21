@@ -34,6 +34,8 @@
 					current = m.id;
 					await loaded; // the first say arrives right behind init
 					if (current !== m.id) return;
+					const type = new TextEncoder().encode(m.voiceType || "");
+					w.say_voice_type(type.length ? put(type) : 0, type.length);
 					const text = new TextEncoder().encode(m.text);
 					const total = w.say_start(put(text), text.length, m.body, m.rate, m.speed, m.pitch, m.accent);
 					if (total === 0) throw new Error("say_start rendered nothing for: " + m.text);
@@ -82,8 +84,8 @@
 		},
 
 		// body: 0 male, 1 female, 2 child. speed and pitch are multipliers, accent < 0 is the
-		// default, volume is linear.
-		say(text, body, speed, pitch, accent, volume) {
+		// default, volume is linear. voiceType is a voice type's text form; "" says it plainly.
+		say(text, body, speed, pitch, accent, volume, voiceType) {
 			api.stop();
 			if (!ctx) {
 				ctx = new AudioContext();
@@ -98,7 +100,7 @@
 			gain.gain.value = volume;
 			id += 1;
 			next = 0;
-			worker.postMessage({ kind: "say", id, text, body, rate: RATE, speed, pitch, accent });
+			worker.postMessage({ kind: "say", id, text, body, rate: RATE, speed, pitch, accent, voiceType: voiceType || "" });
 		},
 
 		stop() {

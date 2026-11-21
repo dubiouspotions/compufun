@@ -1,8 +1,8 @@
 class_name CrtTube
 extends Node
-## The tube of the bench screen: its power, its lock on the signal, the degauss and the
-## magnetised mask. It animates the crt_* global shader uniforms (project settings, Shader
-## Globals), which the Screen View and the 3D monitor share, and plays the monitor's sounds.
+## The tube of one monitor: its power, its lock on the signal, the degauss and the magnetised
+## mask. It animates the crt_* uniforms of its looks (the close-up's and the 3D screen's, see
+## [method add_look]), so each monitor has a tube of its own, and plays the monitor's sounds.
 ## [method reconcile] moves it toward the state that the game wants. See docs/crt.md.
 
 ## The seconds that the picture takes to collapse to a line, a dot, and fade.
@@ -29,6 +29,9 @@ var _on: bool = false
 var _signal: bool = false
 var _warp: float = 0.0
 var _values: Dictionary[StringName, float] = {}
+# Every uniform that the looks get, the cursor's too: a look added later catches up.
+var _params: Dictionary[StringName, Variant] = {}
+var _looks: Array[ShaderMaterial] = []
 var _tweens: Dictionary[StringName, Tween] = {}
 var _players: Dictionary[AudioStream, AudioStreamPlayer] = {}
 
@@ -49,6 +52,20 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _on and _signal and _warp > 0.0 and not _tweens.has(&"crt_magnetization"):
 		_set_value(minf(1.0, _values[&"crt_magnetization"] + magnetize_per_second * _warp * delta), &"crt_magnetization")
+
+
+## Lets this tube drive [param look]'s crt_* uniforms, from their current values on.
+func add_look(look: ShaderMaterial) -> void:
+	_looks.append(look)
+	for uniform: StringName in _params:
+		look.set_shader_parameter(uniform, _params[uniform])
+
+
+## Sets [param uniform] on every look, for example the cursor's crt_cursor.
+func set_param(uniform: StringName, value: Variant) -> void:
+	_params[uniform] = value
+	for look: ShaderMaterial in _looks:
+		look.set_shader_parameter(uniform, value)
 
 
 ## Turns the monitor on or off and locks onto or loses the signal, with their animations and
@@ -132,4 +149,4 @@ func _new_tween(uniform: StringName) -> Tween:
 
 func _set_value(value: float, uniform: StringName) -> void:
 	_values[uniform] = value
-	RenderingServer.global_shader_parameter_set(uniform, value)
+	set_param(uniform, value)

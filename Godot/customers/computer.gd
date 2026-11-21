@@ -6,5 +6,5 @@ extends Resource
 @export var win95_setup: Win95Setup
 ## The material of the case; null is beige plastic.
 @export var case_material: Material
-## The sticker on the front of the case; null is none.
-@export var sticker: Texture2D
+## The stickers on the case, each with its face and place; empty is none.
+@export var stickers: Array[Sticker] = []

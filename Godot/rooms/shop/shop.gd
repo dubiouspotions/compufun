@@ -28,12 +28,24 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _job_slots: JobSlots = %JobSlots
 @onready var _bench: Bench = %Bench
 @onready var _pipedream: Pipedream = %Pipedream
+@onready var _work_monitor: CrtMonitor = %WorkMonitor
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
 @onready var _the_end: TheEnd = %TheEnd
+@onready var _hand: Hand = %Hand
+
+## Plays when a part comes into the player's hand, and when it leaves it (put in, on the mat, away).
+@export var part_take_sound: SoundSet = preload("res://sounds/part_take.tres")
+@export var part_put_sound: SoundSet = preload("res://sounds/part_put.tres")
+## Plays at a computer's socket when the keyboard cable goes in, and when it comes out.
+@export var plug_in_sound: SoundSet = preload("res://sounds/cable_plug_in.tres")
+@export var plug_out_sound: SoundSet = preload("res://sounds/cable_plug_out.tres")
 
 var _shown_view: StringName = &""
+## What the hand held and where the cable was at the last sync, to hear what changed since.
+var _heard_hand: Variant = null
+var _heard_cable: Job
 var _workview_job: Job
 var _walk_in_arrival: int = -1
 var _walk_out_arrival: int = -1
@@ -59,6 +71,25 @@ func _ready() -> void:
 
 
 ## The view marker with this name, or null (with an error) when the room has none.
+## Shows a part in the hand, then every view, to the camera for one frame each, so that the renderer
+## compiles each shader now and not on the player's first turn or take (a first turn stalled for 100
+## to 200 ms, a first take for 90 ms). The camera ends where it began. The loading screen awaits it
+## while it still covers the game.
+func warm_up() -> void:
+	var home := _camera.global_transform
+	var home_fov := _camera.fov
+	await _hand.warm_up(Part.every()[0])
+	for node: Node in _views.get_children():
+		var marker := node as ViewMarker
+		if marker == null:
+			continue
+		_camera.global_transform = marker.global_transform
+		_camera.fov = marker.fov
+		await RenderingServer.frame_post_draw
+	_camera.global_transform = home
+	_camera.fov = home_fov
+
+
 func view_marker(view_name: StringName) -> ViewMarker:
 	var marker := _views.get_node_or_null(NodePath(String(view_name))) as ViewMarker
 	if marker == null:
@@ -78,18 +109,48 @@ func turn_from_main() -> float:
 	return yaw / (2.0 * half_width)
 
 
-## The bench screen as the camera sees it now, in pixels of the world buffer.
-func bench_screen_rect() -> Rect2:
-	var corners := _bench.screen_corners()
+## The screen of the monitor that shows [param screen] as the camera sees it now, in pixels of the
+## world buffer. Empty, with an error, when no monitor shows it.
+func screen_rect(screen: ViewMarker.Screen) -> Rect2:
+	var monitor := _monitor(screen)
+	return _rect_on_screen(monitor.screen_corners()) if monitor != null else Rect2()
+
+
+## The post-it of the computer in focus while the player reads it in the Workview, or null.
+func pinned_post_it() -> PostIt3D:
+	if Game.view != WORKVIEW or Game.focus == null:
+		return null
+	return _job_slots.pinned_post_it(Game.focus)
+
+
+## The paper of [param post_it] as the camera sees it now: the rect around its corners, in pixels
+## of the world buffer.
+func post_it_rect(post_it: PostIt3D) -> Rect2:
+	return _rect_on_screen(post_it.paper_corners())
+
+
+func _rect_on_screen(corners: Array[Vector3]) -> Rect2:
 	var rect := Rect2(_camera.unproject_position(corners[0]), Vector2.ZERO)
 	for corner: Vector3 in corners:
 		rect = rect.expand(_camera.unproject_position(corner))
 	return rect
 
 
-## Shows [param texture] (the screen buffer) on the bench screen.
-func set_desktop_texture(texture: Texture2D) -> void:
-	_bench.set_screen_texture(texture)
+## Shows [param texture] (a screen buffer) on the monitor that shows [param screen]. Returns that
+## monitor's look, for its tube to drive; null, with an error, when no monitor shows it.
+func set_screen_texture(screen: ViewMarker.Screen, texture: Texture2D) -> ShaderMaterial:
+	var monitor := _monitor(screen)
+	return monitor.set_screen_texture(texture) if monitor != null else null
+
+
+func _monitor(screen: ViewMarker.Screen) -> CrtMonitor:
+	match screen:
+		ViewMarker.Screen.WIN95:
+			return _bench.monitor
+		ViewMarker.Screen.COMPUFUN_DB:
+			return _work_monitor
+	push_error("Shop: no monitor shows screen %s" % ViewMarker.Screen.find_key(screen))
+	return null
 
 
 # The dragged plug follows the mouse; the release plugs it into the computer under the mouse, or lays it down.
@@ -110,9 +171,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _sync() -> void:
 	_job_slots.show_jobs(Game.jobs, null if Game.view == WORKVIEW else Game.focus)  # the Workview centres it already
+	_play_changes()
 	_pipedream.warp = Game.warp
 	_the_end.ended = Game.phase == Game.Phase.ENDED
-	_bench.lay_cable(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
+	# Deferred: a computer turns to lie or stand on the same change, and the cable must reach its new socket.
+	_bench.lay_cable.call_deferred(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
 	var workview_moved := _follow_focus()
 	if Game.view != _shown_view or (workview_moved and Game.view == WORKVIEW):
 		_move_camera(Game.view)
@@ -212,6 +275,23 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 			Game.take_new_part(hotspot.part)
 		Hotspot.Action.TRASH_PART:
 			Game.trash_part()
+
+
+# Plays the sound of each hand and cable change since the last sync, whatever made it.
+func _play_changes() -> void:
+	if Game.hand != _heard_hand:
+		if _heard_hand == null:
+			part_take_sound.play_at(self)
+		elif Game.hand == null:
+			part_put_sound.play_at(self)
+		_heard_hand = Game.hand
+	if Game.connected != _heard_cable:
+		var old_socket := _job_slots.cable_socket(_heard_cable) if _heard_cable != null and _heard_cable in Game.jobs else null
+		if old_socket != null:
+			plug_out_sound.play_at(old_socket)
+		if Game.connected != null:
+			plug_in_sound.play_at(_job_slots.cable_socket(Game.connected))
+		_heard_cable = Game.connected
 
 
 func _on_plug_grabbed() -> void:

@@ -88,6 +88,12 @@ float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
+varying vec4 modulate;
+
+void vertex() {
+	modulate = COLOR;  // the node's modulate, which the Screen View fades
+}
+
 void fragment() {
 	vec2 size = vec2(textureSize(screen_texture, 0));
 	// Screen pixels per VGA pixel: 2 in the 1080p Screen View, less during the zoom.
@@ -144,5 +150,5 @@ void fragment() {
 
 	color *= crt_picture_edge(uv, fwidth(uv.y));
 	color = max(color, to_linear(black_level)) * crt_tube_face(UV, corner_radius, fwidth(UV.y));
-	COLOR = vec4(to_display(color), 1.0);
+	COLOR = vec4(to_display(color), 1.0) * modulate;
 }

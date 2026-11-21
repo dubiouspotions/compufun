@@ -18,9 +18,9 @@ uniform float corner_radius : hint_range(0.0, 0.2, 0.005) = 0.04;
 /** The darkening toward the edges and corners. */
 uniform float vignette : hint_range(0.0, 1.0, 0.01) = 0.3;
 /** The colour of white. */
-uniform vec3 white_point : source_color = vec3(0.95, 0.97, 1.0);
+uniform vec3 white_point = vec3(0.95, 0.97, 1.0);
 /** The glow of the glass where the picture is black. */
-uniform vec3 black_level : source_color = vec3(0.02, 0.025, 0.025);
+uniform vec3 black_level = vec3(0.02, 0.025, 0.025);
 /** Multiplies the picture, so the screen glows in the dim room. */
 uniform float brightness : hint_range(0.5, 2.0, 0.01) = 1.1;
 
@@ -28,7 +28,6 @@ void fragment() {
 	vec2 uv = crt_bend(crt_beam(UV, TIME), vec2(curvature_x, curvature_y), underscan);
 	vec2 size = vec2(textureSize(screen_texture, 0));
 	vec3 color = crt_texel(screen_texture, ivec2(floor(uv * size)));
-	color *= color;  // ALBEDO is linear; the buffer holds display colours
 	vec2 from_centre = UV * 2.0 - 1.0;
 	color *= 1.0 - vignette * smoothstep(0.3, 1.6, dot(from_centre, from_centre));
 	color *= brightness * white_point;

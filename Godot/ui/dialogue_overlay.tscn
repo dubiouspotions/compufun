@@ -1,57 +1,67 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://ui/dialogue_overlay.gd" id="overlay"]
 [ext_resource type="Script" path="res://voices/voice_player.gd" id="voice_player"]
-[ext_resource type="Script" path="res://ui/dialogue_overlay.gd" id="1_6w78s"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_regular.ttf" id="pixel"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="pixel_bold"]
+
+[sub_resource type="StyleBoxEmpty" id="nothing"]
+
+[sub_resource type="StyleBoxFlat" id="box"]
+content_margin_left = 48.0
+content_margin_top = 28.0
+content_margin_right = 48.0
+content_margin_bottom = 16.0
+bg_color = Color(0.05, 0.05, 0.09, 0.9)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.3, 0.3, 0.34, 1)
+
+[sub_resource type="StyleBoxFlat" id="next_box"]
+content_margin_left = 24.0
+content_margin_top = 8.0
+content_margin_right = 24.0
+content_margin_bottom = 8.0
+bg_color = Color(0.05, 0.05, 0.09, 0.9)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.3, 0.3, 0.34, 1)
 
 [node name="DialogueOverlay" type="Control" unique_id=574008241]
 layout_mode = 3
-anchors_preset = 0
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-script = ExtResource("1_6w78s")
+script = ExtResource("overlay")
+head_above = 0.18
+sway_degrees = 1.2
+sway_seconds = 5.0
+breath_rise = 0.012
+chars_per_second = 45.0
+next_text = "Next >"
+last_text = "Done >"
 
-[node name="Panel" type="PanelContainer" parent="." unique_id=152360911]
-layout_mode = 0
+[node name="Portrait" type="Panel" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 160.0
-offset_top = -380.0
-offset_right = -160.0
-offset_bottom = -110.0
+offset_left = -500.0
+offset_top = -680.0
+offset_right = -180.0
+offset_bottom = -310.0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("nothing")
 
-[node name="Row" type="HBoxContainer" parent="Panel" unique_id=855170329]
-layout_mode = 2
-
-[node name="Text" type="VBoxContainer" parent="Panel/Row" unique_id=1893410204]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="NameLabel" type="Label" parent="Panel/Row/Text" unique_id=1618515961]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="LineLabel" type="Label" parent="Panel/Row/Text" unique_id=52238823]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-autowrap_mode = 3
-
-[node name="Buttons" type="HBoxContainer" parent="Panel/Row/Text" unique_id=1921619111]
-layout_mode = 2
-
-[node name="NextButton" type="Button" parent="Panel/Row/Text/Buttons" unique_id=1665177363]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Next"
-
-[node name="Portrait" type="Panel" parent="Panel/Row" unique_id=1813881329]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 240)
-layout_mode = 2
-
-[node name="PortraitTexture" type="TextureRect" parent="Panel/Row/Portrait" unique_id=578793518]
+[node name="PortraitTexture" type="TextureRect" parent="Portrait"]
 unique_name_in_owner = true
 layout_mode = 0
 anchor_top = 1.0
@@ -59,6 +69,62 @@ anchor_bottom = 1.0
 mouse_filter = 2
 texture_filter = 1
 expand_mode = 1
+
+[node name="Box" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 120.0
+offset_top = -330.0
+offset_right = -120.0
+offset_bottom = -130.0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("box")
+
+[node name="Text" type="VBoxContainer" parent="Box"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="Box/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.45, 1)
+theme_override_fonts/font = ExtResource("pixel_bold")
+theme_override_font_sizes/font_size = 32
+
+[node name="LineLabel" type="Label" parent="Box/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.96, 0.95, 0.92, 1)
+theme_override_fonts/font = ExtResource("pixel")
+theme_override_font_sizes/font_size = 32
+autowrap_mode = 3
+
+[node name="NextBox" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -340.0
+offset_top = -112.0
+offset_right = -120.0
+offset_bottom = -52.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("next_box")
+
+[node name="NextButton" type="Button" parent="NextBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.95, 0.92, 1)
+theme_override_colors/font_hover_color = Color(1, 0.82, 0.45, 1)
+theme_override_fonts/font = ExtResource("pixel_bold")
+theme_override_font_sizes/font_size = 28
+flat = true
+text = "Next >"
 
 [node name="Voice" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true

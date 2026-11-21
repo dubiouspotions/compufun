@@ -66,6 +66,44 @@ static func stream_of(line: DialogueLine, voice: String) -> AudioStream:
 	return stream
 
 
+## Says [param line] in [param voice] through the ChimeraVoice extension, shaped by
+## [param voice_type], and returns the whole line as a WAV; null with the error pushed when the
+## extension is missing. For the editor: the game streams lines with VoicePlayer instead.
+static func say_live(line: DialogueLine, voice: String, voice_type: VoiceType) -> AudioStreamWAV:
+	if not ClassDB.class_exists(&"ChimeraVoice"):
+		push_error("Voices: no ChimeraVoice extension; build it with tools/build-voice.sh")
+		return null
+	var engine: Object = ClassDB.instantiate(&"ChimeraVoice")
+	if not engine.has_method(&"set_voice_type"):
+		push_error("Voices: this ChimeraVoice has no voice types; rebuild it with tools/build-voice.sh")
+		return null
+	var gz := FileAccess.get_file_as_bytes("res://voices/live/cmudict.txt.gz")
+	if gz.is_empty():
+		push_error("Voices: can't read res://voices/live/cmudict.txt.gz: %s" % error_string(FileAccess.get_open_error()))
+		return null
+	engine.load_dict(gz.decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP).get_string_from_utf8())
+	var shape := mood(line.pose)
+	engine.set_voice_type(voice_type.encode() if voice_type != null else "")
+	if engine.start(line.text, VoicePlayer.BODIES.get(voice, 0), VoicePlayer.MIX_RATE, shape.rate, shape.pitch, shape.swing) <= 0:
+		push_error("Voices: ChimeraVoice said nothing for \"%s\"" % line.text)
+		return null
+	var samples := PackedFloat32Array()
+	while true:
+		var chunk: PackedFloat32Array = engine.render(4096)
+		if chunk.is_empty():
+			break
+		samples.append_array(chunk)
+	var data := PackedByteArray()
+	data.resize(samples.size() * 2)
+	for i in samples.size():
+		data.encode_s16(i * 2, int(clampf(samples[i], -1.0, 1.0) * 32767.0))
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = int(VoicePlayer.MIX_RATE)
+	wav.data = data
+	return wav
+
+
 ## Why [param chimera] can't render moods, or "" when it can: it must exist and carry
 ## tools/chimera-moods.patch. Without the patch, Chimera would say every mood as neutral.
 static func chimera_problem(chimera: String) -> String:

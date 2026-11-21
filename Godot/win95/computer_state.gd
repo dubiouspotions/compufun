@@ -64,6 +64,16 @@ func write_picture(file: Win95File, image: Image) -> void:
 	_changed()
 
 
+## Puts [param file] first in the Start menu's Documents, as opening a document does in Win95,
+## which lists 15.
+func note_opened(file: Win95File) -> void:
+	if setup == null:
+		return
+	setup.recent_documents.erase(file)
+	setup.recent_documents.push_front(file)
+	setup.recent_documents.resize(mini(setup.recent_documents.size(), 15))
+
+
 ## Marks [param email] read, as opening it in Exchange does.
 func mark_read(email: Email) -> void:
 	if setup == null or email.read:

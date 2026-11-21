@@ -43,22 +43,22 @@ size = Vector3(0.24, 0.46, 0.46)
 
 [node name="PowerLight" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.09, 0.211)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.175, 0.211)
 cast_shadow = 0
 material_override = SubResource("StandardMaterial3D_power_light")
 mesh = SubResource("BoxMesh_power_light")
 
 [node name="PowerHotspot" parent="." instance=ExtResource("3_hotspot")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, 0.24)
-size = Vector3(0.07, 0.07, 0.04)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, 0.235)
+size = Vector3(0.05, 0.05, 0.04)
 
 [node name="PostItAnchor" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0.216)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, 0.054, 0.216)
 
 [node name="PostIt" parent="PostItAnchor" instance=ExtResource("4_post_it")]
 unique_name_in_owner = true
-transform = Transform3D(0.99862953, -0.05233596, 0, 0.05233596, 0.99862953, 0, 0, 0, 1, 0, 0, 0.002)
+transform = Transform3D(0.83219128, -0.04361330, 0, 0.04361330, 0.83219128, 0, 0, 0, 0.83333333, 0, 0, 0.002)
 
 [node name="WorkviewEye" type="Marker3D" parent="."]
 unique_name_in_owner = true
@@ -66,7 +66,7 @@ transform = Transform3D(1, 0, 0, 0, 0.88294756, 0.46947157, 0, -0.46947157, 0.88
 
 [node name="CableSocket" type="Marker3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.095, 0.08, 0.16)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.02, 0.17, -0.214)
 
 [node name="OpenCase" parent="." instance=ExtResource("9_open")]
 unique_name_in_owner = true

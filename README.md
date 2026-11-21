@@ -33,15 +33,28 @@ Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actio
 
 ## Credits
 
+- `Godot/sounds/footstep_tile_1.ogg` to `footstep_tile_4.ogg`: four steps cut from "Footsteps_Boots_Tile_Mono" by Nox_Sound on Freesound (https://freesound.org/people/Nox_Sound/sounds/530588/), CC0.
+- `Godot/sounds/computer_set_down.ogg`: cut from "Book dropped on table" by Valerie-Vivegnis on Freesound (https://freesound.org/people/Valerie-Vivegnis/sounds/836521/), CC0.
+- `Godot/sounds/computer_pick_up_1.ogg` and `computer_pick_up_2.ogg`: two lifts cut from "Foley_Object_Toolbox_Metal_PickUp_Mono" by Nox_Sound on Freesound (https://freesound.org/people/Nox_Sound/sounds/556647/), CC0.
+- `Godot/sounds/part_take.ogg`: trimmed from "Picking Something Up From A Table" by RutgerMuller on Freesound (https://freesound.org/people/RutgerMuller/sounds/51160/), CC0.
+- `Godot/sounds/part_put.ogg`: trimmed from "Clip In" by slappy13 on Freesound (https://freesound.org/people/slappy13/sounds/151778/), CC0.
+- `Godot/sounds/cable_plug_in.ogg`: trimmed from "Power Cord Plug 1_2" by Joao_Janz on Freesound (https://freesound.org/people/Joao_Janz/sounds/477621/), CC0.
+- `Godot/sounds/cable_plug_out.ogg`: trimmed from "Power Cord Plug 1_1" by Joao_Janz on Freesound (https://freesound.org/people/Joao_Janz/sounds/477628/), CC0.
+- `Godot/sounds/floppy_insert.ogg`: cut from "Inserting 3.5 inch floppy-disk into floppy disk drive" by micropolis on Freesound (https://freesound.org/people/micropolis/sounds/637057/), CC0.
+- `Godot/sounds/floppy_eject.ogg`: cut from "Taking 3.5-inch floppy-disk from floppy disk drive" by micropolis on Freesound (https://freesound.org/people/micropolis/sounds/637058/), CC0.
 - `Godot/win95/theme/boot_logo.png`: the Windows 95 startup screen, (C) Microsoft, not licensed to us. Taken from the Windows Wallpaper Wiki (https://windowswallpaper.miraheze.org/wiki/Windows_95).
 - `Godot/win95/wallpapers/` (all but `win95-default.png`): the wallpapers that shipped with Windows 95, (C) Microsoft, not licensed to us. Taken from the Windows Wallpaper Wiki (https://windowswallpaper.miraheze.org/wiki/Windows_95).
 - `Godot/win95/sounds/chord.wav`: CHORD.WAV, the Critical Stop sound of Windows 95, (C) Microsoft, not licensed to us. Taken from "Windows 95 audio media" on the Internet Archive (https://archive.org/details/Win95-audio-media).
+- `Godot/win95/solitaire/` (`cards.png`, `recycle.png`, `back.png`): Solitaire's cards by Susan Kare and its 1990 card back, (C) Microsoft, not licensed to us. The faces are from the extracted Windows XP `cards.dll` bitmaps at catonmat.net (https://catonmat.net/cards-dll); the back is from the Windows 3.1 card sheet in 0xe1f/solitaire (https://github.com/0xe1f/solitaire).
 - `Godot/win95/sounds/boot_power_on.ogg`: cut from "PC startup" by bratij on Freesound (https://freesound.org/people/bratij/sounds/841351/), CC0.
 - `Godot/win95/sounds/boot_post_beep.ogg`: cut from "PC speaker error beep" by CZghost on Freesound (https://freesound.org/people/CZghost/sounds/264823/), CC0.
 - `Godot/win95/sounds/boot_drive.ogg`: cut from "Electronic, Computer, Hard Drive - 1990s Compaq Hard Drive, Spooling Up, Turning Off - Close Perspective Memory Access Noise" by jaegrover on Freesound (https://freesound.org/people/jaegrover/sounds/262872/), CC0.
-- `Godot/win95/sounds/boot_startup.ogg`: cut from "1990s Operating System Start Sound - Optimistic" by Johnmode on Freesound (https://freesound.org/people/Johnmode/sounds/818343/), CC0.
+- `Godot/win95/sounds/boot_startup.ogg`: the Windows 95 startup sound ("The Microsoft Sound", Brian Eno), (C) Microsoft, not licensed to us. Taken from "The Microsoft Sound.wav" by goldenzoomi1 on Freesound (https://freesound.org/people/goldenzoomi1/sounds/644997/), which lists it as CC BY-NC 4.0.
+- `Godot/win95/midi/passport.mp3`: PASSPORT.MID from Windows 95, (C) Microsoft, not licensed to us, played on an ESS AudioDrive ES1868F and recorded by blackstorm88, CC BY-NC-ND 4.0, unedited. From the Internet Archive (https://archive.org/details/passport-mid-played-on-a-es-1868-f).
 - `Godot/sounds/city_ambience.ogg`: cut and muffled from "Westfield.wav" by Islabonita on Freesound (https://freesound.org/people/Islabonita/sounds/178532/), CC0. `tools/make_city_ambience.sh` makes it.
+- `Godot/compufun_db/fonts/Px437_IBM_VGA_8x16.ttf`: from [The Ultimate Oldschool PC Font Pack](https://int10h.org/oldschool-pc-fonts/) by VileR, CC BY-SA 4.0 (`LICENSE.txt`).
 - `Godot/win95/theme/fonts/`: W95FA Pixel, a pixel-grid version of [W95FA](https://fontsarena.com/w95fa-by-alina-sava/) by Alina Sava (FontsArena), SIL OFL 1.1 (`ofl.txt`).
+- `Godot/win95/theme/fonts/px437_ibm_vga_8x16.ttf`: Px437 IBM VGA 8x16 from [The Ultimate Oldschool PC Font Pack](https://int10h.org/oldschool-pc-fonts/) by VileR, CC BY-SA 4.0 (`oldschool_pc_fonts_license.txt`).
 - `Godot/voices/live/cmudict.txt.gz`: the CMU Pronouncing Dictionary, (C) Carnegie Mellon University, BSD-style licence (`CMUDICT-LICENSE.txt`).
 - `native/chimera_voice/`: speaks the voices live with [Chimera](https://github.com/jamesondh/chimera-vocal-synth) (MIT) and [godot-rust](https://github.com/godot-rust/gdext) (MPL-2.0).
 - `Godot/voices/`: the customers' voices, rendered with [Chimera](https://github.com/jamesondh/chimera-vocal-synth) by Jameson Hodge, MIT. The game ships only the rendered WAV files.

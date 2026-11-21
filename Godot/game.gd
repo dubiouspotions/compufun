@@ -259,7 +259,7 @@ func setup_for(job: Job) -> Win95Setup:
 		return null
 	var setup: Win95Setup = setups.get(computer)
 	if setup == null:
-		setup = computer.win95_setup.duplicate_deep()  # loaded resources are shared, so mutating them would leak
+		setup = computer.win95_setup.copy()
 		setups[computer] = setup
 	if not job.broken:
 		job.broken = true
@@ -305,7 +305,7 @@ func open_case(job: Job, open: bool) -> bool:
 ## True when the piece of [param part] can come out of [param job] into the empty hand: the case is
 ## open, the piece is in, and no piece sits on it.
 func can_take(job: Job, part: Part) -> bool:
-	if hand != null or not job.case_open or job.piece(part) == null or job.screws[part].has(true):
+	if hand != null or not job.case_open or job.piece(part) == null:
 		return false
 	for other: Part in job.places:
 		if other.sits_on == part:
@@ -321,22 +321,18 @@ func can_put(job: Job, part: Part) -> bool:
 	return part.sits_on == null or job.piece(part.sits_on) != null
 
 
-## True when screw [param index] of the place of [param part] in [param job] can turn, out or in: the
-## piece is there and the case is open. A null [param part] is the side panel: the panel is on.
-func can_turn(job: Job, part: Part, index: int) -> bool:
-	if part == null:
-		return not job.case_open and index >= 0 and index < job.panel_screws.size()
-	return job.case_open and job.piece(part) != null and index >= 0 and index < job.screws[part].size()
+## True when screw [param index] of the side panel of [param job] can turn, out or in: the panel is
+## on. Only the side panel is screwed; the parts inside come out freely.
+func can_turn(job: Job, index: int) -> bool:
+	return not job.case_open and index >= 0 and index < job.panel_screws.size()
 
 
-## Turns a screw out, or back in (see [method can_turn]). The screwdriver is always at hand.
-func turn_screw(job: Job, part: Part, index: int) -> bool:
-	if not _on_counter(job, "turn_screw") or not can_turn(job, part, index):
+## Turns a screw of the side panel out, or back in (see [method can_turn]). The screwdriver is always
+## at hand.
+func turn_screw(job: Job, index: int) -> bool:
+	if not _on_counter(job, "turn_screw") or not can_turn(job, index):
 		return false
-	if part == null:
-		job.panel_screws[index] = not job.panel_screws[index]
-	else:
-		job.screws[part][index] = not job.screws[part][index]
+	job.panel_screws[index] = not job.panel_screws[index]
 	changed.emit()
 	return true
 
@@ -437,12 +433,34 @@ func tick_post_it(job: Job) -> void:
 	changed.emit()
 
 
+## Marks [param symptom] on [param job] in CompuFunDB (true), or clears it (false).
+func mark_symptom(job: Job, symptom: String, marked: bool) -> void:
+	if _on_counter(job, "mark_symptom"):
+		_set_in(job.marked_symptoms, symptom, marked)
+
+
+## Ticks the repair step [param step] of [param job] in CompuFunDB (true), or unticks it (false).
+func tick_repair(job: Job, step: String, ticked: bool) -> void:
+	if _on_counter(job, "tick_repair"):
+		_set_in(job.ticked_repairs, step, ticked)
+
+
+func _set_in(items: Array[String], item: String, present: bool) -> void:
+	if (item in items) == present:
+		return
+	if present:
+		items.append(item)
+	else:
+		items.erase(item)
+	changed.emit()
+
+
 ## True when the phone can call: the shop is open, nobody is in it, and a post-it is ticked.
 func can_call() -> bool:
 	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.post_it_ticked)
 
 
-## Calls for [constant CALL_SECONDS] (phase CALLING; CompufunDB is offline, as the land-line cuts
+## Calls for [constant CALL_SECONDS] (phase CALLING; CompuFunDB is offline, as the land-line cuts
 ## the modem). Then the customer of the oldest ticked job walks in for a PICKUP. Does nothing when
 ## [method can_call] is false.
 func call_customer() -> void:
@@ -571,6 +589,11 @@ func restore(state: Dictionary) -> String:
 		job.software_fixed = bool(data.get("software_fixed", false))
 		job.powered = bool(data.get("powered", false))
 		job.post_it_ticked = bool(data.get("post_it_ticked", false))
+		for key: String in ["marked_symptoms", "ticked_repairs"]:
+			if not data.get(key, []) is Array:
+				return _refuse("job %d: %s is not a list: %s" % [i, key, data[key]])
+		job.marked_symptoms.assign(data.get("marked_symptoms", []).map(str))
+		job.ticked_repairs.assign(data.get("ticked_repairs", []).map(str))
 		if data.has("parts"):
 			var pieces: Variant = Job.pieces_from(data["parts"])
 			if pieces is String:
@@ -590,14 +613,6 @@ func restore(state: Dictionary) -> String:
 			if panel.size() != Job.PANEL_SCREWS:
 				return _refuse("job %d: the side panel has %d screws, not %d" % [i, Job.PANEL_SCREWS, panel.size()])
 			job.panel_screws.assign(panel.map(func(v: Variant) -> bool: return bool(v)))
-		var given_screws: Dictionary = data.get("screws", {})
-		for part: Part in Part.every():
-			if not given_screws.has(String(part.id())):
-				continue
-			var screwed: Array = given_screws[String(part.id())]
-			if screwed.size() != part.screw_points.size():
-				return _refuse("job %d: %s has %d screws, not %d" % [i, part.id(), part.screw_points.size(), screwed.size()])
-			job.screws[part] = screwed.map(func(v: Variant) -> bool: return bool(v))
 		if job.powered and not can_power_on(job):
 			return _refuse("job %d: a computer that is open or misses a part can't be on" % i)
 		if job.post_it_ticked and not job.fixed:

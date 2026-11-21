@@ -1,0 +1,30 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/post_it_label.gd" id="1_script"]
+
+[node name="PostItLabel" type="Control"]
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Issue" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.06
+anchor_top = 0.05
+anchor_right = 0.94
+anchor_bottom = 0.6
+theme_override_colors/font_color = Color(0.12, 0.1, 0.16, 1)
+text = "Windows starts and turns off"
+autowrap_mode = 3
+
+[node name="Pickup" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.3
+anchor_top = 0.55
+anchor_right = 0.97
+anchor_bottom = 0.97
+theme_override_colors/font_color = Color(0.05, 0.4, 0.12, 1)
+text = "Call customer for pickup"
+vertical_alignment = 1
+autowrap_mode = 3

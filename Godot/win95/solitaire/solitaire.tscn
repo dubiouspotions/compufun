@@ -1,0 +1,47 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/solitaire/solitaire.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="Script" path="res://win95/solitaire/solitaire_table.gd" id="table"]
+[ext_resource type="Texture2D" path="res://win95/solitaire/cards.png" id="faces"]
+[ext_resource type="Texture2D" path="res://win95/solitaire/back.png" id="back"]
+[ext_resource type="Texture2D" path="res://win95/solitaire/recycle.png" id="recycle"]
+
+[node name="Solitaire" type="PanelContainer"]
+theme = ExtResource("theme")
+script = ExtResource("script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Solitaire"
+show_minimize = true
+
+[node name="MenuBar" type="MenuBar" parent="VBox"]
+layout_mode = 2
+prefer_global_menu = false
+
+[node name="Game" type="PopupMenu" parent="VBox/MenuBar"]
+unique_name_in_owner = true
+item_count = 3
+item_0/text = "Deal"
+item_0/id = 0
+item_1/id = 2
+item_1/separator = true
+item_2/text = "Exit"
+item_2/id = 1
+
+[node name="Table" type="Control" parent="VBox"]
+unique_name_in_owner = true
+texture_filter = 1
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("table")
+faces = ExtResource("faces")
+back = ExtResource("back")
+recycle = ExtResource("recycle")

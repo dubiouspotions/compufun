@@ -18,16 +18,16 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 ## Game
 
-**View**: A fixed point of view in a room, such as Main, Left, Right, or a close-up (Workview, Screen, CompufunDB). In the scene it is a `ViewMarker` node with the view's name.
+**View**: A fixed point of view in a room, such as Main, Left, Right, or a close-up (Workview, Screen, CompuFunDB). In the scene it is a `ViewMarker` node with the view's name.
 *Avoid:* camera, room view, screen.
 
 **Hotspot**: A thing in a room that the player clicks (`rooms/hotspot.tscn`).
 *Avoid:* button, clickable, interactable.
 
-**Post-it**: The repair ticket on a computer on the counter: the perceived issue and the Done box. Each computer wears one (`props/post_it_3d.tscn`), with a green check once Done is ticked; the UI post-it (`ui/post_it.tscn`) shows the job in focus and has the Done box.
+**Post-it**: The repair ticket on a computer on the counter: the perceived issue and the Done box. Each computer wears one (`props/post_it_3d.tscn`), with a green check once Done is ticked. It sits on the front of the case, below the power button, standing or lying. In the Workview, `ui/post_it_label.tscn` writes its text in sharp UI text over the paper. The UI post-it (`ui/post_it.tscn`) shows the job in focus and has the Done box.
 *Avoid:* ticket, note.
 
-**CompufunDB**: The database on the work computer that maps a set of symptoms to the repair steps. It lists every `Problem` file.
+**CompuFunDB**: The database on the work computer. For each computer on the counter it shows what the customer reported, what to check for that report, and what to fix once the checks are marked. It reads every `Problem` file.
 *Avoid:* Company Database, BBS, database.
 
 **Screen buffer**: The 640 x 480 viewport that runs the Win95 desktop. The 3D monitor shows it, and the Screen View shows it at 2x.
@@ -57,7 +57,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Hat**: The scene that a 3D customer wears on the head (`Customer.hat`), matching the hat in the portrait and clear of the face. `CustomerBody` puts it on the `HatMount` at the brow line. Pierre wears the cap (`props/cap.tscn`) backwards.
 *Avoid:* headwear, accessory, attachment.
 
-**Sticker**: A small picture on the front of a customer's computer case (`Computer.sticker`), shown with the poster prop. The case material (`Computer.case_material`) and the sticker tell the computers on the counter apart.
+**Sticker**: A small picture on the front or a side of a customer's computer case (a `Sticker` in `Computer.stickers`), shown with the poster prop. A computer has any number of stickers, or none. The case material (`Computer.case_material`) and the stickers tell the computers on the counter apart.
 *Avoid:* decal, label, badge.
 
 **Week calendar**: The calendar on the pin board in the Right view (`props/week_calendar.tscn`): the seven days of the game with their dates, and a red cross on each day that has passed. A day has passed when the shop closes for its night.
@@ -81,7 +81,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Mat**: The strip in front of an open computer where the player lays the pieces that they took out (`Job.mat`).
 *Avoid:* tray, bench.
 
-**Hand**: The one piece that the player holds (`Game.hand`). The label at the bottom of the screen shows it.
+**Hand**: The one piece that the player holds (`Game.hand`). Its model shows low in the view, held in front of the camera, with its name (`rooms/shop/hand.tscn`).
 *Avoid:* inventory, cursor item.
 
 **Storage View**: The close-up of the parts desk in the storage room, with one box of new parts per part. The storage door in the Left View leads there.

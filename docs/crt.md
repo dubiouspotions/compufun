@@ -1,15 +1,16 @@
 # The CRT look
 
-The bench screen looks like a mid-90s office VGA monitor, in the Screen View and in the 3D room.
+The shop's monitors look like mid-90s office VGA monitors, in their close-ups and in the 3D room: the
+bench screen (the Screen View) and the work computer (CompuFunDB).
 
 | Part | What it does |
 | --- | --- |
-| `shaders/crt.gdshader` | The CRT look of the Screen View: curve, scanlines, mask, glow, convergence, colour. |
-| `shaders/crt_world.gdshader` | The 3D bench screen: the same curve and light, without the mask and scanlines. |
+| `shaders/crt.gdshader` | The CRT look of a close-up: curve, scanlines, mask, glow, convergence, colour. |
+| `shaders/crt_world.gdshader` | A 3D monitor's screen: the same curve and light, without the mask and scanlines. |
 | `shaders/crt.gdshaderinc` | What both share: the curve (`crt_bend`), the tube's face, the tube's state and the software cursor. |
 | `shaders/crt_looks/` | The looks, as ShaderMaterials. `subtle_vga` is the Screen View's; `world_monitor` is the 3D screen's. |
-| `ui/crt_screen.gd` | The Screen View's screen: shows the buffer through the look, bends the mouse, sets the cursor. |
-| `ui/crt_tube.gd` | The tube's state: power, signal lock, degauss, magnetised mask, and their sounds. |
+| `ui/crt_screen.gd` | A close-up's screen: shows the buffer through the look, bends the mouse, sets the cursor. |
+| `ui/crt_tube.gd` | One monitor's tube: power, signal lock, degauss, magnetised mask, and their sounds. |
 
 To tune a look, open its `.tres` and drag the sliders. To try another, drop it on the Screen View's
 `Screen` Material. The Screen View starts its zoom with the 3D screen's curve (`far_look`) and
@@ -17,9 +18,14 @@ blends to its own as the camera arrives, so the screen bends more from a distanc
 
 ## The tube's state
 
-`CrtTube` animates global shader uniforms (Project Settings > Shader Globals: `crt_power`,
-`crt_warmup`, `crt_degauss`, `crt_sync`, `crt_magnetization`, `crt_cursor`), so the Screen View and
-the 3D screen show one tube. `ScreenView` calls `reconcile()` on every `Game.changed`:
+Each monitor has its own `CrtTube`, a child of its `ScreenView`. It animates the `crt_*` uniforms of
+`crt.gdshaderinc` (`crt_power`, `crt_warmup`, `crt_degauss`, `crt_sync`, `crt_magnetization`,
+`crt_cursor`) on that monitor's two looks: the close-up's (`CrtScreen` adds it) and the 3D screen's
+(`main.gd` adds it with `ScreenView.add_look()`). So the close-up and the 3D screen show one tube,
+and the bench's power cuts and lost signals leave the work computer alone. They are not global
+uniforms for that reason. `ScreenView` calls `reconcile()` on every `Game.changed`: the tube is on
+while the shop is open, and has a signal while its content's `has_picture()` says so (the bench: a
+running computer is connected; CompuFunDB: always):
 
 - **Shop opens:** power-on: a switch clunk, static, a degauss, and a dim, oversized picture that
   warms up over 3 seconds.
@@ -71,6 +77,8 @@ the 3D screen show one tube. `ScreenView` calls `reconcile()` on every `Game.cha
   desktop's cursor into the picture, so it bends, glows, and stays on the screen where the player
   left it. A cursor node in the buffer would sit under Win95's popup menus, which Godot draws on
   a canvas layer above every CanvasLayer.
+- **The shader keeps the node's modulate.** The Screen View fades by `modulate`; a shader that
+  writes its own alpha would pop the overlay off at the end of the zoom.
 - **Functions don't take `TEXTURE`.** A headless compile, as in CI's export, rejects it; the
   shaders read the buffer through their `screen_texture` uniform.
 - **Cost:** one pass at the Screen View's size, 4 texel fetches per sample (12 with convergence)

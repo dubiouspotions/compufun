@@ -12,6 +12,8 @@ const _BENT: Array[StringName] = [&"curvature_x", &"curvature_y", &"underscan", 
 
 ## The picture to show; it gets the mouse and, while this node is visible, the keys.
 @export var buffer: SubViewport
+## The monitor's tube: it powers this node's look, and draws the cursor.
+@export var tube: CrtTube
 ## The look of the 3D monitor; while the camera zooms in, the curve blends from its curve to this
 ## node's material's.
 @export var far_look: ShaderMaterial
@@ -48,6 +50,10 @@ func _ready() -> void:
 		return
 	material = look.duplicate()  # the zoom changes the curve; the look's .tres stays as it is
 	(material as ShaderMaterial).set_shader_parameter(&"screen_texture", texture)
+	if tube == null:
+		push_error("CrtScreen %s: no tube" % get_path())
+		return
+	tube.add_look(material)
 	for uniform in _BENT:
 		_near[uniform] = _param(material, uniform)
 	_set_cursor(arrow_cursor)
@@ -81,6 +87,7 @@ func _gui_input(event: InputEvent) -> void:
 	var pixels := Vector2(buffer.size)
 	var bent := mouse.duplicate() as InputEventMouse
 	bent.position = bend(mouse.position / size) * pixels
+	bent.global_position = bent.position  # controls in the buffer read either
 	var motion := bent as InputEventMouseMotion
 	if motion != null:
 		motion.relative = bent.position - bend((mouse.position - motion.relative) / size) * pixels
@@ -108,15 +115,16 @@ func _on_mouse_exited() -> void:
 
 
 func _set_cursor(cursor: Texture2D) -> void:
-	if cursor != _cursor:
+	if cursor != _cursor and tube != null:
 		_cursor = cursor
-		RenderingServer.global_shader_parameter_set(&"crt_cursor_texture", cursor)
+		tube.set_param(&"crt_cursor_texture", cursor)
 	_sync_cursor()
 
 
 func _sync_cursor() -> void:
 	var hotspot := ibeam_hotspot if _cursor == ibeam_cursor else arrow_hotspot
-	RenderingServer.global_shader_parameter_set(&"crt_cursor", (_cursor_at - hotspot).floor() if cursor_visible else Vector2(-1000, -1000))
+	if tube != null:
+		tube.set_param(&"crt_cursor", (_cursor_at - hotspot).floor() if cursor_visible else Vector2(-1000, -1000))
 
 
 # The uniform's value in [param look], or the shader's default where the look leaves it unset.

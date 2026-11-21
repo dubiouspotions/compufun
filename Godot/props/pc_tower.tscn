@@ -4,7 +4,7 @@
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="2_7echm"]
 [ext_resource type="Material" path="res://materials/power_button.tres" id="3_power"]
 [ext_resource type="Script" path="res://props/pc_tower.gd" id="4_script"]
-[ext_resource type="PackedScene" path="res://props/poster.tscn" id="5_poster"]
+[ext_resource type="Material" path="res://materials/vga_blue_plastic.tres" id="6_vga"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_ub7ej"]
 size = Vector3(0.19, 0.42, 0.42)
@@ -18,8 +18,22 @@ size = Vector3(0.15, 0.035, 0.006)
 [sub_resource type="BoxMesh" id="BoxMesh_uux2d"]
 size = Vector3(0.1, 0.01, 0.006)
 
-[sub_resource type="BoxMesh" id="BoxMesh_87loy"]
-size = Vector3(0.045, 0.045, 0.016)
+[sub_resource type="CylinderMesh" id="CylinderMesh_power"]
+top_radius = 0.016
+bottom_radius = 0.016
+height = 0.01
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ring"]
+top_radius = 0.021
+bottom_radius = 0.021
+height = 0.004
+radial_segments = 10
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_vga"]
+size = Vector3(0.03, 0.012, 0.004)
 
 [node name="PcTower" type="Node3D" unique_id=1682646323]
 script = ExtResource("4_script")
@@ -45,11 +59,27 @@ material_override = ExtResource("2_7echm")
 mesh = SubResource("BoxMesh_uux2d")
 
 [node name="Power" type="MeshInstance3D" parent="." unique_id=1464632202]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, 0.214)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.13, 0.215)
 material_override = ExtResource("3_power")
-mesh = SubResource("BoxMesh_87loy")
+mesh = SubResource("CylinderMesh_power")
 
-[node name="Sticker" parent="." instance=ExtResource("5_poster")]
-visible = false
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.058, 0.09, 0.211)
-size = Vector2(0.06, 0.04)
+[node name="PowerRing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.13, 0.2115)
+material_override = ExtResource("2_7echm")
+mesh = SubResource("CylinderMesh_ring")
+
+[node name="VgaPort" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.02, 0.17, -0.212)
+material_override = ExtResource("6_vga")
+mesh = SubResource("BoxMesh_vga")
+
+[node name="StickerFaces" type="Node3D" parent="."]
+
+[node name="Front" type="Marker3D" parent="StickerFaces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0.211)
+
+[node name="Left" type="Marker3D" parent="StickerFaces"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.096, 0.21, 0)
+
+[node name="Right" type="Marker3D" parent="StickerFaces"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.096, 0.21, 0)

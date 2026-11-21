@@ -6,6 +6,8 @@ extends Control
 ## computer, ScreenView takes it out of the tree, and puts it back as it was.
 
 const _BOOT := preload("res://win95/boot_sequence.tscn")
+const _FLOPPY_IN := preload("res://sounds/floppy_insert.tres")
+const _FLOPPY_OUT := preload("res://sounds/floppy_eject.tres")
 const _FOLDER := preload("res://win95/folder_window.tscn")
 const _PROPERTIES := preload("res://win95/properties_window.tscn")
 const _MESSAGE := preload("res://win95/message_box.tscn")
@@ -41,6 +43,17 @@ class Listing:
 		key = listing_key
 
 
+## pointer_visible changed.
+signal pointer_changed
+
+## Win95 shows the mouse pointer: false while the computer is off and while it boots, until the
+## desktop appears.
+var pointer_visible := false:
+	set(value):
+		if value != pointer_visible:
+			pointer_visible = value
+			pointer_changed.emit()
+
 static var _stock_palette: Win95Palette
 var _setup_icons: Array[FileIcon] = []
 var _listings: Dictionary[IconView, Listing] = {}
@@ -50,6 +63,8 @@ var _context: ContextMenu
 var _context_view: IconView
 var _context_item: FileIcon
 var _boot: Node
+## Whether a floppy was in A: at the last change, to hear it go in or out.
+var _floppy_heard: bool = false
 
 @onready var _state: ComputerState = %ComputerState
 @onready var _desktop: Win95Desktop = $Desktop
@@ -106,11 +121,16 @@ func _on_booted() -> void:
 	if is_instance_valid(_boot):
 		_boot.queue_free()
 	_boot = _BOOT.instantiate()
+	_boot.floppy_in_a = setup.floppy_in_a
+	_floppy_heard = setup.floppy_in_a
+	pointer_visible = false
+	_boot.finished.connect(func() -> void: pointer_visible = true)
 	add_child(_boot)
 	move_child(_boot, _no_signal.get_index())
 
 
 func _on_powered_off() -> void:
+	pointer_visible = false
 	if is_instance_valid(_boot):
 		_boot.queue_free()
 	_no_signal.show()
@@ -132,6 +152,12 @@ func _apply_sound() -> void:
 
 func _on_changed() -> void:
 	_apply_sound()
+	if _state.setup != null:
+		if is_instance_valid(_boot):
+			_boot.floppy_in_a = _state.setup.floppy_in_a
+		if _state.setup.floppy_in_a != _floppy_heard:
+			_floppy_heard = _state.setup.floppy_in_a
+			(_FLOPPY_IN if _floppy_heard else _FLOPPY_OUT).play_at(self)
 	for view: IconView in _listings.keys():
 		_fill(view)
 
@@ -195,13 +221,21 @@ func _open_item(item: FileIcon) -> void:
 	elif file.is_folder:
 		_show(Listing.new(file.name, file.icon, &"folder", func() -> Array: return file.children, not _drives.has(file), file))
 	else:
-		_open_file(file)
+		open_file(file)
 
 
 ## Opens [param file] as Win95 does: a program file runs while its name ends in .EXE or .COM;
 ## any other file opens in the installed program whose app lists its extension. A program file
 ## whose name lost its .EXE still claims the extension, so its files fail with "Cannot find the file".
-func _open_file(file: Win95File) -> void:
+## A shortcut opens its target, or fails with "Problem with Shortcut" when the target is gone.
+func open_file(file: Win95File) -> void:
+	if file.target != "":
+		var target := _state.setup.file_at(file.target)
+		if target == null or target.is_folder:
+			_message("Problem with Shortcut", "The item '%s' that this shortcut refers to has been changed or moved, so this shortcut will no longer work properly." % file.target.substr(file.target.rfind("\\") + 1))
+		else:
+			open_file(target)
+		return
 	if ComputerState.is_runnable(file):
 		_launch(file.program, null)
 		return
@@ -209,6 +243,7 @@ func _open_file(file: Win95File) -> void:
 	for program in programs:
 		if ComputerState.is_runnable(program):
 			_launch(program.program, file)
+			_state.note_opened(file)
 			return
 	if not programs.is_empty():
 		var location := _state.location_of(programs[0]).trim_suffix("\\")
@@ -242,7 +277,7 @@ func _show(listing: Listing) -> void:
 	var window: Node = _desktop.open(_FOLDER, false)
 	var title_bar: Node = window.get_node("%TitleBar")
 	title_bar.title = listing.title
-	title_bar.icon = _small_icon(listing.icon)
+	title_bar.icon = Win95File.small_icon(listing.icon)
 	var view: IconView = window.items
 	_wire_view(view)
 	window.closed.connect(func() -> void:
@@ -383,10 +418,3 @@ func _files(items: Array[FileIcon]) -> Array[Win95File]:
 			files.append(file)
 	return files
 
-
-# Kalle's icon set pairs every name_32.png with a name_16.png.
-func _small_icon(icon: Texture2D) -> Texture2D:
-	if icon == null or not icon.resource_path.ends_with("_32.png"):
-		return null
-	var small := icon.resource_path.trim_suffix("_32.png") + "_16.png"
-	return load(small) if ResourceLoader.exists(small) else null

@@ -88,33 +88,3 @@ renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
 
-[shader_globals]
-
-crt_power={
-"type": "float",
-"value": 1.0
-}
-crt_warmup={
-"type": "float",
-"value": 1.0
-}
-crt_degauss={
-"type": "float",
-"value": 0.0
-}
-crt_sync={
-"type": "float",
-"value": 1.0
-}
-crt_magnetization={
-"type": "float",
-"value": 0.0
-}
-crt_cursor={
-"type": "vec2",
-"value": Vector2(-1000, -1000)
-}
-crt_cursor_texture={
-"type": "sampler2D",
-"value": "res://win95/theme/arrow_cursor.png"
-}

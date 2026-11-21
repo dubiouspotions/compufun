@@ -1,55 +1,66 @@
 class_name ScreenView
 extends Control
-## The Screen View: a sharp copy of the screen buffer, laid exactly over the screen of the 3D
-## monitor. It fades in while the camera zooms into the monitor and lands at [member zoom] times the
-## buffer's size, where it takes the mouse and the keys. The 3D monitor shows the same buffer as its
-## texture, so there is one desktop in one place. The buffer shows the desktop of the job that the
-## cable is connected to (Game.connected), and NO SIGNAL while the cable hangs free. %Tube turns
-## the monitor on while the shop is open and locks it onto the signal of a running computer.
+## A close-up of a 3D monitor: its screen buffer through the CRT look, laid exactly over the
+## monitor's screen. It fades in while the camera zooms into the monitor and lands at [member zoom]
+## times the buffer's size, where it takes the mouse and the keys. The 3D monitor shows the same
+## buffer, and %Tube drives both looks: one monitor, one tube. The tube is on while the shop is open,
+## and locks onto the content's signal. See docs/crt.md.
 
 ## The player clicked the open view outside the screen.
 signal outside_clicked
 
-## The desktop of one job's computer, with a %ComputerState node. Each job gets its own at its
-## first connection; it waits out of the tree while the cable is elsewhere, and is freed when the
-## job leaves the counter. It reports software fixes to Game itself.
-@export var desktop_scene: PackedScene
+## The view marker's screen that opens this view; the room's monitor for it shows the buffer.
+@export var screen: ViewMarker.Screen = ViewMarker.Screen.WIN95
+## What runs in the screen buffer: a Control of the buffer's size. When its script has a
+## [code]has_picture() -> bool[/code], the tube locks onto the picture only while it returns true;
+## a [code]pointer_visible() -> bool[/code] hides the cursor while it returns false, and a
+## [code]pointer_changed[/code] signal says when that changes.
+@export var content: PackedScene
+## The shader draws the mouse cursor into the picture while there is a signal. False when the
+## content draws its own, as CompuFunDB's text mode does.
+@export var draw_cursor: bool = true
 ## The whole-number scale of the open screen: 2 shows the 640 x 480 buffer 1280 x 960 in 1080p,
-## with chunky, sharp pixels. The Screen marker's distance must make the 3D screen this big.
+## with chunky, sharp pixels. The view marker's distance must make the 3D screen this big.
 @export_range(1, 4) var zoom: int = 2
 ## The seconds of the fade in and out. The main scene sets it to the camera's turn time.
 @export var fade_seconds: float = 0.35
-## The mouse cursor everywhere but over the desktop, from the start of the main scene. CrtScreen
-## draws the desktop's.
+## The mouse cursor everywhere but over the screen, from the start of the main scene. CrtScreen
+## draws the screen's.
 @export var game_cursor: Texture2D = preload("res://ui/crosshair_cursor.png")
 ## The pixel of [member game_cursor] that points.
 @export var game_cursor_hotspot: Vector2 = Vector2(6, 6)
 
 var _open: bool = false
 var _fade: Tween
-var _desktops: Dictionary[Job, Control] = {}
+var _content: Control
 
 @onready var _screen: CrtScreen = %Screen
 @onready var _tube: CrtTube = %Tube
 @onready var _buffer: SubViewport = %ScreenBuffer
-@onready var _no_signal: Control = %NoSignal
 
 
 func _ready() -> void:
 	visible = false
 	modulate.a = 0.0
 	_show_cursor(game_cursor, game_cursor_hotspot)
-	if desktop_scene == null:
-		push_error("ScreenView: desktop_scene is empty")
+	var node := content.instantiate() if content != null else null
+	_content = node as Control
+	if _content == null:
+		push_error("ScreenView %s: content is not a Control scene: %s" % [name, content])
+		if node != null:
+			node.free()
+	else:
+		if _content.custom_minimum_size != Vector2(_buffer.size):
+			push_error("ScreenView %s: %s is %s, but the screen buffer is %s" % [name, content.resource_path, _content.custom_minimum_size, _buffer.size])
+		_buffer.add_child(_content)
+		if _content.has_signal(&"pointer_changed"):
+			_content.connect(&"pointer_changed", _sync, CONNECT_DEFERRED)
 	Game.changed.connect(_sync)
 	_sync()
 
 
 func _exit_tree() -> void:
 	_show_cursor(null, Vector2.ZERO)  # Otherwise the display server outlives the texture and logs a leak at exit.
-	for desktop: Control in _desktops.values():
-		if desktop.get_parent() == null:
-			desktop.free()  # out of the tree, nothing else frees it
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -62,6 +73,12 @@ func _gui_input(event: InputEvent) -> void:
 ## The live picture of the screen buffer, for the 3D monitor.
 func screen_texture() -> ViewportTexture:
 	return _buffer.get_texture()
+
+
+## Lets the tube drive [param look] too: the 3D monitor's material, which shows [method screen_texture].
+func add_look(look: ShaderMaterial) -> void:
+	if look != null:
+		_tube.add_look(look)
 
 
 ## Fades the view in (true) or out (false). It stays visible until the fade out ends.
@@ -97,42 +114,11 @@ func degauss() -> void:
 	_tube.degauss()
 
 
-# Frees the desktops of jobs that left the counter, and puts the connected job's desktop in the buffer.
 func _sync() -> void:
-	for job: Job in _desktops.keys():
-		if job not in Game.jobs:
-			_desktops[job].queue_free()
-			_desktops.erase(job)
-	var shown := _desktop(Game.connected) if Game.connected != null else null
-	for child in _buffer.get_children():
-		if child != shown and child != _no_signal:
-			_buffer.remove_child(child)
-	if shown != null and shown.get_parent() == null:
-		_buffer.add_child(shown)
-	_no_signal.visible = shown == null
-	var running := Game.connected != null and Game.connected.powered
-	_screen.cursor_visible = running
-	_tube.reconcile(Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING, running, Game.day.warp if Game.day != null else 0.0)
-
-
-# The desktop of [param job], made at the first call. Null, with an error, when the scene is unfit.
-func _desktop(job: Job) -> Control:
-	if _desktops.has(job):
-		return _desktops[job]
-	if desktop_scene == null:
-		return null
-	var desktop := desktop_scene.instantiate() as Control
-	var state := desktop.get_node_or_null(^"%ComputerState") as ComputerState if desktop != null else null
-	if state == null:
-		push_error("ScreenView: %s is not a Control with a %%ComputerState node" % desktop_scene.resource_path)
-		if desktop != null:
-			desktop.free()
-		return null
-	if desktop.custom_minimum_size != Vector2(_buffer.size):
-		push_error("ScreenView: %s is %s, but the screen buffer is %s" % [desktop_scene.resource_path, desktop.custom_minimum_size, _buffer.size])
-	state.job = job
-	_desktops[job] = desktop  # before it enters the tree, whose boot can emit Game.changed again
-	return desktop
+	var has_picture: bool = _content != null and (not _content.has_method(&"has_picture") or _content.call(&"has_picture"))
+	var pointer: bool = _content == null or not _content.has_method(&"pointer_visible") or _content.call(&"pointer_visible")
+	_screen.cursor_visible = draw_cursor and has_picture and pointer
+	_tube.reconcile(Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING, has_picture, Game.day.warp if Game.day != null else 0.0)
 
 
 # Replaces the image of the arrow shape, which Controls and the 3D world show; the hotspot hand stays.

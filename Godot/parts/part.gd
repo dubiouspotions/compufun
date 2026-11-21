@@ -12,9 +12,6 @@ const IDS: Array[StringName] = [&"motherboard", &"cpu", &"fan", &"gpu", &"hard_d
 ## The part that this one sits on; it must be in first, and this one must be out before it comes out.
 ## null: the part sits in the case itself.
 @export var sits_on: Part
-## Where the part's screws sit, on its model, in metres. Each must come out before the part does,
-## and go back in for the repair to count. Empty: the part clips in.
-@export var screw_points: PackedVector3Array = []
 ## The 3D model: in the computer, on the mat and on its storage box. Flat side down, origin at the
 ## bottom centre.
 @export var model: PackedScene

@@ -1,12 +1,14 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://win95/boot_sequence.gd" id="script"]
-[ext_resource type="SystemFont" path="res://win95/theme/dos_font.tres" id="mono"]
 [ext_resource type="AudioStream" path="res://win95/sounds/boot_power_on.ogg" id="power_on"]
 [ext_resource type="AudioStream" path="res://win95/sounds/boot_post_beep.ogg" id="post_beep"]
 [ext_resource type="AudioStream" path="res://win95/sounds/boot_drive.ogg" id="drive"]
 [ext_resource type="AudioStream" path="res://win95/sounds/boot_startup.ogg" id="startup"]
 [ext_resource type="Texture2D" path="res://win95/theme/boot_logo.png" id="logo"]
+[ext_resource type="Script" path="res://win95/energy_star.gd" id="energy_star"]
+[ext_resource type="FontVariation" path="res://win95/theme/dos_font.tres" id="vga_font"]
+
 
 [sub_resource type="Gradient" id="bar"]
 offsets = PackedFloat32Array(0, 0.5, 1)
@@ -24,16 +26,48 @@ post_beep_sound = ExtResource("post_beep")
 drive_sound = ExtResource("drive")
 startup_sound = ExtResource("startup")
 
-[node name="Post" type="Label" parent="."]
+[node name="Post" type="RichTextLabel" parent="."]
 unique_name_in_owner = true
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 8.0
-offset_top = 8.0
-theme_override_colors/font_color = Color(0.753, 0.753, 0.753, 1)
-theme_override_fonts/font = ExtResource("mono")
-theme_override_font_sizes/font_size = 10
+offset_top = 16.0
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.667, 0.667, 0.667, 1)
+theme_override_constants/line_separation = 3
+theme_override_fonts/normal_font = ExtResource("vga_font")
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+scroll_active = false
+
+[node name="Footer" type="RichTextLabel" parent="."]
+unique_name_in_owner = true
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -62.0
+offset_bottom = -16.0
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.667, 0.667, 0.667, 1)
+theme_override_constants/line_separation = 3
+theme_override_fonts/normal_font = ExtResource("vga_font")
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+scroll_active = false
+
+[node name="EnergyStar" type="Control" parent="Post"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -172.0
+offset_top = 4.0
+offset_right = -36.0
+offset_bottom = 100.0
+script = ExtResource("energy_star")
 
 [node name="Starting" type="Label" parent="."]
 unique_name_in_owner = true
@@ -43,9 +77,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 8.0
 offset_top = 8.0
-theme_override_colors/font_color = Color(0.753, 0.753, 0.753, 1)
-theme_override_fonts/font = ExtResource("mono")
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.667, 0.667, 0.667, 1)
+theme_override_fonts/font = ExtResource("vga_font")
+theme_override_font_sizes/font_size = 16
 text = "Starting Windows 95..."
 
 [node name="Splash" type="TextureRect" parent="."]

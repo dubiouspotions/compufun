@@ -5,26 +5,38 @@ extends Control
 
 ## The boot reached the desktop, or the player skipped it.
 signal finished
+signal _any_key
 
+## A floppy is in drive A:, so after the POST the boot stops on [member disk_error] and every key
+## tries again; it goes on to Windows once this is false. win95.gd keeps it in step with the
+## computer's Win95Setup.floppy_in_a.
+@export var floppy_in_a: bool = false
+## What the BIOS says when the floppy in A: can't start the computer.
+@export_multiline var disk_error: String = "Non-System disk or disk error\nReplace and press any key when ready"
 ## Starts as soon as the node is ready; turn off to start it with play().
 @export var play_on_start: bool = true
-## The power-on self test, one line at a time. %MEMORY% is the memory test, which counts up.
+## The power-on self test, one line at a time, in BBCode: [color=#ffffff] marks the bright words.
+## %MEMORY% is the memory test, which counts up.
 @export_multiline var post_lines: PackedStringArray = [
 	"CompuFun Modular BIOS v4.51PG, An Energy Star Ally",
 	"Copyright (C) 1984-95, CompuFun Ltd.",
 	"",
+	"Version 1.03CF",
+	"",
 	"PENTIUM-S CPU at 100MHz",
 	"%MEMORY%",
 	"",
-	"CompuFun Plug and Play BIOS Extension v1.0A",
+	"CompuFun Plug and Play BIOS Extension  v1.0A",
 	"Copyright (C) 1995, CompuFun Ltd.",
-	"  Detecting IDE Primary Master  ... QUANTUM FIREBALL1080A",
-	"  Detecting IDE Primary Slave   ... None",
-	"  Detecting IDE Secondary Master... CD-ROM 4X",
-	"  Detecting IDE Secondary Slave ... None",
-	"",
-	"",
-	"Press DEL to enter SETUP",
+	"   Detecting HDD Primary Master   ... QUANTUM FIREBALL1080A",
+	"   Detecting HDD Primary Slave    ... [Press [color=#ffffff]F4[/color] to skip]",
+	"   Detecting HDD Secondary Master ... CD-ROM 4X",
+	"   Detecting HDD Secondary Slave  ... None",
+]
+## The lines at the bottom of the screen during the whole test, in BBCode.
+@export_multiline var footer_lines: PackedStringArray = [
+	"Press [color=#ffffff]DEL[/color] to enter SETUP",
+	"11/09/95-i430FX-CF451PG-00",
 ]
 ## Kilobytes of memory that the memory test counts up to.
 @export var memory_kb: int = 16384
@@ -55,11 +67,14 @@ signal finished
 @export var bar_speed: float = 320.0
 
 var _skipped: bool = false
+## True while the disk error waits for a key: a key then tries again instead of skipping.
+var _awaiting_key: bool = false
 var _playing: bool = false
 var _bar_offset: float = 0.0
 var _players: Array[AudioStreamPlayer] = []
 
-@onready var _post: Label = %Post
+@onready var _post: RichTextLabel = %Post
+@onready var _footer: RichTextLabel = %Footer
 @onready var _starting: Label = %Starting
 @onready var _splash: Control = %Splash
 @onready var _bar: Control = %Bar
@@ -81,7 +96,10 @@ func _process(delta: float) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if (event is InputEventKey or event is InputEventMouseButton) and event.is_pressed():
 		accept_event()
-		_skipped = true
+		if _awaiting_key:
+			_any_key.emit()
+		else:
+			_skipped = true
 
 
 ## Plays the boot from the start, then emits finished and frees the node.
@@ -93,7 +111,11 @@ func play() -> void:
 	show()
 	focus_mode = Control.FOCUS_ALL
 	grab_focus.call_deferred()
-	await _run()
+	await _run_post()
+	if floppy_in_a:
+		await _disk_error()
+	if not _skipped:
+		await _run_windows()
 	for player in _players:
 		player.stop()
 	hide()
@@ -106,9 +128,10 @@ func play() -> void:
 	queue_free()
 
 
-func _run() -> void:
+func _run_post() -> void:
 	_show_stage(_post)
 	_post.text = ""
+	_footer.text = "\n".join(footer_lines)
 	_sound(power_on_sound)
 	var drive_started := false
 	for line in post_lines:
@@ -122,8 +145,24 @@ func _run() -> void:
 			_post.text += line + "\n"
 			if not await _wait(line_seconds):
 				return
-	if not await _wait(post_hold_seconds):
-		return
+	await _wait(post_hold_seconds)
+
+
+# The BIOS can't boot from the floppy: it says so, and each key tries again until the floppy is out.
+# A skip doesn't get past this; after it, the boot goes on to Windows in full.
+func _disk_error() -> void:
+	_show_stage(_post)
+	_skipped = false
+	_awaiting_key = true
+	_post.text += "\n" + disk_error + "\n"
+	while floppy_in_a:
+		await _any_key
+		if floppy_in_a:
+			_post.text += "\n" + disk_error + "\n"
+	_awaiting_key = false
+
+
+func _run_windows() -> void:
 	_show_stage(_starting)
 	if not await _wait(starting_seconds):
 		return
@@ -159,6 +198,7 @@ func _wait(seconds: float) -> bool:
 func _show_stage(stage: Control) -> void:
 	for other: Control in [_post, _starting, _splash]:
 		other.visible = other == stage
+	_footer.visible = stage == _post
 
 
 func _draw_bar() -> void:

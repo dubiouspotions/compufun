@@ -9,7 +9,7 @@ const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run ti
 func run() -> void:
 	var computer := Computer.new()
 	computer.win95_setup = Win95Setup.new()
-	var windows := folder("WINDOWS", [file("PBRUSH.EXE", ""), file("SYSTEM.INI", "[386Enh]\ndevice=*vmouse\nkeyboard=*vkd")])
+	var windows := folder("WINDOWS", [load("res://win95/start_menu_stock.tres"), file("PBRUSH.EXE", ""), file("SYSTEM.INI", "[386Enh]\ndevice=*vmouse\nkeyboard=*vkd")])
 	computer.win95_setup.drive_c = [windows]
 	computer.win95_setup.desktop = [file("todo.txt", "milk")]
 
@@ -22,6 +22,9 @@ func run() -> void:
 	check("broken: renamed", [setup.file_at("C:\\WINDOWS\\PBRUSH.EXE"), setup.file_at("c:\\windows\\pbrush.ex_") != null], [null, true])
 	check("the .tres stays healthy", computer.win95_setup.file_at("C:\\WINDOWS\\PBRUSH.EXE") != null, true)
 	check("one copy per computer", game.setup_for(first), setup)
+	var stock: Win95File = load("res://win95/start_menu_stock.tres")
+	var start_menu := setup.file_at("C:\\WINDOWS\\Start Menu")
+	check("a stock folder from another .tres is the computer's own", [start_menu != null, start_menu != stock, start_menu.name == stock.name], [true, true, true])
 
 	var state: Node = load(COMPUTER_STATE_PATH).new()
 	state.job = first
