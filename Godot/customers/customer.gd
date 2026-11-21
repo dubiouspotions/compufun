@@ -1,3 +1,4 @@
+@tool
 class_name Customer
 extends Resource
 ## One customer: who they are, what they say, and what is wrong with the computer.

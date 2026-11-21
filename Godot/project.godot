@@ -34,6 +34,10 @@ window/stretch/mode="canvas_items"
 
 text_editor/behavior/indent/type=0
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/dialogue_editor/plugin.cfg")
+
 [gui]
 
 theme/custom="res://ui/theme.tres"
