@@ -1,7 +1,10 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
+[ext_resource type="Texture2D" path="res://materials/textures/window_grime.png" id="1_grime"]
+
 [resource]
 transparency = 1
 cull_mode = 2
 shading_mode = 0
-albedo_color = Color(0.75, 0.86, 0.95, 0.16)
+albedo_texture = ExtResource("1_grime")
+texture_filter = 2
