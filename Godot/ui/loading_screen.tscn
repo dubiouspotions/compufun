@@ -20,7 +20,7 @@ script = ExtResource("1_1kfex")
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.94, 0.93, 0.89, 1)
+color = Color(1, 1, 1, 1)
 
 [node name="Logo" type="TextureRect" parent="." unique_id=2033569603]
 custom_minimum_size = Vector2(763, 408)
