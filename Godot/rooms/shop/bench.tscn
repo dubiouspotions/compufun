@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://props/keyboard.tscn" id="3_keyboard"]
 [ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="4_hotspot"]
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="5_plastic"]
+[ext_resource type="Material" path="res://materials/vga_blue_plastic.tres" id="6_vga_blue"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_outline"]
 cull_mode = 1
@@ -75,7 +76,7 @@ unique_name_in_owner = true
 
 [node name="Body" type="MeshInstance3D" parent="Plug"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.022)
-material_override = ExtResource("5_plastic")
+material_override = ExtResource("6_vga_blue")
 mesh = SubResource("BoxMesh_plug")
 
 [node name="PlugHotspot" parent="Plug" instance=ExtResource("4_hotspot")]
