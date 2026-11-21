@@ -14,7 +14,8 @@ signal outside_clicked
 ## What runs in the screen buffer: a Control of the buffer's size. When its script has a
 ## [code]has_picture() -> bool[/code], the tube locks onto the picture only while it returns true;
 ## a [code]pointer_visible() -> bool[/code] hides the cursor while it returns false, and a
-## [code]pointer_changed[/code] signal says when that changes. Its [code]screen_opened()[/code], if
+## [code]pointer_changed[/code] signal says when that changes; [code]picture_changed[/code] says that
+## [code]has_picture()[/code] did. Its [code]screen_opened()[/code], if
 ## it has one, is called each time the view opens.
 @export var content: PackedScene
 ## The shader draws the mouse cursor into the picture while there is a signal. False when the
@@ -65,8 +66,9 @@ func _ready() -> void:
 		if _content.custom_minimum_size != Vector2(_buffer.size):
 			push_error("ScreenView %s: %s is %s, but the screen buffer is %s" % [name, content.resource_path, _content.custom_minimum_size, _buffer.size])
 		_buffer.add_child(_content)
-		if _content.has_signal(&"pointer_changed"):
-			_content.connect(&"pointer_changed", _sync, CONNECT_DEFERRED)
+		for changes: StringName in [&"pointer_changed", &"picture_changed"]:
+			if _content.has_signal(changes):
+				_content.connect(changes, _sync, CONNECT_DEFERRED)
 	Game.changed.connect(_sync)
 	_sync()
 

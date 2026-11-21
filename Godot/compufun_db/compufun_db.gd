@@ -7,6 +7,9 @@ extends Control
 ## are all marked; the player ticks them off). Marking the wrong symptoms leads to the wrong fix.
 ## This screen keeps only its cursor and the typing. It reads every Problem file, so its text is
 ## never a second copy of the problems.
+## The first time the player opens it on a day, the work computer boots, the character starts the
+## program at the DOS prompt and the modem dials up; until then the computer is off. Any key or
+## click skips to the database.
 ## Keys: arrows and Tab move, Space or Enter acts. The mouse clicks and scrolls.
 
 const PROBLEMS_DIR: String = "res://problems/"
@@ -19,6 +22,7 @@ const FRAME_ROWS: Array[int] = [1, 3, 27]
 const LIST_TOP: int = 4
 const LIST_BOTTOM: int = 26
 const NEW_RECORD: String = "<New record>"
+const BOOT := preload("res://win95/boot_sequence.tscn")
 
 enum Column { RECORDS, CHECKS, FIXES }
 
@@ -36,6 +40,21 @@ const HEADERS: Array[String] = ["CUSTOMER", "CHECK", "FIX"]
 @export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
 ## The seconds between two keys, picked between x and y for each key.
 @export var key_seconds: Vector2 = Vector2(0.03, 0.09)
+@export_group("Start-up")
+## What the character types at the DOS prompt to start the program.
+@export var command: String = "CFDB"
+## The program's banner, then what the modem says before the dial-up and after it.
+@export_multiline var banner_lines: PackedStringArray = [
+	"CompuFunDB 1.0   Copyright (C) 1988 CompuFun Inc.", "", "Initializing modem...", "ATZ", "OK", "ATDT 555-0196"]
+@export_multiline var connect_lines: PackedStringArray = ["CONNECT 14400", "Logging in to CompuFun HQ... OK"]
+## The seconds after each start-up line.
+@export var start_line_seconds: float = 0.35
+## The modem dialling CompuFun HQ, from the dial tone until it connects.
+@export var dialup_sound: AudioStream = preload("res://sounds/modem_dialup.wav")
+@export_group("")
+
+## The picture changed: the computer started, or a new day turned it off.
+signal picture_changed
 
 ## The first and last x of each column's text, inside the frame.
 var _spans: Array[Vector2i] = [Vector2i(1, 24), Vector2i(26, 51), Vector2i(53, 78)]
@@ -51,6 +70,14 @@ var _typing: DbRecord
 var _shown: int = 0
 var _next_key: float = 0.0
 var _keys: AudioStreamPlayer
+## True from the first opening of a day until the database shows.
+var _starting: bool = false
+## The player skipped the start-up.
+var _skip: bool = false
+## The DOS screen of the start-up, line by line.
+var _dos: PackedStringArray = []
+var _modem: AudioStreamPlayer
+var _shown_day: int = -1
 # The grid that _draw paints: one character, foreground and background per cell.
 var _chars: PackedStringArray = []
 var _fg: PackedColorArray = []
@@ -65,8 +92,12 @@ func _ready() -> void:
 	mouse_exited.connect(_on_mouse_exited)
 	_keys = AudioStreamPlayer.new()
 	add_child(_keys)
+	_modem = AudioStreamPlayer.new()
+	_modem.stream = dialup_sound
+	add_child(_modem)
 	set_process(false)
 	Game.changed.connect(queue_redraw)
+	Game.changed.connect(_check_day)
 
 
 func _on_mouse_exited() -> void:
@@ -228,11 +259,89 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-## The player opened the screen: the character types up every computer on the counter that has no
-## record yet.
+## The player opened the screen: the computer starts up if it hasn't today; then the character
+## types up every computer on the counter that has no record yet.
 func screen_opened() -> void:
-	if _typing == null and _waiting_job() != null:
+	if not has_picture():
+		_start_up()
+	elif not _starting and _typing == null and _waiting_job() != null:
 		_type_up(_waiting_job())
+
+
+## False while the work computer is off: before its first start-up of the day.
+func has_picture() -> bool:
+	return _starting or Game.db_day == Game.day_number
+
+
+# A new day turns the computer off, until the player opens it.
+func _check_day() -> void:
+	if Game.day_number != _shown_day:
+		_shown_day = Game.day_number
+		picture_changed.emit()
+
+
+# The boot, the program at the DOS prompt, the dial-up; then the database. Any key or click skips.
+func _start_up() -> void:
+	_starting = true
+	_skip = false
+	_dos.clear()
+	picture_changed.emit()
+	var boot := BOOT.instantiate()
+	boot.boots_windows = false
+	add_child(boot)
+	while is_instance_valid(boot) and boot.visible and not _skip:
+		await get_tree().process_frame
+	if is_instance_valid(boot):
+		boot.queue_free()
+	if not _skip:
+		_dos.append("C:\\>")
+		for letter: String in command:
+			if not await _pause(randf_range(key_seconds.x, key_seconds.y) * 2.0):
+				break
+			_dos[-1] += letter
+			if keystroke != null:
+				keystroke.play_on(_keys)
+			queue_redraw()
+	for line: String in banner_lines:
+		if _skip or not await _pause(start_line_seconds):
+			break
+		_dos.append(line)
+		queue_redraw()
+	if not _skip and dialup_sound != null:
+		_modem.play()
+		await _pause(dialup_sound.get_length())
+	for line: String in connect_lines:
+		if _skip or not await _pause(start_line_seconds):
+			break
+		_dos.append(line)
+		queue_redraw()
+	if not _skip:
+		await _pause(start_line_seconds * 2.0)
+	_modem.stop()
+	_dos.clear()
+	_starting = false
+	Game.start_db()
+	screen_opened()
+
+
+# Waits [param seconds]; false when the player skipped meanwhile.
+func _pause(seconds: float) -> bool:
+	var left := seconds
+	while left > 0.0 and not _skip:
+		await get_tree().process_frame
+		left -= get_process_delta_time()
+	return not _skip
+
+
+# During the start-up, a key or a click skips all of it, the boot too, straight to the database.
+func _input(event: InputEvent) -> void:
+	if not _starting or not event.is_pressed() or event is InputEventMouseMotion:
+		return
+	var key := event as InputEventKey
+	if key != null and key.keycode == KEY_ESCAPE:
+		return  # leaves the screen; the start-up goes on
+	_skip = true
+	get_viewport().set_input_as_handled()
 
 
 func _on_click(button: InputEventMouseButton) -> void:
@@ -424,6 +533,13 @@ func _draw() -> void:
 
 
 func _paint() -> void:
+	if _starting:
+		for row: int in mini(_dos.size(), ROWS):
+			var line := _dos[_dos.size() - mini(_dos.size(), ROWS) + row]
+			_put(0, row, line + ("_" if row == mini(_dos.size(), ROWS) - 1 else ""), text_color)
+		return
+	if not has_picture():
+		return
 	_reconcile()
 	var date: Dictionary = Game.date
 	_bar(0, " CompuFunDB 1.0", "%02d/%02d/%02d " % [date.month, date.day, date.year % 100], bar_color)

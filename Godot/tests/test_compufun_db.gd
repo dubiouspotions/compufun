@@ -20,7 +20,11 @@ func run() -> void:
 	check("a repair unticks", record.ticked_repairs, [])
 	game.tick_repair(record, "Install the fan", true)
 
+	check("CompuFunDB hasn't started up today", game.db_day, 0)
+	game.start_db()
+	check("start-up is remembered for the day", game.db_day, 1)
 	check("restore the snapshot", game.restore(game.snapshot()), "")
+	check("the start-up day survives", game.db_day, 1)
 	var restored: DbRecord = game.records[0]
 	check("the text survives", restored.text, "Skater bro: turns off")
 	check("the marks survive", restored.marked_symptoms, ["Fan clogged with dust"])
@@ -32,3 +36,4 @@ func run() -> void:
 	check("the refusal keeps the records", game.records[0], restored)
 	check("a restore without records starts empty", game.restore({}), "")
 	check("no records", game.records.size(), 0)
+	check("and no start-up", game.db_day, 0)

@@ -77,6 +77,9 @@ var flags: Dictionary[StringName, int] = {}
 var seen: Dictionary[String, bool] = {}
 ## The records that the player made in CompuFunDB, oldest first. They last the whole game.
 var records: Array[DbRecord] = []
+## The day on which CompuFunDB last started up (the work computer booted and the modem dialled
+## up); 0 before its first start-up.
+var db_day: int = 0
 ## What the visitor says while TALKING, or null when no conversation matches.
 var conversation: Conversation
 ## Goes up every time a visitor starts to walk in, also on [method restore]. A scene that
@@ -507,6 +510,12 @@ func record_of(job: Job) -> DbRecord:
 	return null
 
 
+## CompuFunDB finished starting up today.
+func start_db() -> void:
+	db_day = day_number
+	changed.emit()
+
+
 ## Marks [param symptom] on [param record] (true), or clears it (false).
 func mark_symptom(record: DbRecord, symptom: String, marked: bool) -> void:
 	if _is_record(record, "mark_symptom"):
@@ -630,13 +639,14 @@ func snapshot() -> Dictionary:
 		"flags": flags.duplicate(),
 		"seen": seen.keys(),
 		"records": records.map(func(r: DbRecord) -> Dictionary: return r.snapshot()),
+		"db_day": db_day,
 	}
 
 
 ## Sets the state from [param state], in the format of [method snapshot]. A missing key takes its
 ## value at the start of a day: day 1, OPEN, nobody in the shop, no arrivals, an empty counter, an
-## empty hand and storage bin, no flags, nothing seen, no CompuFunDB records, the daypart of the
-## arrivals; a missing view keeps the current one. The conversation follows from the rest. Returns
+## empty hand and storage bin, no flags, nothing seen, no CompuFunDB records or start-up, the
+## daypart of the arrivals; a missing view keeps the current one. The conversation follows from the rest. Returns
 ## "" or why it refused; a refusal keeps the state.
 func restore(state: Dictionary) -> String:
 	var known := snapshot()
@@ -794,6 +804,7 @@ func restore(state: Dictionary) -> String:
 	flags = new_flags
 	seen = new_seen
 	records = new_records
+	db_day = maxi(int(state.get("db_day", 0)), 0)
 	arrival += 1
 	conversation = null
 	if visitor_state == VisitorState.TALKING:
