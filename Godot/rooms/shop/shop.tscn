@@ -24,6 +24,7 @@
 [ext_resource type="PackedScene" path="res://customers/customer_body.tscn" id="22_rqm4b"]
 [ext_resource type="PackedScene" path="res://props/poster.tscn" id="23_poster"]
 [ext_resource type="PackedScene" path="res://props/trash_can.tscn" id="24_trash"]
+[ext_resource type="PackedScene" path="res://props/modem.tscn" id="25_modem"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -136,6 +137,16 @@ _data = {
 "tilts": PackedFloat32Array(0, 0, 0, 0, 0)
 }
 point_count = 5
+
+[sub_resource type="Curve3D" id="Curve3D_modem_line"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0.05, 0, 0, 0, 0, 0, -0.05, 0, 0, 0.08, -0.01, 0, 0.12, -0.012, 0.02, -0.15, 0, 0, 0.15, 0, 0, 0.5, -0.2, 0.05, -0.12, 0, 0, 0, 0, 0, 1.085, 0.17, 0),
+"tilts": PackedFloat32Array(0, 0, 0, 0)
+}
+point_count = 4
+
+[sub_resource type="BoxMesh" id="BoxMesh_phone_jack"]
+size = Vector3(0.01, 0.11, 0.07)
 
 [node name="Shop" type="Node3D" unique_id=1771311348]
 script = ExtResource("1_y5yy5")
@@ -360,6 +371,33 @@ transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.42
 
 [node name="WorkTower" parent="Room" unique_id=137852129 instance=ExtResource("14_qg2fl")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.85, 0.75, 1.2)
+
+[node name="WorkModem" parent="Room" instance=ExtResource("25_modem")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.8, 0.75, 0.88)
+
+[node name="ModemLine" type="Path3D" parent="Room"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9, 0.77, 0.88)
+curve = SubResource("Curve3D_modem_line")
+
+[node name="Cord" type="CSGPolygon3D" parent="Room/ModemLine"]
+polygon = PackedVector2Array(-0.006, -0.006, -0.006, 0.006, 0.006, 0.006, 0.006, -0.006)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+smooth_faces = true
+material = ExtResource("5_35cdj")
+
+[node name="PhoneJack" type="MeshInstance3D" parent="Room"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.995, 0.94, 0.88)
+material_override = ExtResource("19_a76lc")
+mesh = SubResource("BoxMesh_phone_jack")
 
 [node name="PhoneProp" parent="Room" unique_id=803377635 instance=ExtResource("17_djiw7")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.15, 1, -1.05)
