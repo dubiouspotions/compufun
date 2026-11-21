@@ -1,0 +1,9740 @@
+{
+ "source": "C:\\ of a Windows 95 install; see docs/win95-icons.md",
+ "icons": [
+  {
+   "key": "Program Files/Microsoft Exchange/MLSET32.EXE#100",
+   "name": "exchange_setup",
+   "source": "Program Files/Microsoft Exchange/MLSET32.EXE",
+   "group": 100,
+   "images": [
+    {
+     "file": "exchange_setup_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "exchange_setup_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "Program Files/Microsoft Exchange/MLSHEXT.DLL#129"
+   ]
+  },
+  {
+   "key": "Program Files/Microsoft Exchange/MLSET32.EXE#101",
+   "name": "msn",
+   "source": "Program Files/Microsoft Exchange/MLSET32.EXE",
+   "group": 101,
+   "images": [
+    {
+     "file": "msn_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/Microsoft Exchange/MLSET32.EXE#102",
+   "name": "fax_machine",
+   "source": "Program Files/Microsoft Exchange/MLSET32.EXE",
+   "group": 102,
+   "images": [
+    {
+     "file": "fax_machine_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/CCDIALER.EXE#103",
+   "name": "msn_shortcut",
+   "source": "Program Files/The Microsoft Network/CCDIALER.EXE",
+   "group": 103,
+   "images": [
+    {
+     "file": "msn_shortcut_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "msn_shortcut_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "Program Files/The Microsoft Network/CCEI.DLL#100",
+    "Program Files/The Microsoft Network/CCPSH.DLL#100",
+    "WINDOWS/SYSTEM/CCAPI.DLL#105"
+   ]
+  },
+  {
+   "key": "Program Files/The Microsoft Network/CCDIALER.EXE#104",
+   "name": "shortcut_arrow_tile",
+   "source": "Program Files/The Microsoft Network/CCDIALER.EXE",
+   "group": 104,
+   "images": [
+    {
+     "file": "shortcut_arrow_tile_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/CCDIALER.EXE#109",
+   "name": "overlay_shortcut",
+   "source": "Program Files/The Microsoft Network/CCDIALER.EXE",
+   "group": 109,
+   "images": [
+    {
+     "file": "overlay_shortcut_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "overlay_shortcut_32.png"
+     ]
+    },
+    {
+     "file": "overlay_shortcut_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "overlay_shortcut_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "Program Files/The Microsoft Network/CCEI.DLL#101",
+    "Program Files/The Microsoft Network/CCPSH.DLL#101",
+    "WINDOWS/SYSTEM/CCAPI.DLL#104",
+    "WINDOWS/SYSTEM/SHELL32.DLL#30"
+   ]
+  },
+  {
+   "key": "Program Files/The Microsoft Network/GUIDE.EXE#128",
+   "name": "msn_small",
+   "source": "Program Files/The Microsoft Network/GUIDE.EXE",
+   "group": 128,
+   "images": [
+    {
+     "file": "msn_small_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/GUIDE.EXE#129",
+   "name": "msn_framed",
+   "source": "Program Files/The Microsoft Network/GUIDE.EXE",
+   "group": 129,
+   "images": [
+    {
+     "file": "msn_framed_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "msn_framed_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/MOSCP.EXE#500",
+   "name": "modem",
+   "source": "Program Files/The Microsoft Network/MOSCP.EXE",
+   "group": 500,
+   "images": [
+    {
+     "file": "modem_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "modem_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    },
+    {
+     "file": "modem_32x16.png",
+     "width": 32,
+     "height": 16,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/SIGNUP.EXE#ICONAAAA",
+   "name": "document_pencil",
+   "source": "Program Files/The Microsoft Network/SIGNUP.EXE",
+   "group": "ICONAAAA",
+   "images": [
+    {
+     "file": "document_pencil_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "document_pencil_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "Program Files/The Microsoft Network/SIGNUP.EXE#1100"
+   ]
+  },
+  {
+   "key": "Program Files/The Microsoft Network/SIGNUP.EXE#ICONAMEX",
+   "name": "credit_card_amex",
+   "source": "Program Files/The Microsoft Network/SIGNUP.EXE",
+   "group": "ICONAMEX",
+   "images": [
+    {
+     "file": "credit_card_amex_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/SIGNUP.EXE#ICONCHECK",
+   "name": "payment_cheque",
+   "source": "Program Files/The Microsoft Network/SIGNUP.EXE",
+   "group": "ICONCHECK",
+   "images": [
+    {
+     "file": "payment_cheque_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "Program Files/The Microsoft Network/SIGNUP.EXE#1106"
+   ]
+  },
+  {
+   "key": "Program Files/The Microsoft Network/SIGNUP.EXE#ICONDISCOVER",
+   "name": "credit_card_discover",
+   "source": "Program Files/The Microsoft Network/SIGNUP.EXE",
+   "group": "ICONDISCOVER",
+   "images": [
+    {
+     "file": "credit_card_discover_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/SIGNUP.EXE#ICONGENERIC",
+   "name": "credit_card_generic",
+   "source": "Program Files/The Microsoft Network/SIGNUP.EXE",
+   "group": "ICONGENERIC",
+   "images": [
+    {
+     "file": "credit_card_generic_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/SIGNUP.EXE#ICONJCB",
+   "name": "credit_card_jcb",
+   "source": "Program Files/The Microsoft Network/SIGNUP.EXE",
+   "group": "ICONJCB",
+   "images": [
+    {
+     "file": "credit_card_jcb_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/SIGNUP.EXE#ICONMC",
+   "name": "credit_card_mastercard",
+   "source": "Program Files/The Microsoft Network/SIGNUP.EXE",
+   "group": "ICONMC",
+   "images": [
+    {
+     "file": "credit_card_mastercard_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/SIGNUP.EXE#ICONVISA",
+   "name": "credit_card_visa",
+   "source": "Program Files/The Microsoft Network/SIGNUP.EXE",
+   "group": "ICONVISA",
+   "images": [
+    {
+     "file": "credit_card_visa_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/SIGNUP.EXE#123",
+   "name": "checkmark",
+   "source": "Program Files/The Microsoft Network/SIGNUP.EXE",
+   "group": 123,
+   "images": [
+    {
+     "file": "checkmark_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/SIGNUP.EXE#1103",
+   "name": "document_list",
+   "source": "Program Files/The Microsoft Network/SIGNUP.EXE",
+   "group": 1103,
+   "images": [
+    {
+     "file": "document_list_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "Program Files/The Microsoft Network/SIGNUP.EXE#1105",
+   "name": "envelope",
+   "source": "Program Files/The Microsoft Network/SIGNUP.EXE",
+   "group": 1105,
+   "images": [
+    {
+     "file": "envelope_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/EXPLORER.EXE#100",
+   "name": "explorer",
+   "source": "WINDOWS/EXPLORER.EXE",
+   "group": 100,
+   "images": [
+    {
+     "file": "explorer_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "explorer_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/NETDI.DLL#COMPUTER_ICON"
+   ]
+  },
+  {
+   "key": "WINDOWS/EXPLORER.EXE#101",
+   "name": "folder_explore",
+   "source": "WINDOWS/EXPLORER.EXE",
+   "group": 101,
+   "images": [
+    {
+     "file": "folder_explore_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "folder_explore_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    },
+    {
+     "file": "folder_explore_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/EXPLORER.EXE#102",
+   "name": "printer",
+   "source": "WINDOWS/EXPLORER.EXE",
+   "group": 102,
+   "images": [
+    {
+     "file": "printer_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "17.png",
+      "printer_2_32.png",
+      "printer_32.png"
+     ]
+    },
+    {
+     "file": "printer_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "printer_16.png",
+      "printer_2_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SHELL32.DLL#17",
+    "WINDOWS/SYSTEM/SHELL32.DLL#168"
+   ]
+  },
+  {
+   "key": "WINDOWS/EXPLORER.EXE#103",
+   "name": "desktop",
+   "source": "WINDOWS/EXPLORER.EXE",
+   "group": 103,
+   "images": [
+    {
+     "file": "desktop_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "desktop_32.png"
+     ]
+    },
+    {
+     "file": "desktop_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "desktop_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SHELL32.DLL#35"
+   ]
+  },
+  {
+   "key": "WINDOWS/EXPLORER.EXE#104",
+   "name": "printer_error",
+   "source": "WINDOWS/EXPLORER.EXE",
+   "group": 104,
+   "images": [
+    {
+     "file": "printer_error_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "printer_error_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/EXPLORER.EXE#105",
+   "name": "signpost",
+   "source": "WINDOWS/EXPLORER.EXE",
+   "group": 105,
+   "images": [
+    {
+     "file": "signpost_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/EXPLORER.EXE#107",
+   "name": "window_list_shortcut",
+   "source": "WINDOWS/EXPLORER.EXE",
+   "group": 107,
+   "images": [
+    {
+     "file": "window_list_shortcut_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/GRPCONV.EXE#101"
+   ]
+  },
+  {
+   "key": "WINDOWS/EXPLORER.EXE#108",
+   "name": "recycle_bin_full_explorer",
+   "source": "WINDOWS/EXPLORER.EXE",
+   "group": 108,
+   "images": [
+    {
+     "file": "recycle_bin_full_explorer_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/FONTVIEW.EXE#110",
+   "name": "font_raster",
+   "source": "WINDOWS/FONTVIEW.EXE",
+   "group": 110,
+   "images": [
+    {
+     "file": "font_raster_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "font_raster_32.png"
+     ]
+    },
+    {
+     "file": "font_raster_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "font_raster_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/FONTEXT.DLL#3",
+    "WINDOWS/SYSTEM/SHELL32.DLL#155"
+   ]
+  },
+  {
+   "key": "WINDOWS/FONTVIEW.EXE#111",
+   "name": "font_truetype",
+   "source": "WINDOWS/FONTVIEW.EXE",
+   "group": 111,
+   "images": [
+    {
+     "file": "font_truetype_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "font_truetype_32.png"
+     ]
+    },
+    {
+     "file": "font_truetype_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "font_truetype_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/FONTEXT.DLL#2",
+    "WINDOWS/SYSTEM/SHELL32.DLL#156"
+   ]
+  },
+  {
+   "key": "WINDOWS/GRPCONV.EXE#100",
+   "name": "program_group_converter",
+   "source": "WINDOWS/GRPCONV.EXE",
+   "group": 100,
+   "images": [
+    {
+     "file": "program_group_converter_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "program_group_converter_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/PROGMAN.EXE#3"
+   ]
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#1",
+   "name": "dos_ms_dos",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 1,
+   "images": [
+    {
+     "file": "dos_ms_dos_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/MORICONS.DLL#33",
+    "WINDOWS/MORICONS.DLL#99"
+   ]
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#2",
+   "name": "dos_ms_dos_logo",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 2,
+   "images": [
+    {
+     "file": "dos_ms_dos_logo_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#3",
+   "name": "dos_factory",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 3,
+   "images": [
+    {
+     "file": "dos_factory_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#4",
+   "name": "dos_c_compiler",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 4,
+   "images": [
+    {
+     "file": "dos_c_compiler_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#5",
+   "name": "dos_landscape_chart",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 5,
+   "images": [
+    {
+     "file": "dos_landscape_chart_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#6",
+   "name": "dos_computer_disk",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 6,
+   "images": [
+    {
+     "file": "dos_computer_disk_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#7",
+   "name": "dos_calculator",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 7,
+   "images": [
+    {
+     "file": "dos_calculator_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#8",
+   "name": "dos_pen_paper",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 8,
+   "images": [
+    {
+     "file": "dos_pen_paper_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#9",
+   "name": "computer_mouse_document",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 9,
+   "images": [
+    {
+     "file": "computer_mouse_document_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#10",
+   "name": "dos_word",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 10,
+   "images": [
+    {
+     "file": "dos_word_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#11",
+   "name": "dos_letter_pen",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 11,
+   "images": [
+    {
+     "file": "dos_letter_pen_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#12",
+   "name": "dos_chart_pen",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 12,
+   "images": [
+    {
+     "file": "dos_chart_pen_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#13",
+   "name": "dos_paint_brush",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 13,
+   "images": [
+    {
+     "file": "dos_paint_brush_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#14",
+   "name": "dos_tools",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 14,
+   "images": [
+    {
+     "file": "dos_tools_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#15",
+   "name": "dos_hammer_tools",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 15,
+   "images": [
+    {
+     "file": "dos_hammer_tools_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#16",
+   "name": "dos_wrench",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 16,
+   "images": [
+    {
+     "file": "dos_wrench_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#17",
+   "name": "dos_toolbox",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 17,
+   "images": [
+    {
+     "file": "dos_toolbox_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#18",
+   "name": "computer_letter_pen",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 18,
+   "images": [
+    {
+     "file": "computer_letter_pen_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#19",
+   "name": "blue_spreadsheet_calculator",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 19,
+   "images": [
+    {
+     "file": "blue_spreadsheet_calculator_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#20",
+   "name": "multimate",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 20,
+   "images": [
+    {
+     "file": "multimate_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#21",
+   "name": "notepad_red_lines",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 21,
+   "images": [
+    {
+     "file": "notepad_red_lines_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#22",
+   "name": "now_logo",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 22,
+   "images": [
+    {
+     "file": "now_logo_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#23",
+   "name": "smiley_face",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 23,
+   "images": [
+    {
+     "file": "smiley_face_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#24",
+   "name": "borland_cpp",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 24,
+   "images": [
+    {
+     "file": "borland_cpp_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#25",
+   "name": "quattro_pro",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 25,
+   "images": [
+    {
+     "file": "quattro_pro_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#26",
+   "name": "turbo_pascal",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 26,
+   "images": [
+    {
+     "file": "turbo_pascal_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#27",
+   "name": "paradox_3_0",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 27,
+   "images": [
+    {
+     "file": "paradox_3_0_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#28",
+   "name": "paradox_3_5",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 28,
+   "images": [
+    {
+     "file": "paradox_3_5_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#29",
+   "name": "paradox_se",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 29,
+   "images": [
+    {
+     "file": "paradox_se_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#30",
+   "name": "borland_reflex",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 30,
+   "images": [
+    {
+     "file": "borland_reflex_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#31",
+   "name": "bpi_diamond",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 31,
+   "images": [
+    {
+     "file": "bpi_diamond_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#32",
+   "name": "plus_diamond",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 32,
+   "images": [
+    {
+     "file": "plus_diamond_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#34",
+   "name": "document_red_hatch",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 34,
+   "images": [
+    {
+     "file": "document_red_hatch_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#35",
+   "name": "document_purple_hatch",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 35,
+   "images": [
+    {
+     "file": "document_purple_hatch_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#36",
+   "name": "blue_stripes",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 36,
+   "images": [
+    {
+     "file": "blue_stripes_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#37",
+   "name": "dataease",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 37,
+   "images": [
+    {
+     "file": "dataease_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#38",
+   "name": "crosstalk_mk4",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 38,
+   "images": [
+    {
+     "file": "crosstalk_mk4_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#39",
+   "name": "crosstalk_xvi",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 39,
+   "images": [
+    {
+     "file": "crosstalk_xvi_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#40",
+   "name": "remote_computers_lightning",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 40,
+   "images": [
+    {
+     "file": "remote_computers_lightning_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#41",
+   "name": "envelope_small",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 41,
+   "images": [
+    {
+     "file": "envelope_small_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#42",
+   "name": "computer_network_plug",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 42,
+   "images": [
+    {
+     "file": "computer_network_plug_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#43",
+   "name": "notepad_red_small",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 43,
+   "images": [
+    {
+     "file": "notepad_red_small_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#44",
+   "name": "vt_terminal",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 44,
+   "images": [
+    {
+     "file": "vt_terminal_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#45",
+   "name": "satellite_dish_terminal",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 45,
+   "images": [
+    {
+     "file": "satellite_dish_terminal_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#46",
+   "name": "pctcp",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 46,
+   "images": [
+    {
+     "file": "pctcp_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#47",
+   "name": "gazelle_bars",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 47,
+   "images": [
+    {
+     "file": "gazelle_bars_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#48",
+   "name": "gazelle_tree",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 48,
+   "images": [
+    {
+     "file": "gazelle_tree_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#49",
+   "name": "dollar_sign",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 49,
+   "images": [
+    {
+     "file": "dollar_sign_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#50",
+   "name": "lamp_on_desk",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 50,
+   "images": [
+    {
+     "file": "lamp_on_desk_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#51",
+   "name": "lotus_123",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 51,
+   "images": [
+    {
+     "file": "lotus_123_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#52",
+   "name": "lotus_123_framed",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 52,
+   "images": [
+    {
+     "file": "lotus_123_framed_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#53",
+   "name": "phone_address_book",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 53,
+   "images": [
+    {
+     "file": "phone_address_book_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#54",
+   "name": "pie_chart_presentation",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 54,
+   "images": [
+    {
+     "file": "pie_chart_presentation_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#55",
+   "name": "cc_mail",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 55,
+   "images": [
+    {
+     "file": "cc_mail_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#56",
+   "name": "fruit_basket",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 56,
+   "images": [
+    {
+     "file": "fruit_basket_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#57",
+   "name": "relay_document",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 57,
+   "images": [
+    {
+     "file": "relay_document_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#58",
+   "name": "red_triangles",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 58,
+   "images": [
+    {
+     "file": "red_triangles_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#59",
+   "name": "blue_form_window",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 59,
+   "images": [
+    {
+     "file": "blue_form_window_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#60",
+   "name": "bar_chart_3d_red",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 60,
+   "images": [
+    {
+     "file": "bar_chart_3d_red_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#61",
+   "name": "bar_chart_3d_yellow",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 61,
+   "images": [
+    {
+     "file": "bar_chart_3d_yellow_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#62",
+   "name": "world_map",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 62,
+   "images": [
+    {
+     "file": "world_map_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#63",
+   "name": "blue_org_chart",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 63,
+   "images": [
+    {
+     "file": "blue_org_chart_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#64",
+   "name": "blue_org_chart_red",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 64,
+   "images": [
+    {
+     "file": "blue_org_chart_red_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#65",
+   "name": "hand_writing_pen",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 65,
+   "images": [
+    {
+     "file": "hand_writing_pen_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#66",
+   "name": "filing_cabinet_open",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 66,
+   "images": [
+    {
+     "file": "filing_cabinet_open_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#67",
+   "name": "blue_triangle",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 67,
+   "images": [
+    {
+     "file": "blue_triangle_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#68",
+   "name": "computer_phone_modem",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 68,
+   "images": [
+    {
+     "file": "computer_phone_modem_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#69",
+   "name": "hand_pen_6",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 69,
+   "images": [
+    {
+     "file": "hand_pen_6_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#70",
+   "name": "wordperfect_calculator",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 70,
+   "images": [
+    {
+     "file": "wordperfect_calculator_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#71",
+   "name": "wordperfect_grid",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 71,
+   "images": [
+    {
+     "file": "wordperfect_grid_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#72",
+   "name": "wordperfect_computer",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 72,
+   "images": [
+    {
+     "file": "wordperfect_computer_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#73",
+   "name": "wordperfect_chart",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 73,
+   "images": [
+    {
+     "file": "wordperfect_chart_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#74",
+   "name": "wordperfect_pencil",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 74,
+   "images": [
+    {
+     "file": "wordperfect_pencil_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#75",
+   "name": "wordperfect_folder",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 75,
+   "images": [
+    {
+     "file": "wordperfect_folder_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#76",
+   "name": "wordperfect_signature",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 76,
+   "images": [
+    {
+     "file": "wordperfect_signature_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#77",
+   "name": "wordperfect_envelope",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 77,
+   "images": [
+    {
+     "file": "wordperfect_envelope_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#78",
+   "name": "wordperfect_notepad",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 78,
+   "images": [
+    {
+     "file": "wordperfect_notepad_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#79",
+   "name": "wordperfect_graph",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 79,
+   "images": [
+    {
+     "file": "wordperfect_graph_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#80",
+   "name": "wordperfect_clock",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 80,
+   "images": [
+    {
+     "file": "wordperfect_clock_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#81",
+   "name": "wordperfect_window",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 81,
+   "images": [
+    {
+     "file": "wordperfect_window_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#82",
+   "name": "wordperfect",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 82,
+   "images": [
+    {
+     "file": "wordperfect_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#83",
+   "name": "rbase_1",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 83,
+   "images": [
+    {
+     "file": "rbase_1_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#84",
+   "name": "rbase_2",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 84,
+   "images": [
+    {
+     "file": "rbase_2_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#85",
+   "name": "rbase_4",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 85,
+   "images": [
+    {
+     "file": "rbase_4_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#86",
+   "name": "rbase_7",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 86,
+   "images": [
+    {
+     "file": "rbase_7_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#87",
+   "name": "rbase_8",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 87,
+   "images": [
+    {
+     "file": "rbase_8_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#88",
+   "name": "xcellenet",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 88,
+   "images": [
+    {
+     "file": "xcellenet_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#89",
+   "name": "paintbrush_iv_plus",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 89,
+   "images": [
+    {
+     "file": "paintbrush_iv_plus_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#90",
+   "name": "x_red_blue",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 90,
+   "images": [
+    {
+     "file": "x_red_blue_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#91",
+   "name": "document_magnifier_cp",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 91,
+   "images": [
+    {
+     "file": "document_magnifier_cp_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#92",
+   "name": "fox_head",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 92,
+   "images": [
+    {
+     "file": "fox_head_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#93",
+   "name": "bar_chart_3d_dark",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 93,
+   "images": [
+    {
+     "file": "bar_chart_3d_dark_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#94",
+   "name": "number_5_yellow_arrow",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 94,
+   "images": [
+    {
+     "file": "number_5_yellow_arrow_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#95",
+   "name": "office_desk_items",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 95,
+   "images": [
+    {
+     "file": "office_desk_items_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#96",
+   "name": "purple_shapes_arrows",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 96,
+   "images": [
+    {
+     "file": "purple_shapes_arrows_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#97",
+   "name": "sas_604",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 97,
+   "images": [
+    {
+     "file": "sas_604_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#98",
+   "name": "sidekick_2",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 98,
+   "images": [
+    {
+     "file": "sidekick_2_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#100",
+   "name": "dos_computer_card",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 100,
+   "images": [
+    {
+     "file": "dos_computer_card_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#101",
+   "name": "dos_computer_letter",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 101,
+   "images": [
+    {
+     "file": "dos_computer_letter_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#102",
+   "name": "blue_letters_logo",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 102,
+   "images": [
+    {
+     "file": "blue_letters_logo_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#103",
+   "name": "phone_calculator",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 103,
+   "images": [
+    {
+     "file": "phone_calculator_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#104",
+   "name": "folder_tree_move",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 104,
+   "images": [
+    {
+     "file": "folder_tree_move_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#105",
+   "name": "dos_computer_monitor",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 105,
+   "images": [
+    {
+     "file": "dos_computer_monitor_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/MORICONS.DLL#106",
+   "name": "filing_cabinet",
+   "source": "WINDOWS/MORICONS.DLL",
+   "group": 106,
+   "images": [
+    {
+     "file": "filing_cabinet_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/NOTEPAD.EXE#1",
+   "name": "notepad",
+   "source": "WINDOWS/NOTEPAD.EXE",
+   "group": 1,
+   "images": [
+    {
+     "file": "notepad_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "notepad_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/NOTEPAD.EXE#2",
+   "name": "document_text",
+   "source": "WINDOWS/NOTEPAD.EXE",
+   "group": 2,
+   "images": [
+    {
+     "file": "document_text_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "document_text_32.png"
+     ]
+    },
+    {
+     "file": "document_text_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "document_text_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SHELL32.DLL#152"
+   ]
+  },
+  {
+   "key": "WINDOWS/PACKAGER.EXE#1",
+   "name": "packager",
+   "source": "WINDOWS/PACKAGER.EXE",
+   "group": 1,
+   "images": [
+    {
+     "file": "packager_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "packager_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#6",
+   "name": "ms_dos_window",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": 6,
+   "images": [
+    {
+     "file": "ms_dos_window_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "ms_dos_window_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/WINOA386.MOD#1"
+   ]
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#7",
+   "name": "window_generic",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": 7,
+   "images": [
+    {
+     "file": "window_generic_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "window_generic_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#SHEETICON",
+   "name": "window_spreadsheet",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "SHEETICON",
+   "images": [
+    {
+     "file": "window_spreadsheet_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "window_spreadsheet_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#DATAICON",
+   "name": "window_data",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "DATAICON",
+   "images": [
+    {
+     "file": "window_data_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "window_data_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#COMMICON",
+   "name": "window_terminal",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "COMMICON",
+   "images": [
+    {
+     "file": "window_terminal_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "window_terminal_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#2",
+   "name": "window_empty",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": 2,
+   "images": [
+    {
+     "file": "window_empty_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "window_empty_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#1",
+   "name": "program_manager",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": 1,
+   "images": [
+    {
+     "file": "program_manager_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "program_manager_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944",
+   "name": "windows_logo_large",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": 31944,
+   "images": [
+    {
+     "file": "windows_logo_large_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "windows_logo_large_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/RUNDLL.EXE#100",
+    "WINDOWS/RUNDLL32.EXE#100",
+    "WINDOWS/WINVER.EXE#WINVER"
+   ]
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#MSDOSICON",
+   "name": "ms_dos_logo",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "MSDOSICON",
+   "images": [
+    {
+     "file": "ms_dos_logo_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "ms_dos_logo_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/PIFMGR.DLL#1",
+    "WINDOWS/SYSTEM/WINOA386.MOD#2"
+   ]
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+10",
+   "name": "pencil_cup",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+10",
+   "images": [
+    {
+     "file": "pencil_cup_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "pencil_cup_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+11",
+   "name": "shapes_3d",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+11",
+   "images": [
+    {
+     "file": "shapes_3d_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "shapes_3d_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+12",
+   "name": "camera",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+12",
+   "images": [
+    {
+     "file": "camera_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "camera_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+13",
+   "name": "compact_disc",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+13",
+   "images": [
+    {
+     "file": "compact_disc_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "compact_disc_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+14",
+   "name": "flowchart_window",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+14",
+   "images": [
+    {
+     "file": "flowchart_window_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "flowchart_window_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+15",
+   "name": "hands_cable",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+15",
+   "images": [
+    {
+     "file": "hands_cable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "hands_cable_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+16",
+   "name": "drafting_triangle",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+16",
+   "images": [
+    {
+     "file": "drafting_triangle_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "drafting_triangle_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+17",
+   "name": "papers_scattered",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+17",
+   "images": [
+    {
+     "file": "papers_scattered_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "papers_scattered_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+18",
+   "name": "film_reel",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+18",
+   "images": [
+    {
+     "file": "film_reel_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "film_reel_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+19",
+   "name": "line_graph",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+19",
+   "images": [
+    {
+     "file": "line_graph_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "line_graph_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+20",
+   "name": "handshake",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+20",
+   "images": [
+    {
+     "file": "handshake_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "handshake_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+21",
+   "name": "swiss_army_knife",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+21",
+   "images": [
+    {
+     "file": "swiss_army_knife_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "swiss_army_knife_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+22",
+   "name": "envelopes",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+22",
+   "images": [
+    {
+     "file": "envelopes_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "envelopes_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+23",
+   "name": "mona_lisa",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+23",
+   "images": [
+    {
+     "file": "mona_lisa_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "mona_lisa_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+24",
+   "name": "newspaper",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+24",
+   "images": [
+    {
+     "file": "newspaper_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "newspaper_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+25",
+   "name": "telephone",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+25",
+   "images": [
+    {
+     "file": "telephone_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "telephone_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+26",
+   "name": "blank_page",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+26",
+   "images": [
+    {
+     "file": "blank_page_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "blank_page_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+27",
+   "name": "calculator_spreadsheet",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+27",
+   "images": [
+    {
+     "file": "calculator_spreadsheet_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "calculator_spreadsheet_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+28",
+   "name": "note_pin",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+28",
+   "images": [
+    {
+     "file": "note_pin_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "note_pin_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+29",
+   "name": "cassette_tape",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+29",
+   "images": [
+    {
+     "file": "cassette_tape_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "cassette_tape_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+30",
+   "name": "typewriter",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+30",
+   "images": [
+    {
+     "file": "typewriter_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "typewriter_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+31",
+   "name": "briefcase_grey",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+31",
+   "images": [
+    {
+     "file": "briefcase_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "briefcase_grey_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+32",
+   "name": "door_open",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+32",
+   "images": [
+    {
+     "file": "door_open_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "door_open_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+33",
+   "name": "envelope_manila",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+33",
+   "images": [
+    {
+     "file": "envelope_manila_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "envelope_manila_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+34",
+   "name": "mailbox",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+34",
+   "images": [
+    {
+     "file": "mailbox_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "mailbox_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+35",
+   "name": "safe",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+35",
+   "images": [
+    {
+     "file": "safe_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "safe_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+36",
+   "name": "question_mark",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+36",
+   "images": [
+    {
+     "file": "question_mark_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "question_mark_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+37",
+   "name": "exclamation_mark",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+37",
+   "images": [
+    {
+     "file": "exclamation_mark_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "exclamation_mark_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+38",
+   "name": "exit_door_arrow",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+38",
+   "images": [
+    {
+     "file": "exit_door_arrow_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "exit_door_arrow_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+39",
+   "name": "hand_pointing_left",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+39",
+   "images": [
+    {
+     "file": "hand_pointing_left_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "hand_pointing_left_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+40",
+   "name": "hand_pointing_right",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+40",
+   "images": [
+    {
+     "file": "hand_pointing_right_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "hand_pointing_right_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+41",
+   "name": "hand_stop",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+41",
+   "images": [
+    {
+     "file": "hand_stop_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "hand_stop_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+42",
+   "name": "arrow_down_grey",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+42",
+   "images": [
+    {
+     "file": "arrow_down_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "arrow_down_grey_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+43",
+   "name": "arrow_left_grey",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+43",
+   "images": [
+    {
+     "file": "arrow_left_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "arrow_left_grey_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+44",
+   "name": "arrow_right_grey",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+44",
+   "images": [
+    {
+     "file": "arrow_right_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "arrow_right_grey_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/PROGMAN.EXE#31944+45",
+   "name": "arrow_up_grey",
+   "source": "WINDOWS/PROGMAN.EXE",
+   "group": "31944+45",
+   "images": [
+    {
+     "file": "arrow_up_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "arrow_up_grey_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/REGEDIT.EXE#100",
+   "name": "registry_editor",
+   "source": "WINDOWS/REGEDIT.EXE",
+   "group": 100,
+   "images": [
+    {
+     "file": "registry_editor_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "registry_editor_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/REGEDIT.EXE#101",
+   "name": "registry_file",
+   "source": "WINDOWS/REGEDIT.EXE",
+   "group": 101,
+   "images": [
+    {
+     "file": "registry_file_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "registry_file_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/REGEDIT.EXE#102",
+   "name": "registry_search",
+   "source": "WINDOWS/REGEDIT.EXE",
+   "group": 102,
+   "images": [
+    {
+     "file": "registry_search_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/REGEDIT.EXE#201",
+   "name": "registry_computer",
+   "source": "WINDOWS/REGEDIT.EXE",
+   "group": 201,
+   "images": [
+    {
+     "file": "registry_computer_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/REGEDIT.EXE#202",
+   "name": "registry_computer_selected",
+   "source": "WINDOWS/REGEDIT.EXE",
+   "group": 202,
+   "images": [
+    {
+     "file": "registry_computer_selected_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/REGEDIT.EXE#203",
+   "name": "registry_key_closed",
+   "source": "WINDOWS/REGEDIT.EXE",
+   "group": 203,
+   "images": [
+    {
+     "file": "registry_key_closed_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "folder_closed_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/REGEDIT.EXE#204",
+   "name": "registry_key_open",
+   "source": "WINDOWS/REGEDIT.EXE",
+   "group": 204,
+   "images": [
+    {
+     "file": "registry_key_open_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "folder_open_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/REGEDIT.EXE#205",
+   "name": "registry_value_string",
+   "source": "WINDOWS/REGEDIT.EXE",
+   "group": 205,
+   "images": [
+    {
+     "file": "registry_value_string_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/REGEDIT.EXE#206",
+   "name": "registry_value_binary",
+   "source": "WINDOWS/REGEDIT.EXE",
+   "group": 206,
+   "images": [
+    {
+     "file": "registry_value_binary_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SCANDSKW.EXE#400",
+   "name": "scandisk",
+   "source": "WINDOWS/SCANDSKW.EXE",
+   "group": 400,
+   "images": [
+    {
+     "file": "scandisk_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "drive_cdrom_2_32.png"
+     ]
+    },
+    {
+     "file": "scandisk_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/APPWIZ.CPL#1500",
+   "name": "add_remove_programs",
+   "source": "WINDOWS/SYSTEM/APPWIZ.CPL",
+   "group": 1500,
+   "images": [
+    {
+     "file": "add_remove_programs_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "add_remove_programs_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/APPWIZ.CPL#1501",
+   "name": "setup_wizard_install",
+   "source": "WINDOWS/SYSTEM/APPWIZ.CPL",
+   "group": 1501,
+   "images": [
+    {
+     "file": "setup_wizard_install_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "setup_wizard_install_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/APPWIZ.CPL#1502",
+   "name": "computer_install_software",
+   "source": "WINDOWS/SYSTEM/APPWIZ.CPL",
+   "group": 1502,
+   "images": [
+    {
+     "file": "computer_install_software_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "computer_install_software_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/APPWIZ.CPL#1503",
+   "name": "recycle_bin_full_documents_appwiz",
+   "source": "WINDOWS/SYSTEM/APPWIZ.CPL",
+   "group": 1503,
+   "images": [
+    {
+     "file": "recycle_bin_full_documents_appwiz_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/CCAPI.DLL#106",
+   "name": "msn_service_small",
+   "source": "WINDOWS/SYSTEM/CCAPI.DLL",
+   "group": 106,
+   "images": [
+    {
+     "file": "msn_service_small_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "msn_service_small_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/MSNEXCH.EXE#10"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMCTL32.DLL#150",
+   "name": "drag_arrow_small",
+   "source": "WINDOWS/SYSTEM/COMCTL32.DLL",
+   "group": 150,
+   "images": [
+    {
+     "file": "drag_arrow_small_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/COMMCTRL.DLL#150",
+    "WINDOWS/SYSBCKUP/COMMCTRL.DLL#150"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMDLG32.DLL#528",
+   "name": "page_portrait",
+   "source": "WINDOWS/SYSTEM/COMDLG32.DLL",
+   "group": 528,
+   "images": [
+    {
+     "file": "page_portrait_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/COMMDLG.DLL#528",
+    "WINDOWS/SYSBCKUP/COMMDLG.DLL#528"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMDLG32.DLL#529",
+   "name": "page_landscape",
+   "source": "WINDOWS/SYSTEM/COMDLG32.DLL",
+   "group": 529,
+   "images": [
+    {
+     "file": "page_landscape_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/COMMDLG.DLL#529",
+    "WINDOWS/SYSBCKUP/COMMDLG.DLL#529"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMDLG32.DLL#530",
+   "name": "paper_portrait_small",
+   "source": "WINDOWS/SYSTEM/COMDLG32.DLL",
+   "group": 530,
+   "images": [
+    {
+     "file": "paper_portrait_small_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMDLG32.DLL#531",
+   "name": "paper_landscape_small",
+   "source": "WINDOWS/SYSTEM/COMDLG32.DLL",
+   "group": 531,
+   "images": [
+    {
+     "file": "paper_landscape_small_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMDLG32.DLL#532",
+   "name": "paper_tall",
+   "source": "WINDOWS/SYSTEM/COMDLG32.DLL",
+   "group": 532,
+   "images": [
+    {
+     "file": "paper_tall_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMDLG32.DLL#533",
+   "name": "paper_portrait",
+   "source": "WINDOWS/SYSTEM/COMDLG32.DLL",
+   "group": 533,
+   "images": [
+    {
+     "file": "paper_portrait_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMDLG32.DLL#534",
+   "name": "duplex_long_edge",
+   "source": "WINDOWS/SYSTEM/COMDLG32.DLL",
+   "group": 534,
+   "images": [
+    {
+     "file": "duplex_long_edge_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMDLG32.DLL#535",
+   "name": "duplex_short_edge",
+   "source": "WINDOWS/SYSTEM/COMDLG32.DLL",
+   "group": 535,
+   "images": [
+    {
+     "file": "duplex_short_edge_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMDLG32.DLL#536",
+   "name": "copies_collated",
+   "source": "WINDOWS/SYSTEM/COMDLG32.DLL",
+   "group": 536,
+   "images": [
+    {
+     "file": "copies_collated_91x36.png",
+     "width": 91,
+     "height": 36,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMDLG32.DLL#537",
+   "name": "copies_uncollated",
+   "source": "WINDOWS/SYSTEM/COMDLG32.DLL",
+   "group": 537,
+   "images": [
+    {
+     "file": "copies_uncollated_98x30.png",
+     "width": 98,
+     "height": 30,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMDLG32.DLL#538",
+   "name": "print_columns",
+   "source": "WINDOWS/SYSTEM/COMDLG32.DLL",
+   "group": 538,
+   "images": [
+    {
+     "file": "print_columns_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/COMDLG32.DLL#539",
+   "name": "print_rows",
+   "source": "WINDOWS/SYSTEM/COMDLG32.DLL",
+   "group": 539,
+   "images": [
+    {
+     "file": "print_rows_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/DESK.CPL#100",
+   "name": "display_properties",
+   "source": "WINDOWS/SYSTEM/DESK.CPL",
+   "group": 100,
+   "images": [
+    {
+     "file": "display_properties_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "display_properties_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/DESKCP16.DLL#40",
+    "WINDOWS/SYSTEM/SYSDM.CPL#459"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/DISKCOPY.DLL#1",
+   "name": "disk_copy",
+   "source": "WINDOWS/SYSTEM/DISKCOPY.DLL",
+   "group": 1,
+   "images": [
+    {
+     "file": "disk_copy_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "disk_copy_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/FONTEXT.DLL#1",
+   "name": "folder_fonts_explorer",
+   "source": "WINDOWS/SYSTEM/FONTEXT.DLL",
+   "group": 1,
+   "images": [
+    {
+     "file": "folder_fonts_explorer_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "folder_fonts_explorer_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/FONTEXT.DLL#4",
+   "name": "font_truetype_document",
+   "source": "WINDOWS/SYSTEM/FONTEXT.DLL",
+   "group": 4,
+   "images": [
+    {
+     "file": "font_truetype_document_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "font_truetype_document_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/ICMUI.DLL#1200",
+   "name": "color_profile",
+   "source": "WINDOWS/SYSTEM/ICMUI.DLL",
+   "group": 1200,
+   "images": [
+    {
+     "file": "color_profile_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "color_profile_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/ICMUI.DLL#1201",
+   "name": "color_profile_grey",
+   "source": "WINDOWS/SYSTEM/ICMUI.DLL",
+   "group": 1201,
+   "images": [
+    {
+     "file": "color_profile_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "color_profile_grey_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/INTERNAT.EXE#151",
+   "name": "keyboard_language_unknown",
+   "source": "WINDOWS/SYSTEM/INTERNAT.EXE",
+   "group": 151,
+   "images": [
+    {
+     "file": "keyboard_language_unknown_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/INTL.CPL#101",
+   "name": "regional_settings",
+   "source": "WINDOWS/SYSTEM/INTL.CPL",
+   "group": 101,
+   "images": [
+    {
+     "file": "regional_settings_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "regional_settings_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/IOSCLASS.DLL#2",
+   "name": "cdrom_drive_disc",
+   "source": "WINDOWS/SYSTEM/IOSCLASS.DLL",
+   "group": 2,
+   "images": [
+    {
+     "file": "cdrom_drive_disc_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "cdrom_drive_disc_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/IOSCLASS.DLL#3",
+   "name": "disk_drive_box",
+   "source": "WINDOWS/SYSTEM/IOSCLASS.DLL",
+   "group": 3,
+   "images": [
+    {
+     "file": "disk_drive_box_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "disk_drive_box_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "drive_floppy_35_16.png",
+      "drive_floppy_525_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/JOY.CPL#100",
+   "name": "joystick",
+   "source": "WINDOWS/SYSTEM/JOY.CPL",
+   "group": 100,
+   "images": [
+    {
+     "file": "joystick_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "joystick_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/MMSYS.CPL#108"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/JOY.CPL#101",
+   "name": "joystick_calibrate",
+   "source": "WINDOWS/SYSTEM/JOY.CPL",
+   "group": 101,
+   "images": [
+    {
+     "file": "joystick_calibrate_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/JOY.CPL#102",
+   "name": "joystick_directions_dark",
+   "source": "WINDOWS/SYSTEM/JOY.CPL",
+   "group": 102,
+   "images": [
+    {
+     "file": "joystick_directions_dark_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/JOY.CPL#103",
+   "name": "joystick_direction_up",
+   "source": "WINDOWS/SYSTEM/JOY.CPL",
+   "group": 103,
+   "images": [
+    {
+     "file": "joystick_direction_up_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/JOY.CPL#104",
+   "name": "joystick_direction_down",
+   "source": "WINDOWS/SYSTEM/JOY.CPL",
+   "group": 104,
+   "images": [
+    {
+     "file": "joystick_direction_down_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/JOY.CPL#105",
+   "name": "joystick_direction_left",
+   "source": "WINDOWS/SYSTEM/JOY.CPL",
+   "group": 105,
+   "images": [
+    {
+     "file": "joystick_direction_left_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/JOY.CPL#106",
+   "name": "joystick_direction_right",
+   "source": "WINDOWS/SYSTEM/JOY.CPL",
+   "group": 106,
+   "images": [
+    {
+     "file": "joystick_direction_right_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/JOY.CPL#107",
+   "name": "joystick_directions_grey",
+   "source": "WINDOWS/SYSTEM/JOY.CPL",
+   "group": 107,
+   "images": [
+    {
+     "file": "joystick_directions_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/LIGHTS.EXE#99",
+   "name": "modem_lights_panel",
+   "source": "WINDOWS/SYSTEM/LIGHTS.EXE",
+   "group": 99,
+   "images": [
+    {
+     "file": "modem_lights_panel_256x96.png",
+     "width": 256,
+     "height": 96,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/LIGHTS.EXE#100",
+   "name": "modem_lights_red_red",
+   "source": "WINDOWS/SYSTEM/LIGHTS.EXE",
+   "group": 100,
+   "images": [
+    {
+     "file": "modem_lights_red_red_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "modem_lights_red_red_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/LIGHTS.EXE#101",
+   "name": "modem_lights_green_red",
+   "source": "WINDOWS/SYSTEM/LIGHTS.EXE",
+   "group": 101,
+   "images": [
+    {
+     "file": "modem_lights_green_red_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "modem_lights_green_red_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/LIGHTS.EXE#102",
+   "name": "modem_lights_red_green",
+   "source": "WINDOWS/SYSTEM/LIGHTS.EXE",
+   "group": 102,
+   "images": [
+    {
+     "file": "modem_lights_red_green_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "modem_lights_red_green_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/LIGHTS.EXE#103",
+   "name": "modem_lights_green_green",
+   "source": "WINDOWS/SYSTEM/LIGHTS.EXE",
+   "group": 103,
+   "images": [
+    {
+     "file": "modem_lights_green_green_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "modem_lights_green_green_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MAIN.CPL#100",
+   "name": "mouse",
+   "source": "WINDOWS/SYSTEM/MAIN.CPL",
+   "group": 100,
+   "images": [
+    {
+     "file": "mouse_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/MAINCP16.DLL#111",
+    "WINDOWS/SYSTEM/SETUPX.DLL#2"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MAIN.CPL#103",
+   "name": "mouse_trails",
+   "source": "WINDOWS/SYSTEM/MAIN.CPL",
+   "group": 103,
+   "images": [
+    {
+     "file": "mouse_trails_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MAIN.CPL#104",
+   "name": "mouse_pointer_speed",
+   "source": "WINDOWS/SYSTEM/MAIN.CPL",
+   "group": 104,
+   "images": [
+    {
+     "file": "mouse_pointer_speed_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MAIN.CPL#105",
+   "name": "keyboard_repeat_rate",
+   "source": "WINDOWS/SYSTEM/MAIN.CPL",
+   "group": 105,
+   "images": [
+    {
+     "file": "keyboard_repeat_rate_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MAIN.CPL#106",
+   "name": "font_sample",
+   "source": "WINDOWS/SYSTEM/MAIN.CPL",
+   "group": 106,
+   "images": [
+    {
+     "file": "font_sample_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MAIN.CPL#107",
+   "name": "text_cursor_blink",
+   "source": "WINDOWS/SYSTEM/MAIN.CPL",
+   "group": 107,
+   "images": [
+    {
+     "file": "text_cursor_blink_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MAIN.CPL#200",
+   "name": "keyboard",
+   "source": "WINDOWS/SYSTEM/MAIN.CPL",
+   "group": 200,
+   "images": [
+    {
+     "file": "keyboard_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "keyboard_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/MAINCP16.DLL#110"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MAIN.CPL#300",
+   "name": "folder_printers_shortcut",
+   "source": "WINDOWS/SYSTEM/MAIN.CPL",
+   "group": 300,
+   "images": [
+    {
+     "file": "folder_printers_shortcut_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "folder_printers_shortcut_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MAIN.CPL#400",
+   "name": "folder_fonts_shortcut",
+   "source": "WINDOWS/SYSTEM/MAIN.CPL",
+   "group": 400,
+   "images": [
+    {
+     "file": "folder_fonts_shortcut_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "folder_fonts_shortcut_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MAIN.CPL#500",
+   "name": "pc_card",
+   "source": "WINDOWS/SYSTEM/MAIN.CPL",
+   "group": 500,
+   "images": [
+    {
+     "file": "pc_card_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "pc_card_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/MSPCIC.DLL#100"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MAIN.CPL#600",
+   "name": "power_management",
+   "source": "WINDOWS/SYSTEM/MAIN.CPL",
+   "group": 600,
+   "images": [
+    {
+     "file": "power_management_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "power_management_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SYSTRAY.EXE#150"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MCM.DLL#EARTH",
+   "name": "globe",
+   "source": "WINDOWS/SYSTEM/MCM.DLL",
+   "group": "EARTH",
+   "images": [
+    {
+     "file": "globe_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/MCM.DLL#3203"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MCM.DLL#PHONE",
+   "name": "desk_phone",
+   "source": "WINDOWS/SYSTEM/MCM.DLL",
+   "group": "PHONE",
+   "images": [
+    {
+     "file": "desk_phone_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MCM.DLL#401",
+   "name": "msn_dial",
+   "source": "WINDOWS/SYSTEM/MCM.DLL",
+   "group": 401,
+   "images": [
+    {
+     "file": "msn_dial_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MCM.DLL#502",
+   "name": "key_switch",
+   "source": "WINDOWS/SYSTEM/MCM.DLL",
+   "group": 502,
+   "images": [
+    {
+     "file": "key_switch_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MCM.DLL#3200",
+   "name": "computer_phone",
+   "source": "WINDOWS/SYSTEM/MCM.DLL",
+   "group": 3200,
+   "images": [
+    {
+     "file": "computer_phone_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MCM.DLL#3201",
+   "name": "computer_network_cable",
+   "source": "WINDOWS/SYSTEM/MCM.DLL",
+   "group": 3201,
+   "images": [
+    {
+     "file": "computer_network_cable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MCM.DLL#3202",
+   "name": "phone_address_book_open",
+   "source": "WINDOWS/SYSTEM/MCM.DLL",
+   "group": 3202,
+   "images": [
+    {
+     "file": "phone_address_book_open_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MIDIMAP.DRV#MIDI_ICON_1",
+   "name": "midi_computer",
+   "source": "WINDOWS/SYSTEM/MIDIMAP.DRV",
+   "group": "MIDI_ICON_1",
+   "images": [
+    {
+     "file": "midi_computer_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "midi_computer_32_4bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "midi_computer_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/MMSYS.CPL#102",
+    "WINDOWS/SYSBCKUP/MIDIMAP.DRV#MIDI_ICON_1"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MKCOMPAT.EXE#900",
+   "name": "compatibility_switch",
+   "source": "WINDOWS/SYSTEM/MKCOMPAT.EXE",
+   "group": 900,
+   "images": [
+    {
+     "file": "compatibility_switch_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "compatibility_switch_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMCI.DLL#1",
+   "name": "multimedia_device",
+   "source": "WINDOWS/SYSTEM/MMCI.DLL",
+   "group": 1,
+   "images": [
+    {
+     "file": "multimedia_device_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "multimedia_device_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/MMSYS.CPL#99"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#90",
+   "name": "midi_keyboard",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 90,
+   "images": [
+    {
+     "file": "midi_keyboard_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#100",
+   "name": "multimedia_computer",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 100,
+   "images": [
+    {
+     "file": "multimedia_computer_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "multimedia_computer_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#101",
+   "name": "speaker_sound",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 101,
+   "images": [
+    {
+     "file": "speaker_sound_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "speaker_sound_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/MMSYS.CPL#115"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#103",
+   "name": "audio_device_driver",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 103,
+   "images": [
+    {
+     "file": "audio_device_driver_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "audio_device_driver_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#104",
+   "name": "cd_audio_speaker",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 104,
+   "images": [
+    {
+     "file": "cd_audio_speaker_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "cd_audio_speaker_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#105",
+   "name": "media_devices",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 105,
+   "images": [
+    {
+     "file": "media_devices_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "media_devices_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#106",
+   "name": "sound_scheme_video",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 106,
+   "images": [
+    {
+     "file": "sound_scheme_video_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "sound_scheme_video_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#107",
+   "name": "sound_scheme_audio",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 107,
+   "images": [
+    {
+     "file": "sound_scheme_audio_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "sound_scheme_audio_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#109",
+   "name": "application_sound",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 109,
+   "images": [
+    {
+     "file": "application_sound_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "application_sound_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#110",
+   "name": "speaker_loud",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 110,
+   "images": [
+    {
+     "file": "speaker_loud_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "speaker_loud_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#111",
+   "name": "video_camera",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 111,
+   "images": [
+    {
+     "file": "video_camera_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "video_camera_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#112",
+   "name": "cd_music",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 112,
+   "images": [
+    {
+     "file": "cd_music_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "cd_music_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#113",
+   "name": "application",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 113,
+   "images": [
+    {
+     "file": "application_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "3.png",
+      "application_32.png"
+     ]
+    },
+    {
+     "file": "application_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "application_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SHELL32.DLL#3"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#114",
+   "name": "speaker_waves",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 114,
+   "images": [
+    {
+     "file": "speaker_waves_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/MSACM.DLL#10",
+    "WINDOWS/SYSTEM/MSACM.DRV#10",
+    "WINDOWS/SYSTEM/MSACM32.DLL#10",
+    "WINDOWS/SYSBCKUP/MSACM.DLL#10",
+    "WINDOWS/SYSBCKUP/MSACM.DRV#10"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#116",
+   "name": "microphone",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 116,
+   "images": [
+    {
+     "file": "microphone_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "microphone_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#117",
+   "name": "document_sound",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 117,
+   "images": [
+    {
+     "file": "document_sound_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "document_sound_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#118",
+   "name": "document_midi",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 118,
+   "images": [
+    {
+     "file": "document_midi_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "document_midi_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/MMSYS.CPL#121"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#119",
+   "name": "document_video",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 119,
+   "images": [
+    {
+     "file": "document_video_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "document_video_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#120",
+   "name": "midi_keyboard_cable",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 120,
+   "images": [
+    {
+     "file": "midi_keyboard_cable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "midi_keyboard_cable_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#122",
+   "name": "blank",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 122,
+   "images": [
+    {
+     "file": "blank_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "blank_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#123",
+   "name": "blue_dot",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 123,
+   "images": [
+    {
+     "file": "blue_dot_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MMSYS.CPL#124",
+   "name": "blank_alt",
+   "source": "WINDOWS/SYSTEM/MMSYS.CPL",
+   "group": 124,
+   "images": [
+    {
+     "file": "blank_alt_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MODEM.CPL#1000",
+   "name": "modem_phone",
+   "source": "WINDOWS/SYSTEM/MODEM.CPL",
+   "group": 1000,
+   "images": [
+    {
+     "file": "modem_phone_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "modem_phone_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MODEM.CPL#1001",
+   "name": "modem_cable",
+   "source": "WINDOWS/SYSTEM/MODEM.CPL",
+   "group": 1001,
+   "images": [
+    {
+     "file": "modem_cable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "modem_cable_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MODEMUI.DLL#700",
+   "name": "serial_cable",
+   "source": "WINDOWS/SYSTEM/MODEMUI.DLL",
+   "group": 700,
+   "images": [
+    {
+     "file": "serial_cable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "serial_cable_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MODEMUI.DLL#701",
+   "name": "modem_phone_yellow",
+   "source": "WINDOWS/SYSTEM/MODEMUI.DLL",
+   "group": 701,
+   "images": [
+    {
+     "file": "modem_phone_yellow_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "modem_phone_yellow_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MODEMUI.DLL#702",
+   "name": "modem_card_internal",
+   "source": "WINDOWS/SYSTEM/MODEMUI.DLL",
+   "group": 702,
+   "images": [
+    {
+     "file": "modem_card_internal_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "modem_card_internal_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MODEMUI.DLL#703",
+   "name": "modem_pc_card",
+   "source": "WINDOWS/SYSTEM/MODEMUI.DLL",
+   "group": 703,
+   "images": [
+    {
+     "file": "modem_pc_card_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "modem_pc_card_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MOSCUDLL.DLL#128",
+   "name": "msn_folders",
+   "source": "WINDOWS/SYSTEM/MOSCUDLL.DLL",
+   "group": 128,
+   "images": [
+    {
+     "file": "msn_folders_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "msn_folders_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MPRSERV.DLL#68",
+   "name": "keys_grey",
+   "source": "WINDOWS/SYSTEM/MPRSERV.DLL",
+   "group": 68,
+   "images": [
+    {
+     "file": "keys_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/PASSWORD.CPL#1000"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MPRSERV.DLL#120",
+   "name": "keys_windows_flag",
+   "source": "WINDOWS/SYSTEM/MPRSERV.DLL",
+   "group": 120,
+   "images": [
+    {
+     "file": "keys_windows_flag_48.png",
+     "width": 48,
+     "height": 48,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MPRSERV.DLL#121",
+   "name": "computer_network_pair",
+   "source": "WINDOWS/SYSTEM/MPRSERV.DLL",
+   "group": 121,
+   "images": [
+    {
+     "file": "computer_network_pair_48.png",
+     "width": 48,
+     "height": 48,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MSACM.DRV#11",
+   "name": "microphone_handheld",
+   "source": "WINDOWS/SYSTEM/MSACM.DRV",
+   "group": 11,
+   "images": [
+    {
+     "file": "microphone_handheld_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSBCKUP/MSACM.DRV#11"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MSACM.DRV#12",
+   "name": "speaker_off",
+   "source": "WINDOWS/SYSTEM/MSACM.DRV",
+   "group": 12,
+   "images": [
+    {
+     "file": "speaker_off_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSBCKUP/MSACM.DRV#12"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MSACM.DRV#13",
+   "name": "audio_codec_figure",
+   "source": "WINDOWS/SYSTEM/MSACM.DRV",
+   "group": 13,
+   "images": [
+    {
+     "file": "audio_codec_figure_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSBCKUP/MSACM.DRV#13"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MSNEXCH.EXE#11",
+   "name": "no_entry_sign",
+   "source": "WINDOWS/SYSTEM/MSNEXCH.EXE",
+   "group": 11,
+   "images": [
+    {
+     "file": "no_entry_sign_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "no_entry_sign_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MSPRINT.DLL#100",
+   "name": "printer_unavailable",
+   "source": "WINDOWS/SYSTEM/MSPRINT.DLL",
+   "group": 100,
+   "images": [
+    {
+     "file": "printer_unavailable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "printer_unavailable_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/MSVFW32.DLL#943",
+   "name": "video_film_reel",
+   "source": "WINDOWS/SYSTEM/MSVFW32.DLL",
+   "group": 943,
+   "images": [
+    {
+     "file": "video_film_reel_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "video_film_reel_32_4bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "video_film_reel_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/MSVIDEO.DLL#943",
+    "WINDOWS/SYSBCKUP/MSVIDEO.DLL#943"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/NETCPL.CPL#100",
+   "name": "network_control_panel",
+   "source": "WINDOWS/SYSTEM/NETCPL.CPL",
+   "group": 100,
+   "images": [
+    {
+     "file": "network_control_panel_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "network_control_panel_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "network_neighborhood_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/OLE2.DLL#DEFICON",
+   "name": "document_blank",
+   "source": "WINDOWS/SYSTEM/OLE2.DLL",
+   "group": "DEFICON",
+   "images": [
+    {
+     "file": "document_blank_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/OLE32.DLL#8",
+    "WINDOWS/SYSBCKUP/OLE2.DLL#DEFICON"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PASSWORD.CPL#100",
+   "name": "key_grey",
+   "source": "WINDOWS/SYSTEM/PASSWORD.CPL",
+   "group": 100,
+   "images": [
+    {
+     "file": "key_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PASSWORD.CPL#1010",
+   "name": "key_windows_flag",
+   "source": "WINDOWS/SYSTEM/PASSWORD.CPL",
+   "group": 1010,
+   "images": [
+    {
+     "file": "key_windows_flag_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#2",
+   "name": "umbrella",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 2,
+   "images": [
+    {
+     "file": "umbrella_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#3",
+   "name": "toy_block_a",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 3,
+   "images": [
+    {
+     "file": "toy_block_a_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#4",
+   "name": "newspaper_roll",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 4,
+   "images": [
+    {
+     "file": "newspaper_roll_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#5",
+   "name": "apple",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 5,
+   "images": [
+    {
+     "file": "apple_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#6",
+   "name": "storm_cloud",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 6,
+   "images": [
+    {
+     "file": "storm_cloud_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#7",
+   "name": "tuba",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 7,
+   "images": [
+    {
+     "file": "tuba_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#8",
+   "name": "beach_ball",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 8,
+   "images": [
+    {
+     "file": "beach_ball_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#9",
+   "name": "light_bulb",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 9,
+   "images": [
+    {
+     "file": "light_bulb_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#10",
+   "name": "column",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 10,
+   "images": [
+    {
+     "file": "column_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#11",
+   "name": "money_hand",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 11,
+   "images": [
+    {
+     "file": "money_hand_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#12",
+   "name": "computer_windows",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 12,
+   "images": [
+    {
+     "file": "computer_windows_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#13",
+   "name": "keyboard_cable",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 13,
+   "images": [
+    {
+     "file": "keyboard_cable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#14",
+   "name": "filing_cabinet_grey",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 14,
+   "images": [
+    {
+     "file": "filing_cabinet_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#15",
+   "name": "book_open",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 15,
+   "images": [
+    {
+     "file": "book_open_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#16",
+   "name": "document_clip_ab",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 16,
+   "images": [
+    {
+     "file": "document_clip_ab_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#17",
+   "name": "crayon_scribble",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 17,
+   "images": [
+    {
+     "file": "crayon_scribble_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#18",
+   "name": "pencil",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 18,
+   "images": [
+    {
+     "file": "pencil_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#19",
+   "name": "pencil_paper",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 19,
+   "images": [
+    {
+     "file": "pencil_paper_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#20",
+   "name": "dice",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 20,
+   "images": [
+    {
+     "file": "dice_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#21",
+   "name": "window_night",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 21,
+   "images": [
+    {
+     "file": "window_night_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#22",
+   "name": "eye_chart",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 22,
+   "images": [
+    {
+     "file": "eye_chart_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#23",
+   "name": "dominoes",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 23,
+   "images": [
+    {
+     "file": "dominoes_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#24",
+   "name": "playing_cards_hand",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 24,
+   "images": [
+    {
+     "file": "playing_cards_hand_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#25",
+   "name": "soccer_ball",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 25,
+   "images": [
+    {
+     "file": "soccer_ball_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#26",
+   "name": "first_aid_kit",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 26,
+   "images": [
+    {
+     "file": "first_aid_kit_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#27",
+   "name": "party_hat",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 27,
+   "images": [
+    {
+     "file": "party_hat_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#28",
+   "name": "race_car",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 28,
+   "images": [
+    {
+     "file": "race_car_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#29",
+   "name": "ship",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 29,
+   "images": [
+    {
+     "file": "ship_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#30",
+   "name": "biplane",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 30,
+   "images": [
+    {
+     "file": "biplane_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#31",
+   "name": "raft",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 31,
+   "images": [
+    {
+     "file": "raft_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#32",
+   "name": "traffic_light",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 32,
+   "images": [
+    {
+     "file": "traffic_light_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#33",
+   "name": "rabbit",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 33,
+   "images": [
+    {
+     "file": "rabbit_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#34",
+   "name": "satellite_dish",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 34,
+   "images": [
+    {
+     "file": "satellite_dish_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#35",
+   "name": "swords_crossed",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 35,
+   "images": [
+    {
+     "file": "swords_crossed_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#36",
+   "name": "sword_shield",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 36,
+   "images": [
+    {
+     "file": "sword_shield_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#37",
+   "name": "mace",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 37,
+   "images": [
+    {
+     "file": "mace_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PIFMGR.DLL#38",
+   "name": "dynamite",
+   "source": "WINDOWS/SYSTEM/PIFMGR.DLL",
+   "group": 38,
+   "images": [
+    {
+     "file": "dynamite_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/PRODINV.DLL#MYICON",
+   "name": "computer_inventory",
+   "source": "WINDOWS/SYSTEM/PRODINV.DLL",
+   "group": "MYICON",
+   "images": [
+    {
+     "file": "computer_inventory_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "computer_inventory_32_4bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "computer_inventory_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/RASAPI32.DLL#100",
+   "name": "dial_up_idle",
+   "source": "WINDOWS/SYSTEM/RASAPI32.DLL",
+   "group": 100,
+   "images": [
+    {
+     "file": "dial_up_idle_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/RASAPI32.DLL#101",
+   "name": "dial_up_connecting_1",
+   "source": "WINDOWS/SYSTEM/RASAPI32.DLL",
+   "group": 101,
+   "images": [
+    {
+     "file": "dial_up_connecting_1_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/RASAPI32.DLL#102",
+   "name": "dial_up_connecting_2",
+   "source": "WINDOWS/SYSTEM/RASAPI32.DLL",
+   "group": 102,
+   "images": [
+    {
+     "file": "dial_up_connecting_2_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/RASAPI32.DLL#103",
+   "name": "dial_up_connecting_3",
+   "source": "WINDOWS/SYSTEM/RASAPI32.DLL",
+   "group": 103,
+   "images": [
+    {
+     "file": "dial_up_connecting_3_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/RASAPI32.DLL#104",
+   "name": "dial_up_connection",
+   "source": "WINDOWS/SYSTEM/RASAPI32.DLL",
+   "group": 104,
+   "images": [
+    {
+     "file": "dial_up_connection_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "dial_up_connection_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/REGWIZ.EXE#117",
+   "name": "registration_hands",
+   "source": "WINDOWS/SYSTEM/REGWIZ.EXE",
+   "group": 117,
+   "images": [
+    {
+     "file": "registration_hands_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/REGWIZ.EXE#122",
+   "name": "registration_cancelled",
+   "source": "WINDOWS/SYSTEM/REGWIZ.EXE",
+   "group": 122,
+   "images": [
+    {
+     "file": "registration_cancelled_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/REGWIZ.EXE#127",
+   "name": "globe_small",
+   "source": "WINDOWS/SYSTEM/REGWIZ.EXE",
+   "group": 127,
+   "images": [
+    {
+     "file": "globe_small_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/REGWIZ.EXE#129",
+   "name": "envelope_open_letter",
+   "source": "WINDOWS/SYSTEM/REGWIZ.EXE",
+   "group": 129,
+   "images": [
+    {
+     "file": "envelope_open_letter_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/RUNONCE.EXE#106",
+   "name": "computer_setup",
+   "source": "WINDOWS/SYSTEM/RUNONCE.EXE",
+   "group": 106,
+   "images": [
+    {
+     "file": "computer_setup_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SETUPX.DLL#54"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUP4.DLL#500",
+   "name": "message_warning_round",
+   "source": "WINDOWS/SYSTEM/SETUP4.DLL",
+   "group": 500,
+   "images": [
+    {
+     "file": "message_warning_round_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_warning_round_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUP4.DLL#501",
+   "name": "message_error_x",
+   "source": "WINDOWS/SYSTEM/SETUP4.DLL",
+   "group": 501,
+   "images": [
+    {
+     "file": "message_error_x_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_error_x_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUP4.DLL#502",
+   "name": "message_info",
+   "source": "WINDOWS/SYSTEM/SETUP4.DLL",
+   "group": 502,
+   "images": [
+    {
+     "file": "message_info_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#1",
+   "name": "monitor",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 1,
+   "images": [
+    {
+     "file": "monitor_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#3",
+   "name": "keyboard_grey",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 3,
+   "images": [
+    {
+     "file": "keyboard_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#4",
+   "name": "printer_grey",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 4,
+   "images": [
+    {
+     "file": "printer_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "17.png",
+      "printer_2_32.png",
+      "printer_32.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#50",
+   "name": "drive_floppy_device",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 50,
+   "images": [
+    {
+     "file": "drive_floppy_device_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "6.png",
+      "drive_floppy_35_32.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#51",
+   "name": "drive_cdrom_device",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 51,
+   "images": [
+    {
+     "file": "drive_cdrom_device_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#52",
+   "name": "network_adapter_drive",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 52,
+   "images": [
+    {
+     "file": "network_adapter_drive_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#53",
+   "name": "drive_device",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 53,
+   "images": [
+    {
+     "file": "drive_device_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#5",
+   "name": "expansion_card",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 5,
+   "images": [
+    {
+     "file": "expansion_card_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#6",
+   "name": "network_tee",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 6,
+   "images": [
+    {
+     "file": "network_tee_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#7",
+   "name": "computer_system",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 7,
+   "images": [
+    {
+     "file": "computer_system_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "16.png",
+      "my_computer_32.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#8",
+   "name": "computer_mouse",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 8,
+   "images": [
+    {
+     "file": "computer_mouse_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#9",
+   "name": "drive_controller",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 9,
+   "images": [
+    {
+     "file": "drive_controller_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#18",
+   "name": "unknown_device",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 18,
+   "images": [
+    {
+     "file": "unknown_device_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SYSDM.CPL#603"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#105",
+   "name": "windows_setup_disk",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 105,
+   "images": [
+    {
+     "file": "windows_setup_disk_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#10",
+   "name": "port_connector",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 10,
+   "images": [
+    {
+     "file": "port_connector_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "port_connector_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SETUPX.DLL#19",
+   "name": "diamond_grey",
+   "source": "WINDOWS/SYSTEM/SETUPX.DLL",
+   "group": 19,
+   "images": [
+    {
+     "file": "diamond_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL.DLL#430",
+   "name": "cdrom_drive_disc_16bit",
+   "source": "WINDOWS/SYSTEM/SHELL.DLL",
+   "group": 430,
+   "images": [
+    {
+     "file": "cdrom_drive_disc_16bit_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "drive_cdrom_2_32.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SHELL.DLL#431",
+    "WINDOWS/SYSTEM/SHELL32.DLL#166",
+    "WINDOWS/SYSBCKUP/SHELL.DLL#430",
+    "WINDOWS/SYSBCKUP/SHELL.DLL#431"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#1",
+   "name": "file_unknown",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 1,
+   "images": [
+    {
+     "file": "file_unknown_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "1.png",
+      "file_unknown_32.png"
+     ]
+    },
+    {
+     "file": "file_unknown_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "file_unknown_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#2",
+   "name": "document",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 2,
+   "images": [
+    {
+     "file": "document_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "2.png",
+      "document_32.png"
+     ]
+    },
+    {
+     "file": "document_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "document_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#4",
+   "name": "folder_closed",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 4,
+   "images": [
+    {
+     "file": "folder_closed_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "4.png",
+      "folder_closed_32.png"
+     ]
+    },
+    {
+     "file": "folder_closed_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "folder_closed_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#5",
+   "name": "folder_open",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 5,
+   "images": [
+    {
+     "file": "folder_open_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "5.png",
+      "folder_open_32.png"
+     ]
+    },
+    {
+     "file": "folder_open_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "folder_open_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SYNCUI.DLL#135"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#6",
+   "name": "drive_floppy_525",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 6,
+   "images": [
+    {
+     "file": "drive_floppy_525_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "7.png",
+      "drive_floppy_525_32.png"
+     ]
+    },
+    {
+     "file": "drive_floppy_525_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "drive_floppy_35_16.png",
+      "drive_floppy_525_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#7",
+   "name": "drive_floppy_35",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 7,
+   "images": [
+    {
+     "file": "drive_floppy_35_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "6.png",
+      "drive_floppy_35_32.png"
+     ]
+    },
+    {
+     "file": "drive_floppy_35_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "drive_floppy_35_16.png",
+      "drive_floppy_525_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#8",
+   "name": "drive_removable",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 8,
+   "images": [
+    {
+     "file": "drive_removable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "8.png",
+      "drive_removable_32.png"
+     ]
+    },
+    {
+     "file": "drive_removable_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "drive_removable_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#9",
+   "name": "drive_hard",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 9,
+   "images": [
+    {
+     "file": "drive_hard_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "9.png",
+      "drive_hard_32.png"
+     ]
+    },
+    {
+     "file": "drive_hard_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "drive_hard_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SYSDM.CPL#51"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#10",
+   "name": "drive_network",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 10,
+   "images": [
+    {
+     "file": "drive_network_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "10.png",
+      "drive_network_32.png"
+     ]
+    },
+    {
+     "file": "drive_network_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "drive_network_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#11",
+   "name": "drive_network_disconnected",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 11,
+   "images": [
+    {
+     "file": "drive_network_disconnected_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "11.png",
+      "drive_network_disconnected_32.png"
+     ]
+    },
+    {
+     "file": "drive_network_disconnected_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "drive_network_disconnected_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#12",
+   "name": "drive_cdrom",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 12,
+   "images": [
+    {
+     "file": "drive_cdrom_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "12.png",
+      "drive_cdrom_32.png"
+     ]
+    },
+    {
+     "file": "drive_cdrom_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "drive_cdrom_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SYSDM.CPL#50"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#13",
+   "name": "drive_ram",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 13,
+   "images": [
+    {
+     "file": "drive_ram_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "13.png",
+      "drive_ram_32.png"
+     ]
+    },
+    {
+     "file": "drive_ram_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "drive_ram_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#14",
+   "name": "entire_network",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 14,
+   "images": [
+    {
+     "file": "entire_network_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "14.png",
+      "entire_network_32.png"
+     ]
+    },
+    {
+     "file": "entire_network_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "entire_network_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#15",
+   "name": "network",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 15,
+   "images": [
+    {
+     "file": "network_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "network_32.png"
+     ]
+    },
+    {
+     "file": "network_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "network_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#16",
+   "name": "my_computer",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 16,
+   "images": [
+    {
+     "file": "my_computer_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "16.png",
+      "my_computer_32.png"
+     ]
+    },
+    {
+     "file": "my_computer_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "my_computer_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#18",
+   "name": "network_neighborhood",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 18,
+   "images": [
+    {
+     "file": "network_neighborhood_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "18.png",
+      "network_neighborhood_32.png"
+     ]
+    },
+    {
+     "file": "network_neighborhood_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "network_neighborhood_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#19",
+   "name": "workgroup",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 19,
+   "images": [
+    {
+     "file": "workgroup_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "19.png",
+      "workgroup_32.png"
+     ]
+    },
+    {
+     "file": "workgroup_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "workgroup_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#20",
+   "name": "start_programs",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 20,
+   "images": [
+    {
+     "file": "start_programs_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "20.png",
+      "start_programs_32.png"
+     ]
+    },
+    {
+     "file": "start_programs_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "start_programs_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#21",
+   "name": "start_documents",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 21,
+   "images": [
+    {
+     "file": "start_documents_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "21.png",
+      "start_documents_32.png"
+     ]
+    },
+    {
+     "file": "start_documents_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "start_documents_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#22",
+   "name": "start_settings",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 22,
+   "images": [
+    {
+     "file": "start_settings_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "22.png",
+      "start_settings_32.png"
+     ]
+    },
+    {
+     "file": "start_settings_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "start_settings_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#23",
+   "name": "start_find",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 23,
+   "images": [
+    {
+     "file": "start_find_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "23.png",
+      "start_find_32.png"
+     ]
+    },
+    {
+     "file": "start_find_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "start_find_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#24",
+   "name": "start_help",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 24,
+   "images": [
+    {
+     "file": "start_help_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "24.png",
+      "start_help_32.png"
+     ]
+    },
+    {
+     "file": "start_help_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "start_help_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#25",
+   "name": "start_run",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 25,
+   "images": [
+    {
+     "file": "start_run_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "start_run_32.png"
+     ]
+    },
+    {
+     "file": "start_run_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "application_busy_16.png",
+      "start_run_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#26",
+   "name": "start_suspend",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 26,
+   "images": [
+    {
+     "file": "start_suspend_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "25.png",
+      "start_suspend_32.png"
+     ]
+    },
+    {
+     "file": "start_suspend_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "start_suspend_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#27",
+   "name": "start_eject_pc",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 27,
+   "images": [
+    {
+     "file": "start_eject_pc_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "start_eject_pc_32.png"
+     ]
+    },
+    {
+     "file": "start_eject_pc_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "start_eject_pc_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#28",
+   "name": "start_shutdown",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 28,
+   "images": [
+    {
+     "file": "start_shutdown_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "26.png",
+      "start_shutdown_32.png"
+     ]
+    },
+    {
+     "file": "start_shutdown_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "start_shutdown_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#29",
+   "name": "overlay_shared",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 29,
+   "images": [
+    {
+     "file": "overlay_shared_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "overlay_shared_32.png"
+     ]
+    },
+    {
+     "file": "overlay_shared_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "overlay_shared_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#31",
+   "name": "overlay_shortcut_large",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 31,
+   "images": [
+    {
+     "file": "overlay_shortcut_large_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "overlay_shortcut_large_32.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#32",
+   "name": "recycle_bin_empty",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 32,
+   "images": [
+    {
+     "file": "recycle_bin_empty_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "27.png",
+      "recycle_bin_empty_32.png"
+     ]
+    },
+    {
+     "file": "recycle_bin_empty_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "recycle_bin_empty_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#33",
+   "name": "recycle_bin_full",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 33,
+   "images": [
+    {
+     "file": "recycle_bin_full_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "28.png",
+      "recycle_bin_full_32.png"
+     ]
+    },
+    {
+     "file": "recycle_bin_full_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "recycle_bin_full_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#34",
+   "name": "dial_up_networking",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 34,
+   "images": [
+    {
+     "file": "dial_up_networking_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "dial_up_networking_32.png"
+     ]
+    },
+    {
+     "file": "dial_up_networking_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "dial_up_networking_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#36",
+   "name": "control_panel",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 36,
+   "images": [
+    {
+     "file": "control_panel_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "30.png",
+      "control_panel_32.png",
+      "folder_control_panel_32.png"
+     ]
+    },
+    {
+     "file": "control_panel_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "control_panel_16.png",
+      "folder_control_panel_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SHELL32.DLL#137"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#37",
+   "name": "program_group",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 37,
+   "images": [
+    {
+     "file": "program_group_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "program_group_32.png"
+     ]
+    },
+    {
+     "file": "program_group_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "program_group_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#38",
+   "name": "folder_printers",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 38,
+   "images": [
+    {
+     "file": "folder_printers_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "folder_printers_2_32.png",
+      "folder_printers_32.png"
+     ]
+    },
+    {
+     "file": "folder_printers_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "folder_printers_16.png",
+      "folder_printers_2_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SHELL32.DLL#138"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#39",
+   "name": "folder_fonts",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 39,
+   "images": [
+    {
+     "file": "folder_fonts_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "folder_fonts_32.png"
+     ]
+    },
+    {
+     "file": "folder_fonts_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "folder_fonts_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#40",
+   "name": "windows_logo",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 40,
+   "images": [
+    {
+     "file": "windows_logo_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "29.png",
+      "windows_logo_32.png"
+     ]
+    },
+    {
+     "file": "windows_logo_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "windows_logo_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#41",
+   "name": "cd_audio",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 41,
+   "images": [
+    {
+     "file": "cd_audio_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "cd_audio_32.png"
+     ]
+    },
+    {
+     "file": "cd_audio_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "cd_audio_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#42",
+   "name": "tree",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 42,
+   "images": [
+    {
+     "file": "tree_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "tree_32.png"
+     ]
+    },
+    {
+     "file": "tree_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "tree_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#133",
+   "name": "documents_multiple",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 133,
+   "images": [
+    {
+     "file": "documents_multiple_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "documents_multiple_32.png"
+     ]
+    },
+    {
+     "file": "documents_multiple_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "documents_multiple_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#134",
+   "name": "find_files",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 134,
+   "images": [
+    {
+     "file": "find_files_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "find_files_32.png"
+     ]
+    },
+    {
+     "file": "find_files_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    },
+    {
+     "file": "find_files_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "find_files_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#135",
+   "name": "find_computer",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 135,
+   "images": [
+    {
+     "file": "find_computer_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "find_computer_32.png"
+     ]
+    },
+    {
+     "file": "find_computer_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "find_computer_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#136",
+   "name": "computer_shutdown",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 136,
+   "images": [
+    {
+     "file": "computer_shutdown_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "computer_shutdown_32.png"
+     ]
+    },
+    {
+     "file": "computer_shutdown_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "computer_shutdown_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#139",
+   "name": "printer_properties",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 139,
+   "images": [
+    {
+     "file": "printer_properties_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "printer_properties_32.png"
+     ]
+    },
+    {
+     "file": "printer_properties_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "printer_properties_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#140",
+   "name": "printer_network",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 140,
+   "images": [
+    {
+     "file": "printer_network_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "printer_network_2_32.png",
+      "printer_network_32.png"
+     ]
+    },
+    {
+     "file": "printer_network_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "printer_network_16.png",
+      "printer_network_2_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SHELL32.DLL#169"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#141",
+   "name": "printer_to_file",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 141,
+   "images": [
+    {
+     "file": "printer_to_file_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "printer_to_file_2_32.png",
+      "printer_to_file_32.png"
+     ]
+    },
+    {
+     "file": "printer_to_file_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "printer_to_file_16.png",
+      "printer_to_file_2_16.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SHELL32.DLL#170"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#142",
+   "name": "recycle_bin_full_documents",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 142,
+   "images": [
+    {
+     "file": "recycle_bin_full_documents_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "recycle_bin_full_documents_32.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#143",
+   "name": "recycle_bin_full_folders",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 143,
+   "images": [
+    {
+     "file": "recycle_bin_full_folders_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "recycle_bin_full_folders_32.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#144",
+   "name": "recycle_bin_full_mixed",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 144,
+   "images": [
+    {
+     "file": "recycle_bin_full_mixed_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "recycle_bin_full_mixed_32.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#145",
+   "name": "file_move_delete",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 145,
+   "images": [
+    {
+     "file": "file_move_delete_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "file_move_delete_32.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SYNCUI.DLL#130"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#146",
+   "name": "folder_move",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 146,
+   "images": [
+    {
+     "file": "folder_move_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "folder_move_32.png"
+     ]
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/SYSTEM/SYNCUI.DLL#131"
+   ]
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#147",
+   "name": "folder_rename",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 147,
+   "images": [
+    {
+     "file": "folder_rename_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "folder_rename_32.png"
+     ]
+    },
+    {
+     "file": "folder_rename_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "folder_rename_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#148",
+   "name": "folder_setup",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 148,
+   "images": [
+    {
+     "file": "folder_setup_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "folder_setup_32.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#151",
+   "name": "document_config",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 151,
+   "images": [
+    {
+     "file": "document_config_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "document_config_32.png"
+     ]
+    },
+    {
+     "file": "document_config_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "document_config_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#153",
+   "name": "application_settings",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 153,
+   "images": [
+    {
+     "file": "application_settings_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "15.png",
+      "application_settings_32.png"
+     ]
+    },
+    {
+     "file": "application_settings_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "application_settings_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#154",
+   "name": "file_system",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 154,
+   "images": [
+    {
+     "file": "file_system_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "file_system_32.png"
+     ]
+    },
+    {
+     "file": "file_system_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "file_system_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#160",
+   "name": "application_busy",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 160,
+   "images": [
+    {
+     "file": "application_busy_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "application_busy_32.png"
+     ]
+    },
+    {
+     "file": "application_busy_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "application_busy_16.png",
+      "start_run_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#161",
+   "name": "document_error",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 161,
+   "images": [
+    {
+     "file": "document_error_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "document_error_32.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#165",
+   "name": "backup",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 165,
+   "images": [
+    {
+     "file": "backup_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "backup_32.png"
+     ]
+    },
+    {
+     "file": "backup_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "backup_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHELL32.DLL#167",
+   "name": "multimedia",
+   "source": "WINDOWS/SYSTEM/SHELL32.DLL",
+   "group": 167,
+   "images": [
+    {
+     "file": "multimedia_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": [
+      "multimedia_32.png"
+     ]
+    },
+    {
+     "file": "multimedia_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "multimedia_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SHSCRAP.DLL#100",
+   "name": "scrap_document",
+   "source": "WINDOWS/SYSTEM/SHSCRAP.DLL",
+   "group": 100,
+   "images": [
+    {
+     "file": "scrap_document_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "scrap_document_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYNCUI.DLL#120",
+   "name": "briefcase",
+   "source": "WINDOWS/SYSTEM/SYNCUI.DLL",
+   "group": 120,
+   "images": [
+    {
+     "file": "briefcase_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "briefcase_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYNCUI.DLL#121",
+   "name": "briefcase_grey_lid",
+   "source": "WINDOWS/SYSTEM/SYNCUI.DLL",
+   "group": 121,
+   "images": [
+    {
+     "file": "briefcase_grey_lid_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYNCUI.DLL#122",
+   "name": "sync_document_unavailable",
+   "source": "WINDOWS/SYSTEM/SYNCUI.DLL",
+   "group": 122,
+   "images": [
+    {
+     "file": "sync_document_unavailable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYNCUI.DLL#123",
+   "name": "sync_folder_unavailable",
+   "source": "WINDOWS/SYSTEM/SYNCUI.DLL",
+   "group": 123,
+   "images": [
+    {
+     "file": "sync_folder_unavailable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYNCUI.DLL#124",
+   "name": "sync_folders_unavailable",
+   "source": "WINDOWS/SYSTEM/SYNCUI.DLL",
+   "group": 124,
+   "images": [
+    {
+     "file": "sync_folders_unavailable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYNCUI.DLL#125",
+   "name": "sync_document",
+   "source": "WINDOWS/SYSTEM/SYNCUI.DLL",
+   "group": 125,
+   "images": [
+    {
+     "file": "sync_document_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYNCUI.DLL#126",
+   "name": "sync_folder",
+   "source": "WINDOWS/SYSTEM/SYNCUI.DLL",
+   "group": 126,
+   "images": [
+    {
+     "file": "sync_folder_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYNCUI.DLL#127",
+   "name": "sync_folders",
+   "source": "WINDOWS/SYSTEM/SYNCUI.DLL",
+   "group": 127,
+   "images": [
+    {
+     "file": "sync_folders_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYNCUI.DLL#128",
+   "name": "sync_computer_briefcase",
+   "source": "WINDOWS/SYSTEM/SYNCUI.DLL",
+   "group": 128,
+   "images": [
+    {
+     "file": "sync_computer_briefcase_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYNCUI.DLL#129",
+   "name": "sync_briefcase_folder",
+   "source": "WINDOWS/SYSTEM/SYNCUI.DLL",
+   "group": 129,
+   "images": [
+    {
+     "file": "sync_briefcase_folder_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYNCUI.DLL#132",
+   "name": "sync_update",
+   "source": "WINDOWS/SYSTEM/SYNCUI.DLL",
+   "group": 132,
+   "images": [
+    {
+     "file": "sync_update_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSDM.CPL#600",
+   "name": "system",
+   "source": "WINDOWS/SYSTEM/SYSDM.CPL",
+   "group": 600,
+   "images": [
+    {
+     "file": "system_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "system_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSDM.CPL#605",
+   "name": "device_problem",
+   "source": "WINDOWS/SYSTEM/SYSDM.CPL",
+   "group": 605,
+   "images": [
+    {
+     "file": "device_problem_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSDM.CPL#601",
+   "name": "mouse_cable",
+   "source": "WINDOWS/SYSTEM/SYSDM.CPL",
+   "group": 601,
+   "images": [
+    {
+     "file": "mouse_cable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSDM.CPL#602",
+   "name": "hardware",
+   "source": "WINDOWS/SYSTEM/SYSDM.CPL",
+   "group": 602,
+   "images": [
+    {
+     "file": "hardware_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "hardware_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSDM.CPL#164",
+   "name": "device_disabled",
+   "source": "WINDOWS/SYSTEM/SYSDM.CPL",
+   "group": 164,
+   "images": [
+    {
+     "file": "device_disabled_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSDM.CPL#159",
+   "name": "chip_blue",
+   "source": "WINDOWS/SYSTEM/SYSDM.CPL",
+   "group": 159,
+   "images": [
+    {
+     "file": "chip_blue_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSDM.CPL#160",
+   "name": "not_applicable",
+   "source": "WINDOWS/SYSTEM/SYSDM.CPL",
+   "group": 160,
+   "images": [
+    {
+     "file": "not_applicable_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSDM.CPL#172",
+   "name": "laptop_search",
+   "source": "WINDOWS/SYSTEM/SYSDM.CPL",
+   "group": 172,
+   "images": [
+    {
+     "file": "laptop_search_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSDM.CPL#173",
+   "name": "laptop_magnifier",
+   "source": "WINDOWS/SYSTEM/SYSDM.CPL",
+   "group": 173,
+   "images": [
+    {
+     "file": "laptop_magnifier_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSDM.CPL#174",
+   "name": "laptop_magnifier_open",
+   "source": "WINDOWS/SYSTEM/SYSDM.CPL",
+   "group": 174,
+   "images": [
+    {
+     "file": "laptop_magnifier_open_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSDM.CPL#175",
+   "name": "laptops_search",
+   "source": "WINDOWS/SYSTEM/SYSDM.CPL",
+   "group": 175,
+   "images": [
+    {
+     "file": "laptops_search_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSDM.CPL#102",
+   "name": "laptop_docking_station",
+   "source": "WINDOWS/SYSTEM/SYSDM.CPL",
+   "group": 102,
+   "images": [
+    {
+     "file": "laptop_docking_station_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSEDIT.EXE#1",
+   "name": "system_editor",
+   "source": "WINDOWS/SYSTEM/SYSEDIT.EXE",
+   "group": 1,
+   "images": [
+    {
+     "file": "system_editor_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSEDIT.EXE#2",
+   "name": "system_editor_document",
+   "source": "WINDOWS/SYSTEM/SYSEDIT.EXE",
+   "group": 2,
+   "images": [
+    {
+     "file": "system_editor_document_64.png",
+     "width": 64,
+     "height": 64,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSTRAY.EXE#151",
+   "name": "battery_unknown",
+   "source": "WINDOWS/SYSTEM/SYSTRAY.EXE",
+   "group": 151,
+   "images": [
+    {
+     "file": "battery_unknown_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "battery_unknown_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSTRAY.EXE#200",
+   "name": "battery_full",
+   "source": "WINDOWS/SYSTEM/SYSTRAY.EXE",
+   "group": 200,
+   "images": [
+    {
+     "file": "battery_full_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "battery_full_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSTRAY.EXE#201",
+   "name": "battery_half",
+   "source": "WINDOWS/SYSTEM/SYSTRAY.EXE",
+   "group": 201,
+   "images": [
+    {
+     "file": "battery_half_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "battery_half_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSTRAY.EXE#202",
+   "name": "battery_low",
+   "source": "WINDOWS/SYSTEM/SYSTRAY.EXE",
+   "group": 202,
+   "images": [
+    {
+     "file": "battery_low_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "battery_low_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSTRAY.EXE#203",
+   "name": "battery_missing",
+   "source": "WINDOWS/SYSTEM/SYSTRAY.EXE",
+   "group": 203,
+   "images": [
+    {
+     "file": "battery_missing_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "battery_missing_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSTRAY.EXE#204",
+   "name": "power_plug",
+   "source": "WINDOWS/SYSTEM/SYSTRAY.EXE",
+   "group": 204,
+   "images": [
+    {
+     "file": "power_plug_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "power_plug_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSTRAY.EXE#210",
+   "name": "pc_card_tray",
+   "source": "WINDOWS/SYSTEM/SYSTRAY.EXE",
+   "group": 210,
+   "images": [
+    {
+     "file": "pc_card_tray_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSTRAY.EXE#220",
+   "name": "tray_speaker",
+   "source": "WINDOWS/SYSTEM/SYSTRAY.EXE",
+   "group": 220,
+   "images": [
+    {
+     "file": "tray_speaker_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/SYSTRAY.EXE#221",
+   "name": "tray_speaker_muted",
+   "source": "WINDOWS/SYSTEM/SYSTRAY.EXE",
+   "group": 221,
+   "images": [
+    {
+     "file": "tray_speaker_muted_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/TAPI.DLL#TAPILINE",
+   "name": "telephone_line",
+   "source": "WINDOWS/SYSTEM/TAPI.DLL",
+   "group": "TAPILINE",
+   "images": [
+    {
+     "file": "telephone_line_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/TAPI.DLL#TAPIPHONE",
+   "name": "telephone_grey",
+   "source": "WINDOWS/SYSTEM/TAPI.DLL",
+   "group": "TAPIPHONE",
+   "images": [
+    {
+     "file": "telephone_grey_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/TAPI.DLL#CALLCARD",
+   "name": "calling_card",
+   "source": "WINDOWS/SYSTEM/TAPI.DLL",
+   "group": "CALLCARD",
+   "images": [
+    {
+     "file": "calling_card_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/TIMEDATE.CPL#200",
+   "name": "date_time",
+   "source": "WINDOWS/SYSTEM/TIMEDATE.CPL",
+   "group": 200,
+   "images": [
+    {
+     "file": "date_time_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "date_time_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/USER.EXE#105",
+   "name": "windows_logo_16bit",
+   "source": "WINDOWS/SYSTEM/USER.EXE",
+   "group": 105,
+   "images": [
+    {
+     "file": "windows_logo_16bit_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "windows_logo_16bit_22.png",
+     "width": 22,
+     "height": 22,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "windows_logo_16bit_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "windows_logo_16bit_14.png",
+     "width": 14,
+     "height": 14,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "windows_logo_16bit_12.png",
+     "width": 12,
+     "height": 12,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "windows_logo_16bit_10.png",
+     "width": 10,
+     "height": 10,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/USER.EXE#101",
+   "name": "message_warning",
+   "source": "WINDOWS/SYSTEM/USER.EXE",
+   "group": 101,
+   "images": [
+    {
+     "file": "message_warning_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_warning_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/USER.EXE#102",
+   "name": "message_question",
+   "source": "WINDOWS/SYSTEM/USER.EXE",
+   "group": 102,
+   "images": [
+    {
+     "file": "message_question_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_question_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/USER.EXE#103",
+   "name": "message_error",
+   "source": "WINDOWS/SYSTEM/USER.EXE",
+   "group": 103,
+   "images": [
+    {
+     "file": "message_error_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_error_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/USER.EXE#104",
+   "name": "message_information",
+   "source": "WINDOWS/SYSTEM/USER.EXE",
+   "group": 104,
+   "images": [
+    {
+     "file": "message_information_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_information_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/USER.EXE#100",
+   "name": "application_default",
+   "source": "WINDOWS/SYSTEM/USER.EXE",
+   "group": 100,
+   "images": [
+    {
+     "file": "application_default_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "application_default_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    },
+    {
+     "file": "application_default_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/USER.EXE#1000",
+   "name": "exit_door",
+   "source": "WINDOWS/SYSTEM/USER.EXE",
+   "group": 1000,
+   "images": [
+    {
+     "file": "exit_door_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "exit_door_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/VGA.DRV#32513",
+   "name": "message_stop",
+   "source": "WINDOWS/SYSTEM/VGA.DRV",
+   "group": 32513,
+   "images": [
+    {
+     "file": "message_stop_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_stop_32_4bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_stop_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/VGA.DRV#32514",
+   "name": "message_question_green",
+   "source": "WINDOWS/SYSTEM/VGA.DRV",
+   "group": 32514,
+   "images": [
+    {
+     "file": "message_question_green_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_question_green_32_4bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_question_green_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/VGA.DRV#32515",
+   "name": "message_exclamation_yellow",
+   "source": "WINDOWS/SYSTEM/VGA.DRV",
+   "group": 32515,
+   "images": [
+    {
+     "file": "message_exclamation_yellow_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_exclamation_yellow_32_4bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_exclamation_yellow_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/VGA.DRV#32516",
+   "name": "message_information_blue",
+   "source": "WINDOWS/SYSTEM/VGA.DRV",
+   "group": 32516,
+   "images": [
+    {
+     "file": "message_information_blue_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_information_blue_32_4bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "message_information_blue_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/SYSTEM/VGA.DRV#32512",
+   "name": "window_frame_default",
+   "source": "WINDOWS/SYSTEM/VGA.DRV",
+   "group": 32512,
+   "images": [
+    {
+     "file": "window_frame_default_64.png",
+     "width": 64,
+     "height": 64,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/TASKMAN.EXE#100",
+   "name": "task_manager",
+   "source": "WINDOWS/TASKMAN.EXE",
+   "group": 100,
+   "images": [
+    {
+     "file": "task_manager_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/WELCOME.EXE#16928",
+   "name": "welcome_tip",
+   "source": "WINDOWS/WELCOME.EXE",
+   "group": 16928,
+   "images": [
+    {
+     "file": "welcome_tip_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/WINFILE.EXE#200",
+   "name": "file_manager",
+   "source": "WINDOWS/WINFILE.EXE",
+   "group": 200,
+   "images": [
+    {
+     "file": "file_manager_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "file_manager_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/WINFILE.EXE#201",
+   "name": "file_manager_tree",
+   "source": "WINDOWS/WINFILE.EXE",
+   "group": 201,
+   "images": [
+    {
+     "file": "file_manager_tree_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "file_manager_tree_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/WINFILE.EXE#202",
+   "name": "file_manager_list",
+   "source": "WINDOWS/WINFILE.EXE",
+   "group": 202,
+   "images": [
+    {
+     "file": "file_manager_list_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "file_manager_list_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/WINFILE.EXE#204",
+   "name": "file_manager_split",
+   "source": "WINDOWS/WINFILE.EXE",
+   "group": 204,
+   "images": [
+    {
+     "file": "file_manager_split_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "file_manager_split_32_1bit.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 1,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/WINHELP.EXE#1",
+   "name": "help_question_16bit",
+   "source": "WINDOWS/WINHELP.EXE",
+   "group": 1,
+   "images": [
+    {
+     "file": "help_question_16bit_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "help_question_16bit_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": [
+    "WINDOWS/WINHLP32.EXE#4000",
+    "WINDOWS/SYSBCKUP/WINHELP.EXE#1"
+   ]
+  },
+  {
+   "key": "WINDOWS/WINHLP32.EXE#4001",
+   "name": "help_book",
+   "source": "WINDOWS/WINHLP32.EXE",
+   "group": 4001,
+   "images": [
+    {
+     "file": "help_book_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "help_book_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": [
+      "start_help_16.png"
+     ]
+    }
+   ],
+   "duplicates": []
+  },
+  {
+   "key": "WINDOWS/WINHLP32.EXE#4002",
+   "name": "help_document",
+   "source": "WINDOWS/WINHLP32.EXE",
+   "group": 4002,
+   "images": [
+    {
+     "file": "help_document_32.png",
+     "width": 32,
+     "height": 32,
+     "bpp": 4,
+     "theme_icons": []
+    },
+    {
+     "file": "help_document_16.png",
+     "width": 16,
+     "height": 16,
+     "bpp": 4,
+     "theme_icons": []
+    }
+   ],
+   "duplicates": []
+  }
+ ]
+}

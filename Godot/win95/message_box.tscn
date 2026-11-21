@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/message_error_32.png" id="error"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/message_warning_32.png" id="warning"]
+[ext_resource type="AudioStream" uid="uid://b22xbvgyk76bc" path="res://win95/sounds/chord.ogg" id="chord"]
 
 [node name="MessageBox" type="PanelContainer"]
 offset_right = 360.0
@@ -13,6 +14,8 @@ theme = ExtResource("theme")
 script = ExtResource("script")
 error_icon = ExtResource("error")
 warning_icon = ExtResource("warning")
+error_sound = ExtResource("chord")
+question_sound = ExtResource("chord")
 
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 2

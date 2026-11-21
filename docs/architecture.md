@@ -11,7 +11,7 @@ in the same commit as the code. The design, what the parts are and why, is on th
 Godot/               the Godot project: everything the game loads
   main.tscn          the game: the world viewport, the UI layer, the F9 layer (run/main_scene)
   export_presets.cfg Web, Windows Desktop, MacOS, Linux; CI exports them by name
-  default_bus_layout.tres  the audio buses: Master, and Voice for the customers' voices
+  default_bus_layout.tres  the audio buses: Master, Voice for the customers' voices, and Win95, which follows the volume and mute of the desktop on screen
   game.gd            the Game autoload
   shaders/           psx_world.gdshader, psx_post.gdshader, psx_post_world.tres (the world's post material)
   shaders/crt_looks/ the CRT looks: the Screen View's (crt.gdshader) and the 3D bench screen's (crt_world.gdshader)
@@ -35,6 +35,7 @@ Godot/               the Godot project: everything the game loads
   ui/                loading screen, dialogue overlay, post-it, post-it label (the Workview post-it's text), end of day (the close-the-shop question, the night between two days), screen view, bench screen, CRT screen and tube, debug menu, F9 screen, theme.tres
   ui/logos/          the CompuFun logos (the loading screen, the boot splash, the sign in the shop)
   win95/             the Win95 interface (the Win95 developer's folder)
+  win95/theme/icons_extracted/  every icon in a Windows 95 install, named, with manifest.json (docs/win95-icons.md)
   win95/midi/        recordings that .mid files play in Media Player (Godot plays no MIDI)
   win95/solitaire/   Solitaire: the rules (klondike.gd), the window, the table and the card pictures
   compufun_db/       CompuFunDB, the DOS database on the work computer, and its VGA font
@@ -42,7 +43,7 @@ Godot/               the Godot project: everything the game loads
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
 feedback/            the F9 reports (outside Godot, so Godot does not import them)
-tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; make_castle_renders.py renders Pierre's castle pictures; make_crt_sounds.py synthesizes the bench screen's sounds; chimera-moods.patch
+tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; make_castle_renders.py renders Pierre's castle pictures; make_crt_sounds.py synthesizes the bench screen's sounds; extract_win95_icons.py extracts the Win95 icons; chimera-moods.patch
 wiki/                the GitHub wiki, cloned by tools/sync-wiki.sh (ignored by the repo)
 docs/                the rules for people and agents: this code layout, code standard, build, gotchas, glossary
 .github/workflows/   CI: tests and export on push, itch.io deploy, Discord notifications
