@@ -49,13 +49,16 @@ text = "Next"
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Portrait" type="PanelContainer" parent="Panel/Row" unique_id=1813881329]
+[node name="Portrait" type="Panel" parent="Panel/Row" unique_id=1813881329]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(240, 240)
 layout_mode = 2
 
-[node name="PortraitLabel" type="Label" parent="Panel/Row/Portrait" unique_id=578793518]
+[node name="PortraitTexture" type="TextureRect" parent="Panel/Row/Portrait" unique_id=578793518]
 unique_name_in_owner = true
-layout_mode = 2
-text = "PORTRAIT"
-horizontal_alignment = 1
-vertical_alignment = 1
+layout_mode = 0
+anchor_top = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture_filter = 1
+expand_mode = 1
