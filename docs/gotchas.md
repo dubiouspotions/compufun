@@ -33,6 +33,11 @@ matches what the editor writes. — 2026-10
 **A tool script fails to compile under `godot -s script.gd`.** Scripts that reference an
 autoload don't compile there. Run such a tool as a scene instead. — 2026-10
 
+**A run logs "ObjectDB instances were leaked" and "resources still in use at exit", naming a
+sound.** That sound was playing when the game quit: the city ambience always is, a customer voice
+sometimes. It happens only at exit and only on some runs, and it needs no fix. Any other object
+in the `--verbose` list of leaks is a real leak. — 2026-11
+
 **A hand-written scene logs an engine error on load.** It references a resource by a UID that
 the cache doesn't know. Use path-only `ext_resource` lines in scenes you write by hand.
 — 2026-10
