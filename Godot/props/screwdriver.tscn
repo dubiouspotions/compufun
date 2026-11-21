@@ -1,50 +1,35 @@
 [gd_scene format=3]
 
-[ext_resource type="Material" path="res://materials/bin_red.tres" id="handle"]
-[ext_resource type="Material" path="res://materials/metal.tres" id="metal"]
+[sub_resource type="StandardMaterial3D" id="Material_shaft"]
+transparency = 1
+albedo_color = Color(0.72, 0.73, 0.76, 1)
 
-[sub_resource type="CylinderMesh" id="handle_mesh"]
-top_radius = 0.013
-bottom_radius = 0.013
-height = 0.088
-radial_segments = 8
-rings = 1
-
-[sub_resource type="CylinderMesh" id="ferrule_mesh"]
-top_radius = 0.009
-bottom_radius = 0.009
-height = 0.008
-radial_segments = 8
-rings = 1
+[sub_resource type="StandardMaterial3D" id="Material_handle"]
+transparency = 1
+albedo_color = Color(0.2, 0.36, 0.82, 1)
 
 [sub_resource type="CylinderMesh" id="shaft_mesh"]
-top_radius = 0.003
-bottom_radius = 0.003
-height = 0.078
+top_radius = 0.0025
+bottom_radius = 0.0025
+height = 0.07
 radial_segments = 6
 rings = 1
 
-[sub_resource type="BoxMesh" id="tip_mesh"]
-size = Vector3(0.01, 0.002, 0.005)
+[sub_resource type="CylinderMesh" id="handle_mesh"]
+top_radius = 0.011
+bottom_radius = 0.011
+height = 0.08
+radial_segments = 8
+rings = 1
 
 [node name="Screwdriver" type="Node3D"]
 
-[node name="Handle" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0.044, 0.013, 0)
-mesh = SubResource("handle_mesh")
-surface_material_override/0 = ExtResource("handle")
-
-[node name="Ferrule" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0.092, 0.013, 0)
-mesh = SubResource("ferrule_mesh")
-surface_material_override/0 = ExtResource("metal")
-
 [node name="Shaft" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0.135, 0.013, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, 0)
+material_override = SubResource("Material_shaft")
 mesh = SubResource("shaft_mesh")
-surface_material_override/0 = ExtResource("metal")
 
-[node name="Tip" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.179, 0.013, 0)
-mesh = SubResource("tip_mesh")
-surface_material_override/0 = ExtResource("metal")
+[node name="Handle" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.11, 0)
+material_override = SubResource("Material_handle")
+mesh = SubResource("handle_mesh")

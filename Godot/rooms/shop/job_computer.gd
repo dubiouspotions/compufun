@@ -144,7 +144,7 @@ func _sync_case() -> void:
 	_screwdriver.visible = working and not lying
 	_screwdriver_outline.visible = working and lying
 	_screwdriver_hotspot.set_enabled(working and (not lying or Game.can_stand_up(job)))
-	_hotspot.set_enabled(not (lying and working))
+	_hotspot.set_enabled(not working)  # in the Workview the screwdriver, the screws and the panel take the clicks
 	_front.input_ray_pickable = working and not lying  # swallows clicks on the front, so they don't lay it down
 	_sync_outline()
 
