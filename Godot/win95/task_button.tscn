@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://win95/task_button.gd" id="script"]
+
+[node name="TaskButton" type="Button"]
+custom_minimum_size = Vector2(160, 0)
+focus_mode = 0
+theme_type_variation = &"TaskbarButton"
+toggle_mode = true
+text = "Window"
+alignment = 0
+script = ExtResource("script")
