@@ -112,8 +112,21 @@ func date_of(number: int) -> Dictionary:
 	return Time.get_datetime_dict_from_unix_time(unix)
 
 
+# A computer left on overnight finishes what it was doing: Disk Defragmenter.
+func _finish_overnight_work() -> void:
+	for job in jobs:
+		var setup: Win95Setup = setups.get(job.customer.computer)
+		if setup == null or not job.powered or not setup.defragmenting:
+			continue
+		setup.defragmenting = false
+		setup.fragmented = false
+		if job.problem.software_check != null:
+			job.software_fixed = job.problem.software_check.is_fixed(setup)
+
+
 ## Starts [param new_day] in the morning: the shop opens, and its first customer comes in after
-## [member Day.first_wait_seconds] unless the counter is full. Jobs left overnight stay. Refuses a day that is null, has no customers, has more
+## [member Day.first_wait_seconds] unless the counter is full. Jobs left overnight stay, and those
+## computers that stayed on finish their Disk Defragmenter run. Refuses a day that is null, has no customers, has more
 ## than [constant MAX_CUSTOMERS], or has a customer with no problem, and keeps the current state.
 func start_day(new_day: Day) -> void:
 	var invalid := _check_day(new_day)
@@ -121,6 +134,7 @@ func start_day(new_day: Day) -> void:
 		push_error("Game.start_day: " + invalid)
 		return
 	day = new_day
+	_finish_overnight_work()
 	arrivals = 0
 	daypart = Daypart.MORNING
 	phase = Phase.OPEN

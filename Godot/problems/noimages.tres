@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Problem" format=3]
+
+[ext_resource type="Script" path="res://problems/problem.gd" id="problem"]
+[ext_resource type="Script" path="res://problems/file_check.gd" id="file_check"]
+
+[sub_resource type="Resource" id="FileCheck_paint"]
+script = ExtResource("file_check")
+path = "C:\\WINDOWS\\PBRUSH.EXE"
+broken_name = "PBRUSH.EX_"
+
+[resource]
+script = ExtResource("problem")
+short_name = &"noimages"
+perceived_issue = "Can't open images"
+location = 1
+symptoms = PackedStringArray("Error message when opening images (can't find .exe)", "Customer tampering (If asked customer informs problem appeared after their action)", "Error message/Link corrupted when following link to image program in start menu")
+software_steps = PackedStringArray("Go to programs", "Add \".exe\" back to image editor program")
+software_check = SubResource("FileCheck_paint")

@@ -21,6 +21,9 @@ var is_on: bool = false
 ## The job whose computer this is. Set once, before the node enters the tree.
 var job: Job
 
+## Counts boots, so that a shutdown timer from an earlier boot does nothing.
+var _boots: int = 0
+
 
 func _ready() -> void:
 	if job != null:
@@ -272,9 +275,30 @@ func _sync() -> void:
 		return
 	is_on = on
 	if on:
+		_boots += 1
 		booted.emit()
 	else:
+		setup.defragmenting = false  # switching off stops the run
 		powered_off.emit()
+
+
+## The desktop appeared after a boot. A problem that switches the computer off starts counting.
+func reached_desktop() -> void:
+	var seconds := job.problem.shuts_down_after
+	if seconds <= 0.0 or job.hardware_fixed:
+		return
+	var boot := _boots
+	await get_tree().create_timer(seconds).timeout
+	if boot == _boots and is_on and not job.hardware_fixed and job in Game.jobs:
+		Game.set_powered(job, false)
+
+
+## Starts Disk Defragmenter on drive C. It finishes overnight while the computer stays on.
+func start_defrag() -> void:
+	if setup == null or setup.defragmenting:
+		return
+	setup.defragmenting = true
+	_changed()
 
 
 # Win95 dates a save with its clock: the game's date, and the time that the taskbar shows.
