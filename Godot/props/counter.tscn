@@ -5,13 +5,13 @@
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="3_ix6rg"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_c7sxr"]
-size = Vector3(3, 0.95, 0.55)
+size = Vector3(4.5, 0.95, 0.55)
 
 [sub_resource type="BoxMesh" id="BoxMesh_7j4v4"]
-size = Vector3(3.1, 0.05, 0.66)
+size = Vector3(4.6, 0.05, 0.66)
 
 [sub_resource type="BoxMesh" id="BoxMesh_fvkdp"]
-size = Vector3(2.96, 0.1, 0.5)
+size = Vector3(4.46, 0.1, 0.5)
 
 [node name="Counter" type="Node3D" unique_id=714382428]
 

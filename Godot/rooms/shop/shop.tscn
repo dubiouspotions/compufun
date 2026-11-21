@@ -309,7 +309,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3, 3, -1.6)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -3.9)
 
 [node name="Counter" parent="Room" unique_id=714382428 instance=ExtResource("10_b7xrx")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.75, 0, -1.2)
 
 [node name="BenchMonitor" parent="Room" unique_id=2092350324 instance=ExtResource("11_ydxbd")]
 unique_name_in_owner = true
