@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="Customer" format=3]
 
-[ext_resource type="Resource" path="res://people/placeholder_a/person.tres" id="1_teewq"]
+[ext_resource type="Resource" path="res://people/pierre/person.tres" id="1_teewq"]
 [ext_resource type="Resource" path="res://problems/dust_overheat.tres" id="2_7x3xp"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="3_tc2lv"]
 

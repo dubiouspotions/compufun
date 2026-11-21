@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="Customer" format=3]
 
-[ext_resource type="Resource" path="res://people/placeholder_b/person.tres" id="1_yvxm1"]
+[ext_resource type="Resource" path="res://people/jonny/person.tres" id="1_yvxm1"]
 [ext_resource type="Resource" path="res://problems/no_sound.tres" id="2_qmaft"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="3_10hmr"]
 
