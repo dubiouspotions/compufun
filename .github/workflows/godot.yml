@@ -15,10 +15,6 @@ env:
   ITCHIO_GAME: ${{ secrets.ITCHIO_GAME }}
   LOGFILE: build.log
 
-concurrency: 
-  group: "godot-export"
-  cancel-in-progress: true
-
 defaults:
   run:
     shell: bash
@@ -64,6 +60,11 @@ jobs:
 
   build:
     needs: voice
+    # Only the export cancels an older run: the voice jobs always finish, so their cache fills and
+    # a later run skips the Rust build even when pushes come every few minutes.
+    concurrency:
+      group: "godot-export"
+      cancel-in-progress: true
     timeout-minutes: 5
     name: Godot Export
     runs-on: ubuntu-latest
