@@ -62,6 +62,8 @@ func _status_text() -> String:
 	match Game.phase:
 		Game.Phase.IDLE:
 			return "No day has started."
+		Game.Phase.CLOSED:
+			return "Day %d: the shop is closed." % Game.day.number
 		Game.Phase.DAY_OVER:
 			return "Day %d is over." % Game.day.number
 		Game.Phase.ENDED:

@@ -19,6 +19,7 @@ func run() -> void:
 
 	check("no day: no daypart", game.daypart, GAME.Daypart.NONE)
 	game.start_day(day)
+	game.open_shop()
 	check("the day starts in the morning, nobody in yet", [game.daypart, game.arrivals], [GAME.Daypart.MORNING, 0])
 	tick(4.9)
 	check("4.9 s: nobody yet", game.arrivals, 0)

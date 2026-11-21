@@ -12,6 +12,7 @@ enum Phase {
 	CALLING, ## The phone is calling a customer to pick up a computer.
 	DAY_OVER, ## The player closed the shop for the night.
 	ENDED, ## The player closed the shop on the last day: Cambion takes them, and time and space bluescreen.
+	CLOSED, ## The day started, and the shop isn't open yet: nobody comes in until [method open_shop].
 }
 
 ## Why the visitor is in the shop.
@@ -24,7 +25,7 @@ enum Visit {
 ## The time of day. The customers and closing move it forward; time does not pass on its own.
 enum Daypart {
 	NONE, ## No day has started.
-	MORNING, ## The day started; the first customer comes in.
+	MORNING, ## The day started; the player opens the shop, and the first customer comes in.
 	MIDDAY, ## The second customer came in.
 	AFTERNOON, ## The third customer came in.
 	EVENING, ## The player closed the shop.
@@ -148,10 +149,10 @@ func _finish_overnight_work() -> void:
 			job.software_fixed = job.problem.software_check.is_fixed(setup)
 
 
-## Starts [param new_day] in the morning: the shop opens, and its first customer comes in after
-## [member Day.first_wait_seconds] unless the counter is full. Jobs left overnight stay, and those
-## computers that stayed on finish their Disk Defragmenter run. Refuses a day that is null, has no customers, has more
-## than [constant MAX_CUSTOMERS], or has a customer with no problem, and keeps the current state.
+## Starts [param new_day] in the morning with the shop CLOSED: nobody comes in until
+## [method open_shop]. Jobs left overnight stay, and those computers that stayed on finish their
+## Disk Defragmenter run. Refuses a day that is null, has no customers, has more than
+## [constant MAX_CUSTOMERS], or has a customer with no problem, and keeps the current state.
 func start_day(new_day: Day) -> void:
 	var invalid := _check_day(new_day)
 	if invalid != "":
@@ -162,9 +163,8 @@ func start_day(new_day: Day) -> void:
 	_finish_overnight_work()
 	arrivals = 0
 	daypart = Daypart.MORNING
-	phase = Phase.OPEN
+	phase = Phase.CLOSED
 	_set_visitor(null, Visit.NONE)
-	_try_arrival()
 	changed.emit()
 
 
@@ -690,6 +690,22 @@ func hang_up() -> void:
 	changed.emit()
 
 
+## True when the shop can open: the day started, and the shop is CLOSED.
+func can_open() -> bool:
+	return phase == Phase.CLOSED
+
+
+## Opens the shop: OPEN, and the first customer comes in [member Day.first_wait_seconds] later
+## unless the counter is full. Does nothing when [method can_open] is false.
+func open_shop() -> void:
+	if not can_open():
+		return
+	phase = Phase.OPEN
+	_restart_wait()
+	_try_arrival()
+	changed.emit()
+
+
 ## True when the shop can close: it is open, every customer of the day has come in or is gone for
 ## good, and nobody is in it.
 func can_close() -> bool:
@@ -706,11 +722,11 @@ func close_shop() -> void:
 	changed.emit()
 
 
-## Starts the game again, as at boot: day 1, with every computer's Win95 setup forgotten. The view
-## goes back to [param view].
+## Starts the game again, as at boot: day 1, CLOSED, with every computer's Win95 setup forgotten.
+## The view goes back to [param view].
 func reboot(view_name: StringName = &"Main") -> void:
 	setups.clear()
-	var refused := restore({"day": 1, "view": String(view_name)})
+	var refused := restore({"day": 1, "phase": "CLOSED", "view": String(view_name)})
 	if refused != "":
 		push_error("Game.reboot: " + refused)
 
@@ -760,10 +776,10 @@ func snapshot() -> Dictionary:
 
 
 ## Sets the state from [param state], in the format of [method snapshot]. A missing key takes its
-## value at the start of a day: day 1, OPEN, nobody in the shop, no arrivals, an empty counter, an
-## empty hand and storage bin, no flags, nothing seen, no CompuFunDB records or start-up, the
-## daypart of the arrivals; a missing view keeps the current one. The conversation follows from the rest. Returns
-## "" or why it refused; a refusal keeps the state.
+## value at the start of a day, except that the shop is OPEN: day 1, nobody in the shop, no
+## arrivals, an empty counter, an empty hand and storage bin, no flags, nothing seen, no CompuFunDB
+## records or start-up, the daypart of the arrivals; a missing view keeps the current one. The
+## conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
 func restore(state: Dictionary) -> String:
 	var known := snapshot()
 	for key: Variant in state:
@@ -787,6 +803,8 @@ func restore(state: Dictionary) -> String:
 	var new_arrivals := int(state.get("arrivals", 0))
 	if new_arrivals < 0 or new_arrivals > new_day.customers.size():
 		return _refuse("day %d has %d customers, not %d arrivals" % [number, new_day.customers.size(), new_arrivals])
+	if new_phase == Phase.CLOSED and new_arrivals > 0:
+		return _refuse("the shop is CLOSED, but %d customers came in; it opens before the first" % new_arrivals)
 	if new_phase == Phase.ENDED and ResourceLoader.exists(DAY_PATH % (number + 1)):
 		return _refuse("ENDED is only for the last day, and day %d has a next day" % number)
 	var evening: bool = new_phase == Phase.DAY_OVER or new_phase == Phase.ENDED
@@ -955,7 +973,7 @@ func _process(delta: float) -> void:
 			changed.emit()
 
 
-## The first customer comes in [member Day.first_wait_seconds] after the day starts; each next one
+## The first customer comes in [member Day.first_wait_seconds] after the shop opens; each next one
 ## [member Day.gap_seconds] of open shop after the last visitor left. The wait pauses while the
 ## counter is full.
 func _arrival_due() -> bool:

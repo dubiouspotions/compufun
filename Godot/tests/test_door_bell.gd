@@ -18,6 +18,7 @@ func run() -> void:
 	day.first_wait_seconds = Vector2.ZERO
 
 	game.start_day(day)
+	game.open_shop()
 	check("a visitor walks in", game.visitor_state, GAME.VisitorState.WALKING_IN)
 	await process_frame
 	check("silent while the visitor is in the alley", bell.playing, false)

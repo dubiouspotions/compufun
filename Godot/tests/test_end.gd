@@ -17,7 +17,7 @@ func run() -> void:
 	game.go_to_view(&"End")
 	game.setups[Computer.new()] = Win95Setup.new()
 	game.reboot()
-	check("a reboot starts day 1", [game.day_number, game.phase, game.arrivals], [1, GAME.Phase.OPEN, 0])
+	check("a reboot starts day 1, closed", [game.day_number, game.phase, game.arrivals], [1, GAME.Phase.CLOSED, 0])
 	check("a reboot faces the counter", game.view, &"Main")
 	check("a reboot forgets the setups", game.setups.size(), 0)
 

@@ -1,5 +1,5 @@
 extends "res://tests/test.gd"
-## The Open sign takes clicks and pulses an outline only while the shop can close, and the close
+## The Open sign takes clicks and pulses an outline only while the shop can open or close, and the close
 ## question comes in the game's panel before day 4's warp and in a Win95 message box from it on.
 
 
@@ -13,7 +13,14 @@ func run() -> void:
 	var outline: Node3D = sign.get_node("%Outline")
 	var day_1: Day = load("res://days/day_1.tres")
 	var asked := [0]
+	var opened := [0]
 	sign.connect("close_requested", func() -> void: asked[0] += 1)
+	sign.connect("open_requested", func() -> void: opened[0] += 1)
+
+	check("restore day 1, closed in the morning", game.restore({"day": 1, "phase": "CLOSED"}), "")
+	check("openable: clicks and the outline", [game.can_open(), hotspot.input_ray_pickable, outline.visible], [true, true, true])
+	hotspot.emit_signal("clicked", hotspot)
+	check("a click asks to open, not to close", [opened[0], asked[0]], [1, 0])
 
 	check("restore day 1, one customer still to come", game.restore({"day": 1, "arrivals": day_1.customers.size() - 1}), "")
 	check("before the last customer: no clicks, no outline", [game.can_close(), hotspot.input_ray_pickable, outline.visible], [false, false, false])

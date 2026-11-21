@@ -18,6 +18,7 @@ func run() -> void:
 	day.first_wait_seconds = Vector2.ZERO
 	day.gap_seconds = Vector2(60.0, 60.0)
 	game.start_day(day)
+	game.open_shop()
 	game.customer_arrived()
 	game.dialogue_finished()
 	game.customer_left()

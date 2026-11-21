@@ -14,6 +14,7 @@ func run() -> void:
 
 	# Day 1: the skater talks, and the [x] sends him away.
 	game.start_day(make_day(1, [skater, entrepreneur]))
+	game.open_shop()
 	check("the skater walks in", game.visitor == skater, true)
 	game.customer_arrived()
 	game.dismiss_visitor()
@@ -33,12 +34,14 @@ func run() -> void:
 
 	# Day 2: he is skipped, first and last.
 	game.start_day(make_day(2, [skater, entrepreneur]))
+	game.open_shop()
 	check("the skater is skipped: the entrepreneur comes", [game.visitor == entrepreneur, game.arrivals], [true, 2])
 	game.customer_arrived()
 	game.dialogue_finished()
 	game.customer_left()
 	check("the day can end", game.can_close(), true)
 	game.start_day(make_day(3, [entrepreneur, skater]))
+	game.open_shop()
 	game.customer_arrived()
 	game.dialogue_finished()
 	game.customer_left()

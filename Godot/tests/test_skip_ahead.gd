@@ -13,6 +13,7 @@ func run() -> void:
 	day.first_wait_seconds = Vector2(1000.0, 1000.0)
 
 	game.start_day(day)
+	game.open_shop()
 	tick(1.0)
 	check("nobody yet", game.visitor_state, GAME.VisitorState.NONE)
 	check("no walk to skip", shop.skip_walk(), false)

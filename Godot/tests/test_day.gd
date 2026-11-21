@@ -1,5 +1,5 @@
 extends "res://tests/test.gd"
-## Plays two days through the Game API: drop-offs, a full counter that holds back the next
+## Plays two days through the Game API: opening the shop in the morning, drop-offs, a full counter that holds back the next
 ## customer, focus, fixes, post-its, calling a chosen customer, the pickup, closing the shop, and the
 ## next day from the day files.
 
@@ -25,9 +25,22 @@ func run() -> void:
 	game.start_day(make_day(9, [o1, o2, a, b]))
 	check("too many customers: still IDLE", [game.phase, game.day], [GAME.Phase.IDLE, null])
 
-	# Day 1: two drop-offs stay overnight.
-	game.start_day(make_day(1, [o1, o2]))
-	check("open, morning, first customer at once", [game.phase, game.daypart, game.arrivals], [OPEN, GAME.Daypart.MORNING, 1])
+	# Day 1 starts closed: nobody comes in until the player opens the shop.
+	var day_1 := make_day(1, [o1, o2])
+	day_1.first_wait_seconds = Vector2(5.0, 5.0)
+	game.start_day(day_1)
+	check("closed, morning, nobody in", [game.phase, game.daypart, game.arrivals, game.visitor], [GAME.Phase.CLOSED, GAME.Daypart.MORNING, 0, null])
+	check("closed: can open, can't close or call", [game.can_open(), game.can_close(), game.pick_up_phone()], [true, false, false])
+	tick(1000.0)
+	check("no arrival before opening", [game.phase, game.arrivals, game.visitor], [GAME.Phase.CLOSED, 0, null])
+	game.open_shop()
+	check("open, nobody in yet", [game.phase, game.can_open(), game.arrivals], [OPEN, false, 0])
+	tick(4.9)
+	check("4.9 s after opening: nobody yet", game.arrivals, 0)
+	tick(0.2)
+	check("5 s after opening: the first customer", [game.arrivals, game.visitor == o1, game.daypart], [1, true, GAME.Daypart.MORNING])
+	game.open_shop()
+	check("opening twice changes nothing", [game.phase, game.arrivals], [OPEN, 1])
 	tick(1000.0)
 	check("no arrival while a visitor is in", game.arrivals, 1)
 	check("can't close with a visitor in", game.can_close(), false)
@@ -45,8 +58,11 @@ func run() -> void:
 	tick(1000.0)
 	check("nothing happens at night", [game.phase, game.visitor], [GAME.Phase.DAY_OVER, null])
 
-	# Day 2: three drop-offs, the counter fills.
+	# Day 2: closed again in the morning; three drop-offs, the counter fills.
 	game.start_day(make_day(2, [a, b, c]))
+	tick(1000.0)
+	check("the next morning starts closed", [game.phase, game.arrivals, game.visitor, game.jobs.size()], [GAME.Phase.CLOSED, 0, null, 2])
+	game.open_shop()
 	check("morning, A walks in", [game.phase, game.daypart, game.visitor == a], [OPEN, GAME.Daypart.MORNING, true])
 	drop_off("A")
 	tick(61.0)
@@ -129,7 +145,11 @@ func run() -> void:
 	check("restore day 1, closed", game.restore({"day": 1, "phase": "DAY_OVER", "arrivals": 2, "jobs": overnight}), "")
 	check("day 1 has a next day", game.has_next_day(), true)
 	game.start_next_day()
-	check("day 2: open, morning, nobody in yet, the job stayed", [game.day_number, game.phase, game.daypart, game.arrivals, slots()], [2, OPEN, GAME.Daypart.MORNING, 0, ["Skater bro@2"]])
+	check("day 2: closed, morning, nobody in yet, the job stayed", [game.day_number, game.phase, game.daypart, game.arrivals, slots()], [2, GAME.Phase.CLOSED, GAME.Daypart.MORNING, 0, ["Skater bro@2"]])
+	check("CLOSED after an arrival is refused", game.restore({"day": 2, "phase": "CLOSED", "arrivals": 1}) != "", true)
+	check("restore day 2, closed with a job", game.restore({"day": 2, "phase": "CLOSED", "jobs": overnight}), "")
+	game.open_shop()
+	check("a restored closed shop opens", [game.phase, game.jobs.size()], [OPEN, 1])
 	check("restore day 7", game.restore({"day": 7, "phase": "DAY_OVER", "arrivals": 2}), "")
 	check("day 7 is the last", game.has_next_day(), false)
 

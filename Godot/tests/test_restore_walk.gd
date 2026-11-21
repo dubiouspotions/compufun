@@ -17,10 +17,12 @@ func run() -> void:
 	day.first_wait_seconds = Vector2.ZERO
 
 	game.start_day(day)
+	game.open_shop()
 	await create_timer(WALK_SECONDS * 3.0).timeout
 	check("without a restore, the visitor reaches the counter", game.visitor_state, GAME.VisitorState.TALKING)
 
 	game.start_day(day)
+	game.open_shop()
 	check("the next visitor walks in", game.visitor_state, GAME.VisitorState.WALKING_IN)
 	check("restore to an empty shop", game.restore({"day": 1, "arrivals": 1}), "")
 	await create_timer(WALK_SECONDS * 3.0).timeout

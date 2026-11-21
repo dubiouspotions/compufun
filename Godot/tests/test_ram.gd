@@ -24,6 +24,7 @@ func run() -> void:
 	check("either slot can hold it", bad_slots.size(), 2)
 
 	game.start_day(make_day([accountant]))
+	game.open_shop()
 	game.customer_arrived()
 	game.dialogue_finished()
 	game.customer_left()

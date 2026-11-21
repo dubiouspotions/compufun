@@ -4,7 +4,7 @@ extends VBoxContainer
 ## preset is a paste. Missing keys start the day fresh (see Game.restore()).
 
 const PRESETS: Dictionary[String, Dictionary] = {
-	"Day 1 starts": {"day": 1},
+	"Day 1 starts": {"day": 1, "phase": "CLOSED"},
 	"Skater bro at the counter": {"day": 1, "arrivals": 1, "visitor": "res://customers/skater_bro.tres",
 			"visit": "DROP_OFF", "visitor_state": "TALKING"},
 	"Skater bro's computer, not fixed": {"day": 1, "arrivals": 1, "focus_slot": 0,

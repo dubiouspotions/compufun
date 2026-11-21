@@ -105,6 +105,7 @@ func _ready() -> void:
 	_the_end.crashed.connect(crashed.emit)
 	_bench.degauss_pressed.connect(degauss_requested.emit)
 	_trash_can.trash_requested.connect(Game.trash_part)
+	_open_sign.open_requested.connect(Game.open_shop)
 	_open_sign.close_requested.connect(close_requested.emit)
 	_bench.power_pressed.connect(monitor_power_requested.emit)
 	Game.changed.connect(_sync)

@@ -19,6 +19,7 @@ func run() -> void:
 	var pierre: Customer = load("res://customers/skater_bro.tres")
 	check("Pierre has Dust Overheat", pierre.problem, dust)
 	game.start_day(make_day(1, [pierre]))
+	game.open_shop()
 	game.customer_arrived()
 	game.dialogue_finished()
 	game.customer_left()
