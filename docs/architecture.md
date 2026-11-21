@@ -28,6 +28,7 @@ Godot/               the Godot project: everything the game loads
   ui/logos/          the CompuFun logos (the loading screen, the boot splash, the sign in the shop)
   win95/             the Win95 interface (the Win95 developer's folder)
   addons/dialogue_editor/  the Dialogue tab in the editor
+  tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 feedback/            the F9 reports (outside Godot, so Godot does not import them)
 tools/               scripts; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; chimera-moods.patch
 wiki/                the GitHub wiki, cloned by tools/sync-wiki.sh (ignored by the repo)

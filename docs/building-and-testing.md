@@ -35,7 +35,35 @@ project open (see the gotcha about two Godot processes).
 A headless `--script` that extends `SceneTree` can drive a scene for a quick test. Add the scene in
 `_initialize()` and `await process_frame` before you touch it: until then its `_ready()` has not run.
 
-There is no test framework yet.
+## Tests
+
+`Godot/tests/` holds headless tests that play the game through the `Game` API and check its state.
+Run them all after an import:
+
+```sh
+"$GODOT" --headless -s res://tests/run.gd
+```
+
+`run.gd` runs every `tests/test_*.gd` in its own Godot process, so that each test starts from a fresh
+`Game`. It prints each failed check with its file, line, expected and actual value, and exits 1
+when a test fails. Run one test with `"$GODOT" --headless -s res://tests/test_day.gd`. CI runs the
+tests after the import and fails the build when one fails.
+
+To add one, create `tests/test_<name>.gd`:
+
+```gdscript
+extends "res://tests/test.gd"
+
+
+func run() -> void:
+	game.start_day(load("res://days/day_1.tres"))
+	check("the first customer walks in", game.arrivals, 1)
+```
+
+`game` is the `Game` autoload; reach it through that variable, because a script that names `Game`
+doesn't compile under `-s`. Its `_process` is off: `tick(seconds)` moves time. A test fails when a
+`check` fails, when no check ran, or on a script error. Expected `ERROR` lines from `push_error` don't
+fail it. `run()` may `await`, for example `await process_frame` after adding a scene to `root`.
 
 ## Export
 
@@ -84,7 +112,7 @@ voice that a customer has.
 
 `.github/workflows/godot.yml` runs on every push to `main` and `deploy`:
 
-- **Build** exports all four presets and uploads them as run artifacts. A failed build posts to
+- **Build** imports, runs the tests, exports all four presets and uploads them as run artifacts. A failed build posts to
   Discord, and so do `ERROR` lines in the export log.
 - **Deploy** uploads the builds to itch.io with butler. It runs on the `deploy` branch, or when
   started by hand (Actions > godot-ci export > Run workflow). It needs the `ITCHIO_*` secrets.

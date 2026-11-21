@@ -1,0 +1,165 @@
+extends "res://tests/test.gd"
+## Plays two days through the Game API: drop-offs, a full counter that holds back the next
+## customer, focus, fixes, post-its, the phone, the oldest-first pickup, and closing the shop.
+
+const GAME := preload("res://game.gd")
+const OPEN := GAME.Phase.OPEN
+const WALKING_IN := GAME.VisitorState.WALKING_IN
+const TALKING := GAME.VisitorState.TALKING
+
+
+func run() -> void:
+	var hardware: Problem = load("res://problems/dust_overheat.tres")
+	var software: Problem = load("res://problems/no_sound.tres")
+	var both := Problem.new()
+	both.short_name = &"both_test"
+	both.location = Problem.Location.BOTH
+	var o1 := customer("O1", hardware, false)
+	var o2 := customer("O2", hardware, false)
+	var a := customer("A", hardware, true)
+	var b := customer("B", software, false)
+	var c := customer("C", both, true)
+
+	# A day with more than MAX_CUSTOMERS is refused with an error.
+	game.start_day(make_day(9, [o1, o2, a, b]))
+	check("too many customers: still IDLE", [game.phase, game.day], [GAME.Phase.IDLE, null])
+
+	# Day 1: two drop-offs stay overnight.
+	game.start_day(make_day(1, [o1, o2]))
+	check("open, morning, first customer at once", [game.phase, game.daypart, game.arrivals], [OPEN, GAME.Daypart.MORNING, 1])
+	tick(1000.0)
+	check("no arrival while a visitor is in", game.arrivals, 1)
+	check("can't close with a visitor in", game.can_close(), false)
+	drop_off("O1")
+	check("O1 in slot 0, focused", [slots(), game.focus == job_of("O1")], [["O1@0"], true])
+	tick(59.0)
+	check("59 s: nobody yet", game.arrivals, 1)
+	tick(2.0)
+	check("61 s: O2 comes, midday", [game.arrivals, game.daypart], [2, GAME.Daypart.MIDDAY])
+	drop_off("O2")
+	check("O2 in slot 1, focus stays", [slots(), game.focus == job_of("O1")], [["O1@0", "O2@1"], true])
+	check("can close after every customer", game.can_close(), true)
+	game.close_shop()
+	check("DAY_OVER, night, jobs stay", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.NIGHT, 2])
+	tick(1000.0)
+	check("nothing happens at night", [game.phase, game.visitor], [GAME.Phase.DAY_OVER, null])
+
+	# Day 2: three drop-offs, the counter fills.
+	game.start_day(make_day(2, [a, b, c]))
+	check("morning, A walks in", [game.phase, game.daypart, game.visitor == a], [OPEN, GAME.Daypart.MORNING, true])
+	drop_off("A")
+	tick(61.0)
+	drop_off("B")
+	check("counter full", slots(), ["O1@0", "O2@1", "A@2", "B@3"])
+	tick(1000.0)
+	check("a full counter holds back the arrival", [game.arrivals, game.visitor, game.daypart], [2, null, GAME.Daypart.MIDDAY])
+	check("can't close before C came in", game.can_close(), false)
+
+	# Fixes per location. Two of these steps log an error on purpose.
+	var job_a := job_of("A")
+	var job_b := job_of("B")
+	game.focus_job(job_a)
+	check("focus A", game.focus == job_a, true)
+	game.fix(Problem.Location.HARDWARE)
+	check("A hardware fixed, A fixed", [job_a.hardware_fixed, job_a.fixed], [true, true])
+	game.fix(Problem.Location.SOFTWARE)
+	check("software fix with no cable changes nothing", [job_a.software_fixed, job_b.software_fixed], [false, false])
+	game.connect_cable(job_b)
+	game.fix(Problem.Location.SOFTWARE)
+	check("B software fixed via the cable, focus stays A", [job_b.fixed, game.focus == job_a], [true, true])
+	game.tick_post_it(job_of("O1"))
+	check("an unfixed post-it does not tick", job_of("O1").post_it_ticked, false)
+	check("can't call before a tick", game.can_call(), false)
+	game.tick_post_it(job_b)
+	game.tick_post_it(job_a)
+	check("A and B ticked", [job_a.post_it_ticked, job_b.post_it_ticked], [true, true])
+
+	game.set_software_fixed(job_b, false)
+	check("B's software breaks again: the post-it unticks", [job_b.fixed, job_b.post_it_ticked], [false, false])
+	game.set_software_fixed(job_b, true)
+	game.tick_post_it(job_b)
+	game.set_powered(job_a, true)
+	check("power is per job", [job_a.powered, job_b.powered, job_b.post_it_ticked], [true, false, true])
+
+	# The oldest ticked job is picked up.
+	check("can call", game.can_call(), true)
+	var changes: Array[int] = [0]
+	game.changed.connect(func() -> void: changes[0] += 1)
+	game.call_customer()
+	check("CALLING, changed fired", [game.phase, changes[0] > 0], [GAME.Phase.CALLING, true])
+	check("can't call twice", game.can_call(), false)
+	tick(GAME.CALL_SECONDS - 0.5)
+	check("still calling", game.phase, GAME.Phase.CALLING)
+	tick(1.0)
+	check("call over: A (older than B) walks in for PICKUP", [game.phase, game.visitor == a, game.visit, game.visitor_state], [OPEN, true, GAME.Visit.PICKUP, WALKING_IN])
+	game.customer_arrived()
+	check("A has a pickup conversation: TALKING", game.visitor_state, TALKING)
+	game.dialogue_finished()
+	game.customer_left()
+	check("A's job left, focus cleared, cable stays on B", [slots(), game.focus, game.connected == job_b], [["O1@0", "O2@1", "B@3"], null, true])
+
+	# The freed place lets C in after the gap.
+	tick(59.0)
+	check("59 s: nobody yet", game.arrivals, 2)
+	tick(2.0)
+	check("C comes, evening", [game.arrivals, game.daypart], [3, GAME.Daypart.EVENING])
+	drop_off("C")
+	check("C in the free slot 2, focused", [slots(), game.focus == job_of("C")], [["O1@0", "O2@1", "B@3", "C@2"], true])
+
+	# B has no pickup conversation and takes the computer at once.
+	game.call_customer()
+	tick(GAME.CALL_SECONDS + 0.5)
+	check("B walks in for PICKUP", [game.visitor == b, game.visit], [true, GAME.Visit.PICKUP])
+	game.customer_arrived()
+	game.customer_left()
+	check("B left with the job, cable cleared", [game.visitor, slots(), game.connected], [null, ["O1@0", "O2@1", "C@2"], null])
+
+	check("can close", game.can_close(), true)
+	game.close_shop()
+	check("DAY_OVER, night, 3 jobs overnight", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.NIGHT, 3])
+
+
+func customer(display_name: String, problem: Problem, has_pickup: bool) -> Customer:
+	var c := Customer.new()
+	c.display_name = display_name
+	c.problem = problem
+	var triggers: Array[Conversation.Trigger] = [Conversation.Trigger.ARRIVE]
+	if has_pickup:
+		triggers.append(Conversation.Trigger.PICKUP)
+	for trigger: Conversation.Trigger in triggers:
+		var conversation := Conversation.new()
+		conversation.trigger = trigger
+		var line := DialogueLine.new()
+		line.text = "%s says %s" % [display_name, Conversation.Trigger.find_key(trigger)]
+		conversation.lines = [line]
+		c.conversations.append(conversation)
+	return c
+
+
+func make_day(number: int, customers: Array[Customer]) -> Day:
+	var d := Day.new()
+	d.number = number
+	d.customers = customers
+	d.gap_seconds = 60.0
+	return d
+
+
+func drop_off(who: String) -> void:
+	check("%s walking in" % who, [game.visitor.display_name, game.visit, game.visitor_state], [who, GAME.Visit.DROP_OFF, WALKING_IN])
+	game.customer_arrived()
+	check("%s talking" % who, game.visitor_state, TALKING)
+	game.dialogue_finished()
+	game.customer_left()
+	check("%s left" % who, [game.visitor, game.visit, game.visitor_state], [null, GAME.Visit.NONE, GAME.VisitorState.NONE])
+
+
+func job_of(who: String) -> Job:
+	for j: Job in game.jobs:
+		if j.customer.display_name == who:
+			return j
+	return null
+
+
+## The jobs on the counter as "<customer>@<slot>", oldest first.
+func slots() -> Array:
+	return game.jobs.map(func(j: Job) -> String: return "%s@%d" % [j.customer.display_name, j.slot])

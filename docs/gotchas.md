@@ -33,6 +33,10 @@ matches what the editor writes. — 2026-10
 **A tool script fails to compile under `godot -s script.gd`.** Scripts that reference an
 autoload don't compile there. Run such a tool as a scene instead. — 2026-10
 
+**A `godot -s` script with a parse error exits 0.** Godot prints the parse error and quits as if
+the script had passed. `tests/run.gd` therefore also requires the last line that a passing test
+prints, not only exit code 0. — 2026-11
+
 **A run logs "ObjectDB instances were leaked" and "resources still in use at exit", naming a
 sound.** That sound was playing when the game quit: the city ambience always is, a customer voice
 sometimes. It happens only at exit and only on some runs, and it needs no fix. Any other object
