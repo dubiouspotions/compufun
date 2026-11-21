@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="Day" format=3]
 
 [ext_resource type="Script" path="res://customers/customer.gd" id="1_jrj0c"]
-[ext_resource type="Resource" path="res://customers/sample_customer_1.tres" id="2_mpc7b"]
-[ext_resource type="Resource" path="res://customers/sample_customer_2.tres" id="3_sqgwb"]
+[ext_resource type="Resource" path="res://customers/pierre.tres" id="2_mpc7b"]
+[ext_resource type="Resource" path="res://customers/javve.tres" id="3_sqgwb"]
 [ext_resource type="Script" path="res://days/day.gd" id="4_g4gdh"]
 
 [resource]
