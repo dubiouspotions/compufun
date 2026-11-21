@@ -148,7 +148,17 @@ func pinned_post_it() -> PostIt3D:
 ## The paper of [param post_it] as the camera sees it now: the rect around its corners, in pixels
 ## of the world buffer. Empty while a corner is behind the camera, as during a turn.
 func post_it_rect(post_it: PostIt3D) -> Rect2:
-	var corners := post_it.paper_corners()
+	return _rect_in_front(post_it.paper_corners())
+
+
+## The open sign's board as the camera sees it now, in pixels of the world buffer. Empty while a
+## corner is behind the camera.
+func open_sign_rect() -> Rect2:
+	return _rect_in_front(_open_sign.board_corners())
+
+
+# The rect around [param corners] as the camera sees them, or an empty rect while one is behind it.
+func _rect_in_front(corners: Array[Vector3]) -> Rect2:
 	for corner: Vector3 in corners:
 		if _camera.is_position_behind(corner):
 			return Rect2()

@@ -27,15 +27,12 @@ stretch = true
 stretch_shrink = 2
 
 [node name="Buffer" type="SubViewport" parent="Dialog"]
+unique_name_in_owner = true
 transparent_bg = true
 handle_input_locally = false
 
 [node name="Center" type="CenterContainer" parent="Dialog/Buffer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+unique_name_in_owner = true
 
 [node name="MessageBox" parent="Dialog/Buffer/Center" instance=ExtResource("2_box")]
 unique_name_in_owner = true

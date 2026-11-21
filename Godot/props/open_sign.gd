@@ -28,6 +28,15 @@ func _ready() -> void:
 	_sync()
 
 
+## The four corners of the board's face, in world space: where the end-of-day question shows.
+func board_corners() -> Array[Vector3]:
+	var half := (_board.mesh as QuadMesh).size / 2.0
+	var corners: Array[Vector3] = []
+	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		corners.append(_board.global_transform * Vector3(corner.x * half.x, corner.y * half.y, 0.0))
+	return corners
+
+
 func _sync() -> void:
 	var open := Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING
 	(_board.material_override as ShaderMaterial).set_shader_parameter("albedo_texture", closed_texture if open else open_texture)

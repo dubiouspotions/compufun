@@ -1,7 +1,7 @@
 class_name EndOfDay
 extends Control
-## Asks the player whether to end the day, in the game's own panel or, once Cambion has warped the
-## shop far enough, in a Win95 message box, and plays the night after
+## Asks the player whether to end the day, over the open sign, in the game's own panel or, once
+## Cambion has warped the shop far enough, in a Win95 message box, and plays the night after
 ## Game.close_shop(): a short wait in the evening, the screen and the sound fade out, a black pause,
 ## the sound comes back with the next day's title on the black screen, then that day starts
 ## (Game.start_next_day) and the shop fades in. After the last day the screen stays black with
@@ -35,6 +35,8 @@ var _sequence: Tween
 @onready var _dialog: SubViewportContainer = %Dialog
 @onready var _box: _MessageBox = %MessageBox
 @onready var _panel: PanelContainer = %Panel
+@onready var _buffer: SubViewport = %Buffer
+@onready var _center: CenterContainer = %Center
 @onready var _black: ColorRect = %Black
 @onready var _title: Label = %Title
 @onready var _master: int = AudioServer.get_bus_index(&"Master")
@@ -61,6 +63,24 @@ func ask() -> void:
 	(%AskTitle as Label).text = title
 	(%AskQuestion as Label).text = question
 	_panel.show()
+
+
+## True while the question shows, in the panel or in the message box.
+func asking() -> bool:
+	return _panel.visible or _dialog.visible
+
+
+## Centres the question on [param rect], the open sign on the screen in pixels of the window, and
+## keeps it inside the screen. Main calls it every frame while the question shows.
+func follow(rect: Rect2) -> void:
+	if _panel.visible:
+		_panel.position = (rect.get_center() - global_position - _panel.size / 2.0).clamp(Vector2.ZERO, size - _panel.size).round()
+	if _dialog.visible:
+		var scale := _dialog.size / Vector2(_buffer.size)
+		var box_size := _box.get_combined_minimum_size()
+		var centre := (rect.get_center() - _dialog.global_position) / scale
+		_center.size = box_size
+		_center.position = (centre - box_size / 2.0).clamp(Vector2.ZERO, Vector2(_buffer.size) - box_size).round()
 
 
 func _unhandled_input(event: InputEvent) -> void:
