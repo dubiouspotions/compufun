@@ -1,0 +1,11 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/poster_falls.gd" id="1_script"]
+
+[node name="PosterFalls" type="Node3D"]
+script = ExtResource("1_script")
+title = "A poster falls off with the Solitaire win effect"
+stages = 2
+
+[node name="Trail" type="Node3D" parent="."]
+unique_name_in_owner = true
