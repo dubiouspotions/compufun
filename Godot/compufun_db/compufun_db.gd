@@ -414,16 +414,9 @@ func _paint() -> void:
 	var record := _record()
 	for column: int in Column.size():
 		_paint_column(column as Column)
-	var count := "Rec %d/%d " % [_selected[Column.RECORDS] + 1, Game.records.size()] if record != null else "None "
+	var count := "Rec %d/%d " % [_selected[Column.RECORDS] + 1, Game.records.size()] if record != null else "Rec None "
 	_bar(28, " %s" % HEADERS[_column], count, bar_color)
-	if _typing != null:
-		_put(1, 29, "Typing up the customer...", text_color)
-	elif record == null and _waiting_job() != null:
-		_put(1, 29, "Enter on %s to type up the next customer." % NEW_RECORD, text_color)
-	elif record == null:
-		_put(1, 29, "Every computer on the counter has a record.", text_color)
-	else:
-		_put(1, 29, "\u2191\u2193 Move  \u2190\u2192 Column  Space Mark  Esc Leave", text_color)
+	_put(1, 29, "\u2191\u2193 Move  \u2190\u2192 Column  Space Mark  Esc Leave", text_color)
 
 
 func _paint_column(column: Column) -> void:
@@ -431,9 +424,6 @@ func _paint_column(column: Column) -> void:
 	var lines := _lines(column, entries)
 	var span := _spans[column]
 	if column != Column.RECORDS and _record() == null:
-		return
-	if column == Column.FIXES and entries.is_empty():
-		_put(span.x, LIST_TOP, "Mark what is wrong.", dim_color)
 		return
 	for row: int in LIST_BOTTOM - LIST_TOP + 1:
 		var line := _scroll[column] + row
