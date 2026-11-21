@@ -124,8 +124,23 @@ func call_customer() -> void:
 		return
 	phase = Phase.CALLING
 	changed.emit()
-	await get_tree().create_timer(CALL_SECONDS).timeout
+	await get_tree().create_timer(CALL_SECONDS, false).timeout
 	_next_customer()
+
+
+## The state as plain data, for the F9 report.
+func snapshot() -> Dictionary:
+	return {
+		"phase": String(Phase.find_key(phase)),
+		"day": day.number if day != null else 0,
+		"customer_index": customer_index,
+		"customer": customer.resource_path if customer != null else "",
+		"problem": String(problem.short_name) if problem != null else "",
+		"hardware_fixed": hardware_fixed,
+		"software_fixed": software_fixed,
+		"post_it_ticked": post_it_ticked,
+		"view": String(view),
+	}
 
 
 func _next_customer() -> void:

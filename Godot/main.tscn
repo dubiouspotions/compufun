@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://ui/post_it.tscn" id="7_vivmo"]
 [ext_resource type="PackedScene" path="res://ui/dialogue_overlay.tscn" id="8_2cqfq"]
 [ext_resource type="PackedScene" path="res://ui/view_nav.tscn" id="9_yaehf"]
+[ext_resource type="PackedScene" path="res://ui/feedback_screen.tscn" id="10_fdbk"]
 
 [node name="Main" type="Node" unique_id=367146307]
 script = ExtResource("1_kek77")
@@ -50,3 +51,5 @@ anchors_preset = 15
 [node name="ViewNav" parent="UI" unique_id=1301884336 instance=ExtResource("9_yaehf")]
 unique_name_in_owner = true
 anchors_preset = 15
+
+[node name="Feedback" parent="." instance=ExtResource("10_fdbk")]

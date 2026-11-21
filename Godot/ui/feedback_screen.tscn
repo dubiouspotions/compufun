@@ -1,0 +1,97 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/feedback_screen.gd" id="1_dbr37"]
+
+[node name="Feedback" type="CanvasLayer" unique_id=274603720]
+process_mode = 3
+layer = 100
+script = ExtResource("1_dbr37")
+
+[node name="Root" type="Control" parent="." unique_id=227652677]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Picture" type="TextureRect" parent="Root" unique_id=1339332669]
+unique_name_in_owner = true
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="Boxes" type="Control" parent="Root" unique_id=1735173344]
+unique_name_in_owner = true
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Top" type="PanelContainer" parent="Root" unique_id=758197425]
+custom_minimum_size = Vector2(1400, 0)
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -700.0
+offset_top = 16.0
+offset_right = 700.0
+offset_bottom = 16.0
+grow_horizontal = 2
+
+[node name="Status" type="Label" parent="Root/Top" unique_id=950731173]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Bar" type="PanelContainer" parent="Root" unique_id=1266376775]
+custom_minimum_size = Vector2(1400, 0)
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -700.0
+offset_top = -24.0
+offset_right = 700.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Row" type="HBoxContainer" parent="Root/Bar" unique_id=1846903285]
+layout_mode = 2
+
+[node name="Note" type="LineEdit" parent="Root/Bar/Row" unique_id=854514139]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "What do you see? (a short note)"
+
+[node name="BugButton" type="Button" parent="Root/Bar/Row" unique_id=1274826674]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Bug"
+
+[node name="IdeaButton" type="Button" parent="Root/Bar/Row" unique_id=688712140]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Idea"
+
+[node name="CancelButton" type="Button" parent="Root/Bar/Row" unique_id=83617726]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cancel (Esc)"
+
+[node name="Toast" type="Label" parent="." unique_id=332929202]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(900, 40)
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -450.0
+offset_top = 24.0
+offset_right = 450.0
+offset_bottom = 64.0
+grow_horizontal = 2
+horizontal_alignment = 1
