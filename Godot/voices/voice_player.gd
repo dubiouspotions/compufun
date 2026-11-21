@@ -25,6 +25,12 @@ static var _web: JavaScriptObject
 static var _web_tried: bool = false
 static var _web_error: JavaScriptObject
 
+## Each line is said a little differently: its mood's rate, pitch and pitch swing each move by up
+## to this fraction, at random, so a repeated line doesn't sound copied. 0 says it as written.
+@export_range(0.0, 0.5, 0.01) var rate_jitter: float = 0.05
+@export_range(0.0, 0.5, 0.01) var pitch_jitter: float = 0.04
+@export_range(0.0, 1.0, 0.01) var swing_jitter: float = 0.3
+
 var _left: int = 0
 ## When the last samples are pushed, in ticks (msec); the player stops once they have played.
 var _drained_at: int = 0
@@ -47,14 +53,18 @@ func say(line: DialogueLine, voice: String) -> float:
 		push_error("VoicePlayer: no voice \"%s\"; have %s" % [voice, ", ".join(BODIES.keys())])
 		return 0.0
 	var mood := Voices.mood(line.pose)
+	var rate := mood.rate * (1.0 + randf_range(-rate_jitter, rate_jitter))
+	var pitch := mood.pitch * (1.0 + randf_range(-pitch_jitter, pitch_jitter))
+	var swing := mood.swing * (1.0 + randf_range(-swing_jitter, swing_jitter))
+	pitch_scale = 1.0
 	var web := _web_voice()
 	if web != null:
-		web.say(line.text, BODIES[voice], mood.rate, mood.pitch, mood.swing, db_to_linear(volume_db))
+		web.say(line.text, BODIES[voice], rate, pitch, swing, db_to_linear(volume_db))
 		_owner = self
 		return 0.0
 	var engine := _desktop_engine()
 	if engine != null:
-		_left = engine.start(line.text, BODIES[voice], MIX_RATE, mood.rate, mood.pitch, mood.swing)
+		_left = engine.start(line.text, BODIES[voice], MIX_RATE, rate, pitch, swing)
 		if _left > 0:
 			var generator := AudioStreamGenerator.new()
 			generator.mix_rate = MIX_RATE
@@ -69,9 +79,11 @@ func say(line: DialogueLine, voice: String) -> float:
 	var file := Voices.stream_of(line, voice)
 	if file == null:
 		return 0.0
+	# A rendered file is fixed; playing it a touch higher or lower is the variation it can have.
+	pitch_scale = pitch / mood.pitch
 	stream = file
 	play()
-	return file.get_length()
+	return file.get_length() / pitch_scale
 
 
 ## How loud the voice is right now, from 0 (silent) to 1 (loud speech). It follows the syllables,
