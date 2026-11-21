@@ -2,9 +2,9 @@ class_name CompuFunDB
 extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
 ## what each customer reported (one row per job on the counter: its problem's perceived issue), what
-## to check for that report (the symptoms of every problem with it; the player marks what is wrong),
-## and what to fix (the repair steps of each of those problems whose symptoms are all marked; the
-## player ticks them off). The marks and ticks are the job's; this screen keeps only its cursor. It
+## to check (every symptom of every Problem, whatever was reported; the player marks what is wrong),
+## and what to fix (the repair steps of each problem whose symptoms are all marked; the player ticks
+## them off). Marking the wrong symptoms leads to the wrong fix. The marks and ticks are the job's; this screen keeps only its cursor. It
 ## reads every Problem file, so its text is never a second copy of the problems.
 ## Keys: arrows and Tab move, Space or Enter acts. The mouse clicks and scrolls.
 
@@ -34,6 +34,8 @@ const HEADERS: Array[String] = ["REPORTED", "CHECK", "FIX"]
 ## The first and last x of each column's text, inside the frame.
 var _spans: Array[Vector2i] = [Vector2i(1, 24), Vector2i(26, 51), Vector2i(53, 78)]
 var _problems: Array[Problem] = []
+## Every symptom of every problem, once each, in the order of the problems.
+var _symptoms: PackedStringArray = []
 var _column: Column = Column.REPORTED
 var _selected: Array[int] = [0, 0, 0]
 var _scroll: Array[int] = [0, 0, 0]
@@ -69,6 +71,9 @@ func _load_problems() -> void:
 			push_error("CompuFunDB: %s%s is not a Problem" % [PROBLEMS_DIR, file])
 			continue
 		_problems.append(problem)
+		for symptom: String in problem.symptoms:
+			if symptom not in _symptoms:
+				_symptoms.append(symptom)
 	if _problems.is_empty():
 		push_error("CompuFunDB: no Problem files in %s" % PROBLEMS_DIR)
 
@@ -83,12 +88,7 @@ func _entries(column: Column) -> Array[Dictionary]:
 		Column.CHECKS:
 			var job := _job()
 			if job != null:
-				var symptoms: PackedStringArray = []
-				for problem: Problem in _reported_as(job):
-					for symptom: String in problem.symptoms:
-						if symptom not in symptoms:
-							symptoms.append(symptom)
-				for symptom: String in symptoms:
+				for symptom: String in _symptoms:
 					entries.append({text = symptom, check = symptom in job.marked_symptoms, pick = true})
 		Column.FIXES:
 			var job := _job()
@@ -120,15 +120,10 @@ func _job() -> Job:
 	return jobs[mini(_selected[Column.REPORTED], jobs.size() - 1)] if not jobs.is_empty() else null
 
 
-# The problems that a customer reports as [param job]'s customer did.
-func _reported_as(job: Job) -> Array[Problem]:
-	return _problems.filter(func(p: Problem) -> bool: return p.perceived_issue == job.problem.perceived_issue)
-
-
-# The problems reported as [param job]'s whose symptoms are all marked on it.
+# The problems whose symptoms are all marked on [param job].
 func _matches(job: Job) -> Array[Problem]:
 	var found: Array[Problem] = []
-	for problem: Problem in _reported_as(job):
+	for problem: Problem in _problems:
 		if problem.symptoms.is_empty():
 			continue
 		var all_marked := true
