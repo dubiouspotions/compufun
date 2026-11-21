@@ -5,6 +5,8 @@
 [ext_resource type="PackedScene" path="res://win95/no_signal.tscn" id="3_nosig"]
 [ext_resource type="Script" uid="uid://cpj0skurjoln" path="res://ui/crt_screen.gd" id="4_crt"]
 [ext_resource type="Material" path="res://shaders/crt_looks/subtle_vga.tres" id="5_look"]
+[ext_resource type="Material" path="res://shaders/crt_looks/world_monitor.tres" id="6_far"]
+[ext_resource type="Script" path="res://ui/crt_tube.gd" id="7_tube"]
 
 [node name="ScreenView" type="Control" unique_id=947288806]
 layout_mode = 3
@@ -34,3 +36,8 @@ offset_right = 640.0
 offset_bottom = 480.0
 script = ExtResource("4_crt")
 buffer = NodePath("../ScreenBuffer")
+far_look = ExtResource("6_far")
+
+[node name="Tube" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("7_tube")

@@ -90,6 +90,18 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Bench screen**: The CRT at the left end of the counter, with its keyboard (`rooms/shop/bench.tscn`). It shows the screen buffer: the desktop of the computer that the VGA cable is connected to, or NO SIGNAL.
 *Avoid:* bench monitor, bench computer.
 
+**CRT look**: The look of a mid-90s VGA monitor on the bench screen, in the Screen View and in the 3D room: curve, faint scanlines, mask, glow ([crt.md](crt.md)).
+*Avoid:* CRT filter, CRT effect, scanline shader.
+
+**Tube**: The bench screen's picture tube as the game animates it (`CrtTube`): its power, its lock on the signal, the degauss and the magnetised screen.
+*Avoid:* CRT state, monitor state.
+
+**Degauss**: Demagnetising the bench screen's mask: the picture shakes, its colours swim, and the magnetised screen clears. It happens at power-on and when the player presses the Degauss button under the bench screen.
+*Avoid:* demagnetise, reset the screen.
+
+**Magnetised screen**: Blotches of wrong colour on the bench screen, which Cambion builds up faster as the day's warp rises. A degauss clears them.
+*Avoid:* colour corruption, purity error.
+
 **VGA cable**: The cable from the bench screen to one computer on the counter (`Game.connected`). The player drags its plug onto a computer to connect it, or off a computer to disconnect it.
 *Avoid:* keyboard cable, screen cable.
 

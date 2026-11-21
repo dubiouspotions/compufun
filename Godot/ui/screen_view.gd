@@ -4,7 +4,8 @@ extends Control
 ## monitor. It fades in while the camera zooms into the monitor and lands at [member zoom] times the
 ## buffer's size, where it takes the mouse and the keys. The 3D monitor shows the same buffer as its
 ## texture, so there is one desktop in one place. The buffer shows the desktop of the job that the
-## cable is connected to (Game.connected), and NO SIGNAL while the cable hangs free.
+## cable is connected to (Game.connected), and NO SIGNAL while the cable hangs free. %Tube turns
+## the monitor on while the shop is open and locks it onto the signal of a running computer.
 
 ## The player clicked the open view outside the screen.
 signal outside_clicked
@@ -18,20 +19,18 @@ signal outside_clicked
 @export_range(1, 4) var zoom: int = 2
 ## The seconds of the fade in and out. The main scene sets it to the camera's turn time.
 @export var fade_seconds: float = 0.35
-## The mouse cursor everywhere but over the desktop, from the start of the main scene.
+## The mouse cursor everywhere but over the desktop, from the start of the main scene. CrtScreen
+## draws the desktop's.
 @export var game_cursor: Texture2D = preload("res://ui/crosshair_cursor.png")
 ## The pixel of [member game_cursor] that points.
 @export var game_cursor_hotspot: Vector2 = Vector2(6, 6)
-## The mouse cursor over the desktop.
-@export var desktop_cursor: Texture2D = preload("res://win95/theme/arrow_cursor.png")
-## The pixel of [member desktop_cursor] that points.
-@export var desktop_cursor_hotspot: Vector2 = Vector2.ZERO
 
 var _open: bool = false
 var _fade: Tween
 var _desktops: Dictionary[Job, Control] = {}
 
 @onready var _screen: CrtScreen = %Screen
+@onready var _tube: CrtTube = %Tube
 @onready var _buffer: SubViewport = %ScreenBuffer
 @onready var _no_signal: Control = %NoSignal
 
@@ -40,8 +39,6 @@ func _ready() -> void:
 	visible = false
 	modulate.a = 0.0
 	_show_cursor(game_cursor, game_cursor_hotspot)
-	_screen.mouse_entered.connect(_show_cursor.bind(desktop_cursor, desktop_cursor_hotspot))
-	_screen.mouse_exited.connect(_show_cursor.bind(game_cursor, game_cursor_hotspot))
 	if desktop_scene == null:
 		push_error("ScreenView: desktop_scene is empty")
 	Game.changed.connect(_sync)
@@ -92,6 +89,12 @@ func follow(rect: Rect2) -> void:
 		rect = Rect2((rect.get_center() - open_size * 0.5).round(), open_size)
 	_screen.position = rect.position
 	_screen.scale = rect.size / screen_size
+	_screen.set_closeness(smoothstep(0.5, 1.0, rect.size.x / open_size.x))
+
+
+## Degausses the monitor: the picture shakes and the magnetised colours clear.
+func degauss() -> void:
+	_tube.degauss()
 
 
 # Frees the desktops of jobs that left the counter, and puts the connected job's desktop in the buffer.
@@ -107,6 +110,9 @@ func _sync() -> void:
 	if shown != null and shown.get_parent() == null:
 		_buffer.add_child(shown)
 	_no_signal.visible = shown == null
+	var running := Game.connected != null and Game.connected.powered
+	_screen.cursor_visible = running
+	_tube.reconcile(Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING, running, Game.day.warp if Game.day != null else 0.0)
 
 
 # The desktop of [param job], made at the first call. Null, with an error, when the scene is unfit.

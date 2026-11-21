@@ -1,7 +1,11 @@
-// A mid-90s VGA monitor on the picture of a SubViewportContainer (the screen buffer in the Screen
-// View). Design and the reasons behind each effect: docs/crt.md. ui/crt_screen.gd maps the mouse
-// through warp(); keep the two in step.
+// A mid-90s VGA monitor on the screen buffer, for the Screen View (ui/crt_screen.gd). Design and
+// the reasons behind each effect: docs/crt.md.
 shader_type canvas_item;
+
+#include "res://shaders/crt.gdshaderinc"
+
+/** The screen buffer; CrtScreen sets it. A headless compile, as in CI's export, rejects TEXTURE as a function argument. */
+uniform sampler2D screen_texture : filter_nearest;
 
 group_uniforms tube;
 /** How far the glass curves from left to right. It bows the horizontal lines; a Trinitron curves only this way. */
@@ -51,13 +55,6 @@ uniform float hum_bar : hint_range(0.0, 0.1, 0.005) = 0.0;
 /** How many times a second the hum bar crosses the screen. */
 uniform float hum_bar_speed : hint_range(0.0, 1.0, 0.01) = 0.08;
 
-group_uniforms power;
-/** 1 shows the picture. Toward 0 it collapses to a line, then a dot that fades: the power-off. */
-uniform float power : hint_range(0.0, 1.0, 0.001) = 1.0;
-/** The tube's warm-up after power-on: 0 is cold and dark, 1 is fully warm. */
-uniform float warmup : hint_range(0.0, 1.0, 0.001) = 1.0;
-/** The strength of the degauss wobble: the picture shakes and its colours swim. */
-uniform float degauss : hint_range(0.0, 1.0, 0.001) = 0.0;
 group_uniforms;
 
 vec3 to_linear(vec3 c) {
@@ -68,14 +65,6 @@ vec3 to_display(vec3 c) {
 	return sqrt(max(c, vec3(0.0)));
 }
 
-// Glass position (0..1) to picture position (0..1). The twin of CrtScreen.warp().
-vec2 warp(vec2 uv) {
-	vec2 c = uv * 2.0 - 1.0;
-	c *= 1.0 + underscan * 2.0;
-	c *= 1.0 + vec2(curvature_y, curvature_x) * c.yx * c.yx;
-	return c * 0.5 + 0.5;
-}
-
 // Bilinear that stays sharp at whole scales: blends only across the pixel's edge, over the width
 // of one screen pixel. scale = screen pixels per VGA pixel.
 vec3 sharp_sample(sampler2D tex, vec2 uv, vec2 size, float scale) {
@@ -84,63 +73,38 @@ vec3 sharp_sample(sampler2D tex, vec2 uv, vec2 size, float scale) {
 	vec2 f = clamp((p - i - 0.5) * scale + 0.5, 0.0, 1.0);
 	ivec2 lo = clamp(ivec2(i), ivec2(0), ivec2(size) - 1);
 	ivec2 hi = clamp(ivec2(i) + 1, ivec2(0), ivec2(size) - 1);
-	vec3 a = texelFetch(tex, lo, 0).rgb;
-	vec3 b = texelFetch(tex, ivec2(hi.x, lo.y), 0).rgb;
-	vec3 c = texelFetch(tex, ivec2(lo.x, hi.y), 0).rgb;
-	vec3 d = texelFetch(tex, hi, 0).rgb;
+	vec3 a = crt_texel(tex, lo);
+	vec3 b = crt_texel(tex, ivec2(hi.x, lo.y));
+	vec3 c = crt_texel(tex, ivec2(lo.x, hi.y));
+	vec3 d = crt_texel(tex, hi);
 	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 
 vec3 fetch_linear(sampler2D tex, vec2 px, vec2 size) {
-	return to_linear(texelFetch(tex, clamp(ivec2(px), ivec2(0), ivec2(size) - 1), 0).rgb);
+	return to_linear(crt_texel(tex, ivec2(floor(px))));
 }
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
-// 1 inside the rounded rect of the tube's face, 0 outside, antialiased over aa.
-float tube_face(vec2 uv, float aa) {
-	vec2 aspect = vec2(4.0 / 3.0, 1.0);
-	vec2 q = abs(uv - 0.5) * aspect;
-	vec2 half_size = 0.5 * aspect - corner_radius;
-	float d = length(max(q - half_size, 0.0)) - corner_radius;
-	return 1.0 - smoothstep(-aa, aa, d);
-}
-
-// 1 inside the picture (0..1), 0 outside, antialiased over aa.
-float picture_edge(vec2 uv, float aa) {
-	vec2 inside = smoothstep(vec2(-aa), vec2(aa), uv) * smoothstep(vec2(-aa), vec2(aa), 1.0 - uv);
-	return inside.x * inside.y;
-}
-
 void fragment() {
-	vec2 size = vec2(textureSize(TEXTURE, 0));
+	vec2 size = vec2(textureSize(screen_texture, 0));
 	// Screen pixels per VGA pixel: 2 in the 1080p Screen View, less during the zoom.
 	float scale = 1.0 / max(fwidth(UV.y) * size.y, 1.0e-4);
 	// The patterns line up with the screen pixels only at whole scales from 2x; elsewhere they moire.
 	float fine = smoothstep(1.9, 2.0, scale) * (1.0 - smoothstep(0.02, 0.08, abs(scale - round(scale))));
 
-	vec2 glass = UV;
-	// Power-off: squash the picture to a line, then the line to a dot.
-	float squash_y = mix(0.004, 1.0, smoothstep(0.6, 1.0, power));
-	float squash_x = mix(0.003, 1.0, smoothstep(0.25, 0.6, power));
-	glass = (glass - 0.5) / vec2(squash_x, squash_y) + 0.5;
-	// Degauss: the field shakes the beam along the lines and swims the colours.
-	float wobble = degauss * degauss;
-	glass.x += wobble * 0.012 * sin(glass.y * 23.0 + TIME * 41.0) * sin(TIME * 7.0);
-	glass.y += wobble * 0.006 * sin(glass.x * 17.0 - TIME * 29.0);
-
-	vec2 uv = warp(glass);
+	vec2 uv = crt_bend(crt_beam(UV, TIME), vec2(curvature_x, curvature_y), underscan);
 	vec2 centered = uv * 2.0 - 1.0;
 	vec2 misconverge = (centered * convergence * length(centered) / 1.41421 + vec2(static_convergence, 0.0)) / size;
 	vec3 color;
 	if (misconverge == vec2(0.0)) {
-		color = to_linear(sharp_sample(TEXTURE, uv, size, scale));
+		color = to_linear(sharp_sample(screen_texture, uv, size, scale));
 	} else {
-		color.r = to_linear(sharp_sample(TEXTURE, uv - misconverge, size, scale)).r;
-		color.g = to_linear(sharp_sample(TEXTURE, uv, size, scale)).g;
-		color.b = to_linear(sharp_sample(TEXTURE, uv + misconverge, size, scale)).b;
+		color.r = to_linear(sharp_sample(screen_texture, uv - misconverge, size, scale)).r;
+		color.g = to_linear(sharp_sample(screen_texture, uv, size, scale)).g;
+		color.b = to_linear(sharp_sample(screen_texture, uv + misconverge, size, scale)).b;
 	}
 
 	if (glow > 0.0) {
@@ -149,7 +113,7 @@ void fragment() {
 		for (int i = 0; i < 12; i++) {
 			float angle = float(i) * 2.39996;  // golden angle: an even disc in few taps
 			float r = glow_radius * sqrt((float(i) + 0.5) / 12.0);
-			sum += fetch_linear(TEXTURE, px + r * vec2(cos(angle), sin(angle)), size);
+			sum += fetch_linear(screen_texture, px + r * vec2(cos(angle), sin(angle)), size);
 		}
 		color += sum / 12.0 * glow;
 	}
@@ -176,18 +140,9 @@ void fragment() {
 	color *= 1.0 + flicker * (hash(vec2(TIME, 0.37)) - 0.5) * 2.0;
 	color *= 1.0 - hum_bar * smoothstep(0.0, 1.0, sin((UV.y + TIME * hum_bar_speed) * 6.28318) * 0.5 + 0.5);
 	color *= brightness * white_point;
-	// Degauss: the field magnetises the mask for a moment, so the beams hit the wrong phosphors.
-	float swim = uv.x * 4.0 + uv.y * 3.0 + TIME * 5.0;
-	color *= 1.0 + wobble * 0.5 * vec3(sin(swim), sin(swim + 2.1), sin(swim + 4.2));
+	color = crt_tube_light(color, uv, TIME);
 
-	// Warm-up: dark and soft at first, the last of the light comes slowly.
-	color *= warmup * warmup;
-	// Power-off: the beam's energy crowds into the line and the dot, so they glow bright.
-	float squashed = 1.0 / sqrt(squash_x * squash_y);
-	color = mix(color, vec3(max(color.r, max(color.g, color.b))), 1.0 - smoothstep(0.5, 0.9, power));
-	color *= mix(1.0, min(squashed, 6.0), 1.0 - power) * smoothstep(0.0, 0.25, power);
-
-	color *= picture_edge(uv, fwidth(uv.y));
-	color = max(color, to_linear(black_level)) * tube_face(UV, fwidth(UV.y));
+	color *= crt_picture_edge(uv, fwidth(uv.y));
+	color = max(color, to_linear(black_level)) * crt_tube_face(UV, corner_radius, fwidth(UV.y));
 	COLOR = vec4(to_display(color), 1.0);
 }
