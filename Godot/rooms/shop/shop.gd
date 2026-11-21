@@ -4,6 +4,8 @@ extends Node3D
 
 ## A hotspot asks to go to a view.
 signal view_requested(view: StringName)
+## The player clicked the Open sign while [method Game.can_close] is true.
+signal close_requested
 
 ## The close-up of the computer in focus.
 const WORKVIEW: StringName = &"Workview"
@@ -191,7 +193,7 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 			Game.call_customer()
 		Hotspot.Action.CLOSE_SHOP:
 			if Game.can_close():
-				Game.close_shop()
+				close_requested.emit()
 			else:
 				_open_sign.wobble()
 		Hotspot.Action.TAKE_PART:

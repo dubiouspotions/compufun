@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://ui/feedback_screen.tscn" id="12_d13ii"]
 [ext_resource type="PackedScene" path="res://ui/customer_calling.tscn" id="customer_calling"]
 [ext_resource type="PackedScene" path="res://ui/hand_label.tscn" id="hand_label"]
+[ext_resource type="PackedScene" path="res://ui/end_of_day.tscn" id="end_of_day"]
 
 [node name="Main" type="Node" unique_id=934000901]
 script = ExtResource("1_dg77c")
@@ -69,6 +70,9 @@ unique_name_in_owner = true
 anchors_preset = 15
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="EndOfDay" parent="UI" instance=ExtResource("end_of_day")]
+unique_name_in_owner = true
 
 [node name="DebugMenu" parent="." unique_id=1072510775 instance=ExtResource("11_ryguw")]
 

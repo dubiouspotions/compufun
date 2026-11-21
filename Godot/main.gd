@@ -18,6 +18,7 @@ var _dialogue_for: int = -1
 @onready var _compufun_db: CompufunDB = %CompufunDB
 @onready var _workview: WorkviewPanel = %WorkviewPanel
 @onready var _screen_view: ScreenView = %ScreenView
+@onready var _end_of_day: EndOfDay = %EndOfDay
 @onready var _world: SubViewportContainer = $World
 @onready var _world_buffer: SubViewport = $World/WorldBuffer
 
@@ -31,6 +32,7 @@ func _ready() -> void:
 	RenderingServer.frame_pre_draw.connect(_follow_camera)
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
+	_shop.close_requested.connect(_end_of_day.ask)
 	_screen_view.outside_clicked.connect(_go_back)
 	_dialogue.finished.connect(Game.dialogue_finished)
 	_post_it.ticked.connect(Game.tick_post_it)
