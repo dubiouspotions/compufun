@@ -108,6 +108,7 @@ func _init() -> void:
 		if _sub == null or not _sub.visible:
 			_set_hover(-1))
 	add_child(_rows)
+	window_input.connect(_window_input)
 	_sub_timer = Timer.new()
 	_sub_timer.one_shot = true
 	_sub_timer.wait_time = _SUBMENU_DELAY
@@ -273,18 +274,22 @@ func _draw_icon_centered(icon: Texture2D, cell: Rect2, tint: Color) -> void:
 func _rows_input(event: InputEvent) -> void:
 	var motion := event as InputEventMouseMotion
 	if motion:
-		_armed = true
-		var row := _row_at(motion.position)
-		if row != _hover:
-			_set_hover(row)
+		_point_at(motion.position)
+		var parent := get_parent() as ContextMenu
+		if parent != null and parent._hover != parent._sub_index:
+			parent._set_hover(parent._sub_index)  # back in the submenu: its row in the parent lights up again
 		return
 	var button := event as InputEventMouseButton
 	if button and button.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
 		_rows.accept_event()
+		var row := _row_at(button.position)
+		if row != _hover:
+			_set_hover(row)
 		if button.pressed:
 			_armed = true
+			_sub_timer.stop()  # the release decides
 		elif _armed:
-			_activate(_row_at(button.position))
+			_activate(row)
 		return
 	var key := event as InputEventKey
 	if key and key.pressed:
@@ -302,6 +307,29 @@ func _rows_input(event: InputEvent) -> void:
 				hide()
 			KEY_ENTER, KEY_KP_ENTER, KEY_SPACE:
 				_activate(_hover)
+
+
+func _point_at(at: Vector2) -> void:
+	_armed = true
+	var row := _row_at(at)
+	if row != _hover:
+		_set_hover(row)
+
+
+# An open submenu has the focus, and the focused popup gets all the mouse motion, also over its
+# parent menus; so it hands motion outside itself to the menu under the mouse.
+func _window_input(event: InputEvent) -> void:
+	var motion := event as InputEventMouseMotion
+	if motion == null or Rect2(_rows.position, _rows.size).has_point(motion.position):
+		return
+	var at := Vector2(position) + motion.position
+	var menu := get_parent() as ContextMenu
+	while menu != null:
+		var local := at - Vector2(menu.position) - menu._rows.position
+		if Rect2(Vector2.ZERO, menu._rows.size).has_point(local):
+			menu._point_at(local)
+			return
+		menu = menu.get_parent() as ContextMenu
 
 
 # The item whose underlined letter is [param letter] runs, or opens its submenu.
@@ -371,6 +399,7 @@ func _activate(index: int) -> void:
 func _open_submenu(index: int) -> void:
 	if index < 0 or _entries[index].children.is_empty() or _entries[index].disabled:
 		return
+	_sub_timer.stop()  # a click opens at once; the hover delay must not switch it again
 	_close_submenu()
 	if _sub == null:
 		_sub = ContextMenu.new()
