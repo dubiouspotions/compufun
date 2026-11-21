@@ -46,7 +46,7 @@ Main (Node)                              the main buffer: the window
 │  ├─ the UI screens
 │  └─ ScreenView (screen_view.tscn: follows the 3D screen, fades in for the Screen View)
 │     └─ SubViewportContainer
-│        └─ SubViewport (1280 × 960)     the screen buffer: updates always, embeds sub-windows
+│        └─ SubViewport (640 × 480)      the screen buffer, shown at 2×: updates always, embeds sub-windows
 │           └─ win95/desktop.tscn
 ├─ DebugMenu (CanvasLayer, F2)
 └─ Feedback (CanvasLayer, on top of everything)

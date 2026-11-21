@@ -7,6 +7,8 @@ const GROUP: StringName = &"win95_desktop"
 ## Where the first window opens, and the step between windows, as Win95 cascades them.
 @export var cascade_start := Vector2(80, 60)
 @export var cascade_step := Vector2(24, 24)
+## The height of the taskbar at the bottom; a new window opens above it.
+@export var taskbar_height := 28.0
 
 var _opened: int = 0
 
@@ -34,6 +36,9 @@ func open(scene: PackedScene) -> Control:
 	window.position = cascade_start + cascade_step * (_opened % 8)
 	_opened += 1
 	add_child(window)
+	# Late cascade steps would otherwise run off the screen.
+	var room := size - Vector2(0, taskbar_height) - window.get_combined_minimum_size()
+	window.position = window.position.min(room).max(Vector2.ZERO)
 	_wire(window)
 	return window
 

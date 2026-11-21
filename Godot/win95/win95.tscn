@@ -25,8 +25,8 @@
 
 [node name="Win95" type="Control" unique_id=1752664516]
 texture_filter = 1
-custom_minimum_size = Vector2(1280, 960)
-custom_maximum_size = Vector2(1280, 960)
+custom_minimum_size = Vector2(640, 480)
+custom_maximum_size = Vector2(640, 480)
 layout_mode = 3
 anchors_preset = 0
 theme = ExtResource("1_cq1mh")
@@ -60,10 +60,10 @@ layout_mode = 1
 
 [node name="WelcomeWindow" parent="Desktop" unique_id=1584676698 instance=ExtResource("welcome_window")]
 layout_mode = 0
-offset_left = 160.0
-offset_top = 168.0
-offset_right = 651.0
-offset_bottom = 447.0
+offset_left = 74.0
+offset_top = 86.0
+offset_right = 565.0
+offset_bottom = 365.0
 
 [node name="TaskBar" type="PanelContainer" parent="." unique_id=492109658]
 custom_minimum_size = Vector2(0, 30)

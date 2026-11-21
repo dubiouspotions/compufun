@@ -14,7 +14,7 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme_override_colors/font_color = Color(1, 0.502, 0, 1)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 24
 text = "It's now safe to turn off
 your computer."
 horizontal_alignment = 1

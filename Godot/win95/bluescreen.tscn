@@ -18,19 +18,19 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="Column" type="VBoxContainer" parent="Center"]
-custom_minimum_size = Vector2(760, 0)
-theme_override_constants/separation = 24
+custom_minimum_size = Vector2(380, 0)
+theme_override_constants/separation = 12
 
 [node name="Heading" type="Label" parent="Center/Column"]
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0, 0, 0.667, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("heading")
 text = " Windows "
 
 [node name="Message" type="Label" parent="Center/Column"]
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 12
 text = "A fatal exception 0E has occurred at 0028:C0011E36 in VXD CAMBION(01) +
 00010E36. The current application will be terminated.
 
@@ -42,5 +42,5 @@ autowrap_mode = 3
 [node name="Continue" type="Label" parent="Center/Column"]
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 12
 text = "Press any key to continue _"

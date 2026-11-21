@@ -1,8 +1,8 @@
 class_name ScreenView
 extends Control
 ## The Screen View: a sharp copy of the screen buffer, laid exactly over the screen of the 3D
-## monitor. It fades in while the camera zooms into the monitor and lands at the buffer's size (1:1
-## in 1080p), where it takes the mouse and the keys. The 3D monitor shows the same buffer as its
+## monitor. It fades in while the camera zooms into the monitor and lands at [member zoom] times the
+## buffer's size, where it takes the mouse and the keys. The 3D monitor shows the same buffer as its
 ## texture, so there is one desktop in one place.
 
 ## The player clicked the open view outside the screen.
@@ -10,6 +10,9 @@ signal outside_clicked
 
 ## The desktop that runs in the screen buffer. It reports software fixes to Game itself.
 @export var desktop_scene: PackedScene
+## The whole-number scale of the open screen: 2 shows the 640 x 480 buffer 1280 x 960 in 1080p,
+## with chunky, sharp pixels. The Screen marker's distance must make the 3D screen this big.
+@export_range(1, 4) var zoom: int = 2
 ## The seconds of the fade in and out. The main scene sets it to the camera's turn time.
 @export var fade_seconds: float = 0.35
 ## The mouse cursor everywhere but over the desktop, from the start of the main scene.
@@ -85,12 +88,13 @@ func set_open(open: bool) -> void:
 
 
 ## Lays the screen over [param rect]: the screen of the 3D monitor, in canvas coordinates. A rect
-## within 1 % of the buffer's size snaps to it, so the open screen is sharp.
+## within 1 % of [member zoom] times the buffer's size snaps to it, so the open screen is sharp.
 func follow(rect: Rect2) -> void:
 	var screen_size := Vector2(_buffer.size)
-	var sharp := absf(rect.size.x - screen_size.x) <= screen_size.x * 0.01
+	var open_size := screen_size * zoom
+	var sharp := absf(rect.size.x - open_size.x) <= open_size.x * 0.01
 	if sharp:
-		rect = Rect2((rect.get_center() - screen_size * 0.5).round(), screen_size)
+		rect = Rect2((rect.get_center() - open_size * 0.5).round(), open_size)
 	_container.position = rect.position
 	_container.scale = rect.size / screen_size
 	_container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST if sharp else CanvasItem.TEXTURE_FILTER_LINEAR

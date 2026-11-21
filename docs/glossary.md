@@ -30,7 +30,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **CompufunDB**: The database on the work computer that maps a set of symptoms to the repair steps. It lists every `Problem` file.
 *Avoid:* Company Database, BBS, database.
 
-**Screen buffer**: The 1280 x 960 viewport that runs the Win95 desktop. The 3D monitor and the Screen View both show it.
+**Screen buffer**: The 640 x 480 viewport that runs the Win95 desktop. The 3D monitor shows it, and the Screen View shows it at 2x.
 *Avoid:* desktop viewport, screen texture.
 
 **Win95 setup**: The `Win95Setup` resource of one customer's computer: what the Win95 desktop looks like and holds when it boots. `ComputerState` holds the running copy.
