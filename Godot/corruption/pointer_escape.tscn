@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/pointer_escape.gd" id="1_script"]
+
+[node name="PointerEscape" type="Node"]
+script = ExtResource("1_script")
+title = "The Windows pointer slips off the screen"

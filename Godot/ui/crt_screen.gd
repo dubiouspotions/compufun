@@ -8,6 +8,8 @@ extends TextureRect
 ## The buffer must not be a child of a SubViewportContainer: Godot then works out its hover from
 ## the container's straight transform, so hover and clicks disagree under the curve.
 
+## The group of every CRT screen.
+const GROUP: StringName = &"crt_screens"
 const _BENT: Array[StringName] = [&"curvature_x", &"curvature_y", &"underscan", &"corner_radius"]
 
 ## The picture to show; it gets the mouse and, while this node is visible, the keys.
@@ -36,6 +38,12 @@ var cursor_visible: bool = true:
 	set(value):
 		cursor_visible = value
 		_sync_cursor()
+## Draws the cursor this many buffer pixels from the mouse; clicks still land at the mouse. The
+## corruption sign corruption/pointer_escape.tscn slides it off the screen.
+var cursor_offset: Vector2 = Vector2.ZERO:
+	set(value):
+		cursor_offset = value
+		_sync_cursor()
 
 var _near: Dictionary[StringName, float] = {}
 var _cursor_at: Vector2 = Vector2(320, 240)
@@ -43,6 +51,7 @@ var _cursor: Texture2D
 
 
 func _ready() -> void:
+	add_to_group(GROUP)
 	if buffer == null:
 		push_error("CrtScreen %s: no buffer" % get_path())
 		return
@@ -64,6 +73,11 @@ func _ready() -> void:
 	for uniform in _BENT:
 		_near[uniform] = _param(material, uniform)
 	_set_cursor(arrow_cursor)
+
+
+## Where the mouse points in [member buffer], in its pixels.
+func cursor_at() -> Vector2:
+	return _cursor_at
 
 
 ## The picture position (0..1) that the glass position [param uv] (0..1) shows; outside 0..1 is
@@ -133,7 +147,7 @@ func _sync_cursor() -> void:
 	if _cursor in sizing_cursors.values():
 		hotspot = (_cursor.get_size() / 2.0).floor()
 	if tube != null:
-		tube.set_param(&"crt_cursor", (_cursor_at - hotspot).floor() if cursor_visible else Vector2(-1000, -1000))
+		tube.set_param(&"crt_cursor", (_cursor_at - hotspot + cursor_offset).floor() if cursor_visible else Vector2(-1000, -1000))
 
 
 # The uniform's value in [param look], or the shader's default where the look leaves it unset.
