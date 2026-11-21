@@ -14,11 +14,16 @@ func run() -> void:
 	var day := Day.new()
 	day.number = 1
 	day.customers = [pierre, javve, pierre]
-	day.gap_seconds = 10.0
+	day.first_wait_seconds = Vector2(5.0, 8.0)
+	day.gap_seconds = Vector2(20.0, 40.0)
 
 	check("no day: no daypart", game.daypart, GAME.Daypart.NONE)
 	game.start_day(day)
-	check("first arrival: morning", game.daypart, GAME.Daypart.MORNING)
+	check("the day starts in the morning, nobody in yet", [game.daypart, game.arrivals], [GAME.Daypart.MORNING, 0])
+	tick(4.9)
+	check("4.9 s: nobody yet", game.arrivals, 0)
+	tick(3.2)
+	check("8.1 s: the first customer, morning", [game.arrivals, game.daypart], [1, GAME.Daypart.MORNING])
 	check("the sky shows the morning", outside.hour, outside.morning_hour)
 	serve()
 	check("midday arrival", [game.arrivals, game.daypart], [2, GAME.Daypart.MIDDAY])
@@ -33,10 +38,14 @@ func run() -> void:
 	check("a closed day restores as evening", [game.restore({"phase": "DAY_OVER"}), game.daypart], ["", GAME.Daypart.EVENING])
 
 
-## Plays the visitor's drop-off to the end and waits out the gap to the next customer.
+## Plays the visitor's drop-off to the end and waits out the gap to the next customer, checking
+## that nobody comes before the gap's shortest time.
 func serve() -> void:
 	game.customer_arrived()
 	if game.visitor_state == GAME.VisitorState.TALKING:
 		game.dialogue_finished()
 	game.customer_left()
-	tick(game.day.gap_seconds)
+	var before: int = game.arrivals
+	tick(game.day.gap_seconds.x - 0.1)
+	check("nobody before the gap's shortest time", game.arrivals, before)
+	tick(game.day.gap_seconds.y - game.day.gap_seconds.x + 0.2)

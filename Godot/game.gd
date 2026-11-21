@@ -99,7 +99,8 @@ var date: Dictionary:
 		return date_of(day_number)
 
 var _next_order: int = 0
-var _gap_elapsed: float = 0.0
+var _waited: float = 0.0
+var _wait: float = 0.0
 var _call_left: float = 0.0
 var _pickup: Job
 
@@ -111,8 +112,8 @@ func date_of(number: int) -> Dictionary:
 	return Time.get_datetime_dict_from_unix_time(unix)
 
 
-## Starts [param new_day]: the shop opens and its first customer comes in at once, unless the
-## counter is full. Jobs left overnight stay. Refuses a day that is null, has no customers, has more
+## Starts [param new_day] in the morning: the shop opens, and its first customer comes in after
+## [member Day.first_wait_seconds] unless the counter is full. Jobs left overnight stay. Refuses a day that is null, has no customers, has more
 ## than [constant MAX_CUSTOMERS], or has a customer with no problem, and keeps the current state.
 func start_day(new_day: Day) -> void:
 	var invalid := _check_day(new_day)
@@ -631,7 +632,7 @@ func restore(state: Dictionary) -> String:
 	visitor_state = new_visitor_state
 	_pickup = new_pickup
 	_next_order = jobs.reduce(func(top: int, j: Job) -> int: return maxi(top, j.order + 1), 0)
-	_gap_elapsed = 0.0
+	_restart_wait()
 	_call_left = CALL_SECONDS
 	view = StringName(str(state.get("view", view)))
 	flags = new_flags
@@ -651,15 +652,24 @@ func _process(delta: float) -> void:
 			_end_call()
 		return
 	if phase == Phase.OPEN and visitor == null and jobs.size() < MAX_JOBS:
-		_gap_elapsed += delta
+		_waited += delta
 		if _try_arrival():
 			changed.emit()
 
 
-## The first customer comes in at once; each next one [member Day.gap_seconds] of open shop after
-## the last visitor left. The wait pauses while the counter is full.
+## The first customer comes in [member Day.first_wait_seconds] after the day starts; each next one
+## [member Day.gap_seconds] of open shop after the last visitor left. The wait pauses while the
+## counter is full.
 func _arrival_due() -> bool:
-	return arrivals == 0 or _gap_elapsed >= day.gap_seconds
+	return _waited >= _wait
+
+
+# Starts the wait for the next customer, with a new random length.
+func _restart_wait() -> void:
+	_waited = 0.0
+	if day != null:
+		var span := day.first_wait_seconds if arrivals == 0 else day.gap_seconds
+		_wait = randf_range(span.x, span.y)
 
 
 ## Lets the next customer of the day in when one is due and the shop has room. True when one came.
@@ -720,7 +730,7 @@ func _set_visitor(customer: Customer, why: Visit) -> void:
 	conversation = null
 	if customer != null:
 		arrival += 1
-	_gap_elapsed = 0.0
+	_restart_wait()
 
 
 ## Picks what the TALKING visitor says, and remembers that it played. A pickup visitor with

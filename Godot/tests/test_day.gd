@@ -140,7 +140,8 @@ func make_day(number: int, customers: Array[Customer]) -> Day:
 	var d := Day.new()
 	d.number = number
 	d.customers = customers
-	d.gap_seconds = 60.0
+	d.first_wait_seconds = Vector2.ZERO
+	d.gap_seconds = Vector2(60.0, 60.0)
 	return d
 
 
