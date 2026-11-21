@@ -8,6 +8,7 @@ extends Resource
 @export var person: Person
 @export var conversations: Array[Conversation] = []
 @export var problem: Problem
+@export var computer: Computer
 ## The trousers colour of the 3D customer. It tints the denim texture.
 @export var trousers_color: Color = Color(0.46, 0.56, 0.74)
 
