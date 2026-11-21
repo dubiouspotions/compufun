@@ -6,6 +6,8 @@ extends Node3D
 signal view_requested(view: StringName)
 ## The player clicked the Open sign while [method Game.can_close] is true.
 signal close_requested
+## The end has played in the room: time for the bluescreen.
+signal crashed
 
 ## The close-up of the computer in focus.
 const WORKVIEW: StringName = &"Workview"
@@ -27,6 +29,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
+@onready var _the_end: TheEnd = %TheEnd
 
 var _shown_view: StringName = &""
 var _workview_job: Job
@@ -46,6 +49,8 @@ func _ready() -> void:
 	_job_slots.power_clicked.connect(func(job: Job) -> void: Game.set_powered(job, not job.powered))
 	_bench.view_requested.connect(view_requested.emit)
 	_bench.plug_grabbed.connect(_on_plug_grabbed)
+	_the_end.view_requested.connect(view_requested.emit)
+	_the_end.crashed.connect(crashed.emit)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -103,6 +108,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _sync() -> void:
 	_job_slots.show_jobs(Game.jobs, null if Game.view == WORKVIEW else Game.focus)  # the Workview centres it already
 	_pipedream.warp = Game.warp
+	_the_end.ended = Game.phase == Game.Phase.ENDED
 	_bench.lay_cable(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
 	var workview_moved := _follow_focus()
 	if Game.view != _shown_view or (workview_moved and Game.view == WORKVIEW):
@@ -143,10 +149,11 @@ func _move_camera(view_name: StringName) -> void:
 		_camera.global_transform = marker.global_transform
 		_camera.fov = marker.fov
 		return
+	var seconds := marker.turn_seconds if marker.turn_seconds > 0.0 else turn_seconds
 	_camera_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_parallel()
-	_camera_tween.tween_property(_camera, "global_position", marker.global_position, turn_seconds)
-	_camera_tween.tween_property(_camera, "quaternion", marker.global_basis.get_rotation_quaternion(), turn_seconds)
-	_camera_tween.tween_property(_camera, "fov", marker.fov, turn_seconds)
+	_camera_tween.tween_property(_camera, "global_position", marker.global_position, seconds)
+	_camera_tween.tween_property(_camera, "quaternion", marker.global_basis.get_rotation_quaternion(), seconds)
+	_camera_tween.tween_property(_camera, "fov", marker.fov, seconds)
 
 
 ## Moves the Workview marker to the computer in focus. True when it moved.

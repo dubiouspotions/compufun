@@ -19,7 +19,7 @@ Godot/               the Godot project: everything the game loads
   parts/             part.gd and piece.gd, and one Part per part: <id>.tres
   materials/         one shared material per surface; textures/ holds the PNGs
   rooms/             hotspot.tscn and view_marker.gd, shared by all rooms
-  rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying open in the Workview), bench.tscn (the bench screen, keyboard and VGA cable), pipedream.tscn (the Win95 Pipes that grow with the warp), their meshes and textures
+  rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying open in the Workview), bench.tscn (the bench screen, keyboard and VGA cable), pipedream.tscn (the Win95 Pipes that grow with the warp), the_end.tscn (the body with the pipe through the chest, and the shake of the end), their meshes and textures
   people/<name>/     person.tres, portrait_<pose>.png, face.png
   customers/         one .tres per customer, customer_body.tscn, job.gd (one computer on the counter)
   customers/<name>/  the pictures in that customer's files, such as pierre/castle_01.png
@@ -29,14 +29,14 @@ Godot/               the Godot project: everything the game loads
   sounds/            sound effects, such as footstep.wav
   problems/          one .tres per problem
   days/              day_1.tres to day_7.tres
-  ui/                loading screen, dialogue overlay, post-it, end of day (the close-the-shop question, the night between two days), CompufunDB, screen view, debug menu, F9 screen, theme.tres
+  ui/                loading screen, dialogue overlay, post-it, end of day (the close-the-shop question, the night between two days), crash (the bluescreen over the window at the end), CompufunDB, screen view, debug menu, F9 screen, theme.tres
   ui/logos/          the CompuFun logos (the loading screen, the boot splash, the sign in the shop)
   win95/             the Win95 interface (the Win95 developer's folder)
   addons/dialogue_editor/  the Dialogue tab in the editor
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
 feedback/            the F9 reports (outside Godot, so Godot does not import them)
-tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; make_castle_renders.py renders Pierre's castle pictures; chimera-moods.patch
+tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; make_castle_renders.py renders Pierre's castle pictures; make_end_rumble.sh makes the rumble of the end; chimera-moods.patch
 wiki/                the GitHub wiki, cloned by tools/sync-wiki.sh (ignored by the repo)
 docs/                the rules for people and agents: this code layout, code standard, build, gotchas, glossary
 .github/workflows/   CI: tests and export on push, itch.io deploy, Discord notifications

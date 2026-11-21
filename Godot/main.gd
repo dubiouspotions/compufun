@@ -19,6 +19,7 @@ var _dialogue_for: int = -1
 @onready var _workview: WorkviewPanel = %WorkviewPanel
 @onready var _screen_view: ScreenView = %ScreenView
 @onready var _end_of_day: EndOfDay = %EndOfDay
+@onready var _crash: Crash = %Crash
 @onready var _world: SubViewportContainer = $World
 @onready var _world_buffer: SubViewport = $World/WorldBuffer
 
@@ -33,6 +34,7 @@ func _ready() -> void:
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
 	_shop.close_requested.connect(_end_of_day.ask)
+	_shop.crashed.connect(_crash.show_crash)
 	_screen_view.outside_clicked.connect(_go_back)
 	_dialogue.finished.connect(Game.dialogue_finished)
 	_post_it.ticked.connect(Game.tick_post_it)
