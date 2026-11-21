@@ -8,15 +8,19 @@ signal view_requested(view: StringName)
 
 ## The colour that the up button pulses to while the ceiling mouse squeaks.
 @export var call_color: Color = Color(1.0, 0.84, 0.35)
+## The seconds that the back strip takes to darken, and to clear again.
+@export var back_strip_fade_seconds: float = 0.12
 
 var _marker: ViewMarker
 var _pulse: Tween
+var _back_strip_fade: Tween
 
 @onready var _left: Button = %LeftButton
 @onready var _right: Button = %RightButton
 @onready var _up: Button = %UpButton
 @onready var _back: Button = %BackButton
 @onready var _status_label: Label = %StatusLabel
+@onready var _back_strip: TextureRect = %BackStrip
 
 
 func _ready() -> void:
@@ -35,6 +39,16 @@ func show_marker(marker: ViewMarker) -> void:
 	_back.visible = marker != null and marker.back != &""
 	_sync_pulse(_up.visible and CeilingMouse.stage() == CeilingMouse.Stage.SQUEAKING)
 	_status_label.text = _status_text()
+
+
+## Darkens the bottom [param height] of the screen (a share of its height) while [param on], to show
+## that a click there goes back (see [member Shop.back_strip_height]).
+func show_back_strip(on: bool, height: float) -> void:
+	_back_strip.anchor_top = 1.0 - height
+	if _back_strip_fade != null:
+		_back_strip_fade.kill()
+	_back_strip_fade = create_tween()
+	_back_strip_fade.tween_property(_back_strip, "modulate:a", 1.0 if on else 0.0, back_strip_fade_seconds)
 
 
 # The up button pulses while the ceiling mouse squeaks, so the player looks up.

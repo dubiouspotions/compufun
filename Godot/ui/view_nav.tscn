@@ -50,6 +50,16 @@ axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxEmpty" id="focus"]
 
+[sub_resource type="Gradient" id="back_strip_gradient"]
+offsets = PackedFloat32Array(0, 0.3, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0.3, 0, 0, 0, 0.6)
+
+[sub_resource type="GradientTexture2D" id="back_strip_texture"]
+gradient = SubResource("back_strip_gradient")
+width = 4
+height = 64
+fill_to = Vector2(0, 1)
+
 [sub_resource type="Theme" id="ps1_buttons"]
 Button/styles/normal = SubResource("normal")
 Button/styles/hover = SubResource("hover")
@@ -67,6 +77,17 @@ texture_filter = 1
 mouse_filter = 2
 theme = SubResource("ps1_buttons")
 script = ExtResource("1_itobc")
+
+[node name="BackStrip" type="TextureRect" parent="."]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+anchor_top = 0.82
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = SubResource("back_strip_texture")
+expand_mode = 1
 
 [node name="LeftButton" type="Button" parent="." unique_id=1062322293]
 unique_name_in_owner = true

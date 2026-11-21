@@ -40,6 +40,7 @@ func _ready() -> void:
 	RenderingServer.frame_pre_draw.connect(_follow_camera)
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
+	_shop.back_strip_hovered.connect(func(on: bool) -> void: _nav.show_back_strip(on, _shop.back_strip_height))
 	_shop.close_requested.connect(_end_of_day.ask)
 	_shop.crashed.connect(_crash.show_crash)
 	_shop.phone_requested.connect(_phone.open)

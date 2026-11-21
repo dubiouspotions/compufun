@@ -62,6 +62,11 @@ func _ready() -> void:
 	_sync()
 
 
+## True while the player drags the part out of the hand.
+func is_dragging() -> bool:
+	return _dragging
+
+
 ## Holds a stand-in [param part] in view for one frame, so that the renderer compiles what the hand
 ## shows now and not on the player's first take (see [method Shop.warm_up]). Then shows Game.hand.
 func warm_up(part: Part) -> void:
@@ -106,7 +111,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	_mouse = mouse.position
 	var button := mouse as InputEventMouseButton
 	if button != null and button.button_index == MOUSE_BUTTON_LEFT:
-		if button.pressed and _press == null and _under(button.position):
+		if button.pressed and _press == null and covers(button.position):
 			_press = button
 			get_viewport().set_input_as_handled()  # physics picking skips handled events: the room under the part gets no press
 		elif not button.pressed and _press != null:
@@ -120,8 +125,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_dragging = true
 
 
-# True when [param at], in pixels of the world buffer, is on the part in the hand.
-func _under(at: Vector2) -> bool:
+## True when [param at], in pixels of the world buffer, is on the part in the hand (false while the
+## hand is empty or lowered).
+func covers(at: Vector2) -> bool:
 	if _model == null or not visible or _lowered > 0.5:
 		return false
 	var rect := Rect2(_camera.unproject_position(_model.global_transform * _box.position), Vector2.ZERO)

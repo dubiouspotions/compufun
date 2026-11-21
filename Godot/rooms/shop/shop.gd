@@ -14,6 +14,8 @@ signal phone_requested
 signal degauss_requested
 ## The player pressed the power button of the bench screen.
 signal monitor_power_requested
+## The mouse came onto the back strip ([param on] true) or left it (see [member back_strip_height]).
+signal back_strip_hovered(on: bool)
 
 ## The close-up of the computer in focus.
 const WORKVIEW: StringName = &"Workview"
@@ -24,6 +26,10 @@ const WORKVIEW: StringName = &"Workview"
 @export var walk_seconds: float = 7.0
 ## The seconds that a customer takes to turn around at the counter before walking out.
 @export var about_face_seconds: float = 0.4
+## The height of the back strip, as a share of the view's height: the strip along the bottom of a
+## view with Back and no screen (Workview, Storage, Up). A click there that hits nothing clickable
+## (a hotspot, the part in the hand) goes back, like the Back button.
+@export_range(0.0, 0.5) var back_strip_height: float = 0.18
 
 @onready var _camera: Camera3D = %Camera
 @onready var _views: Node3D = %Views
@@ -58,6 +64,8 @@ var _walk_out_arrival: int = -1
 var _walk_tween: Tween
 var _calling: bool = false
 var _camera_tween: Tween
+var _mouse := Vector2(-1.0, -1.0)  # in pixels of the world buffer
+var _on_back_strip: bool = false
 
 
 func _ready() -> void:
@@ -171,8 +179,32 @@ func _monitor(screen: ViewMarker.Screen) -> CrtMonitor:
 	return null
 
 
-# The dragged plug follows the mouse; the release plugs it into the computer under the mouse, or lays it down.
+func _input(event: InputEvent) -> void:
+	var mouse := event as InputEventMouse
+	if mouse != null:
+		_mouse = mouse.position
+
+
+func _process(_delta: float) -> void:
+	var on := _back_strip_at(_mouse)
+	if on:
+		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)  # every frame: a hotspot that the mouse left resets it
+	if on == _on_back_strip:
+		return
+	_on_back_strip = on
+	if not on and _clickable_at(_mouse) == null:
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+	back_strip_hovered.emit(on)
+
+
+# A click on the back strip goes back. The dragged plug follows the mouse; the release plugs it into
+# the computer under the mouse, or lays it down.
 func _unhandled_input(event: InputEvent) -> void:
+	var press := event as InputEventMouseButton
+	if press != null and press.pressed and press.button_index == MOUSE_BUTTON_LEFT and _back_strip_at(press.position):
+		get_viewport().set_input_as_handled()
+		view_requested.emit(view_marker(Game.view).back)
+		return
 	var mouse := event as InputEventMouse
 	if not _bench.dragging or mouse == null:
 		return
@@ -185,6 +217,40 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	_bench.drag_plug(from, dir)
 	_job_slots.target(job)
+
+
+# True when [param at], in pixels of the world buffer, is on the back strip with nothing clickable
+# there, and nothing is being dragged.
+func _back_strip_at(at: Vector2) -> bool:
+	var view := get_viewport().get_visible_rect()
+	if not view.has_point(at) or at.y < view.end.y - view.size.y * back_strip_height:
+		return false
+	var marker := view_marker(Game.view)
+	if marker == null or marker.back == &"" or marker.screen not in [ViewMarker.Screen.NONE, ViewMarker.Screen.WORKVIEW]:
+		return false
+	if _bench.dragging or _hand.is_dragging() or _hand.covers(at):
+		return false
+	return _clickable_at(at) == null
+
+
+# What physics picking would click at [param at], in pixels of the world buffer: the nearest
+# input_ray_pickable CollisionObject3D under it, or null.
+func _clickable_at(at: Vector2) -> CollisionObject3D:
+	var from := _camera.project_ray_origin(at)
+	var query := PhysicsRayQueryParameters3D.create(from, from + _camera.project_ray_normal(at) * _camera.far)
+	query.collide_with_areas = true
+	var space := get_world_3d().direct_space_state
+	var skipped: Array[RID] = []
+	for _attempt: int in 16:
+		query.exclude = skipped
+		var hit := space.intersect_ray(query)
+		if hit.is_empty():
+			return null
+		var object := hit.collider as CollisionObject3D
+		if object != null and object.input_ray_pickable:
+			return object
+		skipped.append(hit.rid)
+	return null
 
 
 func _sync() -> void:
