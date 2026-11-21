@@ -34,6 +34,11 @@ signal appearance_changed
 	set(value):
 		show_maximize = value
 		_sync()
+## Shows the "?" button left of the close button, as on property sheets. Pressing it does nothing.
+@export var show_help := false:
+	set(value):
+		show_help = value
+		_sync()
 
 
 func _ready() -> void:
@@ -64,5 +69,6 @@ func _sync() -> void:
 	icon_rect.visible = icon != null
 	%Minimize.visible = show_minimize
 	%Maximize.visible = show_maximize
-	%CloseGap.visible = show_minimize or show_maximize
+	%Help.visible = show_help
+	%CloseGap.visible = show_minimize or show_maximize or show_help
 	appearance_changed.emit()

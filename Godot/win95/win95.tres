@@ -479,6 +479,195 @@ script = ExtResource("bevel")
 kind = 4
 palette = ExtResource("palette")
 
+[sub_resource type="StyleBox" id="tab"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 7.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 1.0
+script = ExtResource("bevel")
+kind = 7
+palette = ExtResource("palette")
+expand_margin_top = -2.0
+
+[sub_resource type="StyleBox" id="tab_selected"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 7.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 3.0
+script = ExtResource("bevel")
+kind = 7
+palette = ExtResource("palette")
+expand_margin_left = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 1.0
+
+[sub_resource type="StyleBox" id="tab_panel"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBoxTexture" id="tab_focus"]
+texture = ExtResource("atlas")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+expand_margin_left = -1.0
+expand_margin_top = -3.0
+expand_margin_right = -1.0
+expand_margin_bottom = -1.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+region_rect = Rect2(4, 4, 4, 4)
+
+[sub_resource type="AtlasTexture" id="hslider_thumb"]
+atlas = ExtResource("atlas")
+region = Rect2(76, 31, 11, 21)
+
+[sub_resource type="AtlasTexture" id="hslider_thumb_disabled"]
+atlas = ExtResource("atlas")
+region = Rect2(88, 31, 11, 21)
+
+[sub_resource type="AtlasTexture" id="hslider_tick"]
+atlas = ExtResource("atlas")
+region = Rect2(100, 31, 1, 2)
+
+[sub_resource type="StyleBox" id="hslider_groove"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 0.0
+content_margin_top = 2.0
+content_margin_right = 0.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+kind = 4
+palette = ExtResource("palette")
+expand_margin_top = 2.0
+expand_margin_bottom = -2.0
+
+[sub_resource type="StyleBox" id="combo"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 19.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+kind = 4
+fill = 1
+palette = ExtResource("palette")
+drop_down = 1
+
+[sub_resource type="StyleBox" id="combo_pushed"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 19.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+kind = 4
+fill = 1
+palette = ExtResource("palette")
+drop_down = 2
+
+[sub_resource type="StyleBox" id="combo_disabled"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 19.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+kind = 4
+palette = ExtResource("palette")
+drop_down = 3
+
+[sub_resource type="StyleBoxTexture" id="combo_focus"]
+texture = ExtResource("atlas")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+expand_margin_left = -3.0
+expand_margin_top = -3.0
+expand_margin_right = -19.0
+expand_margin_bottom = -3.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+region_rect = Rect2(122, 31, 4, 4)
+
+[sub_resource type="AtlasTexture" id="combo_no_arrow"]
+atlas = ExtResource("atlas")
+region = Rect2(127, 65, 1, 1)
+
+[sub_resource type="AtlasTexture" id="spin_up"]
+atlas = ExtResource("atlas")
+region = Rect2(102, 31, 3, 2)
+
+[sub_resource type="AtlasTexture" id="spin_up_pressed"]
+atlas = ExtResource("atlas")
+region = Rect2(110, 31, 5, 4)
+
+[sub_resource type="AtlasTexture" id="spin_up_disabled"]
+atlas = ExtResource("atlas")
+region = Rect2(102, 36, 4, 4)
+
+[sub_resource type="AtlasTexture" id="spin_down"]
+atlas = ExtResource("atlas")
+region = Rect2(106, 31, 3, 2)
+
+[sub_resource type="AtlasTexture" id="spin_down_pressed"]
+atlas = ExtResource("atlas")
+region = Rect2(116, 31, 5, 4)
+
+[sub_resource type="AtlasTexture" id="spin_down_disabled"]
+atlas = ExtResource("atlas")
+region = Rect2(107, 36, 4, 4)
+
+[sub_resource type="StyleBox" id="spin_button"]
+resource_local_to_scene = false
+resource_name = ""
+script = ExtResource("bevel")
+kind = 3
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBox" id="spin_button_pushed"]
+resource_local_to_scene = false
+resource_name = ""
+script = ExtResource("bevel")
+kind = 8
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBox" id="spin_down_button"]
+resource_local_to_scene = false
+resource_name = ""
+script = ExtResource("bevel")
+kind = 3
+palette = ExtResource("palette")
+expand_margin_bottom = -1.0
+
+[sub_resource type="StyleBox" id="spin_down_button_pushed"]
+resource_local_to_scene = false
+resource_name = ""
+script = ExtResource("bevel")
+kind = 8
+palette = ExtResource("palette")
+expand_margin_bottom = -1.0
+
+[sub_resource type="AtlasTexture" id="caption_help"]
+atlas = ExtResource("atlas")
+region = Rect2(100, 41, 6, 9)
+
 [resource]
 default_font = ExtResource("font_regular")
 default_font_size = 12
@@ -502,6 +691,14 @@ CaptionCloseButton/styles/hover = SubResource("caption")
 CaptionCloseButton/styles/hover_pressed = SubResource("caption_pressed")
 CaptionCloseButton/styles/normal = SubResource("caption")
 CaptionCloseButton/styles/pressed = SubResource("caption_pressed")
+CaptionHelpButton/base_type = &"Button"
+CaptionHelpButton/icons/icon = SubResource("caption_help")
+CaptionHelpButton/styles/disabled = SubResource("caption")
+CaptionHelpButton/styles/focus = SubResource("no_focus")
+CaptionHelpButton/styles/hover = SubResource("caption")
+CaptionHelpButton/styles/hover_pressed = SubResource("caption_pressed")
+CaptionHelpButton/styles/normal = SubResource("caption")
+CaptionHelpButton/styles/pressed = SubResource("caption_pressed")
 CaptionMaximizeButton/base_type = &"Button"
 CaptionMaximizeButton/icons/icon = SubResource("caption_maximize")
 CaptionMaximizeButton/styles/disabled = SubResource("caption")
@@ -548,6 +745,8 @@ DefaultButton/styles/pressed = SubResource("default_button_pressed")
 DesktopIconLabel/base_type = &"Label"
 DesktopIconLabel/colors/font_color = Color(1, 1, 1, 1)
 DesktopIconLabel/styles/normal = SubResource("icon_label")
+DisabledLabel/base_type = &"Label"
+DisabledLabel/colors/font_color = Color(0.502, 0.502, 0.502, 1)
 FieldPanel/base_type = &"PanelContainer"
 FieldPanel/styles/panel = SubResource("field_panel")
 HScrollBar/icons/decrement = SubResource("scroll_left")
@@ -563,6 +762,15 @@ HScrollBar/styles/scroll = SubResource("scroll_track")
 HScrollBar/styles/scroll_focus = SubResource("scroll_track")
 HSeparator/constants/separation = 2
 HSeparator/styles/separator = SubResource("menu_separator")
+HSlider/constants/grabber_offset = -1
+HSlider/constants/tick_offset = 9
+HSlider/icons/grabber = SubResource("hslider_thumb")
+HSlider/icons/grabber_disabled = SubResource("hslider_thumb_disabled")
+HSlider/icons/grabber_highlight = SubResource("hslider_thumb")
+HSlider/icons/tick = SubResource("hslider_tick")
+HSlider/styles/grabber_area = SubResource("slider_fill")
+HSlider/styles/grabber_area_highlight = SubResource("slider_fill")
+HSlider/styles/slider = SubResource("hslider_groove")
 IconLabel/base_type = &"Label"
 IconLabel/colors/font_color = Color(0, 0, 0, 1)
 IconLabel/styles/normal = SubResource("icon_label")
@@ -591,6 +799,7 @@ LineEdit/colors/font_color = Color(0, 0, 0, 1)
 LineEdit/colors/font_placeholder_color = Color(0.502, 0.502, 0.502, 1)
 LineEdit/colors/font_readonly_color = Color(0.502, 0.502, 0.502, 1)
 LineEdit/colors/font_selected_color = Color(1, 1, 1, 1)
+LineEdit/colors/font_uneditable_color = Color(0, 0, 0, 1)
 LineEdit/colors/selection_color = Color(0, 0, 0.502, 1)
 LineEdit/styles/focus = SubResource("no_focus")
 LineEdit/styles/normal = SubResource("field")
@@ -612,6 +821,21 @@ MenuBar/styles/normal = SubResource("menu_title")
 MenuBar/styles/normal_mirrored = SubResource("menu_title")
 MenuBar/styles/pressed = SubResource("menu_title_pressed")
 MenuBar/styles/pressed_mirrored = SubResource("menu_title_pressed")
+OptionButton/colors/font_color = Color(0, 0, 0, 1)
+OptionButton/colors/font_disabled_color = Color(0.502, 0.502, 0.502, 1)
+OptionButton/colors/font_focus_color = Color(1, 1, 1, 1)
+OptionButton/colors/font_hover_color = Color(0, 0, 0, 1)
+OptionButton/colors/font_hover_pressed_color = Color(0, 0, 0, 1)
+OptionButton/colors/font_pressed_color = Color(0, 0, 0, 1)
+OptionButton/constants/arrow_margin = 0
+OptionButton/constants/h_separation = 0
+OptionButton/icons/arrow = SubResource("combo_no_arrow")
+OptionButton/styles/disabled = SubResource("combo_disabled")
+OptionButton/styles/focus = SubResource("combo_focus")
+OptionButton/styles/hover = SubResource("combo")
+OptionButton/styles/hover_pressed = SubResource("combo_pushed")
+OptionButton/styles/normal = SubResource("combo")
+OptionButton/styles/pressed = SubResource("combo_pushed")
 Panel/styles/panel = SubResource("window")
 PanelContainer/styles/panel = SubResource("window")
 PopupMenu/colors/font_accelerator_color = Color(0, 0, 0, 1)
@@ -639,6 +863,33 @@ PopupPanel/styles/panel = SubResource("window")
 ProgressBar/colors/font_color = Color(0, 0, 0, 1)
 ProgressBar/styles/background = SubResource("progress_bg")
 ProgressBar/styles/fill = SubResource("progress_fill")
+SpinBox/colors/down_disabled_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/down_hover_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/down_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/down_pressed_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/up_disabled_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/up_hover_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/up_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/up_pressed_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/constants/buttons_vertical_separation = 0
+SpinBox/constants/buttons_width = 16
+SpinBox/constants/field_and_buttons_separation = 0
+SpinBox/icons/down = SubResource("spin_down")
+SpinBox/icons/down_disabled = SubResource("spin_down_disabled")
+SpinBox/icons/down_hover = SubResource("spin_down")
+SpinBox/icons/down_pressed = SubResource("spin_down_pressed")
+SpinBox/icons/up = SubResource("spin_up")
+SpinBox/icons/up_disabled = SubResource("spin_up_disabled")
+SpinBox/icons/up_hover = SubResource("spin_up")
+SpinBox/icons/up_pressed = SubResource("spin_up_pressed")
+SpinBox/styles/down_background = SubResource("spin_down_button")
+SpinBox/styles/down_background_disabled = SubResource("spin_down_button")
+SpinBox/styles/down_background_hovered = SubResource("spin_down_button")
+SpinBox/styles/down_background_pressed = SubResource("spin_down_button_pushed")
+SpinBox/styles/up_background = SubResource("spin_button")
+SpinBox/styles/up_background_disabled = SubResource("spin_button")
+SpinBox/styles/up_background_hovered = SubResource("spin_button")
+SpinBox/styles/up_background_pressed = SubResource("spin_button_pushed")
 StartButton/base_type = &"Button"
 StartButton/constants/icon_max_width = 16
 StartButton/fonts/font = ExtResource("font_bold")
@@ -648,6 +899,28 @@ StartButton/styles/normal = SubResource("taskbar_button")
 StartButton/styles/pressed = SubResource("start_button_pressed")
 StatusWell/base_type = &"PanelContainer"
 StatusWell/styles/panel = SubResource("status_well")
+TabBar/colors/font_disabled_color = Color(0.502, 0.502, 0.502, 1)
+TabBar/colors/font_hovered_color = Color(0, 0, 0, 1)
+TabBar/colors/font_selected_color = Color(0, 0, 0, 1)
+TabBar/colors/font_unselected_color = Color(0, 0, 0, 1)
+TabBar/constants/h_separation = 0
+TabBar/styles/tab_disabled = SubResource("tab")
+TabBar/styles/tab_focus = SubResource("tab_focus")
+TabBar/styles/tab_hovered = SubResource("tab")
+TabBar/styles/tab_selected = SubResource("tab_selected")
+TabBar/styles/tab_unselected = SubResource("tab")
+TabContainer/colors/font_disabled_color = Color(0.502, 0.502, 0.502, 1)
+TabContainer/colors/font_hovered_color = Color(0, 0, 0, 1)
+TabContainer/colors/font_selected_color = Color(0, 0, 0, 1)
+TabContainer/colors/font_unselected_color = Color(0, 0, 0, 1)
+TabContainer/constants/icon_separation = 0
+TabContainer/constants/side_margin = 2
+TabContainer/styles/panel = SubResource("tab_panel")
+TabContainer/styles/tab_disabled = SubResource("tab")
+TabContainer/styles/tab_focus = SubResource("tab_focus")
+TabContainer/styles/tab_hovered = SubResource("tab")
+TabContainer/styles/tab_selected = SubResource("tab_selected")
+TabContainer/styles/tab_unselected = SubResource("tab")
 Taskbar/base_type = &"PanelContainer"
 Taskbar/styles/panel = SubResource("taskbar")
 TaskbarButton/base_type = &"Button"
