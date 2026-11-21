@@ -11,17 +11,54 @@ const INTONATIONS: PackedStringArray = ["Line", "Statement", "Question", "Flat"]
 const CUSTOMERS: String = "res://customers"
 const BUS: StringName = &"VoiceLab"
 
-## Each slider: [key, label, min, max, step, default]. Speech keys go to start(); body and source
-## keys go to set_tweaks() when they differ from their default; glitch keys are effects on the
-## rendered samples; bus keys drive the effects on the VoiceLab bus.
+## Each lever: [key, label, min, max, step, default]. The groups say what a lever is for, not
+## where it acts: START_KEYS go to start(), TWEAK_KEYS to set_tweaks() when they differ from their
+## default, BUS_KEYS drive the effects on the VoiceLab bus, and the rest are effects on the samples.
 const GROUPS: Array = [
-	["Speech", "How the line is said", [
+	["Robotic", "Flatten the human out of it", [
+		["accent", "Melody", 0.0, 1.5, 0.01, 0.14],
+		["drift", "Wander", 0.0, 400.0, 1.0, 5.0],
+		["glide", "Glide", 0.0, 1.0, 0.005, 0.06],
+		["vibrato_depth", "Warble", 0.0, 2.0, 0.01, 0.0],
+		["vibrato_rate", "Warble rate", 0.0, 40.0, 0.1, 6.0],
+		["tension", "Strain", 0.0, 1.0, 0.01, 0.5],
+		["breathiness", "Breath", 0.0, 1.0, 0.01, 0.15],
+		["ring_hz", "Ring mod", 0.0, 3000.0, 1.0, 0.0],
+		["ring_mix", "Ring mod mix", 0.0, 1.0, 0.01, 0.0],
+		["metal_ms", "Metal", 0.0, 20.0, 0.1, 0.0],
+		["metal_fb", "Metal ring", 0.0, 0.97, 0.01, 0.6],
+	]],
+	["Digital", "Too few bits, the wrong clock", [
+		["bits", "Bit depth", 1.0, 16.0, 1.0, 16.0],
+		["hold", "Sample crush", 1.0, 64.0, 1.0, 1.0],
+		["fs", "Clock mismatch", 2000.0, 60000.0, 50.0, 22050.0],
+		["drive", "Clip", 1.0, 40.0, 0.1, 1.0],
+	]],
+	["Corrupted", "Damaged on the way", [
+		["stutter", "Stutter", 0.0, 1.0, 0.01, 0.0],
+		["stutter_ms", "Stutter length", 10.0, 400.0, 1.0, 80.0],
+		["stutter_repeats", "Stutter repeats", 1.0, 12.0, 1.0, 3.0],
+		["reverse", "Reverse", 0.0, 1.0, 0.01, 0.0],
+		["dropout", "Dropouts", 0.0, 1.0, 0.01, 0.0],
+		["chunk_ms", "Chunk size", 20.0, 500.0, 1.0, 120.0],
+		["wobble", "Tape wobble", 0.0, 0.8, 0.01, 0.0],
+		["wobble_hz", "Wobble rate", 0.1, 20.0, 0.1, 3.0],
+	]],
+	["Hacked", "Something else is speaking", [
+		["static", "Static bursts", 0.0, 1.0, 0.01, 0.0],
+		["static_level", "Static level", 0.0, 1.0, 0.01, 0.4],
+		["roughness", "Grit", 0.0, 1.0, 0.01, 0.1],
+		["fry", "Crackle", 0.0, 1.0, 0.01, 0.0],
+		["distortion", "Distortion", 0.0, 1.0, 0.01, 0.0],
+		["shift", "Pitch shift", 0.25, 4.0, 0.01, 1.0],
+		["phaser", "Phaser", 0.0, 4.0, 0.01, 0.0],
+		["chorus", "Double voice", 0.0, 1.0, 0.01, 0.0],
+		["delay", "Echo", 0.0, 0.95, 0.01, 0.0],
+		["reverb", "Reverb", 0.0, 1.0, 0.01, 0.0],
+	]],
+	["Human voice", "Chimera's body and breath", [
 		["rate", "Rate", 0.2, 3.0, 0.01, 1.0],
 		["pitch", "Pitch", 0.2, 3.0, 0.01, 1.0],
-		["accent", "Pitch swing", 0.0, 1.5, 0.01, 0.14],
-		["fs", "Render rate", 2000.0, 60000.0, 50.0, 22050.0],
-	]],
-	["Body", "The throat that says it", [
 		["female", "Female blend", 0.0, 1.0, 0.01, 0.0],
 		["child", "Child blend", 0.0, 1.0, 0.01, 0.0],
 		["scale", "Size", 0.2, 3.0, 0.01, 1.0],
@@ -30,46 +67,23 @@ const GROUPS: Array = [
 		["lips", "Lips", 0.2, 3.0, 0.01, 1.0],
 		["folds", "Vocal folds", 0.05, 3.0, 0.01, 1.0],
 		["open_phase", "Open phase", -0.3, 0.8, 0.01, 0.0],
-	]],
-	["Source", "The folds and the breath", [
-		["glide", "Pitch glide", 0.0, 1.0, 0.005, 0.06],
 		["pressure", "Lung pressure", -10.0, 30.0, 0.1, 7.2],
-		["breathiness", "Breathiness", 0.0, 1.0, 0.01, 0.15],
-		["tension", "Tension", 0.0, 1.0, 0.01, 0.5],
-		["fry", "Vocal fry", 0.0, 1.0, 0.01, 0.0],
-		["roughness", "Roughness", 0.0, 1.0, 0.01, 0.1],
-		["vibrato_depth", "Vibrato depth", 0.0, 2.0, 0.01, 0.0],
-		["vibrato_rate", "Vibrato rate", 0.0, 40.0, 0.1, 6.0],
-		["drift", "Pitch drift", 0.0, 400.0, 1.0, 5.0],
 		["brightness", "Brightness", 0.0, 1.0, 0.01, 0.25],
 	]],
-	["Glitch", "Damage to the samples", [
-		["bits", "Bit depth", 1.0, 16.0, 1.0, 16.0],
-		["hold", "Sample hold", 1.0, 64.0, 1.0, 1.0],
-		["drive", "Clip drive", 1.0, 40.0, 0.1, 1.0],
-		["stutter", "Stutter chance", 0.0, 1.0, 0.01, 0.0],
-		["stutter_ms", "Stutter length", 10.0, 400.0, 1.0, 80.0],
-		["stutter_repeats", "Stutter repeats", 1.0, 12.0, 1.0, 3.0],
-		["reverse", "Reverse chance", 0.0, 1.0, 0.01, 0.0],
-		["dropout", "Dropout chance", 0.0, 1.0, 0.01, 0.0],
-		["chunk_ms", "Chunk size", 20.0, 500.0, 1.0, 120.0],
-		["ring_hz", "Ring mod", 0.0, 3000.0, 1.0, 0.0],
-		["ring_mix", "Ring mod mix", 0.0, 1.0, 0.01, 0.0],
-		["wobble", "Tape wobble", 0.0, 0.8, 0.01, 0.0],
-		["wobble_hz", "Wobble rate", 0.1, 20.0, 0.1, 3.0],
-	]],
-	["Space", "Effects on the way out", [
-		["distortion", "Distortion", 0.0, 1.0, 0.01, 0.0],
-		["shift", "Pitch shift", 0.25, 4.0, 0.01, 1.0],
-		["phaser", "Phaser", 0.0, 4.0, 0.01, 0.0],
-		["chorus", "Chorus", 0.0, 1.0, 0.01, 0.0],
-		["delay", "Echo", 0.0, 0.95, 0.01, 0.0],
-		["reverb", "Reverb", 0.0, 1.0, 0.01, 0.0],
-	]],
 ]
-const TWEAK_GROUPS: PackedStringArray = ["Body", "Source"]
+const START_KEYS: PackedStringArray = ["rate", "pitch", "accent", "fs"]
+const TWEAK_KEYS: PackedStringArray = ["female", "child", "scale", "pharynx", "tongue", "lips", "folds", "open_phase",
+	"glide", "pressure", "breathiness", "tension", "fry", "roughness", "vibrato_depth", "vibrato_rate", "drift", "brightness"]
+## Each character macro, 0 to 1, pulls its levers from their defaults toward these values; when
+## two macros pull one lever, their pulls add up.
+const MACROS: Dictionary = {
+	"Robotic": {"accent": 0.0, "drift": 0.0, "glide": 0.0, "tension": 0.9, "breathiness": 0.0, "ring_hz": 90.0, "ring_mix": 0.55, "metal_ms": 4.0, "metal_fb": 0.75},
+	"Digital": {"bits": 4.0, "hold": 8.0, "fs": 16000.0, "drive": 2.5},
+	"Corrupted": {"stutter": 0.4, "reverse": 0.25, "dropout": 0.15, "wobble": 0.3},
+	"Hacked": {"static": 0.35, "roughness": 0.9, "fry": 0.6, "distortion": 0.6, "chorus": 0.5},
+}
 const UNITS: Dictionary = {"fs": " Hz", "glide": " s", "pressure": " cmH2O", "vibrato_rate": " Hz", "drift": " ct",
-	"stutter_ms": " ms", "chunk_ms": " ms", "ring_hz": " Hz", "wobble_hz": " Hz", "bits": " bit", "rate": "x", "pitch": "x", "shift": "x"}
+	"stutter_ms": " ms", "chunk_ms": " ms", "metal_ms": " ms", "ring_hz": " Hz", "wobble_hz": " Hz", "bits": " bit", "rate": "x", "pitch": "x", "shift": "x"}
 
 const BG := Color("12141a")
 const CARD := Color("1b1e26")
@@ -95,6 +109,8 @@ var _voice: ButtonGroup
 var _intonation: ButtonGroup
 var _voiced: CheckButton
 var _auto: CheckButton
+var _loop: CheckButton
+var _macros: Dictionary = {}  # name -> HSlider
 var _seed: SpinBox
 var _status: Label
 var _wave: Control
@@ -217,12 +233,9 @@ func _spec(key: String) -> Array:
 ## Body and source settings that differ from Chimera's own.
 func _tweaks() -> Dictionary:
 	var tweaks := {}
-	for group: Array in GROUPS:
-		if not group[0] in TWEAK_GROUPS:
-			continue
-		for spec: Array in group[2]:
-			if not is_equal_approx(_value(spec[0]), spec[5]):
-				tweaks[spec[0]] = _value(spec[0])
+	for key in TWEAK_KEYS:
+		if not is_equal_approx(_value(key), _spec(key)[5]):
+			tweaks[key] = _value(key)
 	if not _voiced.button_pressed:
 		tweaks["voiced"] = false
 	if _intonation_index() > 0:
@@ -234,8 +247,8 @@ func _tweaks() -> Dictionary:
 	return tweaks
 
 
-## The glitch effects on [param raw], in order: tape wobble, stutters, reversed and dropped chunks,
-## ring mod, clip drive, sample hold, bit depth. The seed makes the random ones repeatable.
+## The effects on [param raw], in order: tape wobble; stutters, reversed, dropped and static
+## chunks; ring mod, metal, clip, sample crush, bit depth. The seed makes the random ones repeatable.
 func _glitch(raw: PackedFloat32Array) -> PackedFloat32Array:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(_seed.value)
@@ -251,7 +264,7 @@ func _glitch(raw: PackedFloat32Array) -> PackedFloat32Array:
 			t += 1.0 / MIX_RATE
 		out = wobbled
 	var chunk := maxi(1, int(_value("chunk_ms") / 1000.0 * MIX_RATE))
-	if _value("stutter") > 0.0 or _value("reverse") > 0.0 or _value("dropout") > 0.0:
+	if _value("stutter") > 0.0 or _value("reverse") > 0.0 or _value("dropout") > 0.0 or _value("static") > 0.0:
 		var cut := PackedFloat32Array()
 		var stutter_len := maxi(1, int(_value("stutter_ms") / 1000.0 * MIX_RATE))
 		for start in range(0, out.size(), chunk):
@@ -260,6 +273,9 @@ func _glitch(raw: PackedFloat32Array) -> PackedFloat32Array:
 				piece.reverse()
 			if rng.randf() < _value("dropout"):
 				piece.fill(0.0)
+			if rng.randf() < _value("static"):
+				for i in piece.size():
+					piece[i] = lerpf(piece[i], rng.randf_range(-1.0, 1.0) * _value("static_level"), 0.85)
 			if rng.randf() < _value("stutter"):
 				var grain := piece.slice(0, mini(stutter_len, piece.size()))
 				for r in int(_value("stutter_repeats")):
@@ -271,10 +287,18 @@ func _glitch(raw: PackedFloat32Array) -> PackedFloat32Array:
 	var hold := int(_value("hold"))
 	var levels := pow(2.0, _value("bits") - 1.0)
 	var held := 0.0
+	# Metal: a comb filter, the voice ringing in a short metal tube.
+	var metal := PackedFloat32Array()
+	metal.resize(maxi(0, int(_value("metal_ms") / 1000.0 * MIX_RATE)))
+	var metal_fb := _value("metal_fb")
 	for i in out.size():
 		var s := out[i]
 		if ring_mix > 0.0:
 			s = lerpf(s, s * sin(TAU * _value("ring_hz") * i / MIX_RATE), ring_mix)
+		if not metal.is_empty():
+			var slot := i % metal.size()
+			s = s + metal_fb * metal[slot]
+			metal[slot] = s
 		s = clampf(s * drive, -1.0, 1.0)
 		if i % hold == 0:
 			held = s
@@ -294,6 +318,9 @@ func _to_wav(samples: PackedFloat32Array) -> AudioStreamWAV:
 	wav.format = AudioStreamWAV.FORMAT_16_BITS
 	wav.mix_rate = int(MIX_RATE)
 	wav.data = data
+	if _loop != null and _loop.button_pressed:
+		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		wav.loop_end = samples.size()
 	return wav
 
 
@@ -344,9 +371,9 @@ func _randomize() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	for group: Array in GROUPS:
-		if group[0] == "Speech":
-			continue
 		for spec: Array in group[2]:
+			if spec[0] in START_KEYS and spec[0] != "accent":
+				continue
 			# Mostly leave a knob alone, so a random voice stays a voice.
 			_set_quietly(spec[0], rng.randf_range(spec[2], spec[3]) if rng.randf() < 0.35 else spec[5])
 	_seed.set_value_no_signal(rng.randi_range(0, 9999))
@@ -359,6 +386,9 @@ func _reset() -> void:
 			_set_quietly(spec[0], spec[5])
 	_voiced.set_pressed_no_signal(true)
 	_intonation.get_buttons()[0].set_pressed_no_signal(true)
+	for macro: String in _macros:
+		(_macros[macro] as HSlider).set_value_no_signal(0.0)
+		_macros[macro].value_changed.emit(0.0)
 	_on_changed()
 
 
@@ -483,9 +513,18 @@ func _header() -> Control:
 
 
 func _sidebar() -> Control:
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.x = 452
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var side := VBoxContainer.new()
-	side.custom_minimum_size.x = 440
+	side.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	side.add_theme_constant_override("separation", 16)
+	scroll.add_child(side)
+
+	var character := _card("Character", "One lever moves many")
+	side.add_child(character[0])
+	for macro: String in MACROS:
+		character[1].add_child(_macro_row(macro))
 
 	var say := _card("Line", "What to say")
 	side.add_child(say[0])
@@ -499,7 +538,7 @@ func _sidebar() -> Control:
 	say[1].add_child(picker)
 	_text = TextEdit.new()
 	_text.text = "Are you busy? I can go somewhere else."
-	_text.custom_minimum_size.y = 96
+	_text.custom_minimum_size.y = 64
 	_text.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	_text.text_changed.connect(_on_changed)
 	say[1].add_child(_text)
@@ -533,7 +572,7 @@ func _sidebar() -> Control:
 		button.pressed.connect(entry[1])
 		transport.add_child(button)
 	_wave = Control.new()
-	_wave.custom_minimum_size.y = 96
+	_wave.custom_minimum_size.y = 80
 	_wave.draw.connect(_draw_wave)
 	play[1].add_child(_wave)
 	_status = _label("", 14, DIM)
@@ -545,8 +584,12 @@ func _sidebar() -> Control:
 	_auto = CheckButton.new()
 	_auto.text = "Speak on change"
 	_auto.button_pressed = true
-	_auto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	options.add_child(_auto)
+	_loop = CheckButton.new()
+	_loop.text = "Loop"
+	_loop.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_loop.toggled.connect(func(_on: bool) -> void: speak())
+	options.add_child(_loop)
 	options.add_child(_label("Seed", 15, DIM))
 	_seed = SpinBox.new()
 	_seed.max_value = 9999
@@ -563,7 +606,47 @@ func _sidebar() -> Control:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.pressed.connect(entry[1])
 		files.add_child(button)
-	return side
+	return scroll
+
+
+func _macro_row(macro: String) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	var label := _label(macro, 18, TEXT)
+	label.custom_minimum_size.x = 110
+	row.add_child(label)
+	var slider := HSlider.new()
+	slider.max_value = 1.0
+	slider.step = 0.01
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(slider)
+	var chip := _label("0%", 14, TEXT)
+	chip.custom_minimum_size.x = 64
+	chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	chip.add_theme_stylebox_override("normal", _box(RAISED, 8, 3))
+	row.add_child(chip)
+	_macros[macro] = slider
+	slider.value_changed.connect(func(value: float) -> void:
+		chip.text = "%d%%" % roundi(value * 100.0)
+		chip.add_theme_color_override("font_color", BG if value > 0.0 else TEXT)
+		chip.add_theme_stylebox_override("normal", _box(ACCENT if value > 0.0 else RAISED, 8, 3))
+		_apply_macros()
+		_on_changed())
+	return row
+
+
+# Sets every lever that a macro pulls: its default plus each macro's pull toward its target.
+func _apply_macros() -> void:
+	var pulled := {}
+	for macro: String in MACROS:
+		var amount: float = _macros[macro].value
+		for key: String in MACROS[macro]:
+			var spec := _spec(key)
+			pulled[key] = pulled.get(key, spec[5]) + amount * (MACROS[macro][key] - spec[5])
+	for key: String in pulled:
+		var spec := _spec(key)
+		_set_quietly(key, clampf(pulled[key], spec[2], spec[3]))
 
 
 func _controls() -> Control:
