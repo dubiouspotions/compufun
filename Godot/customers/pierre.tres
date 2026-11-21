@@ -30,6 +30,7 @@
 [ext_resource type="Texture2D" path="res://customers/pierre/castle_02.png" id="castle_02"]
 [ext_resource type="Texture2D" path="res://customers/pierre/castle_03.png" id="castle_03"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/bitmap_32.png" id="icon_bitmap"]
+[ext_resource type="PackedScene" path="res://props/cap.tscn" id="hat_cap"]
 
 [sub_resource type="Resource" id="DialogueLine_1"]
 script = ExtResource("dl")
@@ -377,3 +378,4 @@ person = ExtResource("1_teewq")
 conversations = Array[ExtResource("cv")]([SubResource("Conversation_arrive")])
 problem = ExtResource("2_7x3xp")
 computer = SubResource("Resource_aan2m")
+hat = ExtResource("hat_cap")
