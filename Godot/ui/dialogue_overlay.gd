@@ -38,9 +38,6 @@ const _MATCH_NEUTRAL_HEIGHT := "young_entrepreneur/portrait_irritated03.png"
 @export_range(1.0, 15.0) var talk_shakes: float = 5.0
 ## How quickly the talking follows the voice's level: higher is snappier, lower is smoother.
 @export_range(1.0, 60.0) var talk_follow: float = 25.0
-## How many characters a second a line types out at; 0 shows the whole line at once. A click on
-## Next while it types shows the rest.
-@export_range(0.0, 200.0) var chars_per_second: float = 0.0
 ## The Next button's text on every line but the last, and on the last.
 @export var next_text: String = "Next"
 @export var last_text: String = "OK"
@@ -58,13 +55,11 @@ var _rise: Tween
 # Where the portrait's slot stands when it has risen: its offset_top and offset_bottom in the scene.
 var _slot_top: float
 var _slot_bottom: float
-# The characters typed so far of the current line; -1 when the whole line shows.
-var _typed: float = -1.0
 # The pixels of the portrait's texture that are not transparent.
 var _figure: Rect2i
 
 @onready var _name: Label = %NameLabel
-@onready var _text: Label = %LineLabel
+@onready var _text: TypedLabel = %LineLabel
 @onready var _portrait_slot: Panel = %Portrait
 @onready var _portrait: TextureRect = %PortraitTexture
 @onready var _next: Button = %NextButton
@@ -82,11 +77,6 @@ func _process(delta: float) -> void:
 	if not is_visible_in_tree():
 		return
 	_time += delta
-	if _typed >= 0.0:
-		_typed += delta * chars_per_second
-		_text.visible_characters = int(_typed)
-		if _typed >= _text.get_total_character_count():
-			_show_whole_line()
 	_talk = lerpf(_talk, _voice.level() if _voiced else 0.0, minf(delta * talk_follow, 1.0))
 	var sway := sway_degrees * sin(TAU * _time / sway_seconds)
 	var shake := talk_degrees * _talk * sin(TAU * _time * talk_shakes)
@@ -297,11 +287,9 @@ func _center_run(image: Image, y: int, axis: int) -> int:
 
 func _show_line() -> void:
 	var line := _lines[_line]
-	_text.text = line.text if line != null else ""
+	_text.type_out(line.text if line != null else "")
 	_show_portrait(line.pose if line != null else _NEUTRAL)
 	_next.text = next_text if _line < _lines.size() - 1 else last_text
-	_typed = 0.0 if chars_per_second > 0.0 else -1.0
-	_text.visible_characters = 0 if _typed >= 0.0 else -1
 	_speak(line)
 
 
@@ -323,14 +311,9 @@ func _speak(line: DialogueLine) -> void:
 		_voice.say(line, _customer.voice, VoiceEffect.of(line, _conversation))
 
 
-func _show_whole_line() -> void:
-	_typed = -1.0
-	_text.visible_characters = -1
-
-
 func _on_next() -> void:
-	if _typed >= 0.0:
-		_show_whole_line()
+	if _text.is_typing():  # a click while the line types shows the rest
+		_text.finish()
 		return
 	if _line >= _lines.size() - 1:
 		_voice.hush()
