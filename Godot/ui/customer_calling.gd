@@ -1,15 +1,20 @@
 class_name CustomerCalling
 extends PanelContainer
 ## A waiting customer calls out while the player looks elsewhere, until stop(): one line at a
-## time, spoken in the customer's voice. The lines are grouped by pose, in the order each pose
-## first appears; each call says a random line of the next group (never the one just said), so the
-## customer gets more annoyed, then starts over.
+## time, spoken in the customer's voice. The lines are grouped by pose, calmest first, in the order
+## each pose first appears; the customer says [member lines_per_mood] random lines of a group
+## (never the one just said) before the next, so they get more annoyed, and once at the end they
+## stay annoyed, going round from group [member loop_from_mood] on.
 
 ## The id of the conversation a customer can have for this; without it they use [member lines].
 const CONVERSATION: StringName = &"waiting"
 
 ## What a customer says while waiting, unless they have their own [constant CONVERSATION].
 @export var lines: Conversation = preload("res://customers/conversations/waiting.tres")
+## How many lines the customer says in one mood before the next.
+@export var lines_per_mood: int = 2
+## The mood group (0 is the calmest) that the customer goes back to after the angriest.
+@export var loop_from_mood: int = 3
 ## The wait before the first line, in seconds.
 @export var first_delay: float = 2.0
 ## The silence between one line and the next, in seconds.
@@ -72,15 +77,26 @@ func _on_timer() -> void:
 		hide()
 		_timer.start(gap)
 		return
-	var choices: Array = _moods[_step % _moods.size()].filter(func(l: DialogueLine) -> bool: return l != _last)
+	var mood: Array = _moods[_mood_of(_step)]
+	var choices: Array = mood.filter(func(l: DialogueLine) -> bool: return l != _last)
 	if choices.is_empty():
-		choices = _moods[_step % _moods.size()]
+		choices = mood
 	var line: DialogueLine = choices.pick_random()
 	_step += 1
 	_last = line
 	_label.text = "%s: %s" % [_customer.spoken_name(), line.text]
 	show()
 	_timer.start(maxf(show_seconds, _voice.say(line, _customer.voice, VoiceType.of(line, _conversation))))
+
+
+# The mood group of the line at [param step]: up through the groups, then round the angriest ones.
+func _mood_of(step: int) -> int:
+	var count := _moods.size()
+	var mood := step / maxi(1, lines_per_mood)
+	if mood < count:
+		return mood
+	var from := clampi(loop_from_mood, 0, count - 1)
+	return from + (mood - count) % (count - from)
 
 
 static func _by_pose(lines: Array[DialogueLine]) -> Array[Array]:
