@@ -18,6 +18,7 @@ func run() -> void:
 	setup = state.setup
 
 	test_systray()
+	test_date_time()
 
 	state.free()
 	game.jobs = [] as Array[Job]
@@ -33,6 +34,49 @@ func test_systray() -> void:
 	check("and follows a Date/Time change at once", clock.text, Win95Time.clock(state.now()))
 	state.apply_settings({&"clock_offset_seconds": 0} as Dictionary[StringName, Variant])
 	tray.free()
+
+
+func test_date_time() -> void:
+	var desktop: Control = load("res://win95/desktop.gd").new()  # loaded at run time, like ComputerState
+	desktop.computer = state
+	root.add_child(desktop)
+	var sheet: Node = desktop.call(&"open", load("res://win95/applets/date_time.tscn"))
+	var page: Node = sheet.get_node("%Tabs/Date & Time")
+	var day1: Dictionary = state.now()
+	var shown: Dictionary = page.call(&"shown")
+	check("Date & Time opens on the computer's date", [shown.year, shown.month, shown.day], [day1.year, day1.month, day1.day])
+	check("and changes nothing until edited", page.call(&"pending"), {})
+
+	(sheet.get_node("%Year") as SpinBox).value = 1999
+	var month: OptionButton = sheet.get_node("%Month")
+	month.select(1)
+	month.item_selected.emit(1)
+	shown = page.call(&"shown")
+	check("May 31 in February becomes its last day", [shown.year, shown.month, shown.day], [1999, 2, 28])
+	month.select(11)
+	month.item_selected.emit(11)
+	sheet.get_node("%Calendar").emit_signal(&"day_picked", 31)
+	var time: Node = sheet.get_node("%Time")
+	time.emit_signal(&"time_edited", 23, 59, 0)
+	time.set(&"segment", 0)
+	time.call(&"step", 1)
+	shown = page.call(&"shown")
+	check("the hour wraps without changing the date", [shown.month, shown.day, shown.hour, shown.minute], [12, 31, 0, 59])
+	time.call(&"step", -1)
+	shown = page.call(&"shown")
+	check("the page shows the chosen date and time", [shown.year, shown.month, shown.day, shown.hour, shown.minute], [1999, 12, 31, 23, 59])
+	check("an edit enables Apply", (sheet.get_node("%Apply") as Button).disabled, false)
+	var pending: Dictionary = page.call(&"pending")
+	check("pending() is the offset that shows that date", pending, {&"clock_offset_seconds": state.offset_for(shown)})
+
+	sheet.call(&"apply")
+	var now: Dictionary = state.now()
+	check("Apply moves the computer's clock", [now.year, now.month, now.day, now.hour, now.minute], [1999, 12, 31, 23, 59])
+	shown = page.call(&"shown")
+	check("and the page keeps showing it", [shown.year, shown.month, shown.day, shown.hour], [1999, 12, 31, 23])
+	check("with nothing left to apply", page.call(&"pending"), {})
+	desktop.free()
+	state.apply_settings({&"clock_offset_seconds": 0} as Dictionary[StringName, Variant])
 
 
 func customer() -> Customer:
