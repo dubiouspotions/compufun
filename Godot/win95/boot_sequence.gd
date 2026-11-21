@@ -15,23 +15,28 @@ signal _any_key
 @export_multiline var disk_error: String = "Non-System disk or disk error\nReplace and press any key when ready"
 ## Starts as soon as the node is ready; turn off to start it with play().
 @export var play_on_start: bool = true
-## The power-on self test, one line at a time. %MEMORY% is the memory test, which counts up.
+## The power-on self test, one line at a time, in BBCode: [color=#ffffff] marks the bright words.
+## %MEMORY% is the memory test, which counts up.
 @export_multiline var post_lines: PackedStringArray = [
 	"CompuFun Modular BIOS v4.51PG, An Energy Star Ally",
 	"Copyright (C) 1984-95, CompuFun Ltd.",
 	"",
+	"Version 1.03CF",
+	"",
 	"PENTIUM-S CPU at 100MHz",
 	"%MEMORY%",
 	"",
-	"CompuFun Plug and Play BIOS Extension v1.0A",
+	"CompuFun Plug and Play BIOS Extension  v1.0A",
 	"Copyright (C) 1995, CompuFun Ltd.",
-	"  Detecting IDE Primary Master  ... QUANTUM FIREBALL1080A",
-	"  Detecting IDE Primary Slave   ... None",
-	"  Detecting IDE Secondary Master... CD-ROM 4X",
-	"  Detecting IDE Secondary Slave ... None",
-	"",
-	"",
-	"Press DEL to enter SETUP",
+	"   Detecting HDD Primary Master   ... QUANTUM FIREBALL1080A",
+	"   Detecting HDD Primary Slave    ... [Press [color=#ffffff]F4[/color] to skip]",
+	"   Detecting HDD Secondary Master ... CD-ROM 4X",
+	"   Detecting HDD Secondary Slave  ... None",
+]
+## The lines at the bottom of the screen during the whole test, in BBCode.
+@export_multiline var footer_lines: PackedStringArray = [
+	"Press [color=#ffffff]DEL[/color] to enter SETUP",
+	"11/09/95-i430FX-CF451PG-00",
 ]
 ## Kilobytes of memory that the memory test counts up to.
 @export var memory_kb: int = 16384
@@ -68,7 +73,8 @@ var _playing: bool = false
 var _bar_offset: float = 0.0
 var _players: Array[AudioStreamPlayer] = []
 
-@onready var _post: Label = %Post
+@onready var _post: RichTextLabel = %Post
+@onready var _footer: RichTextLabel = %Footer
 @onready var _starting: Label = %Starting
 @onready var _splash: Control = %Splash
 @onready var _bar: Control = %Bar
@@ -125,6 +131,7 @@ func play() -> void:
 func _run_post() -> void:
 	_show_stage(_post)
 	_post.text = ""
+	_footer.text = "\n".join(footer_lines)
 	_sound(power_on_sound)
 	var drive_started := false
 	for line in post_lines:
@@ -191,6 +198,7 @@ func _wait(seconds: float) -> bool:
 func _show_stage(stage: Control) -> void:
 	for other: Control in [_post, _starting, _splash]:
 		other.visible = other == stage
+	_footer.visible = stage == _post
 
 
 func _draw_bar() -> void:
