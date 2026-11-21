@@ -96,6 +96,7 @@ func _ready() -> void:
 	add_child(_context)
 	_context.chosen.connect(_on_action)
 	_wire_view(_icons)
+	_systray.computer = _state
 	_systray.mute_toggled.connect(func(_muted: bool) -> void: _state.set_sound(_systray.volume, _systray.muted))
 	_systray.volume_changed.connect(func(_volume: float) -> void: _state.set_sound(_systray.volume, _systray.muted))
 	_no_signal.visible = not _state.is_on
