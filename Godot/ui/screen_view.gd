@@ -1,11 +1,9 @@
 class_name ScreenView
 extends Control
 ## The Screen View: a sharp copy of the screen buffer, laid exactly over the screen of the 3D
-## monitor. It fades in while the camera zooms into the monitor and lands at 800 x 600 (1:1 in
-## 1080p), where it takes the mouse and the keys. The 3D monitor shows the same buffer as its
+## monitor. It fades in while the camera zooms into the monitor and lands at the buffer's size (1:1
+## in 1080p), where it takes the mouse and the keys. The 3D monitor shows the same buffer as its
 ## texture, so there is one desktop in one place.
-
-const SCREEN_SIZE: Vector2 = Vector2(800, 600)
 
 ## The desktop that runs in the screen buffer. Its root should have the signal
 ## problem_fixed(problem: Problem); without it, a placeholder Fix button appears under the screen.
@@ -30,6 +28,8 @@ func _ready() -> void:
 		push_error("ScreenView: desktop_scene is empty")
 		return
 	var desktop := desktop_scene.instantiate()
+	if desktop is Control and (desktop as Control).custom_minimum_size != Vector2(_buffer.size):
+		push_error("ScreenView: %s is %s, but the screen buffer is %s" % [desktop_scene.resource_path, (desktop as Control).custom_minimum_size, _buffer.size])
 	_buffer.add_child(desktop)
 	_has_fix_signal = desktop.has_signal(&"problem_fixed")
 	if _has_fix_signal:
@@ -70,15 +70,16 @@ func set_open(open: bool) -> void:
 
 
 ## Lays the screen over [param rect]: the screen of the 3D monitor, in canvas coordinates. A rect
-## within 1 % of 800 x 600 snaps to it, so the open screen is sharp.
+## within 1 % of the buffer's size snaps to it, so the open screen is sharp.
 func follow(rect: Rect2) -> void:
-	var sharp := absf(rect.size.x - SCREEN_SIZE.x) <= SCREEN_SIZE.x * 0.01
+	var screen_size := Vector2(_buffer.size)
+	var sharp := absf(rect.size.x - screen_size.x) <= screen_size.x * 0.01
 	if sharp:
-		rect = Rect2((rect.get_center() - SCREEN_SIZE * 0.5).round(), SCREEN_SIZE)
+		rect = Rect2((rect.get_center() - screen_size * 0.5).round(), screen_size)
 	_container.position = rect.position
-	_container.scale = rect.size / SCREEN_SIZE
+	_container.scale = rect.size / screen_size
 	_container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST if sharp else CanvasItem.TEXTURE_FILTER_LINEAR
-	_fix.position = Vector2(rect.get_center().x - _fix.size.x * 0.5, rect.end.y + 24.0)
+	_fix.position = Vector2(rect.end.x + 24.0, rect.end.y - _fix.size.y)
 
 
 func _on_problem_fixed(_problem: Problem) -> void:

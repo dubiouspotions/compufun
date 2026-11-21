@@ -427,7 +427,7 @@ back = &"Main"
 screen = 3
 
 [node name="Screen" type="Marker3D" parent="Views" unique_id=1028610608]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 1.255, -0.4948)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 1.255, -0.7266)
 script = ExtResource("21_sg8ra")
 back = &"Main"
 screen = 2
