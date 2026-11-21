@@ -83,7 +83,7 @@ func customer_arrived() -> void:
 	changed.emit()
 
 
-## The dialogue calls this after the player's reply: the computer stays on the counter.
+## The dialogue calls this after its last line: the computer stays on the counter.
 func dialogue_finished() -> void:
 	if phase != Phase.TALKING:
 		return

@@ -14,7 +14,6 @@ text = "Hello. I can\'t hear any sounds on my computer."
 script = ExtResource("cv")
 id = &"arrive"
 lines = Array[ExtResource("dl")]([SubResource("DialogueLine_1")])
-replies = PackedStringArray("I\'ll check it.", "Leave it here.")
 
 [resource]
 script = ExtResource("3_10hmr")
