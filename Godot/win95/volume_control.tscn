@@ -1,0 +1,50 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/volume_control.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/multimedia_16.png" id="icon"]
+
+[node name="VolumeControl" type="PanelContainer"]
+theme = ExtResource("theme")
+script = ExtResource("script")
+custom_minimum_size = Vector2(150, 0)
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Volume Control"
+icon = ExtResource("icon")
+show_minimize = true
+
+[node name="Body" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="Rows" type="VBoxContainer" parent="VBox/Body"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Heading" type="Label" parent="VBox/Body/Rows"]
+layout_mode = 2
+text = "Volume"
+horizontal_alignment = 1
+
+[node name="Slider" type="VSlider" parent="VBox/Body/Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="Mute" type="CheckBox" parent="VBox/Body/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Mute all"

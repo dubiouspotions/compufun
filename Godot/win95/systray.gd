@@ -7,6 +7,8 @@ signal mute_toggled(muted: bool)
 ## The player moved the volume slider; `volume` runs from 0 to 100.
 signal volume_changed(volume: float)
 
+## The group of the systray, for Volume Control to find the one volume and mute.
+const GROUP: StringName = &"win95_systray"
 const _SPEAKER := preload("res://win95/theme/icons/tray_speaker_16.png")
 const _SPEAKER_MUTED := preload("res://win95/theme/icons/tray_speaker_muted_16.png")
 
@@ -28,6 +30,10 @@ const _SPEAKER_MUTED := preload("res://win95/theme/icons/tray_speaker_muted_16.p
 @onready var _popup: PopupPanel = %VolumePopup
 @onready var _slider: VSlider = %VolumeSlider
 @onready var _mute: CheckBox = %Mute
+
+
+func _enter_tree() -> void:
+	add_to_group(GROUP)
 
 
 func _ready() -> void:
