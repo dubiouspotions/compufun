@@ -144,13 +144,13 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Conversation**: One exchange with a customer: the lines they say, one at a time. A `Conversation` resource in the `Customer` file; `Game` plays the first one whose trigger and condition match.
 *Avoid:* dialog, dialogue tree, script.
 
-**Name**: A person's name, shown only on that person's computer (`Person.name`). Dialogue does not show it.
+**Name**: A person's name, for use on that person's computer (`Person.name`). Dialogue does not show it.
 *Avoid:* full name, real name, legal name.
 
 **Nickname**: What the dialogue calls a person (`Person.nickname`). While it is empty, dialogue uses the customer's display name.
 *Avoid:* alias, handle, screen name.
 
-**Email**: A person's address, shown only on that person's computer (`Person.email`). Dialogue does not show it.
+**Email**: A person's address, for use on that person's computer (`Person.email`). Dialogue does not show it.
 *Avoid:* mail, address, account.
 
 **Dialogue tab**: The editor tab (`addons/dialogue_editor/`) that lists every customer and edits their conversations.
