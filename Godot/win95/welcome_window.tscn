@@ -1,43 +1,43 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://nu7hal0154hv"]
 
-[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
-[ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="font_bold"]
+[ext_resource type="FontFile" uid="uid://foknlu6tjkl7" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="font_bold"]
+[ext_resource type="Theme" uid="uid://cg0mcpaggb3c5" path="res://win95/win95.tres" id="theme"]
 
-[node name="WelcomeWindow" type="PanelContainer"]
+[node name="WelcomeWindow" type="PanelContainer" unique_id=546592946]
 custom_minimum_size = Vector2(491, 279)
 offset_right = 491.0
 offset_bottom = 279.0
 theme = ExtResource("theme")
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="VBox" type="VBoxContainer" parent="." unique_id=487282804]
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="TitleBar" type="PanelContainer" parent="VBox"]
+[node name="TitleBar" type="PanelContainer" parent="VBox" unique_id=1404069971]
 layout_mode = 2
 theme_type_variation = &"TitleBar"
 
-[node name="Row" type="HBoxContainer" parent="VBox/TitleBar"]
+[node name="Row" type="HBoxContainer" parent="VBox/TitleBar" unique_id=423581765]
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="Title" type="Label" parent="VBox/TitleBar/Row"]
+[node name="Title" type="Label" parent="VBox/TitleBar/Row" unique_id=671397532]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"TitleLabel"
 text = "Welcome"
 
-[node name="CloseCaption" type="Button" parent="VBox/TitleBar/Row"]
+[node name="CloseCaption" type="Button" parent="VBox/TitleBar/Row" unique_id=697554535]
 custom_minimum_size = Vector2(16, 14)
 layout_mode = 2
 focus_mode = 0
 theme_type_variation = &"CaptionCloseButton"
 
-[node name="Body" type="Control" parent="VBox"]
+[node name="Body" type="Control" parent="VBox" unique_id=524475102]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Heading" type="HBoxContainer" parent="VBox/Body"]
+[node name="Heading" type="HBoxContainer" parent="VBox/Body" unique_id=1986817161]
 layout_mode = 0
 offset_left = 17.0
 offset_top = 14.0
@@ -45,18 +45,18 @@ offset_right = 340.0
 offset_bottom = 40.0
 theme_override_constants/separation = 0
 
-[node name="WelcomeTo" type="Label" parent="VBox/Body/Heading"]
+[node name="WelcomeTo" type="Label" parent="VBox/Body/Heading" unique_id=1490110394]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Welcome to "
 
-[node name="Windows" type="Label" parent="VBox/Body/Heading"]
+[node name="Windows" type="Label" parent="VBox/Body/Heading" unique_id=1036513781]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("font_bold")
 theme_override_font_sizes/font_size = 24
 text = "Windows"
 
-[node name="Version" type="Label" parent="VBox/Body/Heading"]
+[node name="Version" type="Label" parent="VBox/Body/Heading" unique_id=1429646777]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0.502, 0.502, 0.502, 1)
@@ -64,7 +64,7 @@ theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 24
 text = "95"
 
-[node name="Tip" type="Panel" parent="VBox/Body"]
+[node name="Tip" type="Panel" parent="VBox/Body" unique_id=713906404]
 layout_mode = 0
 offset_left = 15.0
 offset_top = 49.0
@@ -72,14 +72,14 @@ offset_right = 325.0
 offset_bottom = 202.0
 theme_type_variation = &"TipPanel"
 
-[node name="Bulb" type="TextureRect" parent="VBox/Body/Tip"]
+[node name="Bulb" type="TextureRect" parent="VBox/Body/Tip" unique_id=12890068]
 layout_mode = 0
 offset_left = 18.0
 offset_top = 21.0
 offset_right = 50.0
 offset_bottom = 53.0
 
-[node name="DidYouKnow" type="Label" parent="VBox/Body/Tip"]
+[node name="DidYouKnow" type="Label" parent="VBox/Body/Tip" unique_id=1387331484]
 layout_mode = 0
 offset_left = 60.0
 offset_top = 29.0
@@ -88,7 +88,7 @@ offset_bottom = 42.0
 theme_override_fonts/font = ExtResource("font_bold")
 text = "Did you know..."
 
-[node name="TipText" type="Label" parent="VBox/Body/Tip"]
+[node name="TipText" type="Label" parent="VBox/Body/Tip" unique_id=1018461950]
 layout_mode = 0
 offset_left = 60.0
 offset_top = 61.0
@@ -97,7 +97,7 @@ offset_bottom = 140.0
 text = "If you don't know how to do something, you can look it up in Help. Just click the Start button, and then click Help."
 autowrap_mode = 3
 
-[node name="WhatsNew" type="Button" parent="VBox/Body"]
+[node name="WhatsNew" type="Button" parent="VBox/Body" unique_id=1730160206]
 layout_mode = 0
 offset_left = 356.0
 offset_top = 49.0
@@ -105,7 +105,7 @@ offset_right = 470.0
 offset_bottom = 72.0
 text = "What's New"
 
-[node name="OnlineRegistration" type="Button" parent="VBox/Body"]
+[node name="OnlineRegistration" type="Button" parent="VBox/Body" unique_id=838528637]
 layout_mode = 0
 offset_left = 356.0
 offset_top = 78.0
@@ -113,7 +113,7 @@ offset_right = 470.0
 offset_bottom = 101.0
 text = "Online Registration"
 
-[node name="NextTip" type="Button" parent="VBox/Body"]
+[node name="NextTip" type="Button" parent="VBox/Body" unique_id=906732166]
 layout_mode = 0
 offset_left = 356.0
 offset_top = 107.0
@@ -121,14 +121,14 @@ offset_right = 470.0
 offset_bottom = 130.0
 text = "Next Tip"
 
-[node name="Separator" type="HSeparator" parent="VBox/Body"]
+[node name="Separator" type="HSeparator" parent="VBox/Body" unique_id=1278842932]
 layout_mode = 0
 offset_left = 355.0
 offset_top = 202.0
 offset_right = 467.0
 offset_bottom = 204.0
 
-[node name="Close" type="Button" parent="VBox/Body"]
+[node name="Close" type="Button" parent="VBox/Body" unique_id=1923148648]
 layout_mode = 0
 offset_left = 356.0
 offset_top = 216.0
@@ -137,7 +137,7 @@ offset_bottom = 239.0
 theme_type_variation = &"DefaultButton"
 text = "Close"
 
-[node name="ShowAtStartup" type="CheckBox" parent="VBox/Body"]
+[node name="ShowAtStartup" type="CheckBox" parent="VBox/Body" unique_id=1424554999]
 layout_mode = 0
 offset_left = 15.0
 offset_top = 219.0
