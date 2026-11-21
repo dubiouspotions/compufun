@@ -42,6 +42,11 @@ sound.** That sound was playing when the game quit: the city ambience always is,
 sometimes. It happens only at exit and only on some runs, and it needs no fix. Any other object
 in the `--verbose` list of leaks is a real leak. — 2026-11
 
+**A custom cursor set in Project Settings logs "Failed loading resource" in a fresh checkout,
+and CI exports from one.** `display/mouse_cursor/custom_image` is read before the image is
+imported. Set the cursor in code with `Input.set_custom_mouse_cursor` once the game runs (see
+`ui/screen_view.gd`); the loading screen keeps the system arrow. — 2026-11
+
 **A hand-written scene logs an engine error on load.** It references a resource by a UID that
 the cache doesn't know. Use path-only `ext_resource` lines in scenes you write by hand.
 — 2026-10
