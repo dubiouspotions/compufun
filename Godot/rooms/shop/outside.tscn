@@ -274,22 +274,22 @@ mesh = ExtResource("tree_round_b")
 [node name="Tree8" parent="." unique_id=834999383 instance=ExtResource("9_iqjyn")]
 transform = Transform3D(1.6990236, 0, 0.05761334, 0, 1.7, 0, -0.05761334, 0, 1.6990236, 14, 0, -11.6)
 
-[node name="Back0" type="MeshInstance3D" parent="." unique_id=1490913025]
+[node name="Back0" type="MeshInstance3D" parent="." unique_id=1490913025 groups=["alley_buildings"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 4.5, -25.6)
 material_override = ExtResource("6_byp5n")
 mesh = SubResource("BoxMesh_rap5q")
 
-[node name="Back1" type="MeshInstance3D" parent="." unique_id=959923783]
+[node name="Back1" type="MeshInstance3D" parent="." unique_id=959923783 groups=["alley_buildings"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.8, -25.6)
 material_override = ExtResource("10_vg285")
 mesh = SubResource("BoxMesh_6jeom")
 
-[node name="Back2" type="MeshInstance3D" parent="." unique_id=1010401512]
+[node name="Back2" type="MeshInstance3D" parent="." unique_id=1010401512 groups=["alley_buildings"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 5.5, -25.6)
 material_override = ExtResource("11_ikd6j")
 mesh = SubResource("BoxMesh_mhmwd")
 
-[node name="Back3" type="MeshInstance3D" parent="." unique_id=1794143583]
+[node name="Back3" type="MeshInstance3D" parent="." unique_id=1794143583 groups=["alley_buildings"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 3.5, -25.6)
 material_override = ExtResource("6_byp5n")
 mesh = SubResource("BoxMesh_4wrp8")

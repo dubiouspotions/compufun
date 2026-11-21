@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="4_hotspot"]
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="5_plastic"]
 [ext_resource type="Material" path="res://materials/vga_blue_plastic.tres" id="6_vga_blue"]
+[ext_resource type="PackedScene" path="res://props/parts/mouse.tscn" id="desk_mouse"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_outline"]
 cull_mode = 1
@@ -23,6 +24,9 @@ unique_name_in_owner = true
 
 [node name="Keyboard" parent="." instance=ExtResource("3_keyboard")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.23)
+
+[node name="Mouse" parent="." instance=ExtResource("desk_mouse") groups=["desk_mouse"]]
+transform = Transform3D(-0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, -0.9659258, 0.32, 0, 0.22)
 
 [node name="ScreenHotspot" parent="." instance=ExtResource("4_hotspot")]
 unique_name_in_owner = true

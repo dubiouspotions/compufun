@@ -5,6 +5,9 @@ extends Resource
 
 ## The name dialogue uses while the person's nickname is empty.
 @export var display_name: String = ""
+## True for a customer that the story does not need. Only such a customer gets the [x] of the
+## corruption sign customer_x, which sends them away for good.
+@export var regular: bool = false
 @export var person: Person
 @export var conversations: Array[Conversation] = []
 @export var problem: Problem

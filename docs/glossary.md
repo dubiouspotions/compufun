@@ -181,3 +181,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 **Pointer trails**: The ghost pointers that follow the mouse on a computer whose Mouse settings turn them on (`Win95Setup.pointer_trails`, drawn by `win95/pointer_trails.gd`).
 *Avoid:* mouse trails, cursor trail.
+
+**Corruption sign**: One of Cambion's changes to the shop, such as the blue logo (`CorruptionSign`, `corruption/<id>.tscn`). It shows while its flag `sign_<id>` is set and its feature switch `enabled` is on.
+*Avoid:* effect, glitch, event.
+
+**Trigger layer**: Whatever sets a corruption sign's flag: for now only the F2 Signs tab; later the days, the conversations or a story script.
+*Avoid:* scheduler, director.

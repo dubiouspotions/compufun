@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://ui/debug_menu.gd" id="1_bbiiw"]
 [ext_resource type="Script" path="res://ui/debug_game_tab.gd" id="2_gtab"]
 [ext_resource type="Script" path="res://ui/debug_presets.gd" id="3_ptab"]
+[ext_resource type="Script" path="res://ui/debug_signs_tab.gd" id="4_stab"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.08, 0.08, 0.09, 0.97)
@@ -149,3 +150,14 @@ metadata/_tab_index = 2
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("3_ptab")
+
+[node name="Signs" type="ScrollContainer" parent="Panel/Margin/Box/Tabs"]
+visible = false
+layout_mode = 2
+horizontal_scroll_mode = 0
+metadata/_tab_index = 3
+
+[node name="Content" type="VBoxContainer" parent="Panel/Margin/Box/Tabs/Signs"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("4_stab")
