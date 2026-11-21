@@ -48,9 +48,9 @@ signal finished
 ## The colours of the bar that scrolls along the bottom of the splash screen, as Win95 cycled
 ## its palette there; the gradient repeats every bar_period pixels.
 @export var bar_gradient: Gradient
-@export var bar_period: float = 160.0
+@export var bar_period: float = 640.0
 ## How fast the bar scrolls, in pixels per second.
-@export var bar_speed: float = 120.0
+@export var bar_speed: float = 320.0
 
 var _skipped: bool = false
 var _playing: bool = false
