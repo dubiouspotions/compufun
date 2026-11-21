@@ -10,30 +10,80 @@ pose = &"neutral"
 
 [sub_resource type="Resource" id="line_2"]
 script = ExtResource("dl")
+text = "Hi?"
+pose = &"neutral"
+
+[sub_resource type="Resource" id="line_3"]
+script = ExtResource("dl")
+text = "Hello there?"
+pose = &"neutral"
+
+[sub_resource type="Resource" id="line_4"]
+script = ExtResource("dl")
+text = "Anyone here?"
+pose = &"neutral"
+
+[sub_resource type="Resource" id="line_5"]
+script = ExtResource("dl")
 text = "Are you there?"
 pose = &"thinking"
 
-[sub_resource type="Resource" id="line_3"]
+[sub_resource type="Resource" id="line_6"]
+script = ExtResource("dl")
+text = "Is anybody back there?"
+pose = &"thinking"
+
+[sub_resource type="Resource" id="line_7"]
+script = ExtResource("dl")
+text = "Hmm... hello?"
+pose = &"thinking"
+
+[sub_resource type="Resource" id="line_8"]
 script = ExtResource("dl")
 text = "Hello?"
 pose = &"irritated01"
 
-[sub_resource type="Resource" id="line_4"]
+[sub_resource type="Resource" id="line_9"]
 script = ExtResource("dl")
 text = "Excuse me..."
 pose = &"irritated01"
 
-[sub_resource type="Resource" id="line_5"]
+[sub_resource type="Resource" id="line_10"]
+script = ExtResource("dl")
+text = "Hello-o?"
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="line_11"]
 script = ExtResource("dl")
 text = "Are you busy?"
 pose = &"irritated02"
 
-[sub_resource type="Resource" id="line_6"]
+[sub_resource type="Resource" id="line_12"]
+script = ExtResource("dl")
+text = "I'm still waiting here."
+pose = &"irritated02"
+
+[sub_resource type="Resource" id="line_13"]
+script = ExtResource("dl")
+text = "Can someone help me?"
+pose = &"irritated02"
+
+[sub_resource type="Resource" id="line_14"]
 script = ExtResource("dl")
 text = "I can go somewhere else."
+pose = &"irritated03"
+
+[sub_resource type="Resource" id="line_15"]
+script = ExtResource("dl")
+text = "I don't have all day."
+pose = &"irritated03"
+
+[sub_resource type="Resource" id="line_16"]
+script = ExtResource("dl")
+text = "Unbelievable."
 pose = &"irritated03"
 
 [resource]
 script = ExtResource("cv")
 id = &"waiting"
-lines = Array[ExtResource("dl")]([SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4"), SubResource("line_5"), SubResource("line_6")])
+lines = Array[ExtResource("dl")]([SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4"), SubResource("line_5"), SubResource("line_6"), SubResource("line_7"), SubResource("line_8"), SubResource("line_9"), SubResource("line_10"), SubResource("line_11"), SubResource("line_12"), SubResource("line_13"), SubResource("line_14"), SubResource("line_15"), SubResource("line_16")])
