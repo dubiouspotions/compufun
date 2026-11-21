@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://rooms/shop/the_end.gd" id="1_end"]
 [ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="2_psx"]
 [ext_resource type="AudioStream" path="res://sounds/end_rumble.wav" id="3_rumble"]
+[ext_resource type="AudioStream" path="res://sounds/end_pierce.wav" id="4_pierce"]
 
 [sub_resource type="ShaderMaterial" id="shirt_mat"]
 render_priority = 0
@@ -108,10 +109,17 @@ script = ExtResource("1_end")
 unique_name_in_owner = true
 stream = ExtResource("3_rumble")
 
+[node name="Pierce" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("4_pierce")
+
 [node name="Body" type="Node3D" parent="."]
 unique_name_in_owner = true
 
-[node name="Torso" type="MeshInstance3D" parent="Body"]
+[node name="Chest" type="Node3D" parent="Body"]
+unique_name_in_owner = true
+
+[node name="Torso" type="MeshInstance3D" parent="Body/Chest"]
 transform = Transform3D(1.25, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0.81)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("torso")
@@ -136,32 +144,32 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.035, 0.75)
 material_override = SubResource("shoes_mat")
 mesh = SubResource("shoe")
 
-[node name="ArmL" type="MeshInstance3D" parent="Body"]
+[node name="ArmL" type="MeshInstance3D" parent="Body/Chest"]
 transform = Transform3D(-0.99563, -0.03, -0.037275, 0.093341, -0.32, -0.39761, 0, -0.14, 0.9168, -0.255, 1.2, 0.75)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
-[node name="ArmR" type="MeshInstance3D" parent="Body"]
+[node name="ArmR" type="MeshInstance3D" parent="Body/Chest"]
 transform = Transform3D(-0.99563, 0.03, 0.041597, -0.093341, -0.32, -0.4437, 0, -0.16, 0.89521, 0.255, 1.2, 0.74)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
-[node name="ForearmL" type="MeshInstance3D" parent="Body"]
+[node name="ForearmL" type="MeshInstance3D" parent="Body/Chest"]
 transform = Transform3D(0.43747, 0.185, 0.21237, -0.89924, 0.09, 0.10331, 0, -0.05, 0.97171, -0.1775, 1.085, 0.655)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
-[node name="HandL" type="MeshInstance3D" parent="Body"]
+[node name="HandL" type="MeshInstance3D" parent="Body/Chest"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.055, 1.14, 0.6)
 material_override = SubResource("skin_mat")
 mesh = SubResource("hand")
 
-[node name="ForearmR" type="MeshInstance3D" parent="Body"]
+[node name="ForearmR" type="MeshInstance3D" parent="Body/Chest"]
 transform = Transform3D(0.54419, -0.185, -0.18552, 0.83896, 0.12, 0.12034, -0, -0.05, 0.97524, 0.1775, 1.1, 0.635)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
-[node name="HandR" type="MeshInstance3D" parent="Body"]
+[node name="HandR" type="MeshInstance3D" parent="Body/Chest"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.055, 1.16, 0.58)
 material_override = SubResource("skin_mat")
 mesh = SubResource("hand")
@@ -172,12 +180,12 @@ transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 1.15, 1.15)
 material_override = SubResource("pipe_mat")
 mesh = SubResource("pipe")
 
-[node name="Wound" type="MeshInstance3D" parent="Body"]
+[node name="Wound" type="MeshInstance3D" parent="Body/Chest"]
 transform = Transform3D(1, 0, 0, 0, 1.3, 0, 0, 0, 0.3, 0, 1.15, 0.662)
 material_override = SubResource("blood_mat")
 mesh = SubResource("wound")
 
-[node name="Sleeve" type="MeshInstance3D" parent="Body"]
+[node name="Sleeve" type="MeshInstance3D" parent="Body/Chest"]
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 1.15, 0.62)
 material_override = SubResource("blood_mat")
 mesh = SubResource("sleeve")
@@ -185,12 +193,15 @@ mesh = SubResource("sleeve")
 [node name="Bleeding" type="Node3D" parent="Body"]
 unique_name_in_owner = true
 
-[node name="DripA" type="MeshInstance3D" parent="Body/Bleeding"]
+[node name="ChestBlood" type="Node3D" parent="Body/Chest"]
+unique_name_in_owner = true
+
+[node name="DripA" type="MeshInstance3D" parent="Body/Chest/ChestBlood"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.035, 1.03, 0.655)
 material_override = SubResource("blood_mat")
 mesh = SubResource("drip_a")
 
-[node name="DripB" type="MeshInstance3D" parent="Body/Bleeding"]
+[node name="DripB" type="MeshInstance3D" parent="Body/Chest/ChestBlood"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, 1.0, 0.655)
 material_override = SubResource("blood_mat")
 mesh = SubResource("drip_b")
