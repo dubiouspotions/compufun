@@ -14,7 +14,6 @@
 [ext_resource type="PackedScene" path="res://props/keyboard.tscn" id="12_ymhy8"]
 [ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="13_ojat2"]
 [ext_resource type="PackedScene" path="res://props/pc_tower.tscn" id="14_qg2fl"]
-[ext_resource type="PackedScene" path="res://props/shelf.tscn" id="15_njvq4"]
 [ext_resource type="PackedScene" path="res://props/desk.tscn" id="16_we7dl"]
 [ext_resource type="PackedScene" path="res://props/phone.tscn" id="17_djiw7"]
 [ext_resource type="Material" path="res://materials/cardboard.tres" id="18_y5vne"]
@@ -26,6 +25,8 @@
 [ext_resource type="PackedScene" path="res://props/trash_can.tscn" id="24_trash"]
 [ext_resource type="PackedScene" path="res://props/modem.tscn" id="25_modem"]
 [ext_resource type="PackedScene" path="res://props/work_mat.tscn" id="26_workmat"]
+[ext_resource type="PackedScene" path="res://rooms/shop/storage.tscn" id="27_storage"]
+[ext_resource type="PackedScene" path="res://props/cart.tscn" id="28_cart"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -38,9 +39,18 @@ subdivide_width = 15
 subdivide_depth = 14
 
 [sub_resource type="BoxMesh" id="BoxMesh_qdpba"]
-size = Vector3(0.1, 3, 7.6)
+size = Vector3(0.1, 3, 6.15)
 subdivide_height = 5
-subdivide_depth = 14
+subdivide_depth = 11
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall_left_rear"]
+size = Vector3(0.1, 3, 0.3)
+subdivide_height = 5
+
+[sub_resource type="BoxMesh" id="BoxMesh_storage_lintel"]
+size = Vector3(0.1, 1, 1.15)
+subdivide_height = 1
+subdivide_depth = 1
 
 [sub_resource type="BoxMesh" id="BoxMesh_di7qd"]
 size = Vector3(0.1, 3, 7.6)
@@ -181,9 +191,19 @@ material_override = ExtResource("3_mslom")
 mesh = SubResource("BoxMesh_nkyfb")
 
 [node name="WallLeft" type="MeshInstance3D" parent="Room" unique_id=1161748760]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.05, 1.5, -1.75)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.05, 1.5, -2.475)
 material_override = ExtResource("4_kwqp3")
 mesh = SubResource("BoxMesh_qdpba")
+
+[node name="WallLeftRear" type="MeshInstance3D" parent="Room"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.05, 1.5, 1.9)
+material_override = ExtResource("4_kwqp3")
+mesh = SubResource("BoxMesh_wall_left_rear")
+
+[node name="StorageLintel" type="MeshInstance3D" parent="Room"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.05, 2.5, 1.175)
+material_override = ExtResource("4_kwqp3")
+mesh = SubResource("BoxMesh_storage_lintel")
 
 [node name="WallRight" type="MeshInstance3D" parent="Room" unique_id=282979511]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.05, 1.5, -1.75)
@@ -359,20 +379,11 @@ size = Vector3(0.24, 0.46, 0.46)
 [node name="Tower" parent="Room/CounterComputer" unique_id=1682646323 instance=ExtResource("14_qg2fl")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, 0)
 
-[node name="Shelf" parent="Room" unique_id=519338394 instance=ExtResource("15_njvq4")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.75, 0, -0.1)
+[node name="Storage" parent="Room" instance=ExtResource("27_storage")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.95, 0, 0.5)
 
-[node name="OldDesk" parent="Room" unique_id=148116219 instance=ExtResource("16_we7dl")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.9, 0, 1.2)
-
-[node name="OldMonitor" parent="Room" unique_id=581740983 instance=ExtResource("11_ydxbd")]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -3, 0.75, 1.05)
-
-[node name="OldKeyboard" parent="Room" unique_id=885011967 instance=ExtResource("12_ymhy8")]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -2.68, 0.75, 1.05)
-
-[node name="OldTower" parent="Room" unique_id=352631802 instance=ExtResource("14_qg2fl")]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -3.05, 0.75, 1.68)
+[node name="Cart" parent="Room" instance=ExtResource("28_cart")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.55, 0, 0)
 
 [node name="WorkDesk" parent="Room" unique_id=924977988 instance=ExtResource("16_we7dl")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6, 0, 0.7)
