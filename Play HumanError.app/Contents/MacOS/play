@@ -1,10 +1,26 @@
 #!/bin/bash
 # Pulls the latest main, imports the project and starts the game. Errors show in a dialog.
-# Godot: $GODOT, else the first Godot*.app whose version starts with GODOT_VERSION and is not mono.
+# Godot: $GODOT, else the first Godot*.app at MIN_GODOT or newer (mono builds too).
 set -u
-GODOT_VERSION="4.7"
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+# A script-only app starts under Rosetta on Apple Silicon; mono Godot then cannot load the arm64 .NET.
+if [ "$(sysctl -n hw.optional.arm64 2>/dev/null)" = 1 ] && [ "$(uname -m)" != arm64 ]; then
+	exec arch -arm64 /bin/bash "$0" "$@"
+fi
+MIN_GODOT="4.7.2"
+# Finder gives apps a bare PATH; mono Godot needs dotnet on it.
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/local/share/dotnet:$PATH"
+[ -d /usr/local/share/dotnet ] && export DOTNET_ROOT="${DOTNET_ROOT:-/usr/local/share/dotnet}"
 repo="$(cd "$(dirname "$0")/../../.." && pwd)"
+
+# True when the version string $1 (4.7.2.stable...) is MIN_GODOT or newer.
+new_enough() {
+	local a b c x y z
+	IFS=. read -r a b c _ <<<"$1"
+	IFS=. read -r x y z <<<"$MIN_GODOT"
+	[[ $c =~ ^[0-9]+$ ]] || c=0
+	[[ $a =~ ^[0-9]+$ && $b =~ ^[0-9]+$ ]] || return 1
+	(( a > x || (a == x && (b > y || (b == y && c >= z))) ))
+}
 
 fail() {
 	osascript -e 'on run argv' -e 'display alert "Play HumanError" message (item 1 of argv) as critical' -e 'end run' "$1" >/dev/null
@@ -28,12 +44,12 @@ else
 	shopt -s nullglob
 	for app in /Applications/Godot*.app "$HOME"/Applications/Godot*.app; do
 		version="$("$app/Contents/MacOS/Godot" --version 2>/dev/null)"
-		if [[ "$version" == "$GODOT_VERSION"* && "$version" != *mono* ]]; then
+		if new_enough "$version"; then
 			godot="$app/Contents/MacOS/Godot"
 			break
 		fi
 	done
-	[ -n "$godot" ] || fail "Cannot find Godot $GODOT_VERSION (not the .NET/mono build) in /Applications or ~/Applications. Install it there, or set GODOT to the path of its Godot program."
+	[ -n "$godot" ] || fail "Cannot find Godot $MIN_GODOT or newer in /Applications or ~/Applications. Install it there, or set GODOT to the path of its Godot program."
 fi
 
 out="$("$godot" --headless --path "$repo/Godot" --import 2>&1)" || fail "The Godot import failed:
