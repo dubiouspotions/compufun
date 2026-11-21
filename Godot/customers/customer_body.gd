@@ -2,7 +2,7 @@ class_name CustomerBody
 extends Node3D
 ## The 3D customer: one placeholder body for all customers. It wears the person's photos: the face
 ## photo on the face, the average colour of the face photo on the skin, and the shirt from the
-## clothes portrait. The trousers take the customer's colour. It walks while it moves.
+## clothes portrait. The trousers take the customer's colour. It walks, with footsteps, while it moves.
 
 # The shirt parameters that a portrait sets; without a portrait they come from shirt_material.
 const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color", &"uv_rect", &"tint_texture",
@@ -30,6 +30,7 @@ var _trousers: ShaderMaterial
 var _last_position: Vector3
 
 @onready var _animation: AnimationPlayer = %AnimationPlayer
+@onready var _steps: AudioStreamPlayer3D = %Steps
 
 
 func _ready() -> void:
@@ -55,6 +56,13 @@ func _process(delta: float) -> void:
 	elif _animation.assigned_animation != &"idle":
 		_animation.speed_scale = 1.0
 		_animation.play(&"idle", 0.2)
+
+
+## Plays one footstep, a little higher or lower each time. The walk animation calls it when a foot
+## lands.
+func step() -> void:
+	_steps.pitch_scale = randf_range(0.9, 1.1)
+	_steps.play()
 
 
 ## Dresses the body as [param customer]. null shows the default face and clothes.

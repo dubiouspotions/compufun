@@ -20,6 +20,7 @@ Godot/               the Godot project: everything the game loads
   people/<name>/     person.tres, portrait_<pose>.png, face.png
   customers/         one .tres per customer, customer_body.tscn
   voices/            one .wav per customer line, rendered by Chimera; render_voices.gd renders them
+  sounds/            sound effects, such as footstep.wav
   problems/          one .tres per problem
   days/              day_1.tres to day_7.tres
   ui/                loading screen, dialogue overlay, post-it, CompufunDB, screen view, debug menu, F9 screen, theme.tres
