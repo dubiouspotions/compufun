@@ -27,7 +27,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Post-it**: The repair ticket on a computer on the counter: the perceived issue and the Done box. Each computer wears one (`props/post_it_3d.tscn`), with a green check once Done is ticked. It sits on the front of the standing case and on the side panel of the lying one, and comes off with the panel. In the Workview, `ui/post_it_label.tscn` writes its text in sharp UI text over the paper. The UI post-it (`ui/post_it.tscn`) shows the job in focus and has the Done box.
 *Avoid:* ticket, note.
 
-**CompuFunDB**: The database on the work computer that maps a set of symptoms to the repair steps. It lists every `Problem` file.
+**CompuFunDB**: The database on the work computer. For each computer on the counter it shows what the customer reported, what to check for that report, and what to fix once the checks are marked. It reads every `Problem` file.
 *Avoid:* Company Database, BBS, database.
 
 **Screen buffer**: The 640 x 480 viewport that runs the Win95 desktop. The 3D monitor shows it, and the Screen View shows it at 2x.

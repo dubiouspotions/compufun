@@ -1,10 +1,11 @@
 class_name CompuFunDB
 extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
-## the customers (one per job on the counter), the symptoms of every Problem (the player marks the
-## ones that match), and the repair steps of each problem whose symptoms are all marked (the player
-## ticks them off). The marks and ticks are the job's; this screen keeps only its cursor. It reads
-## every Problem file, so its text is never a second copy of the problems.
+## what each customer reported (one row per job on the counter: its problem's perceived issue), what
+## to check for that report (the symptoms of every problem with it; the player marks what is wrong),
+## and what to fix (the repair steps of each of those problems whose symptoms are all marked; the
+## player ticks them off). The marks and ticks are the job's; this screen keeps only its cursor. It
+## reads every Problem file, so its text is never a second copy of the problems.
 ## Keys: arrows and Tab move, Space or Enter acts. The mouse clicks and scrolls.
 
 const PROBLEMS_DIR: String = "res://problems/"
@@ -12,12 +13,14 @@ const COLUMNS: int = 80
 const ROWS: int = 30
 const CELL: Vector2 = Vector2(8, 16)
 ## The rows of the frame's lines: the top, under the headers, the bottom.
-const FRAME_ROWS: Array[int] = [2, 4, 27]
+const FRAME_ROWS: Array[int] = [1, 3, 27]
 ## The first and last row of the lists, between the headers and the bottom frame.
-const LIST_TOP: int = 5
+const LIST_TOP: int = 4
 const LIST_BOTTOM: int = 26
 
-enum Column { CUSTOMERS, SYMPTOMS, REPAIRS }
+enum Column { REPORTED, CHECKS, FIXES }
+
+const HEADERS: Array[String] = ["REPORTED", "CHECK", "FIX"]
 
 ## The text-mode font: one glyph per 8 x 16 cell.
 @export var font: Font = preload("res://compufun_db/fonts/Px437_IBM_VGA_8x16.ttf")
@@ -29,10 +32,9 @@ enum Column { CUSTOMERS, SYMPTOMS, REPAIRS }
 @export var bar_color: Color = Color(0.89, 0, 0)
 
 ## The first and last x of each column's text, inside the frame.
-var _spans: Array[Vector2i] = [Vector2i(1, 16), Vector2i(18, 47), Vector2i(49, 78)]
+var _spans: Array[Vector2i] = [Vector2i(1, 24), Vector2i(26, 51), Vector2i(53, 78)]
 var _problems: Array[Problem] = []
-var _symptoms: PackedStringArray = []
-var _column: Column = Column.CUSTOMERS
+var _column: Column = Column.REPORTED
 var _selected: Array[int] = [0, 0, 0]
 var _scroll: Array[int] = [0, 0, 0]
 var _mouse_cell: Vector2i = Vector2i(-1, -1)
@@ -67,9 +69,6 @@ func _load_problems() -> void:
 			push_error("CompuFunDB: %s%s is not a Problem" % [PROBLEMS_DIR, file])
 			continue
 		_problems.append(problem)
-		for symptom: String in problem.symptoms:
-			if symptom not in _symptoms:
-				_symptoms.append(symptom)
 	if _problems.is_empty():
 		push_error("CompuFunDB: no Problem files in %s" % PROBLEMS_DIR)
 
@@ -78,15 +77,20 @@ func _load_problems() -> void:
 func _entries(column: Column) -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
 	match column:
-		Column.CUSTOMERS:
+		Column.REPORTED:
 			for job: Job in _jobs():
-				entries.append({text = job.customer.display_name, check = null, pick = true})
-		Column.SYMPTOMS:
+				entries.append({text = job.problem.perceived_issue, check = null, pick = true})
+		Column.CHECKS:
 			var job := _job()
 			if job != null:
-				for symptom: String in _symptoms:
+				var symptoms: PackedStringArray = []
+				for problem: Problem in _reported_as(job):
+					for symptom: String in problem.symptoms:
+						if symptom not in symptoms:
+							symptoms.append(symptom)
+				for symptom: String in symptoms:
 					entries.append({text = symptom, check = symptom in job.marked_symptoms, pick = true})
-		Column.REPAIRS:
+		Column.FIXES:
 			var job := _job()
 			if job != null:
 				for problem: Problem in _matches(job):
@@ -103,23 +107,28 @@ func _add_steps(entries: Array[Dictionary], job: Job, title: String, steps: Pack
 		entries.append({text = step, check = step in job.ticked_repairs, pick = true})
 
 
-# The jobs on the counter, oldest first: the rows of the customer column.
+# The jobs on the counter, oldest first: the rows of the reported column.
 func _jobs() -> Array[Job]:
 	var jobs := Game.jobs.duplicate()
 	jobs.sort_custom(func(a: Job, b: Job) -> bool: return a.order < b.order)
 	return jobs
 
 
-# The job under the customer cursor, or null when the counter is empty.
+# The job under the reported cursor, or null when the counter is empty.
 func _job() -> Job:
 	var jobs := _jobs()
-	return jobs[mini(_selected[Column.CUSTOMERS], jobs.size() - 1)] if not jobs.is_empty() else null
+	return jobs[mini(_selected[Column.REPORTED], jobs.size() - 1)] if not jobs.is_empty() else null
 
 
-# The problems whose symptoms are all marked on [param job].
+# The problems that a customer reports as [param job]'s customer did.
+func _reported_as(job: Job) -> Array[Problem]:
+	return _problems.filter(func(p: Problem) -> bool: return p.perceived_issue == job.problem.perceived_issue)
+
+
+# The problems reported as [param job]'s whose symptoms are all marked on it.
 func _matches(job: Job) -> Array[Problem]:
 	var found: Array[Problem] = []
-	for problem: Problem in _problems:
+	for problem: Problem in _reported_as(job):
 		if problem.symptoms.is_empty():
 			continue
 		var all_marked := true
@@ -231,11 +240,11 @@ func _act() -> void:
 		return
 	var entry := entries[index]
 	match _column:
-		Column.CUSTOMERS:
+		Column.REPORTED:
 			_change_column(1)
-		Column.SYMPTOMS:
+		Column.CHECKS:
 			Game.mark_symptom(_job(), entry.text, not entry.check)
-		Column.REPAIRS:
+		Column.FIXES:
 			Game.tick_repair(_job(), entry.text, not entry.check)
 	queue_redraw()
 
@@ -254,7 +263,7 @@ func _move(step: int) -> void:
 
 func _change_column(step: int) -> void:
 	var column := wrapi(_column + step, 0, Column.size()) as Column
-	if column != Column.CUSTOMERS and _job() == null:
+	if column != Column.REPORTED and _job() == null:
 		return
 	_column = column
 	_move(0)
@@ -262,8 +271,8 @@ func _change_column(step: int) -> void:
 
 # Selects entry [param index] of the current column and scrolls it into view.
 func _select(index: int) -> void:
-	if _column == Column.CUSTOMERS and index != _selected[_column]:
-		for column: Column in [Column.SYMPTOMS, Column.REPAIRS]:
+	if _column == Column.REPORTED and index != _selected[_column]:
+		for column: Column in [Column.CHECKS, Column.FIXES]:
 			_selected[column] = 0
 			_scroll[column] = 0
 	_selected[_column] = index
@@ -288,9 +297,9 @@ func _select(index: int) -> void:
 func _reconcile() -> void:
 	var count := _jobs().size()
 	if count == 0:
-		_column = Column.CUSTOMERS
-	_selected[Column.CUSTOMERS] = clampi(_selected[Column.CUSTOMERS], 0, maxi(count - 1, 0))
-	for column: Column in [Column.SYMPTOMS, Column.REPAIRS]:
+		_column = Column.REPORTED
+	_selected[Column.REPORTED] = clampi(_selected[Column.REPORTED], 0, maxi(count - 1, 0))
+	for column: Column in [Column.CHECKS, Column.FIXES]:
 		var size := _entries(column).size()
 		_selected[column] = clampi(_selected[column], 0, maxi(size - 1, 0))
 
@@ -337,22 +346,18 @@ func _paint() -> void:
 	var date: Dictionary = Game.date
 	_bar(0, " CompuFunDB 1.0", "%02d/%02d/%02d " % [date.month, date.day, date.year % 100], bar_color)
 	_frame()
-	_put(_spans[0].x, 3, "CUSTOMER", bright_color)
-	_put(_spans[1].x, 3, "SYMPTOMS", bright_color)
-	_put(_spans[2].x, 3, "REPAIRS", bright_color)
+	for column: int in Column.size():
+		_put(_spans[column].x, FRAME_ROWS[0] + 1, HEADERS[column], bright_color)
 	if _offline():
 		_put(30, 15, " OFFLINE: LINE IN USE ", bright_color, bar_color)
 		_bar(28, " CompuFunDB", "", bar_color)
 		return
 	var job := _job()
-	if job != null:
-		_put(1, 1, "Reported: ", text_color)
-		_put(11, 1, job.problem.perceived_issue, bright_color)
 	for column: int in Column.size():
 		_paint_column(column as Column)
 	var jobs := _jobs()
-	var record := "Rec %d/%d " % [jobs.find(job) + 1, jobs.size()] if job != null else "No records "
-	_bar(28, " %s" % Column.find_key(_column), record, bar_color)
+	var record := "%s  Rec %d/%d " % [job.customer.display_name, jobs.find(job) + 1, jobs.size()] if job != null else "No records "
+	_bar(28, " %s" % HEADERS[_column], record, bar_color)
 	if job == null:
 		_put(1, 29, "No computers on the counter.", text_color)
 	else:
@@ -363,11 +368,10 @@ func _paint_column(column: Column) -> void:
 	var entries := _entries(column)
 	var lines := _lines(column, entries)
 	var span := _spans[column]
-	if column != Column.CUSTOMERS and _job() == null:
+	if column != Column.REPORTED and _job() == null:
 		return
-	if column == Column.REPAIRS and entries.is_empty():
-		_put(span.x, LIST_TOP, "Mark the symptoms", dim_color)
-		_put(span.x, LIST_TOP + 1, "that match.", dim_color)
+	if column == Column.FIXES and entries.is_empty():
+		_put(span.x, LIST_TOP, "Mark what is wrong.", dim_color)
 		return
 	for row: int in LIST_BOTTOM - LIST_TOP + 1:
 		var line := _scroll[column] + row
@@ -377,7 +381,7 @@ func _paint_column(column: Column) -> void:
 		var entry := entries[index]
 		var fg := text_color if entry.pick else dim_color
 		var bg := background
-		if column == Column.CUSTOMERS and index == _selected[column]:
+		if column == Column.REPORTED and index == _selected[column]:
 			fg = bright_color
 			bg = dim_color
 		if column == _column and index == _selected[column]:
