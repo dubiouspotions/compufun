@@ -121,8 +121,9 @@ static func pieces_from(data: Array) -> Variant:
 	for entry: Variant in data:
 		var text := str(entry)
 		var part_id := StringName(text.trim_suffix("!"))
-		if part_id not in Part.IDS:
+		var part := Part.named(part_id)
+		if part == null:
 			return "no part '%s'" % part_id
-		pieces.append(Piece.new(load("res://parts/%s.tres" % part_id), text.ends_with("!")))
+		pieces.append(Piece.new(part, text.ends_with("!")))
 	return pieces
 

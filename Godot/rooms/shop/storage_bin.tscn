@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://rooms/shop/storage_bin.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="2_hotspot"]
+
+[node name="StorageBin" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Pieces" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Hotspot" parent="." instance=ExtResource("2_hotspot")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.06)
+size = Vector3(0.17, 0.12, 0.22)

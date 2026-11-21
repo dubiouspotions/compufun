@@ -110,22 +110,11 @@ func _hold(piece: Piece) -> void:
 		return
 	var model := _held.part.model.instantiate() as Node3D
 	_holder.add_child(model)
-	var box := _bounds(model)
+	# So close to the camera, the room's lights would throw a huge shadow of the part.
+	for mesh: Node in model.find_children("*", "MeshInstance3D", true, false):
+		(mesh as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var box := Part.bounds(model)
 	var longest := maxf(box.size.x, maxf(box.size.y, box.size.z))
 	var fit := shown_size / maxf(longest, 0.001)
 	model.scale = Vector3.ONE * fit
 	model.position = -box.get_center() * fit
-
-
-# The box around the model's meshes, in the model's own space. Turns off their shadows on the way:
-# so close to the camera, the room's lights would throw a huge shadow of the part.
-func _bounds(model: Node3D) -> AABB:
-	var box := AABB()
-	var first := true
-	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
-		var mesh := node as MeshInstance3D
-		mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		var part_box: AABB = mesh.transform * mesh.get_aabb()
-		box = part_box if first else box.merge(part_box)
-		first = false
-	return box

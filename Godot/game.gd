@@ -62,6 +62,8 @@ var focus: Job
 var connected: Job
 ## The part in the player's hand, or null. The hand holds one piece at a time.
 var hand: Piece
+## The pieces that the player put away in the storage bin, the last one last.
+var stored: Array[Piece] = []
 ## The customer in the shop, or null when nobody is in.
 var visitor: Customer
 var visit: Visit = Visit.NONE
@@ -352,7 +354,7 @@ func can_take(job: Job, part: Part) -> bool:
 ## True when the piece in the hand can go into its place in [param job]: the case is open, the
 ## place is empty, and the part that it sits on is in.
 func can_put(job: Job, part: Part) -> bool:
-	if hand == null or hand.part != part or not job.case_open or job.piece(part) != null:
+	if hand == null or hand.part != part or not part.fits_computer() or not job.case_open or job.piece(part) != null:
 		return false
 	return part.sits_on == null or job.piece(part.sits_on) != null
 
@@ -421,6 +423,25 @@ func take_new_part(part: Part) -> bool:
 	if hand != null:
 		return false
 	hand = Piece.new(part)
+	changed.emit()
+	return true
+
+
+## Puts the piece in the hand away in the storage bin.
+func put_in_storage() -> bool:
+	if hand == null:
+		return false
+	stored.append(hand)
+	hand = null
+	changed.emit()
+	return true
+
+
+## Takes the piece that went into the storage bin last back into the empty hand.
+func take_from_storage() -> bool:
+	if hand != null or stored.is_empty():
+		return false
+	hand = stored.pop_back()
 	changed.emit()
 	return true
 
@@ -571,6 +592,7 @@ func snapshot() -> Dictionary:
 		"focus_slot": focus.slot if focus != null else -1,
 		"connected_slot": connected.slot if connected != null else -1,
 		"hand": Job.pieces_data([hand] if hand != null else []),
+		"stored": Job.pieces_data(stored),
 		"view": String(view),
 		"conversation": String(conversation.id) if conversation != null else "",
 		"flags": flags.duplicate(),
@@ -580,9 +602,10 @@ func snapshot() -> Dictionary:
 
 
 ## Sets the state from [param state], in the format of [method snapshot]. A missing key takes its
-## value at the start of a day: day 1, OPEN, nobody in the shop, no arrivals, an empty counter, no
-## flags, nothing seen, no CompuFunDB records, the daypart of the arrivals; a missing view keeps the
-## current one. The conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
+## value at the start of a day: day 1, OPEN, nobody in the shop, no arrivals, an empty counter, an
+## empty hand and storage bin, no flags, nothing seen, no CompuFunDB records, the daypart of the
+## arrivals; a missing view keeps the current one. The conversation follows from the rest. Returns
+## "" or why it refused; a refusal keeps the state.
 func restore(state: Dictionary) -> String:
 	var known := snapshot()
 	for key: Variant in state:
@@ -635,6 +658,8 @@ func restore(state: Dictionary) -> String:
 				return _refuse("job %d: %s" % [i, pieces])
 			job.places.clear()
 			for each: Piece in pieces:
+				if not each.part.fits_computer():
+					return _refuse("job %d: a computer has no place for %s" % [i, each.part.id()])
 				if job.places.has(each.part):
 					return _refuse("job %d: two pieces in the place of %s" % [i, each.part.id()])
 				job.places[each.part] = each
@@ -695,6 +720,9 @@ func restore(state: Dictionary) -> String:
 		return _refuse("the hand: %s" % hand_pieces)
 	if hand_pieces.size() > 1:
 		return _refuse("the hand holds one part, not %d" % hand_pieces.size())
+	var stored_pieces: Variant = Job.pieces_from(state.get("stored", []))
+	if stored_pieces is String:
+		return _refuse("the storage bin: %s" % stored_pieces)
 	var new_seen: Dictionary[String, bool] = {}
 	for key: Variant in state.get("seen", []):
 		new_seen[str(key)] = true
@@ -716,6 +744,7 @@ func restore(state: Dictionary) -> String:
 	focus = new_focus
 	connected = new_connected
 	hand = hand_pieces[0] if not hand_pieces.is_empty() else null
+	stored.assign(stored_pieces)
 	visitor = new_visitor
 	visit = new_visit
 	visitor_state = new_visitor_state
