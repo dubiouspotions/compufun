@@ -2,7 +2,8 @@ class_name CustomerBody
 extends Node3D
 ## The 3D customer: one placeholder body for all customers. It wears the person's photos: the face
 ## photo on the face, the average colour of the face photo on the skin, and the shirt from the
-## clothes portrait. The trousers take the customer's colour. It walks, with footsteps, while it moves.
+## clothes portrait. The trousers take the customer's colour. It walks, with footsteps, while it moves,
+## and carries the customer's computer in.
 
 # The shirt parameters that a portrait sets; without a portrait they come from shirt_material.
 const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color", &"uv_rect", &"tint_texture",
@@ -14,6 +15,10 @@ const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color",
 @export var clothes_pose: StringName = &"neutral"
 ## The speed, in metres per second, at which the walk plays at its own pace.
 @export var walk_speed: float = 1.4
+## How far the arms swing while the body walks without a computer, in degrees.
+@export var arm_swing: float = 17.0
+## How far forward the arms reach to hold the computer, in degrees.
+@export var carry_reach: float = 20.0
 ## The shared materials. Each part that uses one gets this body's own copy, which the customer
 ## changes.
 @export var face_material: ShaderMaterial
@@ -31,6 +36,9 @@ var _last_position: Vector3
 
 @onready var _animation: AnimationPlayer = %AnimationPlayer
 @onready var _steps: AudioStreamPlayer3D = %Steps
+@onready var _computer: Node3D = %Computer
+@onready var _shoulder_left: Node3D = $ShoulderL
+@onready var _shoulder_right: Node3D = $ShoulderR
 
 
 func _ready() -> void:
@@ -56,6 +64,24 @@ func _process(delta: float) -> void:
 	elif _animation.assigned_animation != &"idle":
 		_animation.speed_scale = 1.0
 		_animation.play(&"idle", 0.2)
+	_move_arms(delta)
+
+
+# The arms hold the computer, or swing against the legs while walking, or hang. They ease between
+# those, so a change of pose never snaps.
+func _move_arms(delta: float) -> void:
+	var swing := 0.0
+	if _animation.assigned_animation == &"walk" and _animation.current_animation_length > 0.0:
+		var cycle := _animation.current_animation_position / _animation.current_animation_length
+		swing = deg_to_rad(arm_swing) * sin(TAU * cycle)
+	var left := -swing
+	var right := swing
+	if _computer.visible:
+		left = deg_to_rad(carry_reach)
+		right = left
+	var weight := minf(delta * 10.0, 1.0)
+	_shoulder_left.rotation.x = lerpf(_shoulder_left.rotation.x, left, weight)
+	_shoulder_right.rotation.x = lerpf(_shoulder_right.rotation.x, right, weight)
 
 
 ## Plays one footstep, a little higher or lower each time. The walk animation calls it when a foot
@@ -71,6 +97,7 @@ func show_customer(customer: Customer) -> void:
 		return
 	_has_shown = true
 	_shown = customer
+	_computer.visible = customer != null and customer.computer != null
 	var person := customer.person if customer != null else null
 	var face := default_face
 	if person != null and person.face != null:
