@@ -23,12 +23,31 @@ name = "Volume Control"
 icon = ExtResource("app")
 target = "C:\\WINDOWS\\SNDVOL32.EXE"
 
+[sub_resource type="Resource" id="media_player"]
+script = ExtResource("file")
+name = "Media Player"
+icon = ExtResource("app")
+target = "C:\\WINDOWS\\MPLAYER.EXE"
+
+[sub_resource type="Resource" id="solitaire"]
+script = ExtResource("file")
+name = "Solitaire"
+icon = ExtResource("app")
+target = "C:\\WINDOWS\\SOL.EXE"
+
+[sub_resource type="Resource" id="games"]
+script = ExtResource("file")
+name = "Games"
+icon = ExtResource("group")
+is_folder = true
+children = Array[Resource]([SubResource("solitaire")])
+
 [sub_resource type="Resource" id="f4"]
 script = ExtResource("file")
 name = "Multimedia"
 icon = ExtResource("group")
 is_folder = true
-children = Array[Resource]([SubResource("f3")])
+children = Array[Resource]([SubResource("f3"), SubResource("media_player")])
 
 [sub_resource type="Resource" id="f5"]
 script = ExtResource("file")
@@ -59,7 +78,7 @@ script = ExtResource("file")
 name = "Accessories"
 icon = ExtResource("group")
 is_folder = true
-children = Array[Resource]([SubResource("f2"), SubResource("f4"), SubResource("f5"), SubResource("f6"), SubResource("f7"), SubResource("f8")])
+children = Array[Resource]([SubResource("games"), SubResource("f2"), SubResource("f4"), SubResource("f5"), SubResource("f6"), SubResource("f7"), SubResource("f8")])
 
 [sub_resource type="Resource" id="f10"]
 script = ExtResource("file")
