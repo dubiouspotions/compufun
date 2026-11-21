@@ -14,6 +14,8 @@ Concept:
 - Game is 3D, maybe PS1 graphics. You can only turn left, right, and zoom into the CRT VGA monitor.
 - Customers don't come in in 3D, but rather as 2D cutouts and chat boxes, "visual novel" style.
 
+[See more concept details in the wiki](https://github.com/dubiouspotions/humanerror/wiki/Game-Concept-&-Loop).
+
 ## Building
 
 1. Install [Git LFS](https://git-lfs.com) and run `git lfs install` before cloning.
