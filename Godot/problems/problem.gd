@@ -15,3 +15,6 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 @export var symptoms: PackedStringArray = []
 @export var hardware_steps: PackedStringArray = []
 @export var software_steps: PackedStringArray = []
+## How the problem breaks the computer's Win95 setup and when that is fixed; null when the problem
+## has no software part.
+@export var software_check: SoftwareCheck

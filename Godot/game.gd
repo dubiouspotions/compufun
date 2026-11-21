@@ -23,6 +23,8 @@ var day: Day
 var customer_index: int = -1
 var hardware_fixed: bool = false
 var software_fixed: bool = false
+## The computer on the bench has power and a screen. Only in REPAIR; every new customer starts off.
+var bench_powered: bool = false
 var post_it_ticked: bool = false
 ## The name of the current view marker in the room, for example &"Main".
 var view: StringName = &"Main"
@@ -105,6 +107,25 @@ func fix(location: Problem.Location) -> void:
 	changed.emit()
 
 
+## Switches the computer on the bench on or off. Only in REPAIR.
+func set_bench_powered(on: bool) -> void:
+	if phase != Phase.REPAIR or on == bench_powered:
+		return
+	bench_powered = on
+	changed.emit()
+
+
+## The running computer reports whether its software has the problem, after every change it makes.
+## Unlike fix(), this can turn back to false: muting again un-fixes no_sound. Only in REPAIR.
+func set_software_fixed(fixed: bool) -> void:
+	if phase != Phase.REPAIR or fixed == software_fixed:
+		return
+	software_fixed = fixed
+	if not problem_fixed:
+		post_it_ticked = false  # the tick claimed a fix that is gone
+	changed.emit()
+
+
 ## Ticks the post-it. Only when the problem is fixed.
 func tick_post_it() -> void:
 	if phase != Phase.REPAIR or not problem_fixed:
@@ -138,6 +159,7 @@ func snapshot() -> Dictionary:
 		"problem": String(problem.short_name) if problem != null else "",
 		"hardware_fixed": hardware_fixed,
 		"software_fixed": software_fixed,
+		"bench_powered": bench_powered,
 		"post_it_ticked": post_it_ticked,
 		"view": String(view),
 	}
@@ -147,6 +169,7 @@ func _next_customer() -> void:
 	customer_index += 1
 	hardware_fixed = false
 	software_fixed = false
+	bench_powered = false
 	post_it_ticked = false
 	phase = Phase.WALKING_IN if customer != null else Phase.DAY_OVER
 	changed.emit()

@@ -1,6 +1,12 @@
 [gd_resource type="Resource" script_class="Problem" format=3]
 
 [ext_resource type="Script" path="res://problems/problem.gd" id="1_ub0gq"]
+[ext_resource type="Script" path="res://problems/setting_check.gd" id="setting_check"]
+
+[sub_resource type="Resource" id="SettingCheck_muted"]
+script = ExtResource("setting_check")
+setting = &"muted"
+broken_value = true
 
 [resource]
 script = ExtResource("1_ub0gq")
@@ -10,3 +16,4 @@ location = 1
 symptoms = PackedStringArray("Sound is muted", "No other issues")
 hardware_steps = PackedStringArray()
 software_steps = PackedStringArray("Unmute")
+software_check = SubResource("SettingCheck_muted")
