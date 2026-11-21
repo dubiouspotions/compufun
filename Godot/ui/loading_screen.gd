@@ -1,21 +1,24 @@
-extends Control
-## The loading screen: the CompuFun logo draws itself in while main.tscn loads, fades out, and the
-## game starts.
+extends CanvasLayer
+## The loading screen: the CompuFun logo draws itself in while main.tscn loads. Then the game starts
+## underneath, the logo's letters turn into windows onto it, and the white paper fades away.
 
 const GAME_SCENE: String = "res://main.tscn"
 
 ## The shortest time the logo takes to draw in, in seconds, so it does not flash by.
 @export var min_seconds: float = 1.5
-## How long the whole logo stays before it fades out, in seconds.
+## How long the whole logo stays before the game shows through it, in seconds.
 @export var hold_seconds: float = 0.3
-## How long the logo takes to fade out before the game starts, in seconds.
-@export var fade_seconds: float = 0.5
+## How long the letters take to turn see-through, in seconds.
+@export var reveal_seconds: float = 0.6
+## How long the white paper then takes to fade away, in seconds.
+@export var paper_seconds: float = 0.6
 
 # Set on the first frame: the web build has no threads, so the load may block until then.
 var _start_ms: int = -1
 
 @onready var _logo: ShaderMaterial = %Logo.material
 @onready var _status: Label = %Status
+@onready var _paper: ColorRect = %Background
 
 
 func _ready() -> void:
@@ -45,18 +48,27 @@ func _process(_delta: float) -> void:
 				if scene == null:
 					_fail("%s loaded, but it is not a scene" % GAME_SCENE)
 					return
-				var fade := create_tween()
-				fade.tween_property(%Logo, "modulate:a", 0.0, fade_seconds)
-				fade.tween_callback(_start.bind(scene))
+				_reveal(scene)
 		_:
 			_fail("cannot load %s" % GAME_SCENE)
 
 
-func _start(scene: PackedScene) -> void:
-	var err := get_tree().change_scene_to_packed(scene)
-	if err != OK:
-		%Logo.modulate.a = 1.0
-		_fail("cannot start %s: %s" % [GAME_SCENE, error_string(err)])
+# The game starts under the loading screen, which stays on top (its layer) until the paper is gone.
+func _reveal(scene: PackedScene) -> void:
+	var game := scene.instantiate()
+	if game == null:
+		_fail("cannot create %s" % GAME_SCENE)
+		return
+	get_tree().root.add_child(game)
+	get_tree().current_scene = game
+	var logo := (%Logo as Control).get_global_rect()
+	var paper := _paper.material as ShaderMaterial
+	paper.set_shader_parameter("logo_rect", Vector4(logo.position.x, logo.position.y, logo.size.x, logo.size.y))
+	var fade := create_tween()
+	fade.tween_method(func(hole: float) -> void: paper.set_shader_parameter("hole", hole), 0.0, 1.0, reveal_seconds)
+	fade.parallel().tween_property(%Logo, "modulate:a", 0.0, reveal_seconds)
+	fade.tween_property(_paper, "modulate:a", 0.0, paper_seconds)
+	fade.tween_callback(queue_free)
 
 
 func _fail(message: String) -> void:

@@ -3,19 +3,23 @@
 [ext_resource type="Script" path="res://ui/loading_screen.gd" id="1_1kfex"]
 [ext_resource type="Texture2D" path="res://ui/logos/compufun_logo.png" id="2_e66os"]
 [ext_resource type="Shader" path="res://ui/loading_screen.gdshader" id="3_r7mwq"]
+[ext_resource type="Shader" path="res://ui/loading_paper.gdshader" id="4_paper"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_k2v8d"]
 shader = ExtResource("3_r7mwq")
 
-[node name="LoadingScreen" type="Control" unique_id=551782974]
-layout_mode = 3
-anchors_preset = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_paper"]
+shader = ExtResource("4_paper")
+shader_parameter/logo = ExtResource("2_e66os")
+
+[node name="LoadingScreen" type="CanvasLayer" unique_id=551782974]
+layer = 80
 script = ExtResource("1_1kfex")
 
 [node name="Background" type="ColorRect" parent="." unique_id=642828196]
-layout_mode = 0
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_paper")
+layout_mode = 3
 anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(1, 1, 1, 1)
@@ -24,7 +28,7 @@ color = Color(1, 1, 1, 1)
 unique_name_in_owner = true
 material = SubResource("ShaderMaterial_k2v8d")
 custom_minimum_size = Vector2(763, 408)
-layout_mode = 0
+layout_mode = 3
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -42,7 +46,7 @@ stretch_mode = 5
 [node name="Status" type="Label" parent="." unique_id=1101138836]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(900, 40)
-layout_mode = 0
+layout_mode = 3
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
