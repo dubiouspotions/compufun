@@ -1,11 +1,19 @@
 [gd_scene format=3]
 
-[ext_resource type="Material" path="res://materials/floor.tres" id="1_floor"]
+[ext_resource type="Material" path="res://materials/concrete.tres" id="1_floor"]
 [ext_resource type="Material" path="res://materials/ceiling.tres" id="2_ceiling"]
-[ext_resource type="Material" path="res://materials/wall.tres" id="3_wall"]
+[ext_resource type="Material" path="res://materials/cinder_block.tres" id="3_wall"]
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="4_dark"]
 [ext_resource type="PackedScene" path="res://props/hanging_bulb.tscn" id="5_light"]
 [ext_resource type="PackedScene" path="res://props/shelf.tscn" id="6_shelf"]
+[ext_resource type="Material" path="res://materials/cardboard.tres" id="7_cardboard"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="8_metal"]
+[ext_resource type="PackedScene" path="res://props/crt_monitor.tscn" id="9_monitor"]
+[ext_resource type="PackedScene" path="res://props/pc_tower.tscn" id="10_tower"]
+[ext_resource type="PackedScene" path="res://props/keyboard.tscn" id="11_keyboard"]
+[ext_resource type="PackedScene" path="res://props/computer_box.tscn" id="12_computer_box"]
+[ext_resource type="PackedScene" path="res://props/bin_rack.tscn" id="13_bin_rack"]
+[ext_resource type="PackedScene" path="res://props/cable_coil.tscn" id="14_cable_coil"]
 [ext_resource type="PackedScene" path="res://props/desk.tscn" id="20_desk"]
 [ext_resource type="PackedScene" path="res://props/part_box.tscn" id="21_box"]
 [ext_resource type="Resource" path="res://parts/motherboard.tres" id="22_motherboard"]
@@ -31,6 +39,51 @@ subdivide_height = 5
 
 [sub_resource type="BoxMesh" id="BoxMesh_sign"]
 size = Vector3(0.02, 0.2, 0.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rail"]
+size = Vector3(0.62, 0.025, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_0"]
+size = Vector3(0.34, 0.26, 0.36)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_1"]
+size = Vector3(0.5, 0.4, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_2"]
+size = Vector3(0.44, 0.34, 0.44)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_3"]
+size = Vector3(0.3, 0.22, 0.34)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_4"]
+size = Vector3(0.34, 0.3, 0.36)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_5"]
+size = Vector3(0.38, 0.36, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_6"]
+size = Vector3(0.36, 0.34, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_7"]
+size = Vector3(0.4, 0.32, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_8"]
+size = Vector3(0.34, 0.2, 0.34)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_9"]
+size = Vector3(0.5, 0.36, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_10"]
+size = Vector3(0.8, 0.4, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_11"]
+size = Vector3(0.6, 0.3, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_12"]
+size = Vector3(0.4, 0.34, 0.38)
+
+[sub_resource type="BoxMesh" id="BoxMesh_carton_13"]
+size = Vector3(0.36, 0.36, 0.4)
 
 [node name="Storage" type="Node3D"]
 
@@ -63,12 +116,6 @@ mesh = SubResource("BoxMesh_side_wall")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 3, 0.9)
 off_flag = &"storage_light_off"
 
-[node name="ShelfBack" parent="." instance=ExtResource("6_shelf")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0, 0)
-
-[node name="ShelfAisle" parent="." instance=ExtResource("6_shelf")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.25, 0, 0.35)
-
 [node name="Sign" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.96, 2.2, 0.675)
 material_override = ExtResource("4_dark")
@@ -82,25 +129,238 @@ text = "STORAGE"
 font_size = 48
 outline_size = 0
 
-[node name="PartsDesk" parent="." instance=ExtResource("20_desk")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.75, 0, -1.15)
+[node name="ShelfBack0" parent="." instance=ExtResource("6_shelf")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.62, 0, 0.98)
 
-[node name="Box_motherboard" parent="." instance=ExtResource("21_box")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.75, -1.15)
+[node name="Box0" parent="ShelfBack0" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, -0.2, 1.675, 0)
+
+[node name="Carton0" type="MeshInstance3D" parent="ShelfBack0"]
+transform = Transform3D(0.9903, 0, 0.1392, 0, 1, 0, -0.1392, 0, 0.9903, 0.22, 1.805, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_0")
+
+[node name="Monitor0" parent="ShelfBack0" instance=ExtResource("9_monitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.235, 1.155, 0.03)
+
+[node name="Monitor1" parent="ShelfBack0" instance=ExtResource("9_monitor")]
+transform = Transform3D(0.9945, 0, -0.1045, 0, 1, 0, 0.1045, 0, 0.9945, 0.235, 1.155, 0.03)
+
+[node name="Tower0" parent="ShelfBack0" instance=ExtResource("10_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.34, 0.635, 0)
+
+[node name="Tower1" parent="ShelfBack0" instance=ExtResource("10_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 0.635, 0)
+
+[node name="Keyboard0" parent="ShelfBack0" instance=ExtResource("11_keyboard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.225, 0.635, 0.05)
+
+[node name="Keyboard1" parent="ShelfBack0" instance=ExtResource("11_keyboard")]
+transform = Transform3D(0.9976, 0, 0.0698, 0, 1, 0, -0.0698, 0, 0.9976, 0.225, 0.667, 0.05)
+
+[node name="Keyboard2" parent="ShelfBack0" instance=ExtResource("11_keyboard")]
+transform = Transform3D(0.9986, 0, -0.0523, 0, 1, 0, 0.0523, 0, 0.9986, 0.225, 0.699, 0.05)
+
+[node name="Box1" parent="ShelfBack0" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.85, 0, 0, 0, 0.95, 0, 0, 0, 1, -0.22, 0.115, 0)
+
+[node name="Box2" parent="ShelfBack0" instance=ExtResource("12_computer_box")]
+transform = Transform3D(-0.8, 0, 0, 0, 0.9, 0, 0, 0, -1, 0.23, 0.115, 0)
+
+[node name="BackStack" type="Node3D" parent="."]
+
+[node name="Carton0" type="MeshInstance3D" parent="BackStack"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 0.315, 0.15)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_1")
+
+[node name="Carton1" type="MeshInstance3D" parent="BackStack"]
+transform = Transform3D(0.9925, 0, 0.1219, 0, 1, 0, -0.1219, 0, 0.9925, -1.6, 0.57, 0.16)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_2")
+
+[node name="Box0" parent="BackStack" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.6, 0.115, -0.35)
+
+[node name="ShelfRear0" parent="." instance=ExtResource("6_shelf")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 1.12, 0, 1.265)
+
+[node name="Box0" parent="ShelfRear0" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.85, 0, 0, 0, 0.85, 0, 0, 0, 0.9, -0.2, 1.675, 0)
+
+[node name="Carton0" type="MeshInstance3D" parent="ShelfRear0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1.785, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_3")
+
+[node name="Keyboard0" parent="ShelfRear0" instance=ExtResource("11_keyboard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 1.155, 0.05)
+
+[node name="Keyboard1" parent="ShelfRear0" instance=ExtResource("11_keyboard")]
+transform = Transform3D(0.9962, 0, 0.0872, 0, 1, 0, -0.0872, 0, 0.9962, -0.2, 1.187, 0.05)
+
+[node name="Carton2" type="MeshInstance3D" parent="ShelfRear0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26, 1.305, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_4")
+
+[node name="Monitor0" parent="ShelfRear0" instance=ExtResource("9_monitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22, 0.635, 0.03)
+
+[node name="Carton3" type="MeshInstance3D" parent="ShelfRear0"]
+transform = Transform3D(0.9848, 0, 0.1736, 0, 1, 0, -0.1736, 0, 0.9848, 0.24, 0.815, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_5")
+
+[node name="Box1" parent="ShelfRear0" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.85, 0, 0, 0, 0.95, 0, 0, 0, 1, -0.2, 0.115, 0)
+
+[node name="Carton1" type="MeshInstance3D" parent="ShelfRear0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 0.285, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_6")
+
+[node name="ShelfRear1" parent="." instance=ExtResource("6_shelf")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.12, 0, 1.265)
+
+[node name="Carton0" type="MeshInstance3D" parent="ShelfRear1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22, 1.835, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_7")
+
+[node name="Carton1" type="MeshInstance3D" parent="ShelfRear1"]
+transform = Transform3D(0.9945, 0, 0.1045, 0, 1, 0, -0.1045, 0, 0.9945, 0.24, 1.775, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_8")
+
+[node name="Tower0" parent="ShelfRear1" instance=ExtResource("10_tower")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.33, 1.155, 0)
+
+[node name="Carton3" type="MeshInstance3D" parent="ShelfRear1"]
+transform = Transform3D(0.9976, 0, -0.0698, 0, 1, 0, 0.0698, 0, 0.9976, 0.12, 1.335, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_9")
+
+[node name="Box0" parent="ShelfRear1" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.8, 0, 0, 0, 0.9, 0, 0, 0, 1, -0.2, 0.635, 0)
+
+[node name="Box1" parent="ShelfRear1" instance=ExtResource("12_computer_box")]
+transform = Transform3D(-0.75, 0, 0, 0, 0.9, 0, 0, 0, -1, 0.23, 0.635, 0)
+
+[node name="Carton2" type="MeshInstance3D" parent="ShelfRear1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.315, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_10")
+
+[node name="ShelfRear2" parent="." instance=ExtResource("6_shelf")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.88, 0, 1.265)
+
+[node name="Carton0" type="MeshInstance3D" parent="ShelfRear2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.825, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_11")
+
+[node name="Carton3" type="MeshInstance3D" parent="ShelfRear2"]
+transform = Transform3D(0.9945, 0, -0.1045, 0, 1, 0, 0.1045, 0, 0.9945, -0.2, 1.325, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_12")
+
+[node name="Carton1" type="MeshInstance3D" parent="ShelfRear2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.24, 1.305, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_4")
+
+[node name="Box0" parent="ShelfRear2" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.8, 0, 0, 0, 0.9, 0, 0, 0, 1, -0.2, 0.635, 0)
+
+[node name="Box1" parent="ShelfRear2" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.85, 0, 0, 0, 0.95, 0, 0, 0, 1, -0.22, 0.115, 0)
+
+[node name="Carton2" type="MeshInstance3D" parent="ShelfRear2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.24, 0.295, 0)
+material_override = ExtResource("7_cardboard")
+mesh = SubResource("BoxMesh_carton_13")
+
+[node name="AisleStack" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.62, 0, 0.2)
+
+[node name="Box0" parent="AisleStack" instance=ExtResource("12_computer_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 0, 0)
+
+[node name="Box1" parent="AisleStack" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.9477, 0, 0.0663, 0, 0.95, 0, -0.0663, 0, 0.9477, 0.25, 0.45, 0.02)
+
+[node name="Box2" parent="AisleStack" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.85, 0, 0, 0, 0.85, 0, 0, 0, 0.85, 0.27, 0.8775, 0)
+
+[node name="Keyboard0" parent="AisleStack" instance=ExtResource("11_keyboard")]
+transform = Transform3D(0.9986, 0, 0.0523, 0, 1, 0, -0.0523, 0, 0.9986, 0.27, 1.26, 0.05)
+
+[node name="Box3" parent="AisleStack" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.9, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0, 0)
+
+[node name="Box4" parent="AisleStack" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.95, -0.28, 0.45, 0)
+
+[node name="Monitor0" parent="AisleStack" instance=ExtResource("9_monitor")]
+transform = Transform3D(0.9903, 0, -0.1392, 0, 1, 0, 0.1392, 0, 0.9903, -0.28, 0.855, 0.02)
+
+[node name="FloorBoxes" type="Node3D" parent="."]
+
+[node name="Box0" parent="FloorBoxes" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.62, 0.115, -1.22)
+
+[node name="Box1" parent="FloorBoxes" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.0993, 0, 0.9448, 0, 1, 0, -0.9448, 0, 0.0993, -0.62, 0.45, -1.22)
+
+[node name="Box2" parent="FloorBoxes" instance=ExtResource("12_computer_box")]
+transform = Transform3D(-0.0697, 0, 0.797, 0, 0.8, 0, -0.797, 0, -0.0697, -0.6, 0.9, -1.24)
+
+[node name="Box5" parent="FloorBoxes" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.6, 0.115, -1.2)
+
+[node name="Box6" parent="FloorBoxes" instance=ExtResource("12_computer_box")]
+transform = Transform3D(0.1476, 0, -0.8371, 0, 0.85, 0, 0.8371, 0, 0.1476, 1.6, 0.45, -1.18)
+
+[node name="Parts" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0, -1.1)
+
+[node name="PartsDesk" parent="Parts" instance=ExtResource("20_desk")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0, 0)
+
+[node name="Box_motherboard" parent="Parts" instance=ExtResource("21_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.56, 0.75, 0.12)
 part = ExtResource("22_motherboard")
 
-[node name="Box_cpu" parent="." instance=ExtResource("21_box")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 0.75, -1.15)
+[node name="Box_cpu" parent="Parts" instance=ExtResource("21_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0.75, 0.12)
 part = ExtResource("22_cpu")
 
-[node name="Box_fan" parent="." instance=ExtResource("21_box")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 0.75, -1.15)
+[node name="Box_fan" parent="Parts" instance=ExtResource("21_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0.12)
 part = ExtResource("22_fan")
 
-[node name="Box_gpu" parent="." instance=ExtResource("21_box")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 0.75, -1.15)
+[node name="Box_gpu" parent="Parts" instance=ExtResource("21_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0.75, 0.12)
 part = ExtResource("22_gpu")
 
-[node name="Box_hard_drive" parent="." instance=ExtResource("21_box")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 0.75, -1.15)
+[node name="Box_hard_drive" parent="Parts" instance=ExtResource("21_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.56, 0.75, 0.12)
 part = ExtResource("22_hard_drive")
+
+[node name="BinRack" parent="Parts" instance=ExtResource("13_bin_rack")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.93, -0.4)
+
+[node name="CableRail" type="MeshInstance3D" parent="Parts"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 1.42, -0.385)
+material_override = ExtResource("8_metal")
+mesh = SubResource("BoxMesh_rail")
+
+[node name="Cable0" parent="Parts/CableRail" instance=ExtResource("14_cable_coil")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22, 0, 0.02)
+
+[node name="Cable1" parent="Parts/CableRail" instance=ExtResource("14_cable_coil")]
+transform = Transform3D(0.9903, 0, 0.1392, 0, 1, 0, -0.1392, 0, 0.9903, -0.01, 0, 0.02)
+
+[node name="Cable2" parent="Parts/CableRail" instance=ExtResource("14_cable_coil")]
+transform = Transform3D(0.9962, 0, -0.0872, 0, 1, 0, 0.0872, 0, 0.9962, 0.2, 0, 0.02)
