@@ -50,7 +50,7 @@ func _set_hovered(on: bool) -> void:
 
 func _sync() -> void:
 	var holding := Game.hand != null
-	_hotspot.set_enabled(holding or not Game.trashed.is_empty())
+	_hotspot.set_enabled(holding or Game.view != look_view or not Game.trashed.is_empty())
 	_hovered = _hovered and _hotspot.input_ray_pickable
 	_outline.visible = holding or _hovered
 	(_outline.material_override as StandardMaterial3D).albedo_color = hover_color if _hovered else ready_color
