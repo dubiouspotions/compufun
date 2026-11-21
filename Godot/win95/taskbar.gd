@@ -59,10 +59,11 @@ func _sync() -> void:
 		button.button_pressed = window == active
 
 
-# The row would grow with its buttons, so measure what its neighbours leave of the taskbar.
+# The taskbar and its row grow with their buttons, so start from the screen's width, which doesn't.
 func _room() -> float:
 	var bar := _row.get_parent() as BoxContainer
-	var room := bar.size.x - bar.get_theme_constant(&"separation") * (bar.get_child_count() - 1)
+	var width := get_parent_control().size.x - offset_left + offset_right - get_theme_stylebox(&"panel").get_minimum_size().x
+	var room := width - bar.get_theme_constant(&"separation") * (bar.get_child_count() - 1)
 	for other in bar.get_children():
 		if other != _row and other is Control and (other as Control).visible:
 			room -= (other as Control).get_combined_minimum_size().x
