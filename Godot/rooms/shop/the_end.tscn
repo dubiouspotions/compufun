@@ -170,32 +170,32 @@ material_override = SubResource("shoes_mat")
 mesh = SubResource("shoe")
 
 [node name="ArmL" type="MeshInstance3D" parent="Body/Chest"]
-transform = Transform3D(-0.99563, -0.03, -0.037275, 0.093341, -0.32, -0.39761, 0, -0.14, 0.9168, -0.255, 1.2, 0.75)
+transform = Transform3D(-0.99049, -0.05, -0.029572, 0.13757, -0.36, -0.21292, 0, -0.08, 0.97662, -0.265, 1.18, 0.78)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
 [node name="ArmR" type="MeshInstance3D" parent="Body/Chest"]
-transform = Transform3D(-0.99563, 0.03, 0.041597, -0.093341, -0.32, -0.4437, 0, -0.16, 0.89521, 0.255, 1.2, 0.74)
+transform = Transform3D(-0.98639, 0.05, 0.05135, -0.1644, -0.3, -0.3081, 0, -0.1, 0.94997, 0.265, 1.21, 0.77)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
 [node name="ForearmL" type="MeshInstance3D" parent="Body/Chest"]
-transform = Transform3D(0.43747, 0.185, 0.21237, -0.89924, 0.09, 0.10331, 0, -0.05, 0.97171, -0.1775, 1.085, 0.655)
+transform = Transform3D(0.37139, 0.1, 0.69098, -0.92848, 0.04, 0.27639, 0, -0.12, 0.66795, -0.24, 1.02, 0.68)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
 [node name="HandL" type="MeshInstance3D" parent="Body/Chest"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.055, 1.14, 0.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.17, 1.04, 0.59)
 material_override = SubResource("skin_mat")
 mesh = SubResource("hand")
 
 [node name="ForearmR" type="MeshInstance3D" parent="Body/Chest"]
-transform = Transform3D(0.54419, -0.185, -0.18552, 0.83896, 0.12, 0.12034, -0, -0.05, 0.97524, 0.1775, 1.1, 0.635)
+transform = Transform3D(0.66896, -0.1, -0.47049, 0.74329, 0.09, 0.42344, -0, -0.11, 0.77417, 0.24, 1.105, 0.665)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
 [node name="HandR" type="MeshInstance3D" parent="Body/Chest"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.055, 1.16, 0.58)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, 1.15, 0.58)
 material_override = SubResource("skin_mat")
 mesh = SubResource("hand")
 
@@ -203,7 +203,7 @@ mesh = SubResource("hand")
 unique_name_in_owner = true
 
 [node name="Pipe" type="MeshInstance3D" parent="Body/Pipes"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 1.15, 1.15)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.1, 1.15, 1.15)
 material_override = SubResource("pipe_mat")
 mesh = SubResource("pipe")
 
@@ -229,12 +229,12 @@ material_override = SubResource("pipe_blue_mat")
 mesh = SubResource("bend_arm")
 
 [node name="Wound" type="MeshInstance3D" parent="Body/Chest"]
-transform = Transform3D(1, 0, 0, 0, 1.3, 0, 0, 0, 0.3, 0, 1.15, 0.662)
+transform = Transform3D(1, 0, 0, 0, 1.3, 0, 0, 0, 0.3, 0.1, 1.15, 0.662)
 material_override = SubResource("blood_mat")
 mesh = SubResource("wound")
 
 [node name="Sleeve" type="MeshInstance3D" parent="Body/Chest"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 1.15, 0.62)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.1, 1.15, 0.62)
 material_override = SubResource("blood_mat")
 mesh = SubResource("sleeve")
 
@@ -255,17 +255,17 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 
 [node name="DripA" type="MeshInstance3D" parent="Body/Chest/ChestBlood"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.035, 1.03, 0.655)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.065, 1.03, 0.655)
 material_override = SubResource("blood_mat")
 mesh = SubResource("drip_a")
 
 [node name="DripB" type="MeshInstance3D" parent="Body/Chest/ChestBlood"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, 1.0, 0.655)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.95, 0.655)
 material_override = SubResource("blood_mat")
 mesh = SubResource("drip_b")
 
 [node name="Drop" type="MeshInstance3D" parent="Body/Bleeding"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0.33)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 1.1, 0.33)
 material_override = SubResource("blood_mat")
 mesh = SubResource("drop")
 
@@ -281,7 +281,7 @@ mesh = SubResource("puddle_small")
 
 [node name="Splatter" type="CPUParticles3D" parent="Body"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0.62)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0.62)
 material_override = SubResource("blood_mat")
 emitting = false
 amount = 240

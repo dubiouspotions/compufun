@@ -1,8 +1,8 @@
 class_name TheEnd
 extends Node3D
-## The end of the game in the shop (Game.Phase.ENDED): a calm moment in the evening, the player
-## looks up, and Pipedream pipes stab out through their chest from behind. They look down at the
-## stubs, one in their hands; then the pipes push on through with a rumble and a cloud of blood, one
+## The end of the game in the shop (Game.Phase.ENDED): a calm moment in the evening, then
+## Pipedream pipes stab out through the player's chest from behind, and their head jerks up in
+## shock. They look down at the stubs in their hands; then the pipes push on through with a rumble and a cloud of blood, one
 ## bends off like in the screensaver, and the world crashes into the bluescreen. Each stab jerks the
 ## chest along. The body, the pipes and the blood are the children of Body, in world space, so move
 ## them in the editor; each pipe under Pipes stabs along its own axis, and its place in the scene is
@@ -17,12 +17,12 @@ signal crashed
 @export var up_view: StringName = &"EndUp"
 ## The view marker that looks down at the body.
 @export var down_view: StringName = &"End"
-## The calm moment in the evening before the player looks up, in seconds.
-@export_range(0.0, 10.0, 0.1, "suffix:s") var calm_seconds: float = 1.0
-## From the start of the look up to the first stab, in seconds.
-@export_range(0.0, 10.0, 0.1, "suffix:s") var stab_seconds: float = 0.8
-## From the first stab to the look down, in seconds.
-@export_range(0.0, 10.0, 0.1, "suffix:s") var shock_seconds: float = 0.6
+## The calm moment in the evening before the first stab, in seconds.
+@export_range(0.0, 10.0, 0.1, "suffix:s") var calm_seconds: float = 1.5
+## From the first stab to the head jerking up, in seconds.
+@export_range(0.0, 2.0, 0.01, "suffix:s") var flinch_seconds: float = 0.05
+## How long the player looks up in shock before looking down, in seconds, the turn included.
+@export_range(0.0, 10.0, 0.1, "suffix:s") var shock_seconds: float = 0.8
 ## From the start of the look down to the second stab, in seconds, the turn included.
 @export_range(0.0, 10.0, 0.1, "suffix:s") var down_seconds: float = 1.8
 ## From the second stab to the bluescreen, in seconds.
@@ -92,9 +92,9 @@ func _play() -> void:
 		return
 	_sequence = create_tween()
 	_sequence.tween_interval(calm_seconds)
-	_sequence.tween_callback(view_requested.emit.bind(up_view))
-	_sequence.tween_interval(stab_seconds)
 	_stab(second_metres, 1.0)
+	_sequence.tween_interval(flinch_seconds)
+	_sequence.tween_callback(view_requested.emit.bind(up_view))
 	_sequence.tween_interval(shock_seconds)
 	_sequence.tween_callback(view_requested.emit.bind(down_view))
 	_sequence.tween_interval(down_seconds)
