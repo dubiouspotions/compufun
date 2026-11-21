@@ -41,6 +41,7 @@ func _ready() -> void:
 			hotspot.clicked.connect(_on_hotspot_clicked)
 	_job_slots.job_clicked.connect(_on_job_clicked)
 	_bench.view_requested.connect(view_requested.emit)
+	_bench.plug_grabbed.connect(_on_plug_grabbed)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -77,6 +78,22 @@ func bench_screen_rect() -> Rect2:
 ## Shows [param texture] (the screen buffer) on the bench screen.
 func set_desktop_texture(texture: Texture2D) -> void:
 	_bench.set_screen_texture(texture)
+
+
+# The dragged plug follows the mouse; the release plugs it into the computer under the mouse, or lays it down.
+func _unhandled_input(event: InputEvent) -> void:
+	var mouse := event as InputEventMouse
+	if not _bench.dragging or mouse == null:
+		return
+	var from := _camera.project_ray_origin(mouse.position)
+	var dir := _camera.project_ray_normal(mouse.position)
+	var job := _job_slots.job_at(from, dir)
+	var button := mouse as InputEventMouseButton
+	if button != null and button.button_index == MOUSE_BUTTON_LEFT and not button.pressed:
+		_drop_plug(job)
+		return
+	_bench.drag_plug(from, dir)
+	_job_slots.target(job)
 
 
 func _sync() -> void:
@@ -178,9 +195,19 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 				_open_sign.wobble()
 
 
+func _on_plug_grabbed() -> void:
+	_bench.dragging = true
+	Game.connect_cable(null)
+	if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):  # a quick tap is released before physics picking reports the press
+		_drop_plug(null)
+
+
+func _drop_plug(job: Job) -> void:
+	_bench.dragging = false
+	_job_slots.target(null)
+	Game.connect_cable(job)
+
+
 func _on_job_clicked(job: Job) -> void:
-	if _bench.holding:
-		_bench.plug_into(job)
-		return
 	Game.focus_job(job)
 	view_requested.emit(WORKVIEW)

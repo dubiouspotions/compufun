@@ -1,31 +1,35 @@
 class_name Bench
 extends Node3D
-## The left end of the counter: the bench screen, its keyboard and the VGA cable. A click on the
-## cable unplugs it and puts its plug in the player's hand; a click on a computer then plugs it in
-## there ([method plug_into]), and a second click on the cable puts the plug down. The room lays the
-## cable to the connected computer with [method lay_cable].
+## The left end of the counter: the bench screen, its keyboard and the VGA cable. The player drags
+## the plug of the cable: a press on the plug emits [signal plug_grabbed], the room moves the plug
+## with [method drag_plug] while [member dragging], and lays the cable with [method lay_cable].
 
 ## The player clicked the screen: go to [param view].
 signal view_requested(view: StringName)
+## The player pressed the mouse button on the plug.
+signal plug_grabbed
 
-## The outline colour of the cable while the mouse is over it.
+## The outline colour of the cable while the mouse is over the plug.
 @export var hover_color: Color = Color(0.75, 0.9, 1.0)
-## The outline colour of the cable while the player holds its plug.
+## The outline colour of the cable while the player drags the plug.
 @export var held_color: Color = Color(1.0, 0.82, 0.2)
 ## How far the cable runs straight out of a socket before it bends to the counter, in metres.
 @export var socket_reach: float = 0.06
+## The plug follows the mouse on an upright plane facing the player, this far in front of the
+## bench (local z), in metres; in front of the computers, so that they don't hide the plug.
+@export var drag_depth: float = 0.32
 
-## True while the player holds the plug: the next click on a computer plugs it in there.
-var holding: bool = false:
+## True while the player drags the plug. [method lay_cable] leaves the plug where it is meanwhile.
+var dragging: bool = false:
 	set(value):
-		holding = value
+		dragging = value
 		_sync_outline()
 
 var _hovered: bool = false
 
 @onready var _monitor: CrtMonitor = %Monitor
 @onready var _screen_hotspot: Hotspot = %ScreenHotspot
-@onready var _cable_hotspot: Hotspot = %CableHotspot
+@onready var _plug_hotspot: Hotspot = %PlugHotspot
 @onready var _cable: Path3D = %Cable
 @onready var _outline: CSGPolygon3D = %Outline
 @onready var _plug: Node3D = %Plug
@@ -35,9 +39,9 @@ var _hovered: bool = false
 
 func _ready() -> void:
 	_screen_hotspot.clicked.connect(func(h: Hotspot) -> void: view_requested.emit(h.view))
-	_cable_hotspot.clicked.connect(func(_h: Hotspot) -> void: _on_cable_clicked())
-	_cable_hotspot.mouse_entered.connect(_set_hovered.bind(true))
-	_cable_hotspot.mouse_exited.connect(_set_hovered.bind(false))
+	_plug_hotspot.clicked.connect(func(_h: Hotspot) -> void: plug_grabbed.emit())
+	_plug_hotspot.mouse_entered.connect(_set_hovered.bind(true))
+	_plug_hotspot.mouse_exited.connect(_set_hovered.bind(false))
 	_sync_outline()
 	lay_cable(null)
 
@@ -52,22 +56,30 @@ func set_screen_texture(texture: Texture2D) -> void:
 	_monitor.set_screen_texture(texture)
 
 
-## Plugs the held plug into the computer of [param job] (Game.connect_cable) and empties the
-## player's hand. Does nothing unless the player holds the plug.
-func plug_into(job: Job) -> void:
-	if not holding:
-		return
-	holding = false
-	Game.connect_cable(job)
-
-
 ## Lays the cable from the screen to [param socket], the VGA socket of the connected computer,
-## whose +Z points out of the socket. null lays the plug at rest on the counter. The cable runs
-## along the counter at the height of %PlugRest, behind the computers.
+## whose +Z points out of the socket. null lays the plug at rest on the counter. Does nothing while
+## [member dragging].
 func lay_cable(socket: Node3D) -> void:
-	var end := socket if socket != null else _rest
+	if not dragging:
+		_lay(_local(socket if socket != null else _rest))
+
+
+## Moves the plug to where the mouse ray from [param from] along [param dir] (world space) meets
+## the drag plane (see [member drag_depth]), no lower than the counter top.
+func drag_plug(from: Vector3, dir: Vector3) -> void:
+	var local_from := to_local(from)
+	var local_dir := global_basis.inverse() * dir
+	if is_zero_approx(local_dir.z):
+		return
+	var point := local_from + local_dir * ((drag_depth - local_from.z) / local_dir.z)
+	var rest := _local(_rest)
+	point.y = maxf(point.y, rest.origin.y)
+	_lay(Transform3D(rest.basis, point))
+
+
+# The cable runs along the counter at the height of %PlugRest, behind the computers.
+func _lay(finish: Transform3D) -> void:
 	var start := _local(_screen_socket)
-	var finish := _local(end)
 	var counter := _local(_rest).origin.y
 	var out_of_screen := start.origin + start.basis.z * socket_reach
 	var into_end := finish.origin + finish.basis.z * socket_reach
@@ -98,14 +110,6 @@ func _local(node: Node3D) -> Transform3D:
 	return global_transform.affine_inverse() * node.global_transform
 
 
-func _on_cable_clicked() -> void:
-	if holding:
-		holding = false
-		return
-	Game.connect_cable(null)
-	holding = true
-
-
 func _set_hovered(on: bool) -> void:
 	_hovered = on
 	_sync_outline()
@@ -114,5 +118,5 @@ func _set_hovered(on: bool) -> void:
 func _sync_outline() -> void:
 	if not is_node_ready():
 		return
-	_outline.visible = holding or _hovered
-	(_outline.material as StandardMaterial3D).albedo_color = held_color if holding else hover_color
+	_outline.visible = dragging or _hovered
+	(_outline.material as StandardMaterial3D).albedo_color = held_color if dragging else hover_color

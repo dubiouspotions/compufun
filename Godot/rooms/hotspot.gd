@@ -34,6 +34,16 @@ func set_enabled(on: bool) -> void:
 		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
 
+## The distance in metres along the ray from [param from] along the unit vector [param dir] (world
+## space) to where it enters the clickable box, or -1.0 when it misses or the hotspot is disabled.
+func ray_distance(from: Vector3, dir: Vector3) -> float:
+	if not input_ray_pickable:
+		return -1.0
+	var to_box := global_transform.affine_inverse()
+	var hit: Variant = AABB(-size * 0.5, size).intersects_ray(to_box * from, to_box.basis * dir)
+	return from.distance_to(global_transform * (hit as Vector3)) if hit != null else -1.0
+
+
 func _on_input_event(_camera: Node, event: InputEvent, _position: Vector3, _normal: Vector3, _shape_index: int) -> void:
 	var mouse := event as InputEventMouseButton
 	if mouse != null and mouse.pressed and mouse.button_index == MOUSE_BUTTON_LEFT:

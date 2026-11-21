@@ -51,6 +51,25 @@ func cable_socket(job: Job) -> Node3D:
 	return computer.cable_socket()
 
 
+## The job whose computer the mouse ray from [param from] along [param dir] (world space) meets
+## first, or null when it meets none.
+func job_at(from: Vector3, dir: Vector3) -> Job:
+	var nearest: Job = null
+	var nearest_distance := INF
+	for job: Job in _computers:
+		var distance := _computers[job].ray_distance(from, dir)
+		if distance >= 0.0 and distance < nearest_distance:
+			nearest = job
+			nearest_distance = distance
+	return nearest
+
+
+## Outlines the computer of [param job] as the one that the dragged plug is over; null outlines none.
+func target(job: Job) -> void:
+	for computer: JobComputer in _computers.values():
+		computer.targeted = computer.job == job
+
+
 func _add_computer(job: Job) -> JobComputer:
 	var slot := _slots.get_node_or_null("Slot%d" % job.slot) as Marker3D
 	if slot == null:

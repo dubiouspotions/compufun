@@ -54,7 +54,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Bench screen**: The CRT at the left end of the counter, with its keyboard (`rooms/shop/bench.tscn`). It shows the screen buffer: the desktop of the computer that the VGA cable is connected to, or NO SIGNAL.
 *Avoid:* bench monitor, bench computer.
 
-**VGA cable**: The cable from the bench screen to one computer on the counter (`Game.connected`). The player clicks the cable to hold its plug, then a computer to plug it in.
+**VGA cable**: The cable from the bench screen to one computer on the counter (`Game.connected`). The player drags its plug onto a computer to connect it, or off a computer to disconnect it.
 *Avoid:* keyboard cable, screen cable.
 
 **Slot**: One of the `Game.MAX_JOBS` places on the work mat where a job's computer stands (`Job.slot`). In the scene it is a `Slot<n>` marker in `rooms/shop/job_slots.tscn`.
