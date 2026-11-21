@@ -6,6 +6,8 @@ const JOB_FLAGS: Array[String] = ["hardware_fixed", "software_fixed", "powered",
 
 var _status: Label
 var _rows: VBoxContainer
+# True while the day slider is dragged: the day changes when the drag ends, not on every step.
+var _dragging_day: bool = false
 
 
 func _ready() -> void:
@@ -29,7 +31,7 @@ func _refresh() -> void:
 	var customers: Array[Customer] = Game.day.customers if Game.day != null else []
 
 	_section("Day")
-	_row("Day", _spin(1, 7, Game.day_number, func(value: int) -> void: _edit("day", value)))
+	_row("Day", _day_slider())
 	_row("Phase", _enum_picker(Game.Phase, Game.phase, "phase"))
 	_row("Arrivals", _spin(0, customers.size(), Game.arrivals, func(value: int) -> void: _edit("arrivals", value)))
 	_row("Daypart", _enum_picker(Game.Daypart, Game.daypart, "daypart"))
@@ -84,6 +86,35 @@ func _refresh() -> void:
 	var clear := _button("Clear", _edit.bind("seen", []))
 	clear.disabled = seen.is_empty()
 	_row(", ".join(seen) if not seen.is_empty() else "none", Control.new(), clear)
+
+
+## A slider over day 1 to 7 with a tick per day; the number shows next to it. A day without a
+## day file is refused, and the slider springs back.
+func _day_slider() -> Control:
+	var row := HBoxContainer.new()
+	var slider := HSlider.new()
+	slider.min_value = 1
+	slider.max_value = 7
+	slider.step = 1
+	slider.tick_count = 7
+	slider.ticks_on_borders = true
+	slider.value = Game.day_number
+	slider.size_flags_horizontal = SIZE_EXPAND_FILL
+	slider.size_flags_vertical = SIZE_SHRINK_CENTER
+	row.add_child(slider)
+	var number := _text(str(Game.day_number))
+	number.custom_minimum_size.x = 32
+	row.add_child(number)
+	slider.value_changed.connect(func(value: float) -> void:
+		number.text = str(int(value))
+		if not _dragging_day:
+			_edit("day", int(value)))
+	slider.drag_started.connect(func() -> void: _dragging_day = true)
+	slider.drag_ended.connect(func(value_changed: bool) -> void:
+		_dragging_day = false
+		if value_changed:
+			_edit("day", int(slider.value)))
+	return row
 
 
 ## One job: its customer, its repair, whether it is in focus or on the cable, and a remove button.
