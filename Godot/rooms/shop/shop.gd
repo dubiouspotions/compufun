@@ -12,6 +12,8 @@ signal crashed
 signal phone_requested
 ## The player pressed the Degauss button of the bench screen.
 signal degauss_requested
+## The player pressed the power button of the bench screen.
+signal monitor_power_requested
 
 ## The close-up of the computer in focus.
 const WORKVIEW: StringName = &"Workview"
@@ -71,6 +73,7 @@ func _ready() -> void:
 	_the_end.crashed.connect(crashed.emit)
 	_bench.degauss_pressed.connect(degauss_requested.emit)
 	_trash_can.trash_requested.connect(Game.trash_part)
+	_bench.power_pressed.connect(monitor_power_requested.emit)
 	Game.changed.connect(_sync)
 	_sync()
 

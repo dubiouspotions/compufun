@@ -33,7 +33,12 @@ size = Vector3(0.46, 0.42, 0.42)
 [node name="DegaussHotspot" parent="." instance=ExtResource("4_hotspot")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.095, 0.2)
 unique_name_in_owner = true
-size = Vector3(0.06, 0.04, 0.14)
+size = Vector3(0.05, 0.04, 0.14)
+
+[node name="PowerHotspot" parent="." instance=ExtResource("4_hotspot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.155, 0.095, 0.2)
+unique_name_in_owner = true
+size = Vector3(0.018, 0.04, 0.14)
 
 [node name="ScreenSocket" type="Marker3D" parent="."]
 unique_name_in_owner = true

@@ -45,6 +45,7 @@ func _ready() -> void:
 	_shop.crashed.connect(_crash.show_crash)
 	_shop.phone_requested.connect(_phone.open)
 	_shop.degauss_requested.connect((%ScreenView as ScreenView).degauss)
+	_shop.monitor_power_requested.connect((%ScreenView as ScreenView).toggle_power)
 	_dialogue.finished.connect(Game.dialogue_finished)
 	Game.changed.connect(_sync)
 	Game.start_day(first_day)
