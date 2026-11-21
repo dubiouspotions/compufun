@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes the shop's door bell, phone and keystroke sounds as 22050 Hz mono WAVs.
+"""Synthesizes the shop's door bell, phone, keystroke and mouse button sounds as 22050 Hz mono WAVs.
 Usage: make_shop_sounds.py Godot/sounds"""
 import math
 import random
@@ -95,6 +95,19 @@ def keystroke(seed):
     return out
 
 
+def mouse_button(seed, release):
+    """A mouse button's microswitch: a dry snap of noise with no pitch, so it doesn't plink like a
+    drop; the press has a little plastic body, the release is thinner."""
+    random.seed(seed)
+    out = silence(0.03)
+    snap = lowpass(highpass(noise(0.004, 0.0006 if release else 0.0009), 1800 if release else 1200), 7000)
+    mix(out, snap, 0.0, 1.0)
+    if not release:
+        body = lowpass(noise(0.012, 0.0025), 900)
+        mix(out, body, 0.0005, 0.6)
+    return out
+
+
 def write(path, samples):
     peak = max(abs(s) for s in samples)
     gain = 0.7 / peak
@@ -115,3 +128,6 @@ write(sys.argv[1] + "/door_bell.wav", door_bell())
 write(sys.argv[1] + "/phone_receiver.wav", phone_receiver())
 for take in range(1, 5):
     write(sys.argv[1] + "/keystroke_%d.wav" % take, keystroke(take))
+for take in range(1, 4):
+    write(sys.argv[1] + "/mouse_down_%d.wav" % take, mouse_button(10 + take, False))
+    write(sys.argv[1] + "/mouse_up_%d.wav" % take, mouse_button(20 + take, True))
