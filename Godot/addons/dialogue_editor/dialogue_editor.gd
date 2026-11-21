@@ -241,6 +241,17 @@ func _play_line(line: DialogueLine) -> void:
 	if line.text.strip_edges().is_empty():
 		_fail("The line has no text to say")
 		return
+	var voice_type := VoiceType.of(line, _conversation)
+	if voice_type != null:
+		# A voice type is spoken live, as the game does; a rendered WAV has none.
+		var live := Voices.say_live(line, _customer.voice, voice_type)
+		if live == null:
+			_fail("Couldn't say the line live with its voice type; see the Output panel")
+			return
+		_preview.stream = live
+		_preview.play()
+		_show_status("Playing live (%s, %s, %s)" % [_customer.voice, line.pose, voice_type.resource_path.get_file().get_basename()])
+		return
 	var path := Voices.path_of(line, _customer.voice)
 	if not FileAccess.file_exists(path):
 		var chimera: String = EditorInterface.get_editor_settings().get_setting(Voices.CHIMERA_SETTING)
@@ -358,6 +369,10 @@ func _render_when() -> void:
 		c.once = on
 		_changed_when())
 	row.add_child(once)
+	row.add_child(_label("Voice type"))
+	row.add_child(_voice_type_picker(c.voice_type, "Plain", func(picked: VoiceType) -> void:
+		c.voice_type = picked
+		_touch()))
 
 	var days := HBoxContainer.new()
 	_detail.add_child(days)
@@ -428,6 +443,9 @@ func _line_row(index: int) -> Control:
 	side.custom_minimum_size.x = 160
 	row.add_child(side)
 	side.add_child(_pose_picker(line))
+	side.add_child(_voice_type_picker(line.voice_type, "Conversation's", func(picked: VoiceType) -> void:
+		line.voice_type = picked
+		_touch()))
 	var buttons := HBoxContainer.new()
 	side.add_child(buttons)
 	buttons.add_child(_button("Play", _play_line.bind(line)))
@@ -444,6 +462,28 @@ func _line_row(index: int) -> Control:
 		_touch())
 	row.add_child(text)
 	return row
+
+
+## A dropdown of the voice types in voices/types/ (made in the Voice Lab, F3), with
+## [param empty_label] for none; [param on_pick] gets the picked VoiceType or null.
+func _voice_type_picker(current: VoiceType, empty_label: String, on_pick: Callable) -> OptionButton:
+	var picker := OptionButton.new()
+	picker.add_item(empty_label)
+	var types: Array = [null]
+	var dir := "res://voices/types"
+	for file_name in (DirAccess.get_files_at(dir) if DirAccess.dir_exists_absolute(dir) else PackedStringArray()):
+		if file_name.ends_with(".tres"):
+			var loaded := load(dir.path_join(file_name)) as VoiceType
+			if loaded == null:
+				continue
+			types.append(loaded)
+			picker.add_item(file_name.get_basename().capitalize())
+	if current != null and not types.has(current):
+		types.append(current)
+		picker.add_item("%s (not in voices/types)" % current.resource_path.get_file().get_basename())
+	picker.select(types.find(current))
+	picker.item_selected.connect(func(index: int) -> void: on_pick.call(types[index]))
+	return picker
 
 
 ## A dropdown of [constant Person.POSES], marking those the customer's person has no portrait
