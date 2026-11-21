@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Win95Palette" format=3]
+
+[ext_resource type="Script" path="res://win95/theme/win95palette.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+resource_name = "Rainy Day"
+face_color = Color(0.5137255, 0.6, 0.6941176, 1)
+highlight_color = Color(0.7568627, 0.8, 0.8509804, 1)
+light_color = Color(0.5137255, 0.6, 0.6941176, 1)
+shadow_color = Color(0.3098039, 0.3960784, 0.4901961, 1)

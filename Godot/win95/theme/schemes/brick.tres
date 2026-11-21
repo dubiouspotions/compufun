@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Win95Palette" format=3]
+
+[ext_resource type="Script" path="res://win95/theme/win95palette.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+resource_name = "Brick"
+face_color = Color(0.7607843, 0.7490196, 0.6470588, 1)
+highlight_color = Color(0.8823529, 0.8784314, 0.8235294, 1)
+light_color = Color(0.7607843, 0.7490196, 0.6470588, 1)
+shadow_color = Color(0.5529412, 0.5372549, 0.3803922, 1)
