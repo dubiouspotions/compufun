@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_4aw4o")
-display_name = "Person B"
+nickname = "Person B"

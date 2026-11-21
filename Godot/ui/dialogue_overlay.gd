@@ -44,7 +44,7 @@ func start(customer: Customer, conversation: Conversation) -> void:
 		return
 	_customer = customer
 	_line = 0
-	_name.text = customer.display_name
+	_name.text = customer.spoken_name()
 	if conversation == null or conversation.lines.is_empty():
 		var message := ("%s has no conversation for day %d and flags %s" % [customer.resource_path,
 				Game.day_number, Game.flags]) if conversation == null else (

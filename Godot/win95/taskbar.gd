@@ -12,15 +12,28 @@ var _buttons: Dictionary[Control, Button] = {}
 var _sync_queued := false
 
 @onready var _row: HBoxContainer = %TaskButtons
+@onready var _owner_label: Label = %Owner
 
 
 func _ready() -> void:
 	if desktop == null:
 		push_error("Taskbar: desktop is not set, so there are no task buttons")
 		return
+	_show_owner()
 	desktop.windows_changed.connect(_queue_sync)
 	(_row.get_parent() as Control).resized.connect(_queue_sync)
 	_sync()
+
+
+# The name and email live on the taskbar of that person's computer, and nowhere else.
+func _show_owner() -> void:
+	var state := get_node_or_null(^"%ComputerState") as ComputerState
+	var person: Person = null
+	if state != null and state.job != null and state.job.customer != null:
+		person = state.job.customer.person
+	var text := "" if person == null else person.computer_identity()
+	_owner_label.text = text
+	_owner_label.visible = text != ""
 
 
 func _queue_sync() -> void:

@@ -67,6 +67,6 @@ func _on_timer() -> void:
 		return
 	var line := _lines[_next_line % _lines.size()]
 	_next_line += 1
-	_label.text = "%s: %s" % [_customer.display_name, line.text]
+	_label.text = "%s: %s" % [_customer.spoken_name(), line.text]
 	show()
 	_timer.start(maxf(show_seconds, _voice.say(line, _customer.voice)))

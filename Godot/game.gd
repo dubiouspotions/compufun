@@ -599,4 +599,4 @@ func _refuse(reason: String) -> String:
 
 
 static func _who(customer: Customer) -> String:
-	return "%s (%s)" % [customer.display_name, customer.resource_path]
+	return "%s (%s)" % [customer.spoken_name(), customer.resource_path]

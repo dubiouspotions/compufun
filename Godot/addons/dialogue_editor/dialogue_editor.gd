@@ -14,6 +14,8 @@ var _customer: Customer
 var _conversation: Conversation
 ## The paths of the customers with unsaved edits.
 var _dirty: Dictionary[String, bool] = {}
+## People whose nickname was edited. Saved with the customer, because the nickname lives on the person.
+var _dirty_people: Dictionary[String, Person] = {}
 
 var _status: Label
 var _customer_list: ItemList
@@ -47,7 +49,7 @@ func _ready() -> void:
 
 	var middle := _column(split, 260)
 	_name_edit = LineEdit.new()
-	_name_edit.placeholder_text = "Name in the game"
+	_name_edit.placeholder_text = "Nickname"
 	_name_edit.text_changed.connect(_on_name_changed)
 	middle.add_child(_name_edit)
 	var voice_row := HBoxContainer.new()
@@ -118,9 +120,15 @@ func save_all() -> void:
 
 ## A message for the editor to show on quit while there are unsaved edits, or "".
 func unsaved_status() -> String:
-	if _dirty.is_empty():
+	if _dirty.is_empty() and _dirty_people.is_empty():
 		return ""
-	return "Save the dialogue of %s?" % ", ".join(_dirty.keys())
+	var paths: Array[String] = []
+	for path: String in _dirty.keys():
+		paths.append(path)
+	for path: String in _dirty_people.keys():
+		if not paths.has(path):
+			paths.append(path)
+	return "Save the dialogue of %s?" % ", ".join(paths)
 
 
 func _save(customer: Customer) -> bool:
@@ -139,7 +147,26 @@ func _save(customer: Customer) -> bool:
 		return false
 	_dirty.erase(path)
 	EditorInterface.get_resource_filesystem().update_file(path)
+	var person := customer.person
+	if person != null and _dirty_people.has(person.resource_path):
+		if not _save_person(person):
+			return false
 	_show_status("Saved " + path)
+	return true
+
+
+func _save_person(person: Person) -> bool:
+	var path := person.resource_path
+	var err := ResourceSaver.save(person, path)
+	if err != OK:
+		_fail("Couldn't save %s: %s" % [path, error_string(err)])
+		return false
+	var back := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as Person
+	if back == null or back.nickname != person.nickname or back.name != person.name or back.email != person.email:
+		_fail("Saved %s, but the file reads back different" % path)
+		return false
+	_dirty_people.erase(path)
+	EditorInterface.get_resource_filesystem().update_file(path)
 	return true
 
 
@@ -202,7 +229,7 @@ func _on_customer_selected(index: int) -> void:
 func _select_customer(index: int) -> void:
 	_customer = _customers[index] if index >= 0 else null
 	_name_edit.editable = _customer != null
-	_name_edit.text = _customer.display_name if _customer != null else ""
+	_name_edit.text = _customer.spoken_name() if _customer != null else ""
 	_voice_picker.disabled = _customer == null
 	if _customer != null:
 		_voice_picker.select(VOICES.find(_customer.voice))
@@ -223,6 +250,10 @@ func _select_customer(index: int) -> void:
 func _on_name_changed(text: String) -> void:
 	if _customer == null:
 		return
+	if _customer.person != null:
+		_customer.person.nickname = text
+		if _customer.person.resource_path != "":
+			_dirty_people[_customer.person.resource_path] = _customer.person
 	_customer.display_name = text
 	_customer_list.set_item_text(_customers.find(_customer), _customer_label(_customer))
 	_touch()
@@ -503,7 +534,7 @@ func _touch() -> void:
 
 
 func _customer_label(customer: Customer) -> String:
-	return "%s (%s)" % [customer.display_name, customer.resource_path.get_file()]
+	return "%s (%s)" % [customer.spoken_name(), customer.resource_path.get_file()]
 
 
 func _show_status(text: String) -> void:

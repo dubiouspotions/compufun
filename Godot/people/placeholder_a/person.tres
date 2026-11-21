@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_dur5t")
-display_name = "Person A"
+nickname = "Person A"
