@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Person" format=3]
+
+[ext_resource type="Texture2D" path="res://people/handsome_dude/face.png" id="1_face"]
+[ext_resource type="Texture2D" path="res://people/handsome_dude/portrait_happy.png" id="2_happy"]
+[ext_resource type="Texture2D" path="res://people/handsome_dude/portrait_neutral.png" id="3_neut"]
+[ext_resource type="Texture2D" path="res://people/handsome_dude/portrait_problem.png" id="4_prob"]
+[ext_resource type="Script" path="res://people/person.gd" id="5_script"]
+
+[resource]
+script = ExtResource("5_script")
+name = "Ken Carter"
+nickname = "Handsome dude"
+email = "carterjr@aol.com"
+portraits = Dictionary[StringName, Texture2D]({
+&"happy": ExtResource("2_happy"),
+&"neutral": ExtResource("3_neut"),
+&"problem": ExtResource("4_prob")
+})
+face = ExtResource("1_face")
+shirt_rect = Rect2(0.28, 0.34, 0.50, 0.66)
