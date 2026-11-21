@@ -3,9 +3,9 @@
 [ext_resource type="PackedScene" path="res://win95/property_sheet.tscn" id="sheet"]
 [ext_resource type="Script" path="res://win95/applets/add_remove_page.gd" id="page"]
 [ext_resource type="Script" path="res://win95/group_box.gd" id="group_box"]
-[ext_resource type="Texture2D" path="res://win95/applets/install_32.png" id="install"]
-[ext_resource type="Texture2D" path="res://win95/applets/uninstall_32.png" id="uninstall"]
-[ext_resource type="Texture2D" path="res://win95/applets/startup_disk_32.png" id="startup"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/computer_install_software_32.png" id="install"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/recycle_bin_full_documents_appwiz_32.png" id="uninstall"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/windows_setup_disk_32.png" id="startup"]
 [ext_resource type="Texture2D" path="res://win95/applets/windows_setup_components.png" id="components"]
 
 [node name="AddRemoveProgramsProperties" instance=ExtResource("sheet")]
@@ -52,9 +52,9 @@ offset_bottom = 96.0
 mouse_filter = 2
 
 [node name="UninstallIcon" type="TextureRect" parent="VBox/Body/Column/Tabs/Install"]
-offset_left = 14.0
+offset_left = 13.0
 offset_top = 109.0
-offset_right = 14.0
+offset_right = 13.0
 offset_bottom = 109.0
 mouse_filter = 2
 texture = ExtResource("uninstall")

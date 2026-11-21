@@ -169,3 +169,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 **Property sheet**: A Win95 dialog with tabs and OK, Cancel and Apply (`win95/property_sheet.tscn`). Its pages edit pending values; Apply and OK commit them to the running copy through `ComputerState`.
 *Avoid:* properties dialog, settings window.
+
+**Colour scheme**: One of Win95's Appearance schemes, such as Rose or Windows Standard: a `Win95Palette` in `win95/theme/schemes/`. The running copy's `palette` is the scheme that the computer shows.
+*Avoid:* theme, palette (that is the resource type).
+
+**Pointer trails**: The ghost pointers that follow the mouse on a computer whose Mouse settings turn them on (`Win95Setup.pointer_trails`, drawn by `win95/pointer_trails.gd`).
+*Avoid:* mouse trails, cursor trail.

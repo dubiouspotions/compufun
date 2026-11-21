@@ -6,7 +6,7 @@
 [ext_resource type="Script" path="res://win95/group_box.gd" id="group_box"]
 [ext_resource type="Texture2D" path="res://win95/applets/system_monitor.png" id="monitor"]
 [ext_resource type="Texture2D" path="res://win95/applets/device_tree.png" id="tree"]
-[ext_resource type="Texture2D" path="res://win95/applets/hardware_profiles_32.png" id="profiles"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/laptop_docking_station_32.png" id="profiles"]
 
 [sub_resource type="ButtonGroup" id="view"]
 
@@ -189,9 +189,9 @@ layout_mode = 2
 
 [node name="Icon" type="TextureRect" parent="VBox/Body/Column/Tabs/Hardware Profiles"]
 offset_left = 17.0
-offset_top = 19.0
+offset_top = 16.0
 offset_right = 17.0
-offset_bottom = 19.0
+offset_bottom = 16.0
 mouse_filter = 2
 texture = ExtResource("profiles")
 stretch_mode = 2

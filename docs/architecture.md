@@ -36,6 +36,7 @@ Godot/               the Godot project: everything the game loads
   ui/logos/          the CompuFun logos (the loading screen, the boot splash, the sign in the shop)
   win95/             the Win95 interface (the Win95 developer's folder)
   win95/applets/     the Control Panel's applets: applet.gd, one Applet .tres per icon, and each one's property sheet
+  win95/theme/schemes/  Win95's 27 colour schemes, one Win95Palette each, read from the VM's registry
   win95/theme/icons_extracted/  every icon in a Windows 95 install, named, with manifest.json (docs/win95-icons.md)
   win95/midi/        recordings that .mid files play in Media Player (Godot plays no MIDI)
   win95/solitaire/   Solitaire: the rules (klondike.gd), the window, the table and the card pictures
