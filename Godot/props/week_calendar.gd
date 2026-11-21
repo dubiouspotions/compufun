@@ -6,6 +6,8 @@ extends Node3D
 
 ## The game's days, one per Day file (days/day_1.tres to day_7.tres).
 const DAYS: int = 7
+## Thickens the strokes so that the glyphs survive the low-resolution buffer.
+const OUTLINE: int = 3
 const WEEKDAYS: PackedStringArray = ["S", "M", "T", "W", "T", "F", "S"]
 const MONTHS: PackedStringArray = [
 	"JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
@@ -33,6 +35,8 @@ var font: Font:
 			_fit(label)
 
 var _crosses: Array[Node3D] = []
+# The font with room between glyphs for their outlines, which grow each glyph by OUTLINE.
+var _spaced := FontVariation.new()
 # Each label, and the cap height and the width that it fits.
 var _fits: Dictionary[Label3D, Vector2] = {}
 
@@ -66,8 +70,8 @@ func _ready() -> void:
 	if last.month != first.month:
 		months += "/" + MONTHS[last.month - 1]
 	var inner := size.x - margin * 2.0
-	_label(months, heading * 0.36, inner, ink_color, Vector3(0.0, top - heading * 0.36, 0.003))
-	_label(str(first.year), heading * 0.27, inner, ink_color, Vector3(0.0, top - heading * 0.76, 0.003))
+	_label(months, heading * 0.3, inner, ink_color, Vector3(0.0, top - heading * 0.28, 0.003))
+	_label(str(first.year), heading * 0.26, inner, ink_color, Vector3(0.0, top - heading * 0.78, 0.003))
 
 	var rule_y := cells_top - cell
 	while rule_y > bottom + cell * 0.25:
@@ -109,7 +113,7 @@ func _label(text: String, cap_height: float, max_width: float, color: Color, at:
 	var label := Label3D.new()
 	label.text = text
 	label.font_size = 32
-	label.outline_size = 3 # thickens the strokes so the glyphs survive the low-resolution buffer
+	label.outline_size = OUTLINE
 	_fits[label] = Vector2(cap_height, max_width)
 	_fit(label)
 	label.outline_modulate = color
@@ -123,10 +127,11 @@ func _label(text: String, cap_height: float, max_width: float, color: Color, at:
 
 # Sizes [param label] to its cap height and width in the current font.
 func _fit(label: Label3D) -> void:
-	label.font = font
+	_spaced.base_font = font if font != null else ThemeDB.fallback_font
+	_spaced.spacing_glyph = OUTLINE * 2
+	label.font = _spaced
 	var fit := _fits[label]
-	var measured := font if font != null else ThemeDB.fallback_font
-	var width := measured.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, label.font_size).x + label.outline_size * 2
+	var width := _spaced.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, label.font_size).x + label.outline_size * 2
 	label.pixel_size = minf(fit.x / (label.font_size * 0.72), fit.y / width) # 0.72: cap height per em of the default font
 
 
