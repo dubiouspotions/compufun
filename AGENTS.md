@@ -171,6 +171,8 @@ the README's credits. Prefer Godot's built-in features; an addon you don't add c
 - The Web export is a release target, and it has no threads. Check web-sensitive changes
   (audio, loading, shaders) in the web build, not just the editor.
 - 3D assets come from Meshy as `.glb` and go through LFS.
+- The `godot-master` skill (`.claude/skills/`) is reference material. Where it disagrees with
+  this brief or docs/code-standard.md, the brief wins.
 - **Designers edit, code reads.** Teammates who don't code must be able to change content and
   tuning in the editor: tunables are `@export`s or Resource fields, never constants buried in
   logic, and new content is a scene or a `.tres`.
