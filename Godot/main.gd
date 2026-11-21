@@ -53,9 +53,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	var marker := _shop.view_marker(Game.view)
 	if marker == null:
 		return
-	if event.is_action_pressed(&"ui_left"):
+	if event.is_action_pressed(&"turn_left"):
 		Game.go_to_view(marker.left)
-	elif event.is_action_pressed(&"ui_right"):
+	elif event.is_action_pressed(&"turn_right"):
 		Game.go_to_view(marker.right)
 	elif event.is_action_pressed(&"ui_cancel"):
 		Game.go_to_view(marker.back)
