@@ -150,6 +150,7 @@ Config files are 7-bit ASCII, comments included: no em-dashes, smart quotes or e
 
 ## Git workflow
 
+- Push straight to `main`; open a PR only when you want a review.
 - `git pull --rebase` before you push. Never force-push `main` or `deploy`.
 - Scenes (`.tscn`) merge badly. Split your part into its own scene rather than editing a scene
   that someone else is working on.
