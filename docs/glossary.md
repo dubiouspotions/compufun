@@ -60,7 +60,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Sticker**: A small picture on the front or a side of a customer's computer case (a `Sticker` in `Computer.stickers`), shown with the poster prop. A computer has any number of stickers, or none. The case material (`Computer.case_material`) and the stickers tell the computers on the counter apart.
 *Avoid:* decal, label, badge.
 
-**Week calendar**: The calendar on the pin board in the Right view (`props/week_calendar.tscn`): one cell per day of the game with its weekday and date, Saturday and Sunday in red, and a check mark on each day that has passed. A day has passed when the shop closes for its night.
+**Week calendar**: The paper wall calendar on the pin board in the Right view (`props/week_calendar.tscn`): the month and year, then one column per day of the game with its weekday and date, Saturday and Sunday in red. Each day that has passed is crossed out; a day has passed when the shop closes for its night.
 *Avoid:* calendar prop, day counter.
 
 **Job**: One customer's computer on the counter, with its slot, its repair state and its post-it (`Job`, in `Game.jobs`). It stays from the drop-off to the pickup, overnight too.

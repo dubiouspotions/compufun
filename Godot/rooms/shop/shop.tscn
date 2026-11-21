@@ -498,17 +498,20 @@ material_override = ExtResource("18_y5vne")
 mesh = SubResource("BoxMesh_2i8xi")
 
 [node name="Note0" type="MeshInstance3D" parent="Room" unique_id=2138284774]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.945, 1.82, 0.38)
+transform = Transform3D(0, 0, -1, 0.08715574, 0.9961947, 0, 0.9961947, -0.08715574, 0, 3.945, 1.735, 0.3)
 material_override = ExtResource("19_a76lc")
 mesh = SubResource("QuadMesh_max4p")
 
 [node name="Note1" type="MeshInstance3D" parent="Room" unique_id=759308835]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.945, 1.82, 0.6)
+transform = Transform3D(0, 0, -1, -0.06975647, 0.9975641, 0, 0.9975641, 0.06975647, 0, 3.945, 1.47, 0.31)
 material_override = ExtResource("19_a76lc")
 mesh = SubResource("QuadMesh_tgmyf")
 
 [node name="WeekCalendar" parent="Room" instance=ExtResource("week_calendar")]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.944, 1.49, 0.7)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.944, 1.64, 0.85)
+
+[node name="PinBoardLogo" parent="Room" instance=ExtResource("7_mjyfn")]
+transform = Transform3D(0, 0, -0.18, 0, 0.18, 0, 0.18, 0, 0, 3.945, 1.925, 0.3)
 
 [node name="Outside" parent="." unique_id=724951497 instance=ExtResource("20_788ts")]
 unique_name_in_owner = true
