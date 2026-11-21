@@ -7,8 +7,8 @@ signal view_requested(view: StringName)
 
 ## The seconds that the camera takes to move to another view.
 @export var turn_seconds: float = 0.35
-## The seconds that a customer takes from the street to the counter.
-@export var walk_seconds: float = 4.0
+## The seconds that a customer takes from the alley to the counter.
+@export var walk_seconds: float = 7.0
 
 @onready var _camera: Camera3D = %Camera
 @onready var _views: Node3D = %Views

@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="1_qfu6l"]
+[ext_resource type="Texture2D" path="res://ui/logos/compufun_logo_red.png" id="2_fvhg6"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_qfu6l")
+shader_parameter/albedo_texture = ExtResource("2_fvhg6")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)
+shader_parameter/snap = 1.0
+shader_parameter/affine = 0.5
+shader_parameter/world_uv = false
+shader_parameter/uv_scale = 1.0
