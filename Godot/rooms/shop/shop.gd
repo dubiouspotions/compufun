@@ -8,6 +8,8 @@ signal view_requested(view: StringName)
 signal close_requested
 ## The end has played in the room: time for the bluescreen.
 signal crashed
+## The player pressed the Degauss button of the bench screen.
+signal degauss_requested
 
 ## The close-up of the computer in focus.
 const WORKVIEW: StringName = &"Workview"
@@ -51,6 +53,7 @@ func _ready() -> void:
 	_bench.plug_grabbed.connect(_on_plug_grabbed)
 	_the_end.view_requested.connect(view_requested.emit)
 	_the_end.crashed.connect(crashed.emit)
+	_bench.degauss_pressed.connect(degauss_requested.emit)
 	Game.changed.connect(_sync)
 	_sync()
 

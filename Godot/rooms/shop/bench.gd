@@ -8,6 +8,8 @@ extends Node3D
 signal view_requested(view: StringName)
 ## The player pressed the mouse button on the plug.
 signal plug_grabbed
+## The player clicked the monitor's Degauss button.
+signal degauss_pressed
 
 ## The outline colour of the cable while the mouse is over the plug.
 @export var hover_color: Color = Color(0.75, 0.9, 1.0)
@@ -32,6 +34,7 @@ var _hovered: bool = false
 
 @onready var _monitor: CrtMonitor = %Monitor
 @onready var _screen_hotspot: Hotspot = %ScreenHotspot
+@onready var _degauss_hotspot: Hotspot = %DegaussHotspot
 @onready var _plug_hotspot: Hotspot = %PlugHotspot
 @onready var _cable: Path3D = %Cable
 @onready var _outline: CSGPolygon3D = %Outline
@@ -43,6 +46,7 @@ var _hovered: bool = false
 func _ready() -> void:
 	_screen_hotspot.clicked.connect(func(h: Hotspot) -> void: view_requested.emit(h.view))
 	_plug_hotspot.clicked.connect(func(_h: Hotspot) -> void: plug_grabbed.emit())
+	_degauss_hotspot.clicked.connect(func(_h: Hotspot) -> void: degauss_pressed.emit())
 	_plug_hotspot.mouse_entered.connect(_set_hovered.bind(true))
 	_plug_hotspot.mouse_exited.connect(_set_hovered.bind(false))
 	_sync_outline()

@@ -14,6 +14,7 @@ Godot/               the Godot project: everything the game loads
   default_bus_layout.tres  the audio buses: Master, and Voice for the customers' voices
   game.gd            the Game autoload
   shaders/           psx_world.gdshader, psx_post.gdshader, psx_post_world.tres (the world's post material)
+  shaders/crt_looks/ the CRT looks: the Screen View's (crt.gdshader) and the 3D bench screen's (crt_world.gdshader)
   props/             one scene per placeholder model: crt_monitor, pc_tower, counter, shelf, part_box, ...
   props/parts/       the model of each part: motherboard, cpu, fan, gpu, hard_drive
   parts/             part.gd and piece.gd, and one Part per part: <id>.tres
@@ -29,14 +30,14 @@ Godot/               the Godot project: everything the game loads
   sounds/            sound effects, such as footstep.wav
   problems/          one .tres per problem
   days/              day_1.tres to day_7.tres
-  ui/                loading screen, dialogue overlay, post-it, end of day (the close-the-shop question, the night between two days), crash (the bluescreen over the window at the end), CompufunDB, screen view, debug menu, F9 screen, theme.tres
+  ui/                loading screen, dialogue overlay, post-it, end of day (the close-the-shop question, the night between two days), crash (the bluescreen over the window at the end), CompufunDB, screen view, CRT screen, debug menu, F9 screen, theme.tres
   ui/logos/          the CompuFun logos (the loading screen, the boot splash, the sign in the shop)
   win95/             the Win95 interface (the Win95 developer's folder)
   addons/dialogue_editor/  the Dialogue tab in the editor
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
 feedback/            the F9 reports (outside Godot, so Godot does not import them)
-tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; make_castle_renders.py renders Pierre's castle pictures; make_end_rumble.sh makes the rumble of the end; chimera-moods.patch
+tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; make_castle_renders.py renders Pierre's castle pictures; make_crt_sounds.py synthesizes the bench screen's sounds; make_end_rumble.sh makes the rumble of the end; chimera-moods.patch
 wiki/                the GitHub wiki, cloned by tools/sync-wiki.sh (ignored by the repo)
 docs/                the rules for people and agents: this code layout, code standard, build, gotchas, glossary
 .github/workflows/   CI: tests and export on push, itch.io deploy, Discord notifications
@@ -52,10 +53,11 @@ Main (Node)                              the main buffer: the window
 ├─ UI (CanvasLayer)
 │  ├─ the UI screens
 │  └─ ScreenView (screen_view.tscn: follows the 3D screen, fades in for the Screen View)
-│     └─ SubViewportContainer
-│        └─ SubViewport (640 × 480)      the screen buffer, shown at 2×: updates always, embeds sub-windows
-│           ├─ NoSignal (win95/no_signal.tscn), while the VGA cable hangs free
-│           └─ win95/win95.tscn          the connected job's desktop; each job has one, the others wait out of the tree
+│     ├─ ScreenBuffer (SubViewport, 640 × 480)  the screen buffer: updates always, embeds sub-windows
+│     │  ├─ NoSignal (win95/no_signal.tscn), while the VGA cable hangs free
+│     │  └─ win95/win95.tscn            the connected job's desktop; each job has one, the others wait out of the tree
+│     ├─ Screen (crt_screen.gd)          shows the buffer at 2× through the CRT look, passes it the bent mouse
+│     └─ Tube (crt_tube.gd)              the bench screen's power, signal lock, degauss and sounds
 ├─ DebugMenu (CanvasLayer, F2)
 └─ Feedback (CanvasLayer, on top of everything)
 ```
@@ -67,4 +69,5 @@ Do not change these without the team:
 - **The Godot project is in `Godot/`, not the repo root.** Docs, CI and art sources stay out of Godot's import scan. CI's `working-directory` and artifact paths assume it.
 - **GL Compatibility renderer.** The web export needs it. Forward+ breaks the web build.
 - **`textures/vram_compression/import_etc2_astc=true`.** The macOS export is universal (arm64) and needs ETC2/ASTC textures. Without it, the macOS export fails.
+- **The Shader Globals `crt_*`** in `project.godot`. `CrtTube` animates them, and both CRT shaders read them.
 - **The names of the export presets** (`Web`, `Windows Desktop`, `MacOS`, `Linux`). CI exports them by name.

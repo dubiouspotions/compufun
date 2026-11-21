@@ -20,6 +20,9 @@ size = Vector3(0.32, 0.28, 0.24)
 [sub_resource type="BoxMesh" id="BoxMesh_suyqh"]
 size = Vector3(0.36, 0.28, 0.01)
 
+[sub_resource type="BoxMesh" id="BoxMesh_degauss"]
+size = Vector3(0.03, 0.012, 0.008)
+
 [sub_resource type="QuadMesh" id="QuadMesh_wurup"]
 size = Vector2(0.33333, 0.25)
 
@@ -56,3 +59,8 @@ unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.255, 0.137)
 material_override = ExtResource("4_rttwc")
 mesh = SubResource("QuadMesh_wurup")
+
+[node name="DegaussButton" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.095, 0.132)
+material_override = ExtResource("3_wbfy6")
+mesh = SubResource("BoxMesh_degauss")
