@@ -78,6 +78,18 @@ func run() -> void:
 
 	check("won", game.is_won(), true)
 
+	var window: Control = (load("res://win95/solitaire/solitaire.tscn") as PackedScene).instantiate()
+	root.add_child(window)
+	await process_frame
+	var size := window.get_combined_minimum_size()
+	check("the window fits the desktop above the taskbar", size.x <= 640 and size.y <= 452, true)
+	print("Solitaire window: ", size)
+
+	# What the Start menu lists: ComputerState.installed_programs(), which names the Game autoload.
+	for customer in ["javve", "pierre"]:
+		var setup := (load("res://customers/%s.tres" % customer) as Customer).computer.win95_setup
+		var sol := setup.file_at("C:\\WINDOWS\\SOL.EXE")
+		check("%s has Solitaire as C:\\WINDOWS\\SOL.EXE" % customer, sol != null and sol.program == load("res://win95/solitaire/solitaire.tscn"), true)
 
 func _card(suit: int, rank: int) -> int:
 	return suit * 13 + rank - 1

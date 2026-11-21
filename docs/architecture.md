@@ -34,6 +34,7 @@ Godot/               the Godot project: everything the game loads
   ui/                loading screen, dialogue overlay, post-it, post-it label (the Workview post-it's text), end of day (the close-the-shop question, the night between two days), CompufunDB, screen view, CRT screen, debug menu, F9 screen, theme.tres
   ui/logos/          the CompuFun logos (the loading screen, the boot splash, the sign in the shop)
   win95/             the Win95 interface (the Win95 developer's folder)
+  win95/solitaire/   Solitaire: the rules (klondike.gd), the window, the table and the card pictures
   addons/dialogue_editor/  the Dialogue tab in the editor
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
