@@ -36,6 +36,7 @@
 [ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
 [ext_resource type="Resource" path="res://people/old_dude/person.tres" id="person"]
 [ext_resource type="Resource" path="res://problems/bad_ram.tres" id="problem"]
+[ext_resource type="PackedScene" path="res://props/fedora.tscn" id="hat_fedora"]
 
 [sub_resource type="Resource" id="Resource_4fbej"]
 script = ExtResource("2_egn44")
@@ -257,3 +258,4 @@ conversations = Array[ExtResource("cv")]([SubResource("Conversation_arrive"), Su
 problem = ExtResource("problem")
 computer = SubResource("Computer_accountant")
 trousers_color = Color(0.36, 0.3, 0.22, 1)
+hat = ExtResource("hat_fedora")

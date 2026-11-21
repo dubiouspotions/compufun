@@ -63,7 +63,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Poster**: A paper picture on a shop wall (`props/poster.tscn`); each one sets its picture and size in the inspector. The shop has the "It's not a bug" poster on the front wall and the commercial poster on the right wall (`Room/CommercialPoster`).
 *Avoid:* ad, advert, sign.
 
-**Hat**: The scene that a 3D customer wears on the head (`Customer.hat`), matching the hat in the portrait and clear of the face. `CustomerBody` puts it on the `HatMount` at the brow line. Pierre wears the cap (`props/cap.tscn`) backwards.
+**Hat**: The scene that a 3D customer wears on the head (`Customer.hat`), matching the hat in the portrait and clear of the face. `CustomerBody` puts it on the `HatMount` at the brow line. Pierre wears the cap (`props/cap.tscn`) backwards; the retired accountant wears the fedora (`props/fedora.tscn`).
 *Avoid:* headwear, accessory, attachment.
 
 **Sticker**: A small picture on the front or a side of a customer's computer case (a `Sticker` in `Computer.stickers`), shown with the poster prop. A computer has any number of stickers, or none. The case material (`Computer.case_material`), the case front and the stickers tell the computers on the counter apart.
