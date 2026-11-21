@@ -30,10 +30,13 @@ signal outside_clicked
 @export var game_cursor: Texture2D = preload("res://ui/crosshair_cursor.png")
 ## The pixel of [member game_cursor] that points.
 @export var game_cursor_hotspot: Vector2 = Vector2(6, 6)
+## The monitor's keyboard: each key that the player presses while the view is open; null is silent.
+@export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
 
 var _open: bool = false
 var _fade: Tween
 var _content: Control
+var _keys: AudioStreamPlayer
 
 @onready var _screen: CrtScreen = %Screen
 @onready var _tube: CrtTube = %Tube
@@ -44,6 +47,8 @@ func _ready() -> void:
 	visible = false
 	modulate.a = 0.0
 	_show_cursor(game_cursor, game_cursor_hotspot)
+	_keys = AudioStreamPlayer.new()
+	add_child(_keys)
 	var node := content.instantiate() if content != null else null
 	_content = node as Control
 	if _content == null:
@@ -62,6 +67,13 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	_show_cursor(null, Vector2.ZERO)  # Otherwise the display server outlives the texture and logs a leak at exit.
+
+
+# _input, before the screen takes the key: a key that Win95 handles must click too.
+func _input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if _open and keystroke != null and key != null and key.pressed and not key.echo:
+		keystroke.play_on(_keys)
 
 
 func _gui_input(event: InputEvent) -> void:
