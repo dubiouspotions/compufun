@@ -7,8 +7,7 @@ learn something that isn't easily rediscovered from the code, fold it into the m
 keep docs/index.md pointing at it.
 
 Five people code in this repo at the same time, each with their own agents. Pull before you
-start, keep changes small, and push often (with your human's go-ahead) so that nobody builds on
-a stale tree.
+start, keep changes small, and push often so that nobody builds on a stale tree.
 
 ## RULES (always follow, never skip)
 
@@ -64,9 +63,6 @@ whole spec.
 | If you touch… | Read first |
 |---|---|
 | Any GDScript | [docs/code-standard.md](docs/code-standard.md) |
-| Anything — orientation, layout, where state lives | [docs/architecture.md](docs/architecture.md) |
-| Builds, exports, CI, running locally | [docs/building-and-testing.md](docs/building-and-testing.md) |
-| Something behaving weirdly | [docs/gotchas.md](docs/gotchas.md) |
 
 ## Error handling: fail fast and early
 
@@ -112,8 +108,8 @@ obligation**: would changing one copy without the others be a bug?
   shallowest mechanism that works — a function, an exported resource, an enum — over a generic
   tower.
 - **"We should fix this" is a to-do, not a comment.** If it's genuinely too large for your
-  change, file it on the board with the concrete shape of the fix (with your human's
-  go-ahead), and say so in the commit message.
+  change, file it on the board with the concrete shape of the fix, and say so in the commit
+  message.
 - **A bug in duplicated logic is a bug in the duplication.** One implementation invoked N
   times, not a corrected Nth copy.
 
@@ -142,15 +138,12 @@ Config files are 7-bit ASCII, comments included: no em-dashes, smart quotes or e
 
 ## Git workflow
 
-- Atomic commits per logical change, made as you go — not one lump at the end.
-- Subject names the area and what changed; body explains why. Not a restatement of the diff,
-  and not an argument aimed at a reviewer.
+- Push straight to `main`; open a PR only when you want a review.
 - `git pull --rebase` before you push. Never force-push `main` or `deploy`.
-- Scenes (`.tscn`) merge badly. Before editing a scene that someone else is likely working on,
-  check the board, and prefer splitting your part into its own scene.
+- Scenes (`.tscn`) merge badly. Split your part into its own scene rather than editing a scene
+  that someone else is working on.
 - Binary assets go through Git LFS (`.gitattributes`). If you add a new binary type, add it
   there before committing it.
-- Ask before pushing. Ask before anything that leaves the machine.
 
 ## Dependencies
 
@@ -166,6 +159,8 @@ the README's credits. Prefer Godot's built-in features; an addon you don't add c
 - The Web export is a release target, and it has no threads. Check web-sensitive changes
   (audio, loading, shaders) in the web build, not just the editor.
 - 3D assets come from Meshy as `.glb` and go through LFS.
+- The `godot-master` skill (`.claude/skills/`) is reference material. Where it disagrees with
+  this brief or docs/code-standard.md, the brief wins.
 - **Designers edit, code reads.** Teammates who don't code must be able to change content and
   tuning in the editor: tunables are `@export`s or Resource fields, never constants buried in
   logic, and new content is a scene or a `.tres`.
@@ -181,11 +176,10 @@ working from memory.
 **Status** (the board's column): Backlog, In progress, Done. **Size**: XS to XL. Read the issue
 before starting work; its body carries the constraints that the title doesn't.
 
-**Filing** (with your human's go-ahead; the whole team sees the board): `gh issue create` with a
-short title and the detail in the body: the failing scenario, the design fork, and what you
-decided not to do. Add the label `bug` for a bug. Then `gh project item-add 4 --owner
-dubiouspotions --url <issue>` and set Status. A blocker goes on the body's first line as
-`Blocked by #<n>`.
+**Filing:** `gh issue create` with a short title and the detail in the body: the failing
+scenario, the design fork, and what you decided not to do. Add the label `bug` for a bug. Then
+`gh project item-add 4 --owner dubiouspotions --url <issue>` and set Status. A blocker goes on
+the body's first line as `Blocked by #<n>`.
 
 **Finishing:** set In progress and assign yourself when you start, so nobody else picks it up.
 Link the issue from the PR or commit (`Fixes #<n>` closes it on merge to `main`), and the board
@@ -196,3 +190,6 @@ moves a closed issue to Done.
 The project is: @README.md
 
 The documentation index is: @docs/index.md
+
+Agents that don't expand `@` includes: read [README.md](README.md) and
+[docs/index.md](docs/index.md) first.
