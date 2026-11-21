@@ -286,13 +286,7 @@ func _line_row(index: int) -> Control:
 	var side := VBoxContainer.new()
 	side.custom_minimum_size.x = 120
 	row.add_child(side)
-	var pose := LineEdit.new()
-	pose.placeholder_text = "pose"
-	pose.text = line.pose
-	pose.text_changed.connect(func(text: String) -> void:
-		line.pose = StringName(text)
-		_touch())
-	side.add_child(pose)
+	side.add_child(_pose_picker(line))
 	var buttons := HBoxContainer.new()
 	side.add_child(buttons)
 	buttons.add_child(_button("Up", _move_line.bind(index, -1)))
@@ -308,6 +302,29 @@ func _line_row(index: int) -> Control:
 		_touch())
 	row.add_child(text)
 	return row
+
+
+## A dropdown of the poses in the customer's [member Person.portraits]. A pose that the person
+## doesn't have stays selected and is marked missing, so it is never dropped silently.
+func _pose_picker(line: DialogueLine) -> OptionButton:
+	var poses: Array[StringName] = [&""]
+	if _customer.person != null:
+		for key: StringName in _customer.person.portraits.keys():
+			poses.append(key)
+	if not poses.has(line.pose):
+		poses.append(line.pose)
+	var picker := OptionButton.new()
+	for pose: StringName in poses:
+		var text := "(default)" if pose == &"" else String(pose)
+		if pose != &"" and (_customer.person == null or not _customer.person.portraits.has(pose)):
+			text += " (missing)"
+		picker.add_item(text)
+	picker.select(poses.find(line.pose))
+	picker.tooltip_text = "Add poses to the person's portraits to list them here."
+	picker.item_selected.connect(func(index: int) -> void:
+		line.pose = poses[index]
+		_touch())
+	return picker
 
 
 func _on_id_changed(text: String) -> void:
