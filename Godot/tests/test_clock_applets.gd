@@ -19,6 +19,7 @@ func run() -> void:
 
 	test_systray()
 	test_date_time()
+	test_system()
 
 	state.free()
 	game.jobs = [] as Array[Job]
@@ -77,6 +78,24 @@ func test_date_time() -> void:
 	check("with nothing left to apply", page.call(&"pending"), {})
 	desktop.free()
 	state.apply_settings({&"clock_offset_seconds": 0} as Dictionary[StringName, Variant])
+
+
+func test_system() -> void:
+	setup.version = "4.00.950 B"
+	setup.registered_owner = "Pierre"
+	setup.registered_organization = "Castle Ltd"
+	setup.product_id = "24261-OEM-0000000-86468"
+	setup.processor = "Pentium(r)"
+	setup.memory_mb = 64
+	var desktop: Control = load("res://win95/desktop.gd").new()
+	desktop.computer = state
+	root.add_child(desktop)
+	var sheet: Node = desktop.call(&"open", load("res://win95/applets/system.tscn"))
+	var shown := ["%Version", "%Owner", "%Organization", "%ProductId", "%Processor", "%Memory", "%PerformanceMemory"].map(
+		func(path: String) -> String: return (sheet.get_node(path) as Label).text)
+	check("System shows the setup", shown, ["4.00.950 B", "Pierre", "Castle Ltd", "24261-OEM-0000000-86468", "Pentium(r)", "64.0MB RAM", "64.0 MB of RAM"])
+	check("System has no Apply", (sheet.get_node("%Apply") as Button).visible, false)
+	desktop.free()
 
 
 func customer() -> Customer:
