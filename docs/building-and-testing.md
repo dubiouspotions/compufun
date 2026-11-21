@@ -25,6 +25,9 @@ it. Parse-check the scripts you changed:
 "$GODOT" --headless --check-only --script res://path/to/changed.gd
 ```
 
+A script that uses an autoload, such as `Game`, always fails this check with "Identifier not
+found: Game": the check does not load autoloads. That line is not your error; run the scene.
+
 Then run the scene you changed, in the editor or without it: `tools/run.sh [res://scene.tscn]`
 imports and plays the main scene, or the scene you name. It refuses while the editor has the
 project open (see the gotcha about two Godot processes).
