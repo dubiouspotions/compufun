@@ -10,9 +10,11 @@
 [ext_resource type="Texture2D" path="res://people/activist_guy/portrait_problem.png" id="8_thclk"]
 [ext_resource type="Texture2D" path="res://people/activist_guy/portrait_thinking.png" id="9_dnnv5"]
 [ext_resource type="Script" path="res://people/person.gd" id="10_agiua"]
+[ext_resource type="Resource" path="res://voices/persons/activist_guy.tres" id="voice"]
 
 [resource]
 script = ExtResource("10_agiua")
+voice = ExtResource("voice")
 name = "Craig Johnson"
 nickname = "Activist guy"
 email = "anon654@aol.com"

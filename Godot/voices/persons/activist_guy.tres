@@ -4,4 +4,12 @@
 
 [resource]
 script = ExtResource("1_person")
-body = "child"
+body = "male"
+settings = Dictionary[String, float]({
+"tension": 0.62,
+"rate": 1.08,
+"pitch": 1.03,
+"lips": 0.85,
+"brightness": 0.18,
+"breathiness": 0.22
+})

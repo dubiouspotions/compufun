@@ -1,7 +1,7 @@
 class_name VoiceLab
 extends Control
 ## The Voice Lab, a dev tool for the three layers of a voice (docs: Voices.layer). A line is said by
-## a person (VoicePerson: who speaks, voices/persons/), in a mood (VoiceMood: how, one per pose,
+## a person (VoicePerson: who speaks, one per character in voices/persons/), in a mood (VoiceMood: how, one per pose,
 ## voices/moods/), under an effect (VoiceEffect: a corruption, voices/effects/). Pick one of each
 ## to hear them together; the layer chosen at the top is the one the levers edit and Save writes.
 ## Each layer has its own levers: a person its build and timbre, a mood its delivery, an effect
@@ -163,7 +163,7 @@ func _ready() -> void:
 	_mood = VoiceMood.new()
 	_effect = _new_effect()
 	_build()
-	_pick(0, _picked[0].find(Voices.PERSONS_DIR + "man.tres"))
+	_pick(0, 1 if _picked[0].size() > 1 else 0)  # the first character, not a new person
 	_pick(1, _picked[1].find(&"neutral"))
 	_pick(2, 0)
 	_show_layer(0)

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="VoicePerson" format=3]
+
+[ext_resource type="Script" path="res://voices/voice_person.gd" id="1_person"]
+
+[resource]
+script = ExtResource("1_person")
+body = "male"
+settings = Dictionary[String, float]({
+"fry": 0.3,
+"roughness": 0.35,
+"pitch": 0.92,
+"pressure": 8.5,
+"tension": 0.62,
+"rate": 1.05
+})

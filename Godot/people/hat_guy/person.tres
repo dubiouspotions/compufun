@@ -10,9 +10,11 @@
 [ext_resource type="Texture2D" path="res://people/hat_guy/portrait_problem.png" id="8_hqjl3"]
 [ext_resource type="Texture2D" path="res://people/hat_guy/portrait_thinking.png" id="9_sqa7d"]
 [ext_resource type="Script" path="res://people/person.gd" id="10_hh4a0"]
+[ext_resource type="Resource" path="res://voices/persons/hat_guy.tres" id="voice"]
 
 [resource]
 script = ExtResource("10_hh4a0")
+voice = ExtResource("voice")
 name = "Jose Hernandez"
 nickname = "Hat guy"
 email = "big_fish@yahoo.com"

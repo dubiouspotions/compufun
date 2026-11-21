@@ -11,9 +11,11 @@
 [ext_resource type="Texture2D" path="res://people/office_girl/portrait_problem.png" id="8_uqyf7"]
 [ext_resource type="Texture2D" path="res://people/office_girl/portrait_thinking.png" id="9_y1r27"]
 [ext_resource type="Script" path="res://people/person.gd" id="10_mfmf7"]
+[ext_resource type="Resource" path="res://voices/persons/office_girl.tres" id="voice"]
 
 [resource]
 script = ExtResource("10_mfmf7")
+voice = ExtResource("voice")
 name = "Sam Hilton"
 nickname = "Office girl"
 email = "sam.hilton@utsa.edu"

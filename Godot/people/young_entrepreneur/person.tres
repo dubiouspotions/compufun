@@ -10,9 +10,11 @@
 [ext_resource type="Texture2D" path="res://people/young_entrepreneur/portrait_problem.png" id="8_ccea2"]
 [ext_resource type="Texture2D" path="res://people/young_entrepreneur/portrait_thinking.png" id="9_05m0v"]
 [ext_resource type="Script" path="res://people/person.gd" id="10_trcd2"]
+[ext_resource type="Resource" path="res://voices/persons/young_entrepreneur.tres" id="voice"]
 
 [resource]
 script = ExtResource("10_trcd2")
+voice = ExtResource("voice")
 name = "Nick Burton"
 nickname = "Young entrepreneur"
 email = "nick@burton.net"

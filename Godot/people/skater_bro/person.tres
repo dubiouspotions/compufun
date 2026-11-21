@@ -10,9 +10,11 @@
 [ext_resource type="Texture2D" path="res://people/skater_bro/portrait_problem.png" id="8_43roa"]
 [ext_resource type="Texture2D" path="res://people/skater_bro/portrait_thinking.png" id="9_djkdq"]
 [ext_resource type="Script" path="res://people/person.gd" id="10_rqlh6"]
+[ext_resource type="Resource" path="res://voices/persons/skater_bro.tres" id="voice"]
 
 [resource]
 script = ExtResource("10_rqlh6")
+voice = ExtResource("voice")
 name = "Henry Ramirez"
 nickname = "Skater bro"
 email = "prohawk@hotmail.com"

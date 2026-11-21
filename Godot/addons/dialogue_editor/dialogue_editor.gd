@@ -161,7 +161,7 @@ func _save_person(person: Person) -> bool:
 		_fail("Couldn't save %s: %s" % [path, error_string(err)])
 		return false
 	var back := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as Person
-	if back == null or back.nickname != person.nickname or back.name != person.name or back.email != person.email:
+	if back == null or back.nickname != person.nickname or back.name != person.name or back.email != person.email or back.voice != person.voice:
 		_fail("Saved %s, but the file reads back different" % path)
 		return false
 	_dirty_people.erase(path)
@@ -229,7 +229,7 @@ func _select_customer(index: int) -> void:
 	_customer = _customers[index] if index >= 0 else null
 	_name_edit.editable = _customer != null
 	_name_edit.text = _customer.spoken_name() if _customer != null else ""
-	_voice_picker.disabled = _customer == null
+	_voice_picker.disabled = _customer == null or _customer.person == null
 	if _customer != null:
 		_fill_persons()
 	_conversation_list.clear()
@@ -261,7 +261,13 @@ func _on_name_changed(text: String) -> void:
 func _on_voice_selected(index: int) -> void:
 	if _customer == null:
 		return
-	_customer.voice = _persons[index]
+	if _customer.person == null:
+		_fail("%s has no person; set one in the inspector before its voice" % _customer.display_name)
+		_fill_persons()
+		return
+	_customer.person.voice = _persons[index]
+	if _customer.person.resource_path != "":
+		_dirty_people[_customer.person.resource_path] = _customer.person
 	_touch()
 
 
@@ -286,7 +292,7 @@ func _play_line(line: DialogueLine) -> void:
 		_fail("The line has no text to say")
 		return
 	if _customer.voice == null:
-		_fail("%s has no voice person; pick one under Voice" % _customer.display_name)
+		_fail("%s's person has no voice; pick one under Voice" % _customer.display_name)
 		return
 	var effect := VoiceEffect.of(line, _conversation)
 	var person := _customer.voice.resource_path.get_file().get_basename()

@@ -112,7 +112,7 @@ templates (Editor > Manage Export Templates).
 ## Voices
 
 **Layers.** A line's voice is three layers, each over the one below (`Voices.layer`): the
-customer's `VoicePerson` (`voices/persons/`), the `VoiceMood` of the line's pose (`voices/moods/`)
+`VoicePerson` of the customer's person (`voices/persons/`, one per person), the `VoiceMood` of the line's pose (`voices/moods/`)
 and a `VoiceEffect` (`voices/effects/`) of the line or its conversation. Make all three in the
 Voice Lab (Dev menu, F3 or Cmd+3); pick persons and effects in the Dialogue tab. An effect has a
 base, an alternate and a curve over the line that says how much of the alternate plays at each

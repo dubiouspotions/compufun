@@ -22,6 +22,10 @@ const POSES: Array[StringName] = [
 ## The part of the neutral portrait that the 3D customer's shirt shows, in shares of the picture (0 to 1):
 ## from sleeve to sleeve, and from the collar down to the bottom edge.
 @export var shirt_rect: Rect2 = Rect2(0.3, 0.33, 0.46, 0.67)
+## Who speaks when this person plays a customer: the bottom layer of the voice (voices/persons/),
+## under the mood of each line and its effect. A new body needs new voice files: run
+## voices/render_voices.gd.
+@export var voice: VoicePerson
 
 
 ## "Name <email>" for the computer screen, or "" when both are still empty.
