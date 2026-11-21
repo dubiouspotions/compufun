@@ -18,6 +18,9 @@ enum Trigger {
 @export var when: Condition
 ## Plays only the first time it matches.
 @export var once: bool = false
+## The flags that this conversation sets as it starts to play: name to number, where 0 clears the
+## flag. A conversation starts a corruption sign with sign_<id>.
+@export var set_flags: Dictionary[StringName, int] = {}
 @export var lines: Array[DialogueLine] = []
 ## The voice effect of every line, unless the line has its own; null for none.
 @export var effect: VoiceEffect

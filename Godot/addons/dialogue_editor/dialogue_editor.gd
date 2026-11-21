@@ -191,7 +191,7 @@ func _summary(customer: Customer) -> String:
 		for line: DialogueLine in c.lines:
 			lines.append([line.text, line.pose] if line != null else null)
 		var when: Array = [c.when.from_day, c.when.to_day, c.when.need_flags, c.when.not_flags] if c.when != null else []
-		conversations.append([c.id, c.trigger, c.once, when, lines])
+		conversations.append([c.id, c.trigger, c.once, when, c.set_flags, lines])
 	return var_to_str([customer.display_name, customer.voice.resource_path if customer.voice != null else "", conversations])
 
 
@@ -458,6 +458,46 @@ func _render_when() -> void:
 			_condition().set(field, names)
 			_changed_when())
 		flags_row.add_child(edit)
+	var sets_row := HBoxContainer.new()
+	_detail.add_child(sets_row)
+	sets_row.add_child(_label("Sets flags"))
+	var sets := LineEdit.new()
+	sets.placeholder_text = "flag_a, sign_bell=2, flag_b=0 (0 clears)"
+	sets.size_flags_horizontal = SIZE_EXPAND_FILL
+	sets.text = flags_text(c.set_flags)
+	sets.text_changed.connect(func(text: String) -> void:
+		var parsed: Variant = parse_flags(text)
+		if parsed is String:
+			_show_status("Sets flags not changed: " + parsed)
+			return
+		c.set_flags = parsed
+		_show_status("")
+		_changed_when())
+	sets_row.add_child(sets)
+
+
+## [param flags] as "name, name=2": the text of a Sets flags field.
+static func flags_text(flags: Dictionary[StringName, int]) -> String:
+	var parts: PackedStringArray = []
+	for flag: StringName in flags:
+		parts.append(String(flag) if flags[flag] == 1 else "%s=%d" % [flag, flags[flag]])
+	return ", ".join(parts)
+
+
+## The flags in [param text], written as [method flags_text] does, or a String that says why not.
+static func parse_flags(text: String) -> Variant:
+	var flags: Dictionary[StringName, int] = {}
+	for part: String in text.split(",", false):
+		var pair := part.split("=")
+		var flag := pair[0].strip_edges()
+		if flag == "":
+			continue
+		var value := pair[1].strip_edges() if pair.size() == 2 else "1"
+		if pair.size() > 2 or not value.is_valid_int():
+			return "'%s' is not a flag: write name or name=number" % part.strip_edges()
+		flags[StringName(flag)] = value.to_int()
+	return flags
+
 
 
 func _condition() -> Condition:
@@ -485,6 +525,8 @@ func _conversation_label(c: Conversation) -> String:
 			parts.append("not " + String(flag))
 	if c.once:
 		parts.append("once")
+	if not c.set_flags.is_empty():
+		parts.append("sets " + flags_text(c.set_flags))
 	return "%s  (%s)" % [c.id, ", ".join(parts)]
 
 

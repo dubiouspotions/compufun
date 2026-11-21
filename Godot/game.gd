@@ -287,11 +287,15 @@ func set_flag(flag_name: StringName, value: int = 1) -> void:
 	if flag_name == &"":
 		push_error("Game.set_flag: no flag name")
 		return
+	_put_flag(flag_name, value)
+	changed.emit()
+
+
+func _put_flag(flag_name: StringName, value: int) -> void:
 	if value == 0:
 		flags.erase(flag_name)
 	else:
 		flags[flag_name] = value
-	changed.emit()
 
 
 ## The first conversation of [param who] with [param trigger] whose condition matches now, and
@@ -1205,8 +1209,14 @@ static func _thanks(who: Customer) -> Conversation:
 # it played.
 func _play(who: Customer, trigger: Conversation.Trigger) -> void:
 	conversation = matching_conversation(who, trigger)
-	if conversation != null:
-		seen[_seen_key(who, conversation)] = true
+	if conversation == null:
+		return
+	seen[_seen_key(who, conversation)] = true
+	for flag_name: StringName in conversation.set_flags:
+		if flag_name == &"":
+			push_error("Game: conversation %s sets a flag with no name" % _seen_key(who, conversation))
+			continue
+		_put_flag(flag_name, conversation.set_flags[flag_name])
 
 
 func _seen_key(who: Customer, c: Conversation) -> String:
