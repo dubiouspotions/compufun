@@ -3,7 +3,7 @@ extends Node3D
 ## The 3D customer: one placeholder body for all customers. It wears the person's photos: the face
 ## photo on the face, the average colour of the face photo on the skin, and the shirt from the
 ## clothes portrait. The trousers take the customer's colour. It walks, with footsteps, while it moves,
-## and carries the customer's computer in.
+## and carries a computer in when the shop says so (carrying).
 
 # The shirt parameters that a portrait sets; without a portrait they come from shirt_material.
 const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color", &"uv_rect", &"tint_texture",
@@ -34,6 +34,13 @@ var _shirt: ShaderMaterial
 var _trousers: ShaderMaterial
 var _last_position: Vector3
 
+## True while the body carries a computer in. The shop sets it for a drop-off.
+var carrying: bool = false:
+	set(value):
+		carrying = value
+		if is_node_ready():
+			_computer.visible = value
+
 @onready var _animation: AnimationPlayer = %AnimationPlayer
 @onready var _steps: AudioStreamPlayer3D = %Steps
 @onready var _computer: Node3D = %Computer
@@ -47,6 +54,7 @@ func _ready() -> void:
 	_shirt = _own_copy(shirt_material)
 	_trousers = _own_copy(trousers_material)
 	_last_position = global_position
+	_computer.visible = carrying
 	_animation.play(&"idle")
 
 
@@ -76,7 +84,7 @@ func _move_arms(delta: float) -> void:
 		swing = deg_to_rad(arm_swing) * sin(TAU * cycle)
 	var left := -swing
 	var right := swing
-	if _computer.visible:
+	if carrying:
 		left = deg_to_rad(carry_reach)
 		right = left
 	var weight := minf(delta * 10.0, 1.0)
@@ -97,7 +105,6 @@ func show_customer(customer: Customer) -> void:
 		return
 	_has_shown = true
 	_shown = customer
-	_computer.visible = customer != null and customer.computer != null
 	var person := customer.person if customer != null else null
 	var face := default_face
 	if person != null and person.face != null:

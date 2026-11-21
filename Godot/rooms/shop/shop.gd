@@ -75,6 +75,7 @@ func _sync() -> void:
 	_counter_computer.set_enabled(Game.focus != null)
 	_body.visible = Game.visitor != null
 	_body.show_customer(Game.visitor)
+	_body.carrying = Game.visit == Game.Visit.DROP_OFF
 	var walking := Game.visitor_state == Game.VisitorState.WALKING_IN
 	if walking and not _walking:
 		_walk_in()
