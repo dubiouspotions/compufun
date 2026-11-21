@@ -24,7 +24,7 @@ func _ready() -> void:
 	var title_bar: Node = %TitleBar
 	title_bar.drag_moved.connect(_on_drag_moved)
 	title_bar.drag_ended.connect(_on_drag_ended)
-	title_bar.close_pressed.connect(close)
+	title_bar.close_pressed.connect(request_close)
 	title_bar.minimize_pressed.connect(minimize)
 	var material := ShaderMaterial.new()
 	material.shader = _OUTLINE_SHADER
@@ -46,7 +46,13 @@ func _input(event: InputEvent) -> void:
 		activated.emit()
 
 
-## Hides the window and emits closed.
+## The player asked to close the window, with its X or a Close menu item. A window with unsaved
+## work overrides this to ask first.
+func request_close() -> void:
+	close()
+
+
+## Hides the window and emits closed, without asking.
 func close() -> void:
 	is_minimized = false
 	hide()

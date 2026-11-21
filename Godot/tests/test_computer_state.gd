@@ -1,7 +1,8 @@
 extends "res://tests/test.gd"
 ## A computer's running copy: made once per computer, broken once per job, kept across a return
-## visit; FileCheck breaks and fixes; saving a text file.
+## visit; FileCheck breaks and fixes; saving a text file; the sizes that Properties shows.
 
+const PROPERTIES := preload("res://win95/properties_window.gd")
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run time: it names the Game autoload
 
 
@@ -49,6 +50,10 @@ func run() -> void:
 	check("breaking twice is breaking once", ini.contents, "[386Enh]\n;device=*vmouse\nkeyboard=*vkd")
 	ini.contents = "[386Enh]\n  DEVICE=*vmouse\nkeyboard=*vkd"
 	check("the line fixes, ignoring case and spaces", no_mouse.is_fixed(setup), true)
+
+	check("CRLF counts two bytes", todo.size_in_bytes(), 11)
+	check("small size", PROPERTIES.size_text(426), "426 bytes")
+	check("KB size", PROPERTIES.size_text(1262), "1.23KB (1,262 bytes)")
 	game.jobs = [] as Array[Job]
 
 

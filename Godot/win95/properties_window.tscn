@@ -73,12 +73,36 @@ text = "Location:"
 unique_name_in_owner = true
 layout_mode = 2
 
+[node name="SizeLabel" type="Label" parent="VBox/Body/Column/Facts"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Size:"
+
+[node name="Size" type="Label" parent="VBox/Body/Column/Facts"]
+unique_name_in_owner = true
+layout_mode = 2
+
 [node name="ContainsLabel" type="Label" parent="VBox/Body/Column/Facts"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Contains:"
 
 [node name="Contains" type="Label" parent="VBox/Body/Column/Facts"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Dates" type="GridContainer" parent="VBox/Body/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 6
+columns = 2
+
+[node name="ModifiedLabel" type="Label" parent="VBox/Body/Column/Dates"]
+layout_mode = 2
+text = "Modified:"
+
+[node name="Modified" type="Label" parent="VBox/Body/Column/Dates"]
 unique_name_in_owner = true
 layout_mode = 2
 

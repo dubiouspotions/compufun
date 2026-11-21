@@ -216,7 +216,7 @@ func _open_file(file: Win95File) -> void:
 func _launch(program: PackedScene, file: Win95File) -> void:
 	var window: Node = _desktop.open(program)
 	if file != null and window.has_method(&"open_file"):
-		window.open_file(file)
+		window.open_file(file, _state)
 
 
 func _message(title: String, text: String) -> void:

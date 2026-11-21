@@ -1,8 +1,6 @@
-extends "res://win95/window.gd"
-## Paint: draw on the canvas with the left button, pick a colour from the palette. File > New
-## clears the canvas.
-
-enum FileMenu { NEW, CLOSE }
+extends "res://win95/document_window.gd"
+## Paint: draw on the canvas with the left button, pick a colour from the palette. It shows and
+## saves a .bmp file's picture.
 
 ## The colours in the palette, two rows of eight as in Win95.
 @export var palette: PackedColorArray = PackedColorArray([
@@ -20,6 +18,7 @@ var _color: Color = Color.BLACK
 var _image: Image
 var _texture: ImageTexture
 var _last: Vector2i = Vector2i(-1, -1)
+var _drawn := false
 
 @onready var _canvas: TextureRect = %Canvas
 @onready var _current: ColorRect = %Current
@@ -39,22 +38,35 @@ func _ready() -> void:
 		%Palette.add_child(swatch)
 	_current.color = _color
 	_canvas.gui_input.connect(_on_canvas_input)
-	%File.id_pressed.connect(_on_file_menu)
-	_clear()
+	_load(null)
 
 
-## Titles the window after [param file], as Win95 does, on a blank canvas: files have no pictures yet.
-func open_file(file: Win95File) -> void:
-	%TitleBar.title = "%s - Paint" % file.name
-	_clear()
-
-
-func _clear() -> void:
+# A white canvas with the file's picture in its top left corner.
+func _load(from: Win95File) -> void:
 	var canvas_size := Vector2i(_canvas.custom_minimum_size)
 	_image = Image.create_empty(canvas_size.x, canvas_size.y, false, Image.FORMAT_RGBA8)
 	_image.fill(Color.WHITE)
+	if from != null and from.picture != null:
+		var picture := from.picture.get_image()
+		if picture == null:
+			push_error("Paint: the picture of %s has no image data" % from.name)
+		else:
+			if picture.is_compressed():
+				picture.decompress()
+			picture.convert(Image.FORMAT_RGBA8)
+			_image.blit_rect(picture, Rect2i(Vector2i.ZERO, picture.get_size()), Vector2i.ZERO)
 	_texture = ImageTexture.create_from_image(_image)
 	_canvas.texture = _texture
+	_drawn = false
+
+
+func _save(state: ComputerState, into: Win95File) -> void:
+	state.write_picture(into, _image)
+	_drawn = false
+
+
+func _is_dirty() -> bool:
+	return _drawn
 
 
 func _on_canvas_input(event: InputEvent) -> void:
@@ -76,11 +88,5 @@ func _line(from: Vector2i, to: Vector2i) -> void:
 		var point := Vector2i(Vector2(from).lerp(Vector2(to), float(i) / steps))
 		_image.fill_rect(Rect2i(point - Vector2i(pen_size / 2, pen_size / 2), Vector2i(pen_size, pen_size)).intersection(Rect2i(Vector2i.ZERO, _image.get_size())), _color)
 	_texture.update(_image)
+	_drawn = true
 
-
-func _on_file_menu(id: int) -> void:
-	match id:
-		FileMenu.NEW:
-			_clear()
-		FileMenu.CLOSE:
-			close()
