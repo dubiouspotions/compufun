@@ -1,0 +1,77 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/loading_screen.gd" id="1_1kfex"]
+[ext_resource type="Texture2D" path="res://ui/logos/compufun_logo.png" id="2_e66os"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_to6u5"]
+bg_color = Color(0.8, 0.79, 0.75, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gyf4x"]
+bg_color = Color(0.12, 0.12, 0.12, 1)
+
+[node name="LoadingScreen" type="Control" unique_id=551782974]
+layout_mode = 3
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_1kfex")
+
+[node name="Background" type="ColorRect" parent="." unique_id=642828196]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.94, 0.93, 0.89, 1)
+
+[node name="Logo" type="TextureRect" parent="." unique_id=2033569603]
+custom_minimum_size = Vector2(763, 408)
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -381.5
+offset_top = -264.0
+offset_right = 381.5
+offset_bottom = 144.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_e66os")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Progress" type="ProgressBar" parent="." unique_id=493811487]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 14)
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = 193.0
+offset_right = 280.0
+offset_bottom = 207.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_to6u5")
+theme_override_styles/fill = SubResource("StyleBoxFlat_gyf4x")
+show_percentage = false
+
+[node name="Status" type="Label" parent="." unique_id=1101138836]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(900, 40)
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -450.0
+offset_top = 230.0
+offset_right = 450.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.25, 0.25, 0.25, 1)
+text = "Loading..."
+horizontal_alignment = 1
