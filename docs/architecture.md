@@ -19,7 +19,7 @@ Godot/               the Godot project: everything the game loads
   parts/             part.gd and piece.gd, and one Part per part: <id>.tres
   materials/         one shared material per surface; textures/ holds the PNGs
   rooms/             hotspot.tscn and view_marker.gd, shared by all rooms
-  rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying open in the Workview), bench.tscn (the bench screen, keyboard and VGA cable), their meshes and textures
+  rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying open in the Workview), bench.tscn (the bench screen, keyboard and VGA cable), pipedream.tscn (the Win95 Pipes that grow with the warp), their meshes and textures
   people/<name>/     person.tres, portrait_<pose>.png, face.png
   customers/         one .tres per customer, customer_body.tscn, job.gd (one computer on the counter)
   voices/            one .wav per customer line, rendered by Chimera; voices.gd names and renders them

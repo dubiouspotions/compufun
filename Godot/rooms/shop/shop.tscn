@@ -28,6 +28,7 @@
 [ext_resource type="PackedScene" path="res://rooms/shop/job_slots.tscn" id="26_jobslots"]
 [ext_resource type="PackedScene" path="res://rooms/shop/storage.tscn" id="27_storage"]
 [ext_resource type="PackedScene" path="res://props/open_sign.tscn" id="28_open_sign"]
+[ext_resource type="PackedScene" path="res://rooms/shop/pipedream.tscn" id="29_pipedream"]
 [ext_resource type="AudioStream" path="res://sounds/door_bell.wav" id="29_door_bell"]
 [ext_resource type="AudioStream" path="res://sounds/phone_receiver.wav" id="30_phone_receiver"]
 [ext_resource type="Texture2D" path="res://materials/textures/poster_commercial_placeholder.png" id="31_commercial"]
@@ -371,6 +372,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, -1.2)
 [node name="Bench" parent="Room" instance=ExtResource("bench")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.08, 1, -1.18)
+
+[node name="Pipedream" parent="Room" instance=ExtResource("29_pipedream")]
+unique_name_in_owner = true
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 4, 0.9, 1.95)
 
 [node name="JobSlots" parent="Room" instance=ExtResource("26_jobslots")]
 unique_name_in_owner = true

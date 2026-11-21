@@ -23,6 +23,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _body: CustomerBody = %CustomerBody
 @onready var _job_slots: JobSlots = %JobSlots
 @onready var _bench: Bench = %Bench
+@onready var _pipedream: Pipedream = %Pipedream
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
@@ -101,6 +102,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _sync() -> void:
 	_job_slots.show_jobs(Game.jobs, null if Game.view == WORKVIEW else Game.focus)  # the Workview centres it already
+	_pipedream.warp = Game.warp
 	_bench.lay_cable(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
 	var workview_moved := _follow_focus()
 	if Game.view != _shown_view or (workview_moved and Game.view == WORKVIEW):
