@@ -53,7 +53,6 @@ var _upright: Dictionary[Node3D, Transform3D] = {}
 @onready var _post_it: PostIt3D = %PostIt
 @onready var _power_hotspot: Hotspot = %PowerHotspot
 @onready var _power_light: MeshInstance3D = %PowerLight
-@onready var _tower: Node3D = $Tower
 @onready var _post_it_anchor: Node3D = $PostItAnchor
 @onready var _open_case: OpenCase = %OpenCase
 
@@ -64,6 +63,7 @@ func _ready() -> void:
 	_hotspot.mouse_exited.connect(_set_hovered.bind(false))
 	_power_hotspot.clicked.connect(func(_h: Hotspot) -> void: power_clicked.emit(self))
 	_tower.dress(job.customer.computer)
+	_open_case.dress(job.customer.computer)
 	_post_it.job = job
 	_open_case.job = job
 	for node: Node3D in [_power_light, _power_hotspot, _cable_socket]:

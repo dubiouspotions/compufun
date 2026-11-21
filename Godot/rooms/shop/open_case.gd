@@ -34,6 +34,7 @@ var _turning: Tween
 @onready var _panel_hotspot: Hotspot = %PanelHotspot
 @onready var _panel_screws: Node3D = %PanelScrews
 @onready var _driver: Node3D = %Screwdriver
+@onready var _outside: Array[MeshInstance3D] = [%Panel as MeshInstance3D, $Shell/Bezel as MeshInstance3D]
 
 
 func _ready() -> void:
@@ -51,6 +52,15 @@ func _ready() -> void:
 		_add_screw(_panel_screws.get_child(i), Vector3.ZERO, null, i)
 	Game.changed.connect(_sync)
 	_sync()
+
+
+## Gives the outside of the case (the side panel and the front) the case material of
+## [param computer], as PcTower.dress does for the upright tower; null keeps beige plastic.
+func dress(computer: Computer) -> void:
+	var case_material: Material = computer.case_material if computer != null else null
+	if case_material != null:
+		for part: MeshInstance3D in _outside:
+			part.material_override = case_material
 
 
 ## Where the Workview camera looks from at this lying computer, in world space: high enough for the
