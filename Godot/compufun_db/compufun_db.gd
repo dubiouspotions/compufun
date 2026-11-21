@@ -1,6 +1,6 @@
-class_name CompufunDB
+class_name CompuFunDB
 extends Control
-## CompufunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
+## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
 ## the customers that the player creates, the symptoms of every Problem (the player marks the ones
 ## that match), and the repair steps of each problem whose symptoms are all marked (the player ticks
 ## them off). It reads every Problem file, so its text is never a second copy of the problems.
@@ -58,7 +58,7 @@ func _ready() -> void:
 	focus_mode = Control.FOCUS_ALL
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	if font == null:
-		push_error("CompufunDB: font is empty")
+		push_error("CompuFunDB: font is empty")
 	_load_problems()
 	mouse_exited.connect(_on_mouse_exited)
 	Game.changed.connect(queue_redraw)
@@ -76,14 +76,14 @@ func _load_problems() -> void:
 			continue
 		var problem := load(PROBLEMS_DIR + file) as Problem
 		if problem == null:
-			push_error("CompufunDB: %s%s is not a Problem" % [PROBLEMS_DIR, file])
+			push_error("CompuFunDB: %s%s is not a Problem" % [PROBLEMS_DIR, file])
 			continue
 		_problems.append(problem)
 		for symptom: String in problem.symptoms:
 			if symptom not in _symptoms:
 				_symptoms.append(symptom)
 	if _problems.is_empty():
-		push_error("CompufunDB: no Problem files in %s" % PROBLEMS_DIR)
+		push_error("CompuFunDB: no Problem files in %s" % PROBLEMS_DIR)
 
 
 # An entry of a column: its text, its check box (null: none) and whether the player can pick it.
@@ -355,14 +355,14 @@ func _draw() -> void:
 
 func _paint() -> void:
 	var date: Dictionary = Game.date
-	_bar(0, " CompufunDB 1.0", "%02d/%02d/%02d " % [date.month, date.day, date.year % 100], bar_color)
+	_bar(0, " CompuFunDB 1.0", "%02d/%02d/%02d " % [date.month, date.day, date.year % 100], bar_color)
 	_frame()
 	_put(_spans[0].x, 2, "CUSTOMER", bright_color)
 	_put(_spans[1].x, 2, "SYMPTOMS", bright_color)
 	_put(_spans[2].x, 2, "REPAIRS", bright_color)
 	if _offline():
 		_put(30, 14, " OFFLINE: LINE IN USE ", bright_color, bar_color)
-		_bar(28, " CompufunDB", "", bar_color)
+		_bar(28, " CompuFunDB", "", bar_color)
 		return
 	for column: int in Column.size():
 		_paint_column(column as Column)

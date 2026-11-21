@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://compufun_db/compufun_db.gd" id="1_db"]
 
-[node name="CompufunDB" type="Control"]
+[node name="CompuFunDB" type="Control"]
 custom_minimum_size = Vector2(640, 480)
 layout_mode = 3
 anchors_preset = 0

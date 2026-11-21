@@ -437,7 +437,7 @@ func can_call() -> bool:
 	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.post_it_ticked)
 
 
-## Calls for [constant CALL_SECONDS] (phase CALLING; CompufunDB is offline, as the land-line cuts
+## Calls for [constant CALL_SECONDS] (phase CALLING; CompuFunDB is offline, as the land-line cuts
 ## the modem). Then the customer of the oldest ticked job walks in for a PICKUP. Does nothing when
 ## [method can_call] is false.
 func call_customer() -> void:

@@ -1,6 +1,6 @@
 class_name Problem
 extends Resource
-## One computer problem, in the format of the wiki page "Computer Problems". CompufunDB lists
+## One computer problem, in the format of the wiki page "Computer Problems". CompuFunDB lists
 ## every Problem file in this folder.
 
 enum Location { HARDWARE, SOFTWARE, BOTH }

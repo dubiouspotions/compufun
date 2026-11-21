@@ -37,7 +37,7 @@ Godot/               the Godot project: everything the game loads
   win95/             the Win95 interface (the Win95 developer's folder)
   win95/midi/        recordings that .mid files play in Media Player (Godot plays no MIDI)
   win95/solitaire/   Solitaire: the rules (klondike.gd), the window, the table and the card pictures
-  compufun_db/       CompufunDB, the DOS database on the work computer, and its VGA font
+  compufun_db/       CompuFunDB, the DOS database on the work computer, and its VGA font
   addons/dialogue_editor/  the Dialogue tab in the editor
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
@@ -64,9 +64,9 @@ Main (Node)                              the main buffer: the window
 │  │  │     └─ win95/win95.tscn         the connected job's desktop; each job has one, the others wait out of the tree
 │  │  ├─ Screen (crt_screen.gd)          shows the buffer at 2× through the CRT look, passes it the bent mouse
 │  │  └─ Tube (crt_tube.gd)              this monitor's power, signal lock, degauss and sounds
-│  └─ CompufunDBView (screen_view.tscn again: follows the work monitor, fades in for CompufunDB)
+│  └─ CompuFunDBView (screen_view.tscn again: follows the work monitor, fades in for CompuFunDB)
 │     └─ ScreenBuffer (SubViewport, 640 × 480), Screen, Tube
-│        └─ CompufunDB (compufun_db/compufun_db.tscn)
+│        └─ CompuFunDB (compufun_db/compufun_db.tscn)
 ├─ DebugMenu (CanvasLayer, F2)
 └─ Feedback (CanvasLayer, on top of everything)
 ```
