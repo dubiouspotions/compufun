@@ -14,6 +14,7 @@ Godot/               the Godot project: everything the game loads
   default_bus_layout.tres  the audio buses: Master, and Voice for the customers' voices
   game.gd            the Game autoload
   shaders/           psx_world.gdshader, psx_post.gdshader, psx_post_world.tres (the world's post material)
+  shaders/crt_looks/ the CRT looks of the Screen View (ShaderMaterials of crt.gdshader)
   props/             one scene per placeholder model: crt_monitor, pc_tower, counter, shelf, part_box, ...
   props/parts/       the model of each part: motherboard, cpu, fan, gpu, hard_drive
   parts/             part.gd and piece.gd, and one Part per part: <id>.tres
@@ -29,7 +30,7 @@ Godot/               the Godot project: everything the game loads
   sounds/            sound effects, such as footstep.wav
   problems/          one .tres per problem
   days/              day_1.tres to day_7.tres
-  ui/                loading screen, dialogue overlay, post-it, end of day (the close-the-shop question, the night between two days), CompufunDB, screen view, debug menu, F9 screen, theme.tres
+  ui/                loading screen, dialogue overlay, post-it, end of day (the close-the-shop question, the night between two days), CompufunDB, screen view, CRT screen, debug menu, F9 screen, theme.tres
   ui/logos/          the CompuFun logos (the loading screen, the boot splash, the sign in the shop)
   win95/             the Win95 interface (the Win95 developer's folder)
   addons/dialogue_editor/  the Dialogue tab in the editor
@@ -52,10 +53,10 @@ Main (Node)                              the main buffer: the window
 ├─ UI (CanvasLayer)
 │  ├─ the UI screens
 │  └─ ScreenView (screen_view.tscn: follows the 3D screen, fades in for the Screen View)
-│     └─ SubViewportContainer
-│        └─ SubViewport (640 × 480)      the screen buffer, shown at 2×: updates always, embeds sub-windows
-│           ├─ NoSignal (win95/no_signal.tscn), while the VGA cable hangs free
-│           └─ win95/win95.tscn          the connected job's desktop; each job has one, the others wait out of the tree
+│     ├─ ScreenBuffer (SubViewport, 640 × 480)  the screen buffer: updates always, embeds sub-windows
+│     │  ├─ NoSignal (win95/no_signal.tscn), while the VGA cable hangs free
+│     │  └─ win95/win95.tscn            the connected job's desktop; each job has one, the others wait out of the tree
+│     └─ Screen (crt_screen.gd)          shows the buffer at 2× through the CRT look, passes it the bent mouse
 ├─ DebugMenu (CanvasLayer, F2)
 └─ Feedback (CanvasLayer, on top of everything)
 ```

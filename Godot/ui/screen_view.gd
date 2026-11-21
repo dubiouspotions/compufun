@@ -31,7 +31,7 @@ var _open: bool = false
 var _fade: Tween
 var _desktops: Dictionary[Job, Control] = {}
 
-@onready var _container: SubViewportContainer = %ScreenContainer
+@onready var _screen: CrtScreen = %Screen
 @onready var _buffer: SubViewport = %ScreenBuffer
 @onready var _no_signal: Control = %NoSignal
 
@@ -40,8 +40,8 @@ func _ready() -> void:
 	visible = false
 	modulate.a = 0.0
 	_show_cursor(game_cursor, game_cursor_hotspot)
-	_container.mouse_entered.connect(_show_cursor.bind(desktop_cursor, desktop_cursor_hotspot))
-	_container.mouse_exited.connect(_show_cursor.bind(game_cursor, game_cursor_hotspot))
+	_screen.mouse_entered.connect(_show_cursor.bind(desktop_cursor, desktop_cursor_hotspot))
+	_screen.mouse_exited.connect(_show_cursor.bind(game_cursor, game_cursor_hotspot))
 	if desktop_scene == null:
 		push_error("ScreenView: desktop_scene is empty")
 	Game.changed.connect(_sync)
@@ -60,16 +60,6 @@ func _gui_input(event: InputEvent) -> void:
 	if _open and click != null and click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
 		accept_event()
 		outside_clicked.emit()
-
-
-func _notification(what: int) -> void:
-	# The container turns the buffer's updates off when it is hidden; the 3D monitor needs them on.
-	if what == NOTIFICATION_VISIBILITY_CHANGED and is_node_ready():
-		_keep_live.call_deferred()
-
-
-func _keep_live() -> void:
-	_buffer.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 
 
 ## The live picture of the screen buffer, for the 3D monitor.
@@ -100,9 +90,8 @@ func follow(rect: Rect2) -> void:
 	var sharp := absf(rect.size.x - open_size.x) <= open_size.x * 0.01
 	if sharp:
 		rect = Rect2((rect.get_center() - open_size * 0.5).round(), open_size)
-	_container.position = rect.position
-	_container.scale = rect.size / screen_size
-	_container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST if sharp else CanvasItem.TEXTURE_FILTER_LINEAR
+	_screen.position = rect.position
+	_screen.scale = rect.size / screen_size
 
 
 # Frees the desktops of jobs that left the counter, and puts the connected job's desktop in the buffer.

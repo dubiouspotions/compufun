@@ -13,6 +13,7 @@ situation the reader might be in — never as a summary.
 | [building-and-testing.md](building-and-testing.md) | You need the import, test, export or CI commands, want to add a test, CI failed, something passed that should have failed, or a customer line is silent. |
 | [glossary.md](glossary.md) | You name a concept in code, docs or an issue, or meet a word you're not sure is the project's. |
 | [working-together.md](working-together.md) | You set up a machine, add or rename a file, add a new kind of binary file, or meet a merge conflict. |
+| [crt.md](crt.md) | You tune or change the CRT look of the Screen View, or a click on the desktop lands in the wrong place. |
 | [gotchas.md](gotchas.md) | Godot or the web build behaves weirdly. Also where a new non-obvious fact goes when it doesn't fit anywhere else. |
 
 When you learn something deep that isn't easily rediscovered from the code, fold it into the

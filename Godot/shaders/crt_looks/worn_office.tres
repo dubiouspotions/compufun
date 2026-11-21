@@ -1,0 +1,26 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/crt.gdshader" id="1_crt"]
+
+[resource]
+shader = ExtResource("1_crt")
+shader_parameter/curvature_x = 0.05
+shader_parameter/curvature_y = 0.05
+shader_parameter/underscan = 0.02
+shader_parameter/corner_radius = 0.04
+shader_parameter/vignette = 0.3
+shader_parameter/scanlines = 0.15
+shader_parameter/beam_bloom = 0.5
+shader_parameter/convergence = 0.8
+shader_parameter/static_convergence = 0.25
+shader_parameter/mask_type = 2
+shader_parameter/mask_strength = 0.3
+shader_parameter/damper_wire = 0.0
+shader_parameter/glow = 0.2
+shader_parameter/glow_radius = 4.0
+shader_parameter/white_point = Color(0.97, 0.96, 0.92, 1)
+shader_parameter/black_level = Color(0.03, 0.032, 0.03, 1)
+shader_parameter/brightness = 1.12
+shader_parameter/flicker = 0.01
+shader_parameter/hum_bar = 0.03
+shader_parameter/hum_bar_speed = 0.08
