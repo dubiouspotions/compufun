@@ -25,6 +25,13 @@ pub extern "C" fn say_load_dict(ptr: *const u8, len: usize) {
     SPEAKER.with_borrow_mut(|s| s.load_dict(&dict));
 }
 
+/// Shapes every later line with a voice type in its text form; an empty one says lines plainly.
+#[unsafe(no_mangle)]
+pub extern "C" fn say_voice_type(ptr: *const u8, len: usize) {
+    let text = if len == 0 { String::new() } else { text_of(ptr, len) };
+    SPEAKER.with_borrow_mut(|s| s.set_voice_type((!text.trim().is_empty()).then(|| crate::voice_type::VoiceType::parse(&text))));
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn say_start(ptr: *const u8, len: usize, body: u32, fs: f64, rate: f64, pitch: f64, accent: f64) -> u32 {
     let text = text_of(ptr, len);
