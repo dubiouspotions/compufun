@@ -492,10 +492,10 @@ right = &"Right"
 faces_customer = true
 
 [node name="Storage" type="Marker3D" parent="Views"]
-transform = Transform3D(1, 0, 0, 0, 0.81915206, 0.57357645, 0, -0.57357645, 0.81915206, -5.2, 1.5, 0.35)
+transform = Transform3D(1, 0, 0, 0, 0.9135455, 0.4067366, 0, -0.4067366, 0.9135455, -5.4, 1.55, 0.4)
 script = ExtResource("21_sg8ra")
 back = &"Left"
-fov = 50.0
+fov = 52.0
 
 [node name="Left" type="Marker3D" parent="Views" unique_id=291976972]
 transform = Transform3D(0.121869326, -0.12096094, 0.98514783, 0, 0.99254614, 0.12186934, -0.99254614, -0.0148521345, 0.12096093, 0, 1.55, 0.7)
