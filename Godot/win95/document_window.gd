@@ -24,7 +24,7 @@ func _ready() -> void:
 func open_file(opened: Win95File, state: ComputerState) -> void:
 	file = opened
 	_state = state
-	_load.call_deferred(file)  # a new window is laid out at the end of the frame; a TextEdit that is still narrower than a character errors on multi-line text
+	_load(file)
 	_retitle()
 
 

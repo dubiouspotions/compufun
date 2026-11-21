@@ -47,10 +47,21 @@ func open(scene: PackedScene, reuse := true) -> Control:
 	# Late cascade steps would otherwise run off the screen.
 	var room := size - Vector2(0, taskbar_height) - window.get_combined_minimum_size()
 	window.position = window.position.min(room).max(Vector2.ZERO)
+	_lay_out(window)
 	_wire(window)
 	_desktop_active = false
 	_changed()
 	return window
+
+
+# Containers sort their children at the end of the frame; sorting now, top down, gives the new
+# window's controls their sizes before the caller fills them. A TextEdit still 8 px wide errors on
+# multi-line text.
+static func _lay_out(node: Node) -> void:
+	if node is Container:
+		node.notification(Container.NOTIFICATION_SORT_CHILDREN)
+	for child in node.get_children():
+		_lay_out(child)
 
 
 ## Shows [param window], restoring it if it was minimized, and puts it in front.
