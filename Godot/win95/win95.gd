@@ -1,20 +1,49 @@
 extends Control
 ## The Win95 screen of one job's computer. It shows NO SIGNAL while the computer is off, and on
 ## boot it rebuilds the desktop from %ComputerState's setup: palette, wallpaper, desktop icons,
-## folders and sound. Changes the player makes go back into the setup. While the cable is on another
+## folders, the Recycle Bin and sound. Right-click menus act on the setup through %ComputerState,
+## and every icon view lists the setup again after each change. While the cable is on another
 ## computer, ScreenView takes it out of the tree, and puts it back as it was.
 
 const _BOOT := preload("res://win95/boot_sequence.tscn")
 const _FOLDER := preload("res://win95/folder_window.tscn")
+const _PROPERTIES := preload("res://win95/properties_window.tscn")
+const _BIN_EMPTY := preload("res://win95/theme/icons/recycle_bin_empty_32.png")
+const _BIN_FULL := preload("res://win95/theme/icons/recycle_bin_full_32.png")
 const _COVER := preload("res://win95/cover_screen.gd")
 const _SHARED_PALETTE := preload("res://win95/theme/palette.tres")
 const _ICONS := "res://win95/theme/icons/"
 ## The meta key on a FileIcon that holds its Win95File.
 const _FILE_META := &"win95_file"
 
+## What an icon view shows: the desktop, a folder, drive C, My Computer or the Recycle Bin.
+class Listing:
+	extends RefCounted
+	var title: String = ""
+	## 32 x 32; the title bar shows its 16 px twin.
+	var icon: Texture2D
+	var kind: StringName = &"folder"
+	## Returns the Array of Win95Files to show. For a folder, the desktop or drive C it is the live
+	## Array, which New Folder adds to.
+	var files: Callable
+	var creatable: bool = false
+
+	func _init(listing_title: String, listing_icon: Texture2D, listing_kind: StringName, listing_files: Callable, can_create: bool) -> void:
+		title = listing_title
+		icon = listing_icon
+		kind = listing_kind
+		files = listing_files
+		creatable = can_create
+
+
 static var _stock_palette: Win95Palette
 var _setup_icons: Array[FileIcon] = []
-var _my_computer: Win95File
+var _listings: Dictionary[IconView, Listing] = {}
+var _drive_c: Win95File
+var _drives: Array[Win95File] = []
+var _context: ContextMenu
+var _context_view: IconView
+var _context_item: FileIcon
 var _boot: Node
 
 @onready var _state: ComputerState = %ComputerState
@@ -30,8 +59,11 @@ func _ready() -> void:
 		_stock_palette = _SHARED_PALETTE.duplicate() as Win95Palette
 	_state.booted.connect(_on_booted)
 	_state.powered_off.connect(_on_powered_off)
-	_state.changed.connect(_apply_sound)
-	_icons.item_opened.connect(_open_item)
+	_state.changed.connect(_on_changed)
+	_context = ContextMenu.new()
+	add_child(_context)
+	_context.chosen.connect(_on_action)
+	_wire_view(_icons)
 	_systray.mute_toggled.connect(func(_muted: bool) -> void: _state.set_sound(_systray.volume, _systray.muted))
 	_systray.volume_changed.connect(func(_volume: float) -> void: _state.set_sound(_systray.volume, _systray.muted))
 	_no_signal.visible = not _state.is_on
@@ -57,8 +89,12 @@ func _on_booted() -> void:
 		# As Win95 showed them: a small pattern tiles, a picture fills the screen.
 		var tiles := setup.wallpaper.get_width() * 2 < _background.size.x
 		_background.stretch_mode = TextureRect.STRETCH_TILE if tiles else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_rebuild_desktop_icons(setup)
-	_my_computer = _build_my_computer(setup)
+	_drive_c = _folder("(C:)", "drive_hard_32.png")
+	_drives.assign([_folder("3\u00bd Floppy (A:)", "drive_floppy_35_32.png"), _drive_c, _folder("(D:)", "drive_cdrom_32.png"),
+		_folder("Control Panel", "folder_control_panel_32.png"), _folder("Printers", "folder_printers_32.png")])
+	_listings.clear()
+	_listings[_icons] = Listing.new("Desktop", null, &"desktop", func() -> Array: return _state.setup.desktop, true)
+	_fill(_icons)
 	_apply_sound()
 	_no_signal.hide()
 	if is_instance_valid(_boot):
@@ -88,60 +124,236 @@ func _apply_sound() -> void:
 	_systray.muted = _state.setup.muted
 
 
-func _rebuild_desktop_icons(setup: Win95Setup) -> void:
-	for icon in _setup_icons:
-		icon.queue_free()
-	_setup_icons.clear()
-	for file: Win95File in setup.desktop:
-		_setup_icons.append(_add_file(_icons, file))
+func _on_changed() -> void:
+	_apply_sound()
+	for view in _listings.keys():
+		if is_instance_valid(view):
+			_fill(view)
+		else:
+			_listings.erase(view)
 
 
-func _build_my_computer(setup: Win95Setup) -> Win95File:
-	var drive_c := _folder("(C:)", "drive_hard_32.png", setup.drive_c)
-	return _folder("My Computer", "my_computer_32.png", [
-		_folder("3½ Floppy (A:)", "drive_floppy_35_32.png", []),
-		drive_c,
-		_folder("(D:)", "drive_cdrom_32.png", []),
-		_folder("Control Panel", "folder_control_panel_32.png", []),
-		_folder("Printers", "folder_printers_32.png", []),
-	])
+## Lists the view's Win95Files again, keeping the selection. On the desktop, the system icons from
+## desktop_icons.tscn stay and the Recycle Bin shows whether it is empty.
+func _fill(view: IconView) -> void:
+	var listing: Listing = _listings[view]
+	var keep: Array[Win95File] = []
+	for item in view.selected_items():
+		var file := _file_of(item)
+		if file != null:
+			keep.append(file)
+	var old: Array = _setup_icons if view == _icons else view.get_children()
+	for item: Node in old:
+		item.queue_free()
+	var added: Array[FileIcon] = []
+	for file: Win95File in listing.files.call():
+		var item := view.add_item(file.name, file.icon)
+		item.set_meta(_FILE_META, file)
+		item.name_edited.connect(func(_old: String, new_text: String) -> void: _state.rename_file(file, new_text))
+		item.selected = keep.has(file)
+		added.append(item)
+	if view == _icons:
+		_setup_icons = added
+		(_icons.get_node("RecycleBin") as FileIcon).icon = _BIN_EMPTY if _state.setup.recycle_bin.is_empty() else _BIN_FULL
 
 
-func _folder(folder_name: String, icon_file: String, children: Array) -> Win95File:
+func _folder(folder_name: String, icon_file: String) -> Win95File:
 	var folder := Win95File.new()
 	folder.name = folder_name
 	folder.icon = load(_ICONS + icon_file)
 	folder.is_folder = true
-	folder.children.assign(children)
 	return folder
 
 
-func _add_file(view: IconView, file: Win95File) -> FileIcon:
-	var item := view.add_item(file.name, file.icon)
-	item.set_meta(_FILE_META, file)
-	item.name_edited.connect(func(_old: String, new_text: String) -> void: _state.rename_file(file, new_text))
-	return item
+func _file_of(item: FileIcon) -> Win95File:
+	return item.get_meta(_FILE_META) if item.has_meta(_FILE_META) else null
+
+
+func _wire_view(view: IconView) -> void:
+	view.item_opened.connect(_open_item)
+	view.context_requested.connect(func(item: FileIcon, at: Vector2) -> void: _open_context(view, item, at))
+	view.delete_requested.connect(func(items: Array[FileIcon]) -> void: _delete(view, items))
 
 
 func _open_item(item: FileIcon) -> void:
-	var file: Win95File = item.get_meta(_FILE_META) if item.has_meta(_FILE_META) else null
-	if item.name == &"MyComputer" and _my_computer != null:
-		file = _my_computer
-	if file != null and file.is_folder:
-		_open_folder(file)
+	var file := _file_of(item)
+	if item.name == &"MyComputer":
+		_show(Listing.new("My Computer", load(_ICONS + "my_computer_32.png"), &"my_computer", func() -> Array: return _drives, false))
+	elif item.name == &"RecycleBin":
+		_show(Listing.new("Recycle Bin", _BIN_EMPTY, &"recycle_bin", func() -> Array: return _state.setup.recycle_bin, false))
+	elif file == _drive_c:
+		_show(Listing.new("(C:)", file.icon, &"folder", func() -> Array: return _state.setup.drive_c, true))
+	elif file != null and file.is_folder and _listing_of_item(item).kind != &"recycle_bin":
+		_show(Listing.new(file.name, file.icon, &"folder", func() -> Array: return file.children, not _drives.has(file)))
 
 
-func _open_folder(folder: Win95File) -> void:
+func _listing_of_item(item: FileIcon) -> Listing:
+	return _listings.get(item.get_parent() as IconView)
+
+
+func _show(listing: Listing) -> void:
 	var window: Node = _desktop.open(_FOLDER)
 	var title_bar: Node = window.get_node("%TitleBar")
-	title_bar.title = folder.name
-	title_bar.icon = _small_icon(folder.icon)
+	title_bar.title = listing.title
+	title_bar.icon = _small_icon(listing.icon)
 	var view: IconView = window.items
-	if not view.item_opened.is_connected(_open_item):
-		view.item_opened.connect(_open_item)
-	view.clear()
-	for child: Win95File in folder.children:
-		_add_file(view, child)
+	if not _listings.has(view):
+		_wire_view(view)
+	_listings[view] = listing
+	_fill(view)
+
+
+func _open_context(view: IconView, item: FileIcon, at: Vector2) -> void:
+	_context_view = view
+	_context_item = item
+	_context.open(at, _entries_for(view, item))
+
+
+func _entries_for(view: IconView, item: FileIcon) -> Array[ContextMenu.Entry]:
+	var listing: Listing = _listings[view]
+	var properties := ContextMenu.item("Properties", &"properties")
+	if item == null:
+		return _background_entries(listing)
+	var multi := view.selected_items().size() > 1
+	if listing.kind == &"recycle_bin":
+		return _entries([["Restore", &"restore"], [], ["Cut"], [], ["Delete", &"purge"], [], properties])
+	match item.name:
+		&"MyComputer":
+			return _entries([["Open", &"open", true], ["Explore"], ["Find..."], [], ["Map Network Drive..."],
+				["Disconnect Network Drive..."], [], ["Create Shortcut"], ["Rename", &"rename"], [], ["Properties"]])
+		&"RecycleBin":
+			return _entries([["Open", &"open", true], ["Explore"], ContextMenu.item("Empty Recycle Bin", &"empty_bin", false, _state.setup.recycle_bin.is_empty()),
+				[], ["Create Shortcut"], [], ["Properties"]])
+		&"NetworkNeighborhood":
+			return _entries([["Open", &"open", true], ["Explore"], ["Find Computer..."], [], ["Map Network Drive..."],
+				["Disconnect Network Drive..."], [], ["Create Shortcut"], ["Rename", &"rename"], [], ["Properties"]])
+	var file := _file_of(item)
+	if listing.kind == &"my_computer":
+		return _entries([["Open", &"open", true], ["Explore"], ["Find..."], [], ["Create Shortcut"], [], properties])
+	var entries := _entries([["Open", &"open", true]])
+	if file != null and file.is_folder:
+		entries.append_array(_entries([["Explore"], ["Find..."]]))
+	entries.append_array(_entries([[], ContextMenu.submenu("Send To", _entries([["3\u00bd Floppy (A)"], ["Mail Recipient"], ["My Briefcase"]])),
+		[], ["Cut"], ["Copy"], [], ["Create Shortcut"], ["Delete", &"delete"]]))
+	if not multi:
+		entries.append(ContextMenu.item("Rename", &"rename"))
+	entries.append_array(_entries([[], properties]))
+	return entries
+
+
+func _background_entries(listing: Listing) -> Array[ContextMenu.Entry]:
+	var arrange := ContextMenu.submenu("Arrange Icons", _entries([["by Name"], ["by Type"], ["by Size"], ["by Date"], [], ["Auto Arrange"]]))
+	var view_menu := ContextMenu.submenu("View", _entries([ContextMenu.item("Large Icons", &"", false, false, true), ["Small Icons"], ["List"], ["Details"]]))
+	var new_menu := ContextMenu.submenu("New", _entries([["Folder", &"new_folder"], ["Shortcut"], [], ["Text Document"], ["WordPad Document"], ["Bitmap Image"], ["Wave Sound"]]))
+	var paste := ContextMenu.item("Paste", &"", false, true)
+	var paste_shortcut := ContextMenu.item("Paste Shortcut", &"", false, true)
+	match listing.kind:
+		&"desktop":
+			return _entries([arrange, ["Line up Icons"], [], paste, paste_shortcut, [], new_menu, [], ["Properties"]])
+		&"recycle_bin":
+			return _entries([view_menu, [], arrange, ["Line up Icons"], [], ContextMenu.item("Empty Recycle Bin", &"empty_bin", false, _state.setup.recycle_bin.is_empty()), [], ["Properties"]])
+		&"my_computer":
+			return _entries([view_menu, [], arrange, ["Line up Icons"], [], ["Properties"]])
+	if not listing.creatable:
+		return _entries([view_menu, [], arrange, ["Line up Icons"], [], ["Properties"]])
+	return _entries([view_menu, [], arrange, ["Line up Icons"], [], paste, paste_shortcut, [], new_menu, [], ["Properties"]])
+
+
+# Each spec is an Entry, [] for a separator, or [label, id = &"", is_default = false].
+func _entries(specs: Array) -> Array[ContextMenu.Entry]:
+	var entries: Array[ContextMenu.Entry] = []
+	for spec: Variant in specs:
+		if spec is ContextMenu.Entry:
+			entries.append(spec)
+		elif (spec as Array).is_empty():
+			entries.append(ContextMenu.separator())
+		else:
+			var parts: Array = spec
+			entries.append(ContextMenu.item(parts[0], parts[1] if parts.size() > 1 else &"", parts.size() > 2 and parts[2]))
+	return entries
+
+
+func _on_action(id: StringName) -> void:
+	var view := _context_view
+	if not is_instance_valid(view):
+		return
+	var item := _context_item if is_instance_valid(_context_item) else null
+	var listing: Listing = _listings[view]
+	var files := _files(view.selected_items())
+	match id:
+		&"open":
+			for selected in view.selected_items():
+				view.open_item(selected)
+		&"rename":
+			if item != null:
+				item.start_rename()
+		&"delete":
+			_delete(view, view.selected_items())
+		&"purge":
+			_state.purge_files(files)
+		&"restore":
+			_state.restore_files(files)
+		&"empty_bin":
+			_state.empty_recycle_bin()
+		&"new_folder":
+			var folder := _state.new_folder(listing.files.call())
+			_rename_new.call_deferred(view, folder)
+		&"properties":
+			var file := _file_of(item) if item != null else null
+			if file != null:
+				var window: Node = _desktop.open(_PROPERTIES)
+				window.show_file(file, _location_of(file))
+		_:
+			push_error("Win95: no action for the menu id %s" % id)
+
+
+func _delete(view: IconView, items: Array[FileIcon]) -> void:
+	var files := _files(items)
+	if _listings[view].kind == &"recycle_bin":
+		_state.purge_files(files)
+	else:
+		_state.delete_files(files)
+
+
+# Win95 names a new folder by letting the player type over "New Folder" at once.
+func _rename_new(view: IconView, folder: Win95File) -> void:
+	for item in view.get_children():
+		if item is FileIcon and _file_of(item) == folder and not item.is_queued_for_deletion():
+			view.select_only(item)
+			item.start_rename()
+			return
+
+
+func _files(items: Array[FileIcon]) -> Array[Win95File]:
+	var files: Array[Win95File] = []
+	for item in items:
+		var file := _file_of(item)
+		if file != null:
+			files.append(file)
+	return files
+
+
+## Where [param file] is, as Win95's Properties shows it: "Desktop", "C:\", "C:\Windows" or
+## "Recycle Bin".
+func _location_of(file: Win95File) -> String:
+	var setup := _state.setup
+	if setup.desktop.has(file):
+		return "Desktop"
+	if setup.recycle_bin.has(file):
+		return "Recycle Bin"
+	var path: Variant = _path_in(setup.drive_c, file, "C:")
+	return path if path != null else "C:\\"
+
+
+func _path_in(container: Array, file: Win95File, path: String) -> Variant:
+	if container.has(file):
+		return path + "\\" if path == "C:" else path
+	for other: Win95File in container:
+		if other.is_folder:
+			var found: Variant = _path_in(other.children, file, path + "\\" + other.name)
+			if found != null:
+				return found
+	return null
 
 
 # Kalle's icon set pairs every name_32.png with a name_16.png.

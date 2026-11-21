@@ -8,6 +8,8 @@ extends VBoxContainer
 signal clicked(additive: bool, extend: bool, on_name: bool)
 ## The player double-clicked the icon.
 signal opened
+## The player right-clicked the icon at [param at], in canvas coordinates.
+signal context_clicked(at: Vector2)
 ## The player renamed the icon; text is already new_text.
 signal name_edited(old_text: String, new_text: String)
 
@@ -46,7 +48,13 @@ func _ready() -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	var button := event as InputEventMouseButton
-	if button and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
+	if button and button.button_index == MOUSE_BUTTON_RIGHT:
+		# On release, as Win95 does: a popup that opens on the press takes the release, and the
+		# viewport then routes the next click here as if the right button were still held.
+		accept_event()
+		if not button.pressed:
+			context_clicked.emit(button.global_position)
+	elif button and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
 		accept_event()
 		if button.double_click:
 			opened.emit()

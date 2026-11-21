@@ -3,12 +3,17 @@ extends FlowContainer
 ## A grid of FileIcons that the player selects as in Win95: click one, Ctrl-click (Cmd on a Mac)
 ## to toggle one, Shift-click for a range, or drag a rectangle from empty space; Ctrl-drag toggles.
 ## Use a VFlowContainer for the desktop (column by column) and an HFlowContainer for folder windows
-## (row by row).
+## (row by row). Right-click asks for a context menu; Delete, F2, Enter and Shift+F10 work as in Win95.
 
 ## The player double-clicked an icon.
 signal item_opened(item: FileIcon)
 ## Icons were added or removed.
 signal items_changed
+## The player right-clicked [param item], or empty space when it is null, at [param at] in canvas
+## coordinates; or pressed Shift+F10. A right-click on an unselected icon selects it first.
+signal context_requested(item: FileIcon, at: Vector2)
+## The player pressed Delete with [param items] selected.
+signal delete_requested(items: Array[FileIcon])
 
 const _FILE_ICON := preload("res://win95/file_icon.tscn")
 const _BAND_SHADER := preload("res://win95/drag_outline.gdshader")
@@ -44,6 +49,7 @@ func _ready() -> void:
 	_band.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_band.visible = false
 	add_child(_band, false, Node.INTERNAL_MODE_BACK)
+	focus_mode = Control.FOCUS_ALL
 
 
 ## Adds an icon at the end of the grid and returns it.
@@ -75,10 +81,29 @@ func selected_items() -> Array[FileIcon]:
 	return selected
 
 
+## Opens [param item] as a double-click does.
+func open_item(item: FileIcon) -> void:
+	if item.opens:
+		_open_window(item)
+	item_opened.emit(item)
+
+
 func _gui_input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if key and key.pressed and not key.echo:
+		_key(key)
+		return
 	var button := event as InputEventMouseButton
+	if button and button.button_index == MOUSE_BUTTON_RIGHT:
+		accept_event()
+		if not button.pressed:  # on release, like FileIcon
+			grab_focus()
+			_select(null)
+			context_requested.emit(null, button.global_position)
+		return
 	if button and button.button_index == MOUSE_BUTTON_LEFT:
 		if button.pressed:
+			grab_focus()
 			var additive := button.ctrl_pressed or button.meta_pressed
 			_before_band = selected_items()
 			if not additive:
@@ -109,12 +134,39 @@ func _wire(child: Node) -> void:
 	item.clicked.connect(_on_clicked.bind(item))
 	item.opened.connect(func() -> void:
 		_select(item)
-		if item.opens:
-			_open_window(item)
-		item_opened.emit(item))
+		open_item(item))
+	item.context_clicked.connect(func(at: Vector2) -> void:
+		grab_focus()
+		if not item.selected:
+			_select(item)
+		context_requested.emit(item, at))
+
+
+func _key(key: InputEventKey) -> void:
+	var selected := selected_items()
+	match key.keycode:
+		KEY_DELETE:
+			if not selected.is_empty():
+				delete_requested.emit(selected)
+		KEY_F2:
+			if selected.size() == 1 and selected[0].renamable:
+				selected[0].start_rename()
+		KEY_ENTER, KEY_KP_ENTER:
+			for item in selected:
+				open_item(item)
+		KEY_F10, KEY_MENU:
+			if key.keycode == KEY_F10 and not key.shift_pressed:
+				return
+			var item: FileIcon = selected[0] if not selected.is_empty() else null
+			var at := item.hit_rect().get_center() if item else get_global_rect().position
+			context_requested.emit(item, at)
+		_:
+			return
+	accept_event()
 
 
 func _on_clicked(additive: bool, extend: bool, on_name: bool, item: FileIcon) -> void:
+	grab_focus()
 	if additive:
 		item.selected = not item.selected
 		_anchor = item
@@ -131,6 +183,10 @@ func _on_clicked(additive: bool, extend: bool, on_name: bool, item: FileIcon) ->
 
 
 ## Selects only [param item], or nothing when it is null.
+func select_only(item: FileIcon) -> void:
+	_select(item)
+
+
 func _select(item: FileIcon) -> void:
 	for other in _items():
 		other.selected = other == item

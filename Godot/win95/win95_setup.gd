@@ -10,6 +10,8 @@ extends Resource
 @export var desktop: Array[Win95File] = []
 ## The top folder of drive C.
 @export var drive_c: Array[Win95File] = []
+## The files in the Recycle Bin. Restoring one of these puts it on the desktop.
+@export var recycle_bin: Array[Win95File] = []
 ## Every email in every folder; each Email says which folder it is in.
 @export var emails: Array[Email] = []
 ## The programs that the Start menu lists, by their name in the menu.
