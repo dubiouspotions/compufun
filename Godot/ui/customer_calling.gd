@@ -78,7 +78,7 @@ func _on_timer() -> void:
 	var line: DialogueLine = choices.pick_random()
 	_step += 1
 	_last = line
-	_label.text = "%s: %s" % [_customer.display_name, line.text]
+	_label.text = "%s: %s" % [_customer.spoken_name(), line.text]
 	show()
 	_timer.start(maxf(show_seconds, _voice.say(line, _customer.voice, VoiceType.of(line, _conversation))))
 

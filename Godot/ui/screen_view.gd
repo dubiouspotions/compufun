@@ -14,7 +14,8 @@ signal outside_clicked
 ## What runs in the screen buffer: a Control of the buffer's size. When its script has a
 ## [code]has_picture() -> bool[/code], the tube locks onto the picture only while it returns true;
 ## a [code]pointer_visible() -> bool[/code] hides the cursor while it returns false, and a
-## [code]pointer_changed[/code] signal says when that changes.
+## [code]pointer_changed[/code] signal says when that changes. Its [code]screen_opened()[/code], if
+## it has one, is called each time the view opens.
 @export var content: PackedScene
 ## The shader draws the mouse cursor into the picture while there is a signal. False when the
 ## content draws its own, as CompuFunDB's text mode does.
@@ -90,6 +91,8 @@ func set_open(open: bool) -> void:
 		_fade.kill()
 	if open:
 		visible = true
+		if _content != null and _content.has_method(&"screen_opened"):
+			_content.call(&"screen_opened")
 	_fade = create_tween()
 	_fade.tween_property(self, "modulate:a", 1.0 if open else 0.0, fade_seconds)
 	if not open:

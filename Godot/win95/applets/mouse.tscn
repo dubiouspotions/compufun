@@ -1,0 +1,529 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://win95/property_sheet.tscn" id="sheet"]
+[ext_resource type="Script" path="res://win95/applets/mouse_buttons_page.gd" id="buttons_page"]
+[ext_resource type="Script" path="res://win95/applets/mouse_motion_page.gd" id="motion_page"]
+[ext_resource type="Script" path="res://win95/group_box.gd" id="group_box"]
+[ext_resource type="Script" path="res://win95/theme/win95bevel.gd" id="bevel"]
+[ext_resource type="Resource" path="res://win95/theme/palette.tres" id="palette"]
+[ext_resource type="Texture2D" path="res://win95/applets/mouse_right_handed.png" id="right_handed"]
+[ext_resource type="Texture2D" path="res://win95/applets/mouse_left_handed.png" id="left_handed"]
+[ext_resource type="Texture2D" path="res://win95/applets/mouse_jack.png" id="jack"]
+[ext_resource type="Texture2D" path="res://win95/applets/mouse_speed.png" id="speed"]
+[ext_resource type="Texture2D" path="res://win95/applets/mouse_trail.png" id="trail"]
+[ext_resource type="Texture2D" path="res://win95/applets/mouse_general.png" id="general"]
+[ext_resource type="Texture2D" path="res://win95/applets/mouse_pointers.png" id="pointers"]
+
+[sub_resource type="ButtonGroup" id="handedness"]
+
+[sub_resource type="StyleBox" id="test_area"]
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+kind = 4
+palette = ExtResource("palette")
+
+[sub_resource type="AtlasTexture" id="pointer_0"]
+atlas = ExtResource("pointers")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="pointer_1"]
+atlas = ExtResource("pointers")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="pointer_2"]
+atlas = ExtResource("pointers")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="pointer_3"]
+atlas = ExtResource("pointers")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="pointer_4"]
+atlas = ExtResource("pointers")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="pointer_5"]
+atlas = ExtResource("pointers")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="jack_closed"]
+atlas = ExtResource("jack")
+region = Rect2(0, 0, 31, 45)
+
+[node name="MouseProperties" instance=ExtResource("sheet")]
+
+[node name="TitleBar" parent="VBox"]
+title = "Mouse Properties"
+
+[node name="Buttons" type="Control" parent="VBox/Body/Column/Tabs"]
+custom_minimum_size = Vector2(382, 356)
+layout_mode = 2
+script = ExtResource("buttons_page")
+select_text = "-  Normal Select\n-  Normal Drag"
+menu_text = "-  Context Menu\n-  Special Drag"
+right_handed_picture = ExtResource("right_handed")
+left_handed_picture = ExtResource("left_handed")
+jack_frames = ExtResource("jack")
+
+[node name="Configuration" type="Control" parent="VBox/Body/Column/Tabs/Buttons"]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 17.0
+offset_right = 369.0
+offset_bottom = 183.0
+mouse_filter = 2
+script = ExtResource("group_box")
+text = "Button configuration"
+
+[node name="RightHanded" type="CheckBox" parent="VBox/Body/Column/Tabs/Buttons"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 23.0
+offset_top = 36.0
+text = "Right-handed"
+button_pressed = true
+button_group = SubResource("handedness")
+
+[node name="LeftHanded" type="CheckBox" parent="VBox/Body/Column/Tabs/Buttons"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 123.0
+offset_top = 36.0
+text = "Left-handed"
+button_group = SubResource("handedness")
+
+[node name="LeftTitle" type="Label" parent="VBox/Body/Column/Tabs/Buttons"]
+layout_mode = 0
+offset_left = 23.0
+offset_top = 68.0
+text = "Left Button:"
+
+[node name="LeftButton" type="Label" parent="VBox/Body/Column/Tabs/Buttons"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 32.0
+offset_top = 84.0
+
+[node name="Picture" type="TextureRect" parent="VBox/Body/Column/Tabs/Buttons"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 149.0
+offset_top = 77.0
+offset_right = 232.0
+offset_bottom = 157.0
+mouse_filter = 2
+texture = ExtResource("right_handed")
+
+[node name="RightTitle" type="Label" parent="VBox/Body/Column/Tabs/Buttons"]
+layout_mode = 0
+offset_left = 258.0
+offset_top = 68.0
+text = "Right Button:"
+
+[node name="RightButton" type="Label" parent="VBox/Body/Column/Tabs/Buttons"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 267.0
+offset_top = 84.0
+
+[node name="Speed" type="Control" parent="VBox/Body/Column/Tabs/Buttons"]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 196.0
+offset_right = 369.0
+offset_bottom = 335.0
+mouse_filter = 2
+script = ExtResource("group_box")
+text = "Double-click speed"
+
+[node name="Slow" type="Label" parent="VBox/Body/Column/Tabs/Buttons"]
+layout_mode = 0
+offset_left = 23.0
+offset_top = 235.0
+text = "Slow"
+
+[node name="DoubleClick" type="HSlider" parent="VBox/Body/Column/Tabs/Buttons"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 53.0
+offset_top = 234.0
+offset_right = 206.0
+offset_bottom = 260.0
+min_value = 100.0
+max_value = 900.0
+step = 10.0
+value = 500.0
+tick_count = 2
+ticks_on_borders = true
+
+[node name="Fast" type="Label" parent="VBox/Body/Column/Tabs/Buttons"]
+layout_mode = 0
+offset_left = 213.0
+offset_top = 235.0
+text = "Fast"
+
+[node name="TestTitle" type="Label" parent="VBox/Body/Column/Tabs/Buttons"]
+layout_mode = 0
+offset_left = 258.0
+offset_top = 217.0
+text = "Test area:"
+
+[node name="TestArea" type="Panel" parent="VBox/Body/Column/Tabs/Buttons"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 257.0
+offset_top = 234.0
+offset_right = 337.0
+offset_bottom = 319.0
+theme_override_styles/panel = SubResource("test_area")
+
+[node name="Jack" type="TextureRect" parent="VBox/Body/Column/Tabs/Buttons/TestArea"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 25.0
+offset_top = 15.0
+offset_right = 56.0
+offset_bottom = 60.0
+mouse_filter = 2
+texture = SubResource("jack_closed")
+
+[node name="Pointers" type="Control" parent="VBox/Body/Column/Tabs"]
+custom_minimum_size = Vector2(382, 356)
+layout_mode = 2
+
+[node name="Scheme" type="Control" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 17.0
+offset_right = 280.0
+offset_bottom = 97.0
+mouse_filter = 2
+script = ExtResource("group_box")
+text = "Scheme"
+
+[node name="SchemeList" type="OptionButton" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 34.0
+offset_right = 270.0
+offset_bottom = 55.0
+disabled = true
+selected = 0
+item_count = 1
+popup/item_0/text = "(None)"
+popup/item_0/id = 0
+
+[node name="SaveAs" type="Button" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 113.0
+offset_top = 63.0
+offset_right = 188.0
+offset_bottom = 86.0
+disabled = true
+text = "Save As..."
+
+[node name="Delete" type="Button" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 194.0
+offset_top = 63.0
+offset_right = 269.0
+offset_bottom = 86.0
+disabled = true
+text = "Delete"
+
+[node name="Preview" type="Control" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 289.0
+offset_top = 18.0
+offset_right = 369.0
+offset_bottom = 96.0
+mouse_filter = 2
+script = ExtResource("group_box")
+
+[node name="PreviewPointer" type="TextureRect" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 312.0
+offset_top = 41.0
+offset_right = 344.0
+offset_bottom = 73.0
+mouse_filter = 2
+texture = SubResource("pointer_0")
+
+[node name="List" type="Panel" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 104.0
+offset_right = 369.0
+offset_bottom = 312.0
+theme_type_variation = &"FieldPanel"
+
+[node name="Selected" type="ColorRect" parent="VBox/Body/Column/Tabs/Pointers/List"]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 337.0
+offset_bottom = 36.0
+color = Color(0, 0, 0.502, 1)
+
+[node name="Row0" type="Label" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 21.0
+offset_top = 117.0
+text = "Normal Select"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+
+[node name="Pointer0" type="TextureRect" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 314.0
+offset_top = 107.0
+offset_right = 346.0
+offset_bottom = 139.0
+mouse_filter = 2
+texture = SubResource("pointer_0")
+
+[node name="Row1" type="Label" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 21.0
+offset_top = 151.0
+text = "Help Select"
+
+[node name="Pointer1" type="TextureRect" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 314.0
+offset_top = 141.0
+offset_right = 346.0
+offset_bottom = 173.0
+mouse_filter = 2
+texture = SubResource("pointer_1")
+
+[node name="Row2" type="Label" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 21.0
+offset_top = 185.0
+text = "Working In Background"
+
+[node name="Pointer2" type="TextureRect" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 314.0
+offset_top = 175.0
+offset_right = 346.0
+offset_bottom = 207.0
+mouse_filter = 2
+texture = SubResource("pointer_2")
+
+[node name="Row3" type="Label" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 21.0
+offset_top = 219.0
+text = "Busy"
+
+[node name="Pointer3" type="TextureRect" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 314.0
+offset_top = 209.0
+offset_right = 346.0
+offset_bottom = 241.0
+mouse_filter = 2
+texture = SubResource("pointer_3")
+
+[node name="Row4" type="Label" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 21.0
+offset_top = 253.0
+text = "Precision Select"
+
+[node name="Pointer4" type="TextureRect" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 314.0
+offset_top = 243.0
+offset_right = 346.0
+offset_bottom = 275.0
+mouse_filter = 2
+texture = SubResource("pointer_4")
+
+[node name="Row5" type="Label" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 21.0
+offset_top = 287.0
+text = "Text Select"
+
+[node name="Pointer5" type="TextureRect" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 314.0
+offset_top = 277.0
+offset_right = 346.0
+offset_bottom = 309.0
+mouse_filter = 2
+texture = SubResource("pointer_5")
+
+[node name="ListScroll" type="VScrollBar" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 351.0
+offset_top = 106.0
+offset_right = 367.0
+offset_bottom = 310.0
+mouse_filter = 2
+max_value = 14.0
+page = 6.0
+
+[node name="UseDefault" type="Button" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 212.0
+offset_top = 319.0
+offset_right = 287.0
+offset_bottom = 342.0
+disabled = true
+text = "Use Default"
+
+[node name="Browse" type="Button" parent="VBox/Body/Column/Tabs/Pointers"]
+layout_mode = 0
+offset_left = 293.0
+offset_top = 319.0
+offset_right = 368.0
+offset_bottom = 342.0
+disabled = true
+text = "Browse..."
+
+[node name="Motion" type="Control" parent="VBox/Body/Column/Tabs"]
+custom_minimum_size = Vector2(382, 356)
+layout_mode = 2
+script = ExtResource("motion_page")
+
+[node name="SpeedGroup" type="Control" parent="VBox/Body/Column/Tabs/Motion"]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 17.0
+offset_right = 369.0
+offset_bottom = 91.0
+mouse_filter = 2
+script = ExtResource("group_box")
+text = "Pointer speed"
+
+[node name="SpeedIcon" type="TextureRect" parent="VBox/Body/Column/Tabs/Motion"]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 42.0
+offset_right = 64.0
+offset_bottom = 69.0
+mouse_filter = 2
+texture = ExtResource("speed")
+
+[node name="SpeedSlow" type="Label" parent="VBox/Body/Column/Tabs/Motion"]
+layout_mode = 0
+offset_left = 87.0
+offset_top = 43.0
+text = "Slow"
+
+[node name="Speed" type="HSlider" parent="VBox/Body/Column/Tabs/Motion"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 115.0
+offset_top = 42.0
+offset_right = 316.0
+offset_bottom = 68.0
+min_value = 0.0
+max_value = 6.0
+step = 1.0
+value = 3.0
+tick_count = 7
+ticks_on_borders = true
+
+[node name="SpeedFast" type="Label" parent="VBox/Body/Column/Tabs/Motion"]
+layout_mode = 0
+offset_left = 318.0
+offset_top = 43.0
+text = "Fast"
+
+[node name="TrailGroup" type="Control" parent="VBox/Body/Column/Tabs/Motion"]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 104.0
+offset_right = 369.0
+offset_bottom = 200.0
+mouse_filter = 2
+script = ExtResource("group_box")
+text = "Pointer trail"
+
+[node name="TrailIcon" type="TextureRect" parent="VBox/Body/Column/Tabs/Motion"]
+layout_mode = 0
+offset_left = 34.0
+offset_top = 128.0
+offset_right = 66.0
+offset_bottom = 155.0
+mouse_filter = 2
+texture = ExtResource("trail")
+
+[node name="ShowTrails" type="CheckBox" parent="VBox/Body/Column/Tabs/Motion"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 86.0
+offset_top = 128.0
+text = "Show pointer trails"
+
+[node name="Short" type="Label" parent="VBox/Body/Column/Tabs/Motion"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 87.0
+offset_top = 155.0
+text = "Short"
+
+[node name="TrailLength" type="HSlider" parent="VBox/Body/Column/Tabs/Motion"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 115.0
+offset_top = 154.0
+offset_right = 316.0
+offset_bottom = 180.0
+min_value = 2.0
+max_value = 7.0
+step = 1.0
+value = 7.0
+tick_count = 6
+ticks_on_borders = true
+
+[node name="Long" type="Label" parent="VBox/Body/Column/Tabs/Motion"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 318.0
+offset_top = 155.0
+text = "Long"
+
+[node name="General" type="Control" parent="VBox/Body/Column/Tabs"]
+custom_minimum_size = Vector2(382, 356)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="VBox/Body/Column/Tabs/General"]
+layout_mode = 0
+offset_left = 17.0
+offset_top = 18.0
+offset_right = 46.0
+offset_bottom = 50.0
+mouse_filter = 2
+texture = ExtResource("general")
+
+[node name="NameTitle" type="Label" parent="VBox/Body/Column/Tabs/General"]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 66.0
+text = "Name:"
+
+[node name="MouseName" type="LineEdit" parent="VBox/Body/Column/Tabs/General"]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 81.0
+offset_right = 286.0
+offset_bottom = 104.0
+text = "Standard Serial Mouse"
+editable = false
+
+[node name="Change" type="Button" parent="VBox/Body/Column/Tabs/General"]
+layout_mode = 0
+offset_left = 293.0
+offset_top = 81.0
+offset_right = 368.0
+offset_bottom = 104.0
+disabled = true
+text = "Change..."

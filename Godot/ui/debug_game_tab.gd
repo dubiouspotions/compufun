@@ -2,7 +2,7 @@ extends VBoxContainer
 ## The Game tab of the debug menu: the Game state, editable. Every edit goes through
 ## Game.restore(), so the tab can set only states that restore accepts, and shows why when not.
 
-const JOB_FLAGS: Array[String] = ["hardware_fixed", "software_fixed", "powered", "post_it_ticked"]
+const JOB_FLAGS: Array[String] = ["hardware_fixed", "software_fixed", "powered"]
 
 var _status: Label
 var _rows: VBoxContainer
@@ -48,10 +48,10 @@ func _refresh() -> void:
 	visitor_picker.add_item("Nobody")
 	for c: Customer in customers:
 		visits.append([c.resource_path, "DROP_OFF"])
-		visitor_picker.add_item("%s drops off" % c.display_name)
+		visitor_picker.add_item("%s drops off" % c.spoken_name())
 	for j: Job in Game.jobs:
 		visits.append([j.customer.resource_path, "PICKUP"])
-		visitor_picker.add_item("%s picks up (slot %d)" % [j.customer.display_name, j.slot])
+		visitor_picker.add_item("%s picks up (slot %d)" % [j.customer.spoken_name(), j.slot])
 	var current := visits.find([state["visitor"], state["visit"]])
 	visitor_picker.select(current)
 	visitor_picker.item_selected.connect(func(index: int) -> void:
@@ -72,7 +72,7 @@ func _refresh() -> void:
 		_rows.add_child(_job_row(i, Game.jobs[i]))
 	var add_picker := OptionButton.new()
 	for c: Customer in customers:
-		add_picker.add_item(c.display_name)
+		add_picker.add_item(c.spoken_name())
 	var add := _button("Add job", func() -> void: _add_job(customers[add_picker.selected] if add_picker.selected >= 0 else null))
 	add.disabled = customers.is_empty() or Game.jobs.size() >= Game.MAX_JOBS
 	_row("", add_picker, add)
@@ -140,7 +140,7 @@ func _job_row(index: int, job: Job) -> Control:
 	margin.add_child(box)
 	var head := HBoxContainer.new()
 	box.add_child(head)
-	var title := _text("Slot %d: %s (%s)" % [job.slot, job.customer.display_name, job.problem.short_name])
+	var title := _text("Slot %d: %s (%s)" % [job.slot, job.customer.spoken_name(), job.problem.short_name])
 	title.size_flags_horizontal = SIZE_EXPAND_FILL
 	head.add_child(title)
 	for key: String in ["focus_slot", "connected_slot"]:

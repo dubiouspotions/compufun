@@ -7,7 +7,7 @@ const MEDIA_PLAYER_PATH := "res://win95/media_player.tscn"
 
 
 func run() -> void:
-	var setup: Win95Setup = (load("res://customers/javve.tres") as Customer).computer.win95_setup
+	var setup: Win95Setup = (load("res://customers/young_entrepreneur.tres") as Customer).computer.win95_setup
 	var demo := setup.file_at("Desktop\\demo final.mid")
 	check("the demo has a sound", demo.sound != null, true)
 

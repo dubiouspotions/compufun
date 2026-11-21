@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Person" format=3]
+
+[ext_resource type="Texture2D" path="res://people/nice_lady/face.png" id="1_face"]
+[ext_resource type="Texture2D" path="res://people/nice_lady/portrait_happy.png" id="2_happy"]
+[ext_resource type="Texture2D" path="res://people/nice_lady/portrait_neutral.png" id="3_neut"]
+[ext_resource type="Texture2D" path="res://people/nice_lady/portrait_problem.png" id="4_prob"]
+[ext_resource type="Script" path="res://people/person.gd" id="5_script"]
+
+[resource]
+script = ExtResource("5_script")
+name = "Tina Anderson"
+nickname = "Nice lady"
+email = "tiny_tina@hotmail.com"
+portraits = Dictionary[StringName, Texture2D]({
+&"happy": ExtResource("2_happy"),
+&"neutral": ExtResource("3_neut"),
+&"problem": ExtResource("4_prob")
+})
+face = ExtResource("1_face")
+shirt_rect = Rect2(0.29, 0.44, 0.42, 0.56)

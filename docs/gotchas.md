@@ -59,9 +59,22 @@ and CI exports from one.** `display/mouse_cursor/custom_image` is read before th
 imported. Set the cursor in code with `Input.set_custom_mouse_cursor` once the game runs (see
 `ui/screen_view.gd`); the loading screen keeps the system arrow. — 2026-11
 
+**A changed copy of an input event, pushed from `_input`, reaches the controls together with
+the original.** `Viewport.push_input` clears the "handled" flag that the original shares (with
+`handle_input_locally` off, the root window's), so marking the original handled before the push
+has no effect. Call `set_input_as_handled()` after the push, as `win95/mouse_input.gd` does.
+— 2026-11
+
 **A hand-written scene logs an engine error on load.** It references a resource by a UID that
 the cache doesn't know. Use path-only `ext_resource` lines in scenes you write by hand.
 — 2026-10
+
+**"Can't change orientation of VBoxContainer", or a container keeps a stale layout after
+switching orientation.** HBox/VBoxContainer and HFlow/VFlowContainer reject any set of
+`vertical`, even to the value they have; use a BoxContainer or FlowContainer to switch at run
+time. Setting `vertical` sorts at once, with the children's old sizes. If a child's size changes
+later in the same frame and ends where it began the frame, no `minimum_size_changed` fires and
+nothing sorts again: call `queue_sort()` after the change (`IconView`, `FileIcon`). — 2026-11
 
 ## Web export
 

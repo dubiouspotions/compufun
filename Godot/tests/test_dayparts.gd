@@ -9,11 +9,11 @@ func run() -> void:
 	var outside: Node = load("res://rooms/shop/outside.tscn").instantiate()
 	root.add_child(outside)
 	await process_frame
-	var pierre: Customer = load("res://customers/pierre.tres")
-	var javve: Customer = load("res://customers/javve.tres")
+	var skater: Customer = load("res://customers/skater_bro.tres")
+	var entrepreneur: Customer = load("res://customers/young_entrepreneur.tres")
 	var day := Day.new()
 	day.number = 1
-	day.customers = [pierre, javve, pierre]
+	day.customers = [skater, entrepreneur, skater]
 	day.first_wait_seconds = Vector2(5.0, 8.0)
 	day.gap_seconds = Vector2(20.0, 40.0)
 

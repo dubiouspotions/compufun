@@ -60,8 +60,9 @@ func cable_socket(job: Job) -> Node3D:
 	return computer.cable_socket()
 
 
-## The post-it on the lying computer of [param job] (see [method JobComputer.pinned_post_it]), or
-## null when the job has no computer on the counter or the post-it isn't showing.
+## The post-it that the player reads on the computer of [param job] in the Workview (see
+## [method JobComputer.pinned_post_it]), or null when the job has no computer on the counter or the
+## post-it isn't showing.
 func pinned_post_it(job: Job) -> PostIt3D:
 	var computer: JobComputer = _computers.get(job)
 	return computer.pinned_post_it() if computer != null else null

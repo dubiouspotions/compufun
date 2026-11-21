@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
 ## Plays two days through the Game API: drop-offs, a full counter that holds back the next
-## customer, focus, fixes, post-its, the phone, the oldest-first pickup, closing the shop, and the
+## customer, focus, fixes, post-its, calling a chosen customer, the pickup, closing the shop, and the
 ## next day from the day files.
 
 const GAME := preload("res://game.gd")
@@ -68,31 +68,27 @@ func run() -> void:
 	game.connect_cable(job_b)
 	game.fix(Problem.Location.SOFTWARE)
 	check("B software fixed via the cable, focus stays A", [job_b.fixed, game.focus == job_a], [true, true])
-	game.tick_post_it(job_of("O1"))
-	check("an unfixed post-it does not tick", job_of("O1").post_it_ticked, false)
-	check("can't call before a tick", game.can_call(), false)
-	game.tick_post_it(job_b)
-	game.tick_post_it(job_a)
-	check("A and B ticked", [job_a.post_it_ticked, job_b.post_it_ticked], [true, true])
+	check("A and B are ready for pickup, O1 isn't", [job_a.fixed, job_b.fixed, job_of("O1").fixed], [true, true, false])
 
 	game.set_software_fixed(job_b, false)
-	check("B's software breaks again: the post-it unticks", [job_b.fixed, job_b.post_it_ticked], [false, false])
+	check("B's software breaks again: B isn't ready", [job_b.fixed, game.can_call()], [false, true])
 	game.set_software_fixed(job_b, true)
-	game.tick_post_it(job_b)
 	game.set_powered(job_a, true)
-	check("power is per job", [job_a.powered, job_b.powered, job_b.post_it_ticked], [true, false, true])
+	check("power is per job", [job_a.powered, job_b.powered, job_b.fixed], [true, false, true])
 
-	# The oldest ticked job is picked up.
+	# The player calls A, whose computer is fixed.
 	check("can call", game.can_call(), true)
 	var changes: Array[int] = [0]
 	game.changed.connect(func() -> void: changes[0] += 1)
-	game.call_customer()
-	check("CALLING, changed fired", [game.phase, changes[0] > 0], [GAME.Phase.CALLING, true])
+	game.call_customer(job_of("O1"))
+	check("O1 isn't fixed: no call", game.phase, OPEN)
+	game.call_customer(job_a)
+	check("CALLING A, changed fired", [game.phase, game.calling == job_a, changes[0] > 0], [GAME.Phase.CALLING, true, true])
 	check("can't call twice", game.can_call(), false)
-	tick(GAME.CALL_SECONDS - 0.5)
-	check("still calling", game.phase, GAME.Phase.CALLING)
-	tick(1.0)
-	check("call over: A (older than B) walks in for PICKUP", [game.phase, game.visitor == a, game.visit, game.visitor_state], [OPEN, true, GAME.Visit.PICKUP, WALKING_IN])
+	tick(1000.0)
+	check("the call lasts until hang up", [game.phase, game.visitor], [GAME.Phase.CALLING, null])
+	game.hang_up()
+	check("hung up: A walks in for PICKUP", [game.phase, game.visitor == a, game.visit, game.visitor_state], [OPEN, true, GAME.Visit.PICKUP, WALKING_IN])
 	game.customer_arrived()
 	check("A has a pickup conversation: TALKING", game.visitor_state, TALKING)
 	game.dialogue_finished()
@@ -108,8 +104,8 @@ func run() -> void:
 	check("C in the free slot 2, focused", [slots(), game.focus == job_of("C")], [["O1@0", "O2@1", "B@3", "C@2"], true])
 
 	# B has no pickup conversation and takes the computer at once.
-	game.call_customer()
-	tick(GAME.CALL_SECONDS + 0.5)
+	game.call_customer(job_of("B"))
+	game.hang_up()
 	check("B walks in for PICKUP", [game.visitor == b, game.visit], [true, GAME.Visit.PICKUP])
 	game.customer_arrived()
 	game.customer_left()
@@ -120,11 +116,11 @@ func run() -> void:
 	check("DAY_OVER, evening, 3 jobs overnight", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.EVENING, 3])
 
 	# The next day comes from its file; the jobs stay overnight; day 7 is the last.
-	var overnight := [{"customer": "res://customers/pierre.tres", "slot": 2}]
+	var overnight := [{"customer": "res://customers/skater_bro.tres", "slot": 2}]
 	check("restore day 1, closed", game.restore({"day": 1, "phase": "DAY_OVER", "arrivals": 2, "jobs": overnight}), "")
 	check("day 1 has a next day", game.has_next_day(), true)
 	game.start_next_day()
-	check("day 2: open, morning, nobody in yet, the job stayed", [game.day_number, game.phase, game.daypart, game.arrivals, slots()], [2, OPEN, GAME.Daypart.MORNING, 0, ["Pierre@2"]])
+	check("day 2: open, morning, nobody in yet, the job stayed", [game.day_number, game.phase, game.daypart, game.arrivals, slots()], [2, OPEN, GAME.Daypart.MORNING, 0, ["Skater bro@2"]])
 	check("restore day 7", game.restore({"day": 7, "phase": "DAY_OVER", "arrivals": 2}), "")
 	check("day 7 is the last", game.has_next_day(), false)
 

@@ -1,6 +1,6 @@
 extends "res://win95/window.gd"
-## Media Player: plays a .mid file's sound, as loud as the computer's volume and mute. Play turns
-## into Pause while it plays; the slider shows and sets where the song is.
+## Media Player: plays a .mid file's sound on the Win95 bus, so the computer's volume and mute
+## apply. Play turns into Pause while it plays; the slider shows and sets where the song is.
 
 enum FileMenu { CLOSE }
 
@@ -24,7 +24,6 @@ const _THUMB := [
 		"wssssssssg#", "wssssssssg#", "wssssssssg#", "wssssssssg#", "wssssssssg#", "wssssssssg#", "wssssssssg#",
 		"wssssssssg#", "wssssssssg#", "wssssssssg#", "wssssssssg#", "wssssssssg#", "wggggggggg#", "###########"]
 
-var _systray: Node
 var _play_icon: Texture2D
 var _pause_icon: Texture2D
 ## Where a stopped or not yet started song is, in seconds.
@@ -62,13 +61,6 @@ func _ready() -> void:
 		if id == FileMenu.CLOSE:
 			request_close())
 	closed.connect(stop)
-	_systray = get_tree().get_first_node_in_group(preload("res://win95/systray.gd").GROUP)
-	if _systray == null:
-		push_error("Media Player: no systray in the tree, so it plays at full volume")
-	else:
-		_systray.volume_changed.connect(func(_value: float) -> void: _follow_volume())
-		_systray.mute_toggled.connect(func(_on: bool) -> void: _follow_volume())
-		_follow_volume()
 	_show_state()
 
 
@@ -144,10 +136,6 @@ func _is_started() -> bool:
 
 func _length() -> float:
 	return _player.stream.get_length() if _player.stream != null else 0.0
-
-
-func _follow_volume() -> void:
-	_player.volume_linear = 0.0 if _systray.muted else _systray.volume / 100.0
 
 
 func _show_state() -> void:

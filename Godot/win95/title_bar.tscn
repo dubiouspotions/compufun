@@ -46,6 +46,16 @@ focus_mode = 0
 theme_type_variation = &"CaptionMaximizeButton"
 icon_alignment = 1
 
+[node name="Help" type="Button" parent="Row"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(16, 14)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+theme_type_variation = &"CaptionHelpButton"
+icon_alignment = 1
+
 [node name="CloseGap" type="Control" parent="Row"]
 unique_name_in_owner = true
 visible = false

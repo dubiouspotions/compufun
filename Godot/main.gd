@@ -12,7 +12,6 @@ var _dialogue_for: int = -1
 
 @onready var _shop: Shop = %Shop
 @onready var _nav: ViewNav = %ViewNav
-@onready var _post_it: PostIt = %PostIt
 @onready var _dialogue: DialogueOverlay = %DialogueOverlay
 @onready var _calling: CustomerCalling = %CustomerCalling
 @onready var _workview: WorkviewPanel = %WorkviewPanel
@@ -20,6 +19,7 @@ var _dialogue_for: int = -1
 @onready var _post_it_label: PostItLabel = %PostItLabel
 @onready var _end_of_day: EndOfDay = %EndOfDay
 @onready var _crash: Crash = %Crash
+@onready var _phone: PhoneCall = %PhoneCall
 @onready var _world: SubViewportContainer = $World
 @onready var _world_buffer: SubViewport = $World/WorldBuffer
 
@@ -43,9 +43,9 @@ func _ready() -> void:
 	_nav.view_requested.connect(Game.go_to_view)
 	_shop.close_requested.connect(_end_of_day.ask)
 	_shop.crashed.connect(_crash.show_crash)
+	_shop.phone_requested.connect(_phone.open)
 	_shop.degauss_requested.connect((%ScreenView as ScreenView).degauss)
 	_dialogue.finished.connect(Game.dialogue_finished)
-	_post_it.ticked.connect(Game.tick_post_it)
 	Game.changed.connect(_sync)
 	Game.start_day(first_day)
 	_sync()
@@ -93,6 +93,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		Game.go_to_view(marker.left)
 	elif event.is_action_pressed(&"turn_right"):
 		Game.go_to_view(marker.right)
+	elif event.is_action_pressed(&"look_up") and marker.up != &"":
+		Game.go_to_view(marker.up)
 	elif event.is_action_pressed(&"go_back"):
 		_go_back()
 	else:
@@ -113,8 +115,6 @@ func _sync() -> void:
 	_workview.visible = screen == ViewMarker.Screen.WORKVIEW
 	for view: ScreenView in _screen_views:
 		view.set_open(screen == view.screen)
-	_post_it.job = Game.focus
-	_post_it.visible = Game.focus != null
 	var talking := Game.visitor_state == Game.VisitorState.TALKING
 	var facing := talking and marker != null and marker.faces_customer
 	# Looking away hushes the line, and looking back says it again from its start.

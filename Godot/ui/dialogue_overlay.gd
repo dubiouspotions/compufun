@@ -14,7 +14,7 @@ const _HEAD_MIN := 16
 ## Consecutive head-width rows required before a row counts as the crown.
 const _HEAD_RUN := 6
 ## Hands cover the head, so the usual crown scale blows the pose up. Match the neutral portrait's height instead.
-const _MATCH_NEUTRAL_HEIGHT := "jonny/portrait_irritated03.png"
+const _MATCH_NEUTRAL_HEIGHT := "young_entrepreneur/portrait_irritated03.png"
 
 ## How long the portrait takes to rise from behind the box when a conversation starts, in seconds;
 ## 0 shows it at once.
@@ -102,7 +102,7 @@ func start(customer: Customer, conversation: Conversation) -> void:
 	_customer = customer
 	_conversation = conversation
 	_line = 0
-	_name.text = customer.display_name
+	_name.text = customer.spoken_name()
 	if conversation == null or conversation.lines.is_empty():
 		var message := ("%s has no conversation for day %d and flags %s" % [customer.resource_path,
 				Game.day_number, Game.flags]) if conversation == null else (
@@ -154,7 +154,7 @@ func _show_portrait(pose: StringName) -> void:
 	_fit_portrait()
 
 
-## Each pose is scaled so its hem meets the bottom of the column and the head crosses the top edge at the same height. Jonny's hands-up pose is scaled to the same height as his neutral portrait.
+## Each pose is scaled so its hem meets the bottom of the column and the head crosses the top edge at the same height. The young entrepreneur's hands-up pose is scaled to the same height as his neutral portrait.
 func _fit_portrait() -> void:
 	var tex := _portrait.texture
 	if tex == null or _portrait_slot.size.y <= 0.0:

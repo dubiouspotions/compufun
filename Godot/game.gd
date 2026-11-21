@@ -42,8 +42,6 @@ enum VisitorState {
 const MAX_JOBS: int = 4
 ## The most customers that a Day may have.
 const MAX_CUSTOMERS: int = 3
-## How long a phone call takes, in seconds.
-const CALL_SECONDS: float = 2.0
 ## The date of day 1, so that day 7 is 6/6/96.
 const FIRST_DATE: String = "1996-05-31"
 ## Where [method restore] finds day N.
@@ -57,34 +55,28 @@ var arrivals: int = 0
 var daypart: Daypart = Daypart.NONE
 ## The computers on the counter, oldest drop-off first. Jobs left overnight stay.
 var jobs: Array[Job] = []
-## The computer that the player works on in the Workview, or null for none. A new focus stands the
-## computer up again (see [member laid_down]).
-var focus: Job:
-	set(value):
-		if value != focus:
-			laid_down = false
-		focus = value
+## The computer that the player works on in the Workview, or null for none.
+var focus: Job
 ## The computer that the VGA cable is connected to, or null when the cable hangs free.
 var connected: Job
+## The computer whose customer the phone is calling, while the phase is CALLING; null otherwise.
+var calling: Job
 ## The part in the player's hand, or null. The hand holds one piece at a time.
 var hand: Piece
+## The pieces that the player put away in the storage bin, the last one last.
+var stored: Array[Piece] = []
 ## The customer in the shop, or null when nobody is in.
 var visitor: Customer
 var visit: Visit = Visit.NONE
 var visitor_state: VisitorState = VisitorState.NONE
-## The name of the current view marker in the room, for example &"Main". A new view stands the
-## computer in focus up again (see [member laid_down]).
-var view: StringName = &"Main":
-	set(value):
-		if value != view:
-			laid_down = false
-		view = value
-## True after [method lay_down], until the view or the focus changes. See [method lies].
-var laid_down: bool = false
+## The name of the current view marker in the room, for example &"Main".
+var view: StringName = &"Main"
 ## The facts of the story: a name and a number. A flag that is 0 or missing is not set.
 var flags: Dictionary[StringName, int] = {}
 ## The conversations that have played, as "<customer file name>/<conversation id>".
 var seen: Dictionary[String, bool] = {}
+## The records that the player made in CompuFunDB, oldest first. They last the whole game.
+var records: Array[DbRecord] = []
 ## What the visitor says while TALKING, or null when no conversation matches.
 var conversation: Conversation
 ## Goes up every time a visitor starts to walk in, also on [method restore]. A scene that
@@ -114,7 +106,6 @@ var date: Dictionary:
 var _next_order: int = 0
 var _waited: float = 0.0
 var _wait: float = 0.0
-var _call_left: float = 0.0
 var _pickup: Job
 
 
@@ -236,20 +227,25 @@ func matching_conversation(who: Customer, trigger: Conversation.Trigger) -> Conv
 	return null
 
 
-## Lays the computer in focus on its side in the Workview, so the player can reach its side panel.
-## False, and nothing changes, when [param job] is not in focus in the Workview or already lies.
+## Lays the computer in focus on its side in the Workview, so the player can reach its side panel
+## ([member Job.lying]). False, and nothing changes, when [param job] is not in focus in the Workview
+## or already lies.
 func lay_down(job: Job) -> bool:
-	if job == null or job != focus or view != &"Workview" or lies(job):
+	if not _on_counter(job, "lay_down") or job != focus or view != &"Workview" or job.lying:
 		return false
-	laid_down = true
+	job.lying = true
 	changed.emit()
 	return true
 
 
-## True while [param job] lies on its side: in focus in the Workview, and laid down or open. An open
-## computer lies there from the start; elsewhere every computer stands.
-func lies(job: Job) -> bool:
-	return job != null and job == focus and view == &"Workview" and (laid_down or job.case_open)
+## Stands the lying computer of [param job] up again. False, and nothing changes, when it stands
+## already or its side panel is off.
+func stand_up(job: Job) -> bool:
+	if not _on_counter(job, "stand_up") or not job.lying or job.case_open:
+		return false
+	job.lying = false
+	changed.emit()
+	return true
 
 
 ## Puts [param job] in focus for the Workview. null takes the focus away. The job must be on the
@@ -333,11 +329,11 @@ func can_power_on(job: Job) -> bool:
 # --- rules forbid it: that is a normal moment of play, not an error. A job must be on the counter.
 
 ## Lifts the side panel off [param job] (true) or puts it back on (false). The panel comes off only
-## when the computer is off and the panel's screws are out; it goes back on with its screws out.
+## when the computer lies, is off and the panel's screws are out; it goes back on with its screws out.
 func open_case(job: Job, open: bool) -> bool:
 	if not _on_counter(job, "open_case") or open == job.case_open:
 		return false
-	if open and (job.powered or job.panel_screws.has(true)):
+	if open and (not job.lying or job.powered or job.panel_screws.has(true)):
 		return false
 	job.case_open = open
 	changed.emit()
@@ -358,7 +354,7 @@ func can_take(job: Job, part: Part) -> bool:
 ## True when the piece in the hand can go into its place in [param job]: the case is open, the
 ## place is empty, and the part that it sits on is in.
 func can_put(job: Job, part: Part) -> bool:
-	if hand == null or hand.part != part or not job.case_open or job.piece(part) != null:
+	if hand == null or hand.part != part or not part.fits_computer() or not job.case_open or job.piece(part) != null:
 		return false
 	return part.sits_on == null or job.piece(part.sits_on) != null
 
@@ -431,6 +427,25 @@ func take_new_part(part: Part) -> bool:
 	return true
 
 
+## Puts the piece in the hand away in the storage bin.
+func put_in_storage() -> bool:
+	if hand == null:
+		return false
+	stored.append(hand)
+	hand = null
+	changed.emit()
+	return true
+
+
+## Takes the piece that went into the storage bin last back into the empty hand.
+func take_from_storage() -> bool:
+	if hand != null or stored.is_empty():
+		return false
+	hand = stored.pop_back()
+	changed.emit()
+	return true
+
+
 ## Throws the piece in the hand in the trash. It is gone.
 func trash_part() -> bool:
 	if hand == null:
@@ -449,7 +464,7 @@ func _on_counter(job: Job, what: String) -> bool:
 
 ## The running computer of [param job] reports whether its software has the problem, after every
 ## change it makes. Unlike fix(), this can turn back to false (muting again un-fixes no_sound), and
-## then the post-it unticks. The job must be on the counter.
+## the computer is no longer ready for pickup. The job must be on the counter.
 func set_software_fixed(job: Job, fixed: bool) -> void:
 	if job == null or job not in jobs:
 		push_error("Game.set_software_fixed: the job is not on the counter: %s" % job)
@@ -457,34 +472,50 @@ func set_software_fixed(job: Job, fixed: bool) -> void:
 	if fixed == job.software_fixed:
 		return
 	job.software_fixed = fixed
-	if not job.fixed:
-		job.post_it_ticked = false  # the tick claimed a fix that is gone
 	changed.emit()
 
 
-## Ticks the post-it of [param job]. Fails with an error unless the job is on the counter and
-## [member Job.fixed].
-func tick_post_it(job: Job) -> void:
-	if job == null or job not in jobs:
-		push_error("Game.tick_post_it: the job is not on the counter: %s" % job)
-		return
-	if not job.fixed:
-		push_error("Game.tick_post_it: the job of %s is not fixed" % _who(job.customer))
-		return
-	job.post_it_ticked = true
+## Makes the CompuFunDB record of [param job], with the [param text] that the character types up,
+## and returns it. Fails with an error unless the job is on the counter and has no record yet.
+func enter_job(job: Job, text: String) -> DbRecord:
+	if not _on_counter(job, "enter_job"):
+		return null
+	if record_of(job) != null:
+		push_error("Game.enter_job: the job of %s has a record already" % _who(job.customer))
+		return null
+	var record := DbRecord.new()
+	record.text = text
+	record.job_order = job.order
+	records.append(record)
 	changed.emit()
+	return record
 
 
-## Marks [param symptom] on [param job] in CompuFunDB (true), or clears it (false).
-func mark_symptom(job: Job, symptom: String, marked: bool) -> void:
-	if _on_counter(job, "mark_symptom"):
-		_set_in(job.marked_symptoms, symptom, marked)
+## The CompuFunDB record of [param job], or null when it has none.
+func record_of(job: Job) -> DbRecord:
+	for record: DbRecord in records:
+		if record.job_order == job.order:
+			return record
+	return null
 
 
-## Ticks the repair step [param step] of [param job] in CompuFunDB (true), or unticks it (false).
-func tick_repair(job: Job, step: String, ticked: bool) -> void:
-	if _on_counter(job, "tick_repair"):
-		_set_in(job.ticked_repairs, step, ticked)
+## Marks [param symptom] on [param record] (true), or clears it (false).
+func mark_symptom(record: DbRecord, symptom: String, marked: bool) -> void:
+	if _is_record(record, "mark_symptom"):
+		_set_in(record.marked_symptoms, symptom, marked)
+
+
+## Ticks the repair step [param step] on [param record] (true), or unticks it (false).
+func tick_repair(record: DbRecord, step: String, ticked: bool) -> void:
+	if _is_record(record, "tick_repair"):
+		_set_in(record.ticked_repairs, step, ticked)
+
+
+func _is_record(record: DbRecord, what: String) -> bool:
+	if record == null or record not in records:
+		push_error("Game.%s: the record is not in CompuFunDB: %s" % [what, record])
+		return false
+	return true
 
 
 func _set_in(items: Array[String], item: String, present: bool) -> void:
@@ -497,19 +528,33 @@ func _set_in(items: Array[String], item: String, present: bool) -> void:
 	changed.emit()
 
 
-## True when the phone can call: the shop is open, nobody is in it, and a post-it is ticked.
+## True when the phone can call: the shop is open, nobody is in it, and a computer is fixed.
 func can_call() -> bool:
-	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.post_it_ticked)
+	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.fixed)
 
 
-## Calls for [constant CALL_SECONDS] (phase CALLING; CompuFunDB is offline, as the land-line cuts
-## the modem). Then the customer of the oldest ticked job walks in for a PICKUP. Does nothing when
-## [method can_call] is false.
-func call_customer() -> void:
-	if not can_call():
+## Calls the customer of [param job], a fixed computer on the counter, to say it is ready (phase
+## CALLING; CompuFunDB is offline, as the land-line cuts the modem). The call lasts until
+## [method hang_up]. Fails with an error unless [method can_call] and [param job] is fixed.
+func call_customer(job: Job) -> void:
+	if not can_call() or job not in jobs or not job.fixed:
+		push_error("Game.call_customer: can't call about %s now (phase %s, visitor %s, fixed %s)" % [_who(job.customer) if job != null else "no job", Phase.find_key(phase), _who(visitor) if visitor != null else "none", job.fixed if job != null else false])
 		return
 	phase = Phase.CALLING
-	_call_left = CALL_SECONDS
+	calling = job
+	changed.emit()
+
+
+## Ends the call: the called customer comes at once for a PICKUP. Fails with an error unless the
+## phone is calling.
+func hang_up() -> void:
+	if phase != Phase.CALLING or calling == null:
+		push_error("Game.hang_up: the phone isn't calling (phase %s)" % Phase.find_key(phase))
+		return
+	phase = Phase.OPEN
+	_pickup = calling
+	calling = null
+	_set_visitor(_pickup.customer, Visit.PICKUP)
 	changed.emit()
 
 
@@ -569,19 +614,22 @@ func snapshot() -> Dictionary:
 		"jobs": jobs.map(func(j: Job) -> Dictionary: return j.snapshot()),
 		"focus_slot": focus.slot if focus != null else -1,
 		"connected_slot": connected.slot if connected != null else -1,
+		"calling_slot": calling.slot if calling != null else -1,
 		"hand": Job.pieces_data([hand] if hand != null else []),
+		"stored": Job.pieces_data(stored),
 		"view": String(view),
-		"laid_down": laid_down,
 		"conversation": String(conversation.id) if conversation != null else "",
 		"flags": flags.duplicate(),
 		"seen": seen.keys(),
+		"records": records.map(func(r: DbRecord) -> Dictionary: return r.snapshot()),
 	}
 
 
 ## Sets the state from [param state], in the format of [method snapshot]. A missing key takes its
-## value at the start of a day: day 1, OPEN, nobody in the shop, no arrivals, an empty counter, no
-## flags, nothing seen, the daypart of the arrivals; a missing view keeps the current one. The
-## conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
+## value at the start of a day: day 1, OPEN, nobody in the shop, no arrivals, an empty counter, an
+## empty hand and storage bin, no flags, nothing seen, no CompuFunDB records, the daypart of the
+## arrivals; a missing view keeps the current one. The conversation follows from the rest. Returns
+## "" or why it refused; a refusal keeps the state.
 func restore(state: Dictionary) -> String:
 	var known := snapshot()
 	for key: Variant in state:
@@ -631,18 +679,14 @@ func restore(state: Dictionary) -> String:
 		job.hardware_fixed = bool(data.get("hardware_fixed", false))
 		job.software_fixed = bool(data.get("software_fixed", false))
 		job.powered = bool(data.get("powered", false))
-		job.post_it_ticked = bool(data.get("post_it_ticked", false))
-		for key: String in ["marked_symptoms", "ticked_repairs"]:
-			if not data.get(key, []) is Array:
-				return _refuse("job %d: %s is not a list: %s" % [i, key, data[key]])
-		job.marked_symptoms.assign(data.get("marked_symptoms", []).map(str))
-		job.ticked_repairs.assign(data.get("ticked_repairs", []).map(str))
 		if data.has("parts"):
 			var pieces: Variant = Job.pieces_from(data["parts"])
 			if pieces is String:
 				return _refuse("job %d: %s" % [i, pieces])
 			job.places.clear()
 			for each: Piece in pieces:
+				if not each.part.fits_computer():
+					return _refuse("job %d: a computer has no place for %s" % [i, each.part.id()])
 				if job.places.has(each.part):
 					return _refuse("job %d: two pieces in the place of %s" % [i, each.part.id()])
 				job.places[each.part] = each
@@ -651,6 +695,7 @@ func restore(state: Dictionary) -> String:
 			return _refuse("job %d: the mat: %s" % [i, mat_pieces])
 		job.mat.assign(mat_pieces)
 		job.case_open = bool(data.get("case_open", false))
+		job.lying = job.case_open or bool(data.get("lying", false))
 		if data.has("panel_screws"):
 			var panel: Array = data["panel_screws"]
 			if panel.size() != Job.PANEL_SCREWS:
@@ -658,12 +703,11 @@ func restore(state: Dictionary) -> String:
 			job.panel_screws.assign(panel.map(func(v: Variant) -> bool: return bool(v)))
 		if job.powered and not can_power_on(job):
 			return _refuse("job %d: a computer that is open or misses a part can't be on" % i)
-		if job.post_it_ticked and not job.fixed:
-			return _refuse("job %d: the post-it can be ticked only when the problem is fixed" % i)
 		new_jobs.append(job)
 	var new_focus: Variant = _job_in(new_jobs, int(state.get("focus_slot", -1)), "focus_slot")
 	var new_connected: Variant = _job_in(new_jobs, int(state.get("connected_slot", -1)), "connected_slot")
-	for picked: Variant in [new_focus, new_connected]:
+	var new_calling: Variant = _job_in(new_jobs, int(state.get("calling_slot", -1)), "calling_slot")
+	for picked: Variant in [new_focus, new_connected, new_calling]:
 		if picked is String:
 			return _refuse(picked)
 
@@ -685,14 +729,16 @@ func restore(state: Dictionary) -> String:
 	var new_pickup: Job = null
 	var handed_over: bool = new_visitor_state == VisitorState.WALKING_OUT
 	if new_visit == Visit.PICKUP and not handed_over:
-		var ticked := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.post_it_ticked)
-		if ticked.is_empty():
-			return _refuse("%s picks up, but has no ticked job" % _who(new_visitor))
-		new_pickup = ticked[0]
+		var ready := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.fixed)
+		if ready.is_empty():
+			return _refuse("%s picks up, but has no fixed computer" % _who(new_visitor))
+		new_pickup = ready[0]
 	if new_visit == Visit.DROP_OFF and not handed_over and new_jobs.size() >= MAX_JOBS:
 		return _refuse("%s drops off, but the counter is full" % _who(new_visitor))
-	if new_phase == Phase.CALLING and not new_jobs.any(func(j: Job) -> bool: return j.post_it_ticked):
-		return _refuse("CALLING needs a ticked post-it")
+	if (new_phase == Phase.CALLING) != (new_calling != null):
+		return _refuse("calling_slot is set exactly while the phase is CALLING")
+	if new_calling != null and not new_calling.fixed:
+		return _refuse("CALLING about a computer that isn't fixed")
 
 	var new_flags: Dictionary[StringName, int] = {}
 	var given_flags: Dictionary = state.get("flags", {})
@@ -704,9 +750,21 @@ func restore(state: Dictionary) -> String:
 		return _refuse("the hand: %s" % hand_pieces)
 	if hand_pieces.size() > 1:
 		return _refuse("the hand holds one part, not %d" % hand_pieces.size())
+	var stored_pieces: Variant = Job.pieces_from(state.get("stored", []))
+	if stored_pieces is String:
+		return _refuse("the storage bin: %s" % stored_pieces)
 	var new_seen: Dictionary[String, bool] = {}
 	for key: Variant in state.get("seen", []):
 		new_seen[str(key)] = true
+	var new_records: Array[DbRecord] = []
+	var given_records: Variant = state.get("records", [])
+	if not given_records is Array:
+		return _refuse("records is not a list: %s" % given_records)
+	for data: Variant in given_records:
+		var record: Variant = DbRecord.from(data)
+		if record is String:
+			return _refuse(record)
+		new_records.append(record)
 
 	day = new_day
 	phase = new_phase
@@ -715,18 +773,19 @@ func restore(state: Dictionary) -> String:
 	jobs = new_jobs
 	focus = new_focus
 	connected = new_connected
+	calling = new_calling
 	hand = hand_pieces[0] if not hand_pieces.is_empty() else null
+	stored.assign(stored_pieces)
 	visitor = new_visitor
 	visit = new_visit
 	visitor_state = new_visitor_state
 	_pickup = new_pickup
 	_next_order = jobs.reduce(func(top: int, j: Job) -> int: return maxi(top, j.order + 1), 0)
 	_restart_wait()
-	_call_left = CALL_SECONDS
 	view = StringName(str(state.get("view", view)))
-	laid_down = bool(state.get("laid_down", false))
 	flags = new_flags
 	seen = new_seen
+	records = new_records
 	arrival += 1
 	conversation = null
 	if visitor_state == VisitorState.TALKING:
@@ -737,9 +796,6 @@ func restore(state: Dictionary) -> String:
 
 func _process(delta: float) -> void:
 	if phase == Phase.CALLING:
-		_call_left -= delta
-		if _call_left <= 0.0:
-			_end_call()
 		return
 	if phase == Phase.OPEN and visitor == null and jobs.size() < MAX_JOBS:
 		_waited += delta
@@ -775,22 +831,11 @@ func _try_arrival() -> bool:
 
 
 ## Debug: ends the wait that runs now, so the next event comes at once: the next customer (when
-## the counter has room) or the end of the phone call.
+## the counter has room), or the end of the phone call.
 func skip_wait() -> void:
 	_waited = _wait
-	_call_left = 0.0
-
-
-func _end_call() -> void:
-	phase = Phase.OPEN
-	var ticked := jobs.filter(func(j: Job) -> bool: return j.post_it_ticked)
-	if ticked.is_empty():
-		push_error("Game: the call ended, but no post-it is ticked")
-	else:
-		ticked.sort_custom(func(a: Job, b: Job) -> bool: return a.order < b.order)
-		_pickup = ticked[0]
-		_set_visitor(_pickup.customer, Visit.PICKUP)
-	changed.emit()
+	if phase == Phase.CALLING:
+		hang_up()
 
 
 # The visitor hands the computer over and turns to the door; they stay the visitor until they leave.
@@ -891,4 +936,4 @@ func _refuse(reason: String) -> String:
 
 
 static func _who(customer: Customer) -> String:
-	return "%s (%s)" % [customer.display_name, customer.resource_path]
+	return "%s (%s)" % [customer.spoken_name(), customer.resource_path]

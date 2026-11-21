@@ -13,7 +13,10 @@ var order: int = 0
 var places: Dictionary[Part, Piece] = {}
 ## The pieces that the player took out and put down on the mat beside the computer.
 var mat: Array[Piece] = []
-## The side panel is off and the computer lies open in the Workview.
+## The computer lies on its side, the side panel up, in every view: the player laid it down in the
+## Workview and hasn't stood it up again. Always true while [member case_open].
+var lying: bool = false
+## The side panel is off. The computer lies open.
 var case_open: bool = false
 ## How many screws hold the side panel.
 const PANEL_SCREWS: int = 2
@@ -39,12 +42,6 @@ var software_fixed: bool = false
 var powered: bool = false
 ## Game.setup_for has broken the computer's running copy as the problem says.
 var broken: bool = false
-## The player ticked Done on the post-it. Only true when [member fixed] is.
-var post_it_ticked: bool = false
-## The symptoms that the player marked in CompuFunDB, as Problem.symptoms spells them.
-var marked_symptoms: Array[String] = []
-## The repair steps that the player ticked in CompuFunDB, as the Problem spells them.
-var ticked_repairs: Array[String] = []
 
 ## The customer's problem.
 var problem: Problem:
@@ -102,9 +99,7 @@ func snapshot() -> Dictionary:
 		"hardware_fixed": hardware_fixed,
 		"software_fixed": software_fixed,
 		"powered": powered,
-		"post_it_ticked": post_it_ticked,
-		"marked_symptoms": marked_symptoms.duplicate(),
-		"ticked_repairs": ticked_repairs.duplicate(),
+		"lying": lying,
 		"case_open": case_open,
 		"panel_screws": panel_screws.duplicate(),
 		"parts": Job.pieces_data(places.values()),
@@ -126,8 +121,9 @@ static func pieces_from(data: Array) -> Variant:
 	for entry: Variant in data:
 		var text := str(entry)
 		var part_id := StringName(text.trim_suffix("!"))
-		if part_id not in Part.IDS:
+		var part := Part.named(part_id)
+		if part == null:
 			return "no part '%s'" % part_id
-		pieces.append(Piece.new(load("res://parts/%s.tres" % part_id), text.ends_with("!")))
+		pieces.append(Piece.new(part, text.ends_with("!")))
 	return pieces
 

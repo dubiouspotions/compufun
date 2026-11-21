@@ -8,6 +8,10 @@ signal answered(button: String)
 
 @export var error_icon: Texture2D
 @export var warning_icon: Texture2D
+## Plays when show_message() shows; null plays nothing.
+@export var error_sound: AudioStream
+## Plays when ask() asks; null plays nothing.
+@export var question_sound: AudioStream
 
 var _buttons: Array[String] = []
 var _answered := false
@@ -24,12 +28,14 @@ func _ready() -> void:
 ## Shows [param text] under the title [param title], with the error icon and OK.
 func show_message(title: String, text: String) -> void:
 	_show(title, text, error_icon, ["OK"])
+	_play(error_sound)
 
 
 ## Asks [param text] under the title [param title], with the warning icon and [param buttons]; the
 ## first is the default. Listen to [signal answered].
 func ask(title: String, text: String, buttons: Array[String] = ["Yes", "No", "Cancel"]) -> void:
 	_show(title, text, warning_icon, buttons)
+	_play(question_sound)
 
 
 func _show(title: String, text: String, icon: Texture2D, buttons: Array[String]) -> void:
@@ -54,3 +60,13 @@ func _answer(button: String) -> void:
 	_answered = true
 	answered.emit(button)
 	close()
+
+
+# On the desktop, not the box, so that closing the box doesn't cut the sound off.
+func _play(sound: AudioStream) -> void:
+	if sound == null:
+		return
+	if get_parent() == null:
+		push_error("Message box '%s': not on a desktop, so its sound doesn't play" % %TitleBar.title)
+		return
+	Win95Desktop.play_sound(sound, get_parent())

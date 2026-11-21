@@ -24,10 +24,10 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Hotspot**: A thing in a room that the player clicks (`rooms/hotspot.tscn`).
 *Avoid:* button, clickable, interactable.
 
-**Post-it**: The repair ticket on a computer on the counter: the perceived issue and the Done box. Each computer wears one (`props/post_it_3d.tscn`), with a green check once Done is ticked. It sits on the front of the case, below the power button, standing or lying. In the Workview, `ui/post_it_label.tscn` writes its text in sharp UI text over the paper. The UI post-it (`ui/post_it.tscn`) shows the job in focus and has the Done box.
+**Post-it**: The repair ticket on a computer on the counter: the perceived issue, and a green check once the computer is fixed. Each computer wears one (`props/post_it_3d.tscn`). It sits on the front of the case, below the power button, standing or lying. In the Workview, `ui/post_it_label.tscn` writes its text in sharp UI text over the paper.
 *Avoid:* ticket, note.
 
-**CompuFunDB**: The database on the work computer. For each computer on the counter it shows what the customer reported, what to check for that report, and what to fix once the checks are marked. It reads every `Problem` file.
+**CompuFunDB**: The database on the work computer. The player adds a record per customer and types what they like into it, marks what is wrong among every symptom, and gets what to fix. It reads every `Problem` file; `Game` holds the records.
 *Avoid:* Company Database, BBS, database.
 
 **Screen buffer**: The 640 x 480 viewport that runs the Win95 desktop. The 3D monitor shows it, and the Screen View shows it at 2x.
@@ -38,6 +38,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 **Running copy**: The `Win95Setup` that a computer runs, copied from its Win95 setup at the first boot and kept by `Game` for the whole game. The player's changes and the problems' breaks land here.
 *Avoid:* live setup, save state.
+
+**Folder view**: How a Win95 folder window lays out its icons: Large Icons, Small Icons, List or Details, as its View menu names them (`IconView.folder_view`). Each window has its own; a folder opens in the folder view of the window that opened it.
+*Avoid:* view (a point of view in a room), view mode, display mode.
 
 **Report**: One F9 feedback report: a folder in `feedback/` with `shot.png` and `report.json`.
 *Avoid:* ticket, bug report, feedback file.
@@ -60,7 +63,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Sticker**: A small picture on the front or a side of a customer's computer case (a `Sticker` in `Computer.stickers`), shown with the poster prop. A computer has any number of stickers, or none. The case material (`Computer.case_material`) and the stickers tell the computers on the counter apart.
 *Avoid:* decal, label, badge.
 
-**Week calendar**: The calendar on the pin board in the Right view (`props/week_calendar.tscn`): one cell per day of the game with its weekday and date, Saturday and Sunday in red, and a check mark on each day that has passed. A day has passed when the shop closes for its night.
+**Week calendar**: The paper wall calendar on the pin board in the Right view (`props/week_calendar.tscn`): the month and year, then one column per day of the game with its weekday and date, Saturday and Sunday in red. Each day that has passed is crossed out; a day has passed when the shop closes for its night.
 *Avoid:* calendar prop, day counter.
 
 **Job**: One customer's computer on the counter, with its slot, its repair state and its post-it (`Job`, in `Game.jobs`). It stays from the drop-off to the pickup, overnight too.
@@ -75,17 +78,29 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Place**: Where a part sits inside a computer. A job holds one piece per place, or none when the player took it out (`Job.places`).
 *Avoid:* slot (that is a job's place on the counter).
 
-**Side panel**: The panel that the player lifts off a computer to reach its parts, held by two screws (`Job.case_open`, `Job.panel_screws`). In the Workview the computer stands until the player clicks its top; then it lies on its side, the side panel up (`Game.lay_down`).
+**Side panel**: The panel that the player lifts off a computer to reach its parts, held by two screws (`Job.case_open`, `Job.panel_screws`). In the Workview the computer stands until the player clicks its top; then it lies on its side, the side panel up (`Job.lying`), in every view until the player stands it up with the panel on. Taken off, the panel leans against the back of the case until a click puts it back on.
 *Avoid:* lid, cover, shell.
 
 **Mat**: The strip in front of an open computer where the player lays the pieces that they took out (`Job.mat`).
 *Avoid:* tray, bench.
 
-**Hand**: The one piece that the player holds (`Game.hand`). Its model shows low in the view, held in front of the camera, with its name (`rooms/shop/hand.tscn`).
+**Hand**: The one piece that the player holds (`Game.hand`). Its model shows low in the view, held in front of the camera, with its name (`rooms/shop/hand.tscn`). The player puts it somewhere by clicking there or by dragging it there.
 *Avoid:* inventory, cursor item.
 
 **Storage View**: The close-up of the parts desk in the storage room, with one box of new parts per part. The storage door in the Left View leads there.
 *Avoid:* shelf view, parts screen.
+
+**Storage bin**: The blue bin on the wall of the storage room where the player puts parts away and takes them back (`Game.stored`, `rooms/shop/storage_bin.tscn`).
+*Avoid:* lost and found, shelf, drawer.
+
+**Computer mouse**: The part that the ceiling mouse drops (`parts/mouse.tres`). No computer has a place for it. Always say *computer mouse* for the part, so it never means the animal.
+*Avoid:* mouse (alone), peripheral.
+
+**Ceiling mouse**: The easter egg: the animal in the hole above the player that squeaks and drops the computer mouse, once in the whole game (`CeilingMouse`, the flag `ceiling_mouse`).
+*Avoid:* rat, the mouse (alone).
+
+**Up View**: The view straight up at the ceiling, from the Main View with Up, W or the up button.
+*Avoid:* ceiling view, look-up view.
 
 **Bench screen**: The CRT at the left end of the counter, with its keyboard (`rooms/shop/bench.tscn`). It shows the screen buffer: the desktop of the computer that the VGA cable is connected to, or NO SIGNAL.
 *Avoid:* bench monitor, bench computer.
@@ -132,5 +147,31 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Conversation**: One exchange with a customer: the lines they say, one at a time. A `Conversation` resource in the `Customer` file; `Game` plays the first one whose trigger and condition match.
 *Avoid:* dialog, dialogue tree, script.
 
+**Name**: A person's name, for use on that person's computer (`Person.name`). Dialogue does not show it.
+*Avoid:* full name, real name, legal name.
+
+**Nickname**: What the dialogue calls a person (`Person.nickname`). While it is empty, dialogue uses the customer's display name.
+*Avoid:* alias, handle, screen name.
+
+**Email**: A person's address, for use on that person's computer (`Person.email`). Dialogue does not show it.
+*Avoid:* mail, address, account.
+
 **Dialogue tab**: The editor tab (`addons/dialogue_editor/`) that lists every customer and edits their conversations.
 *Avoid:* admin UI, dialogue tool, dialogue editor.
+
+## Win95
+
+**Control Panel**: The Win95 folder that lists the applets of every `.CPL` file in `C:\WINDOWS\SYSTEM` of the running copy; Fonts and Printers are applets of MAIN.CPL too. It opens from My Computer and from Start > Settings.
+*Avoid:* settings, control center.
+
+**Applet**: One icon in the Control Panel, such as Display or Mouse (`Applet` resource): its name, description, icon and property sheet. A `.CPL` file holds one or more applets in `Win95File.applets`; renaming or moving the file hides them.
+*Avoid:* control panel item, CPL (that is the file).
+
+**Property sheet**: A Win95 dialog with tabs and OK, Cancel and Apply (`win95/property_sheet.tscn`). Its pages edit pending values; Apply and OK commit them to the running copy through `ComputerState`.
+*Avoid:* properties dialog, settings window.
+
+**Colour scheme**: One of Win95's Appearance schemes, such as Rose or Windows Standard: a `Win95Palette` in `win95/theme/schemes/`. The running copy's `palette` is the scheme that the computer shows.
+*Avoid:* theme, palette (that is the resource type).
+
+**Pointer trails**: The ghost pointers that follow the mouse on a computer whose Mouse settings turn them on (`Win95Setup.pointer_trails`, drawn by `win95/pointer_trails.gd`).
+*Avoid:* mouse trails, cursor trail.

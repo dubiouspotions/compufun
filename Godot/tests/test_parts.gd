@@ -16,7 +16,7 @@ func run() -> void:
 	check("five parts, in order", Part.every().map(func(p: Part) -> StringName: return p.id()), Part.IDS)
 
 	# Pierre brings Dust Overheat; a customer from a file can be restored.
-	var pierre: Customer = load("res://customers/pierre.tres")
+	var pierre: Customer = load("res://customers/skater_bro.tres")
 	check("Pierre has Dust Overheat", pierre.problem, dust)
 	game.start_day(make_day(1, [pierre]))
 	game.customer_arrived()
@@ -27,15 +27,18 @@ func run() -> void:
 	check("not fixed yet", job.hardware_fixed, false)
 	check("the side panel's screws in", job.panel_screws, [true, true])
 
-	# The Workview shows the computer standing until the player lays it down; leaving stands it up.
+	# The computer stands until the player lays it down in the Workview, and lies until stood up.
 	game.focus_job(job)
 	check("outside the Workview it doesn't lie down", game.lay_down(job), false)
 	game.go_to_view(&"Workview")
-	check("in the Workview it stands", game.lies(job), false)
-	check("a click on the case lays it down", [game.lay_down(job), game.lies(job)], [true, true])
+	check("in the Workview it stands", job.lying, false)
+	check("standing: the case doesn't open", game.open_case(job, true), false)
+	check("a click on the case lays it down", [game.lay_down(job), job.lying], [true, true])
 	check("it lies already", game.lay_down(job), false)
+	check("it stands up", [game.stand_up(job), job.lying], [true, false])
+	game.lay_down(job)
 	game.go_to_view(&"Main")
-	check("leaving the Workview stands it up", [game.lies(job), game.laid_down], [false, false])
+	check("leaving the Workview, it stays down", job.lying, true)
 
 	# The case: closed parts can't move, and a computer that is on doesn't open.
 	check("closed: the fan can't come out", game.take_part(job, fan), false)
@@ -45,6 +48,7 @@ func run() -> void:
 	check("screwed: the panel stays on", game.open_case(job, true), false)
 	check("the panel's screws come out", [game.turn_screw(job, 0), game.turn_screw(job, 1), job.panel_screws], [true, true, [false, false]])
 	check("off and unscrewed: the case opens", [game.open_case(job, true), job.case_open], [true, true])
+	check("open: it doesn't stand up", [game.stand_up(job), job.lying], [false, true])
 	check("no panel, no panel screws", game.turn_screw(job, 0), false)
 	game.set_powered(job, true)
 	check("open: no power", job.powered, false)
@@ -98,6 +102,7 @@ func run() -> void:
 	check("the snapshot names the pieces", [saved["jobs"][0]["parts"].size(), saved["jobs"][0]["mat"], saved["hand"]], [4, ["fan"], ["gpu"]])
 	game.trash_part()
 	check("restore", game.restore(saved), "")
+	check("a restore keeps it lying", game.jobs[0].lying, true)
 	var back: Job = game.jobs[0]
 	check("restored", [back.case_open, back.piece(fan), back.mat.size(), game.hand.part], [true, null, 1, gpu])
 	check("the panel's screws restored", back.panel_screws, [false, false])

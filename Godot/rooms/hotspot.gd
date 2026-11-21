@@ -6,7 +6,10 @@ extends Area3D
 ## The player clicked the hotspot with the left mouse button.
 signal clicked(hotspot: Hotspot)
 
-enum Action { GO_TO_VIEW, CALL_CUSTOMER, CLOSE_SHOP, TAKE_PART, TRASH_PART }
+enum Action { GO_TO_VIEW, CALL_CUSTOMER, CLOSE_SHOP, TAKE_PART }
+
+## The group of the hotspots that take a drop (see [member takes_drop]).
+const DROP_TARGETS: StringName = &"hotspot_drop_targets"
 
 @export var action: Action = Action.GO_TO_VIEW
 ## For GO_TO_VIEW: the name of the view marker to go to.
@@ -15,6 +18,9 @@ enum Action { GO_TO_VIEW, CALL_CUSTOMER, CLOSE_SHOP, TAKE_PART, TRASH_PART }
 @export var part: Part
 ## The size of the clickable box, in metres. It applies when the game runs.
 @export var size: Vector3 = Vector3(0.5, 0.5, 0.5)
+## The player can drag the part in the hand here: dropping it acts as a click (see Hand). Set before
+## the hotspot enters the tree.
+@export var takes_drop: bool = false
 
 @onready var _shape: CollisionShape3D = %Shape
 
@@ -23,6 +29,8 @@ func _ready() -> void:
 	var box := BoxShape3D.new()
 	box.size = size
 	_shape.shape = box
+	if takes_drop:
+		add_to_group(DROP_TARGETS)
 	input_event.connect(_on_input_event)
 	mouse_entered.connect(func() -> void: Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND))
 	mouse_exited.connect(func() -> void: Input.set_default_cursor_shape(Input.CURSOR_ARROW))

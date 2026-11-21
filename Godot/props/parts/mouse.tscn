@@ -1,0 +1,56 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="1_beige"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="2_dark"]
+[ext_resource type="Material" path="res://materials/rubber.tres" id="3_rubber"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_base"]
+size = Vector3(0.058, 0.016, 0.098)
+
+[sub_resource type="SphereMesh" id="SphereMesh_dome"]
+radius = 0.029
+height = 0.034
+radial_segments = 10
+rings = 4
+is_hemisphere = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_split"]
+size = Vector3(0.002, 0.03, 0.036)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cable"]
+size = Vector3(0.005, 0.005, 0.05)
+
+[node name="Mouse" type="Node3D"]
+
+[node name="Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008, 0)
+material_override = ExtResource("1_beige")
+mesh = SubResource("BoxMesh_base")
+
+[node name="Dome" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.65, 0, 0.016, 0)
+material_override = ExtResource("1_beige")
+mesh = SubResource("SphereMesh_dome")
+
+[node name="ButtonSplit" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.017, -0.031)
+material_override = ExtResource("2_dark")
+mesh = SubResource("BoxMesh_split")
+
+[node name="Cable" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.006, -0.049)
+
+[node name="Segment0" type="MeshInstance3D" parent="Cable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.025)
+material_override = ExtResource("3_rubber")
+mesh = SubResource("BoxMesh_cable")
+
+[node name="Segment1" type="MeshInstance3D" parent="Cable"]
+transform = Transform3D(0.76604444, 0, -0.6427876, 0, 1, 0, 0.6427876, 0, 0.76604444, -0.016, 0, -0.069)
+material_override = ExtResource("3_rubber")
+mesh = SubResource("BoxMesh_cable")
+
+[node name="Segment2" type="MeshInstance3D" parent="Cable"]
+transform = Transform3D(-0.17364818, 0, -0.9848077, 0, 1, 0, 0.9848077, 0, -0.17364818, -0.052, 0, -0.085)
+material_override = ExtResource("3_rubber")
+mesh = SubResource("BoxMesh_cable")

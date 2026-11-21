@@ -22,6 +22,9 @@ extends Resource
 ## The date that Properties shows as Modified, as Win95 writes it: "Tuesday, March 12, 1996 4:05:12 PM".
 ## Empty hides it.
 @export var modified: String = ""
+## For a .CPL file in C:\WINDOWS\SYSTEM: the Control Panel icons that it holds. Win95 lists them only
+## while the name ends in .CPL.
+@export var applets: Array[Applet] = []
 ## The files in this folder (Win95File only). Empty for a file.
 @export_custom(PROPERTY_HINT_TYPE_STRING, "24/17:Win95File") var children: Array[Resource] = []  # Array[Win95File] here leaks: the script would reference itself
 

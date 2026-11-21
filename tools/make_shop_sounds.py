@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes the shop's door bell and phone sounds as 22050 Hz mono WAVs.
+"""Synthesizes the shop's door bell, phone and keystroke sounds as 22050 Hz mono WAVs.
 Usage: make_shop_sounds.py Godot/sounds"""
 import math
 import random
@@ -83,6 +83,18 @@ def phone_receiver():
     return out
 
 
+def keystroke(seed):
+    """A 90s office keyboard key: the plastic click of the switch, then the key bottoming out."""
+    random.seed(seed)
+    out = silence(0.09)
+    mix(out, highpass(noise(0.012, 0.002), 2500), 0.0, 0.8)
+    thump_freq = random.uniform(180, 260)
+    thump = [math.sin(2 * math.pi * thump_freq * i / RATE) * math.exp(-i / RATE / 0.012) for i in range(int(0.06 * RATE))]
+    mix(out, thump, 0.008, 0.6)
+    mix(out, lowpass(highpass(noise(0.03, 0.006), 700), 5000), 0.008, 0.5)
+    return out
+
+
 def write(path, samples):
     peak = max(abs(s) for s in samples)
     gain = 0.7 / peak
@@ -101,3 +113,5 @@ def write(path, samples):
 
 write(sys.argv[1] + "/door_bell.wav", door_bell())
 write(sys.argv[1] + "/phone_receiver.wav", phone_receiver())
+for take in range(1, 5):
+    write(sys.argv[1] + "/keystroke_%d.wav" % take, keystroke(take))

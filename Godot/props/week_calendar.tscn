@@ -4,7 +4,7 @@
 [ext_resource type="Material" path="res://materials/paper.tres" id="2_paper"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_paper"]
-size = Vector2(1, 0.34)
+size = Vector2(0.74, 0.62)
 
 [node name="WeekCalendar" type="Node3D"]
 script = ExtResource("1_script")

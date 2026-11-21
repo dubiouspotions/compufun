@@ -13,6 +13,6 @@ script = ExtResource("problem")
 short_name = &"defrag"
 perceived_issue = "Mouse glitches"
 location = 1
-symptoms = PackedStringArray("Windows boots slower", "Mouse skips when moved", "Folder opening is slow (2 sec delay)")
+symptoms = PackedStringArray("Slow to boot", "Mouse pointer jumps", "Folders open slowly")
 software_steps = PackedStringArray("Go to settings", "Start defrag", "Wait one day", "OK defrag result")
 software_check = SubResource("SettingCheck_fragmented")

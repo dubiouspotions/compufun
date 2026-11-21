@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Win95Palette" format=3]
+
+[ext_resource type="Script" path="res://win95/theme/win95palette.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+resource_name = "Plum (high color)"
+face_color = Color(0.6588235, 0.5960784, 0.5647059, 1)
+window_color = Color(0.8470588, 0.8156863, 0.7843137, 1)
+highlight_color = Color(0.8470588, 0.8156863, 0.7843137, 1)
+light_color = Color(0.6588235, 0.5960784, 0.5647059, 1)
+shadow_color = Color(0.4705882, 0.3764706, 0.345098, 1)

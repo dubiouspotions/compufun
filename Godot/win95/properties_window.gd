@@ -32,9 +32,8 @@ func show_file(file: Win95File, location: String) -> void:
 	%Name.text = file.name
 	%Type.text = type_name(file)
 	%Location.text = location
-	var sized := not file.is_folder and file.program == null
-	%SizeLabel.visible = sized
-	%Size.visible = sized
+	%SizeLabel.visible = has_size(file)
+	%Size.visible = has_size(file)
 	%Size.text = size_text(file.size_in_bytes())
 	%Dates.visible = file.modified != ""
 	%Modified.text = file.modified
@@ -46,6 +45,12 @@ func show_file(file: Win95File, location: String) -> void:
 			if child.is_folder:
 				folders += 1
 		%Contains.text = "%d Files, %d Folders" % [file.children.size() - folders, folders]
+
+
+## Whether Win95 shows a size for [param file]: not for folders, nor for program files, whose
+## size_in_bytes() is not their size.
+static func has_size(file: Win95File) -> bool:
+	return not file.is_folder and file.program == null
 
 
 ## [param bytes] as Win95 writes a size: "426 bytes", "1.23KB (1,262 bytes)".

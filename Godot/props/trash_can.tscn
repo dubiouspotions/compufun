@@ -1,7 +1,9 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://props/trash_can.gd" id="0_script"]
 [ext_resource type="Material" path="res://materials/metal.tres" id="1_metal"]
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="2_dark"]
+[ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="3_hotspot"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_outer"]
 top_radius = 0.14
@@ -20,7 +22,21 @@ radial_segments = 12
 rings = 1
 cap_top = false
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_outline"]
+top_radius = 0.16
+bottom_radius = 0.14
+height = 0.37
+radial_segments = 12
+rings = 1
+cap_top = false
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_outline"]
+cull_mode = 1
+shading_mode = 0
+albedo_color = Color(0.75, 0.9, 1, 1)
+
 [node name="TrashCan" type="Node3D"]
+script = ExtResource("0_script")
 
 [node name="Outer" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.17, 0)
@@ -31,3 +47,17 @@ mesh = SubResource("CylinderMesh_outer")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.175, 0)
 material_override = ExtResource("2_dark")
 mesh = SubResource("CylinderMesh_inner")
+
+[node name="Outline" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.175, 0)
+cast_shadow = 0
+material_override = SubResource("StandardMaterial3D_outline")
+mesh = SubResource("CylinderMesh_outline")
+
+[node name="Hotspot" parent="." instance=ExtResource("3_hotspot")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 0)
+size = Vector3(0.3, 0.36, 0.3)
+takes_drop = true

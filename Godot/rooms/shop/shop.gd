@@ -8,6 +8,8 @@ signal view_requested(view: StringName)
 signal close_requested
 ## The end has played in the room: time for the bluescreen.
 signal crashed
+## The player picked up the phone, to call a customer.
+signal phone_requested
 ## The player pressed the Degauss button of the bench screen.
 signal degauss_requested
 
@@ -34,6 +36,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
 @onready var _the_end: TheEnd = %TheEnd
 @onready var _hand: Hand = %Hand
+@onready var _trash_can: TrashCan = %TrashCan
 
 ## Plays when a part comes into the player's hand, and when it leaves it (put in, on the mat, away).
 @export var part_take_sound: SoundSet = preload("res://sounds/part_take.tres")
@@ -67,6 +70,7 @@ func _ready() -> void:
 	_the_end.view_requested.connect(view_requested.emit)
 	_the_end.crashed.connect(crashed.emit)
 	_bench.degauss_pressed.connect(degauss_requested.emit)
+	_trash_can.trash_requested.connect(Game.trash_part)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -226,7 +230,7 @@ func _move_camera(view_name: StringName) -> void:
 ## Moves the Workview marker to the eye of the computer in focus, standing or lying. True when it
 ## moved.
 func _follow_focus() -> bool:
-	var lying := Game.lies(Game.focus)
+	var lying := Game.focus != null and Game.focus.lying
 	if Game.focus == _workview_job and lying == _workview_lying:
 		return false
 	_workview_job = Game.focus
@@ -242,13 +246,15 @@ func _follow_focus() -> bool:
 
 func _walk_in() -> void:
 	_walk_in_arrival = Game.arrival
-	_door_bell.play()
 	if _walk_tween != null:
 		_walk_tween.kill()
 	_body.rotation.y = 0.0
 	_follow.progress_ratio = 0.0
+	var door := _door_ratio()
 	_walk_tween = create_tween()
-	_walk_tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds)
+	_walk_tween.tween_property(_follow, "progress_ratio", door, walk_seconds * door)
+	_walk_tween.tween_callback(_door_bell.play)
+	_walk_tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds * (1.0 - door))
 	_walk_tween.finished.connect(Game.customer_arrived)
 
 
@@ -269,8 +275,17 @@ func _walk_out() -> void:
 	_follow.progress_ratio = 1.0
 	_walk_tween = create_tween()
 	_walk_tween.tween_property(_body, "rotation:y", PI, about_face_seconds)
-	_walk_tween.tween_property(_follow, "progress_ratio", 0.0, walk_seconds)
+	var door := _door_ratio()
+	_walk_tween.tween_property(_follow, "progress_ratio", door, walk_seconds * (1.0 - door))
+	_walk_tween.tween_callback(_door_bell.play)
+	_walk_tween.tween_property(_follow, "progress_ratio", 0.0, walk_seconds * door)
 	_walk_tween.finished.connect(Game.customer_left)
+
+
+## The progress ratio of the customer path where it passes under the door bell.
+func _door_ratio() -> float:
+	var path := _follow.get_parent() as Path3D
+	return path.curve.get_closest_offset(path.to_local(_door_bell.global_position)) / path.curve.get_baked_length()
 
 
 func _on_hotspot_clicked(hotspot: Hotspot) -> void:
@@ -278,7 +293,7 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 		Hotspot.Action.GO_TO_VIEW:
 			view_requested.emit(hotspot.view)
 		Hotspot.Action.CALL_CUSTOMER:
-			Game.call_customer()
+			phone_requested.emit()
 		Hotspot.Action.CLOSE_SHOP:
 			if Game.can_close():
 				close_requested.emit()
@@ -286,8 +301,6 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 				_open_sign.wobble()
 		Hotspot.Action.TAKE_PART:
 			Game.take_new_part(hotspot.part)
-		Hotspot.Action.TRASH_PART:
-			Game.trash_part()
 
 
 # Plays the sound of each hand and cable change since the last sync, whatever made it.

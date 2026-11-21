@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Applet" format=3]
+
+[ext_resource type="Script" path="res://win95/applets/applet.gd" id="script"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/network_control_panel_32.png" id="icon"]
+
+[resource]
+script = ExtResource("script")
+name = "Network"
+description = "Configures network hardware and software."
+icon = ExtResource("icon")

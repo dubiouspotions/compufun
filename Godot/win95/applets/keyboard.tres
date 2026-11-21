@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Applet" format=3]
+
+[ext_resource type="Script" path="res://win95/applets/applet.gd" id="script"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/keyboard_32.png" id="icon"]
+
+[resource]
+script = ExtResource("script")
+name = "Keyboard"
+description = "Changes settings for your keyboard."
+icon = ExtResource("icon")
