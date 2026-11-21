@@ -6,6 +6,7 @@
 use std::collections::VecDeque;
 
 use chimera::anatomy::human::{BODY_CHILD, BODY_FEMALE, BODY_MALE, BodyMix, BodyName, HumanBody};
+use chimera::control::score::{ControlKey, Gesture};
 use chimera::phonetics::Intonation;
 use chimera::phonetics::english::EnglishG2P;
 use chimera::phonetics::planner::{PhraseInput, PlanOptions, plan_phrases};
@@ -70,6 +71,7 @@ impl Speaker {
         let mut mix = BodyMix::from(name);
         let (mut f0, mut rate, mut pitch, mut accent, mut render_fs) = (f0, rate, pitch, accent, fs);
         let mut intonation = None;
+        let mut tuned = 0.0;
         self.queue.clear();
         self.fx = None;
         if let Some(t) = self.voice_type.as_ref() {
@@ -101,6 +103,7 @@ impl Speaker {
                 3 => Some(Intonation::Flat),
                 _ => None,
             };
+            tuned = t.get("tune", avg).clamp(0.0, 1.0);
             self.lines_said += 1;
             let seed = text.bytes().fold(0xcbf29ce484222325u64 ^ self.lines_said, |h, c| (h ^ c as u64).wrapping_mul(0x100000001b3));
             self.fx = Some(Fx::new(fs, seed));
@@ -111,7 +114,7 @@ impl Speaker {
             .iter()
             .map(|p| PhraseInput { segments: p.segments.clone(), intonation: Some(intonation.unwrap_or(p.intonation)), pause: Some(p.pause) })
             .collect();
-        let plan = plan_phrases(
+        let mut plan = plan_phrases(
             &inputs,
             &PlanOptions {
                 body: mix,
@@ -122,6 +125,9 @@ impl Speaker {
                 ..Default::default()
             },
         );
+        if tuned > 0.0 {
+            tune(&mut plan.gestures, f0, tuned);
+        }
         let mut voice = HumanVoice::new(render_fs, b, 2);
         voice.set_source(&self.source_at(0.0, f0));
         voice.schedule(&plan.gestures);
@@ -234,6 +240,29 @@ impl Speaker {
             reverb: g("reverb"),
             hold: g("hold"),
             bits: g("bits"),
+        }
+    }
+}
+
+/// Pulls the pitch of every planned gesture toward the nearest note of a major pentatonic scale on
+/// the line's own pitch `root` (Hz), by `amount` from 0 (speech) to 1 (on the notes), and shortens
+/// the glide between pitch targets, so the line sounds sung.
+fn tune(gestures: &mut [Gesture], root: f64, amount: f64) {
+    const NOTES: [f64; 6] = [0.0, 2.0, 4.0, 7.0, 9.0, 12.0];
+    for g in gestures.iter_mut() {
+        let Some(f) = g.targets.get(ControlKey::F0) else { continue };
+        if f <= 0.0 || root <= 0.0 {
+            continue;
+        }
+        let semitones = 12.0 * (f / root).log2();
+        let octave = (semitones / 12.0).floor() * 12.0;
+        let within = semitones - octave;
+        let note = NOTES.iter().copied().min_by(|a, b| (a - within).abs().total_cmp(&(b - within).abs())).unwrap_or(0.0);
+        let snapped = root * 2f64.powf((octave + note) / 12.0);
+        g.targets.set(ControlKey::F0, f + (snapped - f) * amount);
+        if g.targets.iter().count() == 1 {
+            g.ramp_in *= 1.0 - 0.8 * amount;
+            g.ramp_out *= 1.0 - 0.8 * amount;
         }
     }
 }

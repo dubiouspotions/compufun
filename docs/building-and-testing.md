@@ -117,8 +117,8 @@ and a `VoiceEffect` (`voices/effects/`) of the line or its conversation. Make al
 Voice Lab (Dev menu, F3 or Cmd+3); pick persons and effects in the Dialogue tab. An effect has a
 base, an alternate and a curve over the line that says how much of the alternate plays at each
 moment. The live voice blends the two as it speaks, with the same Rust code on desktop and in the browser
-(`native/chimera_voice/src/voice_type.rs` and `fx.rs`): speed, pitch, melody, body and intonation
-take the curve's average once per line; the voice source and the effects follow the curve. A
+(`native/chimera_voice/src/voice_type.rs` and `fx.rs`): speed, pitch, melody, body, intonation and
+tune (how far the pitch snaps to notes) take the curve's average once per line; the voice source and the effects follow the curve. A
 pre-rendered WAV has only the person's body and the mood's speed, pitch and swing, so the rest of
 the layers plays only where the live voice is built.
 

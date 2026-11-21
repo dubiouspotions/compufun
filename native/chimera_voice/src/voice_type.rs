@@ -7,10 +7,11 @@
 
 /// Every setting a voice type can hold, with the value that changes nothing.
 pub const NEUTRAL: &[(&str, f64)] = &[
-    // Planned once per line, from the curve's average: speed, pitch, melody, body and intonation.
+    // Planned once per line, from the curve's average: speed, pitch, melody, body, intonation and
+    // tune (how far the pitch snaps to notes).
     ("rate", 1.0), ("pitch", 1.0), ("accent", -1.0), ("fs", 22050.0),
     ("female", -1.0), ("child", -1.0), ("scale", 1.0), ("pharynx", 1.0), ("tongue", 1.0), ("lips", 1.0),
-    ("folds", 1.0), ("open_phase", 0.0), ("intonation", 0.0),
+    ("folds", 1.0), ("open_phase", 0.0), ("intonation", 0.0), ("tune", 0.0),
     // The voice source: blended live along the curve as the line plays. Chimera's defaults.
     ("glide", 0.06), ("pressure", 7.2), ("breathiness", 0.15), ("tension", 0.5), ("fry", 0.0),
     ("roughness", 0.1), ("vibrato_depth", 0.0), ("vibrato_rate", 6.0), ("drift", 5.0),

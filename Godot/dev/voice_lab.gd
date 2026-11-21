@@ -37,7 +37,7 @@ const CURVES: Array = [
 ]
 ## The levers each side shows; the rest are under "All levers".
 ## Effects only: the person and the mood own the human voice.
-const COMMON: PackedStringArray = ["ring_mix", "metal_ms", "bits", "hold", "stutter", "dropout", "static", "wobble", "distortion", "chorus", "delay", "reverb"]
+const COMMON: PackedStringArray = ["tune", "ring_mix", "metal_ms", "bits", "hold", "stutter", "dropout", "static", "wobble", "distortion", "chorus", "reverb"]
 ## The lever group that belongs to persons and moods, left out of an effect's levers.
 const HUMAN_GROUP: String = "Human voice"
 
@@ -46,6 +46,7 @@ const HUMAN_GROUP: String = "Human voice"
 const GROUPS: Array = [
 	["Robotic", "Flatten the human out of it", [
 		["accent", "Melody", 0.0, 1.5, 0.01, 0.14],
+		["tune", "Tune", 0.0, 1.0, 0.01, 0.0],
 		["drift", "Wander", 0.0, 400.0, 1.0, 5.0],
 		["glide", "Glide", 0.0, 1.0, 0.005, 0.06],
 		["vibrato_depth", "Warble", 0.0, 2.0, 0.01, 0.0],
