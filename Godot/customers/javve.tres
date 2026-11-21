@@ -14,6 +14,11 @@
 [ext_resource type="Script" path="res://win95/email.gd" id="7_pq1pi"]
 [ext_resource type="Script" path="res://win95/win95_setup.gd" id="9_86j8n"]
 [ext_resource type="Texture2D" path="res://win95/wallpapers/red_blocks.png" id="wallpaper"]
+[ext_resource type="PackedScene" path="res://win95/notepad.tscn" id="app_notepad"]
+[ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="app_wordpad"]
+[ext_resource type="PackedScene" path="res://win95/paint.tscn" id="app_paint"]
+[ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="app_calculator"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/application_32.png" id="application_icon"]
 
 [sub_resource type="Resource" id="DialogueLine_1"]
 script = ExtResource("dl")
@@ -55,12 +60,36 @@ script = ExtResource("2_egn44")
 name = "SYSTEM.INI"
 icon = ExtResource("6_m26x5")
 
+[sub_resource type="Resource" id="Program_notepad"]
+script = ExtResource("2_egn44")
+name = "NOTEPAD.EXE"
+icon = ExtResource("application_icon")
+program = ExtResource("app_notepad")
+
+[sub_resource type="Resource" id="Program_wordpad"]
+script = ExtResource("2_egn44")
+name = "WORDPAD.EXE"
+icon = ExtResource("application_icon")
+program = ExtResource("app_wordpad")
+
+[sub_resource type="Resource" id="Program_paint"]
+script = ExtResource("2_egn44")
+name = "PBRUSH.EXE"
+icon = ExtResource("application_icon")
+program = ExtResource("app_paint")
+
+[sub_resource type="Resource" id="Program_calculator"]
+script = ExtResource("2_egn44")
+name = "CALC.EXE"
+icon = ExtResource("application_icon")
+program = ExtResource("app_calculator")
+
 [sub_resource type="Resource" id="Resource_46tg0"]
 script = ExtResource("2_egn44")
 name = "Windows"
 icon = ExtResource("5_lymrw")
 is_folder = true
-children = Array[Resource]([SubResource("Resource_r3t4y"), SubResource("Resource_4fbej"), SubResource("Resource_irgbr")])
+children = Array[Resource]([SubResource("Resource_r3t4y"), SubResource("Resource_4fbej"), SubResource("Resource_irgbr"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator")])
 
 [sub_resource type="Resource" id="Resource_y6rli"]
 script = ExtResource("2_egn44")

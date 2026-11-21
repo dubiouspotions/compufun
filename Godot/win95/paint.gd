@@ -13,6 +13,8 @@ enum FileMenu { NEW, CLOSE }
 ])
 ## The pen's width, in canvas pixels.
 @export var pen_size: int = 2
+## The file extensions that this app opens, lower case, without the dot.
+@export var opens: Array[String] = ["bmp"]
 
 var _color: Color = Color.BLACK
 var _image: Image
@@ -38,6 +40,12 @@ func _ready() -> void:
 	_current.color = _color
 	_canvas.gui_input.connect(_on_canvas_input)
 	%File.id_pressed.connect(_on_file_menu)
+	_clear()
+
+
+## Titles the window after [param file], as Win95 does, on a blank canvas: files have no pictures yet.
+func open_file(file: Win95File) -> void:
+	%TitleBar.title = "%s - Paint" % file.name
 	_clear()
 
 

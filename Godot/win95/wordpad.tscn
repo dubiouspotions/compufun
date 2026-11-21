@@ -8,6 +8,7 @@
 [node name="Wordpad" type="PanelContainer"]
 theme = ExtResource("theme")
 script = ExtResource("script")
+opens = Array[String](["doc", "wri"])
 custom_minimum_size = Vector2(480, 300)
 
 [node name="VBox" type="VBoxContainer" parent="."]

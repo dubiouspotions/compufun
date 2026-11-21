@@ -16,6 +16,10 @@
 [ext_resource type="Script" path="res://win95/email.gd" id="9_5i8g7"]
 [ext_resource type="Script" path="res://win95/win95_setup.gd" id="11_movdk"]
 [ext_resource type="Texture2D" path="res://win95/wallpapers/clouds.png" id="wallpaper"]
+[ext_resource type="PackedScene" path="res://win95/notepad.tscn" id="app_notepad"]
+[ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="app_wordpad"]
+[ext_resource type="PackedScene" path="res://win95/paint.tscn" id="app_paint"]
+[ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="app_calculator"]
 
 [sub_resource type="Resource" id="DialogueLine_1"]
 script = ExtResource("dl")
@@ -73,12 +77,36 @@ script = ExtResource("2_nepbl")
 name = "SYSTEM.INI"
 icon = ExtResource("6_k5xlp")
 
+[sub_resource type="Resource" id="Program_notepad"]
+script = ExtResource("2_nepbl")
+name = "NOTEPAD.EXE"
+icon = ExtResource("7_xlwt7")
+program = ExtResource("app_notepad")
+
+[sub_resource type="Resource" id="Program_wordpad"]
+script = ExtResource("2_nepbl")
+name = "WORDPAD.EXE"
+icon = ExtResource("7_xlwt7")
+program = ExtResource("app_wordpad")
+
+[sub_resource type="Resource" id="Program_paint"]
+script = ExtResource("2_nepbl")
+name = "PBRUSH.EXE"
+icon = ExtResource("7_xlwt7")
+program = ExtResource("app_paint")
+
+[sub_resource type="Resource" id="Program_calculator"]
+script = ExtResource("2_nepbl")
+name = "CALC.EXE"
+icon = ExtResource("7_xlwt7")
+program = ExtResource("app_calculator")
+
 [sub_resource type="Resource" id="Resource_pbx1f"]
 script = ExtResource("2_nepbl")
 name = "Windows"
 icon = ExtResource("5_ko7w1")
 is_folder = true
-children = Array[Resource]([SubResource("Resource_4f8u6"), SubResource("Resource_rx540"), SubResource("Resource_rkt6m")])
+children = Array[Resource]([SubResource("Resource_4f8u6"), SubResource("Resource_rx540"), SubResource("Resource_rkt6m"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator")])
 
 [sub_resource type="Resource" id="Resource_wafo6"]
 script = ExtResource("2_nepbl")

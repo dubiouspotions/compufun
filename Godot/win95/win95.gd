@@ -8,6 +8,7 @@ extends Control
 const _BOOT := preload("res://win95/boot_sequence.tscn")
 const _FOLDER := preload("res://win95/folder_window.tscn")
 const _PROPERTIES := preload("res://win95/properties_window.tscn")
+const _MESSAGE := preload("res://win95/message_box.tscn")
 const _BIN_EMPTY := preload("res://win95/theme/icons/recycle_bin_empty_32.png")
 const _BIN_FULL := preload("res://win95/theme/icons/recycle_bin_full_32.png")
 const _COVER := preload("res://win95/cover_screen.gd")
@@ -27,13 +28,17 @@ class Listing:
 	## Array, which New Folder adds to.
 	var files: Callable
 	var creatable: bool = false
+	## What the listing shows: a folder's Win95File, or a name such as &"drive_c". Two windows never
+	## show the same key; opening it again brings the open one to the front.
+	var key: Variant
 
-	func _init(listing_title: String, listing_icon: Texture2D, listing_kind: StringName, listing_files: Callable, can_create: bool) -> void:
+	func _init(listing_title: String, listing_icon: Texture2D, listing_kind: StringName, listing_files: Callable, can_create: bool, listing_key: Variant) -> void:
 		title = listing_title
 		icon = listing_icon
 		kind = listing_kind
 		files = listing_files
 		creatable = can_create
+		key = listing_key
 
 
 static var _stock_palette: Win95Palette
@@ -93,7 +98,7 @@ func _on_booted() -> void:
 	_drives.assign([_folder("3\u00bd Floppy (A:)", "drive_floppy_35_32.png"), _drive_c, _folder("(D:)", "drive_cdrom_32.png"),
 		_folder("Control Panel", "folder_control_panel_32.png"), _folder("Printers", "folder_printers_32.png")])
 	_listings.clear()
-	_listings[_icons] = Listing.new("Desktop", null, &"desktop", func() -> Array: return _state.setup.desktop, true)
+	_listings[_icons] = Listing.new("Desktop", null, &"desktop", func() -> Array: return _state.setup.desktop, true, &"desktop")
 	_fill(_icons)
 	_apply_sound()
 	_no_signal.hide()
@@ -178,13 +183,83 @@ func _wire_view(view: IconView) -> void:
 func _open_item(item: FileIcon) -> void:
 	var file := _file_of(item)
 	if item.name == &"MyComputer":
-		_show(Listing.new("My Computer", load(_ICONS + "my_computer_32.png"), &"my_computer", func() -> Array: return _drives, false))
+		_show(Listing.new("My Computer", load(_ICONS + "my_computer_32.png"), &"my_computer", func() -> Array: return _drives, false, &"my_computer"))
 	elif item.name == &"RecycleBin":
-		_show(Listing.new("Recycle Bin", _BIN_EMPTY, &"recycle_bin", func() -> Array: return _state.setup.recycle_bin, false))
+		_show(Listing.new("Recycle Bin", _BIN_EMPTY, &"recycle_bin", func() -> Array: return _state.setup.recycle_bin, false, &"recycle_bin"))
+	elif file == null or _listing_of_item(item).kind == &"recycle_bin":
+		return
 	elif file == _drive_c:
-		_show(Listing.new("(C:)", file.icon, &"folder", func() -> Array: return _state.setup.drive_c, true))
-	elif file != null and file.is_folder and _listing_of_item(item).kind != &"recycle_bin":
-		_show(Listing.new(file.name, file.icon, &"folder", func() -> Array: return file.children, not _drives.has(file)))
+		_show(Listing.new("(C:)", file.icon, &"folder", func() -> Array: return _state.setup.drive_c, true, &"drive_c"))
+	elif file.is_folder:
+		_show(Listing.new(file.name, file.icon, &"folder", func() -> Array: return file.children, not _drives.has(file), file))
+	else:
+		_open_file(file)
+
+
+## Opens [param file] as Win95 does: a program file runs while its name ends in .EXE; any other
+## file opens in the installed program whose app lists its extension. A program file whose name
+## lost its .EXE still claims the extension, so its files fail with "Cannot find the file".
+func _open_file(file: Win95File) -> void:
+	var extension := file.name.get_extension().to_lower()
+	if file.program != null and extension == "exe":
+		_launch(file.program, null)
+		return
+	var programs := _programs_for(extension)
+	for program in programs:
+		if program.name.get_extension().to_lower() == "exe":
+			_launch(program.program, file)
+			return
+	if not programs.is_empty():
+		var location := _location_of(programs[0]).trim_suffix("\\")
+		var expected := "%s\\%s.EXE" % [location, programs[0].name.get_basename().to_upper()]
+		_message(file.name, "Cannot find the file '%s' (or one of its components). Make sure the path and filename are correct and that all required libraries are available." % expected)
+	else:
+		_message(file.name, "Windows cannot open this file:\n\n%s\n\nNo program on this computer opens files of this type." % file.name)
+
+
+func _launch(program: PackedScene, file: Win95File) -> void:
+	var window: Node = _desktop.open(program)
+	if file != null and window.has_method(&"open_file"):
+		window.open_file(file)
+
+
+func _message(title: String, text: String) -> void:
+	var box: Node = _desktop.open(_MESSAGE, false)
+	box.closed.connect(box.queue_free)
+	box.show_message(title, text)
+
+
+## The program files on drive C, at any depth, whose app opens [param extension].
+func _programs_for(extension: String) -> Array[Win95File]:
+	var found: Array[Win95File] = []
+	if extension != "":
+		_collect_programs(_state.setup.drive_c, extension, found)
+	return found
+
+
+func _collect_programs(container: Array, extension: String, found: Array[Win95File]) -> void:
+	for file: Win95File in container:
+		if file.is_folder:
+			_collect_programs(file.children, extension, found)
+		elif file.program != null and _opens(file.program).has(extension):
+			found.append(file)
+
+
+## The extensions that the app in [param program] opens: its root's `opens`, from the scene or
+## else from the root script's default. Read without making the app.
+static func _opens(program: PackedScene) -> Array:
+	var state := program.get_state()
+	var script: Script
+	for i in state.get_node_property_count(0):
+		var property := state.get_node_property_name(0, i)
+		if property == &"opens":
+			return state.get_node_property_value(0, i)
+		if property == &"script":
+			script = state.get_node_property_value(0, i)
+	if script == null:
+		return []
+	var opens: Variant = script.get_property_default_value(&"opens")
+	return opens if opens is Array else []
 
 
 func _listing_of_item(item: FileIcon) -> Listing:
@@ -192,7 +267,12 @@ func _listing_of_item(item: FileIcon) -> Listing:
 
 
 func _show(listing: Listing) -> void:
-	var window: Node = _desktop.open(_FOLDER)
+	for view: IconView in _listings.keys():
+		if view != _icons and is_instance_valid(view) and is_same(_listings[view].key, listing.key) and _desktop.windows().has(view.owner):
+			_desktop.activate(view.owner)
+			return
+	var window: Node = _desktop.open(_FOLDER, false)
+	window.closed.connect(window.queue_free)
 	var title_bar: Node = window.get_node("%TitleBar")
 	title_bar.title = listing.title
 	title_bar.icon = _small_icon(listing.icon)
