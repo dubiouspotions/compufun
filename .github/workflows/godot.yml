@@ -96,10 +96,6 @@ jobs:
       - name: Import
         run: godot --headless --import 2>&1 | tee -a $LOGFILE
 
-      - name: Tests
-        # Not in $LOGFILE: tests log errors on purpose, and the error report below would post them.
-        run: timeout 120 godot --headless -s res://tests/run.gd
-
       - name: Web Build
         run: |
             mkdir -v -p build/web

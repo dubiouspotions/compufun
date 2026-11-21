@@ -35,7 +35,7 @@ feedback/            the F9 reports (outside Godot, so Godot does not import the
 tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; chimera-moods.patch
 wiki/                the GitHub wiki, cloned by tools/sync-wiki.sh (ignored by the repo)
 docs/                the rules for people and agents: this code layout, code standard, build, gotchas, glossary
-.github/workflows/   CI: export on push, itch.io deploy, Discord notifications
+.github/workflows/   CI: tests and export on push, itch.io deploy, Discord notifications
 ```
 
 Play starts `ui/loading_screen.tscn`, which loads the main scene in the background:

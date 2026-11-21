@@ -47,7 +47,7 @@ Run them all after an import:
 `run.gd` runs every `tests/test_*.gd` in its own Godot process, so that each test starts from a fresh
 `Game`. It prints each failed check with its file, line, expected and actual value, and exits 1
 when a test fails. Run one test with `"$GODOT" --headless -s res://tests/test_day.gd`. CI runs the
-tests after the import and fails the build when one fails.
+tests on every push to `main` and every pull request (see CI below).
 
 To add one, create `tests/test_<name>.gd`:
 
@@ -123,10 +123,15 @@ voice that a customer has.
 `.github/workflows/godot.yml` runs on every push to `main` and `deploy`:
 
 - **Live Voice** builds `native/chimera_voice` with `tools/build-voice.sh`: macOS on a Mac runner, the wasm, Linux and Windows on Ubuntu. Build downloads them before its import.
-- **Build** imports, runs the tests, exports all four presets and uploads them as run artifacts. A failed build posts to
+- **Build** imports, exports all four presets and uploads them as run artifacts. A failed build posts to
   Discord, and so do `ERROR` lines in the export log.
 - **Deploy** uploads the builds to itch.io with butler. It runs on the `deploy` branch, or when
   started by hand (Actions > godot-ci export > Run workflow). It needs the `ITCHIO_*` secrets.
+
+A newer push cancels a running export. The tests run in their own workflow,
+`.github/workflows/tests.yml`, on every push to `main` and every pull request: it imports, runs
+`tests/run.gd`, and passes only on its "N of N tests passed" line. Newer pushes don't cancel it, so
+every commit gets a test verdict.
 
 Every push to `main` also posts its commits to Discord (`.discord-main.yml`), and issue changes
 post there too (`.discord-issues.yml`). Both post into the thread whose ID is in the repository
