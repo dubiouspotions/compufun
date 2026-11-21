@@ -1,0 +1,130 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/metal.tres" id="1_metal"]
+[ext_resource type="Material" path="res://materials/rubber.tres" id="2_rubber"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="3_dark"]
+[ext_resource type="Material" path="res://materials/cardboard.tres" id="4_cardboard"]
+[ext_resource type="PackedScene" path="res://props/pc_tower.tscn" id="5_tower"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_deck"]
+size = Vector3(0.55, 0.03, 1.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_post"]
+size = Vector3(0.03, 0.66, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_stem"]
+size = Vector3(0.03, 0.08, 0.03)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_wheel"]
+top_radius = 0.045
+bottom_radius = 0.045
+height = 0.03
+radial_segments = 8
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_handle_upright"]
+size = Vector3(0.03, 0.26, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_handle_bar"]
+size = Vector3(0.45, 0.035, 0.035)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box"]
+size = Vector3(0.4, 0.3, 0.45)
+
+[node name="Cart" type="Node3D"]
+
+[node name="LowerDeck" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_deck")
+
+[node name="UpperDeck" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_deck")
+
+[node name="Post0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26, 0.5, 0.535)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_post")
+
+[node name="Post1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.26, 0.5, 0.535)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_post")
+
+[node name="Post2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26, 0.5, -0.535)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_post")
+
+[node name="Post3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.26, 0.5, -0.535)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_post")
+
+[node name="Stem0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.24, 0.13, 0.48)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_stem")
+
+[node name="Stem1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.24, 0.13, 0.48)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_stem")
+
+[node name="Stem2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.24, 0.13, -0.48)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_stem")
+
+[node name="Stem3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.24, 0.13, -0.48)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_stem")
+
+[node name="Castor0" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0.24, 0.045, 0.48)
+material_override = ExtResource("2_rubber")
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="Castor1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, -0.24, 0.045, 0.48)
+material_override = ExtResource("2_rubber")
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="Castor2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0.24, 0.045, -0.48)
+material_override = ExtResource("2_rubber")
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="Castor3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, -0.24, 0.045, -0.48)
+material_override = ExtResource("2_rubber")
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="HandleUpright0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21, 0.93, 0.535)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_handle_upright")
+
+[node name="HandleUpright1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.21, 0.93, 0.535)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_handle_upright")
+
+[node name="HandleBar" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.06, 0.535)
+material_override = ExtResource("3_dark")
+mesh = SubResource("BoxMesh_handle_bar")
+
+[node name="Box" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.365, 0.05)
+material_override = ExtResource("4_cardboard")
+mesh = SubResource("BoxMesh_box")
+
+[node name="Computer0" parent="." instance=ExtResource("5_tower")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0.815, -0.25)
+
+[node name="Computer1" parent="." instance=ExtResource("5_tower")]
+transform = Transform3D(-0.17364818, 0, 0.9848077, 0, 1, 0, -0.9848077, 0, -0.17364818, 0.02, 0.815, 0.22)
