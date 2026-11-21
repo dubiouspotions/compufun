@@ -163,6 +163,15 @@ func new_folder(container: Array) -> Win95File:
 	return folder
 
 
+## The installed programs: program files on drive C, at any depth, whose names end in .EXE or
+## .COM, as Win95 runs only those.
+func installed_programs() -> Array[Win95File]:
+	var found: Array[Win95File] = []
+	if setup != null:
+		_collect_programs(setup.drive_c, func(file: Win95File) -> bool: return is_runnable(file), found)
+	return found
+
+
 ## The program files on drive C whose app opens files with [param extension] (lower case, no dot),
 ## installed or not: a program file that lost its .EXE still claims its files.
 func programs_for(extension: String) -> Array[Win95File]:
