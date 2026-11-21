@@ -25,7 +25,45 @@ defaults:
     working-directory: Godot
 
 jobs:
+  voice:
+    # The live voice (native/chimera_voice): macOS needs a Mac; Linux, Windows and the web build here.
+    name: Live Voice ${{ matrix.targets }}
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            targets: macos
+          - os: ubuntu-latest
+            targets: wasm linux windows
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            native/chimera_voice/target
+          key: voice-${{ matrix.os }}-${{ hashFiles('native/chimera_voice/**', 'tools/build-voice.sh') }}
+      - name: Windows linker
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y gcc-mingw-w64-x86-64
+      - name: Build
+        run: bash tools/build-voice.sh ${{ matrix.targets }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voice-${{ matrix.os }}
+          path: |
+            Godot/voices/live/bin/
+            Godot/voices/live/chimera_voice.wasm
+          if-no-files-found: error
+
   build:
+    needs: voice
     timeout-minutes: 5
     name: Godot Export
     runs-on: ubuntu-latest
@@ -44,6 +82,16 @@ jobs:
           # The container runs as another user than the checkout's owner, so git refuses the repo without this.
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           bash ../tools/write-build-commit.sh
+
+      - name: Live voice
+        uses: actions/download-artifact@v4
+        with:
+          pattern: voice-*
+          path: Godot/voices/live
+          merge-multiple: true
+
+      - name: List the live voice libraries
+        run: bash ../tools/build-voice.sh list && cat voices/live/chimera_voice.gdextension
 
       - name: Import
         run: godot --headless --import 2>&1 | tee -a $LOGFILE
