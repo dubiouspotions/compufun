@@ -19,6 +19,10 @@
 [ext_resource type="PackedScene" path="res://win95/paint.tscn" id="app_paint"]
 [ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="app_calculator"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/application_32.png" id="application_icon"]
+[ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="app_inbox"]
+[ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
+[ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
+[ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="app_ms_dos_prompt"]
 
 [sub_resource type="Resource" id="DialogueLine_1"]
 script = ExtResource("dl")
@@ -60,6 +64,30 @@ script = ExtResource("2_egn44")
 name = "SYSTEM.INI"
 icon = ExtResource("6_m26x5")
 
+[sub_resource type="Resource" id="Program_inbox"]
+script = ExtResource("2_egn44")
+name = "EXCHNG32.EXE"
+icon = ExtResource("application_icon")
+program = ExtResource("app_inbox")
+
+[sub_resource type="Resource" id="Program_volume_control"]
+script = ExtResource("2_egn44")
+name = "SNDVOL32.EXE"
+icon = ExtResource("application_icon")
+program = ExtResource("app_volume_control")
+
+[sub_resource type="Resource" id="Program_defrag"]
+script = ExtResource("2_egn44")
+name = "DEFRAG.EXE"
+icon = ExtResource("application_icon")
+program = ExtResource("app_defrag")
+
+[sub_resource type="Resource" id="Program_ms_dos_prompt"]
+script = ExtResource("2_egn44")
+name = "COMMAND.COM"
+icon = ExtResource("application_icon")
+program = ExtResource("app_ms_dos_prompt")
+
 [sub_resource type="Resource" id="Program_notepad"]
 script = ExtResource("2_egn44")
 name = "NOTEPAD.EXE"
@@ -89,7 +117,7 @@ script = ExtResource("2_egn44")
 name = "Windows"
 icon = ExtResource("5_lymrw")
 is_folder = true
-children = Array[Resource]([SubResource("Resource_r3t4y"), SubResource("Resource_4fbej"), SubResource("Resource_irgbr"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator")])
+children = Array[Resource]([SubResource("Resource_r3t4y"), SubResource("Resource_4fbej"), SubResource("Resource_irgbr"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator"), SubResource("Program_inbox"), SubResource("Program_volume_control"), SubResource("Program_defrag"), SubResource("Program_ms_dos_prompt")])
 
 [sub_resource type="Resource" id="Resource_y6rli"]
 script = ExtResource("2_egn44")

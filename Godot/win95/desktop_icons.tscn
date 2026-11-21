@@ -38,6 +38,6 @@ icon = ExtResource("recycle_bin")
 
 [node name="Calculator" parent="." instance=ExtResource("file_icon")]
 layout_mode = 2
-text = "Calculator"
+text = "Calculator.exe"
 icon = ExtResource("application")
 opens = ExtResource("calculator")

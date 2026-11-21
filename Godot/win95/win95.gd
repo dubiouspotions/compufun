@@ -193,17 +193,16 @@ func _open_item(item: FileIcon) -> void:
 		_open_file(file)
 
 
-## Opens [param file] as Win95 does: a program file runs while its name ends in .EXE; any other
-## file opens in the installed program whose app lists its extension. A program file whose name
-## lost its .EXE still claims the extension, so its files fail with "Cannot find the file".
+## Opens [param file] as Win95 does: a program file runs while its name ends in .EXE or .COM;
+## any other file opens in the installed program whose app lists its extension. A program file
+## whose name lost its .EXE still claims the extension, so its files fail with "Cannot find the file".
 func _open_file(file: Win95File) -> void:
-	var extension := file.name.get_extension().to_lower()
-	if file.program != null and extension == "exe":
+	if ComputerState.is_runnable(file):
 		_launch(file.program, null)
 		return
-	var programs := _programs_for(extension)
+	var programs := _state.programs_for(file.name.get_extension().to_lower())
 	for program in programs:
-		if program.name.get_extension().to_lower() == "exe":
+		if ComputerState.is_runnable(program):
 			_launch(program.program, file)
 			return
 	if not programs.is_empty():
@@ -224,39 +223,6 @@ func _message(title: String, text: String) -> void:
 	var box: Node = _desktop.open(_MESSAGE, false)
 	box.closed.connect(box.queue_free)
 	box.show_message(title, text)
-
-
-## The program files on drive C, at any depth, whose app opens [param extension].
-func _programs_for(extension: String) -> Array[Win95File]:
-	var found: Array[Win95File] = []
-	if extension != "":
-		_collect_programs(_state.setup.drive_c, extension, found)
-	return found
-
-
-func _collect_programs(container: Array, extension: String, found: Array[Win95File]) -> void:
-	for file: Win95File in container:
-		if file.is_folder:
-			_collect_programs(file.children, extension, found)
-		elif file.program != null and _opens(file.program).has(extension):
-			found.append(file)
-
-
-## The extensions that the app in [param program] opens: its root's `opens`, from the scene or
-## else from the root script's default. Read without making the app.
-static func _opens(program: PackedScene) -> Array:
-	var state := program.get_state()
-	var script: Script
-	for i in state.get_node_property_count(0):
-		var property := state.get_node_property_name(0, i)
-		if property == &"opens":
-			return state.get_node_property_value(0, i)
-		if property == &"script":
-			script = state.get_node_property_value(0, i)
-	if script == null:
-		return []
-	var opens: Variant = script.get_property_default_value(&"opens")
-	return opens if opens is Array else []
 
 
 func _listing_of_item(item: FileIcon) -> Listing:

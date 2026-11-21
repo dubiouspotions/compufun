@@ -123,6 +123,55 @@ func new_folder(container: Array) -> Win95File:
 	return folder
 
 
+## The installed programs: program files on drive C, at any depth, whose names end in .EXE or
+## .COM, as Win95 runs only those.
+func installed_programs() -> Array[Win95File]:
+	var found: Array[Win95File] = []
+	if setup != null:
+		_collect_programs(setup.drive_c, func(file: Win95File) -> bool: return is_runnable(file), found)
+	return found
+
+
+## The program files on drive C whose app opens files with [param extension] (lower case, no dot),
+## installed or not: a program file that lost its .EXE still claims its files.
+func programs_for(extension: String) -> Array[Win95File]:
+	var found: Array[Win95File] = []
+	if setup != null and extension != "":
+		_collect_programs(setup.drive_c, func(file: Win95File) -> bool: return opens_of(file.program).has(extension), found)
+	return found
+
+
+## True when [param file] is a program file that Win95 would run: it has a program, and its name
+## ends in .EXE or .COM.
+static func is_runnable(file: Win95File) -> bool:
+	return file.program != null and file.name.get_extension().to_lower() in ["exe", "com"]
+
+
+## The extensions that the app in [param program] opens: its root's `opens`, from the scene or
+## else from the root script's default. Read without making the app.
+static func opens_of(program: PackedScene) -> Array:
+	var state := program.get_state()
+	var script: Script
+	for i in state.get_node_property_count(0):
+		var property := state.get_node_property_name(0, i)
+		if property == &"opens":
+			return state.get_node_property_value(0, i)
+		if property == &"script":
+			script = state.get_node_property_value(0, i)
+	if script == null:
+		return []
+	var opens: Variant = script.get_property_default_value(&"opens")
+	return opens if opens is Array else []
+
+
+func _collect_programs(container: Array, wanted: Callable, found: Array[Win95File]) -> void:
+	for file: Win95File in container:
+		if file.is_folder:
+			_collect_programs(file.children, wanted, found)
+		elif file.program != null and wanted.call(file):
+			found.append(file)
+
+
 ## The Array that holds [param file] (the desktop, drive C or a folder's children), or null.
 func _container_of(file: Win95File) -> Variant:
 	for top: Array in [setup.desktop, setup.drive_c]:
