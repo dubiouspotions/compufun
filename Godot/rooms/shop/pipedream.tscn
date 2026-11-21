@@ -3,6 +3,6 @@
 [ext_resource type="Script" path="res://rooms/shop/pipedream.gd" id="1_pipes"]
 [ext_resource type="Material" path="res://materials/pipe.tres" id="2_pipe"]
 
-[node name="Pipedream" type="Node3D"]
+[node name="Pipedream" type="Node3D" groups=["pipedream"]]
 script = ExtResource("1_pipes")
 material = ExtResource("2_pipe")

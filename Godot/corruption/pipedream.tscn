@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/pipedream.gd" id="1_sign"]
+
+[node name="Pipedream" type="Node"]
+script = ExtResource("1_sign")
+title = "The Pipedream grows in the corner"
+stages = 2

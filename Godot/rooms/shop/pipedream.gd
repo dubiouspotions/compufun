@@ -2,8 +2,9 @@
 class_name Pipedream
 extends Node3D
 ## Win95's 3D Pipes screensaver leaking into the shop: pipes grow out of this node's origin along
-## -Z, then turn at random on a grid inside [member bounds]. The higher the day's warp, the more of
-## them shows. One seed always grows the same pipes; a higher warp shows more of them, never others.
+## -Z, then turn at random on a grid inside [member bounds]. They show only while the corruption
+## sign pipedream lets them in ([member stage]); then the higher the day's warp, the more of them
+## shows. One seed always grows the same pipes; a higher warp shows more of them, never others.
 
 const DIRS: Array[Vector3i] = [
 	Vector3i.LEFT, Vector3i.RIGHT, Vector3i.DOWN, Vector3i.UP, Vector3i.FORWARD, Vector3i.BACK,
@@ -19,14 +20,19 @@ const STARTS: Array[Vector3i] = [
 var warp: float = 0.0:
 	set(value):
 		warp = value
-		if is_node_ready():
-			_shown = minf(_shown, amount(warp))
-			_show()
-			set_process(not is_equal_approx(_shown, amount(warp)))
+		_retarget()
+## How far the corruption sign pipedream lets the pipes in: 0 shows none, 1 grows them with
+## [member warp], 2 grows all of them. Pipes grow in at [member grow_speed]; a lower stage takes
+## them away at once.
+var stage: int = 0:
+	set(value):
+		stage = value
+		_retarget()
 
-## The warp of the first day with pipes. Below it, none show.
+## The warp from which the pipes grow past [member first_amount]. Below it, the sign shows that many.
 @export_range(0.0, 1.0, 0.01) var from_warp: float = 0.3
-## The share of the pipes that shows at [member from_warp], 0 to 1. At warp 1, all of them show.
+## The share of the pipes, 0 to 1, that shows when the sign starts, up to [member from_warp]. At
+## warp 1, all of them show.
 @export_range(0.0, 1.0, 0.01) var first_amount: float = 0.15
 ## How fast new pipe grows in, in segments per second for each pipe.
 @export_range(0.5, 60.0, 0.5, "suffix:/s") var grow_speed: float = 4.0
@@ -71,20 +77,36 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	var target := amount(warp)
+	var target := _target()
 	_shown = move_toward(_shown, target, grow_speed * delta / maxi(segments, 1))
 	_show()
 	if is_equal_approx(_shown, target):
 		set_process(false)
 
 
-## The share of the pipes, 0 to 1, that shows at [param at_warp].
+## The share of the pipes, 0 to 1, that shows at [param at_warp] in stage 1.
 func amount(at_warp: float) -> float:
-	if at_warp < from_warp and not is_equal_approx(at_warp, from_warp):
-		return 0.0
 	if is_equal_approx(from_warp, 1.0):
-		return 1.0
+		return 1.0 if is_equal_approx(at_warp, 1.0) else first_amount
 	return lerpf(first_amount, 1.0, clampf((at_warp - from_warp) / (1.0 - from_warp), 0.0, 1.0))
+
+
+# The share of the pipes that [member stage] and [member warp] show.
+func _target() -> float:
+	match stage:
+		0:
+			return 0.0
+		1:
+			return amount(warp)
+	return 1.0
+
+
+func _retarget() -> void:
+	if not is_node_ready() or Engine.is_editor_hint():
+		return
+	_shown = minf(_shown, _target())
+	_show()
+	set_process(not is_equal_approx(_shown, _target()))
 
 
 ## The segments that show now, over all pipes.
@@ -135,8 +157,11 @@ func _rebuild() -> void:
 			_add_multimesh(joint_mesh, joint_transforms, pipe_material),
 			joint_at,
 		])
-	_shown = amount(preview_warp if Engine.is_editor_hint() else warp)
-	_show()
+	if Engine.is_editor_hint():
+		_shown = amount(preview_warp)
+		_show()
+	else:
+		_retarget()
 
 
 ## The cells of each pipe, in growing order. The pipes grow in turns, so none takes all the room.
