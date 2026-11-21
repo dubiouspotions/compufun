@@ -50,6 +50,7 @@ func say(line: DialogueLine, voice: String) -> float:
 	var web := _web_voice()
 	if web != null:
 		web.say(line.text, BODIES[voice], mood.rate, mood.pitch, mood.swing, db_to_linear(volume_db))
+		_owner = self
 		return 0.0
 	var engine := _desktop_engine()
 	if engine != null:
@@ -91,9 +92,11 @@ func level() -> float:
 func hush() -> void:
 	stop()
 	set_process(false)
-	if _owner == self and _engine != null:
+	if _owner != self:
+		return
+	_owner = null
+	if _engine != null:
 		_engine.stop()
-		_owner = null
 	if _web != null:
 		_web.stop()
 
