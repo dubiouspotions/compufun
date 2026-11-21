@@ -87,6 +87,18 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Storage View**: The close-up of the parts desk in the storage room, with one box of new parts per part. The storage door in the Left View leads there.
 *Avoid:* shelf view, parts screen.
 
+**Storage bin**: The blue bin on the wall of the storage room where the player puts parts away and takes them back (`Game.stored`, `rooms/shop/storage_bin.tscn`).
+*Avoid:* lost and found, shelf, drawer.
+
+**Computer mouse**: The part that the ceiling mouse drops (`parts/mouse.tres`). No computer has a place for it. Always say *computer mouse* for the part, so it never means the animal.
+*Avoid:* mouse (alone), peripheral.
+
+**Ceiling mouse**: The easter egg: the animal in the hole above the player that squeaks and drops the computer mouse, once in the whole game (`CeilingMouse`, the flag `ceiling_mouse`).
+*Avoid:* rat, the mouse (alone).
+
+**Up View**: The view straight up at the ceiling, from the Main View with Up, W or the up button.
+*Avoid:* ceiling view, look-up view.
+
 **Bench screen**: The CRT at the left end of the counter, with its keyboard (`rooms/shop/bench.tscn`). It shows the screen buffer: the desktop of the computer that the VGA cable is connected to, or NO SIGNAL.
 *Avoid:* bench monitor, bench computer.
 

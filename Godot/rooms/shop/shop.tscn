@@ -34,6 +34,7 @@
 [ext_resource type="Texture2D" path="res://materials/textures/poster_commercial_placeholder.png" id="31_commercial"]
 [ext_resource type="PackedScene" path="res://props/week_calendar.tscn" id="week_calendar"]
 [ext_resource type="PackedScene" path="res://rooms/shop/hand.tscn" id="hand"]
+[ext_resource type="PackedScene" path="res://rooms/shop/ceiling_mouse.tscn" id="ceiling_mouse"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -516,6 +517,9 @@ transform = Transform3D(0, 0, -0.18, 0, 0.18, 0, 0.18, 0, 0, 3.945, 1.925, 0.3)
 [node name="Outside" parent="." unique_id=724951497 instance=ExtResource("20_788ts")]
 unique_name_in_owner = true
 
+[node name="CeilingMouse" parent="Room" instance=ExtResource("ceiling_mouse")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0.7)
+
 [node name="Views" type="Node3D" parent="." unique_id=1753390285]
 unique_name_in_owner = true
 
@@ -524,7 +528,13 @@ transform = Transform3D(1, 0, 0, 0, 0.99254614, 0.12186935, 0, -0.12186935, 0.99
 script = ExtResource("21_sg8ra")
 left = &"Left"
 right = &"Right"
+up = &"Up"
 faces_customer = true
+
+[node name="Up" type="Marker3D" parent="Views"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 1.55, 0.7)
+script = ExtResource("21_sg8ra")
+back = &"Main"
 
 [node name="Storage" type="Marker3D" parent="Views"]
 transform = Transform3D(1, 0, 0, 0, 0.9135455, 0.4067366, 0, -0.4067366, 0.9135455, -5.4, 1.55, 0.4)

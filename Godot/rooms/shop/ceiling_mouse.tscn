@@ -1,0 +1,134 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://rooms/shop/ceiling_mouse.gd" id="1_script"]
+[ext_resource type="Material" path="res://materials/black_plastic.tres" id="2_black"]
+[ext_resource type="Material" path="res://materials/mouse_fur.tres" id="3_fur"]
+[ext_resource type="Material" path="res://materials/mouse_pink.tres" id="4_pink"]
+[ext_resource type="AudioStream" path="res://sounds/mouse_squeak.wav" id="5_squeak"]
+[ext_resource type="Resource" path="res://parts/mouse.tres" id="7_mouse"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_hole"]
+top_radius = 0.09
+bottom_radius = 0.09
+height = 0.004
+radial_segments = 8
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_skull"]
+radius = 0.042
+height = 0.075
+radial_segments = 8
+rings = 4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_snout"]
+top_radius = 0.03
+bottom_radius = 0.005
+height = 0.06
+radial_segments = 6
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_dot"]
+radius = 0.008
+height = 0.016
+radial_segments = 6
+rings = 3
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ear"]
+top_radius = 0.024
+bottom_radius = 0.024
+height = 0.005
+radial_segments = 8
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dust"]
+shading_mode = 0
+albedo_color = Color(0.86, 0.83, 0.75, 1)
+billboard_mode = 1
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="QuadMesh_dust"]
+material = SubResource("StandardMaterial3D_dust")
+size = Vector2(0.01, 0.01)
+
+[node name="CeilingMouse" type="Node3D"]
+script = ExtResource("1_script")
+part = ExtResource("7_mouse")
+
+[node name="Hole" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.002, 0)
+material_override = ExtResource("2_black")
+mesh = SubResource("CylinderMesh_hole")
+
+[node name="Head" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0.25, 0)
+
+[node name="Skull" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.035, 0)
+material_override = ExtResource("3_fur")
+mesh = SubResource("SphereMesh_skull")
+
+[node name="Snout" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.085, 0)
+material_override = ExtResource("3_fur")
+mesh = SubResource("CylinderMesh_snout")
+
+[node name="Nose" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.117, 0)
+material_override = ExtResource("4_pink")
+mesh = SubResource("SphereMesh_dot")
+
+[node name="EyeLeft" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.021, -0.062, 0.016)
+material_override = ExtResource("2_black")
+mesh = SubResource("SphereMesh_dot")
+
+[node name="EyeRight" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.021, -0.062, 0.016)
+material_override = ExtResource("2_black")
+mesh = SubResource("SphereMesh_dot")
+
+[node name="EarLeft" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.034, -0.022, 0.036)
+material_override = ExtResource("4_pink")
+mesh = SubResource("CylinderMesh_ear")
+
+[node name="EarRight" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.034, -0.022, 0.036)
+material_override = ExtResource("4_pink")
+mesh = SubResource("CylinderMesh_ear")
+
+[node name="Dust" type="CPUParticles3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0)
+emitting = false
+amount = 10
+lifetime = 0.8
+mesh = SubResource("QuadMesh_dust")
+emission_shape = 1
+emission_sphere_radius = 0.04
+direction = Vector3(0, -1, 0)
+spread = 15.0
+gravity = Vector3(0, -0.6, 0)
+initial_velocity_min = 0.05
+initial_velocity_max = 0.2
+scale_amount_min = 0.6
+scale_amount_max = 1.2
+
+[node name="Squeak" type="AudioStreamPlayer3D" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("5_squeak")
+volume_db = -4.0
+
+[node name="Wait" type="Timer" parent="."]
+unique_name_in_owner = true
+one_shot = true
+
+[node name="Squeaks" type="Timer" parent="."]
+unique_name_in_owner = true
+one_shot = true
+
+[node name="Carried" type="Node3D" parent="."]
+unique_name_in_owner = true
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
