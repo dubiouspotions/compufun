@@ -135,7 +135,7 @@ func _run_post() -> void:
 	if not await _wait(warm_up_seconds):
 		return
 	_footer.show()
-	_energy_star.show()
+	_energy_star.visible = hardware.energy_star()
 	_post.text = ""
 	_footer.text = "\n".join(hardware.footer_lines())
 	for line in hardware.post_lines():

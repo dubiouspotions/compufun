@@ -37,7 +37,7 @@ const _WIDTH: int = 76
 ## The power-on self test, one line at a time, in BBCode. %MEMORY% is the memory test.
 func post_lines() -> PackedStringArray:
 	var lines: PackedStringArray = [
-		"%s Modular BIOS %s, An Energy Star Ally" % [bios_maker, bios_version],
+		"%s Modular BIOS %s%s" % [bios_maker, bios_version, ", An Energy Star Ally" if energy_star() else ""],
 		"Copyright (C) 1984-%s, %s Ltd." % [_year(), bios_maker],
 		"",
 		"%s CPU at %dMHz" % [cpu, cpu_mhz],
@@ -56,6 +56,11 @@ func post_lines() -> PackedStringArray:
 		"   Detecting HDD Secondary Slave  ... None",
 	])
 	return lines
+
+
+## True for a BIOS from 1993 on, when Energy Star had begun: the POST shows its logo.
+func energy_star() -> bool:
+	return int(_year()) >= 93
 
 
 ## The lines at the bottom of the screen during the POST, in BBCode.
