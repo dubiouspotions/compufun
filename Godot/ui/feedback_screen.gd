@@ -189,6 +189,10 @@ func _save(kind: String) -> void:
 	var author := _author()
 	var stamp := Time.get_datetime_string_from_system(false, true).replace(":", "-").replace(" ", "_")
 	var folder := _output_dir().path_join("%s_%s" % [stamp, author])
+	var copy := 2
+	while DirAccess.dir_exists_absolute(folder):
+		folder = _output_dir().path_join("%s_%s_%d" % [stamp, author, copy])
+		copy += 1
 	var err := DirAccess.make_dir_recursive_absolute(folder)
 	if err != OK:
 		_fail("cannot make %s: %s" % [folder, error_string(err)])
