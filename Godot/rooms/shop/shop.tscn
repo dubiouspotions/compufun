@@ -6,7 +6,7 @@
 [ext_resource type="Material" path="res://materials/wall.tres" id="4_kwqp3"]
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="5_35cdj"]
 [ext_resource type="Material" path="res://materials/glass.tres" id="6_q4845"]
-[ext_resource type="Material" path="res://materials/logo_sign.tres" id="7_mjyfn"]
+[ext_resource type="PackedScene" path="res://props/logo_sign.tscn" id="7_mjyfn"]
 [ext_resource type="PackedScene" path="res://props/door.tscn" id="8_p5y1l"]
 [ext_resource type="PackedScene" path="res://props/ceiling_light.tscn" id="9_ejly0"]
 [ext_resource type="PackedScene" path="res://props/counter.tscn" id="10_b7xrx"]
@@ -137,9 +137,6 @@ size = Vector2(2.6, 1.95)
 
 [sub_resource type="QuadMesh" id="QuadMesh_7gxtd"]
 size = Vector2(2.6, 1.95)
-
-[sub_resource type="QuadMesh" id="QuadMesh_v7qvw"]
-size = Vector2(1.6, 0.573)
 
 [sub_resource type="BoxMesh" id="BoxMesh_2i8xi"]
 size = Vector3(0.04, 0.7, 1.1)
@@ -339,10 +336,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 1.425, -5.5)
 material_override = ExtResource("6_q4845")
 mesh = SubResource("QuadMesh_7gxtd")
 
-[node name="Sign" type="MeshInstance3D" parent="Room" unique_id=1907604386]
+[node name="Sign" parent="Room" unique_id=1907604386 instance=ExtResource("7_mjyfn")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.71, -5.44)
-material_override = ExtResource("7_mjyfn")
-mesh = SubResource("QuadMesh_v7qvw")
+
+[node name="SignLeft" parent="Room" instance=ExtResource("7_mjyfn")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3.99, 1.95, -1.0)
 
 [node name="OpenSignHotspot" parent="Room" instance=ExtResource("13_ojat2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 1.85, -5.38)
