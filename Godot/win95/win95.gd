@@ -130,6 +130,8 @@ func _on_booted() -> void:
 		_boot.queue_free()
 	_boot = _BOOT.instantiate()
 	_boot.floppy_in_a = setup.floppy_in_a
+	if _state.job != null and _state.job.customer.computer != null:
+		_boot.hardware = _state.job.customer.computer.hardware
 	_floppy_heard = setup.floppy_in_a
 	pointer_visible = false
 	_boot.finished.connect(func() -> void:

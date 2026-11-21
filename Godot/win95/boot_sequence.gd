@@ -16,62 +16,11 @@ signal _any_key
 @export_multiline var disk_error: String = "Non-System disk or disk error\nReplace and press any key when ready"
 ## Starts as soon as the node is ready; turn off to start it with play().
 @export var play_on_start: bool = true
-## The power-on self test, one line at a time, in BBCode: [color=#ffffff] marks the bright words.
-## %MEMORY% is the memory test, which counts up.
-@export_multiline var post_lines: PackedStringArray = [
-	"CompuFun Modular BIOS v4.51PG, An Energy Star Ally",
-	"Copyright (C) 1984-95, CompuFun Ltd.",
-	"",
-	"Version 1.03CF",
-	"",
-	"PENTIUM-S CPU at 100MHz",
-	"%MEMORY%",
-	"",
-	"CompuFun Plug and Play BIOS Extension  v1.0A",
-	"Copyright (C) 1995, CompuFun Ltd.",
-	"   Detecting HDD Primary Master   ... QUANTUM FIREBALL1080A",
-	"   Detecting HDD Primary Slave    ... [Press [color=#ffffff]F4[/color] to skip]",
-	"   Detecting HDD Secondary Master ... CD-ROM 4X",
-	"   Detecting HDD Secondary Slave  ... None",
-]
-## The screen after the POST: the system summary, all at once. %EXTENDED% is the memory above 640K.
-@export_multiline var summary_lines: PackedStringArray = [
-	"┌──────────────────────────────────────────────────────────────────────────┐",
-	"│                          System Configurations                           │",
-	"├──────────────────────────────────────────────────────────────────────────┤",
-	"│ CPU Type         : PENTIUM-S         Base Memory      :        640K      │",
-	"│ Co-Processor     : Installed         Extended Memory  : %EXTENDED%K      │",
-	"│ CPU Clock        : 100MHz            Cache Memory     :        256K      │",
-	"├──────────────────────────────────────────────────────────────────────────┤",
-	"│ Diskette Drive A : 1.44M, 3.5 in.    Display Type     : EGA/VGA          │",
-	"│ Diskette Drive B : None              Serial Port(s)   : 3F8 2F8          │",
-	"│ Pri. Master Disk : LBA,Mode 4,1080MB Parallel Port(s) : 378              │",
-	"│ Pri. Slave  Disk : None              EDO DRAM Row(s)  : 0 1              │",
-	"│ Sec. Master Disk : CDROM,Mode 4      L2 Cache Type    : Pipeline         │",
-	"│ Sec. Slave  Disk : None                                                  │",
-	"└──────────────────────────────────────────────────────────────────────────┘",
-]
-## The lines under the summary, one at a time, as the BIOS lists them before it boots.
-@export_multiline var boot_lines: PackedStringArray = [
-	"",
-	"PCI device listing.....",
-	"Bus No. Device No. Func No. Vendor ID  Device ID  Device Class          IRQ",
-	"-----------------------------------------------------------------------------",
-	"   0        7         1       8086       7010     IDE Controller         14",
-	"   0       17         0       1274       5000     Multimedia Device      11",
-	"-----------------------------------------------------------------------------",
-	"",
-	"Verifying DMI Pool Data ........",
-]
+## What the BIOS finds: the CPU, the memory, the drives, the PCI devices. null boots the defaults
+## of Hardware. win95.gd sets it from the computer.
+@export var hardware: Hardware
 ## What the BIOS says as it hands over to Windows.
 @export var starting_text: String = "Starting Windows 95..."
-## The lines at the bottom of the screen during the whole test, in BBCode.
-@export_multiline var footer_lines: PackedStringArray = [
-	"Press [color=#ffffff]DEL[/color] to enter SETUP",
-	"11/09/95-i430FX-CF451PG-00",
-]
-## Kilobytes of memory that the memory test counts up to.
-@export var memory_kb: int = 16384
 @export var memory_test_seconds: float = 1.5
 ## The black screen before the POST, while the monitor warms up, in seconds.
 @export var warm_up_seconds: float = 4.2
@@ -143,6 +92,8 @@ func play() -> void:
 		return
 	_playing = true
 	_skipped = false
+	if hardware == null:
+		hardware = Hardware.new()
 	show()
 	focus_mode = Control.FOCUS_ALL
 	grab_focus.call_deferred()
@@ -173,8 +124,8 @@ func _run_post() -> void:
 	_show_stage(_post)
 	_energy_star.show()
 	_post.text = ""
-	_footer.text = "\n".join(footer_lines)
-	for line in post_lines:
+	_footer.text = "\n".join(hardware.footer_lines())
+	for line in hardware.post_lines():
 		if line == "%MEMORY%":
 			if not await _count_memory():
 				return
@@ -189,8 +140,8 @@ func _run_post() -> void:
 func _run_summary() -> void:
 	_footer.hide()
 	_energy_star.hide()
-	_post.text = "\n".join(summary_lines).replace("%EXTENDED%", str(memory_kb - 640).lpad(10)) + "\n"
-	for line in boot_lines:
+	_post.text = "\n".join(hardware.summary_lines()) + "\n"
+	for line in hardware.boot_lines():
 		_print(line)
 		if not await _wait(line_seconds):
 			return
@@ -225,7 +176,7 @@ func _count_memory() -> bool:
 	var before := _post.text
 	var steps := 30
 	for i in steps + 1:
-		_post.text = before + "Memory Test :  %dK" % (memory_kb * i / steps)
+		_post.text = before + "Memory Test :  %dK" % (hardware.memory_kb * i / steps)
 		if not await _wait(memory_test_seconds / steps):
 			return false
 	_post.text += " OK\n"

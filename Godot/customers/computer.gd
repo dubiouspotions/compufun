@@ -4,6 +4,8 @@ extends Resource
 
 ## What Win95 looks like and holds when this computer boots.
 @export var win95_setup: Win95Setup
+## What its BIOS finds as it boots; null is the defaults of Hardware, a Pentium 100 from 1995.
+@export var hardware: Hardware
 ## The material of the case; null is beige plastic.
 @export var case_material: Material
 ## The stickers on the case, each with its face and place; empty is none.
