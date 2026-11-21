@@ -86,6 +86,11 @@ var day_number: int:
 	get:
 		return day.number if day != null else 0
 
+## How far Cambion has changed the shop today, 0 to 1 ([member Day.warp]); 0 before the first day.
+var warp: float:
+	get:
+		return day.warp if day != null else 0.0
+
 ## The calendar date of the current day (day 1 before the first day), as a Time datetime
 ## dictionary: year, month, day, weekday.
 var date: Dictionary:
