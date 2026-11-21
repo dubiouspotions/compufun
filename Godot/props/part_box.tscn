@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://props/part_box.gd" id="1_box"]
+[ext_resource type="Material" path="res://materials/cardboard.tres" id="2_card"]
+[ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="3_hot"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_box"]
+size = Vector3(0.26, 0.1, 0.24)
+
+[node name="PartBox" type="Node3D"]
+script = ExtResource("1_box")
+
+[node name="Box" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+material_override = ExtResource("2_card")
+mesh = SubResource("BoxMesh_box")
+
+[node name="Hotspot" parent="." instance=ExtResource("3_hot")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+action = 3
+size = Vector3(0.28, 0.2, 0.26)

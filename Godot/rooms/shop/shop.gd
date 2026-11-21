@@ -198,6 +198,10 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 				Game.close_shop()
 			else:
 				_open_sign.wobble()
+		Hotspot.Action.TAKE_PART:
+			Game.take_new_part(hotspot.part)
+		Hotspot.Action.TRASH_PART:
+			Game.trash_part()
 
 
 func _on_plug_grabbed() -> void:

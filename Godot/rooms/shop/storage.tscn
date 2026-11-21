@@ -6,6 +6,13 @@
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="4_dark"]
 [ext_resource type="PackedScene" path="res://props/hanging_bulb.tscn" id="5_light"]
 [ext_resource type="PackedScene" path="res://props/shelf.tscn" id="6_shelf"]
+[ext_resource type="PackedScene" path="res://props/desk.tscn" id="20_desk"]
+[ext_resource type="PackedScene" path="res://props/part_box.tscn" id="21_box"]
+[ext_resource type="Resource" path="res://parts/motherboard.tres" id="22_motherboard"]
+[ext_resource type="Resource" path="res://parts/cpu.tres" id="22_cpu"]
+[ext_resource type="Resource" path="res://parts/fan.tres" id="22_fan"]
+[ext_resource type="Resource" path="res://parts/gpu.tres" id="22_gpu"]
+[ext_resource type="Resource" path="res://parts/hard_drive.tres" id="22_hard_drive"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
 size = Vector3(3.9, 0.1, 3.2)
@@ -74,3 +81,26 @@ texture_filter = 0
 text = "STORAGE"
 font_size = 48
 outline_size = 0
+
+[node name="PartsDesk" parent="." instance=ExtResource("20_desk")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.75, 0, -1.15)
+
+[node name="Box_motherboard" parent="." instance=ExtResource("21_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.75, -1.15)
+part = ExtResource("22_motherboard")
+
+[node name="Box_cpu" parent="." instance=ExtResource("21_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 0.75, -1.15)
+part = ExtResource("22_cpu")
+
+[node name="Box_fan" parent="." instance=ExtResource("21_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 0.75, -1.15)
+part = ExtResource("22_fan")
+
+[node name="Box_gpu" parent="." instance=ExtResource("21_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 0.75, -1.15)
+part = ExtResource("22_gpu")
+
+[node name="Box_hard_drive" parent="." instance=ExtResource("21_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 0.75, -1.15)
+part = ExtResource("22_hard_drive")
