@@ -5,7 +5,7 @@ extends Node3D
 
 ## The names of the Game.Daypart values in which the light is on. In the others it is off, so the
 ## daylight comes through the windows.
-@export var lit_dayparts: Array[StringName] = [&"EVENING", &"NIGHT"]
+@export var lit_dayparts: Array[StringName] = [&"AFTERNOON", &"EVENING", &"NIGHT"]
 ## How often the light flickers on each day, from day 1, in flickers per minute. Days past the end
 ## use the last value; before the first day, the first.
 @export var flickers_per_minute: PackedFloat32Array = PackedFloat32Array([1.0, 2.0, 3.0, 5.0, 8.0, 12.0, 18.0])

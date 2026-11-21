@@ -15,8 +15,8 @@ extends Node3D
 ## The [member hour] that each Game.Daypart shows. Before the first day, [member hour] stays.
 @export_range(0.0, 24.0, 0.01) var morning_hour: float = 9.0
 @export_range(0.0, 24.0, 0.01) var midday_hour: float = 13.0
-@export_range(0.0, 24.0, 0.01) var afternoon_hour: float = 17.0
-@export_range(0.0, 24.0, 0.01) var evening_hour: float = 19.0
+@export_range(0.0, 24.0, 0.01) var afternoon_hour: float = 19.0
+@export_range(0.0, 24.0, 0.01) var evening_hour: float = 20.0
 @export_range(0.0, 24.0, 0.01) var night_hour: float = 23.0
 @export var raining: bool = false:
 	set(value):
