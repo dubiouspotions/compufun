@@ -8,6 +8,8 @@ for example `"/Applications/Godot 4.7.app/Contents/MacOS/Godot"` on a Mac.
 Install [Git LFS](https://git-lfs.com) and run `git lfs install` before cloning. Without it,
 binary assets check out as small text pointer files and Godot fails to import them.
 
+Set up a new machine with [working-together.md](working-together.md).
+
 ## Check a change
 
 ```sh
@@ -46,8 +48,3 @@ post there too (`.discord-issues.yml`).
   output for `ERROR`, or check that the build file exists.
 * *Every CI export logs `Unable to load fontconfig`.* The CI image has no system fonts. The
   Discord error report filters this line out; ignore it in the log.
-
-## Line endings
-
-`.gitattributes` stores text as LF and checks it out as LF on every OS, whatever
-`core.autocrlf` says. `.editorconfig` makes editors write LF. Don't change either per machine.
