@@ -304,7 +304,7 @@ func open_case(job: Job, open: bool) -> bool:
 ## True when the piece of [param part] can come out of [param job] into the empty hand: the case is
 ## open, the piece is in, and no piece sits on it.
 func can_take(job: Job, part: Part) -> bool:
-	if hand != null or not job.case_open or job.piece(part) == null or job.screws[part].has(true):
+	if hand != null or not job.case_open or job.piece(part) == null:
 		return false
 	for other: Part in job.places:
 		if other.sits_on == part:
@@ -320,22 +320,18 @@ func can_put(job: Job, part: Part) -> bool:
 	return part.sits_on == null or job.piece(part.sits_on) != null
 
 
-## True when screw [param index] of the place of [param part] in [param job] can turn, out or in: the
-## piece is there and the case is open. A null [param part] is the side panel: the panel is on.
-func can_turn(job: Job, part: Part, index: int) -> bool:
-	if part == null:
-		return not job.case_open and index >= 0 and index < job.panel_screws.size()
-	return job.case_open and job.piece(part) != null and index >= 0 and index < job.screws[part].size()
+## True when screw [param index] of the side panel of [param job] can turn, out or in: the panel is
+## on. Only the side panel is screwed; the parts inside come out freely.
+func can_turn(job: Job, index: int) -> bool:
+	return not job.case_open and index >= 0 and index < job.panel_screws.size()
 
 
-## Turns a screw out, or back in (see [method can_turn]). The screwdriver is always at hand.
-func turn_screw(job: Job, part: Part, index: int) -> bool:
-	if not _on_counter(job, "turn_screw") or not can_turn(job, part, index):
+## Turns a screw of the side panel out, or back in (see [method can_turn]). The screwdriver is always
+## at hand.
+func turn_screw(job: Job, index: int) -> bool:
+	if not _on_counter(job, "turn_screw") or not can_turn(job, index):
 		return false
-	if part == null:
-		job.panel_screws[index] = not job.panel_screws[index]
-	else:
-		job.screws[part][index] = not job.screws[part][index]
+	job.panel_screws[index] = not job.panel_screws[index]
 	changed.emit()
 	return true
 
@@ -577,14 +573,6 @@ func restore(state: Dictionary) -> String:
 			if panel.size() != Job.PANEL_SCREWS:
 				return _refuse("job %d: the side panel has %d screws, not %d" % [i, Job.PANEL_SCREWS, panel.size()])
 			job.panel_screws.assign(panel.map(func(v: Variant) -> bool: return bool(v)))
-		var given_screws: Dictionary = data.get("screws", {})
-		for part: Part in Part.every():
-			if not given_screws.has(String(part.id())):
-				continue
-			var screwed: Array = given_screws[String(part.id())]
-			if screwed.size() != part.screw_points.size():
-				return _refuse("job %d: %s has %d screws, not %d" % [i, part.id(), part.screw_points.size(), screwed.size()])
-			job.screws[part] = screwed.map(func(v: Variant) -> bool: return bool(v))
 		if job.powered and not can_power_on(job):
 			return _refuse("job %d: a computer that is open or misses a part can't be on" % i)
 		if job.post_it_ticked and not job.fixed:

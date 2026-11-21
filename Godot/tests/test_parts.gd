@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
-## Repairs Dust Overheat through the Game API, as the wiki page Hardware Repair says: the case and
-## its screws, the real order, the parts' screws, one piece in the hand, the mat, the storage, the
-## trash, power, and a restore.
+## Repairs Dust Overheat through the Game API, as the wiki page Hardware Repair says: the side panel
+## and its screws, the real order, one piece in the hand, the mat, the storage, the trash, power,
+## and a restore.
 
 const GAME := preload("res://game.gd")
 
@@ -25,7 +25,7 @@ func run() -> void:
 	var job: Job = game.jobs[0]
 	check("a full computer, its fan broken", [job.places.size(), job.piece(fan).broken, job.piece(cpu).broken], [5, true, false])
 	check("not fixed yet", job.hardware_fixed, false)
-	check("every screw in", [job.panel_screws, job.screws[board].size(), job.screws[gpu], job.screws[fan]], [[true, true], 4, [true], []])
+	check("the side panel's screws in", job.panel_screws, [true, true])
 
 	# The case: closed parts can't move, and a computer that is on doesn't open.
 	check("closed: the fan can't come out", game.take_part(job, fan), false)
@@ -33,9 +33,9 @@ func run() -> void:
 	check("on: the case doesn't open", [game.open_case(job, true), job.case_open], [false, false])
 	game.set_powered(job, false)
 	check("screwed: the panel stays on", game.open_case(job, true), false)
-	check("the panel's screws come out", [game.turn_screw(job, null, 0), game.turn_screw(job, null, 1), job.panel_screws], [true, true, [false, false]])
+	check("the panel's screws come out", [game.turn_screw(job, 0), game.turn_screw(job, 1), job.panel_screws], [true, true, [false, false]])
 	check("off and unscrewed: the case opens", [game.open_case(job, true), job.case_open], [true, true])
-	check("no panel, no panel screws", game.turn_screw(job, null, 0), false)
+	check("no panel, no panel screws", game.turn_screw(job, 0), false)
 	game.set_powered(job, true)
 	check("open: no power", job.powered, false)
 
@@ -49,15 +49,9 @@ func run() -> void:
 	check("nothing to throw away", game.trash_part(), false)
 	check("the CPU comes out now", game.take_part(job, cpu), true)
 	check("the CPU goes on the mat", [game.put_on_mat(job), job.mat.size(), game.hand], [true, 1, null])
-	check("the GPU's screw holds it", game.take_part(job, gpu), false)
-	game.turn_screw(job, gpu, 0)
-	game.take_part(job, gpu)
+	check("the GPU comes out freely: only the panel is screwed", game.take_part(job, gpu), true)
 	game.put_on_mat(job)
-	check("the motherboard's screws hold it", game.take_part(job, board), false)
-	for i: int in 4:
-		game.turn_screw(job, board, i)
 	check("the motherboard comes out last", game.take_part(job, board), true)
-	check("no screws in an empty place", game.turn_screw(job, board, 0), false)
 	check("an empty place: no power", game.can_power_on(job), false)
 	game.put_on_mat(job)
 	game.take_from_mat(job, 0)
@@ -73,25 +67,20 @@ func run() -> void:
 	check("a new fan from the storage", [game.take_new_part(fan), game.hand.broken], [true, false])
 	check("a piece only fits its own place", game.can_put(job, cpu), false)
 	game.put_part(job)
-	game.open_case(job, false)
-	check("closed, but loose screws: not fixed", job.hardware_fixed, false)
-	game.open_case(job, true)
-	check("the screws go back in", [game.turn_screw(job, gpu, 0)] + range(4).map(func(i: int) -> bool: return game.turn_screw(job, board, i)), [true, true, true, true, true])
 	check("all in, but open: not fixed", job.hardware_fixed, false)
 	game.open_case(job, false)
 	check("the panel is on, its screws out: not fixed", job.hardware_fixed, false)
-	game.turn_screw(job, null, 0)
-	game.turn_screw(job, null, 1)
+	game.turn_screw(job, 0)
+	game.turn_screw(job, 1)
 	check("closed and screwed: fixed", job.hardware_fixed, true)
 	game.set_powered(job, true)
 	check("it switches on again", job.powered, true)
 
 	# A snapshot keeps the pieces, the mat, the case and the hand; a restore gives them back.
 	game.set_powered(job, false)
-	game.turn_screw(job, null, 0)
-	game.turn_screw(job, null, 1)
+	game.turn_screw(job, 0)
+	game.turn_screw(job, 1)
 	game.open_case(job, true)
-	game.turn_screw(job, gpu, 0)
 	game.take_part(job, fan)
 	game.put_on_mat(job)
 	game.take_new_part(gpu)
@@ -101,7 +90,7 @@ func run() -> void:
 	check("restore", game.restore(saved), "")
 	var back: Job = game.jobs[0]
 	check("restored", [back.case_open, back.piece(fan), back.mat.size(), game.hand.part], [true, null, 1, gpu])
-	check("the screws restored", [back.panel_screws, back.screws[gpu]], [[false, false], [false]])
+	check("the panel's screws restored", back.panel_screws, [false, false])
 	saved["jobs"][0]["parts"] = ["fan", "fan"]
 	check("two fans in one place: refused", game.restore(saved).contains("two pieces"), true)
 
