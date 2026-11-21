@@ -118,13 +118,13 @@ def modem_dialup():
     the modem turns its speaker off."""
     random.seed(1996)
     out = []
-    out += tone([350, 440], 0.7, 0.3)
+    out += tone([350, 440], 0.45, 0.3)
     keys = {"0": (941, 1336), "1": (697, 1209), "5": (770, 1336), "6": (770, 1477), "9": (852, 1477)}
     for digit in "5550196":
-        out += dtmf(*keys[digit], 0.08) + silence(0.06)
-    out += silence(0.4) + tone([440, 480], 0.8, 0.3) + silence(0.25)
+        out += dtmf(*keys[digit], 0.06) + silence(0.04)  # a modem dials faster than a hand
+    out += silence(0.2) + tone([440, 480], 0.5, 0.3) + silence(0.15)
     answer = []
-    for i in range(int(1.2 * RATE)):
+    for i in range(int(0.8 * RATE)):
         t = i / RATE
         flip = math.pi * int(t / 0.45)  # the answer tone reverses its phase every 450 ms
         answer.append(0.5 * math.sin(2 * math.pi * 2100 * t + flip))
@@ -132,11 +132,11 @@ def modem_dialup():
     for f in [1200, 2400, 1200, 2400]:
         out += tone([f, f * 1.5], 0.07, 0.25) + silence(0.03)
     chirp = []
-    for i in range(int(0.4 * RATE)):
+    for i in range(int(0.25 * RATE)):
         t = i / RATE
         chirp.append(0.3 * sum(math.sin(2 * math.pi * (300 + 600 * k + 900 * t) * t) for k in range(5)) / 3)
     out += chirp
-    hiss_seconds = 1.8
+    hiss_seconds = 1.1
     hiss = highpass(lowpass(noise(hiss_seconds, 10.0), 3400), 300)
     for i in range(len(hiss)):
         t = i / RATE

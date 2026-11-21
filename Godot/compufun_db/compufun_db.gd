@@ -22,7 +22,6 @@ const FRAME_ROWS: Array[int] = [1, 3, 27]
 const LIST_TOP: int = 4
 const LIST_BOTTOM: int = 26
 const NEW_RECORD: String = "<New record>"
-const BOOT := preload("res://win95/boot_sequence.tscn")
 
 enum Column { RECORDS, CHECKS, FIXES }
 
@@ -41,6 +40,8 @@ const HEADERS: Array[String] = ["CUSTOMER", "CHECK", "FIX"]
 ## The seconds between two keys, picked between x and y for each key.
 @export var key_seconds: Vector2 = Vector2(0.03, 0.09)
 @export_group("Start-up")
+## The work computer's boot: a 386 that stops after the BIOS.
+@export var boot_scene: PackedScene = preload("res://compufun_db/work_pc_boot.tscn")
 ## What the character types at the DOS prompt to start the program.
 @export var command: String = "CFDB"
 ## The program's banner, then what the modem says before the dial-up and after it.
@@ -48,7 +49,7 @@ const HEADERS: Array[String] = ["CUSTOMER", "CHECK", "FIX"]
 	"CompuFunDB 1.0   Copyright (C) 1988 CompuFun Inc.", "", "Initializing modem...", "ATZ", "OK", "ATDT 555-0196"]
 @export_multiline var connect_lines: PackedStringArray = ["CONNECT 14400", "Logging in to CompuFun HQ... OK"]
 ## The seconds after each start-up line.
-@export var start_line_seconds: float = 0.35
+@export var start_line_seconds: float = 0.2
 ## The modem dialling CompuFun HQ, from the dial tone until it connects.
 @export var dialup_sound: AudioStream = preload("res://sounds/modem_dialup.wav")
 @export_group("")
@@ -286,9 +287,9 @@ func _start_up() -> void:
 	_skip = false
 	_dos.clear()
 	picture_changed.emit()
-	var boot := BOOT.instantiate()
-	boot.boots_windows = false
-	add_child(boot)
+	var boot := boot_scene.instantiate() if boot_scene != null else null
+	if boot != null:
+		add_child(boot)
 	while is_instance_valid(boot) and boot.visible and not _skip:
 		await get_tree().process_frame
 	if is_instance_valid(boot):

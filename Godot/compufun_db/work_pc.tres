@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Hardware" format=3]
+
+[ext_resource type="Script" path="res://customers/hardware.gd" id="1_hw"]
+
+[resource]
+script = ExtResource("1_hw")
+bios_version = "v3.03"
+bios_id = "04/12/90-OPTI-386-2C4X6000-00"
+cpu = "386DX"
+cpu_mhz = 33
+memory_kb = 4096
+cache_kb = 64
+edo = false
+hard_drive = "CONNER CP3044"
+hard_drive_mb = 42
+cd_rom = ""
+pci_devices = PackedStringArray()
