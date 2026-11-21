@@ -13,11 +13,12 @@ const _HEAD_WINDOW := 4
 const _HEAD_MIN := 16
 ## Consecutive head-width rows required before a row counts as the crown.
 const _HEAD_RUN := 6
-## Fraction of the crown-to-hem distance that sits above the column. About half a head on these busts.
-const _HEAD_ABOVE := 0.18
 ## Hands cover the head, so the usual crown scale blows the pose up. Match the neutral portrait's height instead.
 const _MATCH_NEUTRAL_HEIGHT := "jonny/portrait_irritated03.png"
 
+## The share of the crown-to-hem distance that sits above the portrait's slot: 0.18 is about half
+## a head over the top edge; a negative value keeps the whole head inside a framed slot.
+@export_range(-0.5, 0.5) var head_above: float = 0.18
 ## How far the portrait sways from side to side, as if keeping its balance, in degrees.
 @export_range(0.0, 5.0) var sway_degrees: float = 0.4
 ## How long one sway, there and back, takes, in seconds.
@@ -34,6 +35,12 @@ const _MATCH_NEUTRAL_HEIGHT := "jonny/portrait_irritated03.png"
 @export_range(1.0, 15.0) var talk_shakes: float = 5.0
 ## How quickly the talking follows the voice's level: higher is snappier, lower is smoother.
 @export_range(1.0, 60.0) var talk_follow: float = 25.0
+## How many characters a second a line types out at; 0 shows the whole line at once. A click on
+## Next while it types shows the rest.
+@export_range(0.0, 200.0) var chars_per_second: float = 0.0
+## The Next button's text on every line but the last, and on the last.
+@export var next_text: String = "Next"
+@export var last_text: String = "OK"
 
 var _customer: Customer
 var _conversation: Conversation
@@ -44,6 +51,8 @@ var _voiced: bool = false
 var _time: float = 0.0
 # The voice level that moves the portrait, smoothed: 0 to 1.
 var _talk: float = 0.0
+# The characters typed so far of the current line; -1 when the whole line shows.
+var _typed: float = -1.0
 
 @onready var _name: Label = %NameLabel
 @onready var _text: Label = %LineLabel
@@ -62,6 +71,11 @@ func _process(delta: float) -> void:
 	if not is_visible_in_tree():
 		return
 	_time += delta
+	if _typed >= 0.0:
+		_typed += delta * chars_per_second
+		_text.visible_characters = int(_typed)
+		if _typed >= _text.get_total_character_count():
+			_show_whole_line()
 	_talk = lerpf(_talk, _voice.level() if _voiced else 0.0, minf(delta * talk_follow, 1.0))
 	var sway := sway_degrees * sin(TAU * _time / sway_seconds)
 	var shake := talk_degrees * _talk * sin(TAU * _time * talk_shakes)
@@ -127,7 +141,7 @@ func _fit_portrait() -> void:
 		return
 	var crown := measured.y
 	var hem := measured.z + 1.0
-	var cut := crown + _HEAD_ABOVE * (hem - crown)
+	var cut := crown + head_above * (hem - crown)
 	var scale := _portrait_slot.size.y / (hem - cut)
 	if tex.resource_path.ends_with(_MATCH_NEUTRAL_HEIGHT):
 		var target := _neutral_height(tex.resource_path)
@@ -166,7 +180,7 @@ func _neutral_height(path: String) -> float:
 		push_error("DialogueOverlay: %s has no visible pixels" % neutral_path)
 		return -1.0
 	var hem := measured.z + 1.0
-	var cut := measured.y + _HEAD_ABOVE * (hem - measured.y)
+	var cut := measured.y + head_above * (hem - measured.y)
 	return image.get_height() * _portrait_slot.size.y / (hem - cut)
 
 
@@ -242,7 +256,9 @@ func _show_line() -> void:
 	var line := _lines[_line]
 	_text.text = line.text if line != null else ""
 	_show_portrait(line.pose if line != null else _NEUTRAL)
-	_next.text = "Next" if _line < _lines.size() - 1 else "OK"
+	_next.text = next_text if _line < _lines.size() - 1 else last_text
+	_typed = 0.0 if chars_per_second > 0.0 else -1.0
+	_text.visible_characters = 0 if _typed >= 0.0 else -1
 	_speak(line)
 
 
@@ -264,7 +280,15 @@ func _speak(line: DialogueLine) -> void:
 		_voice.say(line, _customer.voice, VoiceType.of(line, _conversation))
 
 
+func _show_whole_line() -> void:
+	_typed = -1.0
+	_text.visible_characters = -1
+
+
 func _on_next() -> void:
+	if _typed >= 0.0:
+		_show_whole_line()
+		return
 	if _line >= _lines.size() - 1:
 		_voice.hush()
 		finished.emit()
