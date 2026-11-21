@@ -10,16 +10,6 @@
 [ext_resource type="AudioStream" path="res://sounds/footstep.wav" id="9_step"]
 [ext_resource type="PackedScene" path="res://props/pc_tower.tscn" id="9_w6f8g"]
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_pkni2"]
-top_radius = 0.078
-bottom_radius = 0.06
-height = 0.78
-radial_segments = 6
-rings = 1
-
-[sub_resource type="BoxMesh" id="BoxMesh_cgwyv"]
-size = Vector3(0.1, 0.07, 0.24)
-
 [sub_resource type="ArrayMesh" id="ArrayMesh_bd2in"]
 _surfaces = [{
 "aabb": AABB(-0.072, -0.1, -0.062353827, 0.144, 0.2, 0.124707654),
@@ -43,16 +33,6 @@ rings = 1
 [sub_resource type="BoxMesh" id="BoxMesh_5jfhg"]
 size = Vector3(0.045, 0.12, 0.085)
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_u5l00"]
-top_radius = 0.078
-bottom_radius = 0.06
-height = 0.78
-radial_segments = 6
-rings = 1
-
-[sub_resource type="BoxMesh" id="BoxMesh_7vx27"]
-size = Vector3(0.1, 0.07, 0.24)
-
 [sub_resource type="ArrayMesh" id="ArrayMesh_bsih7"]
 _surfaces = [{
 "aabb": AABB(-0.072, -0.1, -0.062353827, 0.144, 0.2, 0.124707654),
@@ -75,19 +55,6 @@ rings = 1
 
 [sub_resource type="BoxMesh" id="BoxMesh_8kjyr"]
 size = Vector3(0.045, 0.12, 0.085)
-
-[sub_resource type="ArrayMesh" id="ArrayMesh_jpgrw"]
-_surfaces = [{
-"aabb": AABB(-0.14320132, 0.8, -0.08878482, 0.28640264, 0.19999999, 0.17756964),
-"attribute_data": PackedByteArray("AAAAAAAAgD8AAAAAaGZmPwAAAD5oZmY/AAAAPgAAgD8AAIA+aGZmPwAAgD4AAIA/AADAPmhmZj8AAMA+AACAPwAAAD9oZmY/AAAAPwAAgD8AACA/aGZmPwAAID8AAIA/AABAP2hmZj8AAEA/AACAPwAAYD9oZmY/AABgPwAAgD8AAIA/aGZmPwAAgD8AAIA/AAAAAGdmJj8AAAA+Z2YmPwAAgD5nZiY/AADAPmdmJj8AAAA/Z2YmPwAAID9nZiY/AABAP2dmJj8AAGA/Z2YmPwAAgD9nZiY/AAAAAJuZmT4AAAA+m5mZPgAAgD6bmZk+AADAPpuZmT4AAAA/m5mZPgAAID+bmZk+AABAP5uZmT4AAGA/m5mZPgAAgD+bmZk+AAAAAAAAAAAAAAA+AAAAAAAAgD4AAAAAAADAPgAAAAAAAAA/AAAAAAAAID8AAAAAAABAPwAAAAAAAGA/AAAAAAAAgD8AAAAA"),
-"format": 34359742487,
-"index_count": 192,
-"index_data": PackedByteArray("AAABAAIAAAACAAMAAwACAAQAAwAEAAUABQAEAAYABQAGAAcABwAGAAgABwAIAAkACQAIAAoACQAKAAsACwAKAAwACwAMAA0ADQAMAA4ADQAOAA8ADwAOABAADwAQABEAAQASABMAAQATAAIAAgATABQAAgAUAAQABAAUABUABAAVAAYABgAVABYABgAWAAgACAAWABcACAAXAAoACgAXABgACgAYAAwADAAYABkADAAZAA4ADgAZABoADgAaABAAEgAbABwAEgAcABMAEwAcAB0AEwAdABQAFAAdAB4AFAAeABUAFQAeAB8AFQAfABYAFgAfACAAFgAgABcAFwAgACEAFwAhABgAGAAhACIAGAAiABkAGQAiACMAGQAjABoAGwAkACUAGwAlABwAHAAlACYAHAAmAB0AHQAmACcAHQAnAB4AHgAnACgAHgAoAB8AHwAoACkAHwApACAAIAApACoAIAAqACEAIQAqACsAIQArACIAIgArACwAIgAsACMA"),
-"primitive": 3,
-"uv_scale": Vector4(0, 0, 0, 0),
-"vertex_count": 45,
-"vertex_data": PackedByteArray("56LIOs3MTD9RKBY7RL8cPYXrUT/+nmo95TW9PYXrUT/QXcI8gjByO83MTD8Ayng65TW9PYXrUT/QXcK8gjByO83MTD8Ayni6RL8cPYXrUT/+nmq956LIOs3MTD9RKBa7RL8cvYXrUT/+nmq956LIus3MTD9RKBa75TW9vYXrUT/QXcK8gjByu83MTD8Ayni65TW9vYXrUT/QXcI8gjByu83MTD8Ayng6RL8cvYXrUT/+nmo956LIus3MTD9RKBY7RL8cPYXrUT/+nmo956LIOs3MTD9RKBY75x5rPVK4Xj8/9689bOgNPlK4Xj9cxhE9bOgNPlK4Xj9cxhG95x5rPVK4Xj8/96+95x5rvVK4Xj8/96+9bOgNvlK4Xj9cxhG9bOgNvlK4Xj9cxhE95x5rvVK4Xj8/96895x5rPVK4Xj8/9689Q/VyPdejcD/R1LU9XqMSPtejcD9OohY9XqMSPtejcD9Ooha9Q/VyPdejcD/R1LW9Q/VyvdejcD/R1LW9XqMSvtejcD9Ooha9XqMSvtejcD9OohY9Q/VyvdejcD/R1LU9Q/VyPdejcD/R1LU9Q/VyPQAAgD/R1LU9XqMSPgAAgD9OohY9XqMSPgAAgD9Ooha9Q/VyPQAAgD/R1LW9Q/VyvQAAgD/R1LW9XqMSvgAAgD9Ooha9XqMSvgAAgD9OohY9Q/VyvQAAgD/R1LU9Q/VyPQAAgD/R1LU9yImEJF0Q3qsJjyg+6yT/nNik8TYrK6qqPZSmHDwVNbNsudAgFkogrVShNBFTJj626Lw7C35QlqxZo/wEtCr/uNZBCg/EPMy3elvICbAeA8ENSdkkcTqxzVhjPhTUHmLJLl9sOXQhLtfKblUhhg+9zsN06TzCGHacA3tZIwsFMq4Jjyg+6yT/nMiJhCRdEN6r3pbWZX5Qqo4Yv4Bhk1Q8qlLg9Tt5kHSpuuSTFdGL/ZUoGt8WQGJUnn8eGD9CU1bFCURTYOajyshrartkzqhnh96W1mV+UKqO3Zuwfe5kQpBg0B19FlpAtNP8LFDjpGG0i/3TGwWa35FOAt0bl2UMkuECYVBvWYe20i/UfGenZLYrZIx9SJtUkN2bsH3uZEKQ+JP/f5Vsf4sIxv9/1lWMrv//NqCynQC7//8P3GKgg5YAAAXslWx/iwAA9bnWVYyuNyD/f7KdALsPXP9/YqCDlviT/3+VbH+L")
-}]
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_5vbca"]
 _surfaces = [{
@@ -236,6 +203,38 @@ _data = {
 &"walk": SubResource("Animation_x7x1t")
 }
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_trouser_leg"]
+top_radius = 0.088
+bottom_radius = 0.058
+height = 0.78
+radial_segments = 12
+rings = 3
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_hem"]
+top_radius = 0.058
+bottom_radius = 0.066
+height = 0.06
+radial_segments = 12
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_pelvis"]
+radius = 0.16
+height = 0.26
+radial_segments = 14
+rings = 7
+
+[sub_resource type="SphereMesh" id="SphereMesh_seat"]
+radius = 0.072
+height = 0.12
+radial_segments = 10
+rings = 5
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_shoe"]
+radius = 0.052
+height = 0.25
+radial_segments = 10
+rings = 3
+
 [node name="CustomerBody" type="Node3D" unique_id=885104050]
 script = ExtResource("1_02ont")
 default_face = ExtResource("2_dpsq6")
@@ -250,12 +249,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.085, 0.85, 0)
 [node name="LegL" type="MeshInstance3D" parent="HipL" unique_id=2027006383]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.39, 0)
 material_override = ExtResource("6_vw5jt")
-mesh = SubResource("CylinderMesh_pkni2")
+mesh = SubResource("CylinderMesh_trouser_leg")
+
+[node name="HemL" type="MeshInstance3D" parent="HipL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.75, 0)
+material_override = ExtResource("6_vw5jt")
+mesh = SubResource("CylinderMesh_hem")
 
 [node name="ShoeL" type="MeshInstance3D" parent="HipL" unique_id=958349452]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.815, -0.035)
+transform = Transform3D(1, 0, 0, 0, 0, -0.7, 0, 1, 0, 0, -0.79, -0.04)
 material_override = ExtResource("7_tro7t")
-mesh = SubResource("BoxMesh_cgwyv")
+mesh = SubResource("CapsuleMesh_shoe")
 
 [node name="ShoulderL" type="Node3D" parent="." unique_id=157388767]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.225, 1.4, 0)
@@ -281,12 +285,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.085, 0.85, 0)
 [node name="LegR" type="MeshInstance3D" parent="HipR" unique_id=1527165324]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.39, 0)
 material_override = ExtResource("6_vw5jt")
-mesh = SubResource("CylinderMesh_u5l00")
+mesh = SubResource("CylinderMesh_trouser_leg")
+
+[node name="HemR" type="MeshInstance3D" parent="HipR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.75, 0)
+material_override = ExtResource("6_vw5jt")
+mesh = SubResource("CylinderMesh_hem")
 
 [node name="ShoeR" type="MeshInstance3D" parent="HipR" unique_id=1681845511]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.815, -0.035)
+transform = Transform3D(1, 0, 0, 0, 0, -0.7, 0, 1, 0, 0, -0.79, -0.04)
 material_override = ExtResource("7_tro7t")
-mesh = SubResource("BoxMesh_7vx27")
+mesh = SubResource("CapsuleMesh_shoe")
 
 [node name="ShoulderR" type="Node3D" parent="." unique_id=580014753]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.225, 1.4, 0)
@@ -307,8 +316,19 @@ material_override = ExtResource("4_ki8ny")
 mesh = SubResource("BoxMesh_8kjyr")
 
 [node name="Hips" type="MeshInstance3D" parent="." unique_id=207644104]
+transform = Transform3D(1.08, 0, 0, 0, 1, 0, 0, 0, 0.72, 0, 0.92, 0)
 material_override = ExtResource("6_vw5jt")
-mesh = SubResource("ArrayMesh_jpgrw")
+mesh = SubResource("SphereMesh_pelvis")
+
+[node name="SeatL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.8, -0.058, 0.88, 0.028)
+material_override = ExtResource("6_vw5jt")
+mesh = SubResource("SphereMesh_seat")
+
+[node name="SeatR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.8, 0.058, 0.88, 0.028)
+material_override = ExtResource("6_vw5jt")
+mesh = SubResource("SphereMesh_seat")
 
 [node name="Torso" type="MeshInstance3D" parent="." unique_id=2057461454]
 material_override = ExtResource("5_l8b2o")
