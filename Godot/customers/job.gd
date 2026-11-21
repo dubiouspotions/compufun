@@ -39,10 +39,6 @@ var software_fixed: bool = false
 var powered: bool = false
 ## Game.setup_for has broken the computer's running copy as the problem says.
 var broken: bool = false
-## The symptoms that the player marked in CompuFunDB, as Problem.symptoms spells them.
-var marked_symptoms: Array[String] = []
-## The repair steps that the player ticked in CompuFunDB, as the Problem spells them.
-var ticked_repairs: Array[String] = []
 
 ## The customer's problem.
 var problem: Problem:
@@ -100,8 +96,6 @@ func snapshot() -> Dictionary:
 		"hardware_fixed": hardware_fixed,
 		"software_fixed": software_fixed,
 		"powered": powered,
-		"marked_symptoms": marked_symptoms.duplicate(),
-		"ticked_repairs": ticked_repairs.duplicate(),
 		"case_open": case_open,
 		"panel_screws": panel_screws.duplicate(),
 		"parts": Job.pieces_data(places.values()),
