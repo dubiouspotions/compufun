@@ -1,0 +1,29 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://win95/systray.gd" id="script"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/tray_speaker_16.png" id="speaker"]
+
+[node name="Systray" type="PanelContainer"]
+theme_type_variation = &"TrayWell"
+script = ExtResource("script")
+
+[node name="Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Speaker" type="TextureButton" parent="Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+texture_normal = ExtResource("speaker")
+
+[node name="Clock" type="Label" parent="Row"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "12:00 PM"
+vertical_alignment = 1
+
+[node name="ClockTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+autostart = true

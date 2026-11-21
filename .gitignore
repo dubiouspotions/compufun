@@ -13,3 +13,9 @@ desktop.ini
 
 # F9 reports: GitHub issues are the record; these folders are the local backups
 /feedback/
+
+# The F9 issues token (docs/working-together.md)
+/issues-token.txt
+
+# The Godot path that Play HumanError.bat found or was given
+/godot-path.txt

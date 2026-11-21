@@ -2,36 +2,24 @@
 
 [ext_resource type="FontFile" uid="uid://foknlu6tjkl7" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="font_bold"]
 [ext_resource type="Theme" uid="uid://cg0mcpaggb3c5" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/window.gd" id="window"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
 
 [node name="WelcomeWindow" type="PanelContainer" unique_id=546592946]
 custom_minimum_size = Vector2(491, 279)
 offset_right = 491.0
 offset_bottom = 279.0
 theme = ExtResource("theme")
+script = ExtResource("window")
 
 [node name="VBox" type="VBoxContainer" parent="." unique_id=487282804]
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="TitleBar" type="PanelContainer" parent="VBox" unique_id=1404069971]
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"TitleBar"
-
-[node name="Row" type="HBoxContainer" parent="VBox/TitleBar" unique_id=423581765]
-layout_mode = 2
-theme_override_constants/separation = 0
-
-[node name="Title" type="Label" parent="VBox/TitleBar/Row" unique_id=671397532]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"TitleLabel"
-text = "Welcome"
-
-[node name="CloseCaption" type="Button" parent="VBox/TitleBar/Row" unique_id=697554535]
-custom_minimum_size = Vector2(16, 14)
-layout_mode = 2
-focus_mode = 0
-theme_type_variation = &"CaptionCloseButton"
+title = "Welcome"
 
 [node name="Body" type="Control" parent="VBox" unique_id=524475102]
 layout_mode = 2
@@ -145,3 +133,5 @@ offset_right = 340.0
 offset_bottom = 234.0
 button_pressed = true
 text = "Show this Welcome Screen next time you start Windows"
+
+[connection signal="pressed" from="VBox/Body/Close" to="." method="close"]

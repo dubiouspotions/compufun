@@ -4,6 +4,8 @@
 [ext_resource type="Texture2D" uid="uid://dy2k4ui5xt3mp" path="res://win95/wallpapers/win95-default.png" id="2_d5dma"]
 [ext_resource type="Texture2D" uid="uid://e7gvt0vfnhnb" path="res://win95/theme/icons/29.png" id="4_d5dma"]
 [ext_resource type="PackedScene" path="res://win95/task_button.tscn" id="5_d5dma"]
+[ext_resource type="PackedScene" path="res://win95/desktop_icons.tscn" id="desktop_icons"]
+[ext_resource type="PackedScene" path="res://win95/systray.tscn" id="systray"]
 [ext_resource type="PackedScene" uid="uid://nu7hal0154hv" path="res://win95/welcome_window.tscn" id="welcome_window"]
 
 [node name="Win95" type="Control" unique_id=1752664516]
@@ -32,6 +34,9 @@ grow_vertical = 2
 texture = ExtResource("2_d5dma")
 stretch_mode = 5
 
+[node name="DesktopIcons" parent="Desktop" unique_id=2116977992 instance=ExtResource("desktop_icons")]
+layout_mode = 1
+
 [node name="WelcomeWindow" parent="Desktop" unique_id=1584676698 instance=ExtResource("welcome_window")]
 layout_mode = 0
 offset_left = 160.0
@@ -40,8 +45,8 @@ offset_right = 651.0
 offset_bottom = 447.0
 
 [node name="TaskBar" type="PanelContainer" parent="." unique_id=492109658]
-custom_minimum_size = Vector2(0, 28)
-custom_maximum_size = Vector2(-1, 28)
+custom_minimum_size = Vector2(0, 30)
+custom_maximum_size = Vector2(-1, 30)
 layout_mode = 1
 anchors_preset = -1
 anchor_top = 1.0
@@ -70,5 +75,13 @@ alignment = 0
 
 [node name="TaskButton" parent="TaskBar/HBoxContainer" unique_id=480996942 instance=ExtResource("5_d5dma")]
 layout_mode = 2
+theme_type_variation = &"TaskbarButtonActive"
 button_pressed = true
 text = "Welcome"
+
+[node name="Spacer" type="Control" parent="TaskBar/HBoxContainer" unique_id=1937979923]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Systray" parent="TaskBar/HBoxContainer" unique_id=1819389400 instance=ExtResource("systray")]
+layout_mode = 2

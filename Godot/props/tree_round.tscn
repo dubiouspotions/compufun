@@ -1,0 +1,29 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/bark.tres" id="1_faox3"]
+[ext_resource type="Material" path="res://materials/leaves.tres" id="2_niq0l"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_4nfv5"]
+top_radius = 0.14
+bottom_radius = 0.14
+height = 1.6
+radial_segments = 8
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_0h3yy"]
+radius = 1.25
+height = 2.3
+radial_segments = 7
+rings = 4
+
+[node name="TreeRound" type="Node3D" unique_id=491982251]
+
+[node name="Trunk" type="MeshInstance3D" parent="." unique_id=1600673749]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = ExtResource("1_faox3")
+mesh = SubResource("CylinderMesh_4nfv5")
+
+[node name="Crown" type="MeshInstance3D" parent="." unique_id=841461960]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0)
+material_override = ExtResource("2_niq0l")
+mesh = SubResource("SphereMesh_0h3yy")

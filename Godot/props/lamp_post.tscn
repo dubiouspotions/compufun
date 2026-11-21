@@ -1,42 +1,97 @@
 [gd_scene format=3]
 
-[ext_resource type="Material" path="res://materials/rubber.tres" id="1_m0cvp"]
-[ext_resource type="Material" path="res://materials/light_panel.tres" id="2_4yuqi"]
+[ext_resource type="Material" path="res://materials/rubber.tres" id="1_jn1y4"]
+[ext_resource type="Material" path="res://materials/lamp_glass.tres" id="2_sjn1l"]
+[ext_resource type="Material" path="res://materials/lamp_glow.tres" id="3_5o2a6"]
+[ext_resource type="Material" path="res://materials/lamp_halo.tres" id="4_6bgod"]
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_jn1y4"]
-top_radius = 0.05
-bottom_radius = 0.05
-height = 4.0
+[sub_resource type="CylinderMesh" id="CylinderMesh_yfl36"]
+top_radius = 0.12
+bottom_radius = 0.12
+height = 0.3
 radial_segments = 8
 rings = 1
 
-[sub_resource type="BoxMesh" id="BoxMesh_sjn1l"]
-size = Vector3(0.05, 0.05, 0.7)
+[sub_resource type="CylinderMesh" id="CylinderMesh_oj08d"]
+top_radius = 0.055
+bottom_radius = 0.055
+height = 2.55
+radial_segments = 8
+rings = 1
 
-[sub_resource type="BoxMesh" id="BoxMesh_5o2a6"]
-size = Vector3(0.22, 0.1, 0.36)
+[sub_resource type="BoxMesh" id="BoxMesh_qpn5r"]
+size = Vector3(0.3, 0.05, 0.3)
 
-[sub_resource type="BoxMesh" id="BoxMesh_6bgod"]
-size = Vector3(0.18, 0.01, 0.3)
+[sub_resource type="BoxMesh" id="BoxMesh_n2vxl"]
+size = Vector3(0.24, 0.32, 0.24)
 
-[node name="LampPost" type="Node3D" unique_id=1778814953]
+[sub_resource type="BoxMesh" id="BoxMesh_rxgsy"]
+size = Vector3(0.25, 0.33, 0.25)
 
-[node name="Pole" type="MeshInstance3D" parent="." unique_id=869360366]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
-material_override = ExtResource("1_m0cvp")
-mesh = SubResource("CylinderMesh_jn1y4")
+[sub_resource type="BoxMesh" id="BoxMesh_brhpg"]
+size = Vector3(0.36, 0.06, 0.36)
 
-[node name="Arm" type="MeshInstance3D" parent="." unique_id=1292568597]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.95, -0.33)
-material_override = ExtResource("1_m0cvp")
-mesh = SubResource("BoxMesh_sjn1l")
+[sub_resource type="CylinderMesh" id="CylinderMesh_nqlpv"]
+top_radius = 0.0
+bottom_radius = 0.2
+height = 0.14
+radial_segments = 6
+rings = 1
 
-[node name="Head" type="MeshInstance3D" parent="." unique_id=807537071]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.92, -0.68)
-material_override = ExtResource("1_m0cvp")
-mesh = SubResource("BoxMesh_5o2a6")
+[sub_resource type="QuadMesh" id="QuadMesh_wakpq"]
+size = Vector2(1.1, 1.1)
 
-[node name="Glow" type="MeshInstance3D" parent="." unique_id=2065430380]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.865, -0.68)
-material_override = ExtResource("2_4yuqi")
-mesh = SubResource("BoxMesh_6bgod")
+[node name="LampPost" type="Node3D" unique_id=1963316113]
+
+[node name="Base" type="MeshInstance3D" parent="." unique_id=55865935]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+material_override = ExtResource("1_jn1y4")
+mesh = SubResource("CylinderMesh_yfl36")
+
+[node name="Pole" type="MeshInstance3D" parent="." unique_id=59736352]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.575, 0)
+material_override = ExtResource("1_jn1y4")
+mesh = SubResource("CylinderMesh_oj08d")
+
+[node name="LanternBottom" type="MeshInstance3D" parent="." unique_id=1116251407]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.86, 0)
+material_override = ExtResource("1_jn1y4")
+mesh = SubResource("BoxMesh_qpn5r")
+
+[node name="LanternGlass" type="MeshInstance3D" parent="." unique_id=1083655544]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.04, 0)
+material_override = ExtResource("2_sjn1l")
+mesh = SubResource("BoxMesh_n2vxl")
+
+[node name="LanternGlow" type="MeshInstance3D" parent="." unique_id=1110393918 groups=["lamp_glow"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.04, 0)
+material_override = ExtResource("3_5o2a6")
+mesh = SubResource("BoxMesh_rxgsy")
+
+[node name="LanternRoof" type="MeshInstance3D" parent="." unique_id=1417231014]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.23, 0)
+material_override = ExtResource("1_jn1y4")
+mesh = SubResource("BoxMesh_brhpg")
+
+[node name="RoofTop" type="MeshInstance3D" parent="." unique_id=1853489339]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.33, 0)
+material_override = ExtResource("1_jn1y4")
+mesh = SubResource("CylinderMesh_nqlpv")
+
+[node name="Halo" type="MeshInstance3D" parent="." unique_id=2070841343 groups=["lamp_glow"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+material_override = ExtResource("4_6bgod")
+mesh = SubResource("QuadMesh_wakpq")
+
+[node name="Pool" type="SpotLight3D" parent="." unique_id=1795999016 groups=["lamp"]]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 2.82, 0)
+light_color = Color(1, 0.78, 0.5, 1)
+light_energy = 7.0
+spot_range = 7.0
+spot_attenuation = 0.6
+spot_angle = 58.0
+
+[node name="Fill" type="OmniLight3D" parent="." unique_id=1890197478 groups=["lamp"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0.2)
+light_color = Color(1, 0.8, 0.55, 1)
+light_energy = 1.8

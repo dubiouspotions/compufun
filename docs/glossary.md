@@ -38,3 +38,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 **Prop**: A placeholder model scene in `Godot/props/`, such as `crt_monitor.tscn`. A room places props; it does not copy their parts.
 *Avoid:* asset, model, object.
+
+**Outside**: The world outside the shop windows (`rooms/shop/outside.tscn`): the back alley, the sky, the sun and moon, the lamps, the fog and the rain. It runs the time of day.
+*Avoid:* street, environment, weather system.
+
+**Debug menu**: The F2 panel in debug builds that sets the time of day, the day cycle and the rain.
+*Avoid:* dev menu, cheat menu.

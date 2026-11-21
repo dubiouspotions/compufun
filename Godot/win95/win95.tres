@@ -158,6 +158,24 @@ script = ExtResource("bevel")
 kind = 2
 palette = ExtResource("palette")
 
+[sub_resource type="StyleBoxEmpty" id="icon_label"]
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+content_margin_bottom = 1.0
+
+[sub_resource type="StyleBox" id="field_panel"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+kind = 4
+fill = 1
+palette = ExtResource("palette")
+
 [sub_resource type="AtlasTexture" id="scroll_left"]
 atlas = ExtResource("atlas")
 region = Rect2(112, 14, 16, 16)
@@ -196,6 +214,13 @@ texture = ExtResource("atlas")
 texture_margin_top = 1.0
 texture_margin_bottom = 1.0
 region_rect = Rect2(16, 0, 3, 2)
+
+[sub_resource type="StyleBoxFlat" id="icon_label_selected"]
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+content_margin_bottom = 1.0
+bg_color = Color(0, 0, 0.502, 1)
 
 [sub_resource type="StyleBoxEmpty" id="no_focus"]
 content_margin_left = 0.0
@@ -243,6 +268,23 @@ content_margin_right = 4.0
 content_margin_bottom = 3.0
 script = ExtResource("bevel")
 kind = 4
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBoxEmpty" id="menu_title"]
+content_margin_left = 6.0
+content_margin_top = 2.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+
+[sub_resource type="StyleBox" id="menu_title_pressed"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 6.0
+content_margin_top = 2.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+kind = 1
 palette = ExtResource("palette")
 
 [sub_resource type="StyleBox" id="window"]
@@ -323,6 +365,17 @@ script = ExtResource("bevel")
 kind = 5
 palette = ExtResource("palette")
 
+[sub_resource type="StyleBox" id="status_well"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 3.0
+content_margin_top = 1.0
+content_margin_right = 3.0
+content_margin_bottom = 1.0
+script = ExtResource("bevel")
+kind = 1
+palette = ExtResource("palette")
+
 [sub_resource type="StyleBox" id="taskbar"]
 resource_local_to_scene = false
 resource_name = ""
@@ -358,16 +411,16 @@ region_rect = Rect2(0, 48, 6, 6)
 
 [sub_resource type="StyleBoxFlat" id="title_active"]
 content_margin_left = 2.0
-content_margin_top = 2.0
+content_margin_top = 1.0
 content_margin_right = 2.0
-content_margin_bottom = 2.0
+content_margin_bottom = 1.0
 bg_color = Color(0, 0, 0.502, 1)
 
 [sub_resource type="StyleBoxFlat" id="title_inactive"]
 content_margin_left = 2.0
-content_margin_top = 2.0
+content_margin_top = 1.0
 content_margin_right = 2.0
-content_margin_bottom = 2.0
+content_margin_bottom = 1.0
 bg_color = Color(0.502, 0.502, 0.502, 1)
 
 [sub_resource type="StyleBoxFlat" id="tooltip"]
@@ -381,6 +434,17 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBox" id="tray_well"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 4.0
+content_margin_top = 3.0
+content_margin_right = 4.0
+content_margin_bottom = 3.0
+script = ExtResource("bevel")
+kind = 1
+palette = ExtResource("palette")
 
 [sub_resource type="AtlasTexture" id="scroll_up"]
 atlas = ExtResource("atlas")
@@ -464,6 +528,11 @@ DefaultButton/styles/hover = SubResource("default_button")
 DefaultButton/styles/hover_pressed = SubResource("default_button_pressed")
 DefaultButton/styles/normal = SubResource("default_button")
 DefaultButton/styles/pressed = SubResource("default_button_pressed")
+DesktopIconLabel/base_type = &"Label"
+DesktopIconLabel/colors/font_color = Color(1, 1, 1, 1)
+DesktopIconLabel/styles/normal = SubResource("icon_label")
+FieldPanel/base_type = &"PanelContainer"
+FieldPanel/styles/panel = SubResource("field_panel")
 HScrollBar/icons/decrement = SubResource("scroll_left")
 HScrollBar/icons/decrement_highlight = SubResource("scroll_left")
 HScrollBar/icons/decrement_pressed = SubResource("scroll_left_pressed")
@@ -477,6 +546,12 @@ HScrollBar/styles/scroll = SubResource("scroll_track")
 HScrollBar/styles/scroll_focus = SubResource("scroll_track")
 HSeparator/constants/separation = 2
 HSeparator/styles/separator = SubResource("menu_separator")
+IconLabel/base_type = &"Label"
+IconLabel/colors/font_color = Color(0, 0, 0, 1)
+IconLabel/styles/normal = SubResource("icon_label")
+IconLabelSelected/base_type = &"Label"
+IconLabelSelected/colors/font_color = Color(1, 1, 1, 1)
+IconLabelSelected/styles/normal = SubResource("icon_label_selected")
 ItemList/colors/font_color = Color(0, 0, 0, 1)
 ItemList/colors/font_hovered_color = Color(0, 0, 0, 1)
 ItemList/colors/font_hovered_selected_color = Color(1, 1, 1, 1)
@@ -503,6 +578,23 @@ LineEdit/colors/selection_color = Color(0, 0, 0.502, 1)
 LineEdit/styles/focus = SubResource("no_focus")
 LineEdit/styles/normal = SubResource("field")
 LineEdit/styles/read_only = SubResource("field_disabled")
+MenuBar/colors/font_color = Color(0, 0, 0, 1)
+MenuBar/colors/font_disabled_color = Color(0.502, 0.502, 0.502, 1)
+MenuBar/colors/font_focus_color = Color(0, 0, 0, 1)
+MenuBar/colors/font_hover_color = Color(0, 0, 0, 1)
+MenuBar/colors/font_hover_pressed_color = Color(0, 0, 0, 1)
+MenuBar/colors/font_pressed_color = Color(0, 0, 0, 1)
+MenuBar/constants/h_separation = 0
+MenuBar/styles/disabled = SubResource("menu_title")
+MenuBar/styles/disabled_mirrored = SubResource("menu_title")
+MenuBar/styles/hover = SubResource("menu_title")
+MenuBar/styles/hover_mirrored = SubResource("menu_title")
+MenuBar/styles/hover_pressed = SubResource("menu_title_pressed")
+MenuBar/styles/hover_pressed_mirrored = SubResource("menu_title_pressed")
+MenuBar/styles/normal = SubResource("menu_title")
+MenuBar/styles/normal_mirrored = SubResource("menu_title")
+MenuBar/styles/pressed = SubResource("menu_title_pressed")
+MenuBar/styles/pressed_mirrored = SubResource("menu_title_pressed")
 Panel/styles/panel = SubResource("window")
 PanelContainer/styles/panel = SubResource("window")
 PopupMenu/colors/font_accelerator_color = Color(0, 0, 0, 1)
@@ -536,6 +628,8 @@ StartButton/styles/hover = SubResource("taskbar_button")
 StartButton/styles/hover_pressed = SubResource("start_button_pressed")
 StartButton/styles/normal = SubResource("taskbar_button")
 StartButton/styles/pressed = SubResource("start_button_pressed")
+StatusWell/base_type = &"PanelContainer"
+StatusWell/styles/panel = SubResource("status_well")
 Taskbar/base_type = &"PanelContainer"
 Taskbar/styles/panel = SubResource("taskbar")
 TaskbarButton/base_type = &"Button"
@@ -571,6 +665,8 @@ TitleLabelInactive/colors/font_color = Color(0.7529, 0.7529, 0.7529, 1)
 TitleLabelInactive/fonts/font = ExtResource("font_bold")
 TooltipLabel/colors/font_color = Color(0, 0, 0, 1)
 TooltipPanel/styles/panel = SubResource("tooltip")
+TrayWell/base_type = &"PanelContainer"
+TrayWell/styles/panel = SubResource("tray_well")
 VScrollBar/icons/decrement = SubResource("scroll_up")
 VScrollBar/icons/decrement_highlight = SubResource("scroll_up")
 VScrollBar/icons/decrement_pressed = SubResource("scroll_up_pressed")
