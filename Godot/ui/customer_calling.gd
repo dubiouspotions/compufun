@@ -30,6 +30,7 @@ var _step: int = 0
 var _last: DialogueLine
 var _calling: bool = false
 
+@onready var _name: Label = %Name
 @onready var _label: Label = %Line
 @onready var _voice: VoicePlayer = %Voice
 @onready var _timer: Timer = %Timer
@@ -84,7 +85,8 @@ func _on_timer() -> void:
 	var line: DialogueLine = choices.pick_random()
 	_step += 1
 	_last = line
-	_label.text = "%s: %s" % [_customer.spoken_name(), line.text]
+	_name.text = _customer.spoken_name()
+	_label.text = line.text
 	show()
 	_timer.start(maxf(show_seconds, _voice.say(line, _customer.voice, VoiceEffect.of(line, _conversation))))
 

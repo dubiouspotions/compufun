@@ -2,6 +2,20 @@
 
 [ext_resource type="Script" path="res://voices/voice_player.gd" id="voice_player"]
 [ext_resource type="Script" path="res://ui/customer_calling.gd" id="script"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_regular.ttf" id="pixel"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="pixel_bold"]
+
+[sub_resource type="StyleBoxFlat" id="box"]
+content_margin_left = 28.0
+content_margin_top = 16.0
+content_margin_right = 28.0
+content_margin_bottom = 16.0
+bg_color = Color(0.05, 0.05, 0.09, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.3, 0.3, 0.34, 1)
 
 [node name="CustomerCalling" type="PanelContainer"]
 anchors_preset = 5
@@ -10,21 +24,29 @@ anchor_right = 0.5
 offset_top = 96.0
 grow_horizontal = 2
 mouse_filter = 2
+theme_override_styles/panel = SubResource("box")
 script = ExtResource("script")
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="Text" type="VBoxContainer" parent="."]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 10
+theme_override_constants/separation = 6
 
-[node name="Line" type="Label" parent="Margin"]
+[node name="Name" type="Label" parent="Text"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.45, 1)
+theme_override_fonts/font = ExtResource("pixel_bold")
 theme_override_font_sizes/font_size = 28
-text = "Customer: Hello?"
+text = "Customer"
+
+[node name="Line" type="Label" parent="Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.95, 0.92, 1)
+theme_override_fonts/font = ExtResource("pixel")
+theme_override_font_sizes/font_size = 28
+text = "Hello?"
 
 [node name="Voice" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
