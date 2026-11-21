@@ -1,23 +1,78 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://props/part_box.gd" id="1_box"]
-[ext_resource type="Material" path="res://materials/cardboard.tres" id="2_card"]
+[ext_resource type="Material" path="res://materials/bin_blue.tres" id="2_plastic"]
 [ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="3_hot"]
+[ext_resource type="Material" path="res://materials/paper.tres" id="4_paper"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_box"]
-size = Vector3(0.26, 0.1, 0.24)
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+size = Vector3(0.26, 0.008, 0.24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_back"]
+size = Vector3(0.26, 0.06, 0.008)
+
+[sub_resource type="BoxMesh" id="BoxMesh_front"]
+size = Vector3(0.26, 0.036, 0.008)
+
+[sub_resource type="BoxMesh" id="BoxMesh_side"]
+size = Vector3(0.008, 0.06, 0.224)
+
+[sub_resource type="BoxMesh" id="BoxMesh_label"]
+size = Vector3(0.24, 0.036, 0.003)
 
 [node name="PartBox" type="Node3D"]
 script = ExtResource("1_box")
 
-[node name="Box" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
-material_override = ExtResource("2_card")
-mesh = SubResource("BoxMesh_box")
+[node name="Tray" type="Node3D" parent="."]
+
+[node name="Floor" type="MeshInstance3D" parent="Tray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.004, 0)
+material_override = ExtResource("2_plastic")
+mesh = SubResource("BoxMesh_floor")
+
+[node name="Back" type="MeshInstance3D" parent="Tray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -0.116)
+material_override = ExtResource("2_plastic")
+mesh = SubResource("BoxMesh_back")
+
+[node name="Front" type="MeshInstance3D" parent="Tray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.018, 0.116)
+material_override = ExtResource("2_plastic")
+mesh = SubResource("BoxMesh_front")
+
+[node name="Left" type="MeshInstance3D" parent="Tray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.126, 0.03, 0)
+material_override = ExtResource("2_plastic")
+mesh = SubResource("BoxMesh_side")
+
+[node name="Right" type="MeshInstance3D" parent="Tray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.126, 0.03, 0)
+material_override = ExtResource("2_plastic")
+mesh = SubResource("BoxMesh_side")
+
+[node name="Label" type="MeshInstance3D" parent="Tray"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.643, 0.766, 0, -0.766, 0.643, 0, 0.042, 0.124)
+material_override = ExtResource("4_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Name" type="Label3D" parent="Tray/Label"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.006)
+pixel_size = 0.0012
+shaded = true
+modulate = Color(0.08, 0.08, 0.1, 1)
+text = "Part"
+font_size = 32
+outline_size = 0
+
+[node name="Pieces" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008, 0)
 
 [node name="Hotspot" parent="." instance=ExtResource("3_hot")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
 action = 2
-size = Vector3(0.28, 0.2, 0.26)
+size = Vector3(0.28, 0.12, 0.26)
 takes_drop = true

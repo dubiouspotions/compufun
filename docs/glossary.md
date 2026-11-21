@@ -99,7 +99,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Hand**: The one piece that the player holds (`Game.hand`). Its model shows low in the view, held in front of the camera, with its name (`rooms/shop/hand.tscn`). The player puts it somewhere by clicking there or by dragging it there.
 *Avoid:* inventory, cursor item.
 
-**Storage View**: The close-up of the parts desk in the storage room, with one box of new parts per part. The storage door in the Left View leads there.
+**Storage View**: The close-up of the parts desk in the storage room, with one plastic tray of new parts per part, labelled with its name. The storage door in the Left View leads there.
 *Avoid:* shelf view, parts screen.
 
 **Storage bin**: The blue bin on the wall of the storage room where the player puts parts away and takes them back (`Game.stored`, `rooms/shop/storage_bin.tscn`).
