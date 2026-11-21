@@ -1,19 +1,29 @@
 class_name VoiceLab
 extends Control
-## The Voice Lab, a dev tool: says a line with every Chimera parameter on a slider, then runs it
-## through glitch effects. Open it from the Dev menu (F3 or Cmd+3), or run dev/voice_lab.tscn.
-## While it is open the game is paused and its sounds are held. It needs the ChimeraVoice extension
-## (tools/build-voice.sh); the game's voices are not changed.
+## The Voice Lab, a dev tool for making voice types (VoiceType): a base voice, an alternate voice
+## and a curve that says how much of the alternate plays across the line. The levers edit the side
+## picked under Voice type; Save writes voices/types/<name>.tres, which the Dialogue tab gives to a
+## conversation or a line. It speaks through ChimeraVoice, the engine the game uses, so what it
+## plays is what the game plays. Open it from the Dev menu (F3 or Cmd+3), or run dev/voice_lab.tscn.
+## While it is open the game is paused and its sounds are held.
 
 const MIX_RATE: float = 22050.0
 const BODIES: PackedStringArray = ["Male", "Female", "Child"]
 const INTONATIONS: PackedStringArray = ["Line", "Statement", "Question", "Flat"]
+const SIDES: PackedStringArray = ["Base", "Alternate"]
 const CUSTOMERS: String = "res://customers"
-const BUS: StringName = &"VoiceLab"
+const TYPES: String = "res://voices/types"
+## The curve presets: name and points.
+const CURVES: Array = [
+	["Full", [Vector2(0, 1), Vector2(1, 1)]],
+	["Ramp up", [Vector2(0, 0), Vector2(1, 1)]],
+	["Ramp down", [Vector2(0, 1), Vector2(1, 0)]],
+	["Bursts", [Vector2(0, 0), Vector2(0.18, 0), Vector2(0.22, 1), Vector2(0.34, 1), Vector2(0.38, 0), Vector2(0.6, 0), Vector2(0.64, 1), Vector2(0.76, 1), Vector2(0.8, 0), Vector2(1, 0)]],
+	["Off", [Vector2(0, 0), Vector2(1, 0)]],
+]
 
-## Each lever: [key, label, min, max, step, default]. The groups say what a lever is for, not
-## where it acts: START_KEYS go to start(), TWEAK_KEYS to set_tweaks() when they differ from their
-## default, BUS_KEYS drive the effects on the VoiceLab bus, and the rest are effects on the samples.
+## Each lever: [key, label, min, max, step, default]. The key is the voice type's (see
+## native/chimera_voice/src/voice_type.rs); a lever at its default is left out of the voice.
 const GROUPS: Array = [
 	["Robotic", "Flatten the human out of it", [
 		["accent", "Melody", 0.0, 1.5, 0.01, 0.14],
@@ -50,7 +60,6 @@ const GROUPS: Array = [
 		["roughness", "Grit", 0.0, 1.0, 0.01, 0.1],
 		["fry", "Crackle", 0.0, 1.0, 0.01, 0.0],
 		["distortion", "Distortion", 0.0, 1.0, 0.01, 0.0],
-		["shift", "Pitch shift", 0.25, 4.0, 0.01, 1.0],
 		["phaser", "Phaser", 0.0, 4.0, 0.01, 0.0],
 		["chorus", "Double voice", 0.0, 1.0, 0.01, 0.0],
 		["delay", "Echo", 0.0, 0.95, 0.01, 0.0],
@@ -71,11 +80,7 @@ const GROUPS: Array = [
 		["brightness", "Brightness", 0.0, 1.0, 0.01, 0.25],
 	]],
 ]
-const START_KEYS: PackedStringArray = ["rate", "pitch", "accent", "fs"]
-const TWEAK_KEYS: PackedStringArray = ["female", "child", "scale", "pharynx", "tongue", "lips", "folds", "open_phase",
-	"glide", "pressure", "breathiness", "tension", "fry", "roughness", "vibrato_depth", "vibrato_rate", "drift", "brightness"]
-## Each character macro, 0 to 1, pulls its levers from their defaults toward these values; when
-## two macros pull one lever, their pulls add up.
+
 const MACROS: Dictionary = {
 	"Robotic": {"accent": 0.0, "drift": 0.0, "glide": 0.0, "tension": 0.9, "breathiness": 0.0, "ring_hz": 90.0, "ring_mix": 0.55, "metal_ms": 4.0, "metal_fb": 0.75},
 	"Digital": {"bits": 4.0, "hold": 8.0, "fs": 16000.0, "drive": 2.5},
@@ -96,14 +101,21 @@ const ACCENT := Color("7c8cff")
 const CHANGED := Color("ffb454")
 
 var _engine: Object
+var _type: VoiceType
+## 0 edits the base voice, 1 the alternate.
+var _side: int = 0
 var _sliders: Dictionary = {}  # key -> HSlider
 var _lines: Array = []  # [label, DialogueLine, voice]
+var _pose: StringName = &"neutral"
 var _samples: PackedFloat32Array = PackedFloat32Array()
-var _bus: int = -1
-var _effects: Dictionary = {}
 var _was_paused: bool = false
 var _held: Array[Node] = []
 
+var _type_picker: OptionButton
+var _type_name: LineEdit
+var _sides: ButtonGroup
+var _curve_edit: Control
+var _dragging: int = -1
 var _text: TextEdit
 var _voice: ButtonGroup
 var _intonation: ButtonGroup
@@ -111,7 +123,6 @@ var _voiced: CheckButton
 var _auto: CheckButton
 var _loop: CheckButton
 var _macros: Dictionary = {}  # name -> HSlider
-var _seed: SpinBox
 var _status: Label
 var _wave: Control
 var _player: AudioStreamPlayer
@@ -121,18 +132,17 @@ var _respeak: Timer
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_hold_game()
-	_make_bus()
+	_type = _new_type()
 	_build()
+	_show_side()
 	_engine = _make_engine()
 	if _engine == null:
-		_status.text = "No ChimeraVoice extension in this build. Run tools/build-voice.sh, then reopen."
+		_status.text = "No ChimeraVoice extension with voice types in this build. Run tools/build-voice.sh, then reopen."
 		return
-	_status.text = "Game paused. Pick a line or type one, then Speak."
+	_status.text = "Game paused. Shape the base, then the alternate, draw the curve, then Save."
 
 
 func _exit_tree() -> void:
-	if _bus >= 0 and AudioServer.get_bus_index(BUS) == _bus:
-		AudioServer.remove_bus(_bus)
 	_release_game()
 
 
@@ -154,7 +164,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## Renders the text with every setting and plays it.
+## Says the text through the voice type being edited, the whole line at once, and plays it.
 func speak() -> void:
 	if _engine == null:
 		return
@@ -162,29 +172,24 @@ func speak() -> void:
 	if text.is_empty():
 		_status.text = "Nothing to say: the text is empty."
 		return
-	_engine.set_tweaks(_tweaks())
+	var mood := Voices.mood(_pose)
 	var started := Time.get_ticks_usec()
-	var count: int = _engine.start(text, _voice_index(), _value("fs"), _value("rate"), _value("pitch"), _value("accent"))
+	_engine.set_voice_type(_type.encode())
+	var count: int = _engine.start(text, _voice_index(), MIX_RATE, mood.rate, mood.pitch, mood.swing)
 	if count <= 0:
-		_status.text = "Chimera rendered nothing for \"%s\"." % text
+		_status.text = "Chimera said nothing for \"%s\"." % text
 		return
-	var raw: PackedFloat32Array = _engine.render(count)
+	_samples = PackedFloat32Array()
+	while true:
+		var chunk: PackedFloat32Array = _engine.render(4096)
+		if chunk.is_empty():
+			break
+		_samples.append_array(chunk)
 	var render_ms := (Time.get_ticks_usec() - started) / 1000.0
-	_samples = _glitch(raw)
 	_player.stream = _to_wav(_samples)
-	_apply_bus()
 	_player.play()
 	_wave.queue_redraw()
-	_status.text = "%.2f s  ·  rendered in %.0f ms  ·  %d voice tweaks" % [_samples.size() / MIX_RATE, render_ms, _tweaks().size()]
-
-
-## The settings as JSON, for pasting into an issue or a mood.
-func settings_json() -> String:
-	var values := {"text": _text.text, "voice": BODIES[_voice_index()].to_lower(), "intonation": INTONATIONS[_intonation_index()].to_lower(),
-		"voiced": _voiced.button_pressed, "seed": int(_seed.value)}
-	for key: String in _sliders:
-		values[key] = _value(key)
-	return JSON.stringify(values, "  ")
+	_status.text = "%.2f s  ·  rendered in %.0f ms  ·  base %d, alternate %d settings" % [_samples.size() / MIX_RATE, render_ms, _type.base.size(), _type.alternate.size()]
 
 
 # The game stops while the lab is open: the tree pauses, and every playing sound of the game is
@@ -209,12 +214,26 @@ func _release_game() -> void:
 		get_tree().paused = _was_paused
 
 
+func _new_type() -> VoiceType:
+	var t := VoiceType.new()
+	t.curve = _curve_from(CURVES[0][1])
+	return t
+
+
+func _curve_from(points: Array) -> Curve:
+	var curve := Curve.new()
+	for p: Vector2 in points:
+		curve.add_point(p, 0.0, 0.0, Curve.TANGENT_LINEAR, Curve.TANGENT_LINEAR)
+	return curve
+
+
+## The settings of the side being edited.
+func _settings() -> Dictionary:
+	return _type.base if _side == 0 else _type.alternate
+
+
 func _voice_index() -> int:
 	return _voice.get_pressed_button().get_index()
-
-
-func _intonation_index() -> int:
-	return _intonation.get_pressed_button().get_index()
 
 
 func _value(key: String) -> float:
@@ -226,87 +245,50 @@ func _spec(key: String) -> Array:
 		for spec: Array in group[2]:
 			if spec[0] == key:
 				return spec
-	assert(false, "VoiceLab: no slider %s" % key)
+	assert(false, "VoiceLab: no lever %s" % key)
 	return []
 
 
-## Body and source settings that differ from Chimera's own.
-func _tweaks() -> Dictionary:
-	var tweaks := {}
-	for key in TWEAK_KEYS:
-		if not is_equal_approx(_value(key), _spec(key)[5]):
-			tweaks[key] = _value(key)
-	if not _voiced.button_pressed:
-		tweaks["voiced"] = false
-	if _intonation_index() > 0:
-		tweaks["intonation"] = INTONATIONS[_intonation_index()].to_lower()
-	# A blend replaces the picked voice, so keep the picked one's weights unless set.
-	if tweaks.has("female") or tweaks.has("child"):
-		tweaks["female"] = _value("female") if tweaks.has("female") else (1.0 if _voice_index() == 1 else 0.0)
-		tweaks["child"] = _value("child") if tweaks.has("child") else (1.0 if _voice_index() == 2 else 0.0)
-	return tweaks
+# Writes a lever into the side being edited: left out at its default, so the voice stays sparse.
+func _store(key: String, value: float) -> void:
+	if is_equal_approx(value, _spec(key)[5]):
+		_settings().erase(key)
+	else:
+		_settings()[key] = value
 
 
-## The effects on [param raw], in order: tape wobble; stutters, reversed, dropped and static
-## chunks; ring mod, metal, clip, sample crush, bit depth. The seed makes the random ones repeatable.
-func _glitch(raw: PackedFloat32Array) -> PackedFloat32Array:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = int(_seed.value)
-	var out := raw
-	if _value("wobble") > 0.0:
-		var wobbled := PackedFloat32Array()
-		var at := 0.0
-		var t := 0.0
-		while at < out.size() - 1:
-			var i := int(at)
-			wobbled.append(lerpf(out[i], out[i + 1], at - i))
-			at += 1.0 + _value("wobble") * sin(TAU * _value("wobble_hz") * t)
-			t += 1.0 / MIX_RATE
-		out = wobbled
-	var chunk := maxi(1, int(_value("chunk_ms") / 1000.0 * MIX_RATE))
-	if _value("stutter") > 0.0 or _value("reverse") > 0.0 or _value("dropout") > 0.0 or _value("static") > 0.0:
-		var cut := PackedFloat32Array()
-		var stutter_len := maxi(1, int(_value("stutter_ms") / 1000.0 * MIX_RATE))
-		for start in range(0, out.size(), chunk):
-			var piece := out.slice(start, mini(start + chunk, out.size()))
-			if rng.randf() < _value("reverse"):
-				piece.reverse()
-			if rng.randf() < _value("dropout"):
-				piece.fill(0.0)
-			if rng.randf() < _value("static"):
-				for i in piece.size():
-					piece[i] = lerpf(piece[i], rng.randf_range(-1.0, 1.0) * _value("static_level"), 0.85)
-			if rng.randf() < _value("stutter"):
-				var grain := piece.slice(0, mini(stutter_len, piece.size()))
-				for r in int(_value("stutter_repeats")):
-					cut.append_array(grain)
-			cut.append_array(piece)
-		out = cut
-	var ring_mix := _value("ring_mix")
-	var drive := _value("drive")
-	var hold := int(_value("hold"))
-	var levels := pow(2.0, _value("bits") - 1.0)
-	var held := 0.0
-	# Metal: a comb filter, the voice ringing in a short metal tube.
-	var metal := PackedFloat32Array()
-	metal.resize(maxi(0, int(_value("metal_ms") / 1000.0 * MIX_RATE)))
-	var metal_fb := _value("metal_fb")
-	for i in out.size():
-		var s := out[i]
-		if ring_mix > 0.0:
-			s = lerpf(s, s * sin(TAU * _value("ring_hz") * i / MIX_RATE), ring_mix)
-		if not metal.is_empty():
-			var slot := i % metal.size()
-			s = s + metal_fb * metal[slot]
-			metal[slot] = s
-		s = clampf(s * drive, -1.0, 1.0)
-		if i % hold == 0:
-			held = s
-		s = held
-		if levels < 32768.0:
-			s = roundf(s * levels) / levels
-		out[i] = s
-	return out
+func _store_switches() -> void:
+	if _voiced.button_pressed:
+		_settings().erase("voiced")
+	else:
+		_settings()["voiced"] = 0.0
+	var tune := _intonation.get_pressed_button().get_index()
+	if tune == 0:
+		_settings().erase("intonation")
+	else:
+		_settings()["intonation"] = float(tune)
+
+
+# Shows the side being edited on every lever and switch, storing nothing.
+func _show_side() -> void:
+	var settings := _settings()
+	for group: Array in GROUPS:
+		for spec: Array in group[2]:
+			var slider: HSlider = _sliders[spec[0]]
+			slider.set_value_no_signal(settings.get(spec[0], spec[5]))
+			_describe(spec[0])
+	_voiced.set_pressed_no_signal(settings.get("voiced", 1.0) >= 0.5)
+	_intonation.get_buttons()[int(settings.get("intonation", 0.0))].set_pressed_no_signal(true)
+	for macro: String in _macros:
+		(_macros[macro] as HSlider).set_value_no_signal(0.0)
+	_refresh_macro_chips()
+
+
+func _set_lever(key: String, value: float) -> void:
+	var slider: HSlider = _sliders[key]
+	slider.set_value_no_signal(value)
+	_store(key, value)
+	_describe(key)
 
 
 func _to_wav(samples: PackedFloat32Array) -> AudioStreamWAV:
@@ -333,38 +315,11 @@ func _make_engine() -> Object:
 		push_error("VoiceLab: can't read %s: %s" % [path, error_string(FileAccess.get_open_error())])
 		return null
 	var engine: Object = ClassDB.instantiate(&"ChimeraVoice")
-	if not engine.has_method(&"set_tweaks"):
-		push_error("VoiceLab: this ChimeraVoice has no set_tweaks; rebuild it with tools/build-voice.sh")
+	if not engine.has_method(&"set_voice_type"):
+		push_error("VoiceLab: this ChimeraVoice has no set_voice_type; rebuild it with tools/build-voice.sh")
 		return null
 	engine.load_dict(gz.decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP).get_string_from_utf8())
 	return engine if engine.is_ready() else null
-
-
-func _make_bus() -> void:
-	if AudioServer.get_bus_index(BUS) >= 0:
-		_bus = AudioServer.get_bus_index(BUS)
-	else:
-		AudioServer.add_bus()
-		_bus = AudioServer.bus_count - 1
-		AudioServer.set_bus_name(_bus, BUS)
-	for effect: AudioEffect in [AudioEffectDistortion.new(), AudioEffectPitchShift.new(), AudioEffectPhaser.new(), AudioEffectChorus.new(), AudioEffectDelay.new(), AudioEffectReverb.new()]:
-		_effects[effect.get_class()] = effect
-		AudioServer.add_bus_effect(_bus, effect)
-
-
-func _apply_bus() -> void:
-	var effects := [["AudioEffectDistortion", "distortion"], ["AudioEffectPitchShift", "shift"], ["AudioEffectPhaser", "phaser"], ["AudioEffectChorus", "chorus"], ["AudioEffectDelay", "delay"], ["AudioEffectReverb", "reverb"]]
-	for i in effects.size():
-		var key: String = effects[i][1]
-		AudioServer.set_bus_effect_enabled(_bus, i, not is_equal_approx(_value(key), _spec(key)[5]))
-	(_effects["AudioEffectDistortion"] as AudioEffectDistortion).drive = _value("distortion")
-	(_effects["AudioEffectPitchShift"] as AudioEffectPitchShift).pitch_scale = _value("shift")
-	(_effects["AudioEffectPhaser"] as AudioEffectPhaser).depth = _value("phaser")
-	(_effects["AudioEffectChorus"] as AudioEffectChorus).wet = _value("chorus")
-	var delay := _effects["AudioEffectDelay"] as AudioEffectDelay
-	delay.feedback_active = _value("delay") > 0.0
-	delay.feedback_level_db = linear_to_db(maxf(0.001, _value("delay")))
-	(_effects["AudioEffectReverb"] as AudioEffectReverb).wet = _value("reverb")
 
 
 func _randomize() -> void:
@@ -372,45 +327,68 @@ func _randomize() -> void:
 	rng.randomize()
 	for group: Array in GROUPS:
 		for spec: Array in group[2]:
-			if spec[0] in START_KEYS and spec[0] != "accent":
+			if spec[0] in ["rate", "pitch", "fs"]:
 				continue
-			# Mostly leave a knob alone, so a random voice stays a voice.
-			_set_quietly(spec[0], rng.randf_range(spec[2], spec[3]) if rng.randf() < 0.35 else spec[5])
-	_seed.set_value_no_signal(rng.randi_range(0, 9999))
+			# Mostly leave a lever alone, so a random voice stays a voice.
+			_set_lever(spec[0], rng.randf_range(spec[2], spec[3]) if rng.randf() < 0.3 else spec[5])
 	speak()
 
 
 func _reset() -> void:
-	for group: Array in GROUPS:
-		for spec: Array in group[2]:
-			_set_quietly(spec[0], spec[5])
-	_voiced.set_pressed_no_signal(true)
-	_intonation.get_buttons()[0].set_pressed_no_signal(true)
-	for macro: String in _macros:
-		(_macros[macro] as HSlider).set_value_no_signal(0.0)
-		_macros[macro].value_changed.emit(0.0)
+	_settings().clear()
+	_show_side()
 	_on_changed()
 
 
-# Sets a slider and its row without speaking for each one.
-func _set_quietly(key: String, value: float) -> void:
-	var slider: HSlider = _sliders[key]
-	slider.set_value_no_signal(value)
-	_describe(key)
-
-
-func _save_wav() -> void:
-	if _samples.is_empty():
-		_status.text = "Nothing to save yet: Speak first."
+func _save_type() -> void:
+	var name_text := _type_name.text.strip_edges().to_snake_case().validate_filename()
+	if name_text.is_empty():
+		_status.text = "Name the voice type first."
 		return
-	var dir := "user://voice_lab"
-	var err := DirAccess.make_dir_recursive_absolute(dir)
+	var err := DirAccess.make_dir_recursive_absolute(TYPES)
 	if err != OK:
-		_status.text = "Can't make %s: %s" % [ProjectSettings.globalize_path(dir), error_string(err)]
+		_status.text = "Can't make %s: %s" % [TYPES, error_string(err)]
 		return
-	var path := "%s/%s.wav" % [dir, Time.get_datetime_string_from_system().replace(":", "-")]
-	err = _to_wav(_samples).save_to_wav(path)
-	_status.text = ("Saved %s" % ProjectSettings.globalize_path(path)) if err == OK else ("Can't save %s: %s" % [path, error_string(err)])
+	var path := "%s/%s.tres" % [TYPES, name_text]
+	err = ResourceSaver.save(_type, path)
+	if err != OK:
+		_status.text = "Can't save %s: %s" % [path, error_string(err)]
+		return
+	_status.text = "Saved %s. Pick it in the Dialogue tab." % path
+	_fill_types(path)
+
+
+func _fill_types(selected := "") -> void:
+	_type_picker.clear()
+	_type_picker.add_item("New voice type")
+	_type_picker.set_item_metadata(0, "")
+	var files := DirAccess.get_files_at(TYPES) if DirAccess.dir_exists_absolute(TYPES) else PackedStringArray()
+	for file_name in files:
+		if file_name.ends_with(".tres"):
+			var path := TYPES.path_join(file_name)
+			_type_picker.add_item(file_name.get_basename().capitalize())
+			_type_picker.set_item_metadata(_type_picker.item_count - 1, path)
+			if path == selected:
+				_type_picker.select(_type_picker.item_count - 1)
+
+
+func _pick_type(index: int) -> void:
+	var path: String = _type_picker.get_item_metadata(index)
+	if path.is_empty():
+		_type = _new_type()
+		_type_name.text = ""
+	else:
+		var loaded := load(path) as VoiceType
+		if loaded == null:
+			_status.text = "%s is not a VoiceType." % path
+			return
+		_type = loaded.duplicate(true) as VoiceType
+		if _type.curve == null:
+			_type.curve = _curve_from(CURVES[4][1])
+		_type_name.text = path.get_file().get_basename()
+	_show_side()
+	_curve_edit.queue_redraw()
+	_on_changed()
 
 
 func _find_lines() -> void:
@@ -443,12 +421,9 @@ func _pick_line(index: int) -> void:
 	var picked: Array = _lines[index - 1]
 	var line: DialogueLine = picked[1]
 	_text.text = line.text
+	_pose = line.pose
 	if picked[2] != "":
 		_voice.get_buttons()[BODIES.find(String(picked[2]).capitalize())].set_pressed_no_signal(true)
-	var mood := Voices.mood(line.pose)
-	_set_quietly("rate", mood.rate)
-	_set_quietly("pitch", mood.pitch)
-	_set_quietly("accent", mood.swing)
 	speak()
 
 
@@ -482,7 +457,6 @@ func _build() -> void:
 	body.add_child(_sidebar())
 	body.add_child(_controls())
 	_player = AudioStreamPlayer.new()
-	_player.bus = BUS
 	add_child(_player)
 	_respeak = Timer.new()
 	_respeak.one_shot = true
@@ -499,7 +473,7 @@ func _header() -> Control:
 	titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(titles)
 	titles.add_child(_label("Voice Lab", 30, TEXT))
-	titles.add_child(_label("Chimera, live. Every setting is a slider; double-click a row to reset it.", 15, DIM))
+	titles.add_child(_label("Make voice types: a base voice, an alternate, and when the alternate takes over.", 15, DIM))
 	var paused := _label("  Game paused  ", 14, ACCENT)
 	paused.add_theme_stylebox_override("normal", _box(Color(ACCENT, 0.14), 14, 4))
 	paused.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -521,7 +495,57 @@ func _sidebar() -> Control:
 	side.add_theme_constant_override("separation", 16)
 	scroll.add_child(side)
 
-	var character := _card("Character", "One lever moves many")
+	var type := _card("Voice type", "Saved in voices/types/")
+	side.add_child(type[0])
+	var pick_row := HBoxContainer.new()
+	pick_row.add_theme_constant_override("separation", 8)
+	type[1].add_child(pick_row)
+	_type_picker = OptionButton.new()
+	_type_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_type_picker.fit_to_longest_item = false
+	_type_picker.item_selected.connect(_pick_type)
+	pick_row.add_child(_type_picker)
+	var name_row := HBoxContainer.new()
+	name_row.add_theme_constant_override("separation", 8)
+	type[1].add_child(name_row)
+	_type_name = LineEdit.new()
+	_type_name.placeholder_text = "Name, e.g. Cambion rasp"
+	_type_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_row.add_child(_type_name)
+	var save := Button.new()
+	save.text = "Save"
+	save.theme_type_variation = &"AccentButton"
+	save.pressed.connect(_save_type)
+	name_row.add_child(save)
+	_sides = ButtonGroup.new()
+	type[1].add_child(_segmented(SIDES, _sides))
+	for button in _sides.get_buttons():
+		button.toggled.connect(func(on: bool) -> void:
+			if on:
+				_side = button.get_index()
+				_show_side())
+	type[1].add_child(_label("When the alternate plays, across the line", 13, DIM))
+	_curve_edit = Control.new()
+	_curve_edit.custom_minimum_size.y = 96
+	_curve_edit.mouse_filter = Control.MOUSE_FILTER_STOP
+	_curve_edit.draw.connect(_draw_curve)
+	_curve_edit.gui_input.connect(_on_curve_input)
+	_curve_edit.tooltip_text = "Drag a point; double-click to add one; right-click to remove one"
+	type[1].add_child(_curve_edit)
+	var presets := HBoxContainer.new()
+	presets.add_theme_constant_override("separation", 6)
+	type[1].add_child(presets)
+	for preset: Array in CURVES:
+		var button := Button.new()
+		button.text = preset[0]
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(func() -> void:
+			_type.curve = _curve_from(preset[1])
+			_curve_edit.queue_redraw()
+			_on_changed())
+		presets.add_child(button)
+
+	var character := _card("Character", "Moves many levers of the side")
 	side.add_child(character[0])
 	for macro: String in MACROS:
 		character[1].add_child(_macro_row(macro))
@@ -542,18 +566,21 @@ func _sidebar() -> Control:
 	_text.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	_text.text_changed.connect(_on_changed)
 	say[1].add_child(_text)
-
-	var voice := _card("Voice", "Who says it, and how it ends")
-	side.add_child(voice[0])
 	_voice = ButtonGroup.new()
-	voice[1].add_child(_segmented(BODIES, _voice))
+	say[1].add_child(_segmented(BODIES, _voice))
 	_intonation = ButtonGroup.new()
-	voice[1].add_child(_segmented(INTONATIONS, _intonation))
+	say[1].add_child(_segmented(INTONATIONS, _intonation))
+	for button in _intonation.get_buttons():
+		button.toggled.connect(func(on: bool) -> void:
+			if on:
+				_store_switches())
 	_voiced = CheckButton.new()
 	_voiced.text = "Voiced (off whispers)"
 	_voiced.button_pressed = true
-	_voiced.toggled.connect(_on_changed)
-	voice[1].add_child(_voiced)
+	_voiced.toggled.connect(func(_on: bool) -> void:
+		_store_switches()
+		_on_changed())
+	say[1].add_child(_voiced)
 
 	var play := _card("Play", "Space speaks")
 	side.add_child(play[0])
@@ -566,7 +593,7 @@ func _sidebar() -> Control:
 	speak_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	speak_button.pressed.connect(speak)
 	transport.add_child(speak_button)
-	for entry: Array in [["Stop", func() -> void: _player.stop()], ["Random", _randomize], ["Reset", _reset]]:
+	for entry: Array in [["Stop", func() -> void: _player.stop()], ["Random", _randomize], ["Reset side", _reset]]:
 		var button := Button.new()
 		button.text = entry[0]
 		button.pressed.connect(entry[1])
@@ -590,22 +617,13 @@ func _sidebar() -> Control:
 	_loop.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_loop.toggled.connect(func(_on: bool) -> void: speak())
 	options.add_child(_loop)
-	options.add_child(_label("Seed", 15, DIM))
-	_seed = SpinBox.new()
-	_seed.max_value = 9999
-	_seed.value_changed.connect(_on_changed)
-	options.add_child(_seed)
-	var files := HBoxContainer.new()
-	files.add_theme_constant_override("separation", 8)
-	play[1].add_child(files)
-	for entry: Array in [["Copy settings", func() -> void:
-			DisplayServer.clipboard_set(settings_json())
-			_status.text = "Copied the settings as JSON."], ["Save WAV", _save_wav]]:
-		var button := Button.new()
-		button.text = entry[0]
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.pressed.connect(entry[1])
-		files.add_child(button)
+	var copy := Button.new()
+	copy.text = "Copy as text"
+	copy.pressed.connect(func() -> void:
+		DisplayServer.clipboard_set(_type.encode())
+		_status.text = "Copied the voice type's text form.")
+	play[1].add_child(copy)
+	_fill_types()
 	return scroll
 
 
@@ -622,35 +640,44 @@ func _macro_row(macro: String) -> Control:
 	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(slider)
 	var chip := _label("0%", 14, TEXT)
+	chip.name = "Chip"
 	chip.custom_minimum_size.x = 64
 	chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	chip.add_theme_stylebox_override("normal", _box(RAISED, 8, 3))
 	row.add_child(chip)
 	var reset := _reset_button(func() -> void: slider.value = 0.0)
+	reset.name = "Reset"
 	_show_reset(reset, false)
 	row.add_child(reset)
 	_macros[macro] = slider
-	slider.value_changed.connect(func(value: float) -> void:
-		_show_reset(reset, value > 0.0)
-		chip.text = "%d%%" % roundi(value * 100.0)
-		chip.add_theme_color_override("font_color", BG if value > 0.0 else TEXT)
-		chip.add_theme_stylebox_override("normal", _box(ACCENT if value > 0.0 else RAISED, 8, 3))
-		_apply_macros()
+	slider.value_changed.connect(func(_value: float) -> void:
+		_refresh_macro_chips()
+		_apply_macro(macro)
 		_on_changed())
 	return row
 
 
-# Sets every lever that a macro pulls: its default plus each macro's pull toward its target.
-func _apply_macros() -> void:
-	var pulled := {}
-	for macro: String in MACROS:
-		var amount: float = _macros[macro].value
-		for key: String in MACROS[macro]:
-			var spec := _spec(key)
-			pulled[key] = pulled.get(key, spec[5]) + amount * (MACROS[macro][key] - spec[5])
-	for key: String in pulled:
+func _refresh_macro_chips() -> void:
+	for macro: String in _macros:
+		var slider: HSlider = _macros[macro]
+		var row := slider.get_parent()
+		var chip: Label = row.get_node("Chip")
+		chip.text = "%d%%" % roundi(slider.value * 100.0)
+		chip.add_theme_color_override("font_color", BG if slider.value > 0.0 else TEXT)
+		chip.add_theme_stylebox_override("normal", _box(ACCENT if slider.value > 0.0 else RAISED, 8, 3))
+		_show_reset(row.get_node("Reset"), slider.value > 0.0)
+
+
+# Sets the levers that [param moved] pulls, and only those, so a lever set by hand stays: each is its
+# default plus every macro's pull toward its target.
+func _apply_macro(moved: String) -> void:
+	for key: String in MACROS[moved]:
 		var spec := _spec(key)
-		_set_quietly(key, clampf(pulled[key], spec[2], spec[3]))
+		var value: float = spec[5]
+		for macro: String in MACROS:
+			if MACROS[macro].has(key):
+				value += (_macros[macro] as HSlider).value * (MACROS[macro][key] - spec[5])
+		_set_lever(key, clampf(value, spec[2], spec[3]))
 
 
 func _controls() -> Control:
@@ -734,7 +761,8 @@ func _slider_row(spec: Array) -> Control:
 	reset.name = "Reset"
 	row.add_child(reset)
 	_sliders[spec[0]] = slider
-	slider.value_changed.connect(func(_v: float) -> void:
+	slider.value_changed.connect(func(value: float) -> void:
+		_store(spec[0], value)
 		_describe(spec[0])
 		_on_changed())
 	row.gui_input.connect(func(event: InputEvent) -> void:
@@ -745,7 +773,7 @@ func _slider_row(spec: Array) -> Control:
 	return row
 
 
-# Shows a row's value, and marks it when it differs from the default.
+# Shows a lever's value, and marks it when it differs from the default.
 func _describe(key: String) -> void:
 	var spec := _spec(key)
 	var slider: HSlider = _sliders[key]
@@ -887,9 +915,90 @@ func _dot(diameter: int, color: Color) -> ImageTexture:
 	return ImageTexture.create_from_image(image)
 
 
+# The curve editor: x is the line from start to end, y how much of the alternate plays.
+func _curve_rect() -> Rect2:
+	return Rect2(Vector2(8, 8), _curve_edit.size - Vector2(16, 16))
+
+
+func _to_screen(p: Vector2) -> Vector2:
+	var r := _curve_rect()
+	return Vector2(r.position.x + p.x * r.size.x, r.position.y + (1.0 - p.y) * r.size.y)
+
+
+func _to_curve(at: Vector2) -> Vector2:
+	var r := _curve_rect()
+	return Vector2(clampf((at.x - r.position.x) / r.size.x, 0.0, 1.0), clampf(1.0 - (at.y - r.position.y) / r.size.y, 0.0, 1.0))
+
+
+func _point_near(at: Vector2) -> int:
+	for i in _type.curve.point_count:
+		if _to_screen(_type.curve.get_point_position(i)).distance_to(at) < 10.0:
+			return i
+	return -1
+
+
+func _on_curve_input(event: InputEvent) -> void:
+	var curve := _type.curve
+	var click := event as InputEventMouseButton
+	if click and click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
+		var near := _point_near(click.position)
+		if click.double_click and near < 0:
+			var p := _to_curve(click.position)
+			curve.add_point(p, 0.0, 0.0, Curve.TANGENT_LINEAR, Curve.TANGENT_LINEAR)
+		else:
+			_dragging = near
+	elif click and not click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
+		if _dragging >= 0:
+			_on_changed()
+		_dragging = -1
+	elif click and click.pressed and click.button_index == MOUSE_BUTTON_RIGHT:
+		var near := _point_near(click.position)
+		if near >= 0 and curve.point_count > 2:
+			curve.remove_point(near)
+			_on_changed()
+	var motion := event as InputEventMouseMotion
+	if motion and _dragging >= 0:
+		var p := _to_curve(motion.position)
+		# A point keeps its order between its neighbours.
+		var low := curve.get_point_position(_dragging - 1).x if _dragging > 0 else 0.0
+		var high := curve.get_point_position(_dragging + 1).x if _dragging < curve.point_count - 1 else 1.0
+		curve.set_point_offset(_dragging, clampf(p.x, low, high))
+		curve.set_point_value(_dragging, p.y)
+	_curve_edit.queue_redraw()
+
+
+func _draw_curve() -> void:
+	var r := _curve_rect()
+	_curve_edit.draw_style_box(_box(Color("0f1116"), 10), Rect2(Vector2.ZERO, _curve_edit.size))
+	for y in [0.0, 0.5, 1.0]:
+		_curve_edit.draw_line(_to_screen(Vector2(0, y)), _to_screen(Vector2(1, y)), LINE, 1.0)
+	var curve := _type.curve
+	if curve == null:
+		return
+	var fill := PackedVector2Array([_to_screen(Vector2(0, 0))])
+	for i in 65:
+		var x := i / 64.0
+		fill.append(_to_screen(Vector2(x, clampf(curve.sample(x), 0.0, 1.0))))
+	fill.append(_to_screen(Vector2(1, 0)))
+	_curve_edit.draw_colored_polygon(fill, Color(CHANGED, 0.18))
+	_curve_edit.draw_polyline(fill.slice(1, fill.size() - 1), CHANGED, 2.0, true)
+	for i in curve.point_count:
+		var at := _to_screen(curve.get_point_position(i))
+		_curve_edit.draw_circle(at, 6.0, TEXT)
+		_curve_edit.draw_circle(at, 4.0, CHANGED)
+	_curve_edit.draw_string(get_theme_default_font(), r.position + Vector2(4, 14), "Alternate", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, DIM)
+	_curve_edit.draw_string(get_theme_default_font(), Vector2(r.position.x + 4, r.end.y - 4), "Base", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, DIM)
+
+
 func _draw_wave() -> void:
 	var rect := Rect2(Vector2.ZERO, _wave.size)
 	_wave.draw_style_box(_box(Color("0f1116"), 10), rect)
+	# Behind the waveform: how much of the alternate plays at each moment.
+	if _type != null and _type.curve != null:
+		for x in range(4, int(rect.size.x) - 4, 4):
+			var amount := clampf(_type.curve.sample(x / rect.size.x), 0.0, 1.0)
+			if amount > 0.0:
+				_wave.draw_rect(Rect2(x, rect.size.y * (1.0 - amount), 4, rect.size.y * amount), Color(CHANGED, 0.12))
 	if _samples.is_empty():
 		return
 	var mid := rect.size.y * 0.5
