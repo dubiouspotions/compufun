@@ -16,7 +16,7 @@ func run() -> void:
 	check("effect on top; its alternate keeps the layers below", Voices.layer(person, mood, effect),
 		"base:scale=0.8,tension=0.2|alt:scale=0.8,tension=0.7,bits=4.0")
 	check("no layers is plain", Voices.layer(null, null, null), "")
-	for name in ["pierre", "javve"]:
+	for name in ["skater_bro", "young_entrepreneur"]:
 		var customer: Customer = load("res://customers/%s.tres" % name)
 		check("%s has a voice person" % name, customer.voice is VoicePerson, true)
 	for body in ["man", "woman", "child"]:
