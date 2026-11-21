@@ -41,6 +41,10 @@ var powered: bool = false
 var broken: bool = false
 ## The player ticked Done on the post-it. Only true when [member fixed] is.
 var post_it_ticked: bool = false
+## The symptoms that the player marked in CompuFunDB, as Problem.symptoms spells them.
+var marked_symptoms: Array[String] = []
+## The repair steps that the player ticked in CompuFunDB, as the Problem spells them.
+var ticked_repairs: Array[String] = []
 
 ## The customer's problem.
 var problem: Problem:
@@ -99,6 +103,8 @@ func snapshot() -> Dictionary:
 		"software_fixed": software_fixed,
 		"powered": powered,
 		"post_it_ticked": post_it_ticked,
+		"marked_symptoms": marked_symptoms.duplicate(),
+		"ticked_repairs": ticked_repairs.duplicate(),
 		"case_open": case_open,
 		"panel_screws": panel_screws.duplicate(),
 		"parts": Job.pieces_data(places.values()),

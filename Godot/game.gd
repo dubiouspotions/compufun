@@ -432,6 +432,28 @@ func tick_post_it(job: Job) -> void:
 	changed.emit()
 
 
+## Marks [param symptom] on [param job] in CompuFunDB (true), or clears it (false).
+func mark_symptom(job: Job, symptom: String, marked: bool) -> void:
+	if _on_counter(job, "mark_symptom"):
+		_set_in(job.marked_symptoms, symptom, marked)
+
+
+## Ticks the repair step [param step] of [param job] in CompuFunDB (true), or unticks it (false).
+func tick_repair(job: Job, step: String, ticked: bool) -> void:
+	if _on_counter(job, "tick_repair"):
+		_set_in(job.ticked_repairs, step, ticked)
+
+
+func _set_in(items: Array[String], item: String, present: bool) -> void:
+	if (item in items) == present:
+		return
+	if present:
+		items.append(item)
+	else:
+		items.erase(item)
+	changed.emit()
+
+
 ## True when the phone can call: the shop is open, nobody is in it, and a post-it is ticked.
 func can_call() -> bool:
 	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.post_it_ticked)
@@ -554,6 +576,11 @@ func restore(state: Dictionary) -> String:
 		job.software_fixed = bool(data.get("software_fixed", false))
 		job.powered = bool(data.get("powered", false))
 		job.post_it_ticked = bool(data.get("post_it_ticked", false))
+		for key: String in ["marked_symptoms", "ticked_repairs"]:
+			if not data.get(key, []) is Array:
+				return _refuse("job %d: %s is not a list: %s" % [i, key, data[key]])
+		job.marked_symptoms.assign(data.get("marked_symptoms", []).map(str))
+		job.ticked_repairs.assign(data.get("ticked_repairs", []).map(str))
 		if data.has("parts"):
 			var pieces: Variant = Job.pieces_from(data["parts"])
 			if pieces is String:
