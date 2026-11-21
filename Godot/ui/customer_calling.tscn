@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://voices/voice_player.gd" id="voice_player"]
 [ext_resource type="Script" path="res://ui/customer_calling.gd" id="script"]
 
 [node name="CustomerCalling" type="PanelContainer"]
@@ -27,6 +28,7 @@ text = "Customer: Hello?"
 
 [node name="Voice" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+script = ExtResource("voice_player")
 
 [node name="Timer" type="Timer" parent="."]
 unique_name_in_owner = true

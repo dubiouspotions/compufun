@@ -21,7 +21,7 @@ var _next_line: int = 0
 var _calling: bool = false
 
 @onready var _label: Label = %Line
-@onready var _voice: AudioStreamPlayer = %Voice
+@onready var _voice: VoicePlayer = %Voice
 @onready var _timer: Timer = %Timer
 
 
@@ -54,7 +54,7 @@ func call_out(customer: Customer) -> void:
 func stop() -> void:
 	_calling = false
 	_timer.stop()
-	_voice.stop()
+	_voice.hush()
 	hide()
 
 
@@ -69,10 +69,4 @@ func _on_timer() -> void:
 	_next_line += 1
 	_label.text = "%s: %s" % [_customer.display_name, line.text]
 	show()
-	var stream := Voices.stream_of(line, _customer.voice)
-	var seconds := show_seconds
-	if stream != null:
-		_voice.stream = stream
-		_voice.play()
-		seconds = maxf(seconds, stream.get_length())
-	_timer.start(seconds)
+	_timer.start(maxf(show_seconds, _voice.say(line, _customer.voice)))

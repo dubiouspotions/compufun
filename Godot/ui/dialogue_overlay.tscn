@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://voices/voice_player.gd" id="voice_player"]
 [ext_resource type="Script" path="res://ui/dialogue_overlay.gd" id="1_6w78s"]
 
 [node name="DialogueOverlay" type="Control" unique_id=574008241]
@@ -61,3 +62,4 @@ expand_mode = 1
 
 [node name="Voice" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+script = ExtResource("voice_player")

@@ -28,7 +28,7 @@ var _voiced: bool = false
 @onready var _portrait_slot: Panel = %Portrait
 @onready var _portrait: TextureRect = %PortraitTexture
 @onready var _next: Button = %NextButton
-@onready var _voice: AudioStreamPlayer = %Voice
+@onready var _voice: VoicePlayer = %Voice
 
 
 func _ready() -> void:
@@ -211,19 +211,14 @@ func _show_line() -> void:
 
 ## Plays the voice file of [param line]. A line without one stays silent: its voice is not rendered yet.
 func _speak(line: DialogueLine) -> void:
-	_voice.stop()
-	if not _voiced:
-		return
-	var stream := Voices.stream_of(line, _customer.voice)
-	if stream == null:
-		return
-	_voice.stream = stream
-	_voice.play()
+	_voice.hush()
+	if _voiced:
+		_voice.say(line, _customer.voice)
 
 
 func _on_next() -> void:
 	if _line >= _lines.size() - 1:
-		_voice.stop()
+		_voice.hush()
 		finished.emit()
 		return
 	_line += 1
