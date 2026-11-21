@@ -1,16 +1,14 @@
 class_name JobComputer
 extends Node3D
 ## The computer of one job on the counter. JobSlots places one at each job's slot. It outlines
-## itself while the mouse is over it, while its job is in focus, and while the cable's plug is dragged
-## over it. Its power button reports clicks, and its power light shows whether the job is on.
+## itself while the mouse or the cable's plug that the player drags is over it. Its power button
+## reports clicks, and its power light shows whether the job is on.
 
 ## The player clicked the computer.
 signal clicked(computer: JobComputer)
 ## The player clicked the computer's power button.
 signal power_clicked(computer: JobComputer)
 
-## The outline colour while the job is in focus.
-@export var focus_color: Color = Color(1.0, 0.82, 0.2)
 ## The outline colour while the mouse or the dragged plug is over the computer.
 @export var hover_color: Color = Color(0.75, 0.9, 1.0)
 ## How far the outline stands out from the case and everything on it, in metres.
@@ -26,13 +24,6 @@ const RESTING_LIFT: float = 0.002
 
 ## The job that this computer shows. Set once, before the computer enters the tree.
 var job: Job
-## True while the job is in [member Game.focus]. JobSlots sets it.
-var focused: bool = false:
-	set(value):
-		focused = value
-		if is_node_ready():
-			_sync_outline()
-
 ## True while the player drags the cable's plug over this computer. JobSlots sets it.
 var targeted: bool = false:
 	set(value):
@@ -80,8 +71,8 @@ func _ready() -> void:
 		_upright[node] = node.transform
 	_upright_post_it = _post_it_anchor.position
 	Game.changed.connect(_sync_case)
+	(_outline.material_override as StandardMaterial3D).albedo_color = hover_color
 	_sync_case()
-	_sync_outline()
 	_sync_power_light()
 
 
@@ -173,8 +164,7 @@ func _visible_bounds() -> AABB:
 
 
 func _sync_outline() -> void:
-	_outline.visible = (focused or _hovered or targeted) and not _open_case.active
-	(_outline.material_override as StandardMaterial3D).albedo_color = focus_color if focused and not targeted else hover_color
+	_outline.visible = (_hovered or targeted) and not _open_case.active
 
 
 func _sync_power_light() -> void:

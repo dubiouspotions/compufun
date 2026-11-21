@@ -20,9 +20,8 @@ var _computers: Dictionary[Job, JobComputer] = {}
 
 
 ## Converges on [param jobs]: a computer appears for each new job and leaves with each job that
-## left. The computer of [param outlined] (null for none) shows the focus outline, and each power
-## light shows its job's power.
-func show_jobs(jobs: Array[Job], outlined: Job) -> void:
+## left. Each power light shows its job's power.
+func show_jobs(jobs: Array[Job]) -> void:
 	for job: Job in _computers.keys():
 		if job not in jobs:
 			pick_up_sound.play_at(_computers[job].get_parent())
@@ -36,7 +35,6 @@ func show_jobs(jobs: Array[Job], outlined: Job) -> void:
 				continue
 			set_down_sound.play_at(computer.get_parent())
 			_computers[job] = computer
-		_computers[job].focused = job == outlined
 		_computers[job].powered = job.powered
 
 
