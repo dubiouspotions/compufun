@@ -141,6 +141,15 @@ func customer_left() -> void:
 	changed.emit()
 
 
+## The day numbers, 1 to 7, that have a day file at [constant DAY_PATH], in order.
+func day_numbers() -> Array[int]:
+	var found: Array[int] = []
+	for number: int in range(1, 8):
+		if ResourceLoader.exists(DAY_PATH % number):
+			found.append(number)
+	return found
+
+
 ## The number of [param flag_name]; 0 when it is not set.
 func flag(flag_name: StringName) -> int:
 	return flags.get(flag_name, 0)

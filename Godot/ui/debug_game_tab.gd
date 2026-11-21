@@ -32,6 +32,11 @@ func _refresh() -> void:
 
 	_section("Day")
 	_row("Day", _day_slider())
+	var days := Game.day_numbers()
+	if days.size() < 7:
+		var note := _text("Day files: %s. Add days/day_N.tres to play another day." % ", ".join(days.map(str)))
+		note.modulate.a = 0.6
+		_row("", note)
 	_row("Phase", _enum_picker(Game.Phase, Game.phase, "phase"))
 	_row("Arrivals", _spin(0, customers.size(), Game.arrivals, func(value: int) -> void: _edit("arrivals", value)))
 	_row("Daypart", _enum_picker(Game.Daypart, Game.daypart, "daypart"))
@@ -88,15 +93,17 @@ func _refresh() -> void:
 	_row(", ".join(seen) if not seen.is_empty() else "none", Control.new(), clear)
 
 
-## A slider over day 1 to 7 with a tick per day; the number shows next to it. A day without a
-## day file is refused, and the slider springs back.
+## A slider over the days that have a day file, with a tick per day; the number shows next to it.
+## With one day file it is locked. A gap between day files is refused, and the slider springs back.
 func _day_slider() -> Control:
+	var days := Game.day_numbers()
 	var row := HBoxContainer.new()
 	var slider := HSlider.new()
-	slider.min_value = 1
-	slider.max_value = 7
+	slider.min_value = days.min() if not days.is_empty() else 1
+	slider.max_value = days.max() if not days.is_empty() else 1
+	slider.editable = days.size() > 1
 	slider.step = 1
-	slider.tick_count = 7
+	slider.tick_count = int(slider.max_value - slider.min_value) + 1
 	slider.ticks_on_borders = true
 	slider.value = Game.day_number
 	slider.size_flags_horizontal = SIZE_EXPAND_FILL
