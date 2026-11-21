@@ -18,7 +18,7 @@ replies = PackedStringArray("I\'ll check it.", "Leave it here.")
 
 [resource]
 script = ExtResource("3_10hmr")
-display_name = "Sample customer 2"
+display_name = "Javve"
 person = ExtResource("1_yvxm1")
 conversations = Array[ExtResource("cv")]([SubResource("Conversation_arrive")])
 problem = ExtResource("2_qmaft")
