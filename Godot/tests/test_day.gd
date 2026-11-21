@@ -56,7 +56,7 @@ func run() -> void:
 	check("a full counter holds back the arrival", [game.arrivals, game.visitor, game.daypart], [2, null, GAME.Daypart.MIDDAY])
 	check("can't close before C came in", game.can_close(), false)
 
-	# Fixes per location. Two of these steps log an error on purpose.
+	# Fixes per location. Three of these steps log an error on purpose.
 	var job_a := job_of("A")
 	var job_b := job_of("B")
 	game.focus_job(job_a)
@@ -68,11 +68,17 @@ func run() -> void:
 	game.connect_cable(job_b)
 	game.fix(Problem.Location.SOFTWARE)
 	check("B software fixed via the cable, focus stays A", [job_b.fixed, game.focus == job_a], [true, true])
-	check("A and B are ready for pickup, O1 isn't", [job_a.fixed, job_b.fixed, job_of("O1").fixed], [true, true, false])
+	check("A and B are fixed, O1 isn't", [job_a.fixed, job_b.fixed, job_of("O1").fixed], [true, true, false])
+	check("fixed but not tested: nobody to call", [job_a.done, game.can_call()], [false, false])
+	game.set_tested(job_a)
+	game.set_tested(job_b)
+	game.set_tested(job_of("O1"))  # logs an error on purpose
+	check("A and B are tested and ready for pickup, O1 isn't", [job_a.done, job_b.done, job_of("O1").tested], [true, true, false])
 
 	game.set_software_fixed(job_b, false)
-	check("B's software breaks again: B isn't ready", [job_b.fixed, game.can_call()], [false, true])
+	check("B's software breaks again: B isn't ready and needs a new test", [job_b.done, job_b.tested, game.can_call()], [false, false, true])
 	game.set_software_fixed(job_b, true)
+	game.set_tested(job_b)
 	game.set_powered(job_a, true)
 	check("power is per job", [job_a.powered, job_b.powered, job_b.fixed], [true, false, true])
 

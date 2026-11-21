@@ -4,9 +4,9 @@ extends Control
 ## the customers (Game.records; New record makes the character type up the next computer on the
 ## counter, key by key), what to check (every symptom of every Problem; the player marks what is
 ## wrong on the selected record), and what to fix (the repair steps of each problem whose symptoms
-## are all marked; the player ticks them off). Marking the wrong symptoms leads to the wrong fix.
-## This screen keeps only its cursor and the typing. It reads every Problem file, so its text is
-## never a second copy of the problems.
+## are all marked, ending in [member test_step]; the player ticks them off). Marking the wrong
+## symptoms leads to the wrong fix. This screen keeps only its cursor and the typing. It reads
+## every Problem file, so its text is never a second copy of the problems.
 ## The first time the player opens it on a day, the work computer boots, the character starts the
 ## program at the DOS prompt and the modem dials up; until then the computer is off. Any key or
 ## click skips to the database.
@@ -35,6 +35,8 @@ const HEADERS: Array[String] = ["CUSTOMER", "CHECK", "FIX"]
 @export var dim_color: Color = Color(0.333, 0.333, 0.333)
 ## The CompuFun red of the bars, the headers and the selection.
 @export var bar_color: Color = Color(0.89, 0, 0)
+## The last repair step of every problem, after its hardware and software steps (see Job.tested).
+@export var test_step: String = "Test the computer"
 ## The sound of each key that the character types.
 @export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
 ## The seconds between two keys, picked between x and y for each key.
@@ -143,6 +145,7 @@ func _entries(column: Column) -> Array[Dictionary]:
 				for problem: Problem in _matches(record):
 					_add_steps(entries, record, "Hardware", problem.hardware_steps)
 					_add_steps(entries, record, "Software", problem.software_steps)
+					_add_steps(entries, record, "Test", PackedStringArray([test_step]))
 	return entries
 
 

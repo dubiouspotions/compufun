@@ -27,8 +27,11 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Back strip**: The strip along the bottom of the Workview, Storage and Up views that goes back like the Back button when the player clicks it where nothing else is clickable (`Shop.back_strip_height`). It darkens under the mouse.
 *Avoid:* back zone, back band, back area.
 
-**Post-it**: The repair ticket on a computer on the counter: the perceived issue, and a green check once the computer is fixed. Each computer wears one (`props/post_it_3d.tscn`). It sits on the front of the case, below the power button, standing or lying. In the Workview, `ui/post_it_label.tscn` writes its text in sharp UI text over the paper.
+**Post-it**: The repair ticket on a computer on the counter: the perceived issue, and a green check once the computer is fixed and tested. Each computer wears one (`props/post_it_3d.tscn`). It sits on the front of the case, below the power button, standing or lying. In the Workview, `ui/post_it_label.tscn` writes its text in sharp UI text over the paper.
 *Avoid:* ticket, note.
+
+**Tested**: A fixed computer whose Windows desktop the player has seen stay up, for the problem's `hangs_after` seconds (`Job.tested`). Breaking the computer again clears it. Only a fixed and tested computer is done: its post-it shows the check, and the player can call its customer. CompuFunDB ends every repair with the step "Test the computer".
+*Avoid:* checked, verified.
 
 **CompuFunDB**: The database on the work computer. The player adds a record per customer and types what they like into it, marks what is wrong among every symptom, and gets what to fix. It reads every `Problem` file; `Game` holds the records.
 *Avoid:* Company Database, BBS, database.

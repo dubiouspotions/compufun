@@ -56,6 +56,11 @@ func run() -> void:
 	state.reached_desktop()
 	await create_timer(0.3).timeout
 	check("with a new fan it stays up", events, [])
+	check("and staying up tests it", [hot.tested, hot.done], [true, true])
+	game.set_powered(hot, false)
+	game.turn_screw(hot, 0)
+	game.turn_screw(hot, 0)
+	check("switched off, a screw out and back in needs a new test", [hot.fixed, hot.tested], [true, false])
 	state.free()
 	game.jobs = [] as Array[Job]
 

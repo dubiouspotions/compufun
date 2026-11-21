@@ -61,6 +61,16 @@ var fixed: bool:
 			_:
 				return hardware_fixed and software_fixed
 
+## The player has run Windows on the fixed computer: its desktop stayed up for the problem's
+## [member Problem.hangs_after] seconds. Game clears it each time the computer stops being fixed.
+var tested: bool = false
+
+## The repair is done: fixed and tested. The post-it shows the check, and the player can call the
+## customer.
+var done: bool:
+	get:
+		return fixed and tested
+
 
 func _init(job_customer: Customer, job_slot: int, job_order: int) -> void:
 	customer = job_customer
@@ -117,6 +127,7 @@ func snapshot() -> Dictionary:
 		"problem": String(problem.short_name),
 		"hardware_fixed": hardware_fixed,
 		"software_fixed": software_fixed,
+		"tested": tested,
 		"powered": powered,
 		"lying": lying,
 		"case_open": case_open,

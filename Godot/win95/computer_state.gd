@@ -28,6 +28,8 @@ var job: Job
 
 ## Counts boots, so that a hang timer from an earlier boot does nothing.
 var _boots: int = 0
+## The boot whose desktop stayed up for the problem's hangs_after seconds; -1 for none.
+var _stayed_up: int = -1
 
 
 func _ready() -> void:
@@ -35,6 +37,7 @@ func _ready() -> void:
 		setup = Game.setup_for(job)
 		_report_fixed()
 	Game.changed.connect(_sync)
+	Game.changed.connect(_report_tested)
 	_sync()
 
 
@@ -397,14 +400,19 @@ func _sync() -> void:
 
 
 ## The desktop appeared after a boot. A problem that hangs Windows starts counting: the computer
-## hangs, then reboots, and does it again after every boot until the hardware is fixed.
+## hangs, then reboots, and does it again after every boot until the hardware is fixed. A desktop
+## that stays up that long tests the computer (see [member Job.tested]).
 func reached_desktop() -> void:
 	var problem := job.problem
-	if problem.hangs_after <= 0.0 or job.hardware_fixed:
-		return
 	var boot := _boots
-	await get_tree().create_timer(problem.hangs_after).timeout
-	if not _still_on(boot) or job.hardware_fixed:
+	var hangs := problem.hangs_after > 0.0 and not job.hardware_fixed
+	if problem.hangs_after > 0.0:
+		await get_tree().create_timer(problem.hangs_after).timeout
+		if not _still_on(boot):
+			return
+	if not hangs or job.hardware_fixed:
+		_stayed_up = boot
+		_report_tested()
 		return
 	hanging.emit(problem.hang_seconds)
 	await get_tree().create_timer(problem.hang_seconds).timeout
@@ -415,6 +423,11 @@ func reached_desktop() -> void:
 
 func _still_on(boot: int) -> bool:
 	return boot == _boots and is_on and job in Game.jobs
+
+
+func _report_tested() -> void:
+	if _still_on(_stayed_up) and job.fixed and not job.tested:
+		Game.set_tested(job)
 
 
 ## Starts Disk Defragmenter on drive C. It finishes overnight while the computer stays on.

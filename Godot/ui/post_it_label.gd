@@ -2,7 +2,7 @@ class_name PostItLabel
 extends Control
 ## The post-it that the player reads in the Workview, written in sharp UI text over the 3D paper (a
 ## PostIt3D with text_3d off) and following it as the camera moves: the perceived issue and, once the
-## computer is fixed, the prompt to call the customer next to the 3D check.
+## computer is fixed and tested, the prompt to call the customer next to the 3D check.
 
 ## The largest font size, as a fraction of the paper's width on screen. The text shrinks below it
 ## when it doesn't fit, as on a paper that the camera sees at a slant.
@@ -64,4 +64,4 @@ func _fits(label: Label, font_size: int) -> bool:
 
 func _sync() -> void:
 	_issue.text = job.problem.perceived_issue if job != null else ""
-	_pickup.visible = job != null and job.fixed
+	_pickup.visible = job != null and job.done

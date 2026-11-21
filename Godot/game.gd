@@ -118,6 +118,17 @@ var _wait: float = 0.0
 var _pickup: Job
 
 
+func _init() -> void:
+	changed.connect(_forget_tests)
+
+
+# A computer that stops being fixed needs a new test.
+func _forget_tests() -> void:
+	for job in jobs:
+		if not job.fixed:
+			job.tested = false
+
+
 ## The calendar date of day [param number] (day 1 for 0 or less), as a Time datetime dictionary:
 ## year, month, day, weekday (0 is Sunday).
 func date_of(number: int) -> Dictionary:
@@ -529,6 +540,18 @@ func set_software_fixed(job: Job, fixed: bool) -> void:
 	changed.emit()
 
 
+## The running computer of [param job] reports that the player ran Windows on it while it was fixed
+## (see [member Job.tested]). The job must be on the counter and fixed.
+func set_tested(job: Job) -> void:
+	if job == null or job not in jobs or not job.fixed:
+		push_error("Game.set_tested: the job is not a fixed computer on the counter: %s" % (_who(job.customer) if job != null else "no job"))
+		return
+	if job.tested:
+		return
+	job.tested = true
+	changed.emit()
+
+
 ## Makes the CompuFunDB record of [param job], with the [param text] that the character types up,
 ## and returns it. Fails with an error unless the job is on the counter and has no record yet.
 func enter_job(job: Job, text: String) -> DbRecord:
@@ -608,27 +631,27 @@ func put_down_phone() -> void:
 	changed.emit()
 
 
-## True when the phone can call: the shop is open, nobody is in it, and a computer is fixed.
+## True when the phone can call: the shop is open, nobody is in it, and a computer is done.
 func can_call() -> bool:
-	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.fixed)
+	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.done)
 
 
-## The fixed job on the counter that came in first (lowest [member Job.order]), whose customer the
-## phone calls; null when no computer is fixed.
+## The done job on the counter that came in first (lowest [member Job.order]), whose customer the
+## phone calls; null when no computer is done.
 func next_to_call() -> Job:
 	var next: Job = null
 	for job: Job in jobs:
-		if job.fixed and (next == null or job.order < next.order):
+		if job.done and (next == null or job.order < next.order):
 			next = job
 	return next
 
 
-## Calls the customer of [param job], a fixed computer on the counter, to say it is ready (phase
+## Calls the customer of [param job], a done computer on the counter, to say it is ready (phase
 ## CALLING; CompuFunDB is offline, as the land-line cuts the modem). The call lasts until
-## [method hang_up]. Fails with an error unless [method can_call] and [param job] is fixed.
+## [method hang_up]. Fails with an error unless [method can_call] and [param job] is done.
 func call_customer(job: Job) -> void:
-	if not can_call() or job not in jobs or not job.fixed:
-		push_error("Game.call_customer: can't call about %s now (phase %s, visitor %s, fixed %s)" % [_who(job.customer) if job != null else "no job", Phase.find_key(phase), _who(visitor) if visitor != null else "none", job.fixed if job != null else false])
+	if not can_call() or job not in jobs or not job.done:
+		push_error("Game.call_customer: can't call about %s now (phase %s, visitor %s, fixed %s, tested %s)" % [_who(job.customer) if job != null else "no job", Phase.find_key(phase), _who(visitor) if visitor != null else "none", job.fixed if job != null else false, job.tested if job != null else false])
 		return
 	phase = Phase.CALLING
 	calling = job
@@ -809,6 +832,7 @@ func restore(state: Dictionary) -> String:
 			if panel.size() != Job.PANEL_SCREWS:
 				return _refuse("job %d: the side panel has %d screws, not %d" % [i, Job.PANEL_SCREWS, panel.size()])
 			job.panel_screws.assign(panel.map(func(v: Variant) -> bool: return bool(v)))
+		job.tested = bool(data.get("tested", job.fixed))  # reports from before the test count fixed as tested
 		if job.powered and not can_power_on(job):
 			return _refuse("job %d: a computer that misses a part can't be on" % i)
 		new_jobs.append(job)
@@ -839,16 +863,16 @@ func restore(state: Dictionary) -> String:
 	var new_pickup: Job = null
 	var handed_over: bool = new_visitor_state == VisitorState.WALKING_OUT
 	if new_visit == Visit.PICKUP and not handed_over:
-		var ready := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.fixed)
+		var ready := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.done)
 		if ready.is_empty():
-			return _refuse("%s picks up, but has no fixed computer" % _who(new_visitor))
+			return _refuse("%s picks up, but has no fixed and tested computer" % _who(new_visitor))
 		new_pickup = ready[0]
 	if new_visit == Visit.DROP_OFF and not handed_over and new_jobs.size() >= MAX_JOBS:
 		return _refuse("%s drops off, but the counter is full" % _who(new_visitor))
 	if (new_phase == Phase.CALLING) != (new_calling != null):
 		return _refuse("calling_slot is set exactly while the phase is CALLING")
-	if new_calling != null and not new_calling.fixed:
-		return _refuse("CALLING about a computer that isn't fixed")
+	if new_calling != null and not new_calling.done:
+		return _refuse("CALLING about a computer that isn't fixed and tested")
 	var new_off_hook: bool = new_phase == Phase.CALLING or bool(state.get("phone_off_hook", false))
 	if new_off_hook and new_visitor != null:
 		return _refuse("the phone is off the hook while %s is in the shop" % _who(new_visitor))

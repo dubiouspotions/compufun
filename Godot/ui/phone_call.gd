@@ -1,11 +1,11 @@
 class_name PhoneCall
 extends Control
 ## The phone: the dialogue box with a red rotary phone in it. A click on the phone
-## (Shop.phone_requested) calls the customer of the oldest fixed computer: the phone rings, the
-## customer answers (their PHONE conversation, or [member greeting]), the player says
-## [member you_say], and hangs up; then the customer comes for it. With no computer fixed, the click
-## picks up the phone instead, which lists the computers and says why nobody can be called; Esc or
-## "Put down" puts it down. Game refuses both while the shop is closed or someone is in it.
+## (Shop.phone_requested) calls the customer of the oldest done (fixed and tested) computer: the
+## phone rings, the customer answers (their PHONE conversation, or [member greeting]), the player
+## says [member you_say], and hangs up; then the customer comes for it. With no computer done, the
+## click picks up the phone instead, which lists the computers and says why nobody can be called;
+## Esc or "Put down" puts it down. Game refuses both while the shop is closed or someone is in it.
 
 ## The heading over the customers to call.
 @export var pick_title: String = "Call a customer"
@@ -135,10 +135,10 @@ func _show_customers() -> void:
 		if button == null:
 			push_error("PhoneCall: choice_scene %s is not a Button" % choice_scene)
 			return
-		var issue := job.problem.perceived_issue + ("" if job.fixed else " (not fixed yet)")
+		var issue := job.problem.perceived_issue + ("" if job.done else " (not tested yet)" if job.fixed else " (not fixed yet)")
 		for part: Array in [["%Name", job.customer.display_name], ["%Number", number_of(job.customer)], ["%Issue", issue]]:
 			(button.get_node(part[0]) as Label).text = part[1]
-		button.disabled = not (job.fixed and Game.can_call())
+		button.disabled = not (job.done and Game.can_call())
 		button.pressed.connect(Game.call_customer.bind(job))
 		_choices.add_child(button)
 	var note := ""
@@ -148,8 +148,8 @@ func _show_customers() -> void:
 		note = "The shop is closed."
 	elif jobs.is_empty():
 		note = "No computers on the counter."
-	elif not jobs.any(func(j: Job) -> bool: return j.fixed):
-		note = "No computer is fixed yet."
+	elif not jobs.any(func(j: Job) -> bool: return j.done):
+		note = "No computer is fixed and tested yet."
 	_text.visible = note != ""
 	_text.type_out(note)
 
