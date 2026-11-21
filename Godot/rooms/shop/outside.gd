@@ -29,10 +29,13 @@ extends Node3D
 @export var fog_rain: float = 0.04
 @export var moon_color: Color = Color(0.6, 0.7, 1.0)
 @export var moon_energy: float = 0.15
-## The energy of the lamps (the lights in the group "lamp") at night. They fade in at dusk.
-@export var lamp_energy: float = 1.4
+## A factor on the night brightness of every lamp (the lights in the group "lamp"). Each light keeps
+## its own energy from the scene; the lamps fade in at dusk.
+@export var lamp_brightness: float = 1.0
 
 var _lamps: Array[Light3D] = []
+var _lamp_energy: Array[float] = []
+var _glows: Array[Node3D] = []
 
 @onready var _sun: DirectionalLight3D = %Sun
 @onready var _environment: WorldEnvironment = %Environment
@@ -41,9 +44,14 @@ var _lamps: Array[Light3D] = []
 
 func _ready() -> void:
 	add_to_group(&"outside")
-	for node: Node in find_children("*", "Light3D"):
-		if node.is_in_group(&"lamp"):
+	# The groups reach into instanced props too, such as the lights of each lamp post.
+	for node: Node in get_tree().get_nodes_in_group(&"lamp"):
+		if is_ancestor_of(node) and node is Light3D:
 			_lamps.append(node as Light3D)
+			_lamp_energy.append((node as Light3D).light_energy)
+	for node: Node in get_tree().get_nodes_in_group(&"lamp_glow"):
+		if is_ancestor_of(node) and node is Node3D:
+			_glows.append(node as Node3D)
 	_apply()
 
 
@@ -80,9 +88,11 @@ func _apply() -> void:
 		_sun.light_energy = moon_energy * clampf(-daylight * 3.0, 0.0, 1.0) * (1.0 - 0.7 * gloom)
 	# The lamps: off in daylight, on from dusk to dawn, a little on in the rain.
 	var dark := maxf(1.0 - clampf(daylight * 4.0, 0.0, 1.0), 0.5 * gloom)
-	for lamp: Light3D in _lamps:
-		lamp.light_energy = lamp_energy * dark
-		lamp.visible = dark > 0.01
+	for i: int in _lamps.size():
+		_lamps[i].light_energy = _lamp_energy[i] * lamp_brightness * dark
+		_lamps[i].visible = dark > 0.01
+	for glow: Node3D in _glows:
+		glow.visible = dark > 0.25
 	_rain.emitting = raining
 
 
