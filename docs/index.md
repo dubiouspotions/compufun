@@ -1,8 +1,9 @@
 # Documentation index
 
-Read the doc whose situation matches yours. This index is `@`-included into every session; the
-docs themselves are not, so the "read it when…" column is what makes them reachable. Write each
-row as a *trigger* — a situation the reader might be in — never as a summary.
+Read the doc whose situation matches yours. Agents read this index at the start of every
+session (Claude Code includes it through AGENTS.md); the docs themselves are not included, so
+the "read it when…" column is what makes them reachable. Write each row as a *trigger* — a
+situation the reader might be in — never as a summary.
 
 | Doc | Read it when… |
 | --- | --- |
