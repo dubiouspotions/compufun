@@ -49,7 +49,7 @@ var carrying: bool = false:
 
 @onready var _animation: AnimationPlayer = %AnimationPlayer
 @onready var _steps: AudioStreamPlayer3D = %Steps
-@onready var _computer: Node3D = %Computer
+@onready var _computer: PcTower = %Computer
 @onready var _shoulder_left: Node3D = $ShoulderL
 @onready var _shoulder_right: Node3D = $ShoulderR
 
@@ -112,6 +112,7 @@ func show_customer(customer: Customer) -> void:
 		return
 	_has_shown = true
 	_shown = customer
+	_computer.dress(customer.computer if customer != null else null)
 	var person := customer.person if customer != null else null
 	var face := default_face
 	if person != null and person.face != null:

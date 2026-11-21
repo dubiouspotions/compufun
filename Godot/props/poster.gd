@@ -1,6 +1,8 @@
 @tool
+class_name Poster
 extends Node3D
-## A paper poster on a wall. Its origin is the centre of the sheet, which faces +Z.
+## A printed sheet: a poster on a wall, or a sticker on a case. Its origin is the centre of the sheet,
+## which faces +Z.
 
 ## The picture on the sheet, stretched to [member size].
 @export var texture: Texture2D:

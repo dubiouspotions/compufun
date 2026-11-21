@@ -42,6 +42,7 @@ var powered: bool = false:
 
 var _hovered: bool = false
 
+@onready var _tower: PcTower = $Tower
 @onready var _hotspot: Hotspot = %Hotspot
 @onready var _outline: MeshInstance3D = %Outline
 @onready var _workview_eye: Marker3D = %WorkviewEye
@@ -56,6 +57,7 @@ func _ready() -> void:
 	_hotspot.mouse_entered.connect(_set_hovered.bind(true))
 	_hotspot.mouse_exited.connect(_set_hovered.bind(false))
 	_power_hotspot.clicked.connect(func(_h: Hotspot) -> void: power_clicked.emit(self))
+	_tower.dress(job.customer.computer)
 	_post_it.job = job
 	_sync_outline()
 	_sync_power_light()
