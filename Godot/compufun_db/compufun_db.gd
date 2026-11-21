@@ -1,12 +1,13 @@
 class_name CompuFunDB
 extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
-## what each customer reported (one row per job on the counter: its problem's perceived issue), what
-## to check (every symptom of every Problem, whatever was reported; the player marks what is wrong),
-## and what to fix (the repair steps of each problem whose symptoms are all marked; the player ticks
-## them off). Marking the wrong symptoms leads to the wrong fix. The marks and ticks are the job's; this screen keeps only its cursor. It
-## reads every Problem file, so its text is never a second copy of the problems.
-## Keys: arrows and Tab move, Space or Enter acts. The mouse clicks and scrolls.
+## the player's records (Game.records: they add one and type what they like into it), what to check
+## (every symptom of every Problem; the player marks what is wrong on the selected record), and what
+## to fix (the repair steps of each problem whose symptoms are all marked; the player ticks them
+## off). Marking the wrong symptoms leads to the wrong fix. This screen keeps only its cursor and
+## the line being typed. It reads every Problem file, so its text is never a second copy of them.
+## Keys: arrows and Tab move, Space or Enter acts, typing fills a new record. The mouse clicks and
+## scrolls.
 
 const PROBLEMS_DIR: String = "res://problems/"
 const COLUMNS: int = 80
@@ -17,10 +18,13 @@ const FRAME_ROWS: Array[int] = [1, 3, 27]
 ## The first and last row of the lists, between the headers and the bottom frame.
 const LIST_TOP: int = 4
 const LIST_BOTTOM: int = 26
+## The most characters that a record holds.
+const TEXT_LENGTH: int = 48
+const NEW_RECORD: String = "<New record>"
 
-enum Column { REPORTED, CHECKS, FIXES }
+enum Column { RECORDS, CHECKS, FIXES }
 
-const HEADERS: Array[String] = ["REPORTED", "CHECK", "FIX"]
+const HEADERS: Array[String] = ["CUSTOMER", "CHECK", "FIX"]
 
 ## The text-mode font: one glyph per 8 x 16 cell.
 @export var font: Font = preload("res://compufun_db/fonts/Px437_IBM_VGA_8x16.ttf")
@@ -36,10 +40,13 @@ var _spans: Array[Vector2i] = [Vector2i(1, 24), Vector2i(26, 51), Vector2i(53, 7
 var _problems: Array[Problem] = []
 ## Every symptom of every problem, once each, in the order of the problems.
 var _symptoms: PackedStringArray = []
-var _column: Column = Column.REPORTED
+var _column: Column = Column.RECORDS
 var _selected: Array[int] = [0, 0, 0]
 var _scroll: Array[int] = [0, 0, 0]
 var _mouse_cell: Vector2i = Vector2i(-1, -1)
+## True while the player types a new record into [member _typed].
+var _typing: bool = false
+var _typed: String = ""
 # The grid that _draw paints: one character, foreground and background per cell.
 var _chars: PackedStringArray = []
 var _fg: PackedColorArray = []
@@ -82,53 +89,47 @@ func _load_problems() -> void:
 func _entries(column: Column) -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
 	match column:
-		Column.REPORTED:
-			for job: Job in _jobs():
-				entries.append({text = job.problem.perceived_issue, check = null, pick = true})
+		Column.RECORDS:
+			for record: DbRecord in Game.records:
+				entries.append({text = record.text, check = null, pick = true})
+			entries.append({text = NEW_RECORD, check = null, pick = true})
 		Column.CHECKS:
-			var job := _job()
-			if job != null:
+			var record := _record()
+			if record != null:
 				for symptom: String in _symptoms:
-					entries.append({text = symptom, check = symptom in job.marked_symptoms, pick = true})
+					entries.append({text = symptom, check = symptom in record.marked_symptoms, pick = true})
 		Column.FIXES:
-			var job := _job()
-			if job != null:
-				for problem: Problem in _matches(job):
-					_add_steps(entries, job, "Hardware", problem.hardware_steps)
-					_add_steps(entries, job, "Software", problem.software_steps)
+			var record := _record()
+			if record != null:
+				for problem: Problem in _matches(record):
+					_add_steps(entries, record, "Hardware", problem.hardware_steps)
+					_add_steps(entries, record, "Software", problem.software_steps)
 	return entries
 
 
-func _add_steps(entries: Array[Dictionary], job: Job, title: String, steps: PackedStringArray) -> void:
+func _add_steps(entries: Array[Dictionary], record: DbRecord, title: String, steps: PackedStringArray) -> void:
 	if steps.is_empty():
 		return
 	entries.append({text = "-- %s --" % title, check = null, pick = false})
 	for step: String in steps:
-		entries.append({text = step, check = step in job.ticked_repairs, pick = true})
+		entries.append({text = step, check = step in record.ticked_repairs, pick = true})
 
 
-# The jobs on the counter, oldest first: the rows of the reported column.
-func _jobs() -> Array[Job]:
-	var jobs := Game.jobs.duplicate()
-	jobs.sort_custom(func(a: Job, b: Job) -> bool: return a.order < b.order)
-	return jobs
+# The record under the first column's cursor, or null on <New record>.
+func _record() -> DbRecord:
+	var index := _selected[Column.RECORDS]
+	return Game.records[index] if index < Game.records.size() else null
 
 
-# The job under the reported cursor, or null when the counter is empty.
-func _job() -> Job:
-	var jobs := _jobs()
-	return jobs[mini(_selected[Column.REPORTED], jobs.size() - 1)] if not jobs.is_empty() else null
-
-
-# The problems whose symptoms are all marked on [param job].
-func _matches(job: Job) -> Array[Problem]:
+# The problems whose symptoms are all marked on [param record].
+func _matches(record: DbRecord) -> Array[Problem]:
 	var found: Array[Problem] = []
 	for problem: Problem in _problems:
 		if problem.symptoms.is_empty():
 			continue
 		var all_marked := true
 		for symptom: String in problem.symptoms:
-			all_marked = all_marked and symptom in job.marked_symptoms
+			all_marked = all_marked and symptom in record.marked_symptoms
 		if all_marked:
 			found.append(problem)
 	return found
@@ -203,6 +204,7 @@ func _on_click(button: InputEventMouseButton) -> void:
 	var line := _scroll[column] + cell.y - LIST_TOP
 	if line >= lines.size():
 		return
+	_typing = false
 	_column = column
 	_select(lines[line][0])
 	_act()
@@ -211,6 +213,8 @@ func _on_click(button: InputEventMouseButton) -> void:
 func _on_key(key: InputEventKey) -> bool:
 	if _offline():
 		return false
+	if _typing:
+		return _on_typing_key(key)
 	match key.keycode:
 		KEY_UP:
 			_move(-1)
@@ -227,7 +231,27 @@ func _on_key(key: InputEventKey) -> bool:
 	return true
 
 
-# Acts on the entry under the cursor: a customer opens its symptoms, a symptom or a step toggles.
+# The line of a new record keeps every key, so typing never turns the room.
+func _on_typing_key(key: InputEventKey) -> bool:
+	match key.keycode:
+		KEY_ENTER, KEY_KP_ENTER:
+			if not _typed.strip_edges().is_empty():
+				_typing = false
+				Game.add_record(_typed.strip_edges())
+				_select(Game.records.size() - 1)
+		KEY_ESCAPE:
+			_typing = false
+		KEY_BACKSPACE:
+			_typed = _typed.left(-1)
+		_:
+			if key.unicode >= 32 and key.unicode < 127 and _typed.length() < TEXT_LENGTH:
+				_typed += char(key.unicode)
+	queue_redraw()
+	return true
+
+
+# Acts on the entry under the cursor: <New record> starts typing, a record opens its checks, a
+# symptom or a step toggles.
 func _act() -> void:
 	var entries := _entries(_column)
 	var index := _selected[_column]
@@ -235,12 +259,16 @@ func _act() -> void:
 		return
 	var entry := entries[index]
 	match _column:
-		Column.REPORTED:
-			_change_column(1)
+		Column.RECORDS:
+			if index == Game.records.size():
+				_typing = true
+				_typed = ""
+			else:
+				_change_column(1)
 		Column.CHECKS:
-			Game.mark_symptom(_job(), entry.text, not entry.check)
+			Game.mark_symptom(_record(), entry.text, not entry.check)
 		Column.FIXES:
-			Game.tick_repair(_job(), entry.text, not entry.check)
+			Game.tick_repair(_record(), entry.text, not entry.check)
 	queue_redraw()
 
 
@@ -258,7 +286,7 @@ func _move(step: int) -> void:
 
 func _change_column(step: int) -> void:
 	var column := wrapi(_column + step, 0, Column.size()) as Column
-	if column != Column.REPORTED and _job() == null:
+	if column != Column.RECORDS and _record() == null:
 		return
 	_column = column
 	_move(0)
@@ -266,7 +294,7 @@ func _change_column(step: int) -> void:
 
 # Selects entry [param index] of the current column and scrolls it into view.
 func _select(index: int) -> void:
-	if _column == Column.REPORTED and index != _selected[_column]:
+	if _column == Column.RECORDS and index != _selected[_column]:
 		for column: Column in [Column.CHECKS, Column.FIXES]:
 			_selected[column] = 0
 			_scroll[column] = 0
@@ -288,12 +316,11 @@ func _select(index: int) -> void:
 		_scroll[_column] = last - height + 1
 
 
-# Keeps the cursors on the counter as it is: a job that left takes its row and its columns along.
+# Keeps the cursors on entries that exist, and in the first column while no record is picked.
 func _reconcile() -> void:
-	var count := _jobs().size()
-	if count == 0:
-		_column = Column.REPORTED
-	_selected[Column.REPORTED] = clampi(_selected[Column.REPORTED], 0, maxi(count - 1, 0))
+	_selected[Column.RECORDS] = clampi(_selected[Column.RECORDS], 0, Game.records.size())
+	if _record() == null:
+		_column = Column.RECORDS
 	for column: Column in [Column.CHECKS, Column.FIXES]:
 		var size := _entries(column).size()
 		_selected[column] = clampi(_selected[column], 0, maxi(size - 1, 0))
@@ -347,14 +374,15 @@ func _paint() -> void:
 		_put(30, 15, " OFFLINE: LINE IN USE ", bright_color, bar_color)
 		_bar(28, " CompuFunDB", "", bar_color)
 		return
-	var job := _job()
+	var record := _record()
 	for column: int in Column.size():
 		_paint_column(column as Column)
-	var jobs := _jobs()
-	var record := "%s  Rec %d/%d " % [job.customer.display_name, jobs.find(job) + 1, jobs.size()] if job != null else "No records "
-	_bar(28, " %s" % HEADERS[_column], record, bar_color)
-	if job == null:
-		_put(1, 29, "No computers on the counter.", text_color)
+	var count := "Rec %d/%d " % [_selected[Column.RECORDS] + 1, Game.records.size()] if record != null else "None "
+	_bar(28, " %s" % HEADERS[_column], count, bar_color)
+	if _typing:
+		_put(1, 29, "Customer: %s_" % _typed, bright_color)
+	elif record == null:
+		_put(1, 29, "Enter on %s, then type the customer." % NEW_RECORD, text_color)
 	else:
 		_put(1, 29, "\u2191\u2193 Move  \u2190\u2192 Column  Space Mark  Esc Leave", text_color)
 
@@ -363,7 +391,7 @@ func _paint_column(column: Column) -> void:
 	var entries := _entries(column)
 	var lines := _lines(column, entries)
 	var span := _spans[column]
-	if column != Column.REPORTED and _job() == null:
+	if column != Column.RECORDS and _record() == null:
 		return
 	if column == Column.FIXES and entries.is_empty():
 		_put(span.x, LIST_TOP, "Mark what is wrong.", dim_color)
@@ -376,7 +404,7 @@ func _paint_column(column: Column) -> void:
 		var entry := entries[index]
 		var fg := text_color if entry.pick else dim_color
 		var bg := background
-		if column == Column.REPORTED and index == _selected[column]:
+		if column == Column.RECORDS and index == _selected[column]:
 			fg = bright_color
 			bg = dim_color
 		if column == _column and index == _selected[column]:

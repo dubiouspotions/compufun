@@ -84,6 +84,8 @@ var laid_down: bool = false
 var flags: Dictionary[StringName, int] = {}
 ## The conversations that have played, as "<customer file name>/<conversation id>".
 var seen: Dictionary[String, bool] = {}
+## The records that the player made in CompuFunDB, oldest first. They last the whole game.
+var records: Array[DbRecord] = []
 ## What the visitor says while TALKING, or null when no conversation matches.
 var conversation: Conversation
 ## Goes up every time a visitor starts to walk in, also on [method restore]. A scene that
@@ -459,16 +461,32 @@ func set_software_fixed(job: Job, fixed: bool) -> void:
 	changed.emit()
 
 
-## Marks [param symptom] on [param job] in CompuFunDB (true), or clears it (false).
-func mark_symptom(job: Job, symptom: String, marked: bool) -> void:
-	if _on_counter(job, "mark_symptom"):
-		_set_in(job.marked_symptoms, symptom, marked)
+## Adds a record to CompuFunDB with the [param text] that the player typed, and returns it.
+func add_record(text: String) -> DbRecord:
+	var record := DbRecord.new()
+	record.text = text
+	records.append(record)
+	changed.emit()
+	return record
 
 
-## Ticks the repair step [param step] of [param job] in CompuFunDB (true), or unticks it (false).
-func tick_repair(job: Job, step: String, ticked: bool) -> void:
-	if _on_counter(job, "tick_repair"):
-		_set_in(job.ticked_repairs, step, ticked)
+## Marks [param symptom] on [param record] (true), or clears it (false).
+func mark_symptom(record: DbRecord, symptom: String, marked: bool) -> void:
+	if _is_record(record, "mark_symptom"):
+		_set_in(record.marked_symptoms, symptom, marked)
+
+
+## Ticks the repair step [param step] on [param record] (true), or unticks it (false).
+func tick_repair(record: DbRecord, step: String, ticked: bool) -> void:
+	if _is_record(record, "tick_repair"):
+		_set_in(record.ticked_repairs, step, ticked)
+
+
+func _is_record(record: DbRecord, what: String) -> bool:
+	if record == null or record not in records:
+		push_error("Game.%s: the record is not in CompuFunDB: %s" % [what, record])
+		return false
+	return true
 
 
 func _set_in(items: Array[String], item: String, present: bool) -> void:
@@ -550,13 +568,14 @@ func snapshot() -> Dictionary:
 		"conversation": String(conversation.id) if conversation != null else "",
 		"flags": flags.duplicate(),
 		"seen": seen.keys(),
+		"records": records.map(func(r: DbRecord) -> Dictionary: return r.snapshot()),
 	}
 
 
 ## Sets the state from [param state], in the format of [method snapshot]. A missing key takes its
 ## value at the start of a day: day 1, OPEN, nobody in the shop, no arrivals, an empty counter, no
-## flags, nothing seen, the daypart of the arrivals; a missing view keeps the current one. The
-## conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
+## flags, nothing seen, no CompuFunDB records, the daypart of the arrivals; a missing view keeps the
+## current one. The conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
 func restore(state: Dictionary) -> String:
 	var known := snapshot()
 	for key: Variant in state:
@@ -603,11 +622,6 @@ func restore(state: Dictionary) -> String:
 		job.hardware_fixed = bool(data.get("hardware_fixed", false))
 		job.software_fixed = bool(data.get("software_fixed", false))
 		job.powered = bool(data.get("powered", false))
-		for key: String in ["marked_symptoms", "ticked_repairs"]:
-			if not data.get(key, []) is Array:
-				return _refuse("job %d: %s is not a list: %s" % [i, key, data[key]])
-		job.marked_symptoms.assign(data.get("marked_symptoms", []).map(str))
-		job.ticked_repairs.assign(data.get("ticked_repairs", []).map(str))
 		if data.has("parts"):
 			var pieces: Variant = Job.pieces_from(data["parts"])
 			if pieces is String:
@@ -676,6 +690,15 @@ func restore(state: Dictionary) -> String:
 	var new_seen: Dictionary[String, bool] = {}
 	for key: Variant in state.get("seen", []):
 		new_seen[str(key)] = true
+	var new_records: Array[DbRecord] = []
+	var given_records: Variant = state.get("records", [])
+	if not given_records is Array:
+		return _refuse("records is not a list: %s" % given_records)
+	for data: Variant in given_records:
+		var record: Variant = DbRecord.from(data)
+		if record is String:
+			return _refuse(record)
+		new_records.append(record)
 
 	day = new_day
 	phase = new_phase
@@ -696,6 +719,7 @@ func restore(state: Dictionary) -> String:
 	laid_down = bool(state.get("laid_down", false))
 	flags = new_flags
 	seen = new_seen
+	records = new_records
 	arrival += 1
 	conversation = null
 	if visitor_state == VisitorState.TALKING:

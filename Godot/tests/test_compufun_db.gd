@@ -1,26 +1,28 @@
 extends "res://tests/test.gd"
-## The symptoms and repairs that the player marks in CompuFunDB belong to the job: they survive a
-## snapshot and a restore, and a malformed list is refused.
-
-const CUSTOMER: String = "res://customers/pierre.tres"
+## The records that the player makes in CompuFunDB, with their marked symptoms and ticked repairs,
+## survive a snapshot and a restore, and a malformed record is refused.
 
 
 func run() -> void:
-	check("restore a job", game.restore({"day": 1, "arrivals": 1, "jobs": [{"customer": CUSTOMER}]}), "")
-	var job: Job = game.jobs[0]
-	var symptom: String = job.problem.symptoms[0]
-	game.mark_symptom(job, symptom, true)
-	game.mark_symptom(job, symptom, true)
-	check("a symptom is marked once", job.marked_symptoms, [symptom])
-	game.tick_repair(job, "Unmute", true)
-	game.tick_repair(job, "Unmute", false)
-	check("a repair unticks", job.ticked_repairs, [])
-	game.tick_repair(job, "Unmute", true)
+	check("start day 1", game.restore({}), "")
+	var record: DbRecord = game.add_record("Pierre: turns off")
+	check("the record is added", game.records.size(), 1)
+	game.mark_symptom(record, "The fan is full of dust", true)
+	game.mark_symptom(record, "The fan is full of dust", true)
+	check("a symptom is marked once", record.marked_symptoms, ["The fan is full of dust"])
+	game.tick_repair(record, "Install the fan", true)
+	game.tick_repair(record, "Install the fan", false)
+	check("a repair unticks", record.ticked_repairs, [])
+	game.tick_repair(record, "Install the fan", true)
 
 	check("restore the snapshot", game.restore(game.snapshot()), "")
-	check("the marks survive", game.jobs[0].marked_symptoms, [symptom])
-	check("the ticks survive", game.jobs[0].ticked_repairs, ["Unmute"])
+	var restored: DbRecord = game.records[0]
+	check("the text survives", restored.text, "Pierre: turns off")
+	check("the marks survive", restored.marked_symptoms, ["The fan is full of dust"])
+	check("the ticks survive", restored.ticked_repairs, ["Install the fan"])
 
-	var refused: String = game.restore({"jobs": [{"customer": CUSTOMER, "marked_symptoms": "oops"}]})
-	check("a list that is not a list is refused", refused.contains("marked_symptoms is not a list"), true)
-	check("the refusal keeps the state", game.jobs[0].ticked_repairs, ["Unmute"])
+	var refused: String = game.restore({"records": [{"text": "x", "marked_symptoms": "oops"}]})
+	check("a list that is not a list is refused", refused.contains("marked_symptoms of the record 'x' is not a list"), true)
+	check("the refusal keeps the records", game.records[0], restored)
+	check("a restore without records starts empty", game.restore({}), "")
+	check("no records", game.records.size(), 0)
