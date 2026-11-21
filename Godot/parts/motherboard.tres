@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="Part" format=3]
+
+[ext_resource type="Script" path="res://parts/part.gd" id="1_part"]
+[ext_resource type="PackedScene" path="res://props/parts/motherboard.tscn" id="3_model"]
+
+[resource]
+script = ExtResource("1_part")
+display_name = "Motherboard"
+model = ExtResource("3_model")

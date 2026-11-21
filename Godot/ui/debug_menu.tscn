@@ -86,6 +86,11 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Noon"
 
+[node name="AfternoonButton" type="Button" parent="Panel/Margin/Box/Tabs/World/TimeButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Afternoon"
+
 [node name="EveningButton" type="Button" parent="Panel/Margin/Box/Tabs/World/TimeButtons" unique_id=1850818308]
 unique_name_in_owner = true
 layout_mode = 2

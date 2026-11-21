@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/application_16.png" id="icon"]
 [ext_resource type="Script" path="res://win95/win95_file.gd" id="file"]
-[ext_resource type="SystemFont" path="res://win95/theme/dos_font.tres" id="mono"]
+[ext_resource type="FontVariation" path="res://win95/theme/dos_font.tres" id="mono"]
 
 [sub_resource type="Resource" id="f_sys"]
 script = ExtResource("file")
@@ -95,6 +95,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.753, 0.753, 0.753, 1)
 theme_override_fonts/font = ExtResource("mono")
+theme_override_font_sizes/font_size = 16
 autowrap_mode = 3
 
 [node name="Input" type="HBoxContainer" parent="VBox/Screen/Scroll/Lines"]
@@ -106,6 +107,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.753, 0.753, 0.753, 1)
 theme_override_fonts/font = ExtResource("mono")
+theme_override_font_sizes/font_size = 16
 text = "C:\\WINDOWS>"
 
 [node name="Command" type="LineEdit" parent="VBox/Screen/Scroll/Lines/Input"]
@@ -116,6 +118,7 @@ theme_override_colors/font_color = Color(0.753, 0.753, 0.753, 1)
 theme_override_constants/caret_width = 8
 theme_override_colors/caret_color = Color(0.753, 0.753, 0.753, 1)
 theme_override_fonts/font = ExtResource("mono")
+theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("none")
 theme_override_styles/focus = SubResource("none")
 caret_blink = true

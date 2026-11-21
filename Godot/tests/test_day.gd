@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
 ## Plays two days through the Game API: drop-offs, a full counter that holds back the next
-## customer, focus, fixes, post-its, the phone, the oldest-first pickup, and closing the shop.
+## customer, focus, fixes, post-its, the phone, the oldest-first pickup, closing the shop, and the
+## next day from the day files.
 
 const GAME := preload("res://game.gd")
 const OPEN := GAME.Phase.OPEN
@@ -40,7 +41,7 @@ func run() -> void:
 	check("O2 in slot 1, focus stays", [slots(), game.focus == job_of("O1")], [["O1@0", "O2@1"], true])
 	check("can close after every customer", game.can_close(), true)
 	game.close_shop()
-	check("DAY_OVER, night, jobs stay", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.NIGHT, 2])
+	check("DAY_OVER, evening, jobs stay", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.EVENING, 2])
 	tick(1000.0)
 	check("nothing happens at night", [game.phase, game.visitor], [GAME.Phase.DAY_OVER, null])
 
@@ -67,21 +68,15 @@ func run() -> void:
 	game.connect_cable(job_b)
 	game.fix(Problem.Location.SOFTWARE)
 	check("B software fixed via the cable, focus stays A", [job_b.fixed, game.focus == job_a], [true, true])
-	game.tick_post_it(job_of("O1"))
-	check("an unfixed post-it does not tick", job_of("O1").post_it_ticked, false)
-	check("can't call before a tick", game.can_call(), false)
-	game.tick_post_it(job_b)
-	game.tick_post_it(job_a)
-	check("A and B ticked", [job_a.post_it_ticked, job_b.post_it_ticked], [true, true])
+	check("A and B are ready for pickup, O1 isn't", [job_a.fixed, job_b.fixed, job_of("O1").fixed], [true, true, false])
 
 	game.set_software_fixed(job_b, false)
-	check("B's software breaks again: the post-it unticks", [job_b.fixed, job_b.post_it_ticked], [false, false])
+	check("B's software breaks again: B isn't ready", [job_b.fixed, game.can_call()], [false, true])
 	game.set_software_fixed(job_b, true)
-	game.tick_post_it(job_b)
 	game.set_powered(job_a, true)
-	check("power is per job", [job_a.powered, job_b.powered, job_b.post_it_ticked], [true, false, true])
+	check("power is per job", [job_a.powered, job_b.powered, job_b.fixed], [true, false, true])
 
-	# The oldest ticked job is picked up.
+	# The oldest fixed computer is picked up.
 	check("can call", game.can_call(), true)
 	var changes: Array[int] = [0]
 	game.changed.connect(func() -> void: changes[0] += 1)
@@ -102,7 +97,7 @@ func run() -> void:
 	tick(59.0)
 	check("59 s: nobody yet", game.arrivals, 2)
 	tick(2.0)
-	check("C comes, evening", [game.arrivals, game.daypart], [3, GAME.Daypart.EVENING])
+	check("C comes, afternoon", [game.arrivals, game.daypart], [3, GAME.Daypart.AFTERNOON])
 	drop_off("C")
 	check("C in the free slot 2, focused", [slots(), game.focus == job_of("C")], [["O1@0", "O2@1", "B@3", "C@2"], true])
 
@@ -116,7 +111,16 @@ func run() -> void:
 
 	check("can close", game.can_close(), true)
 	game.close_shop()
-	check("DAY_OVER, night, 3 jobs overnight", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.NIGHT, 3])
+	check("DAY_OVER, evening, 3 jobs overnight", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.EVENING, 3])
+
+	# The next day comes from its file; the jobs stay overnight; day 7 is the last.
+	var overnight := [{"customer": "res://customers/pierre.tres", "slot": 2}]
+	check("restore day 1, closed", game.restore({"day": 1, "phase": "DAY_OVER", "arrivals": 2, "jobs": overnight}), "")
+	check("day 1 has a next day", game.has_next_day(), true)
+	game.start_next_day()
+	check("day 2: open, morning, nobody in yet, the job stayed", [game.day_number, game.phase, game.daypart, game.arrivals, slots()], [2, OPEN, GAME.Daypart.MORNING, 0, ["Pierre@2"]])
+	check("restore day 7", game.restore({"day": 7, "phase": "DAY_OVER", "arrivals": 2}), "")
+	check("day 7 is the last", game.has_next_day(), false)
 
 
 func customer(display_name: String, problem: Problem, has_pickup: bool) -> Customer:
@@ -140,7 +144,8 @@ func make_day(number: int, customers: Array[Customer]) -> Day:
 	var d := Day.new()
 	d.number = number
 	d.customers = customers
-	d.gap_seconds = 60.0
+	d.first_wait_seconds = Vector2.ZERO
+	d.gap_seconds = Vector2(60.0, 60.0)
 	return d
 
 

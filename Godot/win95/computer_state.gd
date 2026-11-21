@@ -21,6 +21,9 @@ var is_on: bool = false
 ## The job whose computer this is. Set once, before the node enters the tree.
 var job: Job
 
+## Counts boots, so that a shutdown timer from an earlier boot does nothing.
+var _boots: int = 0
+
 
 func _ready() -> void:
 	if job != null:
@@ -61,6 +64,40 @@ func write_picture(file: Win95File, image: Image) -> void:
 		return
 	file.picture = ImageTexture.create_from_image(image.duplicate())
 	_stamp(file)
+	_changed()
+
+
+## Puts [param file] first in the Start menu's Documents, as opening a document does in Win95,
+## which lists 15.
+func note_opened(file: Win95File) -> void:
+	if setup == null:
+		return
+	setup.recent_documents.erase(file)
+	setup.recent_documents.push_front(file)
+	setup.recent_documents.resize(mini(setup.recent_documents.size(), 15))
+
+
+## Marks [param email] read, as opening it in Exchange does.
+func mark_read(email: Email) -> void:
+	if setup == null or email.read:
+		return
+	email.read = true
+	_changed()
+
+
+## Moves [param email] to [param folder], as Exchange's Delete moves it to Deleted Items.
+func move_email(email: Email, folder: Email.Folder) -> void:
+	if setup == null or email.folder == folder:
+		return
+	email.folder = folder
+	_changed()
+
+
+## Removes [param email] for good, as deleting it from Deleted Items does.
+func purge_email(email: Email) -> void:
+	if setup == null or not setup.emails.has(email):
+		return
+	setup.emails.erase(email)
 	_changed()
 
 
@@ -150,7 +187,12 @@ func programs_for(extension: String) -> Array[Win95File]:
 ## True when [param file] is a program file that Win95 would run: it has a program, and its name
 ## ends in .EXE or .COM.
 static func is_runnable(file: Win95File) -> bool:
-	return file.program != null and file.name.get_extension().to_lower() in ["exe", "com"]
+	return file.program != null and is_program_name(file.name)
+
+
+## True when Win95 would run a file named [param file_name]: it ends in .EXE or .COM.
+static func is_program_name(file_name: String) -> bool:
+	return file_name.get_extension().to_lower() in ["exe", "com"]
 
 
 ## The extensions that the app in [param program] opens: its root's `opens`, from the scene or
@@ -233,19 +275,37 @@ func _sync() -> void:
 		return
 	is_on = on
 	if on:
+		_boots += 1
 		booted.emit()
 	else:
+		setup.defragmenting = false  # switching off stops the run
 		powered_off.emit()
+
+
+## The desktop appeared after a boot. A problem that switches the computer off starts counting.
+func reached_desktop() -> void:
+	var seconds := job.problem.shuts_down_after
+	if seconds <= 0.0 or job.hardware_fixed:
+		return
+	var boot := _boots
+	await get_tree().create_timer(seconds).timeout
+	if boot == _boots and is_on and not job.hardware_fixed and job in Game.jobs:
+		Game.set_powered(job, false)
+
+
+## Starts Disk Defragmenter on drive C. It finishes overnight while the computer stays on.
+func start_defrag() -> void:
+	if setup == null or setup.defragmenting:
+		return
+	setup.defragmenting = true
+	_changed()
 
 
 # Win95 dates a save with its clock: the game's date, and the time that the taskbar shows.
 func _stamp(file: Win95File) -> void:
-	var date: Dictionary = Game.date
-	var time := Time.get_time_dict_from_system()
-	var weekdays := ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-	var months := ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-	file.modified = "%s, %s %d, %d %d:%02d:%02d %s" % [weekdays[date.weekday], months[date.month - 1], date.day, date.year,
-		(time.hour + 11) % 12 + 1, time.minute, time.second, "AM" if time.hour < 12 else "PM"]
+	var now: Dictionary = Game.date
+	now.merge(Time.get_time_dict_from_system(), true)
+	file.modified = "%s %s" % [Win95Time.long_date(now), Win95Time.clock(now, true)]
 
 
 func _changed() -> void:

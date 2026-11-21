@@ -1,7 +1,8 @@
 class_name Win95Desktop
 extends Control
 ## The desktop that windows open on. Later children draw on top, so the active window is the last
-## visible one. It marks that window's title bar active and the others' inactive.
+## visible one, until the player clicks the desktop itself, which makes no window active. It marks
+## the active window's title bar active and the others' inactive.
 
 ## A window opened, closed, minimized, came back, or became active. The taskbar re-reads windows().
 signal windows_changed
@@ -14,7 +15,13 @@ const GROUP: StringName = &"win95_desktop"
 ## The height of the taskbar at the bottom; a new window opens above it.
 @export var taskbar_height := 28.0
 
+## The computer whose desktop this is. Windows read and change it through this; its Win95 screen
+## sets it before any window opens.
+var computer: ComputerState
+
 var _opened: int = 0
+## The player clicked the desktop outside every window; the next window that activates ends it.
+var _desktop_active := false
 
 
 func _enter_tree() -> void:
@@ -44,9 +51,21 @@ func open(scene: PackedScene, reuse := true) -> Control:
 	# Late cascade steps would otherwise run off the screen.
 	var room := size - Vector2(0, taskbar_height) - window.get_combined_minimum_size()
 	window.position = window.position.min(room).max(Vector2.ZERO)
+	_lay_out(window)
 	_wire(window)
+	_desktop_active = false
 	_changed()
 	return window
+
+
+# Containers sort their children at the end of the frame; sorting now, top down, gives the new
+# window's controls their sizes before the caller fills them. A TextEdit still 8 px wide errors on
+# multi-line text.
+static func _lay_out(node: Node) -> void:
+	if node is Container:
+		node.notification(Container.NOTIFICATION_SORT_CHILDREN)
+	for child in node.get_children():
+		_lay_out(child)
 
 
 ## Shows [param window], restoring it if it was minimized, and puts it in front.
@@ -54,6 +73,7 @@ func activate(window: Control) -> void:
 	if not window.visible:
 		window.call(&"restore")
 	move_child(window, -1)
+	_desktop_active = false
 	_changed()
 
 
@@ -66,13 +86,33 @@ func windows() -> Array[Control]:
 	return open
 
 
-## The window in front, or null when every window is closed or minimized.
+## The window in front, or null when the desktop itself is active: the player clicked it, or every
+## window is closed or minimized.
 func active_window() -> Control:
+	if _desktop_active:
+		return null
 	for i in range(get_child_count() - 1, -1, -1):
 		var child := get_child(i)
 		if child.has_signal(&"activated") and child.visible and not child.is_queued_for_deletion():
 			return child
 	return null
+
+
+# _input sees the press before an icon or the wallpaper consumes it; presses on embedded popups
+# never reach it.
+func _input(event: InputEvent) -> void:
+	var button := event as InputEventMouseButton
+	if button == null or not button.pressed or _desktop_active or not is_visible_in_tree():
+		return
+	var desk := get_global_rect()
+	desk.size.y -= taskbar_height
+	if not desk.has_point(button.position):
+		return
+	for window in windows():
+		if window.visible and window.get_global_rect().has_point(button.position):
+			return
+	_desktop_active = true
+	_changed()
 
 
 ## Closes every open window, as a restart does.

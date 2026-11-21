@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/bench_screen.gd" id="1_bench"]
+[ext_resource type="PackedScene" path="res://win95/win95.tscn" id="2_win95"]
+[ext_resource type="PackedScene" path="res://win95/no_signal.tscn" id="3_nosig"]
+
+[node name="BenchScreen" type="Control"]
+custom_minimum_size = Vector2(640, 480)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 480.0
+script = ExtResource("1_bench")
+desktop_scene = ExtResource("2_win95")
+
+[node name="NoSignal" parent="." instance=ExtResource("3_nosig")]
+unique_name_in_owner = true
+layout_mode = 1

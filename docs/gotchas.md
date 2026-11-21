@@ -14,6 +14,12 @@ Format — symptom first, because that's what a future reader is searching for:
 
 ## Godot 4.7.2
 
+**The first turn to a view stalls for 100 to 200 ms.** The GL Compatibility renderer compiles a
+shader the first time something that uses it is on screen, and each view has things no other view
+shows. Measured 2026-11-21: the first turn right 100 to 193 ms, the second 5 ms. `Shop.warm_up()`
+shows every view for one frame behind the loading screen; with it, the first turn takes 5 ms. A new
+view, or a thing that first appears later (a ghost, an outline), can stall again: warm it up too.
+
 **The editor saves scenes and resources with data missing, or one scene's content under another
 scene's path.** We saw this after other Godot processes (headless `--import` runs and test runs)
 used the same `Godot/.godot/` caches as the open editor; its UID cache then held two UIDs for
@@ -39,8 +45,14 @@ prints, not only exit code 0. — 2026-11
 
 **A run logs "ObjectDB instances were leaked" and "resources still in use at exit", naming a
 sound.** That sound was playing when the game quit: the city ambience always is, a customer voice
-sometimes. It happens only at exit and only on some runs, and it needs no fix. Any other object
-in the `--verbose` list of leaks is a real leak. — 2026-11
+sometimes. It happens only at exit and only on some runs, and it needs no fix. In a headless
+test, every playback that a player stopped during the run is listed too (`AudioStreamPlayback...`),
+with a bare `AudioStreamPlayer` as well. Any other object in the `--verbose` list of leaks is a real
+leak. — 2026-11
+
+**A paused `AudioStreamPlayer` reads `playing == false` and ignores `seek()`.** Check
+`stream_paused` to tell paused from stopped, and seek a paused player with `play(from)` and then
+`stream_paused = true`, as `win95/media_player.gd` does. — 2026-11
 
 **A custom cursor set in Project Settings logs "Failed loading resource" in a fresh checkout,
 and CI exports from one.** `display/mouse_cursor/custom_image` is read before the image is
@@ -62,3 +74,15 @@ loading screen, and loop music instead of restarting it. — 2026-10
 web build plays sounds as samples, and samples skip `AudioEffect`s (Godot 4.7.2 class reference,
 `AudioServer.PLAYBACK_TYPE_SAMPLE`). Bake the effect into the file instead, as
 `tools/make_city_ambience.sh` does. — 2026-11
+
+## PSX look
+
+**A big surface's texture swims or bends as the camera turns.** `psx_world` maps textures affinely,
+so a texture bends across each triangle, and the bend grows with the triangle's size on screen.
+Subdivide boxes and planes into quads of about 0.5 m (`subdivide_width`, `_height`, `_depth`), as
+the shop's walls, floor and counter are. — 2026-11
+
+**A thin layer on a surface tears as the camera turns, and the surface shows through.** The vertex
+snap moves every vertex by up to half a pixel of the world buffer; on a counter top seen at a
+grazing angle that is about 1 cm of depth. Make a layer at least 1 cm thick, as the work mat is.
+— 2026-11

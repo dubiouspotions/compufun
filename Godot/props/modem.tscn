@@ -1,12 +1,13 @@
 [gd_scene format=3]
 
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="1_case"]
+[ext_resource type="Script" path="res://props/modem.gd" id="2_script"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_body"]
 size = Vector3(0.15, 0.035, 0.2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_led"]
-size = Vector3(0.008, 0.005, 0.004)
+size = Vector3(0.014, 0.008, 0.004)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_led_on"]
 shading_mode = 0
@@ -16,7 +17,11 @@ albedo_color = Color(1, 0.15, 0.1, 1)
 shading_mode = 0
 albedo_color = Color(0.25, 0.05, 0.05, 1)
 
-[node name="Modem" type="Node3D"]
+[node name="Modem" type="Node3D" node_paths=PackedStringArray("data_leds")]
+script = ExtResource("2_script")
+lit_material = SubResource("StandardMaterial3D_led_on")
+off_material = SubResource("StandardMaterial3D_led_off")
+data_leds = [NodePath("LedRD"), NodePath("LedSD")]
 
 [node name="Body" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0175, 0)

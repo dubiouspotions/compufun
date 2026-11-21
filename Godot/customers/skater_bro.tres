@@ -23,9 +23,18 @@
 [ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="app_inbox"]
 [ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
 [ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
+[ext_resource type="PackedScene" path="res://win95/solitaire/solitaire.tscn" id="app_solitaire"]
 [ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="app_ms_dos_prompt"]
+[ext_resource type="PackedScene" path="res://win95/media_player.tscn" id="app_media_player"]
 [ext_resource type="Material" path="res://materials/black_plastic.tres" id="case_black"]
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_turbo.png" id="sticker_turbo"]
+[ext_resource type="Script" path="res://customers/sticker.gd" id="sticker_script"]
+[ext_resource type="Texture2D" path="res://customers/pierre/castle_01.png" id="castle_01"]
+[ext_resource type="Texture2D" path="res://customers/pierre/castle_02.png" id="castle_02"]
+[ext_resource type="Texture2D" path="res://customers/pierre/castle_03.png" id="castle_03"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/bitmap_32.png" id="icon_bitmap"]
+[ext_resource type="PackedScene" path="res://props/cap.tscn" id="hat_cap"]
+[ext_resource type="Resource" path="res://win95/start_menu_stock.tres" id="start_menu"]
 
 [sub_resource type="Resource" id="DialogueLine_1"]
 script = ExtResource("dl")
@@ -44,21 +53,36 @@ lines = Array[ExtResource("dl")]([SubResource("DialogueLine_1"), SubResource("Di
 script = ExtResource("2_nepbl")
 name = "todo.txt"
 icon = ExtResource("3_tejm6")
+contents = "TODO
+
+- castle: render again tonight (3rd try!!)
+- computer gets HOT and switched off twice. buy a fan? ask Kent
+- TAXES 1995 !!!
+- 28.8k? 49 kr more a month
+- return library books
+"
+modified = "Thursday, May 30, 1996 11:12:44 PM"
 
 [sub_resource type="Resource" id="Resource_3rdml"]
 script = ExtResource("2_nepbl")
 name = "castle_01.bmp"
-icon = ExtResource("4_gjf3x")
+icon = ExtResource("icon_bitmap")
+picture = ExtResource("castle_01")
+modified = "Sunday, April 14, 1996 9:40:05 PM"
 
 [sub_resource type="Resource" id="Resource_7iqh2"]
 script = ExtResource("2_nepbl")
 name = "castle_02.bmp"
-icon = ExtResource("4_gjf3x")
+icon = ExtResource("icon_bitmap")
+picture = ExtResource("castle_02")
+modified = "Sunday, May 5, 1996 2:17:31 AM"
 
 [sub_resource type="Resource" id="Resource_ndhw4"]
 script = ExtResource("2_nepbl")
 name = "castle_03.bmp"
-icon = ExtResource("4_gjf3x")
+icon = ExtResource("icon_bitmap")
+picture = ExtResource("castle_03")
+modified = "Thursday, May 30, 1996 3:51:18 AM"
 
 [sub_resource type="Resource" id="Resource_mtqkb"]
 script = ExtResource("2_nepbl")
@@ -77,58 +101,132 @@ is_folder = true
 script = ExtResource("2_nepbl")
 name = "WIN.INI"
 icon = ExtResource("6_k5xlp")
+contents = "[windows]
+load=
+run=
+NullPort=None
+device=
+
+[Desktop]
+TileWallpaper=0
+WallpaperStyle=0
+
+[intl]
+iCountry=46
+sCountry=Sweden
+sLanguage=sve
+
+[extensions]
+txt=notepad.exe ^.txt
+ini=notepad.exe ^.ini
+bmp=pbrush.exe ^.bmp
+ray=C:\\PROGRA~1\\RAYTRA~1\\RAYTRACE.EXE ^.ray
+
+[mci extensions]
+mid=Sequencer
+wav=WaveAudio
+"
+modified = "Tuesday, April 2, 1996 8:31:12 PM"
 
 [sub_resource type="Resource" id="Resource_rkt6m"]
 script = ExtResource("2_nepbl")
 name = "SYSTEM.INI"
 icon = ExtResource("6_k5xlp")
+contents = "[boot]
+shell=Explorer.exe
+system.drv=system.drv
+drivers=mmsystem.dll power.drv
+display.drv=pnpdrvr.drv
+mouse.drv=mouse.drv
+keyboard.drv=keyboard.drv
+
+[boot.description]
+keyboard.typ=Standard 101/102-Key or Microsoft Natural Keyboard
+mouse.drv=Standard mouse
+display.drv=Standard Display Adapter (VGA)
+
+[386Enh]
+ebios=*ebios
+woafont=dosapp.fon
+device=*vmouse
+device=*vshare
+keyboard=*vkd
+display=*vdd,*vflatd
+
+[drivers]
+wave=mmsndsys.drv
+midimapper=midimap.drv
+"
+modified = "Sunday, September 3, 1995 2:22:08 PM"
 
 [sub_resource type="Resource" id="Program_inbox"]
 script = ExtResource("2_nepbl")
 name = "EXCHNG32.EXE"
 icon = ExtResource("7_xlwt7")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_inbox")
 
 [sub_resource type="Resource" id="Program_volume_control"]
 script = ExtResource("2_nepbl")
 name = "SNDVOL32.EXE"
 icon = ExtResource("7_xlwt7")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_volume_control")
 
 [sub_resource type="Resource" id="Program_defrag"]
 script = ExtResource("2_nepbl")
 name = "DEFRAG.EXE"
 icon = ExtResource("7_xlwt7")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_defrag")
+
+[sub_resource type="Resource" id="Program_solitaire"]
+script = ExtResource("2_nepbl")
+name = "SOL.EXE"
+icon = ExtResource("7_xlwt7")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+program = ExtResource("app_solitaire")
+
+[sub_resource type="Resource" id="Program_media_player"]
+script = ExtResource("2_nepbl")
+name = "MPLAYER.EXE"
+icon = ExtResource("7_xlwt7")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+program = ExtResource("app_media_player")
 
 [sub_resource type="Resource" id="Program_ms_dos_prompt"]
 script = ExtResource("2_nepbl")
 name = "COMMAND.COM"
 icon = ExtResource("7_xlwt7")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_ms_dos_prompt")
 
 [sub_resource type="Resource" id="Program_notepad"]
 script = ExtResource("2_nepbl")
 name = "NOTEPAD.EXE"
 icon = ExtResource("7_xlwt7")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_notepad")
 
 [sub_resource type="Resource" id="Program_wordpad"]
 script = ExtResource("2_nepbl")
 name = "WORDPAD.EXE"
 icon = ExtResource("7_xlwt7")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_wordpad")
 
 [sub_resource type="Resource" id="Program_paint"]
 script = ExtResource("2_nepbl")
 name = "PBRUSH.EXE"
 icon = ExtResource("7_xlwt7")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_paint")
 
 [sub_resource type="Resource" id="Program_calculator"]
 script = ExtResource("2_nepbl")
 name = "CALC.EXE"
 icon = ExtResource("7_xlwt7")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_calculator")
 
 [sub_resource type="Resource" id="Resource_pbx1f"]
@@ -136,17 +234,37 @@ script = ExtResource("2_nepbl")
 name = "Windows"
 icon = ExtResource("5_ko7w1")
 is_folder = true
-children = Array[Resource]([SubResource("Resource_4f8u6"), SubResource("Resource_rx540"), SubResource("Resource_rkt6m"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator"), SubResource("Program_inbox"), SubResource("Program_volume_control"), SubResource("Program_defrag"), SubResource("Program_ms_dos_prompt")])
+children = Array[Resource]([ExtResource("start_menu"), SubResource("Resource_4f8u6"), SubResource("Resource_rx540"), SubResource("Resource_rkt6m"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator"), SubResource("Program_inbox"), SubResource("Program_volume_control"), SubResource("Program_defrag"), SubResource("Program_solitaire"), SubResource("Program_ms_dos_prompt"), SubResource("Program_media_player")])
 
 [sub_resource type="Resource" id="Resource_wafo6"]
 script = ExtResource("2_nepbl")
 name = "RAYTRACE.EXE"
 icon = ExtResource("7_xlwt7")
+modified = "Thursday, November 2, 1995 12:00:00 PM"
 
 [sub_resource type="Resource" id="Resource_sh8oe"]
 script = ExtResource("2_nepbl")
 name = "README.TXT"
 icon = ExtResource("3_tejm6")
+contents = "RAYTRACE 2.0
+
+Thank you for choosing Raytrace 2! Registered users get the
+printed manual and the next version on floppy disk.
+
+QUICK START
+  Open a scene file (.RAY) to render it. The picture is saved
+  as a .BMP next to the scene file.
+
+RENDER TIMES
+  A complex scene can take many hours, and your computer works
+  hard the whole time. Make sure it has good air flow, and keep
+  the fan and the vents free of dust.
+
+PROBLEMS?
+  If your computer turns itself off during a render, it is
+  probably too hot. Let it cool down, and clean it.
+"
+modified = "Thursday, November 2, 1995 12:00:00 PM"
 
 [sub_resource type="Resource" id="Resource_x6btj"]
 script = ExtResource("2_nepbl")
@@ -166,11 +284,50 @@ children = Array[Resource]([SubResource("Resource_x6btj")])
 script = ExtResource("2_nepbl")
 name = "castle.ray"
 icon = ExtResource("8_5wmul")
+contents = "// castle.ray - the castle, 3rd try
+// Raytrace 2 scene file
+
+camera   { from <0.6, 1.6, -5>  to <0, 1.2, 2> }
+light    { at <-4, 8, -5> }
+sky      { gradient <0.25, 0.45, 0.9> }
+floor    { checker yellow navy  reflect 0.25 }
+
+// walls and gate
+box      { <-2, 0, 2> <2, 1.5, 2.6>  texture stone }
+box      { <-0.5, 0, 1.9> <0.5, 0.9, 2>  colour <0.25, 0.15, 0.08> }
+repeat 8 { box { <-2 + i * 0.55, 1.5, 2> <-1.72 + i * 0.55, 1.8, 2.6>  texture stone } }
+
+// towers
+cylinder { <-2.2, 0, 2.3>  radius 0.6  height 2.4  texture stone }
+cone     { <-2.2, 2.4, 2.3>  radius 0.75  height 1.2  colour red }
+cylinder { <2.2, 0, 2.3>  radius 0.6  height 2.4  texture stone }
+cone     { <2.2, 2.4, 2.3>  radius 0.75  height 1.2  colour red }
+
+// the chrome ball. Kent says every render needs one
+sphere   { <1.1, 0.6, 0.3>  radius 0.6  colour white  reflect 0.7 }
+
+quality high   // takes ALL night
+"
+modified = "Wednesday, May 29, 1996 10:58:02 PM"
 
 [sub_resource type="Resource" id="Resource_oja5x"]
 script = ExtResource("2_nepbl")
 name = "taxes 1995.txt"
 icon = ExtResource("3_tejm6")
+contents = "TAXES 1995
+
+Costs I can maybe deduct?
+  Computer (486 DX2/66)     14 995 kr
+  Modem 14.4k                1 495 kr
+  Raytrace 2 registration      250 kr
+  Books                        389 kr
+                            ---------
+                            17 129 kr
+
+Ask Kent: can I deduct the computer if I render
+castles for fun? (Not for fun. For my PORTFOLIO.)
+"
+modified = "Sunday, April 28, 1996 7:05:50 PM"
 
 [sub_resource type="Resource" id="Resource_ssvdj"]
 script = ExtResource("2_nepbl")
@@ -184,6 +341,7 @@ script = ExtResource("9_5i8g7")
 from = "Kent <kent@modemlandia.se>"
 to = "prohawk@hotmail.com"
 subject = "Re: the castle"
+sent = "1996-05-30 08:12"
 body = "Did the render finish overnight? Mine took 14 hours.
 
 Tip: take the side panel off. It runs cooler.
@@ -195,6 +353,7 @@ script = ExtResource("9_5i8g7")
 from = "Modemlandia <support@modemlandia.se>"
 to = "prohawk@hotmail.com"
 subject = "Welcome to Modemlandia!"
+sent = "1996-03-11 14:03"
 body = "Welcome! Your account is ready. Dial 08-555 123 45 to connect.
 
 You can call our support line on weekdays, 9 to 17."
@@ -206,6 +365,7 @@ folder = 1
 from = "prohawk@hotmail.com"
 to = "Kent <kent@modemlandia.se>"
 subject = "the castle"
+sent = "1996-05-29 23:01"
 body = "Starting the big render tonight. If the house burns down, you know why."
 read = true
 
@@ -215,6 +375,7 @@ folder = 2
 from = "Modemlandia <offers@modemlandia.se>"
 to = "prohawk@hotmail.com"
 subject = "Double your speed: 28.8k is here"
+sent = "1996-05-21 10:30"
 body = "Upgrade to our new 28.8k lines for only 49 kr more a month!"
 read = true
 
@@ -226,11 +387,16 @@ drive_c = Array[ExtResource("2_nepbl")]([SubResource("Resource_pbx1f"), SubResou
 emails = Array[ExtResource("9_5i8g7")]([SubResource("Resource_ovstq"), SubResource("Resource_t3ecn"), SubResource("Resource_ri5pa"), SubResource("Resource_ch6ki")])
 installed_apps = PackedStringArray("Calculator", "Notepad", "Paint", "Raytrace 2")
 
+[sub_resource type="Resource" id="Sticker_turbo"]
+script = ExtResource("sticker_script")
+texture = ExtResource("sticker_turbo")
+position = Vector2(-0.058, -0.12)
+
 [sub_resource type="Resource" id="Resource_aan2m"]
 script = ExtResource("1_43eac")
 win95_setup = SubResource("Resource_x8y54")
 case_material = ExtResource("case_black")
-sticker = ExtResource("sticker_turbo")
+stickers = Array[ExtResource("sticker_script")]([SubResource("Sticker_turbo")])
 
 [resource]
 script = ExtResource("3_tc2lv")
@@ -239,3 +405,4 @@ person = ExtResource("1_teewq")
 conversations = Array[ExtResource("cv")]([SubResource("Conversation_arrive")])
 problem = ExtResource("2_7x3xp")
 computer = SubResource("Resource_aan2m")
+hat = ExtResource("hat_cap")

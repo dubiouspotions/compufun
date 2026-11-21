@@ -4,6 +4,10 @@ extends Node3D
 
 ## A hotspot asks to go to a view.
 signal view_requested(view: StringName)
+## The player clicked the Open sign while [method Game.can_close] is true.
+signal close_requested
+## The player pressed the Degauss button of the bench screen.
+signal degauss_requested
 
 ## The close-up of the computer in focus.
 const WORKVIEW: StringName = &"Workview"
@@ -21,12 +25,26 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _body: CustomerBody = %CustomerBody
 @onready var _job_slots: JobSlots = %JobSlots
 @onready var _bench: Bench = %Bench
+@onready var _pipedream: Pipedream = %Pipedream
+@onready var _work_monitor: CrtMonitor = %WorkMonitor
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
+@onready var _hand: Hand = %Hand
+
+## Plays when a part comes into the player's hand, and when it leaves it (put in, on the mat, away).
+@export var part_take_sound: SoundSet = preload("res://sounds/part_take.tres")
+@export var part_put_sound: SoundSet = preload("res://sounds/part_put.tres")
+## Plays at a computer's socket when the keyboard cable goes in, and when it comes out.
+@export var plug_in_sound: SoundSet = preload("res://sounds/cable_plug_in.tres")
+@export var plug_out_sound: SoundSet = preload("res://sounds/cable_plug_out.tres")
 
 var _shown_view: StringName = &""
+## What the hand held and where the cable was at the last sync, to hear what changed since.
+var _heard_hand: Variant = null
+var _heard_cable: Job
 var _workview_job: Job
+var _workview_lying: bool = false
 var _walk_in_arrival: int = -1
 var _walk_out_arrival: int = -1
 var _walk_tween: Tween
@@ -43,11 +61,31 @@ func _ready() -> void:
 	_job_slots.power_clicked.connect(func(job: Job) -> void: Game.set_powered(job, not job.powered))
 	_bench.view_requested.connect(view_requested.emit)
 	_bench.plug_grabbed.connect(_on_plug_grabbed)
+	_bench.degauss_pressed.connect(degauss_requested.emit)
 	Game.changed.connect(_sync)
 	_sync()
 
 
 ## The view marker with this name, or null (with an error) when the room has none.
+## Shows a part in the hand, then every view, to the camera for one frame each, so that the renderer
+## compiles each shader now and not on the player's first turn or take (a first turn stalled for 100
+## to 200 ms, a first take for 90 ms). The camera ends where it began. The loading screen awaits it
+## while it still covers the game.
+func warm_up() -> void:
+	var home := _camera.global_transform
+	var home_fov := _camera.fov
+	await _hand.warm_up(Part.every()[0])
+	for node: Node in _views.get_children():
+		var marker := node as ViewMarker
+		if marker == null:
+			continue
+		_camera.global_transform = marker.global_transform
+		_camera.fov = marker.fov
+		await RenderingServer.frame_post_draw
+	_camera.global_transform = home
+	_camera.fov = home_fov
+
+
 func view_marker(view_name: StringName) -> ViewMarker:
 	var marker := _views.get_node_or_null(NodePath(String(view_name))) as ViewMarker
 	if marker == null:
@@ -67,18 +105,48 @@ func turn_from_main() -> float:
 	return yaw / (2.0 * half_width)
 
 
-## The bench screen as the camera sees it now, in pixels of the world buffer.
-func bench_screen_rect() -> Rect2:
-	var corners := _bench.screen_corners()
+## The screen of the monitor that shows [param screen] as the camera sees it now, in pixels of the
+## world buffer. Empty, with an error, when no monitor shows it.
+func screen_rect(screen: ViewMarker.Screen) -> Rect2:
+	var monitor := _monitor(screen)
+	return _rect_on_screen(monitor.screen_corners()) if monitor != null else Rect2()
+
+
+## The post-it of the computer in focus while the player reads it in the Workview, or null.
+func pinned_post_it() -> PostIt3D:
+	if Game.view != WORKVIEW or Game.focus == null:
+		return null
+	return _job_slots.pinned_post_it(Game.focus)
+
+
+## The paper of [param post_it] as the camera sees it now: the rect around its corners, in pixels
+## of the world buffer.
+func post_it_rect(post_it: PostIt3D) -> Rect2:
+	return _rect_on_screen(post_it.paper_corners())
+
+
+func _rect_on_screen(corners: Array[Vector3]) -> Rect2:
 	var rect := Rect2(_camera.unproject_position(corners[0]), Vector2.ZERO)
 	for corner: Vector3 in corners:
 		rect = rect.expand(_camera.unproject_position(corner))
 	return rect
 
 
-## Shows [param texture] (the screen buffer) on the bench screen.
-func set_desktop_texture(texture: Texture2D) -> void:
-	_bench.set_screen_texture(texture)
+## Shows [param texture] (a screen buffer) on the monitor that shows [param screen]. Returns that
+## monitor's look, for its tube to drive; null, with an error, when no monitor shows it.
+func set_screen_texture(screen: ViewMarker.Screen, texture: Texture2D) -> ShaderMaterial:
+	var monitor := _monitor(screen)
+	return monitor.set_screen_texture(texture) if monitor != null else null
+
+
+func _monitor(screen: ViewMarker.Screen) -> CrtMonitor:
+	match screen:
+		ViewMarker.Screen.WIN95:
+			return _bench.monitor
+		ViewMarker.Screen.COMPUFUN_DB:
+			return _work_monitor
+	push_error("Shop: no monitor shows screen %s" % ViewMarker.Screen.find_key(screen))
+	return null
 
 
 # The dragged plug follows the mouse; the release plugs it into the computer under the mouse, or lays it down.
@@ -99,7 +167,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _sync() -> void:
 	_job_slots.show_jobs(Game.jobs, null if Game.view == WORKVIEW else Game.focus)  # the Workview centres it already
-	_bench.lay_cable(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
+	_play_changes()
+	_pipedream.warp = Game.warp
+	# Deferred: a computer turns to lie or stand on the same change, and the cable must reach its new socket.
+	_bench.lay_cable.call_deferred(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
 	var workview_moved := _follow_focus()
 	if Game.view != _shown_view or (workview_moved and Game.view == WORKVIEW):
 		_move_camera(Game.view)
@@ -112,8 +183,8 @@ func _sync() -> void:
 		Game.VisitorState.WALKING_IN:
 			if _walk_in_arrival != Game.arrival:
 				_walk_in()
-		Game.VisitorState.TALKING:
-			# A restore can skip the walk; the visitor still stands at the counter.
+		Game.VisitorState.NONE, Game.VisitorState.TALKING:
+			# A restore can end a walk halfway; its tween must not reach Game.
 			if _walk_tween != null:
 				_walk_tween.kill()
 			_body.rotation.y = 0.0
@@ -145,11 +216,14 @@ func _move_camera(view_name: StringName) -> void:
 	_camera_tween.tween_property(_camera, "fov", marker.fov, turn_seconds)
 
 
-## Moves the Workview marker to the computer in focus. True when it moved.
+## Moves the Workview marker to the eye of the computer in focus, standing or lying. True when it
+## moved.
 func _follow_focus() -> bool:
-	if Game.focus == _workview_job:
+	var lying := Game.lies(Game.focus)
+	if Game.focus == _workview_job and lying == _workview_lying:
 		return false
 	_workview_job = Game.focus
+	_workview_lying = lying
 	if Game.focus == null:
 		return false
 	var marker := view_marker(WORKVIEW)
@@ -161,14 +235,25 @@ func _follow_focus() -> bool:
 
 func _walk_in() -> void:
 	_walk_in_arrival = Game.arrival
-	_door_bell.play()
 	if _walk_tween != null:
 		_walk_tween.kill()
 	_body.rotation.y = 0.0
 	_follow.progress_ratio = 0.0
+	var door := _door_ratio()
 	_walk_tween = create_tween()
-	_walk_tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds)
+	_walk_tween.tween_property(_follow, "progress_ratio", door, walk_seconds * door)
+	_walk_tween.tween_callback(_door_bell.play)
+	_walk_tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds * (1.0 - door))
 	_walk_tween.finished.connect(Game.customer_arrived)
+
+
+## Debug: ends the customer's walk in or out at once, as if it had run its course. False when
+## nobody is walking.
+func skip_walk() -> bool:
+	if _walk_tween == null or not _walk_tween.is_running():
+		return false
+	_walk_tween.custom_step(1e6)
+	return true
 
 
 # The path runs from the door to the counter, so the visitor turns around and walks it backwards.
@@ -179,8 +264,17 @@ func _walk_out() -> void:
 	_follow.progress_ratio = 1.0
 	_walk_tween = create_tween()
 	_walk_tween.tween_property(_body, "rotation:y", PI, about_face_seconds)
-	_walk_tween.tween_property(_follow, "progress_ratio", 0.0, walk_seconds)
+	var door := _door_ratio()
+	_walk_tween.tween_property(_follow, "progress_ratio", door, walk_seconds * (1.0 - door))
+	_walk_tween.tween_callback(_door_bell.play)
+	_walk_tween.tween_property(_follow, "progress_ratio", 0.0, walk_seconds * door)
 	_walk_tween.finished.connect(Game.customer_left)
+
+
+## The progress ratio of the customer path where it passes under the door bell.
+func _door_ratio() -> float:
+	var path := _follow.get_parent() as Path3D
+	return path.curve.get_closest_offset(path.to_local(_door_bell.global_position)) / path.curve.get_baked_length()
 
 
 func _on_hotspot_clicked(hotspot: Hotspot) -> void:
@@ -191,9 +285,30 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 			Game.call_customer()
 		Hotspot.Action.CLOSE_SHOP:
 			if Game.can_close():
-				Game.close_shop()
+				close_requested.emit()
 			else:
 				_open_sign.wobble()
+		Hotspot.Action.TAKE_PART:
+			Game.take_new_part(hotspot.part)
+		Hotspot.Action.TRASH_PART:
+			Game.trash_part()
+
+
+# Plays the sound of each hand and cable change since the last sync, whatever made it.
+func _play_changes() -> void:
+	if Game.hand != _heard_hand:
+		if _heard_hand == null:
+			part_take_sound.play_at(self)
+		elif Game.hand == null:
+			part_put_sound.play_at(self)
+		_heard_hand = Game.hand
+	if Game.connected != _heard_cable:
+		var old_socket := _job_slots.cable_socket(_heard_cable) if _heard_cable != null and _heard_cable in Game.jobs else null
+		if old_socket != null:
+			plug_out_sound.play_at(old_socket)
+		if Game.connected != null:
+			plug_in_sound.play_at(_job_slots.cable_socket(Game.connected))
+		_heard_cable = Game.connected
 
 
 func _on_plug_grabbed() -> void:
@@ -210,5 +325,8 @@ func _drop_plug(job: Job) -> void:
 
 
 func _on_job_clicked(job: Job) -> void:
+	if Game.view == WORKVIEW and job == Game.focus:
+		Game.lay_down(job)
+		return
 	Game.focus_job(job)
 	view_requested.emit(WORKVIEW)

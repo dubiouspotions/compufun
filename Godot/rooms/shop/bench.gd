@@ -1,13 +1,16 @@
 class_name Bench
 extends Node3D
 ## The left end of the counter: the bench screen, its keyboard and the VGA cable. The player drags
-## the plug of the cable: a press on the plug emits [signal plug_grabbed], the room moves the plug
-## with [method drag_plug] while [member dragging], and lays the cable with [method lay_cable].
+## the plug of the cable: a press on the plug or the cord emits [signal plug_grabbed], the room
+## moves the plug with [method drag_plug] while [member dragging], and lays the cable with
+## [method lay_cable].
 
 ## The player clicked the screen: go to [param view].
 signal view_requested(view: StringName)
 ## The player pressed the mouse button on the plug.
 signal plug_grabbed
+## The player clicked the monitor's Degauss button.
+signal degauss_pressed
 
 ## The outline colour of the cable while the mouse is over the plug.
 @export var hover_color: Color = Color(0.75, 0.9, 1.0)
@@ -21,6 +24,9 @@ signal plug_grabbed
 ## How far the connected cable bows forward of the counter's back, towards %PlugRest, before it
 ## turns back to the computers, in metres; this slack makes it read as a loose cable.
 @export var slack: float = 0.28
+## How thick the clickable band along the cord is, in metres. The connected plug hides behind its
+## computer, so the cord is where the player grabs the cable.
+@export var hit_width: float = 0.06
 
 ## True while the player drags the plug. [method lay_cable] leaves the plug where it is meanwhile.
 var dragging: bool = false:
@@ -29,9 +35,13 @@ var dragging: bool = false:
 		_sync_outline()
 
 var _hovered: bool = false
+var _cord_shapes: Array[CollisionShape3D] = []
+var _cord_sphere := SphereShape3D.new()
 
-@onready var _monitor: CrtMonitor = %Monitor
+## The bench screen.
+@onready var monitor: CrtMonitor = %Monitor
 @onready var _screen_hotspot: Hotspot = %ScreenHotspot
+@onready var _degauss_hotspot: Hotspot = %DegaussHotspot
 @onready var _plug_hotspot: Hotspot = %PlugHotspot
 @onready var _cable: Path3D = %Cable
 @onready var _outline: CSGPolygon3D = %Outline
@@ -43,20 +53,11 @@ var _hovered: bool = false
 func _ready() -> void:
 	_screen_hotspot.clicked.connect(func(h: Hotspot) -> void: view_requested.emit(h.view))
 	_plug_hotspot.clicked.connect(func(_h: Hotspot) -> void: plug_grabbed.emit())
+	_degauss_hotspot.clicked.connect(func(_h: Hotspot) -> void: degauss_pressed.emit())
 	_plug_hotspot.mouse_entered.connect(_set_hovered.bind(true))
 	_plug_hotspot.mouse_exited.connect(_set_hovered.bind(false))
 	_sync_outline()
 	lay_cable(null)
-
-
-## The four corners of the bench screen, in world space.
-func screen_corners() -> Array[Vector3]:
-	return _monitor.screen_corners()
-
-
-## Shows [param texture] (the screen buffer) on the bench screen.
-func set_screen_texture(texture: Texture2D) -> void:
-	_monitor.set_screen_texture(texture)
 
 
 ## Lays the cable from the screen to [param socket], the VGA socket of the connected computer,
@@ -111,6 +112,25 @@ func _lay(finish: Transform3D, loose: bool) -> void:
 	curve.set_point_in(points.size() - 1, finish.basis.z * socket_reach)
 	_cable.curve = curve
 	_plug.transform = finish
+	_fit_cord_hit_area()
+
+
+# Lines the cord with spheres in the plug's hotspot, so that the cord takes the plug's hover and clicks.
+func _fit_cord_hit_area() -> void:
+	var curve := _cable.curve
+	var length := curve.get_baked_length()
+	var count := maxi(ceili(length / (hit_width * 0.5)), 1) + 1
+	_cord_sphere.radius = hit_width * 0.5
+	while _cord_shapes.size() < count:
+		var shape := CollisionShape3D.new()
+		shape.shape = _cord_sphere
+		_plug_hotspot.add_child(shape)
+		_cord_shapes.append(shape)
+	while _cord_shapes.size() > count:
+		_cord_shapes.pop_back().queue_free()
+	var to_hotspot := (_plug.transform * _plug_hotspot.transform).affine_inverse() * _cable.transform
+	for i in count:
+		_cord_shapes[i].position = to_hotspot * curve.sample_baked(length * i / (count - 1))
 
 
 func _local(node: Node3D) -> Transform3D:

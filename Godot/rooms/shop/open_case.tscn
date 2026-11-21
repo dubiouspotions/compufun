@@ -1,0 +1,272 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://rooms/shop/open_case.gd" id="1_fm6p7"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="2_k8km5"]
+[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="3_sqjkr"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="4_7jy72"]
+[ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="5_54tg8"]
+[ext_resource type="Material" path="res://materials/vga_blue_plastic.tres" id="6_agwkd"]
+[ext_resource type="Material" path="res://materials/power_button.tres" id="20_power"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_4ktm6"]
+size = Vector3(0.42, 0.01, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_k5r81"]
+size = Vector3(0.42, 0.19, 0.02)
+
+[sub_resource type="BoxMesh" id="BoxMesh_664xw"]
+size = Vector3(0.42, 0.19, 0.01)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mhk1o"]
+size = Vector3(0.01, 0.19, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tndnr"]
+size = Vector3(0.01, 0.19, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_h1xm2"]
+size = Vector3(0.035, 0.15, 0.006)
+
+[sub_resource type="BoxMesh" id="BoxMesh_0mlqe"]
+size = Vector3(0.035, 0.15, 0.006)
+
+[sub_resource type="BoxMesh" id="BoxMesh_kkh4s"]
+size = Vector3(0.01, 0.1, 0.006)
+
+[sub_resource type="BoxMesh" id="BoxMesh_r4d2t"]
+size = Vector3(0.14, 0.13, 0.15)
+
+[sub_resource type="BoxMesh" id="BoxMesh_aqfo7"]
+size = Vector3(0.05, 0.15, 0.17)
+
+[sub_resource type="BoxMesh" id="BoxMesh_soiru"]
+size = Vector3(0.42, 0.012, 0.42)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cok7p"]
+top_radius = 0.0025
+bottom_radius = 0.0025
+height = 0.07
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_f0pso"]
+top_radius = 0.011
+bottom_radius = 0.011
+height = 0.08
+radial_segments = 8
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Material_shaft"]
+transparency = 1
+albedo_color = Color(0.72, 0.73, 0.76, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_handle"]
+transparency = 1
+albedo_color = Color(0.2, 0.36, 0.82, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_power"]
+top_radius = 0.016
+bottom_radius = 0.016
+height = 0.01
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ring"]
+top_radius = 0.021
+bottom_radius = 0.021
+height = 0.004
+radial_segments = 10
+rings = 1
+
+[node name="OpenCase" type="Node3D" unique_id=1055260190]
+script = ExtResource("1_fm6p7")
+
+[node name="Shell" type="Marker3D" parent="." unique_id=69315201]
+
+[node name="Bottom" type="MeshInstance3D" parent="Shell" unique_id=143064441]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0)
+material_override = ExtResource("2_k8km5")
+mesh = SubResource("BoxMesh_4ktm6")
+
+[node name="Bezel" type="MeshInstance3D" parent="Shell" unique_id=1373349843]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.095, 0.2)
+material_override = ExtResource("3_sqjkr")
+mesh = SubResource("BoxMesh_k5r81")
+
+[node name="StickerFront" type="Marker3D" parent="Shell/Bezel"]
+unique_name_in_owner = true
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.011)
+
+[node name="Back" type="MeshInstance3D" parent="Shell" unique_id=957044595]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.095, -0.205)
+material_override = ExtResource("2_k8km5")
+mesh = SubResource("BoxMesh_664xw")
+
+[node name="TopWall" type="MeshInstance3D" parent="Shell" unique_id=1033902423]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.205, 0.095, 0)
+material_override = ExtResource("2_k8km5")
+mesh = SubResource("BoxMesh_mhk1o")
+
+[node name="BottomWall" type="MeshInstance3D" parent="Shell" unique_id=122887269]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.205, 0.095, 0)
+material_override = ExtResource("2_k8km5")
+mesh = SubResource("BoxMesh_tndnr")
+
+[node name="Bay1" type="MeshInstance3D" parent="Shell" unique_id=1763547697]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.095, 0.211)
+material_override = ExtResource("4_7jy72")
+mesh = SubResource("BoxMesh_h1xm2")
+
+[node name="Bay2" type="MeshInstance3D" parent="Shell" unique_id=1080913750]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.095, 0.211)
+material_override = ExtResource("4_7jy72")
+mesh = SubResource("BoxMesh_0mlqe")
+
+[node name="Floppy" type="MeshInstance3D" parent="Shell" unique_id=1395854244]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.04, 0.095, 0.211)
+material_override = ExtResource("4_7jy72")
+mesh = SubResource("BoxMesh_kkh4s")
+
+[node name="PowerButton" type="MeshInstance3D" parent="Shell"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.08, 0.095, 0.215)
+material_override = ExtResource("20_power")
+mesh = SubResource("CylinderMesh_power")
+
+[node name="PowerRing" type="MeshInstance3D" parent="Shell"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.08, 0.095, 0.2115)
+material_override = ExtResource("4_7jy72")
+mesh = SubResource("CylinderMesh_ring")
+
+[node name="PowerSupply" type="MeshInstance3D" parent="Shell" unique_id=1614584840]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 0.075, -0.12)
+material_override = ExtResource("4_7jy72")
+mesh = SubResource("BoxMesh_r4d2t")
+
+[node name="CdDrive" type="MeshInstance3D" parent="Shell" unique_id=1975850564]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.085, 0.115)
+material_override = ExtResource("2_k8km5")
+mesh = SubResource("BoxMesh_aqfo7")
+
+[node name="Places" type="Marker3D" parent="." unique_id=1713548014]
+unique_name_in_owner = true
+
+[node name="motherboard" type="Marker3D" parent="Places" unique_id=1428619010]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.075, 0.01, -0.07)
+
+[node name="Hotspot" parent="Places/motherboard" unique_id=484566507 instance=ExtResource("5_54tg8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+size = Vector3(0.25, 0.02, 0.27)
+
+[node name="cpu" type="Marker3D" parent="Places" unique_id=1562242031]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.02, 0.03, -0.12)
+
+[node name="Hotspot" parent="Places/cpu" unique_id=1479460634 instance=ExtResource("5_54tg8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008, 0)
+size = Vector3(0.06, 0.016, 0.06)
+
+[node name="fan" type="Marker3D" parent="Places" unique_id=1250804434]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.02, 0.038, -0.12)
+
+[node name="Hotspot" parent="Places/fan" unique_id=1737769600 instance=ExtResource("5_54tg8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+size = Vector3(0.07, 0.05, 0.07)
+
+[node name="gpu" type="Marker3D" parent="Places" unique_id=2086816545]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.14, 0.032, -0.05)
+
+[node name="Hotspot" parent="Places/gpu" unique_id=1752496093 instance=ExtResource("5_54tg8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.013, 0)
+size = Vector3(0.18, 0.026, 0.1)
+
+[node name="hard_drive" type="Marker3D" parent="Places" unique_id=433271184]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.03, 0.01, 0.11)
+
+[node name="Hotspot" parent="Places/hard_drive" unique_id=432745952 instance=ExtResource("5_54tg8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.017, 0)
+size = Vector3(0.11, 0.035, 0.16)
+
+[node name="Panel" type="MeshInstance3D" parent="." unique_id=947857295]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.196, 0)
+material_override = ExtResource("3_sqjkr")
+mesh = SubResource("BoxMesh_soiru")
+
+[node name="PanelHotspot" parent="Panel" unique_id=1392530090 instance=ExtResource("5_54tg8")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.004, 0)
+size = Vector3(0.42, 0.02, 0.42)
+
+[node name="StickerRight" type="Marker3D" parent="Panel"]
+unique_name_in_owner = true
+transform = Transform3D(0, -1, 0, 0, 0, 1, -1, 0, 0, 0, 0.0065, 0)
+
+[node name="PanelScrews" type="Marker3D" parent="." unique_id=1479054847]
+unique_name_in_owner = true
+
+[node name="Screw0" type="Marker3D" parent="PanelScrews" unique_id=1728036726]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.202, -0.19)
+
+[node name="Screw1" type="Marker3D" parent="PanelScrews" unique_id=133377549]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.202, -0.19)
+
+[node name="Screwdriver" type="Marker3D" parent="." unique_id=234056196]
+unique_name_in_owner = true
+visible = false
+
+[node name="Shaft" type="MeshInstance3D" parent="Screwdriver" unique_id=1360099]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, 0)
+material_override = SubResource("Material_shaft")
+mesh = SubResource("CylinderMesh_cok7p")
+
+[node name="Handle" type="MeshInstance3D" parent="Screwdriver" unique_id=315371800]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.11, 0)
+material_override = SubResource("Material_handle")
+mesh = SubResource("CylinderMesh_f0pso")
+
+[node name="Mat" type="Marker3D" parent="." unique_id=2097313185]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.33)
+
+[node name="MatSurface" parent="Mat" unique_id=592791901 instance=ExtResource("5_54tg8")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.006, 0)
+size = Vector3(0.5, 0.012, 0.13)
+
+[node name="Spots" type="Marker3D" parent="Mat" unique_id=1451464615]
+unique_name_in_owner = true
+
+[node name="Spot0" type="Marker3D" parent="Mat/Spots" unique_id=139826706]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0, 0)
+
+[node name="Hotspot" parent="Mat/Spots/Spot0" unique_id=945960591 instance=ExtResource("5_54tg8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+size = Vector3(0.09, 0.05, 0.1)
+
+[node name="Spot1" type="Marker3D" parent="Mat/Spots" unique_id=1913065455]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0, 0)
+
+[node name="Hotspot" parent="Mat/Spots/Spot1" unique_id=1731645480 instance=ExtResource("5_54tg8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+size = Vector3(0.09, 0.05, 0.1)
+
+[node name="Spot2" type="Marker3D" parent="Mat/Spots" unique_id=1011179476]
+
+[node name="Hotspot" parent="Mat/Spots/Spot2" unique_id=1466065473 instance=ExtResource("5_54tg8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+size = Vector3(0.09, 0.05, 0.1)
+
+[node name="Spot3" type="Marker3D" parent="Mat/Spots" unique_id=1243346199]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0, 0)
+
+[node name="Hotspot" parent="Mat/Spots/Spot3" unique_id=1396145958 instance=ExtResource("5_54tg8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+size = Vector3(0.09, 0.05, 0.1)
+
+[node name="Spot4" type="Marker3D" parent="Mat/Spots" unique_id=1137709430]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0, 0)
+
+[node name="Hotspot" parent="Mat/Spots/Spot4" unique_id=1759142392 instance=ExtResource("5_54tg8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+size = Vector3(0.09, 0.05, 0.1)
+
+[node name="Eye" type="Marker3D" parent="." unique_id=22284312]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.45399052, 0.8910065, 0, -0.8910065, 0.45399052, 0, 0.9, 0.45)

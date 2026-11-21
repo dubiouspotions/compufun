@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="1_dt1f4"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="2_gxx5e"]
+[ext_resource type="Material" path="res://materials/gold.tres" id="3_bt38g"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_y11m7"]
+size = Vector3(0.05, 0.006, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_soo6y"]
+size = Vector3(0.032, 0.003, 0.032)
+
+[sub_resource type="BoxMesh" id="BoxMesh_egh8u"]
+size = Vector3(0.006, 0.001, 0.006)
+
+[node name="Cpu" type="Node3D" unique_id=1100518957]
+
+[node name="Ceramic" type="MeshInstance3D" parent="." unique_id=1609466549]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.003, 0)
+material_override = ExtResource("1_dt1f4")
+mesh = SubResource("BoxMesh_y11m7")
+
+[node name="Spreader" type="MeshInstance3D" parent="." unique_id=1490152490]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0075, 0)
+material_override = ExtResource("2_gxx5e")
+mesh = SubResource("BoxMesh_soo6y")
+
+[node name="PinOne" type="MeshInstance3D" parent="." unique_id=980760252]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.02, 0.0065, -0.02)
+material_override = ExtResource("3_bt38g")
+mesh = SubResource("BoxMesh_egh8u")

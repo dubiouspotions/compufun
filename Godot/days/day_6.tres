@@ -8,4 +8,5 @@
 [resource]
 script = ExtResource("4_g4gdh")
 number = 6
+warp = 0.8
 customers = Array[ExtResource("1_jrj0c")]([ExtResource("2_mpc7b"), ExtResource("3_sqgwb")])

@@ -20,13 +20,14 @@ enum Visit {
 	PICKUP, ## The visitor takes a finished computer home.
 }
 
-## The time of day. The customers move it forward; time does not pass on its own.
+## The time of day. The customers and closing move it forward; time does not pass on its own.
 enum Daypart {
-	NONE, ## Before the first customer of the day.
-	MORNING, ## The first customer came in.
+	NONE, ## No day has started.
+	MORNING, ## The day started; the first customer comes in.
 	MIDDAY, ## The second customer came in.
-	EVENING, ## The third customer came in.
-	NIGHT, ## The player closed the shop.
+	AFTERNOON, ## The third customer came in.
+	EVENING, ## The player closed the shop.
+	NIGHT, ## Not reached in play; the debug menu shows it.
 }
 
 enum VisitorState {
@@ -51,20 +52,34 @@ var phase: Phase = Phase.IDLE
 var day: Day
 ## How many of [member Day.customers] have come in today, 0 to day.customers.size().
 var arrivals: int = 0
-## Set by each arrival and by [method close_shop]; the Outside shows it.
+## Set by [method start_day], each arrival and [method close_shop]; the Outside shows it.
 var daypart: Daypart = Daypart.NONE
 ## The computers on the counter, oldest drop-off first. Jobs left overnight stay.
 var jobs: Array[Job] = []
-## The computer that the player works on in the Workview, or null for none.
-var focus: Job
+## The computer that the player works on in the Workview, or null for none. A new focus stands the
+## computer up again (see [member laid_down]).
+var focus: Job:
+	set(value):
+		if value != focus:
+			laid_down = false
+		focus = value
 ## The computer that the VGA cable is connected to, or null when the cable hangs free.
 var connected: Job
+## The part in the player's hand, or null. The hand holds one piece at a time.
+var hand: Piece
 ## The customer in the shop, or null when nobody is in.
 var visitor: Customer
 var visit: Visit = Visit.NONE
 var visitor_state: VisitorState = VisitorState.NONE
-## The name of the current view marker in the room, for example &"Main".
-var view: StringName = &"Main"
+## The name of the current view marker in the room, for example &"Main". A new view stands the
+## computer in focus up again (see [member laid_down]).
+var view: StringName = &"Main":
+	set(value):
+		if value != view:
+			laid_down = false
+		view = value
+## True after [method lay_down], until the view or the focus changes. See [method lies].
+var laid_down: bool = false
 ## The facts of the story: a name and a number. A flag that is 0 or missing is not set.
 var flags: Dictionary[StringName, int] = {}
 ## The conversations that have played, as "<customer file name>/<conversation id>".
@@ -84,21 +99,46 @@ var day_number: int:
 	get:
 		return day.number if day != null else 0
 
+## How far Cambion has changed the shop today, 0 to 1 ([member Day.warp]); 0 before the first day.
+var warp: float:
+	get:
+		return day.warp if day != null else 0.0
+
 ## The calendar date of the current day (day 1 before the first day), as a Time datetime
 ## dictionary: year, month, day, weekday.
 var date: Dictionary:
 	get:
-		var unix := Time.get_unix_time_from_datetime_string(FIRST_DATE) + maxi(day_number - 1, 0) * 86400
-		return Time.get_datetime_dict_from_unix_time(unix)
+		return date_of(day_number)
 
 var _next_order: int = 0
-var _gap_elapsed: float = 0.0
+var _waited: float = 0.0
+var _wait: float = 0.0
 var _call_left: float = 0.0
 var _pickup: Job
 
 
-## Starts [param new_day]: the shop opens and its first customer comes in at once, unless the
-## counter is full. Jobs left overnight stay. Refuses a day that is null, has no customers, has more
+## The calendar date of day [param number] (day 1 for 0 or less), as a Time datetime dictionary:
+## year, month, day, weekday (0 is Sunday).
+func date_of(number: int) -> Dictionary:
+	var unix := Time.get_unix_time_from_datetime_string(FIRST_DATE) + maxi(number - 1, 0) * 86400
+	return Time.get_datetime_dict_from_unix_time(unix)
+
+
+# A computer left on overnight finishes what it was doing: Disk Defragmenter.
+func _finish_overnight_work() -> void:
+	for job in jobs:
+		var setup: Win95Setup = setups.get(job.customer.computer)
+		if setup == null or not job.powered or not setup.defragmenting:
+			continue
+		setup.defragmenting = false
+		setup.fragmented = false
+		if job.problem.software_check != null:
+			job.software_fixed = job.problem.software_check.is_fixed(setup)
+
+
+## Starts [param new_day] in the morning: the shop opens, and its first customer comes in after
+## [member Day.first_wait_seconds] unless the counter is full. Jobs left overnight stay, and those
+## computers that stayed on finish their Disk Defragmenter run. Refuses a day that is null, has no customers, has more
 ## than [constant MAX_CUSTOMERS], or has a customer with no problem, and keeps the current state.
 func start_day(new_day: Day) -> void:
 	var invalid := _check_day(new_day)
@@ -106,8 +146,9 @@ func start_day(new_day: Day) -> void:
 		push_error("Game.start_day: " + invalid)
 		return
 	day = new_day
+	_finish_overnight_work()
 	arrivals = 0
-	daypart = Daypart.NONE
+	daypart = Daypart.MORNING
 	phase = Phase.OPEN
 	_set_visitor(null, Visit.NONE)
 	_try_arrival()
@@ -194,6 +235,22 @@ func matching_conversation(who: Customer, trigger: Conversation.Trigger) -> Conv
 	return null
 
 
+## Lays the computer in focus on its side in the Workview, so the player can reach its side panel.
+## False, and nothing changes, when [param job] is not in focus in the Workview or already lies.
+func lay_down(job: Job) -> bool:
+	if job == null or job != focus or view != &"Workview" or lies(job):
+		return false
+	laid_down = true
+	changed.emit()
+	return true
+
+
+## True while [param job] lies on its side: in focus in the Workview, and laid down or open. An open
+## computer lies there from the start; elsewhere every computer stands.
+func lies(job: Job) -> bool:
+	return job != null and job == focus and view == &"Workview" and (laid_down or job.case_open)
+
+
 ## Puts [param job] in focus for the Workview. null takes the focus away. The job must be on the
 ## counter.
 func focus_job(job: Job) -> void:
@@ -243,7 +300,7 @@ func setup_for(job: Job) -> Win95Setup:
 		return null
 	var setup: Win95Setup = setups.get(computer)
 	if setup == null:
-		setup = computer.win95_setup.duplicate_deep()  # loaded resources are shared, so mutating them would leak
+		setup = computer.win95_setup.copy()
 		setups[computer] = setup
 	if not job.broken:
 		job.broken = true
@@ -260,13 +317,138 @@ func set_powered(job: Job, on: bool) -> void:
 		return
 	if on == job.powered:
 		return
+	if on and not can_power_on(job):
+		return
 	job.powered = on
 	changed.emit()
 
 
+## True when [param job] can switch on: its case is closed and every place holds a piece.
+func can_power_on(job: Job) -> bool:
+	return not job.case_open and job.places.size() == Part.every().size()
+
+
+# --- Hardware repair (wiki: Hardware Repair). Each move returns false and changes nothing when the
+# --- rules forbid it: that is a normal moment of play, not an error. A job must be on the counter.
+
+## Lifts the side panel off [param job] (true) or puts it back on (false). The panel comes off only
+## when the computer is off and the panel's screws are out; it goes back on with its screws out.
+func open_case(job: Job, open: bool) -> bool:
+	if not _on_counter(job, "open_case") or open == job.case_open:
+		return false
+	if open and (job.powered or job.panel_screws.has(true)):
+		return false
+	job.case_open = open
+	changed.emit()
+	return true
+
+
+## True when the piece of [param part] can come out of [param job] into the empty hand: the case is
+## open, the piece is in, and no piece sits on it.
+func can_take(job: Job, part: Part) -> bool:
+	if hand != null or not job.case_open or job.piece(part) == null:
+		return false
+	for other: Part in job.places:
+		if other.sits_on == part:
+			return false
+	return true
+
+
+## True when the piece in the hand can go into its place in [param job]: the case is open, the
+## place is empty, and the part that it sits on is in.
+func can_put(job: Job, part: Part) -> bool:
+	if hand == null or hand.part != part or not job.case_open or job.piece(part) != null:
+		return false
+	return part.sits_on == null or job.piece(part.sits_on) != null
+
+
+## True when screw [param index] of the side panel of [param job] can turn, out or in: the panel is
+## on. Only the side panel is screwed; the parts inside come out freely.
+func can_turn(job: Job, index: int) -> bool:
+	return not job.case_open and index >= 0 and index < job.panel_screws.size()
+
+
+## Turns a screw of the side panel out, or back in (see [method can_turn]). The screwdriver is always
+## at hand.
+func turn_screw(job: Job, index: int) -> bool:
+	if not _on_counter(job, "turn_screw") or not can_turn(job, index):
+		return false
+	job.panel_screws[index] = not job.panel_screws[index]
+	changed.emit()
+	return true
+
+
+## Takes the piece of [param part] out of [param job] into the hand (see [method can_take]).
+func take_part(job: Job, part: Part) -> bool:
+	if not _on_counter(job, "take_part") or not can_take(job, part):
+		return false
+	hand = job.places[part]
+	job.places.erase(part)
+	changed.emit()
+	return true
+
+
+## Puts the piece in the hand into its place in [param job] (see [method can_put]).
+func put_part(job: Job) -> bool:
+	if not _on_counter(job, "put_part") or hand == null or not can_put(job, hand.part):
+		return false
+	job.places[hand.part] = hand
+	hand = null
+	changed.emit()
+	return true
+
+
+## Lays the piece in the hand on the mat of [param job].
+func put_on_mat(job: Job) -> bool:
+	if not _on_counter(job, "put_on_mat") or hand == null:
+		return false
+	job.mat.append(hand)
+	hand = null
+	changed.emit()
+	return true
+
+
+## Takes the piece at [param index] on the mat of [param job] into the empty hand.
+func take_from_mat(job: Job, index: int) -> bool:
+	if not _on_counter(job, "take_from_mat") or hand != null or index < 0 or index >= job.mat.size():
+		return false
+	hand = job.mat[index]
+	job.mat.remove_at(index)
+	changed.emit()
+	return true
+
+
+## Takes a new piece of [param part] from its box in the storage into the empty hand.
+func take_new_part(part: Part) -> bool:
+	if part == null:
+		push_error("Game.take_new_part: no part")
+		return false
+	if hand != null:
+		return false
+	hand = Piece.new(part)
+	changed.emit()
+	return true
+
+
+## Throws the piece in the hand in the trash. It is gone.
+func trash_part() -> bool:
+	if hand == null:
+		return false
+	hand = null
+	changed.emit()
+	return true
+
+
+func _on_counter(job: Job, what: String) -> bool:
+	if job == null or job not in jobs:
+		push_error("Game.%s: the job is not on the counter: %s" % [what, job])
+		return false
+	return true
+
+
 ## The running computer of [param job] reports whether its software has the problem, after every
 ## change it makes. Unlike fix(), this can turn back to false (muting again un-fixes no_sound), and
-## then the post-it unticks. The job must be on the counter.
+## the computer is no longer ready for pickup. The job must be on the counter.
 func set_software_fixed(job: Job, fixed: bool) -> void:
 	if job == null or job not in jobs:
 		push_error("Game.set_software_fixed: the job is not on the counter: %s" % job)
@@ -274,31 +456,38 @@ func set_software_fixed(job: Job, fixed: bool) -> void:
 	if fixed == job.software_fixed:
 		return
 	job.software_fixed = fixed
-	if not job.fixed:
-		job.post_it_ticked = false  # the tick claimed a fix that is gone
 	changed.emit()
 
 
-## Ticks the post-it of [param job]. Fails with an error unless the job is on the counter and
-## [member Job.fixed].
-func tick_post_it(job: Job) -> void:
-	if job == null or job not in jobs:
-		push_error("Game.tick_post_it: the job is not on the counter: %s" % job)
+## Marks [param symptom] on [param job] in CompuFunDB (true), or clears it (false).
+func mark_symptom(job: Job, symptom: String, marked: bool) -> void:
+	if _on_counter(job, "mark_symptom"):
+		_set_in(job.marked_symptoms, symptom, marked)
+
+
+## Ticks the repair step [param step] of [param job] in CompuFunDB (true), or unticks it (false).
+func tick_repair(job: Job, step: String, ticked: bool) -> void:
+	if _on_counter(job, "tick_repair"):
+		_set_in(job.ticked_repairs, step, ticked)
+
+
+func _set_in(items: Array[String], item: String, present: bool) -> void:
+	if (item in items) == present:
 		return
-	if not job.fixed:
-		push_error("Game.tick_post_it: the job of %s is not fixed" % _who(job.customer))
-		return
-	job.post_it_ticked = true
+	if present:
+		items.append(item)
+	else:
+		items.erase(item)
 	changed.emit()
 
 
-## True when the phone can call: the shop is open, nobody is in it, and a post-it is ticked.
+## True when the phone can call: the shop is open, nobody is in it, and a computer is fixed.
 func can_call() -> bool:
-	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.post_it_ticked)
+	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.fixed)
 
 
-## Calls for [constant CALL_SECONDS] (phase CALLING; CompufunDB is offline, as the land-line cuts
-## the modem). Then the customer of the oldest ticked job walks in for a PICKUP. Does nothing when
+## Calls for [constant CALL_SECONDS] (phase CALLING; CompuFunDB is offline, as the land-line cuts
+## the modem). Then the customer of the oldest fixed computer walks in for a PICKUP. Does nothing when
 ## [method can_call] is false.
 func call_customer() -> void:
 	if not can_call():
@@ -314,14 +503,32 @@ func can_close() -> bool:
 	return phase == Phase.OPEN and day != null and arrivals >= day.customers.size() and visitor == null
 
 
-## Closes the shop for the night: DAY_OVER and [constant Daypart.NIGHT]. Jobs stay on the counter. Does nothing when
-## [method can_close] is false.
+## Closes the shop for the night: DAY_OVER and [constant Daypart.EVENING]. Jobs stay on the counter.
+## Does nothing when [method can_close] is false.
 func close_shop() -> void:
 	if not can_close():
 		return
 	phase = Phase.DAY_OVER
-	daypart = Daypart.NIGHT
+	daypart = Daypart.EVENING
 	changed.emit()
+
+
+## True when a day file follows the current day at [constant DAY_PATH]; false after the last day.
+func has_next_day() -> bool:
+	return day != null and ResourceLoader.exists(DAY_PATH % (day_number + 1))
+
+
+## Starts the day after the current one (see [method start_day]), from its file at
+## [constant DAY_PATH]. Jobs left overnight stay. Fails with an error, keeping the state, when that
+## file is missing, isn't a Day or has another day number.
+func start_next_day() -> void:
+	var number := day_number + 1
+	var path := DAY_PATH % number
+	var next := load(path) as Day if ResourceLoader.exists(path) else null
+	if next == null or next.number != number:
+		push_error("Game.start_next_day: %s is not day %d: %s" % [path, number, next])
+		return
+	start_day(next)
 
 
 ## The state as plain data: for the F9 report, the presets of the debug menu, and [method restore].
@@ -337,7 +544,9 @@ func snapshot() -> Dictionary:
 		"jobs": jobs.map(func(j: Job) -> Dictionary: return j.snapshot()),
 		"focus_slot": focus.slot if focus != null else -1,
 		"connected_slot": connected.slot if connected != null else -1,
+		"hand": Job.pieces_data([hand] if hand != null else []),
 		"view": String(view),
+		"laid_down": laid_down,
 		"conversation": String(conversation.id) if conversation != null else "",
 		"flags": flags.duplicate(),
 		"seen": seen.keys(),
@@ -371,7 +580,7 @@ func restore(state: Dictionary) -> String:
 	var new_arrivals := int(state.get("arrivals", 0))
 	if new_arrivals < 0 or new_arrivals > new_day.customers.size():
 		return _refuse("day %d has %d customers, not %d arrivals" % [number, new_day.customers.size(), new_arrivals])
-	var default_daypart := "NIGHT" if new_phase == Phase.DAY_OVER else String(Daypart.find_key(mini(new_arrivals, Daypart.EVENING)))
+	var default_daypart := String(Daypart.find_key(Daypart.EVENING if new_phase == Phase.DAY_OVER else _daypart_of(new_arrivals)))
 	var new_daypart: Variant = _enum_value(Daypart, state.get("daypart", default_daypart), "daypart")
 	if new_daypart is String:
 		return _refuse(new_daypart)
@@ -394,9 +603,32 @@ func restore(state: Dictionary) -> String:
 		job.hardware_fixed = bool(data.get("hardware_fixed", false))
 		job.software_fixed = bool(data.get("software_fixed", false))
 		job.powered = bool(data.get("powered", false))
-		job.post_it_ticked = bool(data.get("post_it_ticked", false))
-		if job.post_it_ticked and not job.fixed:
-			return _refuse("job %d: the post-it can be ticked only when the problem is fixed" % i)
+		for key: String in ["marked_symptoms", "ticked_repairs"]:
+			if not data.get(key, []) is Array:
+				return _refuse("job %d: %s is not a list: %s" % [i, key, data[key]])
+		job.marked_symptoms.assign(data.get("marked_symptoms", []).map(str))
+		job.ticked_repairs.assign(data.get("ticked_repairs", []).map(str))
+		if data.has("parts"):
+			var pieces: Variant = Job.pieces_from(data["parts"])
+			if pieces is String:
+				return _refuse("job %d: %s" % [i, pieces])
+			job.places.clear()
+			for each: Piece in pieces:
+				if job.places.has(each.part):
+					return _refuse("job %d: two pieces in the place of %s" % [i, each.part.id()])
+				job.places[each.part] = each
+		var mat_pieces: Variant = Job.pieces_from(data.get("mat", []))
+		if mat_pieces is String:
+			return _refuse("job %d: the mat: %s" % [i, mat_pieces])
+		job.mat.assign(mat_pieces)
+		job.case_open = bool(data.get("case_open", false))
+		if data.has("panel_screws"):
+			var panel: Array = data["panel_screws"]
+			if panel.size() != Job.PANEL_SCREWS:
+				return _refuse("job %d: the side panel has %d screws, not %d" % [i, Job.PANEL_SCREWS, panel.size()])
+			job.panel_screws.assign(panel.map(func(v: Variant) -> bool: return bool(v)))
+		if job.powered and not can_power_on(job):
+			return _refuse("job %d: a computer that is open or misses a part can't be on" % i)
 		new_jobs.append(job)
 	var new_focus: Variant = _job_in(new_jobs, int(state.get("focus_slot", -1)), "focus_slot")
 	var new_connected: Variant = _job_in(new_jobs, int(state.get("connected_slot", -1)), "connected_slot")
@@ -422,20 +654,25 @@ func restore(state: Dictionary) -> String:
 	var new_pickup: Job = null
 	var handed_over: bool = new_visitor_state == VisitorState.WALKING_OUT
 	if new_visit == Visit.PICKUP and not handed_over:
-		var ticked := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.post_it_ticked)
-		if ticked.is_empty():
-			return _refuse("%s picks up, but has no ticked job" % _who(new_visitor))
-		new_pickup = ticked[0]
+		var ready := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.fixed)
+		if ready.is_empty():
+			return _refuse("%s picks up, but has no fixed computer" % _who(new_visitor))
+		new_pickup = ready[0]
 	if new_visit == Visit.DROP_OFF and not handed_over and new_jobs.size() >= MAX_JOBS:
 		return _refuse("%s drops off, but the counter is full" % _who(new_visitor))
-	if new_phase == Phase.CALLING and not new_jobs.any(func(j: Job) -> bool: return j.post_it_ticked):
-		return _refuse("CALLING needs a ticked post-it")
+	if new_phase == Phase.CALLING and not new_jobs.any(func(j: Job) -> bool: return j.fixed):
+		return _refuse("CALLING needs a fixed computer")
 
 	var new_flags: Dictionary[StringName, int] = {}
 	var given_flags: Dictionary = state.get("flags", {})
 	for key: Variant in given_flags:
 		if int(given_flags[key]) != 0:
 			new_flags[StringName(str(key))] = int(given_flags[key])
+	var hand_pieces: Variant = Job.pieces_from(state.get("hand", []))
+	if hand_pieces is String:
+		return _refuse("the hand: %s" % hand_pieces)
+	if hand_pieces.size() > 1:
+		return _refuse("the hand holds one part, not %d" % hand_pieces.size())
 	var new_seen: Dictionary[String, bool] = {}
 	for key: Variant in state.get("seen", []):
 		new_seen[str(key)] = true
@@ -447,14 +684,16 @@ func restore(state: Dictionary) -> String:
 	jobs = new_jobs
 	focus = new_focus
 	connected = new_connected
+	hand = hand_pieces[0] if not hand_pieces.is_empty() else null
 	visitor = new_visitor
 	visit = new_visit
 	visitor_state = new_visitor_state
 	_pickup = new_pickup
 	_next_order = jobs.reduce(func(top: int, j: Job) -> int: return maxi(top, j.order + 1), 0)
-	_gap_elapsed = 0.0
+	_restart_wait()
 	_call_left = CALL_SECONDS
 	view = StringName(str(state.get("view", view)))
+	laid_down = bool(state.get("laid_down", false))
 	flags = new_flags
 	seen = new_seen
 	arrival += 1
@@ -472,15 +711,24 @@ func _process(delta: float) -> void:
 			_end_call()
 		return
 	if phase == Phase.OPEN and visitor == null and jobs.size() < MAX_JOBS:
-		_gap_elapsed += delta
+		_waited += delta
 		if _try_arrival():
 			changed.emit()
 
 
-## The first customer comes in at once; each next one [member Day.gap_seconds] of open shop after
-## the last visitor left. The wait pauses while the counter is full.
+## The first customer comes in [member Day.first_wait_seconds] after the day starts; each next one
+## [member Day.gap_seconds] of open shop after the last visitor left. The wait pauses while the
+## counter is full.
 func _arrival_due() -> bool:
-	return arrivals == 0 or _gap_elapsed >= day.gap_seconds
+	return _waited >= _wait
+
+
+# Starts the wait for the next customer, with a new random length.
+func _restart_wait() -> void:
+	_waited = 0.0
+	if day != null:
+		var span := day.first_wait_seconds if arrivals == 0 else day.gap_seconds
+		_wait = randf_range(span.x, span.y)
 
 
 ## Lets the next customer of the day in when one is due and the shop has room. True when one came.
@@ -490,19 +738,26 @@ func _try_arrival() -> bool:
 	if not _arrival_due():
 		return false
 	arrivals += 1
-	daypart = mini(arrivals, Daypart.EVENING) as Daypart
+	daypart = _daypart_of(arrivals)
 	_set_visitor(day.customers[arrivals - 1], Visit.DROP_OFF)
 	return true
 
 
+## Debug: ends the wait that runs now, so the next event comes at once: the next customer (when
+## the counter has room) or the end of the phone call.
+func skip_wait() -> void:
+	_waited = _wait
+	_call_left = 0.0
+
+
 func _end_call() -> void:
 	phase = Phase.OPEN
-	var ticked := jobs.filter(func(j: Job) -> bool: return j.post_it_ticked)
-	if ticked.is_empty():
-		push_error("Game: the call ended, but no post-it is ticked")
+	var ready := jobs.filter(func(j: Job) -> bool: return j.fixed)
+	if ready.is_empty():
+		push_error("Game: the call ended, but no computer is fixed")
 	else:
-		ticked.sort_custom(func(a: Job, b: Job) -> bool: return a.order < b.order)
-		_pickup = ticked[0]
+		ready.sort_custom(func(a: Job, b: Job) -> bool: return a.order < b.order)
+		_pickup = ready[0]
 		_set_visitor(_pickup.customer, Visit.PICKUP)
 	changed.emit()
 
@@ -541,7 +796,7 @@ func _set_visitor(customer: Customer, why: Visit) -> void:
 	conversation = null
 	if customer != null:
 		arrival += 1
-	_gap_elapsed = 0.0
+	_restart_wait()
 
 
 ## Picks what the TALKING visitor says, and remembers that it played. A pickup visitor with
@@ -557,6 +812,12 @@ func _start_talk() -> void:
 
 func _seen_key(who: Customer, c: Conversation) -> String:
 	return "%s/%s" % [who.resource_path.get_file().get_basename(), c.id]
+
+
+## The daypart after [param count] arrivals: morning until the second customer, then midday, then
+## afternoon.
+static func _daypart_of(count: int) -> Daypart:
+	return clampi(count, 1, Daypart.AFTERNOON) as Daypart
 
 
 ## Why [param d] can't be played, or "".

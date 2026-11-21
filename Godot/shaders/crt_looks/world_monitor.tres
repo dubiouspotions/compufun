@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/crt_world.gdshader" id="1_world"]
+
+[resource]
+shader = ExtResource("1_world")
+shader_parameter/curvature_x = 0.05
+shader_parameter/curvature_y = 0.05
+shader_parameter/underscan = 0.02
+shader_parameter/corner_radius = 0.04
+shader_parameter/vignette = 0.3
+shader_parameter/white_point = Vector3(0.95, 0.97, 1)
+shader_parameter/black_level = Vector3(0.02, 0.025, 0.025)
+shader_parameter/brightness = 1.1

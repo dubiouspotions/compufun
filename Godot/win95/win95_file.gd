@@ -10,15 +10,29 @@ extends Resource
 ## For a program file such as NOTEPAD.EXE: the app that it runs. Win95 runs it only while the name
 ## ends in .EXE, and the app's `opens` says which files it opens. Null for other files.
 @export var program: PackedScene
+## For a shortcut (a .LNK file, whose extension Win95 hides): the path of the file that it opens,
+## such as "C:\WINDOWS\NOTEPAD.EXE". Empty for other files.
+@export var target: String = ""
 ## The text of a text file, which Notepad shows and saves.
 @export_multiline var contents: String = ""
 ## The picture of a .bmp file, which Paint shows and saves. Null for a blank canvas.
 @export var picture: Texture2D
+## The sound of a .mid file, which Media Player plays: a recording, as Godot plays no MIDI.
+@export var sound: AudioStream
 ## The date that Properties shows as Modified, as Win95 writes it: "Tuesday, March 12, 1996 4:05:12 PM".
 ## Empty hides it.
 @export var modified: String = ""
 ## The files in this folder (Win95File only). Empty for a file.
 @export_custom(PROPERTY_HINT_TYPE_STRING, "24/17:Win95File") var children: Array[Resource] = []  # Array[Win95File] here leaks: the script would reference itself
+
+
+## The 16 x 16 version of [param icon], a 32 x 32 icon named like name_32.png, or null when the
+## icon set has none.
+static func small_icon(icon: Texture2D) -> Texture2D:
+	if icon == null or not icon.resource_path.ends_with("_32.png"):
+		return null
+	var small := icon.resource_path.trim_suffix("_32.png") + "_16.png"
+	return load(small) if ResourceLoader.exists(small) else null
 
 
 ## The size in bytes that Properties shows: the text with Win95's CRLF line ends, or the picture

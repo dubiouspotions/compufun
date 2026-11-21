@@ -2,6 +2,9 @@ class_name CrtMonitor
 extends Node3D
 ## A 90s CRT monitor. Its screen stays dark, or shows a live texture such as the screen buffer.
 
+## The tube's look when the screen shows a texture. Each monitor gets its own copy.
+@export var screen_look: ShaderMaterial = preload("res://shaders/crt_looks/world_monitor.tres")
+
 @onready var _screen: MeshInstance3D = %Screen
 
 
@@ -14,10 +17,10 @@ func screen_corners() -> Array[Vector3]:
 	return corners
 
 
-## Shows [param texture] on the screen, unshaded, so the screen glows.
-func set_screen_texture(texture: Texture2D) -> void:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_texture = texture
-	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	_screen.material_override = material
+## Shows [param texture] on the screen through a copy of [member screen_look], bent and glowing.
+## Returns the copy, for a CrtTube to power.
+func set_screen_texture(texture: Texture2D) -> ShaderMaterial:
+	var look := screen_look.duplicate() as ShaderMaterial
+	look.set_shader_parameter(&"screen_texture", texture)
+	_screen.material_override = look
+	return look

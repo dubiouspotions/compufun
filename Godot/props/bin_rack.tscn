@@ -1,0 +1,173 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/metal.tres" id="1_metal"]
+[ext_resource type="Material" path="res://materials/paper.tres" id="2_paper"]
+[ext_resource type="Material" path="res://materials/bin_blue.tres" id="3_bin_blue"]
+[ext_resource type="Material" path="res://materials/bin_yellow.tres" id="4_bin_yellow"]
+[ext_resource type="Material" path="res://materials/bin_red.tres" id="5_bin_red"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_panel"]
+size = Vector3(1, 0.6, 0.02)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bin"]
+size = Vector3(0.16, 0.11, 0.17)
+
+[sub_resource type="BoxMesh" id="BoxMesh_label"]
+size = Vector3(0.09, 0.04, 0.004)
+
+[node name="BinRack" type="Node3D"]
+
+[node name="Panel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.01)
+material_override = ExtResource("1_metal")
+mesh = SubResource("BoxMesh_panel")
+
+[node name="Bin00" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.38, 0.095, 0.105)
+material_override = ExtResource("3_bin_blue")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin00"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin01" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.19, 0.095, 0.105)
+material_override = ExtResource("3_bin_blue")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin01"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin02" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.095, 0.105)
+material_override = ExtResource("3_bin_blue")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin02"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin03" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.19, 0.095, 0.105)
+material_override = ExtResource("3_bin_blue")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin03"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin04" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.38, 0.095, 0.105)
+material_override = ExtResource("3_bin_blue")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin04"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin10" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.38, 0.295, 0.105)
+material_override = ExtResource("4_bin_yellow")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin10"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin11" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.19, 0.295, 0.105)
+material_override = ExtResource("4_bin_yellow")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin11"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin12" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.295, 0.105)
+material_override = ExtResource("4_bin_yellow")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin12"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin13" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.19, 0.295, 0.105)
+material_override = ExtResource("4_bin_yellow")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin13"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin14" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.38, 0.295, 0.105)
+material_override = ExtResource("4_bin_yellow")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin14"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin20" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.38, 0.495, 0.105)
+material_override = ExtResource("5_bin_red")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin20"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin21" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.19, 0.495, 0.105)
+material_override = ExtResource("5_bin_red")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin21"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin22" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.495, 0.105)
+material_override = ExtResource("5_bin_red")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin22"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin23" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.19, 0.495, 0.105)
+material_override = ExtResource("5_bin_red")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin23"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")
+
+[node name="Bin24" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.38, 0.495, 0.105)
+material_override = ExtResource("5_bin_red")
+mesh = SubResource("BoxMesh_bin")
+
+[node name="Label" type="MeshInstance3D" parent="Bin24"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0.087)
+material_override = ExtResource("2_paper")
+mesh = SubResource("BoxMesh_label")

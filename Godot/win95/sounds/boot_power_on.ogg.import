@@ -12,8 +12,8 @@ dest_files=["res://.godot/imported/boot_power_on.ogg-adebea3a2641a4915865a9391d8
 
 [params]
 
-loop=false
-loop_offset=0
+loop=true
+loop_offset=12.65
 bpm=0
 beat_count=0
 bar_beats=4

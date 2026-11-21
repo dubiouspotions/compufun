@@ -6,11 +6,13 @@ extends Area3D
 ## The player clicked the hotspot with the left mouse button.
 signal clicked(hotspot: Hotspot)
 
-enum Action { GO_TO_VIEW, CALL_CUSTOMER, CLOSE_SHOP }
+enum Action { GO_TO_VIEW, CALL_CUSTOMER, CLOSE_SHOP, TAKE_PART, TRASH_PART }
 
 @export var action: Action = Action.GO_TO_VIEW
 ## For GO_TO_VIEW: the name of the view marker to go to.
 @export var view: StringName = &""
+## For TAKE_PART: the part that a click takes from the storage into the hand.
+@export var part: Part
 ## The size of the clickable box, in metres. It applies when the game runs.
 @export var size: Vector3 = Vector3(0.5, 0.5, 0.5)
 

@@ -11,6 +11,11 @@ const LIVE_DIR: String = "res://voices/live/"
 ## The most samples rendered in one frame: about 46 ms of audio.
 const FEED_SAMPLES: int = 1024
 const BODIES: Dictionary = {"male": 0, "female": 1, "child": 2}
+## The audio bus that every voice plays on, so that [method level] hears the voice alone.
+const BUS: StringName = &"Voice"
+## The peak, in dB, at which [method level] is 0 (and below), and at which it is 1 (and above).
+const QUIET_DB: float = -40.0
+const LOUD_DB: float = -6.0
 
 # One engine for every player: one line plays at a time, and the dictionary loads once.
 static var _engine: Object
@@ -20,6 +25,12 @@ static var _web: JavaScriptObject
 static var _web_tried: bool = false
 static var _web_error: JavaScriptObject
 
+## Each line is said a little differently: its mood's rate, pitch and pitch swing each move by up
+## to this fraction, at random, so a repeated line doesn't sound copied. 0 says it as written.
+@export_range(0.0, 0.5, 0.01) var rate_jitter: float = 0.05
+@export_range(0.0, 0.5, 0.01) var pitch_jitter: float = 0.04
+@export_range(0.0, 1.0, 0.01) var swing_jitter: float = 0.3
+
 var _left: int = 0
 ## When the last samples are pushed, in ticks (msec); the player stops once they have played.
 var _drained_at: int = 0
@@ -27,11 +38,15 @@ var _drained_at: int = 0
 
 func _ready() -> void:
 	set_process(false)
+	if AudioServer.get_bus_index(BUS) < 0:
+		push_error("VoicePlayer: no \"%s\" bus in the bus layout (default_bus_layout.tres)" % BUS)
+	bus = BUS
 
 
-## Starts saying [param line] in [param voice] (male, female or child) and returns its length
-## in seconds, or 0 when the length is not known yet (a live line in a browser).
-func say(line: DialogueLine, voice: String) -> float:
+## Starts saying [param line] in [param voice] (male, female or child), shaped by
+## [param voice_type] (null says it plainly), and returns its length in seconds, or 0 when the
+## length is not known yet (a live line in a browser). A pre-rendered WAV has no voice type.
+func say(line: DialogueLine, voice: String, voice_type: VoiceType = null) -> float:
 	hush()
 	if line == null or line.text.strip_edges().is_empty():
 		return 0.0
@@ -39,13 +54,20 @@ func say(line: DialogueLine, voice: String) -> float:
 		push_error("VoicePlayer: no voice \"%s\"; have %s" % [voice, ", ".join(BODIES.keys())])
 		return 0.0
 	var mood := Voices.mood(line.pose)
+	var rate := mood.rate * (1.0 + randf_range(-rate_jitter, rate_jitter))
+	var pitch := mood.pitch * (1.0 + randf_range(-pitch_jitter, pitch_jitter))
+	var swing := mood.swing * (1.0 + randf_range(-swing_jitter, swing_jitter))
+	pitch_scale = 1.0
+	var type_text := voice_type.encode() if voice_type != null else ""
 	var web := _web_voice()
 	if web != null:
-		web.say(line.text, BODIES[voice], mood.rate, mood.pitch, mood.swing, db_to_linear(volume_db))
+		web.say(line.text, BODIES[voice], rate, pitch, swing, db_to_linear(volume_db), type_text)
+		_owner = self
 		return 0.0
 	var engine := _desktop_engine()
 	if engine != null:
-		_left = engine.start(line.text, BODIES[voice], MIX_RATE, mood.rate, mood.pitch, mood.swing)
+		engine.set_voice_type(type_text)
+		_left = engine.start(line.text, BODIES[voice], MIX_RATE, rate, pitch, swing)
 		if _left > 0:
 			var generator := AudioStreamGenerator.new()
 			generator.mix_rate = MIX_RATE
@@ -60,18 +82,36 @@ func say(line: DialogueLine, voice: String) -> float:
 	var file := Voices.stream_of(line, voice)
 	if file == null:
 		return 0.0
+	# A rendered file is fixed; playing it a touch higher or lower is the variation it can have.
+	pitch_scale = pitch / mood.pitch
 	stream = file
 	play()
-	return file.get_length()
+	return file.get_length() / pitch_scale
+
+
+## How loud the voice is right now, from 0 (silent) to 1 (loud speech). It follows the syllables,
+## so it can move things in time with the voice. Any player reads the line that plays now.
+func level() -> float:
+	var peak: float
+	if _web != null:
+		peak = _web.level()
+	elif OS.has_feature("web"):
+		# The browser plays the WAVs outside Godot's mixer, so the bus has no level.
+		peak = 1.0 if playing else 0.0
+	else:
+		peak = db_to_linear(AudioServer.get_bus_peak_volume_left_db(AudioServer.get_bus_index(bus), 0))
+	return clampf(inverse_lerp(QUIET_DB, LOUD_DB, linear_to_db(peak)), 0.0, 1.0)
 
 
 ## Stops the line, live or not.
 func hush() -> void:
 	stop()
 	set_process(false)
-	if _owner == self and _engine != null:
+	if _owner != self:
+		return
+	_owner = null
+	if _engine != null:
 		_engine.stop()
-		_owner = null
 	if _web != null:
 		_web.stop()
 

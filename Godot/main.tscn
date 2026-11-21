@@ -5,14 +5,16 @@
 [ext_resource type="Material" path="res://shaders/psx_post_world.tres" id="3_w48qg"]
 [ext_resource type="PackedScene" path="res://rooms/shop/shop.tscn" id="4_vivmo"]
 [ext_resource type="PackedScene" path="res://ui/screen_view.tscn" id="5_2cqfq"]
-[ext_resource type="PackedScene" path="res://ui/compufun_db.tscn" id="6_yaehf"]
+[ext_resource type="PackedScene" path="res://compufun_db/compufun_db.tscn" id="6_yaehf"]
+[ext_resource type="PackedScene" path="res://ui/bench_screen.tscn" id="13_bench"]
 [ext_resource type="PackedScene" path="res://ui/workview_panel.tscn" id="7_074og"]
-[ext_resource type="PackedScene" path="res://ui/post_it.tscn" id="8_cegan"]
 [ext_resource type="PackedScene" path="res://ui/dialogue_overlay.tscn" id="9_82xsv"]
 [ext_resource type="PackedScene" path="res://ui/view_nav.tscn" id="10_getpj"]
 [ext_resource type="PackedScene" path="res://ui/debug_menu.tscn" id="11_ryguw"]
 [ext_resource type="PackedScene" path="res://ui/feedback_screen.tscn" id="12_d13ii"]
 [ext_resource type="PackedScene" path="res://ui/customer_calling.tscn" id="customer_calling"]
+[ext_resource type="PackedScene" path="res://ui/end_of_day.tscn" id="end_of_day"]
+[ext_resource type="PackedScene" path="res://ui/post_it_label.tscn" id="post_it_label"]
 
 [node name="Main" type="Node" unique_id=934000901]
 script = ExtResource("1_dg77c")
@@ -29,6 +31,7 @@ stretch_shrink = 4
 
 [node name="WorldBuffer" type="SubViewport" parent="World" unique_id=146023764]
 handle_input_locally = false
+audio_listener_enable_3d = true
 physics_object_picking = true
 size = Vector2i(480, 270)
 render_target_update_mode = 4
@@ -40,17 +43,23 @@ unique_name_in_owner = true
 
 [node name="ScreenView" parent="UI" unique_id=947288806 instance=ExtResource("5_2cqfq")]
 unique_name_in_owner = true
+content = ExtResource("13_bench")
 
-[node name="CompufunDB" parent="UI" unique_id=981690516 instance=ExtResource("6_yaehf")]
+[node name="PostItLabel" parent="UI" instance=ExtResource("post_it_label")]
 unique_name_in_owner = true
-anchors_preset = 8
+
+[node name="CompuFunDBView" parent="UI" unique_id=981690516 instance=ExtResource("5_2cqfq")]
+unique_name_in_owner = true
+screen = 1
+content = ExtResource("6_yaehf")
+draw_cursor = false
+
+[node name="Tube" parent="UI/CompuFunDBView" index="2"]
+magnetize_per_second = 0.0
 
 [node name="WorkviewPanel" parent="UI" unique_id=1779327767 instance=ExtResource("7_074og")]
 unique_name_in_owner = true
 anchors_preset = 6
-
-[node name="PostIt" parent="UI" unique_id=1993570074 instance=ExtResource("8_cegan")]
-unique_name_in_owner = true
 
 [node name="DialogueOverlay" parent="UI" unique_id=574008241 instance=ExtResource("9_82xsv")]
 unique_name_in_owner = true
@@ -67,6 +76,11 @@ anchors_preset = 15
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="EndOfDay" parent="UI" instance=ExtResource("end_of_day")]
+unique_name_in_owner = true
+
 [node name="DebugMenu" parent="." unique_id=1072510775 instance=ExtResource("11_ryguw")]
 
 [node name="Feedback" parent="." unique_id=842827844 instance=ExtResource("12_d13ii")]
+
+[editable path="UI/CompuFunDBView"]

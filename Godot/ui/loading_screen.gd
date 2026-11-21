@@ -1,21 +1,33 @@
-extends Control
-## The loading screen: the CompuFun logo draws itself in while main.tscn loads, fades out, and the
-## game starts.
+extends CanvasLayer
+## The loading screen: the CompuFun logo draws itself in while main.tscn loads. Then the game starts
+## underneath, the logo's letters turn into windows onto it, and the paper zooms in through the
+## middle of the logo until the game fills the screen.
 
 const GAME_SCENE: String = "res://main.tscn"
 
 ## The shortest time the logo takes to draw in, in seconds, so it does not flash by.
 @export var min_seconds: float = 1.5
-## How long the whole logo stays before it fades out, in seconds.
+## How long the whole logo stays before the game shows through it, in seconds.
 @export var hold_seconds: float = 0.3
-## How long the logo takes to fade out before the game starts, in seconds.
-@export var fade_seconds: float = 0.5
+## How long the letters take to turn see-through, in seconds.
+@export var reveal_seconds: float = 0.6
+## How long the cut-out logo then stays, before the zoom, in seconds.
+@export var cutout_seconds: float = 1.2
+## Where the zoom goes: a point inside the logo's ink, in pixels of the logo picture. It glides to the
+## centre of the screen, and its hole grows until it covers the screen. The thickest stroke near the
+## logo's middle (15 px deep): measure again if the logo changes.
+@export var zoom_point: Vector2 = Vector2(342, 203)
+## How far the paper zooms in. The hole around zoom_point must then cover the screen.
+@export var zoom_scale: float = 80.0
+## How long the zoom takes, in seconds. The paper also fades in the last 30 %.
+@export var zoom_seconds: float = 1.0
 
 # Set on the first frame: the web build has no threads, so the load may block until then.
 var _start_ms: int = -1
 
 @onready var _logo: ShaderMaterial = %Logo.material
 @onready var _status: Label = %Status
+@onready var _paper: ColorRect = %Background
 
 
 func _ready() -> void:
@@ -45,18 +57,37 @@ func _process(_delta: float) -> void:
 				if scene == null:
 					_fail("%s loaded, but it is not a scene" % GAME_SCENE)
 					return
-				var fade := create_tween()
-				fade.tween_property(%Logo, "modulate:a", 0.0, fade_seconds)
-				fade.tween_callback(_start.bind(scene))
+				_reveal(scene)
 		_:
 			_fail("cannot load %s" % GAME_SCENE)
 
 
-func _start(scene: PackedScene) -> void:
-	var err := get_tree().change_scene_to_packed(scene)
-	if err != OK:
-		%Logo.modulate.a = 1.0
-		_fail("cannot start %s: %s" % [GAME_SCENE, error_string(err)])
+# The game starts under the loading screen, which stays on top (its layer) until the paper is gone.
+func _reveal(scene: PackedScene) -> void:
+	var game := scene.instantiate()
+	if game == null:
+		_fail("cannot create %s" % GAME_SCENE)
+		return
+	get_tree().root.add_child(game)
+	get_tree().current_scene = game
+	# While the logo still covers it, the game shows each view once to compile its shaders.
+	if game.has_method(&"warm_up"):
+		await game.warm_up()
+	var logo := (%Logo as Control).get_global_rect()
+	var paper := _paper.material as ShaderMaterial
+	paper.set_shader_parameter("logo_rect", Vector4(logo.position.x, logo.position.y, logo.size.x, logo.size.y))
+	var fade := create_tween()
+	fade.tween_method(func(hole: float) -> void: paper.set_shader_parameter("hole", hole), 0.0, 1.0, reveal_seconds)
+	fade.parallel().tween_property(%Logo, "modulate:a", 0.0, reveal_seconds)
+	fade.tween_interval(cutout_seconds)
+	var picture := (%Logo as TextureRect).texture.get_size()
+	_paper.pivot_offset = logo.position + zoom_point * logo.size / picture
+	fade.tween_property(_paper, "scale", Vector2.ONE * zoom_scale, zoom_seconds).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
+	# The scale keeps the pivot in place, so moving the paper moves the zoom point to the centre.
+	var to_centre := _paper.size * 0.5 - _paper.pivot_offset
+	fade.parallel().tween_property(_paper, "position", to_centre, zoom_seconds * 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	fade.parallel().tween_property(_paper, "modulate:a", 0.0, zoom_seconds * 0.3).set_delay(zoom_seconds * 0.7)
+	fade.tween_callback(queue_free)
 
 
 func _fail(message: String) -> void:

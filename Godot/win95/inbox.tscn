@@ -3,31 +3,16 @@
 [ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
 [ext_resource type="Script" path="res://win95/inbox.gd" id="script"]
 [ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons/documents_multiple_16.png" id="icon"]
-[ext_resource type="Script" path="res://win95/email.gd" id="email"]
-
-[sub_resource type="Resource" id="email_0"]
-script = ExtResource("email")
-from = "Mom"
-subject = "Did the computer work?"
-body = "Hi sweetie, did they fix the computer yet? Your father wants to play his card game. Love, Mom"
-
-[sub_resource type="Resource" id="email_1"]
-script = ExtResource("email")
-from = "CompuFun"
-subject = "Thank you for your visit"
-body = "Thank you for choosing CompuFun for your computer repair. We look forward to seeing you again!"
-
-[sub_resource type="Resource" id="email_2"]
-script = ExtResource("email")
-from = "Unknown"
-subject = "it is listening"
-body = "do not let them open the case\ndo not let them open the case\ndo not let them"
+[ext_resource type="Texture2D" path="res://win95/theme/icons/inbox_16.png" id="icon"]
+[ext_resource type="Script" path="res://win95/folder_tree.gd" id="folder_tree"]
+[ext_resource type="Script" path="res://win95/report_list.gd" id="report_list"]
 
 [node name="Inbox" type="PanelContainer"]
+custom_minimum_size = Vector2(500, 250)
+offset_right = 500.0
+offset_bottom = 250.0
 theme = ExtResource("theme")
 script = ExtResource("script")
-emails = Array[ExtResource("email")]([SubResource("email_0"), SubResource("email_1"), SubResource("email_2")])
 
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -36,36 +21,72 @@ theme_override_constants/separation = 0
 [node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
 unique_name_in_owner = true
 layout_mode = 2
-title = "Inbox"
+title = "Inbox - Microsoft Exchange"
 icon = ExtResource("icon")
 show_minimize = true
 show_maximize = true
 
-[node name="Body" type="MarginContainer" parent="VBox"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/margin_left = 4
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 4
-theme_override_constants/margin_bottom = 4
-
-[node name="Rows" type="VBoxContainer" parent="VBox/Body"]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="List" type="ItemList" parent="VBox/Body/Rows"]
+[node name="MenuBar" type="MenuBar" parent="VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(420, 90)
 layout_mode = 2
+prefer_global_menu = false
 
-[node name="ReaderField" type="PanelContainer" parent="VBox/Body/Rows"]
+[node name="ToolbarMargin" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 2
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_bottom = 3
+
+[node name="Toolbar" type="HBoxContainer" parent="VBox/ToolbarMargin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Body" type="HBoxContainer" parent="VBox"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/separation = 3
+
+[node name="FoldersField" type="PanelContainer" parent="VBox/Body"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(136, 0)
+layout_mode = 2
 theme_type_variation = &"FieldPanel"
 
-[node name="Reader" type="Label" parent="VBox/Body/Rows/ReaderField"]
+[node name="Folders" type="Control" parent="VBox/Body/FoldersField"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
-autowrap_mode = 3
-vertical_alignment = 0
+script = ExtResource("folder_tree")
+
+[node name="MessagesField" type="PanelContainer" parent="VBox/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"FieldPanel"
+
+[node name="Messages" type="Control" parent="VBox/Body/MessagesField"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("report_list")
+
+[node name="StatusGap" type="Control" parent="VBox"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+
+[node name="StatusBar" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="CountWell" type="PanelContainer" parent="VBox/StatusBar"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme_type_variation = &"StatusWell"
+
+[node name="Count" type="Label" parent="VBox/StatusBar/CountWell"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0 Items"
+
+[node name="Rest" type="PanelContainer" parent="VBox/StatusBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"StatusWell"

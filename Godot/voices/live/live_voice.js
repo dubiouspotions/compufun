@@ -9,6 +9,7 @@
 		// About 90 ms of audio: small enough to start at once, big enough to stay ahead.
 		const CHUNK = 2048;
 		let w = null;
+		let loaded = null;
 		let current = 0;
 		const put = (bytes) => {
 			const p = w.say_alloc(bytes.length);
@@ -20,14 +21,21 @@
 			const m = e.data;
 			try {
 				if (m.kind === "init") {
-					w = (await WebAssembly.instantiate(m.wasm, {})).instance.exports;
-					const dict = new Uint8Array(await new Response(new Blob([m.dict]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
-					w.say_load_dict(put(dict), dict.length);
+					loaded = (async () => {
+						w = (await WebAssembly.instantiate(m.wasm, {})).instance.exports;
+						const dict = new Uint8Array(await new Response(new Blob([m.dict]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
+						w.say_load_dict(put(dict), dict.length);
+					})();
+					await loaded;
 					postMessage({ kind: "ready" });
 				} else if (m.kind === "stop") {
 					current = m.id;
 				} else if (m.kind === "say") {
 					current = m.id;
+					await loaded; // the first say arrives right behind init
+					if (current !== m.id) return;
+					const type = new TextEncoder().encode(m.voiceType || "");
+					w.say_voice_type(type.length ? put(type) : 0, type.length);
 					const text = new TextEncoder().encode(m.text);
 					const total = w.say_start(put(text), text.length, m.body, m.rate, m.speed, m.pitch, m.accent);
 					if (total === 0) throw new Error("say_start rendered nothing for: " + m.text);
@@ -48,6 +56,8 @@
 	let worker = null;
 	let ctx = null;
 	let gain = null;
+	let analyser = null;
+	let heard = null;
 	let id = 0;
 	let next = 0;
 	let sources = [];
@@ -74,19 +84,23 @@
 		},
 
 		// body: 0 male, 1 female, 2 child. speed and pitch are multipliers, accent < 0 is the
-		// default, volume is linear.
-		say(text, body, speed, pitch, accent, volume) {
+		// default, volume is linear. voiceType is a voice type's text form; "" says it plainly.
+		say(text, body, speed, pitch, accent, volume, voiceType) {
 			api.stop();
 			if (!ctx) {
 				ctx = new AudioContext();
 				gain = ctx.createGain();
 				gain.connect(ctx.destination);
+				analyser = ctx.createAnalyser();
+				analyser.fftSize = 512;
+				analyser.connect(gain);
+				heard = new Float32Array(analyser.fftSize);
 			}
 			if (ctx.state === "suspended") ctx.resume();
 			gain.gain.value = volume;
 			id += 1;
 			next = 0;
-			worker.postMessage({ kind: "say", id, text, body, rate: RATE, speed, pitch, accent });
+			worker.postMessage({ kind: "say", id, text, body, rate: RATE, speed, pitch, accent, voiceType: voiceType || "" });
 		},
 
 		stop() {
@@ -96,12 +110,21 @@
 			sources = [];
 		},
 
+		// The peak of the last 512 samples that played, linear, before the volume.
+		level() {
+			if (!analyser) return 0;
+			analyser.getFloatTimeDomainData(heard);
+			let peak = 0;
+			for (const v of heard) peak = Math.max(peak, Math.abs(v));
+			return peak;
+		},
+
 		_play(samples) {
 			const buffer = ctx.createBuffer(1, samples.length, RATE);
 			buffer.copyToChannel(samples, 0);
 			const source = ctx.createBufferSource();
 			source.buffer = buffer;
-			source.connect(gain);
+			source.connect(analyser);
 			// A little lead on the first chunk, so the next ones arrive before it ends.
 			next = Math.max(next, ctx.currentTime + 0.05);
 			source.start(next);

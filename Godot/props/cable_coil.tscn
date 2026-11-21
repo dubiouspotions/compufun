@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/rubber.tres" id="1_rubber"]
+
+[sub_resource type="TorusMesh" id="TorusMesh_loop"]
+inner_radius = 0.075
+outer_radius = 0.09
+rings = 12
+ring_segments = 4
+
+[node name="CableCoil" type="Node3D"]
+
+[node name="Loop0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1.35, 0, 1, 0, 0, -0.12, 0.01)
+material_override = ExtResource("1_rubber")
+mesh = SubResource("TorusMesh_loop")
+
+[node name="Loop1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9292, 0, 0.1975, 0.2567, 0, -1.208, 0, 0.95, 0, 0.012, -0.115, 0.022)
+material_override = ExtResource("1_rubber")
+mesh = SubResource("TorusMesh_loop")

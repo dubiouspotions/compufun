@@ -12,28 +12,36 @@ var _dialogue_for: int = -1
 
 @onready var _shop: Shop = %Shop
 @onready var _nav: ViewNav = %ViewNav
-@onready var _post_it: PostIt = %PostIt
 @onready var _dialogue: DialogueOverlay = %DialogueOverlay
 @onready var _calling: CustomerCalling = %CustomerCalling
-@onready var _compufun_db: CompufunDB = %CompufunDB
 @onready var _workview: WorkviewPanel = %WorkviewPanel
-@onready var _screen_view: ScreenView = %ScreenView
+@onready var _screen_views: Array[ScreenView] = [%ScreenView, %CompuFunDBView]
+@onready var _post_it_label: PostItLabel = %PostItLabel
+@onready var _end_of_day: EndOfDay = %EndOfDay
 @onready var _world: SubViewportContainer = $World
 @onready var _world_buffer: SubViewport = $World/WorldBuffer
 
 
+
+## Renders every view once, behind the loading screen, so that no shader compiles while the player
+## plays (see Shop.warm_up).
+func warm_up() -> void:
+	await _shop.warm_up()
+
 func _ready() -> void:
 	if OS.is_debug_build() and ResourceLoader.exists(DEV_MENU):
 		add_child(load(DEV_MENU).instantiate())
-	_shop.set_desktop_texture(_screen_view.screen_texture())
-	_screen_view.fade_seconds = _shop.turn_seconds
+	for view: ScreenView in _screen_views:
+		view.add_look(_shop.set_screen_texture(view.screen, view.screen_texture()))
+		view.fade_seconds = _shop.turn_seconds
+		view.outside_clicked.connect(_go_back)
 	# Right before drawing, after the camera tween moved: the copy never lags behind the 3D screen.
 	RenderingServer.frame_pre_draw.connect(_follow_camera)
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
-	_screen_view.outside_clicked.connect(_go_back)
+	_shop.close_requested.connect(_end_of_day.ask)
+	_shop.degauss_requested.connect((%ScreenView as ScreenView).degauss)
 	_dialogue.finished.connect(Game.dialogue_finished)
-	_post_it.ticked.connect(Game.tick_post_it)
 	Game.changed.connect(_sync)
 	Game.start_day(first_day)
 	_sync()
@@ -51,11 +59,26 @@ func _exit_tree() -> void:
 
 func _follow_camera() -> void:
 	_dialogue.position.x = _shop.turn_from_main() * _dialogue.size.x
-	if not _screen_view.visible:
-		return
-	var pixels := _shop.bench_screen_rect()
 	var scale := _world.size / Vector2(_world_buffer.size)
-	_screen_view.follow(Rect2(_world.position + pixels.position * scale, pixels.size * scale))
+	var post_it := _shop.pinned_post_it()
+	_post_it_label.visible = post_it != null
+	if post_it != null:
+		var paper := _shop.post_it_rect(post_it)
+		_post_it_label.job = post_it.job
+		_post_it_label.follow(Rect2(_world.position + paper.position * scale, paper.size * scale))
+	for view: ScreenView in _screen_views:
+		if view.visible:
+			var pixels := _shop.screen_rect(view.screen)
+			view.follow(Rect2(_world.position + pixels.position * scale, pixels.size * scale))
+
+
+# Cmd+N (Ctrl+N) in debug builds skips to the next event; _input, so a screen that eats keys can't hide it.
+func _input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if key != null and not key.echo and key.is_action_pressed(&"skip_ahead") and OS.is_debug_build():
+		if not _shop.skip_walk():
+			Game.skip_wait()
+		get_viewport().set_input_as_handled()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -83,16 +106,19 @@ func _sync() -> void:
 	var marker := _shop.view_marker(Game.view)
 	_nav.show_marker(marker)
 	var screen := marker.screen if marker != null else ViewMarker.Screen.NONE
-	_compufun_db.visible = screen == ViewMarker.Screen.COMPUFUN_DB
 	_workview.visible = screen == ViewMarker.Screen.WORKVIEW
-	_screen_view.set_open(screen == ViewMarker.Screen.WIN95)
-	_post_it.job = Game.focus
-	_post_it.visible = Game.focus != null
+	for view: ScreenView in _screen_views:
+		view.set_open(screen == view.screen)
 	var talking := Game.visitor_state == Game.VisitorState.TALKING
 	var facing := talking and marker != null and marker.faces_customer
+	# Looking away hushes the line, and looking back says it again from its start.
 	if facing and _dialogue_for != Game.arrival:
 		_dialogue_for = Game.arrival
 		_dialogue.start(Game.visitor, Game.conversation)
+	elif facing and not _dialogue.visible:
+		_dialogue.replay()
+	elif not facing and _dialogue.visible:
+		_dialogue.hush()
 	_dialogue.visible = facing
 	if talking and not facing:
 		_calling.call_out(Game.visitor)

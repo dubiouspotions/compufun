@@ -1,13 +1,16 @@
 extends "res://win95/window.gd"
-## The MS-DOS Prompt: type a command and press Enter. DIR and CD walk drive_c; the rest are the
-## few commands below. EXIT closes the window. While it is the active window, the prompt has the
+## The MS-DOS Prompt: type a command and press Enter. DIR, CD and TYPE walk the computer's drive
+## C (drive_c here when the window isn't on a computer's desktop); the rest are the few commands
+## below. EXIT closes the window. While it is the active window, the prompt has the
 ## focus with a blinking cursor and takes every key, so typing never reaches the game; Esc clears
 ## the line, as in DOS.
 
 const BANNER: String = "Microsoft(R) Windows 95\n   (C)Copyright Microsoft Corp 1981-1995.\n\n"
-const HELP: String = "CD       Changes the current directory.\nCLS      Clears the screen.\nDIR      Lists the files in a directory.\nECHO     Displays a message.\nEXIT     Closes the MS-DOS Prompt.\nHELP     Lists the commands.\nVER      Shows the Windows version."
+const HELP: String = "CD       Changes the current directory.\nCLS      Clears the screen.\nDIR      Lists the files in a directory.\nECHO     Displays a message.\nEXIT     Closes the MS-DOS Prompt.\nHELP     Lists the commands.\nTYPE     Displays the contents of a text file.\nVER      Shows the Windows version."
+## What DIR says is free on drive C.
+const BYTES_FREE: int = 312885248
 
-## The top folder of drive C, as Win95Setup.drive_c holds it.
+## The top folder of drive C when the window isn't on a computer's desktop, as in a scene preview.
 @export var drive_c: Array[Win95File] = []
 
 ## Everything on the screen above the prompt.
@@ -58,6 +61,8 @@ func run(line: String) -> String:
 			return ""
 		"DIR":
 			return _dir()
+		"TYPE":
+			return _type(argument)
 		"CD", "CHDIR":
 			return _cd(argument)
 		"ECHO":
@@ -82,16 +87,84 @@ func _on_submitted(line: String) -> void:
 	_sync()
 
 
+# As Win95 lists a folder: the short 8.3 name, the size or <DIR>, the date and the long name.
 func _dir() -> String:
-	var lines: PackedStringArray = [" Volume in drive C has no label", " Directory of %s" % _where(), ""]
+	var lines: PackedStringArray = [" Volume in drive C has no label", " Volume Serial Number is 1F2A-0C17", " Directory of %s" % _where(), ""]
 	var files := 0
+	var folders := 0
+	var bytes := 0
+	if not _path.is_empty():
+		lines.append_array([_dir_line(".", "", true, 0, {}, "."), _dir_line("..", "", true, 0, {}, "..")])
+		folders += 2
+	var taken := {}
 	for file: Win95File in _folder():
-		var parts := file.name.split(".")
-		var extension := parts[1] if parts.size() > 1 else ""
-		lines.append("%-8s %-3s  %s" % [parts[0], extension, "<DIR>" if file.is_folder else ""])
-		files += 1
-	lines.append("%9d file(s)" % files)
+		var short := short_name(file.name, taken)
+		var dot := short.find(".")
+		var when := Win95Time.parse_long(file.modified) if file.modified != "" else {}
+		lines.append(_dir_line(short.left(dot) if dot >= 0 else short, short.substr(dot + 1) if dot >= 0 else "", file.is_folder, file.size_in_bytes(), when, file.name))
+		if file.is_folder:
+			folders += 1
+		else:
+			files += 1
+			bytes += file.size_in_bytes()
+	lines.append("%9d file(s) %14s bytes" % [files, _grouped(bytes)])
+	lines.append("%9d dir(s)  %14s bytes free" % [folders, _grouped(BYTES_FREE)])
 	return "\n".join(lines)
+
+
+func _dir_line(base: String, extension: String, is_folder: bool, size: int, when: Dictionary, long_name: String) -> String:
+	var amount := "<DIR>       " if is_folder else "%12s" % _grouped(size)
+	var date := ""
+	if not when.is_empty():
+		var hour: int = when.hour
+		date = "%02d-%02d-%02d %2d:%02d%s" % [when.month, when.day, when.year % 100, (hour + 11) % 12 + 1, when.minute, "p" if hour >= 12 else "a"]
+	return "%-8s %-3s %s  %-15s %s" % [base, extension, amount, date, long_name]
+
+
+## The DOS name of [param long_name], as Win95 makes it: "TAXES1~1.TXT" for "taxes 1995.txt".
+## [param taken] holds the short names already given in the folder and gets this one.
+static func short_name(long_name: String, taken: Dictionary) -> String:
+	var dot := long_name.rfind(".")
+	var base := long_name.left(dot) if dot > 0 else long_name
+	var extension := long_name.substr(dot + 1) if dot > 0 else ""
+	var clean := func(text: String) -> String:
+		var kept := ""
+		for c in text.to_upper():
+			if c != " " and c != ".":
+				kept += c
+		return kept
+	var short_base: String = clean.call(base)
+	var short_extension: String = clean.call(extension).left(3)
+	if short_base.length() > 8 or short_base != base.to_upper() or extension.length() > 3:
+		var n := 1
+		while true:
+			var candidate := "%s~%d" % [short_base.left(8 - 1 - str(n).length()), n]
+			if not taken.has(candidate + "." + short_extension):
+				short_base = candidate
+				break
+			n += 1
+	var short := short_base + ("." + short_extension if short_extension != "" else "")
+	taken[short] = true
+	return short
+
+
+static func _grouped(value: int) -> String:
+	var text := str(value)
+	for i in range(text.length() - 3, 0, -3):
+		text = text.insert(i, ",")
+	return text
+
+
+# TYPE prints a text file, by its long or its short name.
+func _type(argument: String) -> String:
+	var wanted := argument.strip_edges().to_upper()
+	if wanted == "":
+		return "Required parameter missing"
+	var taken := {}
+	for file: Win95File in _folder():
+		if not file.is_folder and (file.name.to_upper() == wanted or short_name(file.name, taken) == wanted):
+			return file.contents.trim_suffix("\n")
+	return "File not found - %s" % argument.strip_edges()
 
 
 func _cd(argument: String) -> String:
@@ -106,7 +179,8 @@ func _cd(argument: String) -> String:
 			if not path.is_empty():
 				path.remove_at(path.size() - 1)
 			continue
-		var found := _files_in(path).filter(func(f: Win95File) -> bool: return f.is_folder and f.name.to_upper() == step)
+		var here := _files_in(path)
+		var found := here.filter(func(f: Win95File) -> bool: return f.is_folder and (f.name.to_upper() == step or _short_in(here, f) == step))
 		if found.is_empty():
 			return "Invalid directory"
 		path.append(found[0].name)
@@ -121,7 +195,9 @@ func _folder() -> Array:
 
 ## The files in the folder at [param path], or [] when there is no such folder.
 func _files_in(path: PackedStringArray) -> Array:
-	var files: Array = drive_c
+	var desktop := get_parent() as Win95Desktop
+	var computer := desktop.computer if desktop != null else null
+	var files: Array = computer.setup.drive_c if computer != null and computer.setup != null else drive_c
 	for folder_name in path:
 		var found := files.filter(func(f: Win95File) -> bool: return f.is_folder and f.name == folder_name)
 		if found.is_empty():
@@ -144,8 +220,24 @@ func _is_active() -> bool:
 	return is_visible_in_tree() and (desktop == null or desktop.active_window() == self)
 
 
+# DOS shows the short names: C:\MYDOCU~1.
 func _where() -> String:
-	return "C:\\" + "\\".join(_path)
+	var shorts: PackedStringArray = []
+	for depth in _path.size():
+		var here := _files_in(_path.slice(0, depth))
+		var found := here.filter(func(f: Win95File) -> bool: return f.is_folder and f.name == _path[depth])
+		shorts.append(_short_in(here, found[0]) if not found.is_empty() else _path[depth].to_upper())
+	return "C:\\" + "\\".join(shorts)
+
+
+## The short name of [param file] among [param files], its folder, which numbers the ~1, ~2 in order.
+static func _short_in(files: Array, file: Win95File) -> String:
+	var taken := {}
+	for other: Win95File in files:
+		var short := short_name(other.name, taken)
+		if other == file:
+			return short
+	return ""
 
 
 func _sync() -> void:

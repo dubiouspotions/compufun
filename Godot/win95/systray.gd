@@ -1,6 +1,7 @@
 extends PanelContainer
 ## The notification area at the right end of the taskbar: the speaker and the clock. Clicking the
-## speaker opens the volume popup, with a slider and a Mute checkbox, as in Win95.
+## speaker opens the volume popup, with a slider and a Mute checkbox, as in Win95; a click outside
+## it closes it.
 
 ## The player ticked or cleared Mute; `muted` is the new state.
 signal mute_toggled(muted: bool)
@@ -52,6 +53,8 @@ func _open_volume() -> void:
 	var popup_size := Vector2i(_popup.get_contents_minimum_size())
 	var tray := get_global_rect()
 	var corner := Vector2i(int(tray.end.x) - popup_size.x, int(tray.position.y) - popup_size.y)
+	var host := owner as Control if owner is Control else self as Control  # the whole Win95 screen, so a click anywhere closes it
+	PopupCatcher.attach(_popup, host)
 	_popup.popup(Rect2i(corner, popup_size))
 
 
@@ -59,6 +62,4 @@ func _sync() -> void:
 	_speaker.texture_normal = _SPEAKER_MUTED if muted else _SPEAKER
 	_mute.set_pressed_no_signal(muted)
 	_slider.set_value_no_signal(volume)
-	var now := Time.get_time_dict_from_system()
-	var hour: int = now.hour
-	_clock.text = "%d:%02d %s" % [(hour + 11) % 12 + 1, now.minute, "PM" if hour >= 12 else "AM"]
+	_clock.text = Win95Time.clock(Time.get_time_dict_from_system())

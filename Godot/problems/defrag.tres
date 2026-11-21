@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Problem" format=3]
+
+[ext_resource type="Script" path="res://problems/problem.gd" id="problem"]
+[ext_resource type="Script" path="res://problems/setting_check.gd" id="setting_check"]
+
+[sub_resource type="Resource" id="SettingCheck_fragmented"]
+script = ExtResource("setting_check")
+setting = &"fragmented"
+broken_value = true
+
+[resource]
+script = ExtResource("problem")
+short_name = &"defrag"
+perceived_issue = "Mouse glitches"
+location = 1
+symptoms = PackedStringArray("Windows boots slower", "Mouse skips when moved", "Folder opening is slow (2 sec delay)")
+software_steps = PackedStringArray("Go to settings", "Start defrag", "Wait one day", "OK defrag result")
+software_check = SubResource("SettingCheck_fragmented")
