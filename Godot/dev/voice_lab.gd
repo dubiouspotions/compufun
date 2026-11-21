@@ -4,6 +4,9 @@ extends Control
 ## a person (VoicePerson: who speaks, voices/persons/), in a mood (VoiceMood: how, one per pose,
 ## voices/moods/), under an effect (VoiceEffect: a corruption, voices/effects/). Pick one of each
 ## to hear them together; the layer chosen at the top is the one the levers edit and Save writes.
+## Each layer has its own levers: a person its build and timbre, a mood its delivery, an effect
+## its corruption. A lever starts from what the layers below give it, and stays out of its layer
+## while it sits there.
 ## An effect has a base, an alternate and a curve over the line that says where the alternate
 ## plays, drawn over the line's waveform. It speaks through ChimeraVoice, the engine the game uses.
 ## Open it from the Dev menu (F3 or Cmd+3), or run dev/voice_lab.tscn. While it is open the game
@@ -33,7 +36,10 @@ const CURVES: Array = [
 	["Off", [Vector2(0, 0), Vector2(1, 0)]],
 ]
 ## The levers each side shows; the rest are under "All levers".
-const COMMON: PackedStringArray = ["pitch", "rate", "accent", "breathiness", "roughness", "fry", "ring_mix", "metal_ms", "bits", "stutter", "static", "reverb"]
+## Effects only: the person and the mood own the human voice.
+const COMMON: PackedStringArray = ["ring_mix", "metal_ms", "bits", "hold", "stutter", "dropout", "static", "wobble", "distortion", "chorus", "delay", "reverb"]
+## The lever group that belongs to persons and moods, left out of an effect's levers.
+const HUMAN_GROUP: String = "Human voice"
 
 ## Each lever: [key, label, min, max, step, default]. The key is the voice type's (see
 ## native/chimera_voice/src/voice_type.rs); a lever at its default is left out of the voice.
@@ -261,7 +267,30 @@ func _settings(target: int) -> Dictionary:
 func _value(target: int, key: String) -> float:
 	if target == MOOD and MOOD_FIELDS.has(key):
 		return _mood.get(MOOD_FIELDS[key])
-	return float(_settings(target).get(key, _spec(key)[5]))
+	return float(_settings(target).get(key, _below(target, key)))
+
+
+# What a lever of [param target] is when the layer leaves it out: the value the layers under it
+# give, or Chimera's. A lever at this value stays out of its layer, and Reset returns to it.
+func _below(target: int, key: String) -> float:
+	var value: float = _spec(key)[5]
+	if target == PERSON or (target == MOOD and MOOD_FIELDS.has(key)):
+		return value
+	value = _person.settings.get(key, value)
+	if target == MOOD:
+		return value
+	if key == "accent":
+		value = _mood.swing  # an effect's melody sits on the mood's pitch swing
+	return _mood.settings.get(key, value)
+
+
+# The layer that gives [param target]'s lever its value from below, or "" when it is Chimera's.
+func _below_from(target: int, key: String) -> String:
+	if target in [BASE, ALT] and (_mood.settings.has(key) or key == "accent"):
+		return "mood"
+	if target in [MOOD, BASE, ALT] and not (target == MOOD and MOOD_FIELDS.has(key)) and _person.settings.has(key):
+		return "person"
+	return ""
 
 
 func _spec(key: String) -> Array:
@@ -278,13 +307,13 @@ func _spec(key: String) -> Array:
 func _set_lever(target: int, key: String, value: float) -> void:
 	if target == MOOD and MOOD_FIELDS.has(key):
 		_mood.set(MOOD_FIELDS[key], value)
-	elif is_equal_approx(value, _spec(key)[5]):
+	elif is_equal_approx(value, _below(target, key)):
 		_settings(target).erase(key)
 	else:
 		_settings(target)[key] = value
 	for slider: HSlider in _sliders[target].get(key, []):
 		slider.set_value_no_signal(value)
-		_describe(slider, key)
+		_describe(slider, target, key)
 
 
 func _store_switches(target: int) -> void:
@@ -311,7 +340,7 @@ func _show_all() -> void:
 		for key: String in _sliders[target]:
 			for slider: HSlider in _sliders[target][key]:
 				slider.set_value_no_signal(_value(target, key))
-				_describe(slider, key)
+				_describe(slider, target, key)
 		var switches := _switches[target]
 		if switches.has("voiced"):
 			(switches["voiced"] as CheckButton).set_pressed_no_signal(_value(target, "voiced") >= 0.5 if _settings(target).has("voiced") else true)
@@ -432,6 +461,7 @@ func _show_layer(layer: int) -> void:
 	for i in _cards.size():
 		_cards[i].visible = i == layer
 	_save.text = "Save " + LAYERS[layer].to_lower()
+	_show_all()  # a lower layer may have changed what this one starts from
 	_show_name()
 	_timeline.queue_redraw()
 
@@ -793,6 +823,8 @@ func _all_levers_panel() -> Control:
 		columns.add_theme_constant_override("separation", 28)
 		page.add_child(columns)
 		for group: Array in GROUPS:
+			if group[0] == HUMAN_GROUP:
+				continue
 			var column := VBoxContainer.new()
 			column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			column.add_theme_constant_override("separation", 2)
@@ -856,10 +888,11 @@ func _refresh_macros(side: int) -> void:
 func _apply_macro(side: int, moved: String) -> void:
 	for key: String in MACROS[moved]:
 		var spec := _spec(key)
-		var value: float = spec[5]
+		var below := _below(side, key)
+		var value := below
 		for macro: String in MACROS:
 			if MACROS[macro].has(key):
-				value += (_macros[side][macro] as HSlider).value * (MACROS[macro][key] - spec[5])
+				value += (_macros[side][macro] as HSlider).value * (MACROS[macro][key] - below)
 		_set_lever(side, key, clampf(value, spec[2], spec[3]))
 
 
@@ -919,7 +952,7 @@ func _slider_row(side: int, spec: Array, compact := false) -> Control:
 	chip.custom_minimum_size.x = 64 if compact else 76
 	chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	row.add_child(chip)
-	var reset := _reset_button(func() -> void: _set_lever(side, spec[0], spec[5]))
+	var reset := _reset_button(func() -> void: _set_lever(side, spec[0], _below(side, spec[0])))
 	reset.name = "Reset"
 	reset.pressed.connect(_on_changed)
 	row.add_child(reset)
@@ -932,17 +965,21 @@ func _slider_row(side: int, spec: Array, compact := false) -> Control:
 	row.gui_input.connect(func(event: InputEvent) -> void:
 		var click := event as InputEventMouseButton
 		if click and click.double_click:
-			_set_lever(side, spec[0], spec[5])
+			_set_lever(side, spec[0], _below(side, spec[0]))
 			_on_changed())
-	_describe(slider, spec[0])
+	_describe(slider, side, spec[0])
 	return row
 
 
-# Shows a slider's value, and marks its row when it differs from the default.
-func _describe(slider: HSlider, key: String) -> void:
+# Shows a slider's value, and marks its row when this layer changes it from what the layers below
+# give; the tooltip says where that value comes from.
+func _describe(slider: HSlider, target: int, key: String) -> void:
 	var spec := _spec(key)
 	var row := slider.get_parent()
-	var changed := not is_equal_approx(slider.value, spec[5])
+	var below := _below(target, key)
+	var changed := not is_equal_approx(slider.value, below)
+	var from := _below_from(target, key)
+	row.tooltip_text = "Without this layer: %s%s (%s)" % [snappedf(below, spec[4]), UNITS.get(key, ""), "from the " + from if from != "" else "Chimera's"]
 	var chip: Label = row.get_node("Value")
 	var shown := snappedf(slider.value, spec[4])
 	chip.text = (str(int(shown)) if spec[4] >= 1.0 else str(shown)) + UNITS.get(key, "")
