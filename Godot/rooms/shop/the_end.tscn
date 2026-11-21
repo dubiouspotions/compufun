@@ -47,10 +47,10 @@ size = Vector3(0.13, 0.86, 0.15)
 size = Vector3(0.11, 0.07, 0.26)
 
 [sub_resource type="BoxMesh" id="arm"]
-size = Vector3(0.08, 0.58, 0.09)
+size = Vector3(0.08, 1, 0.09)
 
 [sub_resource type="BoxMesh" id="hand"]
-size = Vector3(0.07, 0.1, 0.05)
+size = Vector3(0.05, 0.09, 0.1)
 
 [sub_resource type="CylinderMesh" id="pipe"]
 top_radius = 0.035
@@ -134,22 +134,32 @@ material_override = SubResource("shoes_mat")
 mesh = SubResource("shoe")
 
 [node name="ArmL" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, 1.05, 0.81)
+transform = Transform3D(-0.99563, -0.03, -0.037275, 0.093341, -0.32, -0.39761, 0, -0.14, 0.9168, -0.255, 1.2, 0.75)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
 [node name="ArmR" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1.05, 0.81)
+transform = Transform3D(-0.99563, 0.03, 0.041597, -0.093341, -0.32, -0.4437, 0, -0.16, 0.89521, 0.255, 1.2, 0.74)
+material_override = SubResource("shirt_mat")
+mesh = SubResource("arm")
+
+[node name="ForearmL" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(0.45632, 0.195, 0.56478, -0.88982, 0.1, 0.28963, 0, -0.18, 0.77275, -0.1725, 1.09, 0.59)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
 [node name="HandL" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, 0.72, 0.81)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.052, 1.15, 0.47)
 material_override = SubResource("skin_mat")
 mesh = SubResource("hand")
 
+[node name="ForearmR" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(0.49132, -0.195, -0.62411, 0.87098, 0.11, 0.35206, -0, -0.23, 0.69752, 0.1725, 1.095, 0.545)
+material_override = SubResource("shirt_mat")
+mesh = SubResource("arm")
+
 [node name="HandR" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 0.72, 0.81)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.052, 1.15, 0.4)
 material_override = SubResource("skin_mat")
 mesh = SubResource("hand")
 
