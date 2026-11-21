@@ -48,9 +48,6 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Open sign**: The sign that hangs in the shop window (`props/open_sign.tscn`). It reads OPEN while the shop is open; the player clicks it to close the shop for the night, once every customer of the day has come in.
 *Avoid:* closed sign, shop sign.
 
-**Debug menu**: The F2 panel in debug builds that sets the time of day, the day cycle and the rain.
-*Avoid:* dev menu, cheat menu.
-
 **Job**: One customer's computer on the counter, with its slot, its repair state and its post-it (`Job`, in `Game.jobs`). It stays from the drop-off to the pickup, overnight too.
 *Avoid:* order, ticket, repair.
 
@@ -69,7 +66,22 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Daypart**: The time of day in the game: morning, midday, evening or night (`Game.daypart`). Each customer who comes in moves it forward, and closing the shop makes it night; time does not pass on its own.
 *Avoid:* hour, time, clock.
 
-**Conversation**: One exchange with a customer: the lines they say, one at a time. A `Conversation` resource in the `Customer` file, found by its id (`arrive`).
+**Debug menu**: The F2 panel in debug builds, with three tabs: World (the time of day, the day cycle, the rain), Game (the `Game` state) and Presets.
+*Avoid:* dev menu, cheat menu.
+
+**Preset**: A `Game` state that the debug menu sets with one click, in the format of `Game.snapshot()`. The presets are in `ui/debug_presets.gd`.
+*Avoid:* quick button, shortcut, save state.
+
+**Flag**: A fact of the story in `Game.flags`: a name and a number. 0 or missing means not set.
+*Avoid:* variable, story state, switch.
+
+**Trigger**: The moment a conversation can play, such as `ARRIVE` when a customer brings a computer, or `PICKUP` when they come back for it.
+*Avoid:* event, hook.
+
+**Condition**: The days and flags that a conversation needs to play (`Condition` resource).
+*Avoid:* requirement, rule, filter.
+
+**Conversation**: One exchange with a customer: the lines they say, one at a time. A `Conversation` resource in the `Customer` file; `Game` plays the first one whose trigger and condition match.
 *Avoid:* dialog, dialogue tree, script.
 
 **Dialogue tab**: The editor tab (`addons/dialogue_editor/`) that lists every customer and edits their conversations.
