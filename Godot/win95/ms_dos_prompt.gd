@@ -1,6 +1,8 @@
 extends "res://win95/window.gd"
 ## The MS-DOS Prompt: type a command and press Enter. DIR and CD walk drive_c; the rest are the
-## few commands below. EXIT closes the window.
+## few commands below. EXIT closes the window. While it is the active window, the prompt has the
+## focus with a blinking cursor and takes every key, so typing never reaches the game; Esc clears
+## the line, as in DOS.
 
 const BANNER: String = "Microsoft(R) Windows 95\n   (C)Copyright Microsoft Corp 1981-1995.\n\n"
 const HELP: String = "CD       Changes the current directory.\nCLS      Clears the screen.\nDIR      Lists the files in a directory.\nECHO     Displays a message.\nEXIT     Closes the MS-DOS Prompt.\nHELP     Lists the commands.\nVER      Shows the Windows version."
@@ -23,10 +25,25 @@ func _ready() -> void:
 	super()
 	_log = BANNER
 	_command.text_submitted.connect(_on_submitted)
-	visibility_changed.connect(func() -> void:
-		if visible:
-			_command.grab_focus.call_deferred())
+	# Tab would move the focus out of the prompt.
+	_command.focus_next = NodePath(".")
+	_command.focus_previous = NodePath(".")
+	# The field would swallow Esc before _unhandled_key_input sees it.
+	_command.gui_input.connect(func(event: InputEvent) -> void:
+		if event.is_action_pressed(&"ui_cancel"):
+			_command.clear()
+			_command.accept_event())
+	var desktop := get_parent() as Win95Desktop
+	if desktop != null:
+		desktop.windows_changed.connect(_sync_focus)
 	_sync()
+	_sync_focus.call_deferred()
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not _is_active():
+		return
+	get_viewport().set_input_as_handled()
 
 
 ## Runs [param line] as if the player typed it, and returns what it printed.
@@ -111,6 +128,20 @@ func _files_in(path: PackedStringArray) -> Array:
 			return []
 		files = found[0].children
 	return files
+
+
+## The prompt has the focus exactly while this is the desktop's active window.
+func _sync_focus() -> void:
+	if _is_active():
+		if not _command.has_focus():
+			_command.grab_focus()
+	elif _command.has_focus():
+		_command.release_focus()
+
+
+func _is_active() -> bool:
+	var desktop := get_parent() as Win95Desktop
+	return is_visible_in_tree() and (desktop == null or desktop.active_window() == self)
 
 
 func _where() -> String:
