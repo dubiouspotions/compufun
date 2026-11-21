@@ -20,7 +20,11 @@ STATES = {
     "hover": ((74, 74, 81), (200, 200, 212), (12, 12, 14)),
     "pressed": ((50, 50, 55), (10, 10, 12), (150, 150, 160)),
 }
-ARROW, LIT, SHADOW = (128, 128, 136, 255), (226, 226, 236, 255), (8, 8, 10, 255)
+# How strongly the bevel and the arrows stand out from the plastic: 1 is the full light and dark
+# tones, lower blends them toward the body. The edges stay hard at any value.
+EMBOSS_OPACITY = 0.6
+ARROW_ALPHA = round(255 * EMBOSS_OPACITY)
+ARROW, LIT, SHADOW = (128, 128, 136, ARROW_ALPHA), (226, 226, 236, ARROW_ALPHA), (8, 8, 10, ARROW_ALPHA)
 
 
 def grain(size):
@@ -41,8 +45,13 @@ def shade(colour, by):
     return tuple(max(0, min(255, c + by)) for c in colour) + (255,)
 
 
+def blend(body, tone):
+    return tuple(round(b + (t - b) * EMBOSS_OPACITY) for b, t in zip(body, tone))
+
+
 def button(body, light, dark):
     # 24 art pixels: a 4-pixel edge round a 16-pixel middle, which tiles across the button.
+    light, dark = blend(body, light), blend(body, dark)
     size = 24
     noise = grain(size)
     px = [[shade(body, noise[y][x]) for x in range(size)] for y in range(size)]
