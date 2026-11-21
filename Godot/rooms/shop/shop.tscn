@@ -26,7 +26,6 @@
 [ext_resource type="PackedScene" path="res://props/modem.tscn" id="25_modem"]
 [ext_resource type="PackedScene" path="res://props/work_mat.tscn" id="26_workmat"]
 [ext_resource type="PackedScene" path="res://rooms/shop/storage.tscn" id="27_storage"]
-[ext_resource type="PackedScene" path="res://props/cart.tscn" id="28_cart"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -381,9 +380,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, 0)
 
 [node name="Storage" parent="Room" instance=ExtResource("27_storage")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.95, 0, 0.5)
-
-[node name="Cart" parent="Room" instance=ExtResource("28_cart")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.55, 0, 0)
 
 [node name="WorkDesk" parent="Room" unique_id=924977988 instance=ExtResource("16_we7dl")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6, 0, 0.7)
