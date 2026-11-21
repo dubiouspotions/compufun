@@ -96,13 +96,15 @@ def keystroke(seed):
 
 
 def mouse_button(seed, release):
-    """A mouse button's microswitch: a sharp tick on the press, a softer, higher one on the release."""
+    """A mouse button's microswitch: a dry snap of noise with no pitch, so it doesn't plink like a
+    drop; the press has a little plastic body, the release is thinner."""
     random.seed(seed)
-    out = silence(0.05)
-    mix(out, highpass(noise(0.004, 0.0008), 3500 if release else 2500), 0.0, 0.5 if release else 1.0)
-    body_freq = random.uniform(1700, 2100) if release else random.uniform(1100, 1400)
-    body = [math.sin(2 * math.pi * body_freq * i / RATE) * math.exp(-i / RATE / 0.004) for i in range(int(0.03 * RATE))]
-    mix(out, body, 0.001, 0.25 if release else 0.45)
+    out = silence(0.03)
+    snap = lowpass(highpass(noise(0.004, 0.0006 if release else 0.0009), 1800 if release else 1200), 7000)
+    mix(out, snap, 0.0, 1.0)
+    if not release:
+        body = lowpass(noise(0.012, 0.0025), 900)
+        mix(out, body, 0.0005, 0.6)
     return out
 
 
