@@ -207,13 +207,21 @@ func _open_item(item: FileIcon) -> void:
 	elif file.is_folder:
 		_show(Listing.new(file.name, file.icon, &"folder", func() -> Array: return file.children, not _drives.has(file), file))
 	else:
-		_open_file(file)
+		open_file(file)
 
 
 ## Opens [param file] as Win95 does: a program file runs while its name ends in .EXE or .COM;
 ## any other file opens in the installed program whose app lists its extension. A program file
 ## whose name lost its .EXE still claims the extension, so its files fail with "Cannot find the file".
-func _open_file(file: Win95File) -> void:
+## A shortcut opens its target, or fails with "Problem with Shortcut" when the target is gone.
+func open_file(file: Win95File) -> void:
+	if file.target != "":
+		var target := _state.setup.file_at(file.target)
+		if target == null or target.is_folder:
+			_message("Problem with Shortcut", "The item '%s' that this shortcut refers to has been changed or moved, so this shortcut will no longer work properly." % file.target.substr(file.target.rfind("\\") + 1))
+		else:
+			open_file(target)
+		return
 	if ComputerState.is_runnable(file):
 		_launch(file.program, null)
 		return
@@ -221,6 +229,7 @@ func _open_file(file: Win95File) -> void:
 	for program in programs:
 		if ComputerState.is_runnable(program):
 			_launch(program.program, file)
+			_state.note_opened(file)
 			return
 	if not programs.is_empty():
 		var location := _state.location_of(programs[0]).trim_suffix("\\")
@@ -254,7 +263,7 @@ func _show(listing: Listing) -> void:
 	var window: Node = _desktop.open(_FOLDER, false)
 	var title_bar: Node = window.get_node("%TitleBar")
 	title_bar.title = listing.title
-	title_bar.icon = _small_icon(listing.icon)
+	title_bar.icon = Win95File.small_icon(listing.icon)
 	var view: IconView = window.items
 	_wire_view(view)
 	window.closed.connect(func() -> void:
@@ -395,10 +404,3 @@ func _files(items: Array[FileIcon]) -> Array[Win95File]:
 			files.append(file)
 	return files
 
-
-# Kalle's icon set pairs every name_32.png with a name_16.png.
-func _small_icon(icon: Texture2D) -> Texture2D:
-	if icon == null or not icon.resource_path.ends_with("_32.png"):
-		return null
-	var small := icon.resource_path.trim_suffix("_32.png") + "_16.png"
-	return load(small) if ResourceLoader.exists(small) else null

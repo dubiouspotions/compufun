@@ -1,0 +1,100 @@
+[gd_resource type="Resource" script_class="Win95File" format=3]
+
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="file"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/program_group_32.png" id="group"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/application_32.png" id="app"]
+
+[sub_resource type="Resource" id="f1"]
+script = ExtResource("file")
+name = "Disk Defragmenter"
+icon = ExtResource("app")
+target = "C:\\WINDOWS\\DEFRAG.EXE"
+
+[sub_resource type="Resource" id="f2"]
+script = ExtResource("file")
+name = "System Tools"
+icon = ExtResource("group")
+is_folder = true
+children = Array[Resource]([SubResource("f1")])
+
+[sub_resource type="Resource" id="f3"]
+script = ExtResource("file")
+name = "Volume Control"
+icon = ExtResource("app")
+target = "C:\\WINDOWS\\SNDVOL32.EXE"
+
+[sub_resource type="Resource" id="f4"]
+script = ExtResource("file")
+name = "Multimedia"
+icon = ExtResource("group")
+is_folder = true
+children = Array[Resource]([SubResource("f3")])
+
+[sub_resource type="Resource" id="f5"]
+script = ExtResource("file")
+name = "Calculator"
+icon = ExtResource("app")
+target = "C:\\WINDOWS\\CALC.EXE"
+
+[sub_resource type="Resource" id="f6"]
+script = ExtResource("file")
+name = "Notepad"
+icon = ExtResource("app")
+target = "C:\\WINDOWS\\NOTEPAD.EXE"
+
+[sub_resource type="Resource" id="f7"]
+script = ExtResource("file")
+name = "Paint"
+icon = ExtResource("app")
+target = "C:\\WINDOWS\\PBRUSH.EXE"
+
+[sub_resource type="Resource" id="f8"]
+script = ExtResource("file")
+name = "WordPad"
+icon = ExtResource("app")
+target = "C:\\WINDOWS\\WORDPAD.EXE"
+
+[sub_resource type="Resource" id="f9"]
+script = ExtResource("file")
+name = "Accessories"
+icon = ExtResource("group")
+is_folder = true
+children = Array[Resource]([SubResource("f2"), SubResource("f4"), SubResource("f5"), SubResource("f6"), SubResource("f7"), SubResource("f8")])
+
+[sub_resource type="Resource" id="f10"]
+script = ExtResource("file")
+name = "StartUp"
+icon = ExtResource("group")
+is_folder = true
+children = Array[Resource]([])
+
+[sub_resource type="Resource" id="f11"]
+script = ExtResource("file")
+name = "Microsoft Exchange"
+icon = ExtResource("app")
+target = "C:\\WINDOWS\\EXCHNG32.EXE"
+
+[sub_resource type="Resource" id="f12"]
+script = ExtResource("file")
+name = "MS-DOS Prompt"
+icon = ExtResource("app")
+target = "C:\\WINDOWS\\COMMAND.COM"
+
+[sub_resource type="Resource" id="f13"]
+script = ExtResource("file")
+name = "Windows Explorer"
+icon = ExtResource("app")
+
+[sub_resource type="Resource" id="f14"]
+script = ExtResource("file")
+name = "Programs"
+icon = ExtResource("group")
+is_folder = true
+children = Array[Resource]([SubResource("f9"), SubResource("f10"), SubResource("f11"), SubResource("f12"), SubResource("f13")])
+
+[resource]
+script = ExtResource("file")
+name = "Start Menu"
+icon = ExtResource("group")
+is_folder = true
+children = Array[Resource]([SubResource("f14")])

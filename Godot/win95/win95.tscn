@@ -10,7 +10,6 @@
 [ext_resource type="Script" path="res://win95/desktop.gd" id="desktop"]
 [ext_resource type="Script" path="res://win95/start_menu.gd" id="start_menu"]
 [ext_resource type="PackedScene" path="res://win95/shut_down.tscn" id="shut_down"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons/start_shutdown_16.png" id="shut_down_icon"]
 [ext_resource type="Script" path="res://win95/win95.gd" id="win95"]
 [ext_resource type="Script" path="res://win95/computer_state.gd" id="computer_state"]
 [ext_resource type="PackedScene" path="res://win95/no_signal.tscn" id="no_signal"]
@@ -88,10 +87,9 @@ text = "Start"
 icon = ExtResource("4_d5dma")
 alignment = 0
 
-[node name="StartMenu" type="PopupMenu" parent="TaskBar/HBoxContainer/StartButton"]
+[node name="StartMenu" type="PopupPanel" parent="TaskBar/HBoxContainer/StartButton"]
 script = ExtResource("start_menu")
 shut_down = ExtResource("shut_down")
-shut_down_icon = ExtResource("shut_down_icon")
 
 [node name="TaskButtons" type="HBoxContainer" parent="TaskBar/HBoxContainer" unique_id=1937979923]
 unique_name_in_owner = true

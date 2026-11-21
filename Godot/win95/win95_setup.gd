@@ -15,6 +15,9 @@ extends Resource
 ## Where each file in the Recycle Bin was deleted from: the desktop, drive_c or a folder's
 ## children. Only while the game runs.
 var deleted_from: Dictionary[Win95File, Array] = {}
+## The documents that the player opened, newest first, as the Start menu's Documents lists them.
+## Only while the game runs.
+var recent_documents: Array[Win95File] = []
 ## Every email in every folder; each Email says which folder it is in.
 @export var emails: Array[Email] = []
 ## The programs that the Start menu lists, by their name in the menu.
@@ -29,6 +32,24 @@ var deleted_from: Dictionary[Win95File, Array] = {}
 ## A floppy is in drive A:. The PC tries to boot from it and stops on "Non-System disk or disk
 ## error", so Windows does not start until the floppy is out.
 @export var floppy_in_a: bool = false
+
+
+## A copy to run: every file and folder is the copy's own, also the ones that came from another
+## .tres, such as the stock Start Menu folder. duplicate_deep() alone shares those.
+func copy() -> Win95Setup:
+	var running := duplicate_deep() as Win95Setup
+	for files: Array in [running.desktop, running.drive_c, running.recycle_bin]:
+		_own(files)
+	return running
+
+
+static func _own(files: Array) -> void:
+	for i in files.size():
+		var file: Win95File = files[i]
+		if file.resource_path != "" and not file.resource_path.contains("::"):
+			file = file.duplicate_deep()
+			files[i] = file
+		_own(file.children)
 
 
 ## The file or folder at [param path], or null. The path starts at drive C or the desktop, with

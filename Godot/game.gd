@@ -258,7 +258,7 @@ func setup_for(job: Job) -> Win95Setup:
 		return null
 	var setup: Win95Setup = setups.get(computer)
 	if setup == null:
-		setup = computer.win95_setup.duplicate_deep()  # loaded resources are shared, so mutating them would leak
+		setup = computer.win95_setup.copy()
 		setups[computer] = setup
 	if not job.broken:
 		job.broken = true
