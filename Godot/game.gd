@@ -227,21 +227,29 @@ func matching_conversation(who: Customer, trigger: Conversation.Trigger) -> Conv
 	return null
 
 
-## Lays the computer in focus on its side in the Workview, so the player can reach its side panel
-## ([member Job.lying]). False, and nothing changes, when [param job] is not in focus in the Workview
-## or already lies.
+## Switches the computer in focus off and lays it on its side in the Workview, so the player can
+## reach its side panel ([member Job.lying]); it lies until [method stand_up], also while the player
+## looks elsewhere. False, and nothing changes, when [param job] is not in focus in the Workview or
+## already lies.
 func lay_down(job: Job) -> bool:
 	if not _on_counter(job, "lay_down") or job != focus or view != &"Workview" or job.lying:
 		return false
+	job.powered = false
 	job.lying = true
 	changed.emit()
 	return true
 
 
-## Stands the lying computer of [param job] up again. False, and nothing changes, when it stands
-## already or its side panel is off.
+## True when the lying computer of [param job] can stand up: its side panel is on, with every
+## screw in.
+func can_stand_up(job: Job) -> bool:
+	return job.lying and not job.case_open and not job.panel_screws.has(false)
+
+
+## Stands the lying computer of [param job] up again. False, and nothing changes, unless
+## [method can_stand_up].
 func stand_up(job: Job) -> bool:
-	if not _on_counter(job, "stand_up") or not job.lying or job.case_open:
+	if not _on_counter(job, "stand_up") or not can_stand_up(job):
 		return false
 	job.lying = false
 	changed.emit()
@@ -320,9 +328,9 @@ func set_powered(job: Job, on: bool) -> void:
 	changed.emit()
 
 
-## True when [param job] can switch on: its case is closed and every place holds a piece.
+## True when [param job] can switch on: it stands, its case is closed and every place holds a piece.
 func can_power_on(job: Job) -> bool:
-	return not job.case_open and job.places.size() == Part.every().size()
+	return not job.lying and not job.case_open and job.places.size() == Part.every().size()
 
 
 # --- Hardware repair (wiki: Hardware Repair). Each move returns false and changes nothing when the

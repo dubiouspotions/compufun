@@ -8,6 +8,9 @@ extends Node3D
 signal clicked(computer: JobComputer)
 ## The player clicked the computer's power button.
 signal power_clicked(computer: JobComputer)
+## The player clicked the screwdriver beside the computer in the Workview, or its dashed outline
+## once the computer lies and is closed with its screws.
+signal screwdriver_clicked(computer: JobComputer)
 
 ## The outline colour while the mouse or the dragged plug is over the computer.
 @export var hover_color: Color = Color(0.75, 0.9, 1.0)
@@ -18,6 +21,8 @@ const LYING := Transform3D(Basis(Vector3.BACK, PI / 2.0), Vector3(0, 0.095, 0)) 
 # How far above the counter the outline's bottom rests, in metres; clear of z-fighting.
 const RESTING_LIFT: float = 0.002
 
+## How long the case takes to tip over onto its side, or back up, in seconds.
+@export var tip_seconds: float = 0.5
 ## The power light's colour while the computer is on, and while it is off.
 @export var power_on_color: Color = Color(0.3, 1.0, 0.3)
 @export var power_off_color: Color = Color(0.08, 0.16, 0.08)
@@ -39,6 +44,9 @@ var powered: bool = false:
 			_sync_power_light()
 
 var _hovered: bool = false
+## 0 standing, 1 lying; between the two while the case tips.
+var _pose: float = 0.0
+var _tip: Tween
 var _upright: Dictionary[Node3D, Transform3D] = {}
 var _upright_post_it: Vector3
 
@@ -56,6 +64,9 @@ var _upright_post_it: Vector3
 # Off the lying case: the panel once it leans against the back, and the mat with its pieces.
 @onready var _case_panel: Node3D = $OpenCase/Panel
 @onready var _case_mat: Node3D = $OpenCase/Mat
+@onready var _screwdriver: Node3D = %Screwdriver
+@onready var _screwdriver_outline: Sprite3D = %ScrewdriverOutline
+@onready var _screwdriver_hotspot: Hotspot = %ScrewdriverHotspot
 
 
 func _ready() -> void:
@@ -63,12 +74,14 @@ func _ready() -> void:
 	_hotspot.mouse_entered.connect(_set_hovered.bind(true))
 	_hotspot.mouse_exited.connect(_set_hovered.bind(false))
 	_power_hotspot.clicked.connect(func(_h: Hotspot) -> void: power_clicked.emit(self))
+	_screwdriver_hotspot.clicked.connect(func(_h: Hotspot) -> void: screwdriver_clicked.emit(self))
 	_tower.dress(job.customer.computer)
 	_open_case.dress(job.customer.computer)
 	_post_it.job = job
 	_open_case.job = job
-	for node: Node3D in [_power_light, _power_hotspot, _cable_socket, _hotspot]:
+	for node: Node3D in [_tower, _power_light, _power_hotspot, _cable_socket, _hotspot]:
 		_upright[node] = node.transform
+	_pose = 1.0 if job.lying else 0.0
 	_upright_post_it = _post_it_anchor.position
 	Game.changed.connect(_sync_case)
 	(_outline.material_override as StandardMaterial3D).albedo_color = hover_color
@@ -118,19 +131,36 @@ func _working() -> bool:
 func _sync_case() -> void:
 	var working := _working()
 	var lying := job.lying
-	_tower.visible = not lying
-	_open_case.visible = lying
 	_open_case.active = lying and working
 	_post_it.text_3d = not working
-	var pose := LYING if lying else Transform3D.IDENTITY
+	var target := 1.0 if lying else 0.0
+	if _tip != null and _tip.is_running():
+		_tip.kill()
+	if target != _pose and is_inside_tree():
+		_tip = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN if lying else Tween.EASE_OUT)
+		_tip.tween_method(_set_pose, _pose, target, tip_seconds * absf(target - _pose))
+	else:
+		_set_pose(target)
+	_screwdriver.visible = working and not lying
+	_screwdriver_outline.visible = working and lying
+	_screwdriver_hotspot.set_enabled(working and (not lying or Game.can_stand_up(job)))
+	_hotspot.set_enabled(not (lying and working))
+	_front.input_ray_pickable = working and not lying  # swallows clicks on the front, so they don't lay it down
+	_sync_outline()
+
+
+# Tips the case between standing (0) and lying on its side (1). The tower turns; the open case,
+# which shows the inside, takes over once it lies.
+func _set_pose(t: float) -> void:
+	_pose = t
+	var pose := Transform3D.IDENTITY.interpolate_with(LYING, t)
 	for node: Node3D in _upright:
 		node.transform = pose * _upright[node]
 	# Only the position turns: the square paper covers the same spot either way, and its check stays where PostItLabel expects it.
 	_post_it_anchor.position = pose * _upright_post_it
+	_tower.visible = t < 1.0
+	_open_case.visible = t >= 1.0
 	_fit_outline.call_deferred()  # after the open case has drawn this change
-	_hotspot.set_enabled(not (lying and working))
-	_front.input_ray_pickable = working and not lying  # swallows clicks on the front, so they don't lay it down
-	_sync_outline()
 
 
 # A box around the case and everything on it, standing or lying. Its bottom rests just above the

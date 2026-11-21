@@ -14,7 +14,6 @@ var _dialogue_for: int = -1
 @onready var _nav: ViewNav = %ViewNav
 @onready var _dialogue: DialogueOverlay = %DialogueOverlay
 @onready var _calling: CustomerCalling = %CustomerCalling
-@onready var _workview: WorkviewPanel = %WorkviewPanel
 @onready var _screen_views: Array[ScreenView] = [%ScreenView, %CompuFunDBView]
 @onready var _post_it_label: PostItLabel = %PostItLabel
 @onready var _end_of_day: EndOfDay = %EndOfDay
@@ -114,7 +113,6 @@ func _sync() -> void:
 	var marker := _shop.view_marker(Game.view)
 	_nav.show_marker(marker)
 	var screen := marker.screen if marker != null else ViewMarker.Screen.NONE
-	_workview.visible = screen == ViewMarker.Screen.WORKVIEW
 	for view: ScreenView in _screen_views:
 		view.set_open(screen == view.screen)
 	var talking := Game.visitor_state == Game.VisitorState.TALKING
