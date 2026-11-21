@@ -3,8 +3,9 @@ class_name FileIcon
 extends VBoxContainer
 ## A 32 px icon with its name below, as on the desktop and in folder windows.
 
-## The player clicked the icon once.
-signal clicked
+## The player clicked the icon once. [param additive]: Ctrl (Cmd on a Mac) was held;
+## [param extend]: Shift was held; [param on_name]: the click hit the name, not the picture.
+signal clicked(additive: bool, extend: bool, on_name: bool)
 ## The player double-clicked the icon.
 signal opened
 ## The player renamed the icon; text is already new_text.
@@ -47,12 +48,16 @@ func _gui_input(event: InputEvent) -> void:
 	var button := event as InputEventMouseButton
 	if button and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
 		accept_event()
-		if selected and renamable and not button.double_click and %Name.get_global_rect().has_point(button.global_position):
-			start_rename()
-		elif button.double_click:
+		if button.double_click:
 			opened.emit()
 		else:
-			clicked.emit()
+			var on_name: bool = %Name.get_global_rect().has_point(button.global_position)
+			clicked.emit(button.ctrl_pressed or button.meta_pressed, button.shift_pressed, on_name)
+
+
+## The picture and the name in canvas coordinates: the part that a selection rectangle must touch.
+func hit_rect() -> Rect2:
+	return (%Icon as Control).get_global_rect().merge((%Name as Control).get_global_rect())
 
 
 func _sync() -> void:
