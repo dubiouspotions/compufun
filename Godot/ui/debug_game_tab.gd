@@ -65,6 +65,11 @@ func _refresh() -> void:
 	if Game.visitor != null:
 		_row("Visitor state", _enum_picker(Game.VisitorState, Game.visitor_state, "visitor_state"))
 	_row("Conversation", _text(state["conversation"] if state["conversation"] != "" else "none"))
+	var off_hook := CheckBox.new()
+	off_hook.text = "Phone off the hook"
+	off_hook.button_pressed = Game.phone_off_hook
+	off_hook.toggled.connect(func(on: bool) -> void: _edit("phone_off_hook", on))
+	_rows.add_child(off_hook)
 
 	_section("Counter (%d of %d)" % [Game.jobs.size(), Game.MAX_JOBS])
 	var job_states: Array = state["jobs"]

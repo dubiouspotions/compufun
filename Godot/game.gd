@@ -62,6 +62,10 @@ var focus: Job
 var connected: Job
 ## The computer whose customer the phone is calling, while the phase is CALLING; null otherwise.
 var calling: Job
+## The player holds the phone's receiver: picking whom to call, or on a call. The phone and a
+## visitor never meet: it can't be picked up while someone is in the shop, and nobody comes in
+## while it is off the hook.
+var phone_off_hook: bool = false
 ## The part in the player's hand, or null. The hand holds one piece at a time.
 var hand: Piece
 ## The pieces that the player put away in the storage bin, the last one last.
@@ -143,6 +147,7 @@ func start_day(new_day: Day) -> void:
 		push_error("Game.start_day: " + invalid)
 		return
 	day = new_day
+	phone_off_hook = false
 	_finish_overnight_work()
 	arrivals = 0
 	daypart = Daypart.MORNING
@@ -584,6 +589,26 @@ func _set_in(items: Array[String], item: String, present: bool) -> void:
 
 
 ## True when the phone can call: the shop is open, nobody is in it, and a computer is fixed.
+## Picks up the phone's receiver. False, and nothing changes, while someone is in the shop or the
+## shop is not open.
+func pick_up_phone() -> bool:
+	if phone_off_hook:
+		return true
+	if phase != Phase.OPEN or visitor != null:
+		return false
+	phone_off_hook = true
+	changed.emit()
+	return true
+
+
+## Puts the receiver down, unless a call is on: hang_up() ends a call.
+func put_down_phone() -> void:
+	if not phone_off_hook or phase == Phase.CALLING:
+		return
+	phone_off_hook = false
+	changed.emit()
+
+
 func can_call() -> bool:
 	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.fixed)
 
@@ -597,6 +622,7 @@ func call_customer(job: Job) -> void:
 		return
 	phase = Phase.CALLING
 	calling = job
+	phone_off_hook = true
 	_play(job.customer, Conversation.Trigger.PHONE)
 	changed.emit()
 
@@ -608,6 +634,7 @@ func hang_up() -> void:
 		push_error("Game.hang_up: the phone isn't calling (phase %s)" % Phase.find_key(phase))
 		return
 	phase = Phase.OPEN
+	phone_off_hook = false
 	_pickup = calling
 	calling = null
 	_set_visitor(_pickup.customer, Visit.PICKUP)
@@ -671,6 +698,7 @@ func snapshot() -> Dictionary:
 		"focus_slot": focus.slot if focus != null else -1,
 		"connected_slot": connected.slot if connected != null else -1,
 		"calling_slot": calling.slot if calling != null else -1,
+		"phone_off_hook": phone_off_hook,
 		"hand": Job.pieces_data([hand] if hand != null else []),
 		"stored": Job.pieces_data(stored),
 		"view": String(view),
@@ -811,6 +839,9 @@ func restore(state: Dictionary) -> String:
 		return _refuse("calling_slot is set exactly while the phase is CALLING")
 	if new_calling != null and not new_calling.fixed:
 		return _refuse("CALLING about a computer that isn't fixed")
+	var new_off_hook: bool = new_phase == Phase.CALLING or bool(state.get("phone_off_hook", false))
+	if new_off_hook and new_visitor != null:
+		return _refuse("the phone is off the hook while %s is in the shop" % _who(new_visitor))
 
 	var hand_pieces: Variant = Job.pieces_from(state.get("hand", []))
 	if hand_pieces is String:
@@ -841,6 +872,7 @@ func restore(state: Dictionary) -> String:
 	focus = new_focus
 	connected = new_connected
 	calling = new_calling
+	phone_off_hook = new_off_hook
 	hand = hand_pieces[0] if not hand_pieces.is_empty() else null
 	stored.assign(stored_pieces)
 	visitor = new_visitor
@@ -890,7 +922,7 @@ func _restart_wait() -> void:
 
 ## Lets the next customer of the day in when one is due and the shop has room. True when one came.
 func _try_arrival() -> bool:
-	if phase != Phase.OPEN or visitor != null or jobs.size() >= MAX_JOBS:
+	if phase != Phase.OPEN or visitor != null or phone_off_hook or jobs.size() >= MAX_JOBS:
 		return false
 	var next := _next_arrival()
 	if next < 0 or not _arrival_due():

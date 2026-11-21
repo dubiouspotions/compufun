@@ -2,8 +2,9 @@ class_name PhoneCall
 extends Control
 ## The phone: the dialogue box with a red rotary phone in it. Pick the customer of a fixed
 ## computer; the phone rings, the customer answers (their PHONE conversation, or [member greeting]),
-## the player says [member you_say], and hangs up; then the customer comes for it. Opens when the
-## player picks up the phone (Shop.phone_requested); Esc puts it down before a call.
+## the player says [member you_say], and hangs up; then the customer comes for it. Shows while
+## Game.phone_off_hook: the player picks it up (Shop.phone_requested), which Game refuses while
+## someone is in the shop, and Esc puts it down before a call.
 
 ## The heading over the customers to call.
 @export var pick_title: String = "Call a customer"
@@ -42,10 +43,9 @@ func _ready() -> void:
 	_next.pressed.connect(_on_next)
 
 
-## Shows the phone: the call that is on, or the customers to call.
+## Picks up the phone, unless someone is in the shop: then nothing happens.
 func open() -> void:
-	show()
-	_sync()
+	Game.pick_up_phone()
 
 
 ## A made-up phone number for [param customer], the same on every call.
@@ -72,15 +72,16 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _sync() -> void:
 	var calling := Game.phase == Game.Phase.CALLING and Game.calling != null
-	if _was_calling and not calling:
-		_put_down()  # the call ended, also by the debug skip
 	var started := calling and not _was_calling
 	_was_calling = calling
+	visible = Game.phone_off_hook
+	if not visible:
+		_voice.hush()
+		return
 	if started:
 		_ring()
-	if not visible or calling:
-		return
-	_show_customers()
+	elif not calling:
+		_show_customers()
 
 
 ## The phone starts to ring for the called customer, whose lines are ready for when they answer.
@@ -168,4 +169,4 @@ func _on_next() -> void:
 
 func _put_down() -> void:
 	_voice.hush()
-	hide()
+	Game.put_down_phone()
