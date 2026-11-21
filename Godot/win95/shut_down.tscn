@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/computer_shutdown_32.png" id="computer"]
 [ext_resource type="PackedScene" path="res://win95/safe_off.tscn" id="safe_off"]
+[ext_resource type="AudioStream" uid="uid://duxoc7yfrssdy" path="res://win95/sounds/tada.ogg" id="tada"]
 
 [sub_resource type="ButtonGroup" id="choice"]
 
@@ -12,6 +13,7 @@
 theme = ExtResource("theme")
 script = ExtResource("script")
 safe_off = ExtResource("safe_off")
+exit_sound = ExtResource("tada")
 
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 2

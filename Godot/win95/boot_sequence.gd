@@ -87,7 +87,8 @@ signal _any_key
 ## Plays from the power switch until the desktop: the fan, the POST beep, the drive; a looping
 ## stream keeps humming through a long wait.
 @export var power_on_sound: AudioStream
-## Plays as the desktop appears, also after a skip.
+## Plays as the desktop appears, also after a skip, on the Win95 bus: the computer's volume and
+## mute apply to it, but not to the power-on sound.
 @export var startup_sound: AudioStream
 @export_group("")
 
@@ -158,7 +159,7 @@ func play() -> void:
 	set_process(false)
 	finished.emit()
 	if startup_sound:
-		_sound(startup_sound)
+		_sound(startup_sound).bus = Win95Desktop.SOUND_BUS
 		# The stream's length, not the player's finished: with no audio device that never fires.
 		await get_tree().create_timer(startup_sound.get_length()).timeout
 	queue_free()

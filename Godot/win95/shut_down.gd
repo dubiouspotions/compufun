@@ -3,6 +3,8 @@ extends "res://win95/window.gd"
 ## close every window.
 
 @export var safe_off: PackedScene
+## Plays on Yes, before Windows shuts down, restarts or logs off; null plays nothing.
+@export var exit_sound: AudioStream
 
 
 func _ready() -> void:
@@ -17,6 +19,7 @@ func _on_yes() -> void:
 	if desktop == null:
 		push_error("Shut Down: not on a Win95Desktop, so there is nothing to shut down")
 		return
+	Win95Desktop.play_sound(exit_sound, desktop)
 	if %ShutDown.button_pressed:
 		desktop.cover(safe_off)
 	else:

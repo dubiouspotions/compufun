@@ -46,6 +46,9 @@ class Listing:
 ## pointer_visible changed.
 signal pointer_changed
 
+## Plays when the player empties the Recycle Bin; null plays nothing.
+@export var empty_bin_sound: AudioStream
+
 ## Win95 shows the mouse pointer: false while the computer is off and while it boots, until the
 ## desktop appears.
 var pointer_visible := false:
@@ -98,6 +101,7 @@ func _ready() -> void:
 func _enter_tree() -> void:
 	if is_node_ready() and _state.is_on:
 		_apply_palette(_state.setup.palette)
+		_apply_sound()
 
 
 func _on_booted() -> void:
@@ -155,6 +159,14 @@ func _apply_sound() -> void:
 		return
 	_systray.volume = _state.setup.volume
 	_systray.muted = _state.setup.muted
+	if not is_inside_tree():
+		return  # the bus belongs to the desktop on screen
+	var bus := AudioServer.get_bus_index(Win95Desktop.SOUND_BUS)
+	if bus < 0:
+		push_error("Win95: no audio bus %s in default_bus_layout.tres, so Win95 sounds ignore volume and mute" % Win95Desktop.SOUND_BUS)
+		return
+	AudioServer.set_bus_volume_linear(bus, _state.setup.volume / 100.0)
+	AudioServer.set_bus_mute(bus, _state.setup.muted)
 
 
 func _on_changed() -> void:
@@ -390,6 +402,7 @@ func _on_action(id: StringName) -> void:
 			_state.restore_files(files)
 		&"empty_bin":
 			_state.empty_recycle_bin()
+			Win95Desktop.play_sound(empty_bin_sound, self)
 		&"new_folder":
 			var folder := _state.new_folder(listing.files.call())
 			_rename_new.call_deferred(view, folder)
