@@ -51,7 +51,9 @@ templates (Editor > Manage Export Templates).
 Each customer line plays a WAV in `Godot/voices/`, which [Chimera](https://github.com/jamesondh/chimera-vocal-synth)
 renders from the text, in the customer's `voice` and the mood of the line's pose
 (`Godot/voices/moods/<pose>.tres`: speed, pitch and pitch swing). A line without its file is
-silent, and a debug run warns about it.
+silent, and a debug run warns about it. Conversations that every customer shares, such as what
+they say while they wait, live in `Godot/customers/conversations/`; they are rendered in each
+voice that a customer has.
 
 1. Once: install [Rust](https://rustup.rs), then clone Chimera outside this repo, at the commit
    that the patch fits, and build its CLI with our mood patch. The binary finds Chimera's data
