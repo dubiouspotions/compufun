@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/win_cursor.gd" id="1_script"]
+
+[node name="WinCursor" type="Node"]
+script = ExtResource("1_script")
+title = "The mouse cursor becomes a Windows cursor"
