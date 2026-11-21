@@ -626,8 +626,12 @@ func _macro_row(macro: String) -> Control:
 	chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	chip.add_theme_stylebox_override("normal", _box(RAISED, 8, 3))
 	row.add_child(chip)
+	var reset := _reset_button(func() -> void: slider.value = 0.0)
+	_show_reset(reset, false)
+	row.add_child(reset)
 	_macros[macro] = slider
 	slider.value_changed.connect(func(value: float) -> void:
+		_show_reset(reset, value > 0.0)
 		chip.text = "%d%%" % roundi(value * 100.0)
 		chip.add_theme_color_override("font_color", BG if value > 0.0 else TEXT)
 		chip.add_theme_stylebox_override("normal", _box(ACCENT if value > 0.0 else RAISED, 8, 3))
@@ -723,9 +727,12 @@ func _slider_row(spec: Array) -> Control:
 	row.add_child(slider)
 	var chip := _label("", 14, TEXT)
 	chip.name = "Value"
-	chip.custom_minimum_size.x = 92
+	chip.custom_minimum_size.x = 84
 	chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	row.add_child(chip)
+	var reset := _reset_button(func() -> void: slider.value = spec[5])
+	reset.name = "Reset"
+	row.add_child(reset)
 	_sliders[spec[0]] = slider
 	slider.value_changed.connect(func(_v: float) -> void:
 		_describe(spec[0])
@@ -750,6 +757,35 @@ func _describe(key: String) -> void:
 	chip.add_theme_color_override("font_color", BG if changed else TEXT)
 	chip.add_theme_stylebox_override("normal", _box(CHANGED if changed else RAISED, 8, 3))
 	(row.get_node("Name") as Label).add_theme_color_override("font_color", CHANGED if changed else TEXT)
+	_show_reset(row.get_node("Reset"), changed)
+
+
+## A small round button with a counter-clockwise arrow that calls [param reset]. It keeps its place
+## while hidden, so rows don't shift when it shows.
+func _reset_button(reset: Callable) -> Button:
+	var button := Button.new()
+	button.custom_minimum_size = Vector2(28, 28)
+	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	button.tooltip_text = "Reset to the default"
+	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_stylebox_override("normal", _box(Color.TRANSPARENT, 14))
+	button.add_theme_stylebox_override("hover", _box(HOVER, 14))
+	button.add_theme_stylebox_override("pressed", _box(ACCENT, 14))
+	button.add_theme_stylebox_override("disabled", _box(Color.TRANSPARENT, 14))
+	button.pressed.connect(reset)
+	button.draw.connect(func() -> void:
+		var center := button.size / 2.0
+		var color := CHANGED if not button.is_hovered() else TEXT
+		button.draw_arc(center, 7.0, deg_to_rad(-60.0), deg_to_rad(230.0), 24, color, 2.0, true)
+		var tip := center + Vector2.from_angle(deg_to_rad(-60.0)) * 7.0
+		button.draw_colored_polygon(PackedVector2Array([tip + Vector2(-5, -3), tip + Vector2(3, -4), tip + Vector2(0, 4)]), color))
+	return button
+
+
+func _show_reset(button: Button, changed: bool) -> void:
+	button.modulate.a = 1.0 if changed else 0.0
+	button.disabled = not changed
+	button.mouse_filter = Control.MOUSE_FILTER_STOP if changed else Control.MOUSE_FILTER_IGNORE
 
 
 func _label(text: String, size: int, color: Color) -> Label:
