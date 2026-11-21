@@ -124,9 +124,13 @@ func pinned_post_it() -> PostIt3D:
 
 
 ## The paper of [param post_it] as the camera sees it now: the rect around its corners, in pixels
-## of the world buffer.
+## of the world buffer. Empty while a corner is behind the camera, as during a turn.
 func post_it_rect(post_it: PostIt3D) -> Rect2:
-	return _rect_on_screen(post_it.paper_corners())
+	var corners := post_it.paper_corners()
+	for corner: Vector3 in corners:
+		if _camera.is_position_behind(corner):
+			return Rect2()
+	return _rect_on_screen(corners)
 
 
 func _rect_on_screen(corners: Array[Vector3]) -> Rect2:

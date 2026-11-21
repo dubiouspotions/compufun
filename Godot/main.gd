@@ -63,9 +63,10 @@ func _follow_camera() -> void:
 	_dialogue.position.x = _shop.turn_from_main() * _dialogue.size.x
 	var scale := _world.size / Vector2(_world_buffer.size)
 	var post_it := _shop.pinned_post_it()
-	_post_it_label.visible = post_it != null
-	if post_it != null:
-		var paper := _shop.post_it_rect(post_it)
+	var paper := _shop.post_it_rect(post_it) if post_it != null else Rect2()
+	var on_screen := paper.has_area() and paper.intersects(Rect2(Vector2.ZERO, Vector2(_world_buffer.size)))
+	_post_it_label.visible = on_screen
+	if on_screen:
 		_post_it_label.job = post_it.job
 		_post_it_label.follow(Rect2(_world.position + paper.position * scale, paper.size * scale))
 	for view: ScreenView in _screen_views:
