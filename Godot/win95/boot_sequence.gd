@@ -49,6 +49,8 @@ signal finished
 ## its palette there; the gradient repeats every bar_period pixels.
 @export var bar_gradient: Gradient
 @export var bar_period: float = 640.0
+## How many flat colour bands one period has, as Win95 cycled a few palette entries.
+@export var bar_steps: int = 12
 ## How fast the bar scrolls, in pixels per second.
 @export var bar_speed: float = 320.0
 
@@ -165,7 +167,7 @@ func _draw_bar() -> void:
 	var step := 2.0
 	var x := 0.0
 	while x < _bar.size.x:
-		var at := fposmod((x + _bar_offset) / bar_period, 1.0)
+		var at := floorf(fposmod((x + _bar_offset) / bar_period, 1.0) * bar_steps) / bar_steps
 		_bar.draw_rect(Rect2(x, 0, step, _bar.size.y), bar_gradient.sample(at))
 		x += step
 
