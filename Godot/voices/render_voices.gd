@@ -14,21 +14,34 @@ func _initialize() -> void:
 		return
 	var wanted := {}
 	var errors := 0
+	# Conversations in their own file are shared, for example what every customer says while
+	# waiting: render them in each voice that a customer has.
+	var shared: Array[Conversation] = []
+	var voices := {}
 	for path: String in _resources(CUSTOMERS):
 		var resource := load(path)
 		if resource == null:
 			push_error("render_voices: can't load %s" % path)
 			errors += 1
 			continue
+		if resource is Conversation:
+			shared.append(resource)
+			continue
 		var customer := resource as Customer
 		if customer == null:
 			continue
+		voices[customer.voice] = true
 		for conversation: Conversation in customer.conversations:
 			if conversation == null:
 				continue
 			for line: DialogueLine in conversation.lines:
 				if line != null and not line.text.strip_edges().is_empty():
 					wanted[Voices.path_of(line, customer.voice)] = [line, customer.voice, path]
+	for conversation in shared:
+		for voice: String in voices:
+			for line: DialogueLine in conversation.lines:
+				if line != null and not line.text.strip_edges().is_empty():
+					wanted[Voices.path_of(line, voice)] = [line, voice, conversation.resource_path]
 	var rendered := 0
 	for voice_path: String in wanted:
 		if FileAccess.file_exists(voice_path):

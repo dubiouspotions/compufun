@@ -24,3 +24,10 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Customer: Hello?"
+
+[node name="Voice" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+
+[node name="Timer" type="Timer" parent="."]
+unique_name_in_owner = true
+one_shot = true

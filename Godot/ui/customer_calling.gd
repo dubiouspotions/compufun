@@ -1,37 +1,33 @@
 class_name CustomerCalling
 extends PanelContainer
-## A waiting customer calls out while the player looks elsewhere: one line at a time, in turn,
-## until stop().
+## A waiting customer calls out while the player looks elsewhere: one line at a time, spoken in
+## the customer's voice, getting more annoyed, then from the top again, until stop().
 
-## What the customer says, in this order, then from the top again.
-@export var lines: PackedStringArray = ["Hello...", "Are you there?", "Hello?", "Excuse me..."]
+## The id of the conversation a customer can have for this; without it they use [member lines].
+const CONVERSATION: StringName = &"waiting"
+
+## What a customer says while waiting, unless they have their own [constant CONVERSATION].
+@export var lines: Conversation = preload("res://customers/conversations/waiting.tres")
 ## The wait before the first line, in seconds.
 @export var first_delay: float = 2.0
-## The time from one line to the next, in seconds.
-@export var interval: float = 5.0
-## How long each line stays on screen, in seconds.
-@export var show_seconds: float = 3.0
+## The silence between one line and the next, in seconds.
+@export var gap: float = 3.0
+## The shortest time a line stays on screen, in seconds; a longer voice keeps it up longer.
+@export var show_seconds: float = 2.5
 
 var _customer: Customer
+var _lines: Array[DialogueLine] = []
 var _next_line: int = 0
-var _clock: float = 0.0
+var _calling: bool = false
 
 @onready var _label: Label = %Line
+@onready var _voice: AudioStreamPlayer = %Voice
+@onready var _timer: Timer = %Timer
 
 
 func _ready() -> void:
+	_timer.timeout.connect(_on_timer)
 	stop()
-
-
-func _process(delta: float) -> void:
-	_clock += delta
-	if _clock >= 0.0 and not lines.is_empty():
-		_label.text = "%s: %s" % [_customer.display_name, lines[_next_line % lines.size()]]
-		_next_line += 1
-		_clock = -interval
-		show()
-	elif visible and _clock >= show_seconds - interval:
-		hide()
 
 
 ## Starts calling as [param customer], from the first line. Calling again for the same customer
@@ -40,15 +36,43 @@ func call_out(customer: Customer) -> void:
 	if customer == null:
 		push_error("CustomerCalling.call_out: no customer")
 		return
-	if is_processing() and customer == _customer:
+	if _calling and customer == _customer:
+		return
+	var own := customer.conversation(CONVERSATION)
+	var conversation := own if own != null else lines
+	if conversation == null or conversation.lines.is_empty():
+		push_error("CustomerCalling: %s has no \"%s\" lines and no default is set" % [customer.resource_path, CONVERSATION])
 		return
 	_customer = customer
+	_lines = conversation.lines
 	_next_line = 0
-	_clock = -first_delay
-	set_process(true)
+	_calling = true
+	_timer.start(first_delay)
 
 
-## Stops calling and hides the line.
+## Stops calling, the voice too, and hides the line.
 func stop() -> void:
-	set_process(false)
+	_calling = false
+	_timer.stop()
+	_voice.stop()
 	hide()
+
+
+func _on_timer() -> void:
+	if not _calling:
+		return
+	if visible:
+		hide()
+		_timer.start(gap)
+		return
+	var line := _lines[_next_line % _lines.size()]
+	_next_line += 1
+	_label.text = "%s: %s" % [_customer.display_name, line.text]
+	show()
+	var stream := Voices.stream_of(line, _customer.voice)
+	var seconds := show_seconds
+	if stream != null:
+		_voice.stream = stream
+		_voice.play()
+		seconds = maxf(seconds, stream.get_length())
+	_timer.start(seconds)

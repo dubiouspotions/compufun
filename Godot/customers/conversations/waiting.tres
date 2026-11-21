@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="Conversation" format=3]
+
+[ext_resource type="Script" path="res://customers/conversation.gd" id="cv"]
+[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="dl"]
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("dl")
+text = "Hello..."
+pose = &"neutral"
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("dl")
+text = "Are you there?"
+pose = &"thinking"
+
+[sub_resource type="Resource" id="line_3"]
+script = ExtResource("dl")
+text = "Hello?"
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="line_4"]
+script = ExtResource("dl")
+text = "Excuse me..."
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="line_5"]
+script = ExtResource("dl")
+text = "Are you busy?"
+pose = &"irritated02"
+
+[sub_resource type="Resource" id="line_6"]
+script = ExtResource("dl")
+text = "I can go somewhere else."
+pose = &"irritated03"
+
+[resource]
+script = ExtResource("cv")
+id = &"waiting"
+lines = Array[ExtResource("dl")]([SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4"), SubResource("line_5"), SubResource("line_6")])

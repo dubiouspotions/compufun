@@ -51,6 +51,21 @@ static func path_of(line: DialogueLine, voice: String) -> String:
 	return DIR + key.md5_text() + ".wav"
 
 
+## The voice of [param line] in [param voice], or null: with a warning when it is not rendered
+## yet (docs/building-and-testing.md, Voices), with an error when the file will not load.
+static func stream_of(line: DialogueLine, voice: String) -> AudioStream:
+	if line == null or line.text.strip_edges().is_empty():
+		return null
+	var path := path_of(line, voice)
+	if not ResourceLoader.exists(path):
+		push_warning("Voices: no voice for \"%s\" (%s). Render it: see docs/building-and-testing.md" % [line.text, path])
+		return null
+	var stream := load(path) as AudioStream
+	if stream == null:
+		push_error("Voices: can't load the voice %s" % path)
+	return stream
+
+
 ## Why [param chimera] can't render moods, or "" when it can: it must exist and carry
 ## tools/chimera-moods.patch. Without the patch, Chimera would say every mood as neutral.
 static func chimera_problem(chimera: String) -> String:

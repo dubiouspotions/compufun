@@ -212,15 +212,10 @@ func _show_line() -> void:
 ## Plays the voice file of [param line]. A line without one stays silent: its voice is not rendered yet.
 func _speak(line: DialogueLine) -> void:
 	_voice.stop()
-	if not _voiced or line == null or line.text.strip_edges().is_empty():
+	if not _voiced:
 		return
-	var path := Voices.path_of(line, _customer.voice)
-	if not ResourceLoader.exists(path):
-		push_warning("DialogueOverlay: no voice for \"%s\" (%s). Render it: see docs/building-and-testing.md" % [line.text, path])
-		return
-	var stream := load(path) as AudioStream
+	var stream := Voices.stream_of(line, _customer.voice)
 	if stream == null:
-		push_error("DialogueOverlay: can't load the voice %s" % path)
 		return
 	_voice.stream = stream
 	_voice.play()
