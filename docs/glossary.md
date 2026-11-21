@@ -42,11 +42,20 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Prop**: A placeholder model scene in `Godot/props/`, such as `crt_monitor.tscn`. A room places props; it does not copy their parts.
 *Avoid:* asset, model, object.
 
-**Outside**: The world outside the shop windows (`rooms/shop/outside.tscn`): the back alley, the sky, the sun and moon, the lamps, the fog and the rain. It runs the time of day.
+**Outside**: The world outside the shop windows (`rooms/shop/outside.tscn`): the back alley, the sky, the sun and moon, the lamps, the fog and the rain. It shows the daypart.
 *Avoid:* street, environment, weather system.
 
-**Debug menu**: The F2 panel in debug builds that sets the time of day, the day cycle and the rain.
+**Debug menu**: The F2 panel in debug builds that sets the time of day, the day cycle and the rain, and closes the shop.
 *Avoid:* dev menu, cheat menu.
+
+**Job**: One customer's computer on the counter, with its slot, its repair state and its post-it (`Job`, in `Game.jobs`). It stays from the drop-off to the pickup, overnight too.
+*Avoid:* order, ticket, repair.
+
+**Visitor**: The customer who is in the shop now, to drop off or to pick up a computer (`Game.visitor`). Only one at a time.
+*Avoid:* current customer.
+
+**Daypart**: The time of day in the game: morning, midday, evening or night (`Game.daypart`). Each customer who comes in moves it forward, and closing the shop makes it night; time does not pass on its own.
+*Avoid:* hour, time, clock.
 
 **Conversation**: One exchange with a customer: the lines they say, one at a time. A `Conversation` resource in the `Customer` file, found by its id (`arrive`).
 *Avoid:* dialog, dialogue tree, script.

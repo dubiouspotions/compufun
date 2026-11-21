@@ -18,7 +18,7 @@ Godot/               the Godot project: everything the game loads
   rooms/             hotspot.tscn and view_marker.gd, shared by all rooms
   rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain), their meshes and textures
   people/<name>/     person.tres, portrait_<pose>.png, face.png
-  customers/         one .tres per customer, customer_body.tscn
+  customers/         one .tres per customer, customer_body.tscn, job.gd (one computer on the counter)
   voices/            one .wav per customer line, rendered by Chimera; voices.gd names and renders them
   voices/moods/      the mood of each pose (VoiceMood): the speed, pitch and pitch swing of the voice
   sounds/            sound effects, such as footstep.wav
