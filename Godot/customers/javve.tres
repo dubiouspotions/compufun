@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" path="res://win95/theme/icons/document_config_32.png" id="6_m26x5"]
 [ext_resource type="Script" path="res://win95/email.gd" id="7_pq1pi"]
 [ext_resource type="Script" path="res://win95/win95_setup.gd" id="9_86j8n"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/red_blocks.png" id="wallpaper"]
 
 [sub_resource type="Resource" id="DialogueLine_1"]
 script = ExtResource("dl")
@@ -104,6 +105,7 @@ read = true
 
 [sub_resource type="Resource" id="Resource_8iaji"]
 script = ExtResource("9_86j8n")
+wallpaper = ExtResource("wallpaper")
 desktop = Array[ExtResource("2_egn44")]([SubResource("Resource_brkaj"), SubResource("Resource_skkob"), SubResource("Resource_1wfhb")])
 drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResource("Resource_17xmd")])
 emails = Array[ExtResource("7_pq1pi")]([SubResource("Resource_pdq6s"), SubResource("Resource_jonve"), SubResource("Resource_s2vee")])

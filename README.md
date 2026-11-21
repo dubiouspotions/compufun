@@ -33,6 +33,7 @@ Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actio
 
 ## Credits
 
+- `Godot/win95/wallpapers/` (all but `win95-default.png`): the wallpapers that shipped with Windows 95, (C) Microsoft, not licensed to us. Taken from the Windows Wallpaper Wiki (https://windowswallpaper.miraheze.org/wiki/Windows_95).
 - `Godot/win95/sounds/boot_power_on.ogg`: cut from "PC startup" by bratij on Freesound (https://freesound.org/people/bratij/sounds/841351/), CC0.
 - `Godot/win95/sounds/boot_post_beep.ogg`: cut from "PC speaker error beep" by CZghost on Freesound (https://freesound.org/people/CZghost/sounds/264823/), CC0.
 - `Godot/win95/sounds/boot_drive.ogg`: cut from "Electronic, Computer, Hard Drive - 1990s Compaq Hard Drive, Spooling Up, Turning Off - Close Perspective Memory Access Noise" by jaegrover on Freesound (https://freesound.org/people/jaegrover/sounds/262872/), CC0.

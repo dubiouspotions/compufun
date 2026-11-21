@@ -44,6 +44,9 @@ func _on_booted() -> void:
 	_apply_palette(setup.palette)
 	if setup.wallpaper != null:
 		_background.texture = setup.wallpaper
+		# As Win95 showed them: a small pattern tiles, a picture fills the screen.
+		var tiles := setup.wallpaper.get_width() * 2 < _background.size.x
+		_background.stretch_mode = TextureRect.STRETCH_TILE if tiles else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_rebuild_desktop_icons(setup)
 	_my_computer = _build_my_computer(setup)
 	_apply_sound()
