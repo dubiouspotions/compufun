@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## Display Properties: Background lists (None), the stock wallpapers and the .bmp pictures in
 ## C:\WINDOWS, and Apply sets the wallpaper; Appearance applies a scheme; a SettingCheck on the
-## wallpaper reports the fix.
+## wallpaper reports the fix; a palette emits changed only when a colour changes.
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run time: it names the Game autoload
 const STOCK := ["Black Thatch", "Blue Rivets", "Bubbles", "Carved Stone", "Circles", "Houndstooth",
@@ -74,6 +74,10 @@ func run() -> void:
 
 	var odd := Win95Palette.new()
 	odd.face_color = Color.RED
+	var emits := [0]
+	odd.changed.connect(func() -> void: emits[0] += 1)
+	odd.face_color = Color.RED
+	check("a palette set to the colour it has emits no change", emits[0], 0)
 	setup.palette = odd
 	sheet = open(desktop, display)
 	scheme = sheet.find_child("Scheme", true, false)
