@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://win95/size_grip.gd" id="size_grip"]
 [ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
 [ext_resource type="Script" path="res://win95/inbox.gd" id="script"]
 [ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
@@ -13,6 +14,7 @@ offset_right = 500.0
 offset_bottom = 250.0
 theme = ExtResource("theme")
 script = ExtResource("script")
+resizable = true
 
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -90,3 +92,7 @@ text = "0 Items"
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"StatusWell"
+
+[node name="SizeGrip" type="Control" parent="VBox/StatusBar/Rest"]
+layout_mode = 2
+script = ExtResource("size_grip")
