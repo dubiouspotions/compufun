@@ -10,3 +10,7 @@ extends Resource
 ## The replies that the player can choose after the last line.
 @export var replies: PackedStringArray = []
 @export var problem: Problem
+## The shirt colour of the 3D customer. It tints the shirt texture.
+@export var shirt_color: Color = Color(0.38, 0.44, 0.2)
+## The trousers colour of the 3D customer. It tints the denim texture.
+@export var trousers_color: Color = Color(0.46, 0.56, 0.74)
