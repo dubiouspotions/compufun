@@ -145,11 +145,12 @@ func places_data() -> Dictionary[String, String]:
 	return data
 
 
-## [param pieces] as plain data: "<part id>" for a working piece, "<part id>!" for a broken one.
+## [param pieces] as plain data: "<part id>" for a working piece, "<part id>!" for a broken one,
+## "<part id>+" for an unused one (see [member Piece.unused]).
 static func pieces_data(pieces: Array) -> Array[String]:
 	var data: Array[String] = []
 	for each: Piece in pieces:
-		data.append(String(each.part.id()) + ("!" if each.broken else ""))
+		data.append(String(each.part.id()) + ("!" if each.broken else "+" if each.unused else ""))
 	return data
 
 
@@ -158,10 +159,10 @@ static func pieces_from(data: Array) -> Variant:
 	var pieces: Array[Piece] = []
 	for entry: Variant in data:
 		var text := str(entry)
-		var part_id := StringName(text.trim_suffix("!"))
+		var part_id := StringName(text.trim_suffix("!").trim_suffix("+"))
 		var part := Part.named(part_id)
 		if part == null:
 			return "no part '%s'" % part_id
-		pieces.append(Piece.new(part, text.ends_with("!")))
+		pieces.append(Piece.new(part, text.ends_with("!"), text.ends_with("+")))
 	return pieces
 

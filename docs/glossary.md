@@ -84,6 +84,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Piece**: One real part: which part it is and whether it is broken (`Piece`). A piece sits in a computer's place, lies on the mat, or is in the hand.
 *Avoid:* item, instance.
 
+**Unused piece**: A piece that the player took from a box in the Storage View and hasn't put in a computer yet (`Piece.unused`). Only an unused piece goes back into its box; a piece that was in a computer goes in the trash.
+*Avoid:* new piece, spare.
+
 **Place**: Where a part sits inside a computer. A job holds one piece per place, or none when the player took it out (`Job.places`).
 *Avoid:* slot (that is a job's place on the counter).
 

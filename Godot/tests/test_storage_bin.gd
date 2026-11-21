@@ -32,7 +32,7 @@ func run() -> void:
 	check("a full hand takes nothing back", game.take_from_storage(), false)
 
 	var saved: Dictionary = game.snapshot()
-	check("the snapshot names the bin", saved["stored"], ["mouse"])
+	check("the snapshot names the bin", saved["stored"], ["mouse+"])
 	game.trash_part()
 	game.take_from_storage()
 	game.trash_part()

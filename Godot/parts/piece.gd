@@ -5,11 +5,15 @@ extends RefCounted
 
 var part: Part
 var broken: bool = false
+## True for a piece from a box in the storage that has never been in a computer: only such a piece
+## can go back into its box.
+var unused: bool = false
 
 
-func _init(piece_part: Part, piece_broken: bool = false) -> void:
+func _init(piece_part: Part, piece_broken: bool = false, piece_unused: bool = false) -> void:
 	part = piece_part
 	broken = piece_broken
+	unused = piece_unused
 
 
 ## A new instance of the part's [member Part.model], its Broken child shown only when this piece is

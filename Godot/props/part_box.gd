@@ -1,8 +1,9 @@
 @tool
 class_name PartBox
 extends Node3D
-## A box of new parts on a storage shelf: a click takes one into the hand. Its part's model lies on
-## top, so the box needs no label. The supply never runs out (wiki: Hardware Repair).
+## A box of new parts on a storage shelf: a click takes one into the hand, and a click with an unused
+## one in the hand puts it back. Its part's model lies on top, so the box needs no label. The supply
+## never runs out (wiki: Hardware Repair).
 
 ## The part in this box.
 @export var part: Part:

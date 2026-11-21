@@ -415,7 +415,10 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 		Hotspot.Action.CALL_CUSTOMER:
 			phone_requested.emit()
 		Hotspot.Action.TAKE_PART:
-			Game.take_new_part(hotspot.part)
+			if Game.hand == null:
+				Game.take_new_part(hotspot.part)
+			else:
+				Game.return_part(hotspot.part)
 
 
 # Plays the sound of each hand and cable change since the last sync, whatever made it.

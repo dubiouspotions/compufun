@@ -14,7 +14,8 @@ const DROP_TARGETS: StringName = &"hotspot_drop_targets"
 @export var action: Action = Action.GO_TO_VIEW
 ## For GO_TO_VIEW: the name of the view marker to go to.
 @export var view: StringName = &""
-## For TAKE_PART: the part that a click takes from the storage into the hand.
+## For TAKE_PART: the part that a click takes from the storage into the empty hand, or that an unused
+## piece in the hand goes back to (see [method Game.return_part]).
 @export var part: Part
 ## The size of the clickable box, in metres. It applies when the game runs.
 @export var size: Vector3 = Vector3(0.5, 0.5, 0.5)

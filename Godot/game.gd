@@ -455,6 +455,7 @@ func put_part(job: Job, place: Part = null) -> bool:
 	if place == null or not can_put(job, place):
 		return false
 	job.places[place] = hand
+	hand.unused = false
 	hand = null
 	changed.emit()
 	return true
@@ -487,7 +488,22 @@ func take_new_part(part: Part) -> bool:
 		return false
 	if hand != null:
 		return false
-	hand = Piece.new(part)
+	hand = Piece.new(part, false, true)
+	changed.emit()
+	return true
+
+
+## True when the piece in the hand can go back into the storage box of [param part]: it is an unused
+## piece of that part (see [member Piece.unused]). A piece that was in a computer goes in the trash.
+func can_return_part(part: Part) -> bool:
+	return hand != null and hand.unused and hand.part == part
+
+
+## Puts the piece in the hand back into the storage box of [param part] (see [method can_return_part]).
+func return_part(part: Part) -> bool:
+	if not can_return_part(part):
+		return false
+	hand = null
 	changed.emit()
 	return true
 
