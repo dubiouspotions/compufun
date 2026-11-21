@@ -304,23 +304,21 @@ func _line_row(index: int) -> Control:
 	return row
 
 
-## A dropdown of the poses in the customer's [member Person.portraits]. A pose that the person
-## doesn't have stays selected and is marked missing, so it is never dropped silently.
+## A dropdown of [constant Person.POSES], marking those the customer's person has no portrait
+## for. A pose outside the list stays selected and is marked unknown, never dropped silently.
 func _pose_picker(line: DialogueLine) -> OptionButton:
-	var poses: Array[StringName] = [&""]
-	if _customer.person != null:
-		for key: StringName in _customer.person.portraits.keys():
-			poses.append(key)
+	var poses := Person.POSES.duplicate()
 	if not poses.has(line.pose):
 		poses.append(line.pose)
 	var picker := OptionButton.new()
 	for pose: StringName in poses:
-		var text := "(default)" if pose == &"" else String(pose)
-		if pose != &"" and (_customer.person == null or not _customer.person.portraits.has(pose)):
-			text += " (missing)"
+		var text := String(pose)
+		if not Person.POSES.has(pose):
+			text += " (unknown)"
+		elif _customer.person == null or not _customer.person.portraits.has(pose):
+			text += " (no photo)"
 		picker.add_item(text)
 	picker.select(poses.find(line.pose))
-	picker.tooltip_text = "Add poses to the person's portraits to list them here."
 	picker.item_selected.connect(func(index: int) -> void:
 		line.pose = poses[index]
 		_touch())
