@@ -17,6 +17,11 @@ enum Kind {
 ## What fills the inside of the edge. DITHER is a checkerboard of highlight and face.
 enum Fill { FACE, WINDOW, DITHER }
 
+## The state of the button that drop_down draws; NONE draws no button.
+enum DropDown { NONE, UP, PUSHED, DISABLED }
+
+const _DROP_DOWN_WIDTH := 16
+
 const _DITHER_SIZE := 64
 
 static var _stock_palette := Win95Palette.new()
@@ -41,7 +46,11 @@ var _dither_colors := PackedColorArray()
 		if palette:
 			palette.changed.connect(emit_changed)
 		emit_changed()
-
+## Draws a combo box's 16 px drop-down button, with its arrow, inside the right of the face.
+@export var drop_down := DropDown.NONE:
+	set(value):
+		drop_down = value
+		emit_changed()
 ## Grows the drawn edge past the rect, in pixels, without moving the content; negative shrinks it.
 @export var expand_margin_left := 0.0:
 	set(value):
@@ -108,6 +117,8 @@ func _draw(to_canvas_item: RID, rect: Rect2) -> void:
 	elif kind != Kind.SUNKEN:
 		face = inner.grow(-1)
 	_fill(to_canvas_item, face, p)
+	if drop_down != DropDown.NONE:
+		_draw_drop_down(to_canvas_item, Rect2(face.end.x - _DROP_DOWN_WIDTH, face.position.y, _DROP_DOWN_WIDTH, face.size.y), p)
 
 
 func _fill(ci: RID, face: Rect2, p: Win95Palette) -> void:
@@ -137,6 +148,34 @@ func _draw_tab(ci: RID, r: Rect2, p: Win95Palette) -> void:
 	RenderingServer.canvas_item_add_rect(ci, Rect2(x + w - 1, y + 2, 1, h - 2), p.dark_shadow_color)
 	_fill(ci, Rect2(x + 2, y + 1, w - 4, 1), p)
 	_fill(ci, Rect2(x + 1, y + 2, w - 3, h - 2), p)
+
+
+func _draw_drop_down(ci: RID, b: Rect2, p: Win95Palette) -> void:
+	if b.size.y < 4:
+		return
+	var pushed := drop_down == DropDown.PUSHED
+	if pushed:
+		_edge(ci, b, p.shadow_color, p.shadow_color)
+	else:
+		_edge(ci, b, p.light_color, p.dark_shadow_color)
+		_edge(ci, b.grow(-1), p.highlight_color, p.shadow_color)
+	var face := b.grow(-1 if pushed else -2)
+	if face.has_area():
+		RenderingServer.canvas_item_add_rect(ci, face, p.face_color)
+	var tip := b.position + Vector2(floorf((b.size.x - 7) / 2), floorf((b.size.y - 4) / 2))
+	if pushed:
+		tip += Vector2.ONE
+	if drop_down == DropDown.DISABLED:
+		_draw_arrow(ci, tip + Vector2.ONE, p.highlight_color)
+		_draw_arrow(ci, tip, p.shadow_color)
+	else:
+		_draw_arrow(ci, tip, p.dark_shadow_color)
+
+
+# The 7 px wide down arrow of scroll and drop-down buttons, from its top left corner.
+func _draw_arrow(ci: RID, at: Vector2, color: Color) -> void:
+	for row in 4:
+		RenderingServer.canvas_item_add_rect(ci, Rect2(at + Vector2(row, row), Vector2(7 - 2 * row, 1)), color)
 
 
 # Tiles the face with regions of one cached texture; a canvas item's texture repeat is off by default.
