@@ -1,16 +1,30 @@
 #!/bin/bash
 # Pulls the latest main, imports the project and starts the game. Errors show in a dialog.
-# Godot: $GODOT, else the first Godot*.app at MIN_GODOT or newer (mono builds too).
+# Git: one on the PATH that has LFS, else GitHub Desktop's (it has LFS), else it asks for one.
+# Godot: $GODOT, else the first Godot*.app at MIN_GODOT or newer (mono builds too), else it offers
+# to download GODOT_DOWNLOAD into ~/Applications.
 set -u
 # A script-only app starts under Rosetta on Apple Silicon; mono Godot then cannot load the arm64 .NET.
 if [ "$(sysctl -n hw.optional.arm64 2>/dev/null)" = 1 ] && [ "$(uname -m)" != arm64 ]; then
 	exec arch -arm64 /bin/bash "$0" "$@"
 fi
 MIN_GODOT="4.7.2"
+GODOT_DOWNLOAD="4.7.2"
 # Finder gives apps a bare PATH; mono Godot needs dotnet on it.
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/local/share/dotnet:$PATH"
 [ -d /usr/local/share/dotnet ] && export DOTNET_ROOT="${DOTNET_ROOT:-/usr/local/share/dotnet}"
 repo="$(cd "$(dirname "$0")/../../.." && pwd)"
+desktop_git="/Applications/GitHub Desktop.app/Contents/Resources/app/git"
+
+fail() {
+	osascript -e 'on run argv' -e 'display alert "Play HumanError" message (item 1 of argv) as critical' -e 'end run' "$1" >/dev/null
+	exit 1
+}
+
+# True when the user clicks OK in a dialog with the text $1.
+confirm() {
+	osascript -e 'on run argv' -e 'display dialog (item 1 of argv) with title "Play HumanError" buttons {"Cancel", "OK"} default button "OK"' -e 'end run' "$1" >/dev/null 2>&1
+}
 
 # True when the version string $1 (4.7.2.stable...) is MIN_GODOT or newer.
 new_enough() {
@@ -22,17 +36,38 @@ new_enough() {
 	(( a > x || (a == x && (b > y || (b == y && c >= z))) ))
 }
 
-fail() {
-	osascript -e 'on run argv' -e 'display alert "Play HumanError" message (item 1 of argv) as critical' -e 'end run' "$1" >/dev/null
-	exit 1
+# Downloads Godot GODOT_DOWNLOAD into the folder $1 and prints its program path.
+download_godot() {
+	local url="https://github.com/godotengine/godot/releases/download/$GODOT_DOWNLOAD-stable/Godot_v$GODOT_DOWNLOAD-stable_macos.universal.zip"
+	local tmp app out
+	tmp="$(mktemp -d)" || return 1
+	osascript -e "display notification \"Downloading Godot $GODOT_DOWNLOAD (170 MB)...\" with title \"Play HumanError\"" >/dev/null
+	out="$(curl -fsSL -o "$tmp/godot.zip" "$url" 2>&1)" || { echo "cannot download $url: $out" >&2; return 1; }
+	out="$(ditto -x -k "$tmp/godot.zip" "$tmp" 2>&1)" || { echo "cannot unzip $tmp/godot.zip: $out" >&2; return 1; }
+	app="$1/Godot $GODOT_DOWNLOAD.app"
+	mkdir -p "$1" && rm -rf "$app" && mv "$tmp/Godot.app" "$app" || { echo "cannot move Godot.app to $app" >&2; return 1; }
+	rm -rf "$tmp"
+	echo "$app/Contents/MacOS/Godot"
 }
 
-command -v git >/dev/null || fail "git is not installed. Run: xcode-select --install"
-git lfs version >/dev/null 2>&1 || fail "Git LFS is not installed. Run: brew install git-lfs && git lfs install"
+if git --version >/dev/null 2>&1 && git lfs version >/dev/null 2>&1; then
+	git="git"
+elif [ -x "$desktop_git/bin/git" ]; then
+	git="$desktop_git/bin/git"
+	# Without it, Desktop's git cannot find its https helper or git-lfs.
+	export GIT_EXEC_PATH="$desktop_git/libexec/git-core"
+elif git --version >/dev/null 2>&1; then
+	git="git"
+else
+	xcode-select --install >/dev/null 2>&1
+	fail "Git is missing. Install GitHub Desktop (desktop.github.com), or the command line tools in the window that just opened. Then try again."
+fi
+"$git" lfs version >/dev/null 2>&1 || fail "Git LFS is missing. Install GitHub Desktop (desktop.github.com), or run: brew install git-lfs"
+out="$("$git" -C "$repo" lfs install --local --skip-repo 2>&1)" || fail "Cannot set up Git LFS in $repo: $out"
 
-branch="$(git -C "$repo" rev-parse --abbrev-ref HEAD 2>&1)" || fail "$repo is not a git checkout: $branch"
+branch="$("$git" -C "$repo" rev-parse --abbrev-ref HEAD 2>&1)" || fail "$repo is not a git checkout: $branch"
 [ "$branch" = "main" ] || fail "You are on the branch '$branch', not main. Switch to main first."
-out="$(git -C "$repo" pull --rebase --autostash 2>&1)" || fail "git pull failed:
+out="$("$git" -C "$repo" pull --rebase --autostash 2>&1)" || fail "git pull failed:
 
 $(echo "$out" | tail -15)"
 
@@ -43,13 +78,18 @@ if [ -n "${GODOT:-}" ]; then
 else
 	shopt -s nullglob
 	for app in /Applications/Godot*.app "$HOME"/Applications/Godot*.app; do
-		version="$("$app/Contents/MacOS/Godot" --version 2>/dev/null)"
-		if new_enough "$version"; then
+		if new_enough "$("$app/Contents/MacOS/Godot" --version 2>/dev/null)"; then
 			godot="$app/Contents/MacOS/Godot"
 			break
 		fi
 	done
-	[ -n "$godot" ] || fail "Cannot find Godot $MIN_GODOT or newer in /Applications or ~/Applications. Install it there, or set GODOT to the path of its Godot program."
+	if [ -z "$godot" ]; then
+		confirm "This project needs Godot $MIN_GODOT or newer, and none is in /Applications or ~/Applications. Download Godot $GODOT_DOWNLOAD (170 MB) into ~/Applications?" \
+			|| fail "No Godot $MIN_GODOT or newer. Install it in /Applications, or set GODOT to the path of its Godot program."
+		err="$(mktemp)"
+		godot="$(download_godot "$HOME/Applications" 2>"$err")" || fail "Cannot download Godot: $(cat "$err")"
+		rm -f "$err"
+	fi
 fi
 
 out="$("$godot" --headless --path "$repo/Godot" --import 2>&1)" || fail "The Godot import failed:
