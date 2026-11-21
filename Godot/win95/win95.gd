@@ -131,11 +131,8 @@ func _apply_sound() -> void:
 
 func _on_changed() -> void:
 	_apply_sound()
-	for view in _listings.keys():
-		if is_instance_valid(view):
-			_fill(view)
-		else:
-			_listings.erase(view)
+	for view: IconView in _listings.keys():
+		_fill(view)
 
 
 ## Lists the view's Win95Files again, keeping the selection. On the desktop, the system icons from
@@ -268,17 +265,18 @@ func _listing_of_item(item: FileIcon) -> Listing:
 
 func _show(listing: Listing) -> void:
 	for view: IconView in _listings.keys():
-		if view != _icons and is_instance_valid(view) and is_same(_listings[view].key, listing.key) and _desktop.windows().has(view.owner):
+		if view != _icons and is_same(_listings[view].key, listing.key) and _desktop.windows().has(view.owner):
 			_desktop.activate(view.owner)
 			return
 	var window: Node = _desktop.open(_FOLDER, false)
-	window.closed.connect(window.queue_free)
 	var title_bar: Node = window.get_node("%TitleBar")
 	title_bar.title = listing.title
 	title_bar.icon = _small_icon(listing.icon)
 	var view: IconView = window.items
-	if not _listings.has(view):
-		_wire_view(view)
+	_wire_view(view)
+	window.closed.connect(func() -> void:
+		_listings.erase(view)
+		window.queue_free())
 	_listings[view] = listing
 	_fill(view)
 
