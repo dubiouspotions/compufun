@@ -1,7 +1,8 @@
 extends Control
-## The Win95 screen of the computer on the bench. It shows NO SIGNAL while the computer is off,
-## and on boot it rebuilds the desktop from %ComputerState's setup: palette, wallpaper, desktop
-## icons, folders and sound. Changes the player makes go back into the setup.
+## The Win95 screen of one job's computer. It shows NO SIGNAL while the computer is off, and on
+## boot it rebuilds the desktop from %ComputerState's setup: palette, wallpaper, desktop icons,
+## folders and sound. Changes the player makes go back into the setup. While the cable is on another
+## computer, ScreenView takes it out of the tree, and puts it back as it was.
 
 const _BOOT := preload("res://win95/boot_sequence.tscn")
 const _FOLDER := preload("res://win95/folder_window.tscn")
@@ -11,7 +12,7 @@ const _ICONS := "res://win95/theme/icons/"
 ## The meta key on a FileIcon that holds its Win95File.
 const _FILE_META := &"win95_file"
 
-var _stock_palette: Win95Palette
+static var _stock_palette: Win95Palette
 var _setup_icons: Array[FileIcon] = []
 var _my_computer: Win95File
 var _boot: Node
@@ -25,7 +26,8 @@ var _boot: Node
 
 
 func _ready() -> void:
-	_stock_palette = _SHARED_PALETTE.duplicate() as Win95Palette
+	if _stock_palette == null:
+		_stock_palette = _SHARED_PALETTE.duplicate() as Win95Palette
 	_state.booted.connect(_on_booted)
 	_state.powered_off.connect(_on_powered_off)
 	_state.changed.connect(_apply_sound)
@@ -33,6 +35,13 @@ func _ready() -> void:
 	_systray.mute_toggled.connect(func(_muted: bool) -> void: _state.set_sound(_systray.volume, _systray.muted))
 	_systray.volume_changed.connect(func(_volume: float) -> void: _state.set_sound(_systray.volume, _systray.muted))
 	_no_signal.visible = not _state.is_on
+	if _state.is_on:
+		_on_booted()
+
+
+func _enter_tree() -> void:
+	if is_node_ready() and _state.is_on:
+		_apply_palette(_state.setup.palette)
 
 
 func _on_booted() -> void:
@@ -41,7 +50,8 @@ func _on_booted() -> void:
 	for child in get_children():
 		if child.get_script() == _COVER:
 			child.queue_free()
-	_apply_palette(setup.palette)
+	if is_inside_tree():
+		_apply_palette(setup.palette)
 	if setup.wallpaper != null:
 		_background.texture = setup.wallpaper
 		# As Win95 showed them: a small pattern tiles, a picture fills the screen.
@@ -64,7 +74,7 @@ func _on_powered_off() -> void:
 	_no_signal.show()
 
 
-# Every bevel in the theme draws with the one shared palette, so copying colours into it recolours all.
+# Every bevel draws with the one shared palette; the desktop on screen sets it, also on entering the tree.
 func _apply_palette(palette: Win95Palette) -> void:
 	var source := _stock_palette if palette == null or palette == _SHARED_PALETTE else palette
 	for colour in [&"face_color", &"window_color", &"highlight_color", &"light_color", &"shadow_color", &"dark_shadow_color"]:

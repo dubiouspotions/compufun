@@ -1,25 +1,29 @@
 class_name ComputerState
 extends Node
-## The live Win95 state of the computer that the cable is connected to (Game.connected). When the
-## cable moves to another job, it copies that computer's Win95Setup and applies the problem's
-## break; the job's power switches it on and off. Each running desktop has its own ComputerState.
+## The live Win95 state of one job's computer. ScreenView makes one desktop per job, at the job's
+## first connection, and keeps it while the cable is on another computer, so the state survives a
+## reconnection. It copies the computer's Win95Setup, applies the problem's break, and follows the
+## job's power.
 
 ## The power came on. [member setup] is ready: rebuild everything from it.
 signal booted
-## The power went off, or the computer left the bench.
+## The power went off.
 signal powered_off
 ## A setter changed [member setup]; re-read what you show.
 signal changed
 
-## The running copy; null when no computer with a Win95 setup is on the bench. A power cycle keeps
-## it, so the player's changes survive a reboot.
+## The running copy; null when the computer has no Win95 setup. A power cycle keeps it, so the
+## player's changes survive a reboot.
 var setup: Win95Setup
 var is_on: bool = false
-
-var _job: Job
+## The job whose computer this is. Set once, before the node enters the tree.
+var job: Job
 
 
 func _ready() -> void:
+	var computer := job.customer.computer if job != null else null
+	if computer != null and computer.win95_setup != null:
+		boot(computer.win95_setup, job.problem)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -49,13 +53,6 @@ func rename_file(file: Win95File, new_name: String) -> void:
 
 
 func _sync() -> void:
-	var job: Job = Game.connected
-	if job != _job:
-		_job = job
-		setup = null
-		var computer := job.customer.computer if job != null else null
-		if computer != null and computer.win95_setup != null:
-			boot(computer.win95_setup, job.problem)
 	var on := setup != null and job.powered
 	if on == is_on:
 		return
@@ -72,5 +69,5 @@ func _changed() -> void:
 
 
 func _report_fixed() -> void:
-	if setup != null and _job != null and _job.problem.software_check != null:
-		Game.set_software_fixed(_job, _job.problem.software_check.is_fixed(setup))
+	if setup != null and job.problem.software_check != null:
+		Game.set_software_fixed(job, job.problem.software_check.is_fixed(setup))

@@ -139,11 +139,14 @@ func _count_memory() -> bool:
 	return true
 
 
-## Waits [param seconds]; false when the player skipped meanwhile.
+## Waits [param seconds], and longer while the screen is out of the tree; false when the player
+## skipped meanwhile.
 func _wait(seconds: float) -> bool:
 	if _skipped:
 		return false
 	await get_tree().create_timer(seconds).timeout
+	if not is_inside_tree():
+		await tree_entered
 	return not _skipped
 
 

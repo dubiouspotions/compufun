@@ -47,7 +47,8 @@ Main (Node)                              the main buffer: the window
 │  └─ ScreenView (screen_view.tscn: follows the 3D screen, fades in for the Screen View)
 │     └─ SubViewportContainer
 │        └─ SubViewport (640 × 480)      the screen buffer, shown at 2×: updates always, embeds sub-windows
-│           └─ win95/desktop.tscn
+│           ├─ NoSignal (win95/no_signal.tscn), while the VGA cable hangs free
+│           └─ win95/win95.tscn          the connected job's desktop; each job has one, the others wait out of the tree
 ├─ DebugMenu (CanvasLayer, F2)
 └─ Feedback (CanvasLayer, on top of everything)
 ```

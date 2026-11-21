@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://ui/screen_view.gd" id="1_rc0eh"]
 [ext_resource type="PackedScene" path="res://win95/win95.tscn" id="2_jr16l"]
+[ext_resource type="PackedScene" path="res://win95/no_signal.tscn" id="3_nosig"]
 
 [node name="ScreenView" type="Control" unique_id=947288806]
 layout_mode = 3
@@ -25,3 +26,6 @@ unique_name_in_owner = true
 gui_embed_subwindows = true
 size = Vector2i(640, 480)
 render_target_update_mode = 4
+
+[node name="NoSignal" parent="ScreenContainer/ScreenBuffer" instance=ExtResource("3_nosig")]
+unique_name_in_owner = true

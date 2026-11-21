@@ -3,12 +3,15 @@ extends Control
 ## The Screen View: a sharp copy of the screen buffer, laid exactly over the screen of the 3D
 ## monitor. It fades in while the camera zooms into the monitor and lands at [member zoom] times the
 ## buffer's size, where it takes the mouse and the keys. The 3D monitor shows the same buffer as its
-## texture, so there is one desktop in one place.
+## texture, so there is one desktop in one place. The buffer shows the desktop of the job that the
+## cable is connected to (Game.connected), and NO SIGNAL while the cable hangs free.
 
 ## The player clicked the open view outside the screen.
 signal outside_clicked
 
-## The desktop that runs in the screen buffer. It reports software fixes to Game itself.
+## The desktop of one job's computer, with a %ComputerState node. Each job gets its own at its
+## first connection; it waits out of the tree while the cable is elsewhere, and is freed when the
+## job leaves the counter. It reports software fixes to Game itself.
 @export var desktop_scene: PackedScene
 ## The whole-number scale of the open screen: 2 shows the 640 x 480 buffer 1280 x 960 in 1080p,
 ## with chunky, sharp pixels. The Screen marker's distance must make the 3D screen this big.
@@ -26,9 +29,11 @@ signal outside_clicked
 
 var _open: bool = false
 var _fade: Tween
+var _desktops: Dictionary[Job, Control] = {}
 
 @onready var _container: SubViewportContainer = %ScreenContainer
 @onready var _buffer: SubViewport = %ScreenBuffer
+@onready var _no_signal: Control = %NoSignal
 
 
 func _ready() -> void:
@@ -39,15 +44,15 @@ func _ready() -> void:
 	_container.mouse_exited.connect(_show_cursor.bind(game_cursor, game_cursor_hotspot))
 	if desktop_scene == null:
 		push_error("ScreenView: desktop_scene is empty")
-		return
-	var desktop := desktop_scene.instantiate()
-	if desktop is Control and (desktop as Control).custom_minimum_size != Vector2(_buffer.size):
-		push_error("ScreenView: %s is %s, but the screen buffer is %s" % [desktop_scene.resource_path, (desktop as Control).custom_minimum_size, _buffer.size])
-	_buffer.add_child(desktop)
+	Game.changed.connect(_sync)
+	_sync()
 
 
 func _exit_tree() -> void:
 	_show_cursor(null, Vector2.ZERO)  # Otherwise the display server outlives the texture and logs a leak at exit.
+	for desktop: Control in _desktops.values():
+		if desktop.get_parent() == null:
+			desktop.free()  # out of the tree, nothing else frees it
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -98,6 +103,41 @@ func follow(rect: Rect2) -> void:
 	_container.position = rect.position
 	_container.scale = rect.size / screen_size
 	_container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST if sharp else CanvasItem.TEXTURE_FILTER_LINEAR
+
+
+# Frees the desktops of jobs that left the counter, and puts the connected job's desktop in the buffer.
+func _sync() -> void:
+	for job: Job in _desktops.keys():
+		if job not in Game.jobs:
+			_desktops[job].queue_free()
+			_desktops.erase(job)
+	var shown := _desktop(Game.connected) if Game.connected != null else null
+	for child in _buffer.get_children():
+		if child != shown and child != _no_signal:
+			_buffer.remove_child(child)
+	if shown != null and shown.get_parent() == null:
+		_buffer.add_child(shown)
+	_no_signal.visible = shown == null
+
+
+# The desktop of [param job], made at the first call. Null, with an error, when the scene is unfit.
+func _desktop(job: Job) -> Control:
+	if _desktops.has(job):
+		return _desktops[job]
+	if desktop_scene == null:
+		return null
+	var desktop := desktop_scene.instantiate() as Control
+	var state := desktop.get_node_or_null(^"%ComputerState") as ComputerState if desktop != null else null
+	if state == null:
+		push_error("ScreenView: %s is not a Control with a %%ComputerState node" % desktop_scene.resource_path)
+		if desktop != null:
+			desktop.free()
+		return null
+	if desktop.custom_minimum_size != Vector2(_buffer.size):
+		push_error("ScreenView: %s is %s, but the screen buffer is %s" % [desktop_scene.resource_path, desktop.custom_minimum_size, _buffer.size])
+	state.job = job
+	_desktops[job] = desktop  # before it enters the tree, whose boot can emit Game.changed again
+	return desktop
 
 
 # Replaces the image of the arrow shape, which Controls and the 3D world show; the hotspot hand stays.

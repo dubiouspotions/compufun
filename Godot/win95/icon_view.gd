@@ -29,6 +29,8 @@ func _ready() -> void:
 	for child in get_children():
 		_wire(child)
 	child_entered_tree.connect(func(child: Node) -> void:
+		if child.is_node_ready():
+			return  # the whole desktop re-entered the tree; its icons are wired
 		_wire(child)
 		items_changed.emit())
 	child_exiting_tree.connect(func(_child: Node) -> void: items_changed.emit.call_deferred())
