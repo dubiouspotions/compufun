@@ -23,15 +23,18 @@ func _refresh() -> void:
 	if not is_visible_in_tree():
 		return
 	for child: Node in _rows.get_children():
+		_rows.remove_child(child)
 		child.queue_free()
 	var state := Game.snapshot()
 	var customers: Array[Customer] = Game.day.customers if Game.day != null else []
 
+	_section("Day")
 	_row("Day", _spin(1, 7, Game.day_number, func(value: int) -> void: _edit("day", value)))
 	_row("Phase", _enum_picker(Game.Phase, Game.phase, "phase"))
 	_row("Arrivals", _spin(0, customers.size(), Game.arrivals, func(value: int) -> void: _edit("arrivals", value)))
 	_row("Daypart", _enum_picker(Game.Daypart, Game.daypart, "daypart"))
 
+	_section("Visitor")
 	# The visitor: nobody, a drop-off of today's customers, or a pickup of a job on the counter.
 	var visits: Array[Array] = [["", "NONE"]]
 	var visitor_picker := OptionButton.new()
@@ -56,7 +59,7 @@ func _refresh() -> void:
 		_row("Visitor state", _enum_picker(Game.VisitorState, Game.visitor_state, "visitor_state"))
 	_row("Conversation", _text(state["conversation"] if state["conversation"] != "" else "none"))
 
-	_rows.add_child(_text("Counter"))
+	_section("Counter (%d of %d)" % [Game.jobs.size(), Game.MAX_JOBS])
 	var job_states: Array = state["jobs"]
 	for i: int in job_states.size():
 		_rows.add_child(_job_row(i, Game.jobs[i]))
@@ -67,7 +70,7 @@ func _refresh() -> void:
 	add.disabled = customers.is_empty() or Game.jobs.size() >= Game.MAX_JOBS
 	_row("", add_picker, add)
 
-	_rows.add_child(_text("Flags"))
+	_section("Flags")
 	for flag_name: StringName in Game.flags:
 		var value := _spin(-999, 999, Game.flags[flag_name], func(number: int) -> void: _edit_flag(flag_name, number))
 		_row(String(flag_name), value, _button("X", _edit_flag.bind(flag_name, 0)))
@@ -76,15 +79,27 @@ func _refresh() -> void:
 	new_flag.text_submitted.connect(func(text: String) -> void: _edit_flag(StringName(text.strip_edges()), 1))
 	_row("", new_flag, _button("Set", func() -> void: _edit_flag(StringName(new_flag.text.strip_edges()), 1)))
 
+	_section("Conversations played")
 	var seen := Game.seen.keys()
 	var clear := _button("Clear", _edit.bind("seen", []))
 	clear.disabled = seen.is_empty()
-	_row("Played: %s" % (", ".join(seen) if not seen.is_empty() else "none"), clear)
+	_row(", ".join(seen) if not seen.is_empty() else "none", Control.new(), clear)
 
 
 ## One job: its customer, its repair, whether it is in focus or on the cable, and a remove button.
 func _job_row(index: int, job: Job) -> Control:
+	var frame := PanelContainer.new()
+	var look := StyleBoxFlat.new()
+	look.bg_color = Color(1, 1, 1, 0.06)
+	look.set_corner_radius_all(4)
+	frame.add_theme_stylebox_override(&"panel", look)
+	var margin := MarginContainer.new()
+	for side: String in ["left", "right", "top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 12)
+	frame.add_child(margin)
 	var box := VBoxContainer.new()
+	box.add_theme_constant_override(&"separation", 8)
+	margin.add_child(box)
 	var head := HBoxContainer.new()
 	box.add_child(head)
 	var title := _text("Slot %d: %s (%s)" % [job.slot, job.customer.display_name, job.problem.short_name])
@@ -107,7 +122,7 @@ func _job_row(index: int, job: Job) -> Control:
 			changed["jobs"][index][key] = on
 			_apply(changed))
 		checks.add_child(check)
-	return box
+	return frame
 
 
 func _add_job(customer: Customer) -> void:
@@ -167,12 +182,24 @@ func _row(label: String, control: Control, extra: Control = null) -> void:
 	var row := HBoxContainer.new()
 	_rows.add_child(row)
 	var name_label := _text(label)
-	name_label.custom_minimum_size.x = 140
+	name_label.custom_minimum_size.x = 200
 	row.add_child(name_label)
 	control.size_flags_horizontal = SIZE_EXPAND_FILL
 	row.add_child(control)
 	if extra != null:
 		row.add_child(extra)
+
+
+## A heading with space above it, so the tab reads as groups.
+func _section(title: String) -> void:
+	if _rows.get_child_count() > 0:
+		var gap := Control.new()
+		gap.custom_minimum_size.y = 8
+		_rows.add_child(gap)
+		_rows.add_child(HSeparator.new())
+	var heading := _text(title)
+	heading.add_theme_font_size_override(&"font_size", 24)
+	_rows.add_child(heading)
 
 
 func _text(text: String) -> Label:

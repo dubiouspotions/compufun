@@ -4,8 +4,26 @@
 [ext_resource type="Script" path="res://ui/debug_game_tab.gd" id="2_gtab"]
 [ext_resource type="Script" path="res://ui/debug_presets.gd" id="3_ptab"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.08, 0.09, 0.97)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tabs"]
+content_margin_top = 12.0
+
 [sub_resource type="Theme" id="Theme_6q0ra"]
 default_font_size = 20
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_panel")
+TabContainer/styles/panel = SubResource("StyleBoxEmpty_tabs")
+HBoxContainer/constants/separation = 12
+MarginContainer/constants/margin_bottom = 20
+MarginContainer/constants/margin_left = 24
+MarginContainer/constants/margin_right = 24
+MarginContainer/constants/margin_top = 20
+VBoxContainer/constants/separation = 14
 
 [node name="DebugMenu" type="CanvasLayer" unique_id=1072510775]
 layer = 90
@@ -13,75 +31,80 @@ script = ExtResource("1_bbiiw")
 
 [node name="Panel" type="PanelContainer" parent="." unique_id=256159558]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(420, 0)
-anchors_preset = 1
+custom_minimum_size = Vector2(820, 0)
+anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -492.0
-offset_top = 72.0
-offset_right = -72.0
-offset_bottom = 72.0
+anchor_bottom = 1.0
+offset_left = -868.0
+offset_top = 96.0
+offset_right = -48.0
+offset_bottom = -48.0
 grow_horizontal = 0
 theme = SubResource("Theme_6q0ra")
 
-[node name="Box" type="VBoxContainer" parent="Panel" unique_id=1833360283]
+[node name="Margin" type="MarginContainer" parent="Panel" unique_id=1406623780]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="Panel/Box" unique_id=2033932098]
+[node name="Box" type="VBoxContainer" parent="Panel/Margin" unique_id=1833360283]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/Margin/Box" unique_id=2033932098]
 layout_mode = 2
 text = "DEBUG (F2)"
 
-[node name="Tabs" type="TabContainer" parent="Panel/Box" unique_id=1406623771]
+[node name="Tabs" type="TabContainer" parent="Panel/Margin/Box" unique_id=1406623771]
 layout_mode = 2
+size_flags_vertical = 3
 current_tab = 0
 
-[node name="World" type="VBoxContainer" parent="Panel/Box/Tabs" unique_id=1406623772]
+[node name="World" type="VBoxContainer" parent="Panel/Margin/Box/Tabs" unique_id=1406623772]
 layout_mode = 2
 metadata/_tab_index = 0
 
-[node name="TimeLabel" type="Label" parent="Panel/Box/Tabs/World" unique_id=311151643]
+[node name="TimeLabel" type="Label" parent="Panel/Margin/Box/Tabs/World" unique_id=311151643]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Time"
 
-[node name="TimeSlider" type="HSlider" parent="Panel/Box/Tabs/World" unique_id=354681793]
+[node name="TimeSlider" type="HSlider" parent="Panel/Margin/Box/Tabs/World" unique_id=354681793]
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 24.0
 step = 0.05
 
-[node name="TimeButtons" type="HBoxContainer" parent="Panel/Box/Tabs/World" unique_id=1703790153]
+[node name="TimeButtons" type="HBoxContainer" parent="Panel/Margin/Box/Tabs/World" unique_id=1703790153]
 layout_mode = 2
 
-[node name="MorningButton" type="Button" parent="Panel/Box/Tabs/World/TimeButtons" unique_id=975049113]
+[node name="MorningButton" type="Button" parent="Panel/Margin/Box/Tabs/World/TimeButtons" unique_id=975049113]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Morning"
 
-[node name="NoonButton" type="Button" parent="Panel/Box/Tabs/World/TimeButtons" unique_id=572739563]
+[node name="NoonButton" type="Button" parent="Panel/Margin/Box/Tabs/World/TimeButtons" unique_id=572739563]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Noon"
 
-[node name="EveningButton" type="Button" parent="Panel/Box/Tabs/World/TimeButtons" unique_id=1850818308]
+[node name="EveningButton" type="Button" parent="Panel/Margin/Box/Tabs/World/TimeButtons" unique_id=1850818308]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Evening"
 
-[node name="NightButton" type="Button" parent="Panel/Box/Tabs/World/TimeButtons" unique_id=61214743]
+[node name="NightButton" type="Button" parent="Panel/Margin/Box/Tabs/World/TimeButtons" unique_id=61214743]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Night"
 
-[node name="CycleRow" type="HBoxContainer" parent="Panel/Box/Tabs/World" unique_id=713134722]
+[node name="CycleRow" type="HBoxContainer" parent="Panel/Margin/Box/Tabs/World" unique_id=713134722]
 layout_mode = 2
 
-[node name="CycleBox" type="CheckBox" parent="Panel/Box/Tabs/World/CycleRow" unique_id=1732909753]
+[node name="CycleBox" type="CheckBox" parent="Panel/Margin/Box/Tabs/World/CycleRow" unique_id=1732909753]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Day cycle"
 
-[node name="MinutesBox" type="SpinBox" parent="Panel/Box/Tabs/World/CycleRow" unique_id=1320417169]
+[node name="MinutesBox" type="SpinBox" parent="Panel/Margin/Box/Tabs/World/CycleRow" unique_id=1320417169]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
@@ -91,23 +114,33 @@ step = 0.5
 value = 10.0
 suffix = "min / day"
 
-[node name="RainBox" type="CheckBox" parent="Panel/Box/Tabs/World" unique_id=119768468]
+[node name="RainBox" type="CheckBox" parent="Panel/Margin/Box/Tabs/World" unique_id=119768468]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Rain"
 
-[node name="FpsLabel" type="Label" parent="Panel/Box/Tabs/World" unique_id=1778125651]
+[node name="FpsLabel" type="Label" parent="Panel/Margin/Box/Tabs/World" unique_id=1778125651]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Game" type="VBoxContainer" parent="Panel/Box/Tabs" unique_id=1406623773]
+[node name="Game" type="ScrollContainer" parent="Panel/Margin/Box/Tabs" unique_id=1406623773]
 visible = false
 layout_mode = 2
-script = ExtResource("2_gtab")
+horizontal_scroll_mode = 0
 metadata/_tab_index = 1
 
-[node name="Presets" type="VBoxContainer" parent="Panel/Box/Tabs" unique_id=1406623774]
+[node name="Content" type="VBoxContainer" parent="Panel/Margin/Box/Tabs/Game" unique_id=1406623775]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("2_gtab")
+
+[node name="Presets" type="ScrollContainer" parent="Panel/Margin/Box/Tabs" unique_id=1406623774]
 visible = false
 layout_mode = 2
-script = ExtResource("3_ptab")
+horizontal_scroll_mode = 0
 metadata/_tab_index = 2
+
+[node name="Content" type="VBoxContainer" parent="Panel/Margin/Box/Tabs/Presets" unique_id=1406623776]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_ptab")
