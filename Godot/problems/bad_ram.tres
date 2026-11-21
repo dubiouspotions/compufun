@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Problem" format=3]
+
+[ext_resource type="Script" path="res://problems/problem.gd" id="1_problem"]
+[ext_resource type="Resource" path="res://parts/ram.tres" id="2_ram"]
+
+[resource]
+script = ExtResource("1_problem")
+short_name = &"bad_ram"
+perceived_issue = "Stops before Windows starts"
+symptoms = PackedStringArray("Memory test fails at startup", "Halts before Windows")
+broken_part = ExtResource("2_ram")
+hardware_steps = PackedStringArray("Remove the computer shell", "Swap one RAM module for a new one from storage", "Switch it on: if the memory test passes, the module that you took out was bad", "If the test still fails, put that module back and swap the other one", "Throw the bad module in the trash", "Remount the shell")

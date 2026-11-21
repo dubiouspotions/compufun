@@ -4,7 +4,8 @@
 [ext_resource type="Resource" path="res://customers/skater_bro.tres" id="2_mpc7b"]
 [ext_resource type="Resource" path="res://customers/young_entrepreneur.tres" id="3_sqgwb"]
 [ext_resource type="Script" path="res://days/day.gd" id="4_g4gdh"]
+[ext_resource type="Resource" path="res://customers/retired_accountant.tres" id="5_ram"]
 
 [resource]
 script = ExtResource("4_g4gdh")
-customers = Array[ExtResource("1_jrj0c")]([ExtResource("2_mpc7b"), ExtResource("3_sqgwb")])
+customers = Array[ExtResource("1_jrj0c")]([ExtResource("2_mpc7b"), ExtResource("3_sqgwb"), ExtResource("5_ram")])
