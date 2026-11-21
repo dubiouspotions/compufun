@@ -96,6 +96,11 @@ func test_system() -> void:
 		func(path: String) -> String: return (sheet.get_node(path) as Label).text)
 	check("System shows the setup", shown, ["4.00.950 B", "Pierre", "Castle Ltd", "24261-OEM-0000000-86468", "Pentium(r)", "64.0MB RAM", "64.0 MB of RAM"])
 	check("System has no Apply", (sheet.get_node("%Apply") as Button).visible, false)
+	sheet.free()
+	setup.registered_owner = ""
+	state.job.customer.display_name = "Skater bro"
+	sheet = desktop.call(&"open", load("res://win95/applets/system.tscn"))
+	check("an empty owner shows the customer's name", (sheet.get_node("%Owner") as Label).text, "Skater bro")
 	desktop.free()
 
 

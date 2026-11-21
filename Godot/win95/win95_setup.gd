@@ -52,7 +52,8 @@ var recent_documents: Array[Win95File] = []
 @export_group("System")
 ## What System > General shows under "Microsoft Windows 95", for example "4.00.950".
 @export var version: String = "4.00.950"
-## System > General, "Registered to": the owner, the organisation and the product ID.
+## System > General, "Registered to": the owner, the organisation and the product ID. An empty
+## owner shows the customer's display_name.
 @export var registered_owner: String = ""
 @export var registered_organization: String = ""
 @export var product_id: String = "12345-OEM-0012345-12345"
