@@ -21,7 +21,7 @@ func _ready() -> void:
 	_shop.set_desktop_texture(_screen_view.screen_texture())
 	_screen_view.fade_seconds = _shop.turn_seconds
 	# Right before drawing, after the camera tween moved: the copy never lags behind the 3D screen.
-	RenderingServer.frame_pre_draw.connect(_follow_screen)
+	RenderingServer.frame_pre_draw.connect(_follow_camera)
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
 	_dialogue.finished.connect(Game.dialogue_finished)
@@ -33,15 +33,16 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	# frame_pre_draw fires only when a frame is drawn; a headless run draws none.
-	_follow_screen()
+	_follow_camera()
 
 
 func _exit_tree() -> void:
-	if RenderingServer.frame_pre_draw.is_connected(_follow_screen):
-		RenderingServer.frame_pre_draw.disconnect(_follow_screen)
+	if RenderingServer.frame_pre_draw.is_connected(_follow_camera):
+		RenderingServer.frame_pre_draw.disconnect(_follow_camera)
 
 
-func _follow_screen() -> void:
+func _follow_camera() -> void:
+	_dialogue.position.x = _shop.turn_from_main() * _dialogue.size.x
 	if not _screen_view.visible:
 		return
 	var pixels := _shop.bench_screen_rect()

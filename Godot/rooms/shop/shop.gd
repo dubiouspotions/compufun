@@ -39,6 +39,18 @@ func view_marker(view_name: StringName) -> ViewMarker:
 	return marker
 
 
+## How far the camera has turned away from the Main view, where the customer stands, in widths of
+## its view: 0 facing Main, positive turned left, 1 when Main has left the picture on the right.
+func turn_from_main() -> float:
+	var main := view_marker(&"Main")
+	if main == null:
+		return 0.0
+	var yaw := angle_difference(main.global_rotation.y, _camera.global_rotation.y)
+	var size := _camera.get_viewport().get_visible_rect().size
+	var half_width := atan(tan(deg_to_rad(_camera.fov) * 0.5) * size.x / size.y)
+	return yaw / (2.0 * half_width)
+
+
 ## The screen of the CRT on the counter as the camera sees it now, in pixels of the world buffer.
 func bench_screen_rect() -> Rect2:
 	var corners := _bench_monitor.screen_corners()
