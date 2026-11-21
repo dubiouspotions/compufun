@@ -5,7 +5,14 @@ extends Control
 
 ## The boot reached the desktop, or the player skipped it.
 signal finished
+signal _any_key
 
+## A floppy is in drive A:, so after the POST the boot stops on [member disk_error] and every key
+## tries again; it goes on to Windows once this is false. win95.gd keeps it in step with the
+## computer's Win95Setup.floppy_in_a.
+@export var floppy_in_a: bool = false
+## What the BIOS says when the floppy in A: can't start the computer.
+@export_multiline var disk_error: String = "Non-System disk or disk error\nReplace and press any key when ready"
 ## Starts as soon as the node is ready; turn off to start it with play().
 @export var play_on_start: bool = true
 ## The power-on self test, one line at a time. %MEMORY% is the memory test, which counts up.
@@ -55,6 +62,8 @@ signal finished
 @export var bar_speed: float = 320.0
 
 var _skipped: bool = false
+## True while the disk error waits for a key: a key then tries again instead of skipping.
+var _awaiting_key: bool = false
 var _playing: bool = false
 var _bar_offset: float = 0.0
 var _players: Array[AudioStreamPlayer] = []
@@ -81,7 +90,10 @@ func _process(delta: float) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if (event is InputEventKey or event is InputEventMouseButton) and event.is_pressed():
 		accept_event()
-		_skipped = true
+		if _awaiting_key:
+			_any_key.emit()
+		else:
+			_skipped = true
 
 
 ## Plays the boot from the start, then emits finished and frees the node.
@@ -93,7 +105,11 @@ func play() -> void:
 	show()
 	focus_mode = Control.FOCUS_ALL
 	grab_focus.call_deferred()
-	await _run()
+	await _run_post()
+	if floppy_in_a:
+		await _disk_error()
+	if not _skipped:
+		await _run_windows()
 	for player in _players:
 		player.stop()
 	hide()
@@ -106,7 +122,7 @@ func play() -> void:
 	queue_free()
 
 
-func _run() -> void:
+func _run_post() -> void:
 	_show_stage(_post)
 	_post.text = ""
 	_sound(power_on_sound)
@@ -122,8 +138,24 @@ func _run() -> void:
 			_post.text += line + "\n"
 			if not await _wait(line_seconds):
 				return
-	if not await _wait(post_hold_seconds):
-		return
+	await _wait(post_hold_seconds)
+
+
+# The BIOS can't boot from the floppy: it says so, and each key tries again until the floppy is out.
+# A skip doesn't get past this; after it, the boot goes on to Windows in full.
+func _disk_error() -> void:
+	_show_stage(_post)
+	_skipped = false
+	_awaiting_key = true
+	_post.text += "\n" + disk_error + "\n"
+	while floppy_in_a:
+		await _any_key
+		if floppy_in_a:
+			_post.text += "\n" + disk_error + "\n"
+	_awaiting_key = false
+
+
+func _run_windows() -> void:
 	_show_stage(_starting)
 	if not await _wait(starting_seconds):
 		return

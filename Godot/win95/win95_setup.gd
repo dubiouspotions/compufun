@@ -25,6 +25,11 @@ var deleted_from: Dictionary[Win95File, Array] = {}
 @export_range(0, 100) var volume: float = 75.0
 @export var muted: bool = false
 
+@export_group("Drives")
+## A floppy is in drive A:. The PC tries to boot from it and stops on "Non-System disk or disk
+## error", so Windows does not start until the floppy is out.
+@export var floppy_in_a: bool = false
+
 
 ## The file or folder at [param path], or null. The path starts at drive C or the desktop, with
 ## backslashes, and ignores case as Win95 does: "C:\WINDOWS\SYSTEM.INI", "Desktop\todo.txt".

@@ -106,6 +106,7 @@ func _on_booted() -> void:
 	if is_instance_valid(_boot):
 		_boot.queue_free()
 	_boot = _BOOT.instantiate()
+	_boot.floppy_in_a = setup.floppy_in_a
 	add_child(_boot)
 	move_child(_boot, _no_signal.get_index())
 
@@ -132,6 +133,8 @@ func _apply_sound() -> void:
 
 func _on_changed() -> void:
 	_apply_sound()
+	if is_instance_valid(_boot) and _state.setup != null:
+		_boot.floppy_in_a = _state.setup.floppy_in_a
 	for view: IconView in _listings.keys():
 		_fill(view)
 
