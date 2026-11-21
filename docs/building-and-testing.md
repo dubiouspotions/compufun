@@ -111,6 +111,14 @@ templates (Editor > Manage Export Templates).
 
 ## Voices
 
+**Voice types.** A conversation, or a single line, can have a `VoiceType`: a base voice, an
+alternate voice and a curve over the line that says how much of the alternate plays at each moment.
+Make them in the Voice Lab (Dev menu, F3 or Cmd+3) and pick them in the Dialogue tab. The live voice
+blends the two as it speaks, with the same Rust code on desktop and in the browser
+(`native/chimera_voice/src/voice_type.rs` and `fx.rs`): speed, pitch, melody, body and intonation
+take the curve's average once per line; the voice source and the effects follow the curve. A
+pre-rendered WAV has no voice type, so a line plays its type only where the live voice is built.
+
 **Live.** `VoicePlayer` speaks each line as it plays: in the web build Chimera runs as wasm in a
 Web Worker (`voices/live/live_voice.js`), on desktop as the `ChimeraVoice` extension
 (`native/chimera_voice/`). Without them, as on a machine that has not built them, it plays the

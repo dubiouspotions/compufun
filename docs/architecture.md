@@ -26,6 +26,7 @@ Godot/               the Godot project: everything the game loads
   customers/<name>/  the pictures in that customer's files, such as pierre/castle_01.png
   voices/            one .wav per customer line, rendered by Chimera; voices.gd names and renders them
   voices/moods/      the mood of each pose (VoiceMood): the speed, pitch and pitch swing of the voice
+  voices/types/      voice types (VoiceType), made in the Voice Lab: a base voice, an alternate, and a curve
   voices/live/       the live voice: live_voice.js (web), the dictionary; tools/build-voice.sh adds the wasm, the libraries and the .gdextension
   sounds/            sound effects: the audio files, and one SoundSet .tres per effect (its takes,
                      volume and pitch range), exported where the effect happens
