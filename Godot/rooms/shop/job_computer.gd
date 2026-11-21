@@ -25,12 +25,14 @@ var _hovered: bool = false
 @onready var _hotspot: Hotspot = %Hotspot
 @onready var _outline: MeshInstance3D = %Outline
 @onready var _workview_eye: Marker3D = %WorkviewEye
+@onready var _post_it: PostIt3D = %PostIt
 
 
 func _ready() -> void:
 	_hotspot.clicked.connect(func(_h: Hotspot) -> void: clicked.emit(self))
 	_hotspot.mouse_entered.connect(_set_hovered.bind(true))
 	_hotspot.mouse_exited.connect(_set_hovered.bind(false))
+	_post_it.job = job
 	_sync_outline()
 
 

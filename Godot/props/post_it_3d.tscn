@@ -1,0 +1,76 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://props/post_it_3d.gd" id="1_script"]
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_paper"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo_color = Color(0.98, 0.9, 0.42, 1)
+shader_parameter/snap = 0.0
+shader_parameter/affine = 0.0
+shader_parameter/world_uv = false
+shader_parameter/uv_scale = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_check"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo_color = Color(0.1, 0.62, 0.2, 1)
+shader_parameter/snap = 0.0
+shader_parameter/affine = 0.0
+shader_parameter/world_uv = false
+shader_parameter/uv_scale = 1.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_paper"]
+size = Vector2(0.12, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_short"]
+size = Vector3(0.004, 0.012, 0.001)
+
+[sub_resource type="BoxMesh" id="BoxMesh_long"]
+size = Vector3(0.004, 0.024, 0.001)
+
+[node name="PostIt3D" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Paper" type="MeshInstance3D" parent="."]
+material_override = SubResource("ShaderMaterial_paper")
+mesh = SubResource("QuadMesh_paper")
+
+[node name="Issue" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.054, 0.001)
+pixel_size = 0.0004
+texture_filter = 0
+modulate = Color(0.12, 0.1, 0.16, 1)
+text = ""
+font_size = 32
+outline_size = 0
+vertical_alignment = 0
+autowrap_mode = 3
+width = 275.0
+
+[node name="Done" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.03, 0.001)
+
+[node name="CheckShort" type="MeshInstance3D" parent="Done"]
+transform = Transform3D(0.7071068, -0.7071068, 0, 0.7071068, 0.7071068, 0, 0, 0, 1, -0.0462, 0.0002, 0)
+material_override = SubResource("ShaderMaterial_check")
+mesh = SubResource("BoxMesh_short")
+
+[node name="CheckLong" type="MeshInstance3D" parent="Done"]
+transform = Transform3D(0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 0, 0, 1, -0.0335, 0.0045, 0)
+material_override = SubResource("ShaderMaterial_check")
+mesh = SubResource("BoxMesh_long")
+
+[node name="Pickup" type="Label3D" parent="Done"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0175, 0, 0)
+pixel_size = 0.0004
+texture_filter = 0
+modulate = Color(0.05, 0.4, 0.12, 1)
+text = "Call customer for pickup"
+font_size = 32
+outline_size = 0
+autowrap_mode = 3
+width = 212.0
