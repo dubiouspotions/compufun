@@ -11,6 +11,11 @@ const LIVE_DIR: String = "res://voices/live/"
 ## The most samples rendered in one frame: about 46 ms of audio.
 const FEED_SAMPLES: int = 1024
 const BODIES: Dictionary = {"male": 0, "female": 1, "child": 2}
+## The audio bus that every voice plays on, so that [method level] hears the voice alone.
+const BUS: StringName = &"Voice"
+## The peak, in dB, at which [method level] is 0 (and below), and at which it is 1 (and above).
+const QUIET_DB: float = -40.0
+const LOUD_DB: float = -6.0
 
 # One engine for every player: one line plays at a time, and the dictionary loads once.
 static var _engine: Object
@@ -27,6 +32,9 @@ var _drained_at: int = 0
 
 func _ready() -> void:
 	set_process(false)
+	if AudioServer.get_bus_index(BUS) < 0:
+		push_error("VoicePlayer: no \"%s\" bus in the bus layout (default_bus_layout.tres)" % BUS)
+	bus = BUS
 
 
 ## Starts saying [param line] in [param voice] (male, female or child) and returns its length
@@ -63,6 +71,20 @@ func say(line: DialogueLine, voice: String) -> float:
 	stream = file
 	play()
 	return file.get_length()
+
+
+## How loud the voice is right now, from 0 (silent) to 1 (loud speech). It follows the syllables,
+## so it can move things in time with the voice. Any player reads the line that plays now.
+func level() -> float:
+	var peak: float
+	if _web != null:
+		peak = _web.level()
+	elif OS.has_feature("web"):
+		# The browser plays the WAVs outside Godot's mixer, so the bus has no level.
+		peak = 1.0 if playing else 0.0
+	else:
+		peak = db_to_linear(AudioServer.get_bus_peak_volume_left_db(AudioServer.get_bus_index(bus), 0))
+	return clampf(inverse_lerp(QUIET_DB, LOUD_DB, linear_to_db(peak)), 0.0, 1.0)
 
 
 ## Stops the line, live or not.

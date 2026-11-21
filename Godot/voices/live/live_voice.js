@@ -48,6 +48,8 @@
 	let worker = null;
 	let ctx = null;
 	let gain = null;
+	let analyser = null;
+	let heard = null;
 	let id = 0;
 	let next = 0;
 	let sources = [];
@@ -81,6 +83,10 @@
 				ctx = new AudioContext();
 				gain = ctx.createGain();
 				gain.connect(ctx.destination);
+				analyser = ctx.createAnalyser();
+				analyser.fftSize = 512;
+				analyser.connect(gain);
+				heard = new Float32Array(analyser.fftSize);
 			}
 			if (ctx.state === "suspended") ctx.resume();
 			gain.gain.value = volume;
@@ -96,12 +102,21 @@
 			sources = [];
 		},
 
+		// The peak of the last 512 samples that played, linear, before the volume.
+		level() {
+			if (!analyser) return 0;
+			analyser.getFloatTimeDomainData(heard);
+			let peak = 0;
+			for (const v of heard) peak = Math.max(peak, Math.abs(v));
+			return peak;
+		},
+
 		_play(samples) {
 			const buffer = ctx.createBuffer(1, samples.length, RATE);
 			buffer.copyToChannel(samples, 0);
 			const source = ctx.createBufferSource();
 			source.buffer = buffer;
-			source.connect(gain);
+			source.connect(analyser);
 			// A little lead on the first chunk, so the next ones arrive before it ends.
 			next = Math.max(next, ctx.currentTime + 0.05);
 			source.start(next);

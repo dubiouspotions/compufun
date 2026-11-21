@@ -11,6 +11,7 @@ in the same commit as the code. The design, what the parts are and why, is on th
 Godot/               the Godot project: everything the game loads
   main.tscn          the game: the world viewport, the UI layer, the F9 layer (run/main_scene)
   export_presets.cfg Web, Windows Desktop, MacOS, Linux; CI exports them by name
+  default_bus_layout.tres  the audio buses: Master, and Voice for the customers' voices
   game.gd            the Game autoload
   shaders/           psx_world.gdshader, psx_post.gdshader, psx_post_world.tres (the world's post material)
   props/             one scene per placeholder model: crt_monitor, pc_tower, counter, shelf, ...
