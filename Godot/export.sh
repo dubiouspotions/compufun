@@ -31,6 +31,8 @@ if [ -z "$godot" ] || [ ! -x "$godot" ]; then
 fi
 echo "Godot found at: $godot"
 
+"$(dirname "$0")/../tools/write-build-commit.sh" || exit 1
+
 ALL=(web mac windows linux)
 
 # Check if any arguments are provided

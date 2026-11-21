@@ -13,6 +13,7 @@ var _start_ms: int = 0
 
 
 func _ready() -> void:
+	get_window().title = BuildInfo.title()
 	_start_ms = Time.get_ticks_msec()
 	var err := ResourceLoader.load_threaded_request(GAME_SCENE)
 	if err != OK:

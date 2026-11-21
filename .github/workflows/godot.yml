@@ -41,6 +41,9 @@ jobs:
         run: |
           mkdir -v -p ~/.local/share/godot/export_templates/
           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          # The container runs as another user than the checkout's owner, so git refuses the repo without this.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          bash ../tools/write-build-commit.sh
 
       - name: Web Build
         run: |
