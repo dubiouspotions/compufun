@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="Person" format=3]
+
+[ext_resource type="Texture2D" path="res://people/elli/face.png" id="1_vjqfv"]
+[ext_resource type="Texture2D" path="res://people/elli/portrait_angry.png" id="2_cfflx"]
+[ext_resource type="Texture2D" path="res://people/elli/portrait_happy.png" id="3_2aehu"]
+[ext_resource type="Texture2D" path="res://people/elli/portrait_irritated01.png" id="4_2nyeh"]
+[ext_resource type="Texture2D" path="res://people/elli/portrait_irritated02.png" id="5_hkje7"]
+[ext_resource type="Texture2D" path="res://people/elli/portrait_irritated03.png" id="6_o41yk"]
+[ext_resource type="Texture2D" path="res://people/elli/portrait_neutral.png" id="7_6eef4"]
+[ext_resource type="Texture2D" path="res://people/elli/portrait_problem.png" id="8_uqyf7"]
+[ext_resource type="Texture2D" path="res://people/elli/portrait_thinking.png" id="9_y1r27"]
+[ext_resource type="Script" path="res://people/person.gd" id="10_mfmf7"]
+
+[resource]
+script = ExtResource("10_mfmf7")
+display_name = "Elli"
+portraits = Dictionary[StringName, Texture2D]({
+&"angry": ExtResource("2_cfflx"),
+&"happy": ExtResource("3_2aehu"),
+&"irritated01": ExtResource("4_2nyeh"),
+&"irritated02": ExtResource("5_hkje7"),
+&"irritated03": ExtResource("6_o41yk"),
+&"neutral": ExtResource("7_6eef4"),
+&"problem": ExtResource("8_uqyf7"),
+&"thinking": ExtResource("9_y1r27")
+})
+face = ExtResource("1_vjqfv")
