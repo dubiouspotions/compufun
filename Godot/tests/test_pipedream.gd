@@ -40,5 +40,16 @@ func run() -> void:
 	pipes.stage = 0
 	check("the sign off takes them away at once", pipes.shown_segments(), 0)
 
+	var camera := Camera3D.new()
+	root.add_child(camera)
+	camera.make_current()
+	camera.look_at_from_position(pipes.global_position + Vector3(0.5, 0.5, 2.0), pipes.global_position + Vector3(0.5, 0.5, -1.0))
+	pipes.stage = 1
+	pipes.call("_process", 1000.0)
+	check("no growth while the camera looks at them", pipes.shown_segments(), 0)
+	camera.look_at_from_position(pipes.global_position + Vector3(0.5, 0.5, 2.0), pipes.global_position + Vector3(0.5, 0.5, 5.0))
+	pipes.call("_process", 1000.0)
+	check("they grow once it looks away", pipes.shown_segments(), day_3)
+
 func _warp(number: int) -> float:
 	return (load("res://days/day_%d.tres" % number) as Day).warp

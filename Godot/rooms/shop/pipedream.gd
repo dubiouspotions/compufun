@@ -5,6 +5,7 @@ extends Node3D
 ## -Z, then turn at random on a grid inside [member bounds]. They show only while the corruption
 ## sign pipedream lets them in ([member stage]); then the higher the day's warp, the more of them
 ## shows. One seed always grows the same pipes; a higher warp shows more of them, never others.
+## They grow only while the camera looks away, so the player never sees them move.
 
 const DIRS: Array[Vector3i] = [
 	Vector3i.LEFT, Vector3i.RIGHT, Vector3i.DOWN, Vector3i.UP, Vector3i.FORWARD, Vector3i.BACK,
@@ -78,10 +79,29 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var target := _target()
+	if _seen():
+		return
 	_shown = move_toward(_shown, target, grow_speed * delta / maxi(segments, 1))
 	_show()
 	if is_equal_approx(_shown, target):
 		set_process(false)
+
+
+## True while any part of the space the pipes take is in the current camera's view.
+func _seen() -> bool:
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return false
+	var space := global_transform * bounds.merge(AABB(Vector3.ONE * -cell, Vector3.ONE * cell * 2.0)).grow(joint_radius)
+	for plane: Plane in camera.get_frustum():
+		var outside := true
+		for i: int in 8:
+			if not plane.is_point_over(space.get_endpoint(i)):
+				outside = false
+				break
+		if outside:
+			return false
+	return true
 
 
 ## The share of the pipes, 0 to 1, that shows at [param at_warp] in stage 1.
