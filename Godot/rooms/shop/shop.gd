@@ -235,13 +235,15 @@ func _follow_focus() -> bool:
 
 func _walk_in() -> void:
 	_walk_in_arrival = Game.arrival
-	_door_bell.play()
 	if _walk_tween != null:
 		_walk_tween.kill()
 	_body.rotation.y = 0.0
 	_follow.progress_ratio = 0.0
+	var door := _door_ratio()
 	_walk_tween = create_tween()
-	_walk_tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds)
+	_walk_tween.tween_property(_follow, "progress_ratio", door, walk_seconds * door)
+	_walk_tween.tween_callback(_door_bell.play)
+	_walk_tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds * (1.0 - door))
 	_walk_tween.finished.connect(Game.customer_arrived)
 
 
@@ -262,8 +264,17 @@ func _walk_out() -> void:
 	_follow.progress_ratio = 1.0
 	_walk_tween = create_tween()
 	_walk_tween.tween_property(_body, "rotation:y", PI, about_face_seconds)
-	_walk_tween.tween_property(_follow, "progress_ratio", 0.0, walk_seconds)
+	var door := _door_ratio()
+	_walk_tween.tween_property(_follow, "progress_ratio", door, walk_seconds * (1.0 - door))
+	_walk_tween.tween_callback(_door_bell.play)
+	_walk_tween.tween_property(_follow, "progress_ratio", 0.0, walk_seconds * door)
 	_walk_tween.finished.connect(Game.customer_left)
+
+
+## The progress ratio of the customer path where it passes under the door bell.
+func _door_ratio() -> float:
+	var path := _follow.get_parent() as Path3D
+	return path.curve.get_closest_offset(path.to_local(_door_bell.global_position)) / path.curve.get_baked_length()
 
 
 func _on_hotspot_clicked(hotspot: Hotspot) -> void:
