@@ -95,14 +95,14 @@ jobs:
           msg="There was a problem with the build for $commit_url."
           embeds="[{\"title\": \"Build Failed\", \"description\": \"See details here: ${run_url}\", \"url\": \"${run_url}\", \"color\": 10038562}]"
           data="{\"content\": \"$msg\", \"username\": \"Buildbot\", \"embeds\": $embeds}"
-          wget --header="Content-Type: application/json" --post-data="$data" "${{ secrets.DISCORD_WEBHOOK_URL }}"
+          wget -q -O /dev/null --header="Content-Type: application/json" --post-data="$data" "${{ secrets.DISCORD_WEBHOOK_URL }}"
       
       - name: Grep log for errors and send to discord
         if: always()
         continue-on-error: true
         shell: bash
         run: |
-          ERRORS=$(grep "ERROR" build.log | sort -u | sed 's/\\/\\\\/g; s/"/\\"/g')
+          ERRORS=$(grep "ERROR" build.log | grep -v "Unable to load fontconfig" | sort -u | sed 's/\\/\\\\/g; s/"/\\"/g') || true
           if [ -n "$ERRORS" ]; then
             count=$(printf '%s\n' "$ERRORS" | wc -l | tr -d ' ')
             run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
@@ -110,7 +110,7 @@ jobs:
             msg="The build succeeded, but Godot printed $count errors during export.\n\n$ERRORS"
             embeds="[{\"title\": \"Build error report\", \"description\": \"See details here: ${run_url}\", \"url\": \"${run_url}\", \"color\": 10038562}]"
             data="{\"content\": \"$msg\", \"username\": \"Buildbot\", \"embeds\": $embeds}"
-            wget --header="Content-Type: application/json" --post-data="$data" "${{ secrets.DISCORD_WEBHOOK_URL }}"
+            wget -q -O /dev/null --header="Content-Type: application/json" --post-data="$data" "${{ secrets.DISCORD_WEBHOOK_URL }}"
           fi
 
   deploy:
@@ -175,4 +175,4 @@ jobs:
           msg="Itch.io deploy failed for $commit_url."
           embeds="[{\"title\": \"Deploy Failed\", \"description\": \"See details here: ${run_url}\", \"url\": \"${run_url}\", \"color\": 10038562}]"
           data="{\"content\": \"$msg\", \"username\": \"Buildbot\", \"embeds\": $embeds}"
-          wget --header="Content-Type: application/json" --post-data="$data" "${{ secrets.DISCORD_WEBHOOK_URL }}"
+          wget -q -O /dev/null --header="Content-Type: application/json" --post-data="$data" "${{ secrets.DISCORD_WEBHOOK_URL }}"
