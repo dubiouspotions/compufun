@@ -13,6 +13,9 @@ signal activated
 const _OUTLINE_SHADER := preload("res://win95/drag_outline.gdshader")
 const _OUTLINE_Z := 100
 
+## True while the window is minimized: hidden, but still open, with its taskbar button.
+var is_minimized := false
+
 var _outline: ColorRect
 var _drag_offset := Vector2.ZERO
 
@@ -45,14 +48,22 @@ func _input(event: InputEvent) -> void:
 
 ## Hides the window and emits closed.
 func close() -> void:
+	is_minimized = false
 	hide()
 	closed.emit()
 
 
-## Hides the window and emits minimized.
+## Hides the window and emits minimized; restore() shows it again.
 func minimize() -> void:
+	is_minimized = true
 	hide()
 	minimized.emit()
+
+
+## Shows a minimized or closed window again.
+func restore() -> void:
+	is_minimized = false
+	show()
 
 
 # Siblings later in the tree draw on top, so they get the press instead.

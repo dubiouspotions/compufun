@@ -3,7 +3,7 @@
 [ext_resource type="Theme" uid="uid://cg0mcpaggb3c5" path="res://win95/win95.tres" id="1_cq1mh"]
 [ext_resource type="Texture2D" uid="uid://dy2k4ui5xt3mp" path="res://win95/wallpapers/win95-default.png" id="2_d5dma"]
 [ext_resource type="Texture2D" uid="uid://e7gvt0vfnhnb" path="res://win95/theme/icons/29.png" id="4_d5dma"]
-[ext_resource type="PackedScene" path="res://win95/task_button.tscn" id="5_d5dma"]
+[ext_resource type="Script" path="res://win95/taskbar.gd" id="taskbar"]
 [ext_resource type="PackedScene" path="res://win95/desktop_icons.tscn" id="desktop_icons"]
 [ext_resource type="PackedScene" path="res://win95/systray.tscn" id="systray"]
 [ext_resource type="PackedScene" uid="uid://nu7hal0154hv" path="res://win95/welcome_window.tscn" id="welcome_window"]
@@ -65,7 +65,7 @@ offset_top = 86.0
 offset_right = 565.0
 offset_bottom = 365.0
 
-[node name="TaskBar" type="PanelContainer" parent="." unique_id=492109658]
+[node name="TaskBar" type="PanelContainer" parent="." unique_id=492109658 node_paths=PackedStringArray("desktop")]
 custom_minimum_size = Vector2(0, 30)
 custom_maximum_size = Vector2(-1, 30)
 layout_mode = 1
@@ -81,6 +81,8 @@ grow_horizontal = 2
 grow_vertical = 0
 theme = ExtResource("1_cq1mh")
 theme_type_variation = &"Taskbar"
+script = ExtResource("taskbar")
+desktop = NodePath("../Desktop")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="TaskBar" unique_id=158504101]
 layout_mode = 2
@@ -100,15 +102,11 @@ programs = Array[PackedScene]([ExtResource("app_calculator"), ExtResource("app_n
 shut_down = ExtResource("shut_down")
 shut_down_icon = ExtResource("shut_down_icon")
 
-[node name="TaskButton" parent="TaskBar/HBoxContainer" unique_id=480996942 instance=ExtResource("5_d5dma")]
-layout_mode = 2
-theme_type_variation = &"TaskbarButtonActive"
-button_pressed = true
-text = "Welcome"
-
-[node name="Spacer" type="Control" parent="TaskBar/HBoxContainer" unique_id=1937979923]
+[node name="TaskButtons" type="HBoxContainer" parent="TaskBar/HBoxContainer" unique_id=1937979923]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 3
 
 [node name="Systray" parent="TaskBar/HBoxContainer" unique_id=1819389400 instance=ExtResource("systray")]
 unique_name_in_owner = true

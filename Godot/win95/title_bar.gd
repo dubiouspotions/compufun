@@ -9,6 +9,8 @@ signal maximize_pressed
 signal drag_moved(relative: Vector2)
 ## The player released the left button after pressing it on the title bar.
 signal drag_ended
+## The title, the icon or the active state changed.
+signal appearance_changed
 
 @export var title := "":
 	set(value):
@@ -63,3 +65,4 @@ func _sync() -> void:
 	%Minimize.visible = show_minimize
 	%Maximize.visible = show_maximize
 	%CloseGap.visible = show_minimize or show_maximize
+	appearance_changed.emit()
