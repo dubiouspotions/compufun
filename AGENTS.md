@@ -72,8 +72,11 @@ whole spec.
 
 The design lives in the GitHub wiki: the concept and loop, the story and the architecture.
 `tools/sync-wiki.sh` clones it into `wiki/` (ignored by git) or pulls it. Claude Code runs it at
-the start of every session; other agents run `bash tools/sync-wiki.sh` first.
+the start of every session and loads `wiki/Architecture.md` through the include at the bottom of
+this file. Other agents run `bash tools/sync-wiki.sh` and read the page first.
 
+- **Check the wiki when you pull and before you push.** Run `bash tools/sync-wiki.sh` with every
+  `git pull`. Before you push, check that the page still matches your change.
 - **The code follows the page.** When the work needs something that `wiki/Architecture.md`
   doesn't say, or says otherwise, stop and ask your human. Change the page first, then the code.
 - **Keep them in sync.** When a change adds, moves or removes something that the page names (a
@@ -210,5 +213,7 @@ The project is: @README.md
 
 The documentation index is: @docs/index.md
 
-Agents that don't expand `@` includes: read [README.md](README.md) and
-[docs/index.md](docs/index.md) first.
+The architecture is: @wiki/Architecture.md
+
+Agents that don't expand `@` includes: read [README.md](README.md),
+[docs/index.md](docs/index.md) and [wiki/Architecture.md](wiki/Architecture.md) first.

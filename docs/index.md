@@ -8,7 +8,7 @@ situation the reader might be in — never as a summary.
 | Doc | Read it when… |
 | --- | --- |
 | [code-standard.md](code-standard.md) | **Binding.** You write or review GDScript, or create a scene or resource type. |
-| [architecture.md](architecture.md) | You add structure: a new scene tree, autoload or folder, or you need to know where state lives. |
+| [wiki/Architecture.md](../wiki/Architecture.md) | You add structure: a new scene tree, autoload or folder, or you need to know where state lives. It is the wiki page; `tools/sync-wiki.sh` fetches it. |
 | [building-and-testing.md](building-and-testing.md) | You need the import, export or CI commands, CI failed, or something passed that should have failed. |
 | [glossary.md](glossary.md) | You name a concept in code, docs or an issue, or meet a word you're not sure is the project's. |
 | [working-together.md](working-together.md) | You set up a machine, add or rename a file, add a new kind of binary file, or meet a merge conflict. |
