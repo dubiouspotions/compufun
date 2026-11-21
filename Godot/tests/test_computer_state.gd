@@ -34,6 +34,13 @@ func run() -> void:
 	state.write_text(todo, "eggs\nflour")
 	check("saved into the copy only", [todo.contents, computer.win95_setup.desktop[0].contents], ["eggs\nflour", "milk"])
 	check("path of a desktop file", state.path_of(todo), "C:\\WINDOWS\\Desktop\\todo.txt")
+	check("dated day 1", todo.modified.begins_with("Friday, May 31, 1996 "), true)
+	game.day = Day.new()
+	game.day.number = 7
+	state.write_text(todo, "eggs\nflour\nsugar")
+	check("dated day 7", todo.modified.begins_with("Thursday, June 6, 1996 "), true)
+	state.write_text(todo, "eggs\nflour")
+	game.day = null
 	state.free()
 
 	var no_mouse := FileCheck.new()

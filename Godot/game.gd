@@ -42,6 +42,8 @@ const MAX_JOBS: int = 4
 const MAX_CUSTOMERS: int = 3
 ## How long a phone call takes, in seconds.
 const CALL_SECONDS: float = 2.0
+## The date of day 1, so that day 7 is 6/6/96.
+const FIRST_DATE: String = "1996-05-31"
 ## Where [method restore] finds day N.
 const DAY_PATH: String = "res://days/day_%d.tres"
 
@@ -81,6 +83,13 @@ var setups: Dictionary[Computer, Win95Setup] = {}
 var day_number: int:
 	get:
 		return day.number if day != null else 0
+
+## The calendar date of the current day (day 1 before the first day), as a Time datetime
+## dictionary: year, month, day, weekday.
+var date: Dictionary:
+	get:
+		var unix := Time.get_unix_time_from_datetime_string(FIRST_DATE) + maxi(day_number - 1, 0) * 86400
+		return Time.get_datetime_dict_from_unix_time(unix)
 
 var _next_order: int = 0
 var _gap_elapsed: float = 0.0

@@ -50,6 +50,7 @@ func write_text(file: Win95File, text: String) -> void:
 	if setup == null or file.contents == text:
 		return
 	file.contents = text
+	_stamp(file)
 	_changed()
 
 
@@ -59,6 +60,7 @@ func write_picture(file: Win95File, image: Image) -> void:
 	if setup == null:
 		return
 	file.picture = ImageTexture.create_from_image(image.duplicate())
+	_stamp(file)
 	_changed()
 
 
@@ -234,6 +236,16 @@ func _sync() -> void:
 		booted.emit()
 	else:
 		powered_off.emit()
+
+
+# Win95 dates a save with its clock: the game's date, and the time that the taskbar shows.
+func _stamp(file: Win95File) -> void:
+	var date: Dictionary = Game.date
+	var time := Time.get_time_dict_from_system()
+	var weekdays := ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+	var months := ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+	file.modified = "%s, %s %d, %d %d:%02d:%02d %s" % [weekdays[date.weekday], months[date.month - 1], date.day, date.year,
+		(time.hour + 11) % 12 + 1, time.minute, time.second, "AM" if time.hour < 12 else "PM"]
 
 
 func _changed() -> void:
