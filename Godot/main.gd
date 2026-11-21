@@ -59,7 +59,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		Game.go_to_view(marker.left)
 	elif event.is_action_pressed(&"turn_right"):
 		Game.go_to_view(marker.right)
-	elif event.is_action_pressed(&"ui_cancel"):
+	elif event.is_action_pressed(&"go_back"):
 		_go_back()
 	else:
 		return

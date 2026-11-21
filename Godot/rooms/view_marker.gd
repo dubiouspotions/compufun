@@ -9,7 +9,7 @@ enum Screen { NONE, COMPUFUN_DB, WIN95, WORKVIEW }
 @export var left: StringName = &""
 ## The view to the right of this one. Empty: the player cannot turn right.
 @export var right: StringName = &""
-## The view that Back (Esc) goes to. Empty: no Back.
+## The view that Back (the down arrow button, Esc, Down or S) goes to. Empty: no Back.
 @export var back: StringName = &""
 ## The UI screen that opens in this view.
 @export var screen: Screen = Screen.NONE
