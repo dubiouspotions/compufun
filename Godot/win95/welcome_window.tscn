@@ -1,0 +1,147 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="font_bold"]
+
+[node name="WelcomeWindow" type="PanelContainer"]
+custom_minimum_size = Vector2(491, 279)
+offset_right = 491.0
+offset_bottom = 279.0
+theme = ExtResource("theme")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" type="PanelContainer" parent="VBox"]
+layout_mode = 2
+theme_type_variation = &"TitleBar"
+
+[node name="Row" type="HBoxContainer" parent="VBox/TitleBar"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Title" type="Label" parent="VBox/TitleBar/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"TitleLabel"
+text = "Welcome"
+
+[node name="CloseCaption" type="Button" parent="VBox/TitleBar/Row"]
+custom_minimum_size = Vector2(16, 14)
+layout_mode = 2
+focus_mode = 0
+theme_type_variation = &"CaptionCloseButton"
+
+[node name="Body" type="Control" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Heading" type="HBoxContainer" parent="VBox/Body"]
+layout_mode = 0
+offset_left = 17.0
+offset_top = 14.0
+offset_right = 340.0
+offset_bottom = 40.0
+theme_override_constants/separation = 0
+
+[node name="WelcomeTo" type="Label" parent="VBox/Body/Heading"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Welcome to "
+
+[node name="Windows" type="Label" parent="VBox/Body/Heading"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("font_bold")
+theme_override_font_sizes/font_size = 24
+text = "Windows"
+
+[node name="Version" type="Label" parent="VBox/Body/Heading"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.502, 0.502, 0.502, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 24
+text = "95"
+
+[node name="Tip" type="Panel" parent="VBox/Body"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 49.0
+offset_right = 325.0
+offset_bottom = 202.0
+theme_type_variation = &"TipPanel"
+
+[node name="Bulb" type="TextureRect" parent="VBox/Body/Tip"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 21.0
+offset_right = 50.0
+offset_bottom = 53.0
+
+[node name="DidYouKnow" type="Label" parent="VBox/Body/Tip"]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 29.0
+offset_right = 280.0
+offset_bottom = 42.0
+theme_override_fonts/font = ExtResource("font_bold")
+text = "Did you know..."
+
+[node name="TipText" type="Label" parent="VBox/Body/Tip"]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 61.0
+offset_right = 275.0
+offset_bottom = 140.0
+text = "If you don't know how to do something, you can look it up in Help. Just click the Start button, and then click Help."
+autowrap_mode = 3
+
+[node name="WhatsNew" type="Button" parent="VBox/Body"]
+layout_mode = 0
+offset_left = 356.0
+offset_top = 49.0
+offset_right = 470.0
+offset_bottom = 72.0
+text = "What's New"
+
+[node name="OnlineRegistration" type="Button" parent="VBox/Body"]
+layout_mode = 0
+offset_left = 356.0
+offset_top = 78.0
+offset_right = 470.0
+offset_bottom = 101.0
+text = "Online Registration"
+
+[node name="NextTip" type="Button" parent="VBox/Body"]
+layout_mode = 0
+offset_left = 356.0
+offset_top = 107.0
+offset_right = 470.0
+offset_bottom = 130.0
+text = "Next Tip"
+
+[node name="Separator" type="HSeparator" parent="VBox/Body"]
+layout_mode = 0
+offset_left = 355.0
+offset_top = 202.0
+offset_right = 467.0
+offset_bottom = 204.0
+
+[node name="Close" type="Button" parent="VBox/Body"]
+layout_mode = 0
+offset_left = 356.0
+offset_top = 216.0
+offset_right = 470.0
+offset_bottom = 239.0
+theme_type_variation = &"DefaultButton"
+text = "Close"
+
+[node name="ShowAtStartup" type="CheckBox" parent="VBox/Body"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 219.0
+offset_right = 340.0
+offset_bottom = 234.0
+button_pressed = true
+text = "Show this Welcome Screen next time you start Windows"

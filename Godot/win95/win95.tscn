@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://dy2k4ui5xt3mp" path="res://win95/wallpapers/win95-default.png" id="2_d5dma"]
 [ext_resource type="Texture2D" uid="uid://e7gvt0vfnhnb" path="res://win95/theme/icons/29.png" id="4_d5dma"]
 [ext_resource type="Texture2D" uid="uid://0qcpslabqpsq" path="res://win95/theme/icons/30.png" id="5_7q2i6"]
+[ext_resource type="PackedScene" path="res://win95/welcome_window.tscn" id="welcome_window"]
 
 [node name="Win95" type="Control" unique_id=1752664516]
 texture_filter = 1
@@ -31,12 +32,12 @@ grow_vertical = 2
 texture = ExtResource("2_d5dma")
 stretch_mode = 5
 
-[node name="PanelContainer" type="PanelContainer" parent="Desktop" unique_id=153202170]
+[node name="WelcomeWindow" parent="Desktop" unique_id=1584676698 instance=ExtResource("welcome_window")]
 layout_mode = 0
 offset_left = 167.0
 offset_top = 178.0
-offset_right = 481.0
-offset_bottom = 383.0
+offset_right = 658.0
+offset_bottom = 457.0
 
 [node name="TaskBar" type="PanelContainer" parent="." unique_id=492109658]
 custom_minimum_size = Vector2(0, 28)
