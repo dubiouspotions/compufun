@@ -42,6 +42,8 @@ func _status_text() -> String:
 			return "No day has started."
 		Game.Phase.DAY_OVER:
 			return "Day %d is over." % Game.day.number
+		Game.Phase.ENDED:
+			return "Day %d: the end." % Game.day.number
 		Game.Phase.CALLING:
 			return "Day %d: calling a customer." % Game.day.number
 		_:

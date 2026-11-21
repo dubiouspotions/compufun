@@ -11,6 +11,7 @@ enum Phase {
 	OPEN, ## The shop is open: customers come in, and the player repairs and calls.
 	CALLING, ## The phone is calling a customer to pick up a computer.
 	DAY_OVER, ## The player closed the shop for the night.
+	ENDED, ## The player closed the shop on the last day: Cambion takes them, and time and space bluescreen.
 }
 
 ## Why the visitor is in the shop.
@@ -459,13 +460,22 @@ func can_close() -> bool:
 
 
 ## Closes the shop for the night: DAY_OVER and [constant Daypart.EVENING]. Jobs stay on the counter.
-## Does nothing when [method can_close] is false.
+## On the last day it is ENDED instead. Does nothing when [method can_close] is false.
 func close_shop() -> void:
 	if not can_close():
 		return
-	phase = Phase.DAY_OVER
+	phase = Phase.DAY_OVER if has_next_day() else Phase.ENDED
 	daypart = Daypart.EVENING
 	changed.emit()
+
+
+## Starts the game again, as at boot: day 1, with every computer's Win95 setup forgotten. The view
+## goes back to [param view].
+func reboot(view_name: StringName = &"Main") -> void:
+	setups.clear()
+	var refused := restore({"day": 1, "view": String(view_name)})
+	if refused != "":
+		push_error("Game.reboot: " + refused)
 
 
 ## True when a day file follows the current day at [constant DAY_PATH]; false after the last day.
@@ -534,7 +544,10 @@ func restore(state: Dictionary) -> String:
 	var new_arrivals := int(state.get("arrivals", 0))
 	if new_arrivals < 0 or new_arrivals > new_day.customers.size():
 		return _refuse("day %d has %d customers, not %d arrivals" % [number, new_day.customers.size(), new_arrivals])
-	var default_daypart := String(Daypart.find_key(Daypart.EVENING if new_phase == Phase.DAY_OVER else _daypart_of(new_arrivals)))
+	if new_phase == Phase.ENDED and ResourceLoader.exists(DAY_PATH % (number + 1)):
+		return _refuse("ENDED is only for the last day, and day %d has a next day" % number)
+	var evening: bool = new_phase == Phase.DAY_OVER or new_phase == Phase.ENDED
+	var default_daypart := String(Daypart.find_key(Daypart.EVENING if evening else _daypart_of(new_arrivals)))
 	var new_daypart: Variant = _enum_value(Daypart, state.get("daypart", default_daypart), "daypart")
 	if new_daypart is String:
 		return _refuse(new_daypart)
