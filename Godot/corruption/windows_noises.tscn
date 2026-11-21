@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/windows_noises.gd" id="1_script"]
+[ext_resource type="Script" path="res://sounds/sound_set.gd" id="2_sound_set"]
+[ext_resource type="AudioStream" path="res://win95/sounds/ding.ogg" id="3_ding"]
+[ext_resource type="AudioStream" path="res://win95/sounds/chord.ogg" id="4_chord"]
+[ext_resource type="AudioStream" path="res://win95/sounds/tada.ogg" id="5_tada"]
+
+[sub_resource type="Resource" id="Resource_noises"]
+script = ExtResource("2_sound_set")
+sounds = Array[AudioStream]([ExtResource("3_ding"), ExtResource("4_chord"), ExtResource("5_tada")])
+volume_db = -6.0
+pitch_range = Vector2(1, 1)
+
+[node name="WindowsNoises" type="Node"]
+script = ExtResource("1_script")
+title = "Things in the shop make Windows noises"
+noises = SubResource("Resource_noises")
