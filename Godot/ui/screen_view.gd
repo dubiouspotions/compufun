@@ -5,6 +5,9 @@ extends Control
 ## in 1080p), where it takes the mouse and the keys. The 3D monitor shows the same buffer as its
 ## texture, so there is one desktop in one place.
 
+## The player clicked the open view outside the screen and the Fix button.
+signal outside_clicked
+
 ## The desktop that runs in the screen buffer. Its root should have the signal
 ## problem_fixed(problem: Problem); without it, a placeholder Fix button appears under the screen.
 @export var desktop_scene: PackedScene
@@ -37,6 +40,13 @@ func _ready() -> void:
 	else:
 		push_warning("ScreenView: %s has no signal problem_fixed(problem); the placeholder Fix button stands in" % desktop_scene.resource_path)
 	_fix.visible = not _has_fix_signal
+
+
+func _gui_input(event: InputEvent) -> void:
+	var click := event as InputEventMouseButton
+	if _open and click != null and click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
+		accept_event()
+		outside_clicked.emit()
 
 
 func _notification(what: int) -> void:

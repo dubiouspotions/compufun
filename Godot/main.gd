@@ -24,6 +24,7 @@ func _ready() -> void:
 	RenderingServer.frame_pre_draw.connect(_follow_camera)
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
+	_screen_view.outside_clicked.connect(_go_back)
 	_dialogue.finished.connect(Game.dialogue_finished)
 	_post_it.ticked.connect(Game.tick_post_it)
 	Game.changed.connect(_sync)
@@ -59,10 +60,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed(&"turn_right"):
 		Game.go_to_view(marker.right)
 	elif event.is_action_pressed(&"ui_cancel"):
-		Game.go_to_view(marker.back)
+		_go_back()
 	else:
 		return
 	get_viewport().set_input_as_handled()
+
+
+func _go_back() -> void:
+	var marker := _shop.view_marker(Game.view)
+	if marker != null:
+		Game.go_to_view(marker.back)
 
 
 func _sync() -> void:
