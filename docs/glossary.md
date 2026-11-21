@@ -63,6 +63,24 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Job**: One customer's computer on the counter, with its slot, its repair state and its post-it (`Job`, in `Game.jobs`). It stays from the drop-off to the pickup, overnight too.
 *Avoid:* order, ticket, repair.
 
+**Part**: One kind of computer part: motherboard, CPU, fan, graphics card or hard drive (`Part`, `parts/<id>.tres`). Every computer has one of each, and a part can sit on another (the fan on the CPU).
+*Avoid:* component, hardware item.
+
+**Piece**: One real part: which part it is and whether it is broken (`Piece`). A piece sits in a computer's place, lies on the mat, or is in the hand.
+*Avoid:* item, instance.
+
+**Place**: Where a part sits inside a computer. A job holds one piece per place, or none when the player took it out (`Job.places`).
+*Avoid:* slot (that is a job's place on the counter).
+
+**Mat**: The strip in front of an open computer where the player lays the pieces that they took out (`Job.mat`).
+*Avoid:* tray, bench.
+
+**Hand**: The one piece that the player holds (`Game.hand`). The label at the bottom of the screen shows it.
+*Avoid:* inventory, cursor item.
+
+**Storage View**: The close-up of the parts desk in the storage room, with one box of new parts per part. The storage door in the Left View leads there.
+*Avoid:* shelf view, parts screen.
+
 **Bench screen**: The CRT at the left end of the counter, with its keyboard (`rooms/shop/bench.tscn`). It shows the screen buffer: the desktop of the computer that the VGA cable is connected to, or NO SIGNAL.
 *Avoid:* bench monitor, bench computer.
 

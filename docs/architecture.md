@@ -14,10 +14,12 @@ Godot/               the Godot project: everything the game loads
   default_bus_layout.tres  the audio buses: Master, and Voice for the customers' voices
   game.gd            the Game autoload
   shaders/           psx_world.gdshader, psx_post.gdshader, psx_post_world.tres (the world's post material)
-  props/             one scene per placeholder model: crt_monitor, pc_tower, counter, shelf, ...
+  props/             one scene per placeholder model: crt_monitor, pc_tower, counter, shelf, part_box, ...
+  props/parts/       the model of each part: motherboard, cpu, fan, gpu, hard_drive
+  parts/             part.gd and piece.gd, and one Part per part: <id>.tres
   materials/         one shared material per surface; textures/ holds the PNGs
   rooms/             hotspot.tscn and view_marker.gd, shared by all rooms
-  rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), bench.tscn (the bench screen, keyboard and VGA cable), their meshes and textures
+  rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying open in the Workview), bench.tscn (the bench screen, keyboard and VGA cable), their meshes and textures
   people/<name>/     person.tres, portrait_<pose>.png, face.png
   customers/         one .tres per customer, customer_body.tscn, job.gd (one computer on the counter)
   voices/            one .wav per customer line, rendered by Chimera; voices.gd names and renders them
