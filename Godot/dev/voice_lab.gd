@@ -1,10 +1,11 @@
 class_name VoiceLab
 extends Control
 ## The Voice Lab, a dev tool for making voice types (VoiceType): a base voice, an alternate voice
-## and a curve that says how much of the alternate plays across the line. The levers edit the side
-## picked under Voice type; Save writes voices/types/<name>.tres, which the Dialogue tab gives to a
-## conversation or a line. It speaks through ChimeraVoice, the engine the game uses, so what it
-## plays is what the game plays. Open it from the Dev menu (F3 or Cmd+3), or run dev/voice_lab.tscn.
+## and a curve over the line that says where the alternate plays. The curve is drawn over the
+## line's waveform, so you see which words it lands on. Each side has the four character macros
+## and the most-used levers; "All levers" opens the rest. Save writes voices/types/<name>.tres,
+## which the Dialogue tab gives to a conversation or a line. It speaks through ChimeraVoice, the
+## engine the game uses. Open it from the Dev menu (F3 or Cmd+3), or run dev/voice_lab.tscn.
 ## While it is open the game is paused and its sounds are held.
 
 const MIX_RATE: float = 22050.0
@@ -19,8 +20,11 @@ const CURVES: Array = [
 	["Ramp up", [Vector2(0, 0), Vector2(1, 1)]],
 	["Ramp down", [Vector2(0, 1), Vector2(1, 0)]],
 	["Bursts", [Vector2(0, 0), Vector2(0.18, 0), Vector2(0.22, 1), Vector2(0.34, 1), Vector2(0.38, 0), Vector2(0.6, 0), Vector2(0.64, 1), Vector2(0.76, 1), Vector2(0.8, 0), Vector2(1, 0)]],
+	["End", [Vector2(0, 0), Vector2(0.7, 0), Vector2(0.8, 1), Vector2(1, 1)]],
 	["Off", [Vector2(0, 0), Vector2(1, 0)]],
 ]
+## The levers each side shows; the rest are under "All levers".
+const COMMON: PackedStringArray = ["pitch", "rate", "accent", "breathiness", "roughness", "fry", "ring_mix", "metal_ms", "bits", "stutter", "static", "reverb"]
 
 ## Each lever: [key, label, min, max, step, default]. The key is the voice type's (see
 ## native/chimera_voice/src/voice_type.rs); a lever at its default is left out of the voice.
@@ -102,29 +106,27 @@ const CHANGED := Color("ffb454")
 
 var _engine: Object
 var _type: VoiceType
-## 0 edits the base voice, 1 the alternate.
-var _side: int = 0
-var _sliders: Dictionary = {}  # key -> HSlider
+## Per side (0 base, 1 alternate): every lever, by key. A lever can show twice (common and all),
+## so each key holds a list of sliders.
+var _sliders: Array[Dictionary] = [{}, {}]
+var _macros: Array[Dictionary] = [{}, {}]
+var _switches: Array[Dictionary] = [{}, {}]  # "voiced" -> CheckButton, "intonation" -> ButtonGroup
 var _lines: Array = []  # [label, DialogueLine, voice]
 var _pose: StringName = &"neutral"
 var _samples: PackedFloat32Array = PackedFloat32Array()
 var _was_paused: bool = false
 var _held: Array[Node] = []
+var _dragging: int = -1
 
 var _type_picker: OptionButton
 var _type_name: LineEdit
-var _sides: ButtonGroup
-var _curve_edit: Control
-var _dragging: int = -1
-var _text: TextEdit
+var _timeline: Control
+var _text: LineEdit
 var _voice: ButtonGroup
-var _intonation: ButtonGroup
-var _voiced: CheckButton
 var _auto: CheckButton
 var _loop: CheckButton
-var _macros: Dictionary = {}  # name -> HSlider
 var _status: Label
-var _wave: Control
+var _all_levers: Control
 var _player: AudioStreamPlayer
 var _respeak: Timer
 
@@ -134,12 +136,13 @@ func _ready() -> void:
 	_hold_game()
 	_type = _new_type()
 	_build()
-	_show_side()
+	_show_type()
 	_engine = _make_engine()
 	if _engine == null:
 		_status.text = "No ChimeraVoice extension with voice types in this build. Run tools/build-voice.sh, then reopen."
 		return
-	_status.text = "Game paused. Shape the base, then the alternate, draw the curve, then Save."
+	_status.text = "Shape the base and the alternate, draw where the alternate plays, then Save."
+	speak()
 
 
 func _exit_tree() -> void:
@@ -148,7 +151,7 @@ func _exit_tree() -> void:
 
 func _process(_delta: float) -> void:
 	if _player != null and _player.playing:
-		_wave.queue_redraw()
+		_timeline.queue_redraw()
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -158,7 +161,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if key.keycode == KEY_SPACE:
 		speak()
 	elif key.keycode == KEY_ESCAPE:
-		queue_free()
+		if _all_levers.visible:
+			_all_levers.hide()
+		else:
+			queue_free()
 	else:
 		return
 	get_viewport().set_input_as_handled()
@@ -170,13 +176,12 @@ func speak() -> void:
 		return
 	var text := _text.text.strip_edges()
 	if text.is_empty():
-		_status.text = "Nothing to say: the text is empty."
+		_status.text = "Nothing to say: the line is empty."
 		return
 	var mood := Voices.mood(_pose)
 	var started := Time.get_ticks_usec()
 	_engine.set_voice_type(_type.encode())
-	var count: int = _engine.start(text, _voice_index(), MIX_RATE, mood.rate, mood.pitch, mood.swing)
-	if count <= 0:
+	if _engine.start(text, _voice.get_pressed_button().get_index(), MIX_RATE, mood.rate, mood.pitch, mood.swing) <= 0:
 		_status.text = "Chimera said nothing for \"%s\"." % text
 		return
 	_samples = PackedFloat32Array()
@@ -185,11 +190,11 @@ func speak() -> void:
 		if chunk.is_empty():
 			break
 		_samples.append_array(chunk)
-	var render_ms := (Time.get_ticks_usec() - started) / 1000.0
 	_player.stream = _to_wav(_samples)
 	_player.play()
-	_wave.queue_redraw()
-	_status.text = "%.2f s  ·  rendered in %.0f ms  ·  base %d, alternate %d settings" % [_samples.size() / MIX_RATE, render_ms, _type.base.size(), _type.alternate.size()]
+	_timeline.queue_redraw()
+	_status.text = "%.2f s, rendered in %.0f ms. Base %d settings, alternate %d." % [_samples.size() / MIX_RATE,
+		(Time.get_ticks_usec() - started) / 1000.0, _type.base.size(), _type.alternate.size()]
 
 
 # The game stops while the lab is open: the tree pauses, and every playing sound of the game is
@@ -216,7 +221,7 @@ func _release_game() -> void:
 
 func _new_type() -> VoiceType:
 	var t := VoiceType.new()
-	t.curve = _curve_from(CURVES[0][1])
+	t.curve = _curve_from(CURVES[3][1])
 	return t
 
 
@@ -227,17 +232,12 @@ func _curve_from(points: Array) -> Curve:
 	return curve
 
 
-## The settings of the side being edited.
-func _settings() -> Dictionary:
-	return _type.base if _side == 0 else _type.alternate
+func _settings(side: int) -> Dictionary:
+	return _type.base if side == 0 else _type.alternate
 
 
-func _voice_index() -> int:
-	return _voice.get_pressed_button().get_index()
-
-
-func _value(key: String) -> float:
-	return (_sliders[key] as HSlider).value
+func _value(side: int, key: String) -> float:
+	return float(_settings(side).get(key, _spec(key)[5]))
 
 
 func _spec(key: String) -> Array:
@@ -249,46 +249,46 @@ func _spec(key: String) -> Array:
 	return []
 
 
-# Writes a lever into the side being edited: left out at its default, so the voice stays sparse.
-func _store(key: String, value: float) -> void:
+# Writes a lever into a side, left out at its default so the voice stays sparse, and shows it on
+# every slider of that lever.
+func _set_lever(side: int, key: String, value: float) -> void:
 	if is_equal_approx(value, _spec(key)[5]):
-		_settings().erase(key)
+		_settings(side).erase(key)
 	else:
-		_settings()[key] = value
+		_settings(side)[key] = value
+	for slider: HSlider in _sliders[side].get(key, []):
+		slider.set_value_no_signal(value)
+		_describe(slider, key)
 
 
-func _store_switches() -> void:
-	if _voiced.button_pressed:
-		_settings().erase("voiced")
+func _store_switches(side: int) -> void:
+	var voiced: CheckButton = _switches[side]["voiced"]
+	if voiced.button_pressed:
+		_settings(side).erase("voiced")
 	else:
-		_settings()["voiced"] = 0.0
-	var tune := _intonation.get_pressed_button().get_index()
+		_settings(side)["voiced"] = 0.0
+	var tune: int = (_switches[side]["intonation"] as ButtonGroup).get_pressed_button().get_index()
 	if tune == 0:
-		_settings().erase("intonation")
+		_settings(side).erase("intonation")
 	else:
-		_settings()["intonation"] = float(tune)
+		_settings(side)["intonation"] = float(tune)
+	_on_changed()
 
 
-# Shows the side being edited on every lever and switch, storing nothing.
-func _show_side() -> void:
-	var settings := _settings()
-	for group: Array in GROUPS:
-		for spec: Array in group[2]:
-			var slider: HSlider = _sliders[spec[0]]
-			slider.set_value_no_signal(settings.get(spec[0], spec[5]))
-			_describe(spec[0])
-	_voiced.set_pressed_no_signal(settings.get("voiced", 1.0) >= 0.5)
-	_intonation.get_buttons()[int(settings.get("intonation", 0.0))].set_pressed_no_signal(true)
-	for macro: String in _macros:
-		(_macros[macro] as HSlider).set_value_no_signal(0.0)
-	_refresh_macro_chips()
-
-
-func _set_lever(key: String, value: float) -> void:
-	var slider: HSlider = _sliders[key]
-	slider.set_value_no_signal(value)
-	_store(key, value)
-	_describe(key)
+# Shows the whole type on every lever, switch and macro, storing nothing.
+func _show_type() -> void:
+	for side in 2:
+		for key: String in _sliders[side]:
+			for slider: HSlider in _sliders[side][key]:
+				slider.set_value_no_signal(_value(side, key))
+				_describe(slider, key)
+		(_switches[side]["voiced"] as CheckButton).set_pressed_no_signal(_value(side, "voiced") >= 0.5 if _settings(side).has("voiced") else true)
+		var tune := int(_settings(side).get("intonation", 0.0))
+		(_switches[side]["intonation"] as ButtonGroup).get_buttons()[tune].set_pressed_no_signal(true)
+		for macro: String in _macros[side]:
+			(_macros[side][macro] as HSlider).set_value_no_signal(0.0)
+		_refresh_macros(side)
+	_timeline.queue_redraw()
 
 
 func _to_wav(samples: PackedFloat32Array) -> AudioStreamWAV:
@@ -320,24 +320,6 @@ func _make_engine() -> Object:
 		return null
 	engine.load_dict(gz.decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP).get_string_from_utf8())
 	return engine if engine.is_ready() else null
-
-
-func _randomize() -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-	for group: Array in GROUPS:
-		for spec: Array in group[2]:
-			if spec[0] in ["rate", "pitch", "fs"]:
-				continue
-			# Mostly leave a lever alone, so a random voice stays a voice.
-			_set_lever(spec[0], rng.randf_range(spec[2], spec[3]) if rng.randf() < 0.3 else spec[5])
-	speak()
-
-
-func _reset() -> void:
-	_settings().clear()
-	_show_side()
-	_on_changed()
 
 
 func _save_type() -> void:
@@ -384,10 +366,9 @@ func _pick_type(index: int) -> void:
 			return
 		_type = loaded.duplicate(true) as VoiceType
 		if _type.curve == null:
-			_type.curve = _curve_from(CURVES[4][1])
+			_type.curve = _curve_from(CURVES[5][1])
 		_type_name.text = path.get_file().get_basename()
-	_show_side()
-	_curve_edit.queue_redraw()
+	_show_type()
 	_on_changed()
 
 
@@ -399,10 +380,10 @@ func _find_lines() -> void:
 			for conversation: Conversation in customer.conversations:
 				if conversation != null:
 					for line: DialogueLine in conversation.lines:
-						_lines.append(["%s · %s · %s" % [customer.display_name, conversation.id, line.text.left(44)], line, customer.voice])
+						_lines.append(["%s · %s" % [customer.display_name, line.text.left(50)], line, customer.voice])
 		elif resource is Conversation:
 			for line: DialogueLine in resource.lines:
-				_lines.append(["Everyone · %s · %s" % [resource.id, line.text.left(44)], line, ""])
+				_lines.append(["Everyone · %s" % line.text.left(50), line, ""])
 
 
 func _resources(dir: String) -> PackedStringArray:
@@ -444,18 +425,22 @@ func _build() -> void:
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "top", "right", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 28)
+		margin.add_theme_constant_override("margin_" + side, 24)
 	add_child(margin)
 	var page := VBoxContainer.new()
-	page.add_theme_constant_override("separation", 20)
+	page.add_theme_constant_override("separation", 16)
 	margin.add_child(page)
-	page.add_child(_header())
-	var body := HBoxContainer.new()
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_theme_constant_override("separation", 20)
-	page.add_child(body)
-	body.add_child(_sidebar())
-	body.add_child(_controls())
+	page.add_child(_top_bar())
+	var line_card := _line_card()
+	line_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	page.add_child(line_card)
+	var sides := HBoxContainer.new()
+	sides.add_theme_constant_override("separation", 16)
+	page.add_child(sides)
+	for side in 2:
+		sides.add_child(_side_card(side))
+	_all_levers = _all_levers_panel()
+	add_child(_all_levers)
 	_player = AudioStreamPlayer.new()
 	add_child(_player)
 	_respeak = Timer.new()
@@ -463,175 +448,228 @@ func _build() -> void:
 	_respeak.wait_time = 0.25
 	_respeak.timeout.connect(speak)
 	add_child(_respeak)
+	_fill_types()
 
 
-func _header() -> Control:
+func _top_bar() -> Control:
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 14)
-	var titles := VBoxContainer.new()
-	titles.add_theme_constant_override("separation", 0)
-	titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(titles)
-	titles.add_child(_label("Voice Lab", 30, TEXT))
-	titles.add_child(_label("Make voice types: a base voice, an alternate, and when the alternate takes over.", 15, DIM))
-	var paused := _label("  Game paused  ", 14, ACCENT)
-	paused.add_theme_stylebox_override("normal", _box(Color(ACCENT, 0.14), 14, 4))
+	row.add_theme_constant_override("separation", 12)
+	row.add_child(_label("Voice Lab", 28, TEXT))
+	var paused := _label("  Game paused  ", 13, ACCENT)
+	paused.add_theme_stylebox_override("normal", _box(Color(ACCENT, 0.14), 12, 3))
 	paused.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(paused)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(spacer)
+	_type_picker = OptionButton.new()
+	_type_picker.custom_minimum_size.x = 260
+	_type_picker.fit_to_longest_item = false
+	_type_picker.item_selected.connect(_pick_type)
+	row.add_child(_type_picker)
+	_type_name = LineEdit.new()
+	_type_name.placeholder_text = "Name, e.g. Cambion rasp"
+	_type_name.custom_minimum_size.x = 260
+	row.add_child(_type_name)
+	var save := Button.new()
+	save.text = "Save type"
+	save.theme_type_variation = &"AccentButton"
+	save.pressed.connect(_save_type)
+	row.add_child(save)
+	var copy := Button.new()
+	copy.text = "Copy"
+	copy.tooltip_text = "Copy the voice type's text form"
+	copy.pressed.connect(func() -> void:
+		DisplayServer.clipboard_set(_type.encode())
+		_status.text = "Copied the voice type's text form.")
+	row.add_child(copy)
 	var close := Button.new()
 	close.text = "Close  Esc"
-	close.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	close.pressed.connect(queue_free)
 	row.add_child(close)
 	return row
 
 
-func _sidebar() -> Control:
-	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size.x = 452
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	var side := VBoxContainer.new()
-	side.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	side.add_theme_constant_override("separation", 16)
-	scroll.add_child(side)
-
-	var type := _card("Voice type", "Saved in voices/types/")
-	side.add_child(type[0])
-	var pick_row := HBoxContainer.new()
-	pick_row.add_theme_constant_override("separation", 8)
-	type[1].add_child(pick_row)
-	_type_picker = OptionButton.new()
-	_type_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_type_picker.fit_to_longest_item = false
-	_type_picker.item_selected.connect(_pick_type)
-	pick_row.add_child(_type_picker)
-	var name_row := HBoxContainer.new()
-	name_row.add_theme_constant_override("separation", 8)
-	type[1].add_child(name_row)
-	_type_name = LineEdit.new()
-	_type_name.placeholder_text = "Name, e.g. Cambion rasp"
-	_type_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_row.add_child(_type_name)
-	var save := Button.new()
-	save.text = "Save"
-	save.theme_type_variation = &"AccentButton"
-	save.pressed.connect(_save_type)
-	name_row.add_child(save)
-	_sides = ButtonGroup.new()
-	type[1].add_child(_segmented(SIDES, _sides))
-	for button in _sides.get_buttons():
-		button.toggled.connect(func(on: bool) -> void:
-			if on:
-				_side = button.get_index()
-				_show_side())
-	type[1].add_child(_label("When the alternate plays, across the line", 13, DIM))
-	_curve_edit = Control.new()
-	_curve_edit.custom_minimum_size.y = 96
-	_curve_edit.mouse_filter = Control.MOUSE_FILTER_STOP
-	_curve_edit.draw.connect(_draw_curve)
-	_curve_edit.gui_input.connect(_on_curve_input)
-	_curve_edit.tooltip_text = "Drag a point; double-click to add one; right-click to remove one"
-	type[1].add_child(_curve_edit)
-	var presets := HBoxContainer.new()
-	presets.add_theme_constant_override("separation", 6)
-	type[1].add_child(presets)
-	for preset: Array in CURVES:
-		var button := Button.new()
-		button.text = preset[0]
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.pressed.connect(func() -> void:
-			_type.curve = _curve_from(preset[1])
-			_curve_edit.queue_redraw()
-			_on_changed())
-		presets.add_child(button)
-
-	var character := _card("Character", "Moves many levers of the side")
-	side.add_child(character[0])
-	for macro: String in MACROS:
-		character[1].add_child(_macro_row(macro))
-
-	var say := _card("Line", "What to say")
-	side.add_child(say[0])
+# The line, the voice that says it, and the timeline: its waveform with the curve over it.
+func _line_card() -> Control:
+	var card := _card("Line", "Drag the points where the alternate should play · double-click adds one · right-click removes one")
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	card[1].add_child(row)
 	var picker := OptionButton.new()
+	picker.custom_minimum_size.x = 340
+	picker.fit_to_longest_item = false
 	picker.add_item("Pick a line from the game")
 	_find_lines()
 	for entry: Array in _lines:
 		picker.add_item(entry[0])
 	picker.item_selected.connect(_pick_line)
-	picker.fit_to_longest_item = false
-	say[1].add_child(picker)
-	_text = TextEdit.new()
+	row.add_child(picker)
+	_text = LineEdit.new()
 	_text.text = "Are you busy? I can go somewhere else."
-	_text.custom_minimum_size.y = 64
-	_text.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
-	_text.text_changed.connect(_on_changed)
-	say[1].add_child(_text)
+	_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_text.text_submitted.connect(func(_t: String) -> void: speak())
+	row.add_child(_text)
 	_voice = ButtonGroup.new()
-	say[1].add_child(_segmented(BODIES, _voice))
-	_intonation = ButtonGroup.new()
-	say[1].add_child(_segmented(INTONATIONS, _intonation))
-	for button in _intonation.get_buttons():
+	var bodies := _segmented(BODIES, _voice)
+	bodies.custom_minimum_size.x = 260
+	row.add_child(bodies)
+	for button in _voice.get_buttons():
 		button.toggled.connect(func(on: bool) -> void:
 			if on:
-				_store_switches())
-	_voiced = CheckButton.new()
-	_voiced.text = "Voiced (off whispers)"
-	_voiced.button_pressed = true
-	_voiced.toggled.connect(func(_on: bool) -> void:
-		_store_switches()
-		_on_changed())
-	say[1].add_child(_voiced)
-
-	var play := _card("Play", "Space speaks")
-	side.add_child(play[0])
-	var transport := HBoxContainer.new()
-	transport.add_theme_constant_override("separation", 8)
-	play[1].add_child(transport)
+				_on_changed())
+	_timeline = Control.new()
+	_timeline.custom_minimum_size.y = 220
+	_timeline.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_timeline.mouse_filter = Control.MOUSE_FILTER_STOP
+	_timeline.draw.connect(_draw_timeline)
+	_timeline.gui_input.connect(_on_timeline_input)
+	card[1].add_child(_timeline)
+	var bottom := HBoxContainer.new()
+	bottom.add_theme_constant_override("separation", 8)
+	card[1].add_child(bottom)
 	var speak_button := Button.new()
-	speak_button.text = "Speak"
+	speak_button.text = "Speak  Space"
 	speak_button.theme_type_variation = &"AccentButton"
-	speak_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	speak_button.custom_minimum_size.x = 160
 	speak_button.pressed.connect(speak)
-	transport.add_child(speak_button)
-	for entry: Array in [["Stop", func() -> void: _player.stop()], ["Random", _randomize], ["Reset side", _reset]]:
-		var button := Button.new()
-		button.text = entry[0]
-		button.pressed.connect(entry[1])
-		transport.add_child(button)
-	_wave = Control.new()
-	_wave.custom_minimum_size.y = 80
-	_wave.draw.connect(_draw_wave)
-	play[1].add_child(_wave)
-	_status = _label("", 14, DIM)
-	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	play[1].add_child(_status)
-	var options := HBoxContainer.new()
-	options.add_theme_constant_override("separation", 12)
-	play[1].add_child(options)
+	bottom.add_child(speak_button)
+	var stop := Button.new()
+	stop.text = "Stop"
+	stop.pressed.connect(func() -> void: _player.stop())
+	bottom.add_child(stop)
+	_loop = CheckButton.new()
+	_loop.text = "Loop"
+	_loop.toggled.connect(func(_on: bool) -> void: speak())
+	bottom.add_child(_loop)
 	_auto = CheckButton.new()
 	_auto.text = "Speak on change"
 	_auto.button_pressed = true
-	options.add_child(_auto)
-	_loop = CheckButton.new()
-	_loop.text = "Loop"
-	_loop.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_loop.toggled.connect(func(_on: bool) -> void: speak())
-	options.add_child(_loop)
-	var copy := Button.new()
-	copy.text = "Copy as text"
-	copy.pressed.connect(func() -> void:
-		DisplayServer.clipboard_set(_type.encode())
-		_status.text = "Copied the voice type's text form.")
-	play[1].add_child(copy)
-	_fill_types()
-	return scroll
+	bottom.add_child(_auto)
+	_status = _label("", 14, DIM)
+	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_status.clip_text = true
+	bottom.add_child(_status)
+	bottom.add_child(_label("Curve", 14, DIM))
+	for preset: Array in CURVES:
+		var button := Button.new()
+		button.text = preset[0]
+		button.pressed.connect(func() -> void:
+			_type.curve = _curve_from(preset[1])
+			_timeline.queue_redraw()
+			_on_changed())
+		bottom.add_child(button)
+	return card[0]
 
 
-func _macro_row(macro: String) -> Control:
+# One side of the type: its four macros and the common levers, two columns.
+func _side_card(side: int) -> Control:
+	var card := _card(SIDES[side], "Plays where the curve is low" if side == 0 else "Plays where the curve is high")
+	card[0].size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var head: HBoxContainer = card[1].get_child(0)
+	var all := Button.new()
+	all.text = "All levers"
+	all.pressed.connect(func() -> void: _open_all_levers(side))
+	head.add_child(all)
+	var reset := Button.new()
+	reset.text = "Reset"
+	reset.pressed.connect(func() -> void:
+		_settings(side).clear()
+		_show_type()
+		_on_changed())
+	head.add_child(reset)
+	var macros := GridContainer.new()
+	macros.columns = 2
+	macros.add_theme_constant_override("h_separation", 24)
+	macros.add_theme_constant_override("v_separation", 6)
+	card[1].add_child(macros)
+	for macro: String in MACROS:
+		macros.add_child(_macro_row(side, macro))
+	card[1].add_child(HSeparator.new())
+	var levers := GridContainer.new()
+	levers.columns = 2
+	levers.add_theme_constant_override("h_separation", 24)
+	levers.add_theme_constant_override("v_separation", 4)
+	card[1].add_child(levers)
+	for key in COMMON:
+		levers.add_child(_slider_row(side, _spec(key)))
+	return card[0]
+
+
+# Every lever of one side, in columns that fit the screen; it covers the lab until closed.
+func _all_levers_panel() -> Control:
+	var veil := ColorRect.new()
+	veil.color = Color(0, 0, 0, 0.55)
+	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	veil.hide()
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for side_name in ["left", "top", "right", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side_name, 48)
+	veil.add_child(margin)
+	var panel := PanelContainer.new()
+	panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	margin.add_child(panel)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 12)
+	panel.add_child(box)
+	for side in 2:
+		var page := VBoxContainer.new()
+		page.name = "Side%d" % side
+		page.add_theme_constant_override("separation", 12)
+		box.add_child(page)
+		var head := HBoxContainer.new()
+		page.add_child(head)
+		var title := _label("All levers · %s" % SIDES[side], 22, TEXT)
+		title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		head.add_child(title)
+		var voiced := CheckButton.new()
+		voiced.text = "Voiced (off whispers)"
+		voiced.button_pressed = true
+		voiced.toggled.connect(func(_on: bool) -> void: _store_switches(side))
+		head.add_child(voiced)
+		var tune := ButtonGroup.new()
+		var tunes := _segmented(INTONATIONS, tune)
+		tunes.custom_minimum_size.x = 380
+		head.add_child(tunes)
+		for button in tune.get_buttons():
+			button.toggled.connect(func(on: bool) -> void:
+				if on:
+					_store_switches(side))
+		_switches[side] = {"voiced": voiced, "intonation": tune}
+		var done := Button.new()
+		done.text = "Done  Esc"
+		done.theme_type_variation = &"AccentButton"
+		done.pressed.connect(veil.hide)
+		head.add_child(done)
+		var columns := HBoxContainer.new()
+		columns.add_theme_constant_override("separation", 28)
+		page.add_child(columns)
+		for group: Array in GROUPS:
+			var column := VBoxContainer.new()
+			column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			column.add_theme_constant_override("separation", 2)
+			columns.add_child(column)
+			column.add_child(_label(group[0], 17, TEXT))
+			column.add_child(_label(group[1], 12, DIM))
+			for spec: Array in group[2]:
+				column.add_child(_slider_row(side, spec, true))
+	return veil
+
+
+func _open_all_levers(side: int) -> void:
+	for page_side in 2:
+		var page: Control = _all_levers.find_child("Side%d" % page_side, true, false)
+		page.visible = page_side == side
+	_all_levers.show()
+
+
+func _macro_row(side: int, macro: String) -> Control:
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	var label := _label(macro, 18, TEXT)
-	label.custom_minimum_size.x = 110
+	row.add_theme_constant_override("separation", 10)
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var label := _label(macro, 16, TEXT)
+	label.custom_minimum_size.x = 96
 	row.add_child(label)
 	var slider := HSlider.new()
 	slider.max_value = 1.0
@@ -639,27 +677,25 @@ func _macro_row(macro: String) -> Control:
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(slider)
-	var chip := _label("0%", 14, TEXT)
+	var chip := _label("0%", 13, TEXT)
 	chip.name = "Chip"
-	chip.custom_minimum_size.x = 64
+	chip.custom_minimum_size.x = 56
 	chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	chip.add_theme_stylebox_override("normal", _box(RAISED, 8, 3))
 	row.add_child(chip)
 	var reset := _reset_button(func() -> void: slider.value = 0.0)
 	reset.name = "Reset"
-	_show_reset(reset, false)
 	row.add_child(reset)
-	_macros[macro] = slider
+	_macros[side][macro] = slider
 	slider.value_changed.connect(func(_value: float) -> void:
-		_refresh_macro_chips()
-		_apply_macro(macro)
+		_refresh_macros(side)
+		_apply_macro(side, macro)
 		_on_changed())
 	return row
 
 
-func _refresh_macro_chips() -> void:
-	for macro: String in _macros:
-		var slider: HSlider = _macros[macro]
+func _refresh_macros(side: int) -> void:
+	for macro: String in _macros[side]:
+		var slider: HSlider = _macros[side][macro]
 		var row := slider.get_parent()
 		var chip: Label = row.get_node("Chip")
 		chip.text = "%d%%" % roundi(slider.value * 100.0)
@@ -668,39 +704,16 @@ func _refresh_macro_chips() -> void:
 		_show_reset(row.get_node("Reset"), slider.value > 0.0)
 
 
-# Sets the levers that [param moved] pulls, and only those, so a lever set by hand stays: each is its
-# default plus every macro's pull toward its target.
-func _apply_macro(moved: String) -> void:
+# Sets the levers that [param moved] pulls on [param side], and only those, so a lever set by hand
+# stays: each is its default plus every macro's pull toward its target.
+func _apply_macro(side: int, moved: String) -> void:
 	for key: String in MACROS[moved]:
 		var spec := _spec(key)
 		var value: float = spec[5]
 		for macro: String in MACROS:
 			if MACROS[macro].has(key):
-				value += (_macros[macro] as HSlider).value * (MACROS[macro][key] - spec[5])
-		_set_lever(key, clampf(value, spec[2], spec[3]))
-
-
-func _controls() -> Control:
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	# Two columns that each stack their cards, so a short card leaves no gap beside a tall one.
-	var columns := HBoxContainer.new()
-	columns.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	columns.add_theme_constant_override("separation", 20)
-	scroll.add_child(columns)
-	for i in 2:
-		var column := VBoxContainer.new()
-		column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		column.add_theme_constant_override("separation", 20)
-		columns.add_child(column)
-	for g in GROUPS.size():
-		var group: Array = GROUPS[g]
-		var card := _card(group[0], group[1])
-		columns.get_child(g % 2).add_child(card[0])
-		for spec: Array in group[2]:
-			card[1].add_child(_slider_row(spec))
-	return scroll
+				value += (_macros[side][macro] as HSlider).value * (MACROS[macro][key] - spec[5])
+		_set_lever(side, key, clampf(value, spec[2], spec[3]))
 
 
 ## A card: a rounded panel with a title and a hint. Returns [panel, the box for its content].
@@ -711,7 +724,7 @@ func _card(title: String, hint: String) -> Array:
 	panel.add_child(box)
 	var head := HBoxContainer.new()
 	box.add_child(head)
-	var name_label := _label(title, 19, TEXT)
+	var name_label := _label(title, 18, TEXT)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(name_label)
 	head.add_child(_label(hint, 13, DIM))
@@ -736,13 +749,15 @@ func _segmented(options: PackedStringArray, group: ButtonGroup) -> Control:
 	return row
 
 
-func _slider_row(spec: Array) -> Control:
+func _slider_row(side: int, spec: Array, compact := false) -> Control:
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
+	row.add_theme_constant_override("separation", 8)
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.mouse_filter = Control.MOUSE_FILTER_PASS
-	var label := _label(spec[1], 15, TEXT)
+	var label := _label(spec[1], 13 if compact else 15, TEXT)
 	label.name = "Name"
-	label.custom_minimum_size.x = 150
+	label.custom_minimum_size.x = 104 if compact else 128
+	label.clip_text = true
 	row.add_child(label)
 	var slider := HSlider.new()
 	slider.min_value = spec[2]
@@ -752,31 +767,33 @@ func _slider_row(spec: Array) -> Control:
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(slider)
-	var chip := _label("", 14, TEXT)
+	var chip := _label("", 12 if compact else 13, TEXT)
 	chip.name = "Value"
-	chip.custom_minimum_size.x = 84
+	chip.custom_minimum_size.x = 64 if compact else 76
 	chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	row.add_child(chip)
-	var reset := _reset_button(func() -> void: slider.value = spec[5])
+	var reset := _reset_button(func() -> void: _set_lever(side, spec[0], spec[5]))
 	reset.name = "Reset"
+	reset.pressed.connect(_on_changed)
 	row.add_child(reset)
-	_sliders[spec[0]] = slider
+	if not _sliders[side].has(spec[0]):
+		_sliders[side][spec[0]] = []
+	_sliders[side][spec[0]].append(slider)
 	slider.value_changed.connect(func(value: float) -> void:
-		_store(spec[0], value)
-		_describe(spec[0])
+		_set_lever(side, spec[0], value)
 		_on_changed())
 	row.gui_input.connect(func(event: InputEvent) -> void:
 		var click := event as InputEventMouseButton
 		if click and click.double_click:
-			slider.value = spec[5])
-	_describe(spec[0])
+			_set_lever(side, spec[0], spec[5])
+			_on_changed())
+	_describe(slider, spec[0])
 	return row
 
 
-# Shows a lever's value, and marks it when it differs from the default.
-func _describe(key: String) -> void:
+# Shows a slider's value, and marks its row when it differs from the default.
+func _describe(slider: HSlider, key: String) -> void:
 	var spec := _spec(key)
-	var slider: HSlider = _sliders[key]
 	var row := slider.get_parent()
 	var changed := not is_equal_approx(slider.value, spec[5])
 	var chip: Label = row.get_node("Value")
@@ -915,36 +932,37 @@ func _dot(diameter: int, color: Color) -> ImageTexture:
 	return ImageTexture.create_from_image(image)
 
 
-# The curve editor: x is the line from start to end, y how much of the alternate plays.
-func _curve_rect() -> Rect2:
-	return Rect2(Vector2(8, 8), _curve_edit.size - Vector2(16, 16))
+# --- The timeline: the line's waveform, and over it the curve that says where the alternate plays.
+
+func _area() -> Rect2:
+	return Rect2(Vector2(12, 12), _timeline.size - Vector2(24, 24))
 
 
 func _to_screen(p: Vector2) -> Vector2:
-	var r := _curve_rect()
+	var r := _area()
 	return Vector2(r.position.x + p.x * r.size.x, r.position.y + (1.0 - p.y) * r.size.y)
 
 
 func _to_curve(at: Vector2) -> Vector2:
-	var r := _curve_rect()
+	var r := _area()
 	return Vector2(clampf((at.x - r.position.x) / r.size.x, 0.0, 1.0), clampf(1.0 - (at.y - r.position.y) / r.size.y, 0.0, 1.0))
 
 
 func _point_near(at: Vector2) -> int:
 	for i in _type.curve.point_count:
-		if _to_screen(_type.curve.get_point_position(i)).distance_to(at) < 10.0:
+		if _to_screen(_type.curve.get_point_position(i)).distance_to(at) < 12.0:
 			return i
 	return -1
 
 
-func _on_curve_input(event: InputEvent) -> void:
+func _on_timeline_input(event: InputEvent) -> void:
 	var curve := _type.curve
 	var click := event as InputEventMouseButton
 	if click and click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
 		var near := _point_near(click.position)
 		if click.double_click and near < 0:
-			var p := _to_curve(click.position)
-			curve.add_point(p, 0.0, 0.0, Curve.TANGENT_LINEAR, Curve.TANGENT_LINEAR)
+			curve.add_point(_to_curve(click.position), 0.0, 0.0, Curve.TANGENT_LINEAR, Curve.TANGENT_LINEAR)
+			_on_changed()
 		else:
 			_dragging = near
 	elif click and not click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
@@ -964,54 +982,54 @@ func _on_curve_input(event: InputEvent) -> void:
 		var high := curve.get_point_position(_dragging + 1).x if _dragging < curve.point_count - 1 else 1.0
 		curve.set_point_offset(_dragging, clampf(p.x, low, high))
 		curve.set_point_value(_dragging, p.y)
-	_curve_edit.queue_redraw()
+	_timeline.queue_redraw()
 
 
-func _draw_curve() -> void:
-	var r := _curve_rect()
-	_curve_edit.draw_style_box(_box(Color("0f1116"), 10), Rect2(Vector2.ZERO, _curve_edit.size))
-	for y in [0.0, 0.5, 1.0]:
-		_curve_edit.draw_line(_to_screen(Vector2(0, y)), _to_screen(Vector2(1, y)), LINE, 1.0)
+func _draw_timeline() -> void:
+	var r := _area()
+	_timeline.draw_style_box(_box(Color("0f1116"), 12), Rect2(Vector2.ZERO, _timeline.size))
 	var curve := _type.curve
+	# Where the alternate plays: shaded from the bottom up to the curve.
+	if curve != null:
+		var fill := PackedVector2Array([_to_screen(Vector2(0, 0))])
+		for i in 129:
+			var x := i / 128.0
+			fill.append(_to_screen(Vector2(x, clampf(curve.sample(x), 0.0, 1.0))))
+		fill.append(_to_screen(Vector2(1, 0)))
+		_timeline.draw_colored_polygon(fill, Color(CHANGED, 0.14))
+	# The waveform, coloured by which voice plays there.
+	if not _samples.is_empty():
+		var mid := r.position.y + r.size.y * 0.5
+		var played := -1.0
+		if _player.playing:
+			played = r.position.x + _player.get_playback_position() * MIX_RATE / _samples.size() * r.size.x
+		var columns := int(r.size.x / 2.0)
+		for c in columns:
+			var from := int(float(c) / columns * _samples.size())
+			var to := int(float(c + 1) / columns * _samples.size())
+			var peak := 0.0
+			for i in range(from, to):
+				peak = maxf(peak, absf(_samples[i]))
+			var x := r.position.x + c * 2.0
+			var amount := clampf(curve.sample(float(c) / columns), 0.0, 1.0) if curve != null else 0.0
+			var color := ACCENT.lerp(CHANGED, amount)
+			if played >= 0.0 and x > played:
+				color.a = 0.45
+			var height := maxf(1.0, peak * r.size.y * 0.48)
+			_timeline.draw_line(Vector2(x, mid - height), Vector2(x, mid + height), color, 1.5)
+		if played >= 0.0:
+			_timeline.draw_line(Vector2(played, r.position.y), Vector2(played, r.end.y), TEXT, 2.0)
 	if curve == null:
 		return
-	var fill := PackedVector2Array([_to_screen(Vector2(0, 0))])
-	for i in 65:
-		var x := i / 64.0
-		fill.append(_to_screen(Vector2(x, clampf(curve.sample(x), 0.0, 1.0))))
-	fill.append(_to_screen(Vector2(1, 0)))
-	_curve_edit.draw_colored_polygon(fill, Color(CHANGED, 0.18))
-	_curve_edit.draw_polyline(fill.slice(1, fill.size() - 1), CHANGED, 2.0, true)
+	var line := PackedVector2Array()
+	for i in 129:
+		var x := i / 128.0
+		line.append(_to_screen(Vector2(x, clampf(curve.sample(x), 0.0, 1.0))))
+	_timeline.draw_polyline(line, CHANGED, 2.5, true)
 	for i in curve.point_count:
 		var at := _to_screen(curve.get_point_position(i))
-		_curve_edit.draw_circle(at, 6.0, TEXT)
-		_curve_edit.draw_circle(at, 4.0, CHANGED)
-	_curve_edit.draw_string(get_theme_default_font(), r.position + Vector2(4, 14), "Alternate", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, DIM)
-	_curve_edit.draw_string(get_theme_default_font(), Vector2(r.position.x + 4, r.end.y - 4), "Base", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, DIM)
-
-
-func _draw_wave() -> void:
-	var rect := Rect2(Vector2.ZERO, _wave.size)
-	_wave.draw_style_box(_box(Color("0f1116"), 10), rect)
-	# Behind the waveform: how much of the alternate plays at each moment.
-	if _type != null and _type.curve != null:
-		for x in range(4, int(rect.size.x) - 4, 4):
-			var amount := clampf(_type.curve.sample(x / rect.size.x), 0.0, 1.0)
-			if amount > 0.0:
-				_wave.draw_rect(Rect2(x, rect.size.y * (1.0 - amount), 4, rect.size.y * amount), Color(CHANGED, 0.12))
-	if _samples.is_empty():
-		return
-	var mid := rect.size.y * 0.5
-	var played := -1.0
-	if _player.playing:
-		played = _player.get_playback_position() * MIX_RATE / _samples.size() * rect.size.x
-	var step := maxi(1, _samples.size() / int(maxf(1.0, rect.size.x)))
-	for x in range(2, int(rect.size.x) - 2, 2):
-		var peak := 0.0
-		for i in range(x * step, mini((x + 2) * step, _samples.size())):
-			peak = maxf(peak, absf(_samples[i]))
-		var height := maxf(1.0, peak * (mid - 8))
-		var color := ACCENT if x <= played else Color(ACCENT, 0.45)
-		_wave.draw_line(Vector2(x, mid - height), Vector2(x, mid + height), color, 1.5)
-	if played >= 0.0:
-		_wave.draw_line(Vector2(played, 6), Vector2(played, rect.size.y - 6), TEXT, 2.0)
+		_timeline.draw_circle(at, 7.0, TEXT)
+		_timeline.draw_circle(at, 5.0, CHANGED)
+	var font := get_theme_default_font()
+	_timeline.draw_string(font, r.position + Vector2(6, 16), "Alternate", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, CHANGED)
+	_timeline.draw_string(font, Vector2(r.position.x + 6, r.end.y - 6), "Base", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, ACCENT)
