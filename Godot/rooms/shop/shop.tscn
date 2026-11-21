@@ -165,7 +165,7 @@ point_count = 5
 
 [sub_resource type="Curve3D" id="Curve3D_modem_line"]
 _data = {
-"points": PackedVector3Array(0, 0, 0, 0.05, 0, 0, 0, 0, 0, -0.04, 0, 0, 0.03, -0.01, 0, 0.11, -0.014, 0.02, 0, 0.2, -0.03, 0, -0.05, 0.04, 0.14, -0.7, 0.12, -0.08, 0, -0.08, 0.1, 0, 0.2, 0.3, -0.764, 0.45, -0.05, 0, -0.2, 0.01, 0, 0.04, 0.54, -0.764, 1.05, 0, -0.05, -0.03, 0, 0, 0, 0.55, -0.65, 1.11),
+"points": PackedVector3Array(0, 0, 0, 0.04, 0, 0, 0, 0, 0, -0.03, 0, 0, 0.01, -0.01, 0, 0.08, -0.014, 0.02, 0, 0.2, -0.03, 0, -0.05, 0.04, 0.088, -0.7, 0.12, 0, 0, -0.1, -0.05, 0, 0.2, 0.08, -0.764, 0.5, 0.1, 0, -0.15, -0.05, 0, 0.03, -0.4, -0.764, 1.06, 0, -0.05, -0.03, 0, 0, 0, -0.45, -0.65, 1.11),
 "tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0)
 }
 point_count = 6
@@ -387,22 +387,22 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.225, 1, -1.2)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.95, 0, 0.5)
 
 [node name="WorkDesk" parent="Room" unique_id=924977988 instance=ExtResource("16_we7dl")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6, 0, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6, 0, 0.7)
 
 [node name="WorkMonitor" parent="Room" unique_id=609848541 instance=ExtResource("11_ydxbd")]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.75, 0.75, 0.45)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.75, 0.75, 0.45)
 
 [node name="WorkKeyboard" parent="Room" unique_id=2073205538 instance=ExtResource("12_ymhy8")]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.42, 0.75, 0.45)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.42, 0.75, 0.45)
 
 [node name="WorkTower" parent="Room" unique_id=137852129 instance=ExtResource("14_qg2fl")]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.85, 0.75, 1.2)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.85, 0.75, 1.2)
 
 [node name="WorkModem" parent="Room" instance=ExtResource("25_modem")]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.8, 0.75, 0.88)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.8, 0.75, 0.88)
 
 [node name="ModemLine" type="Path3D" parent="Room"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9, 0.77, 0.88)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, 0.77, 0.88)
 curve = SubResource("Curve3D_modem_line")
 
 [node name="Cord" type="CSGPolygon3D" parent="Room/ModemLine"]
@@ -429,10 +429,10 @@ mesh = SubResource("BoxMesh_phone_jack")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.15, 1, -1.05)
 
 [node name="TrashCan" parent="Room" instance=ExtResource("24_trash")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 0, 1.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0, 1.2)
 
 [node name="WorkComputer" parent="Room" unique_id=397139589 instance=ExtResource("13_ojat2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.72, 1, 0.45)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.72, 1, 0.45)
 view = &"CompufunDB"
 size = Vector3(0.32, 0.42, 0.46)
 
@@ -520,7 +520,7 @@ screen = 2
 fov = 40.0
 
 [node name="CompufunDB" type="Marker3D" parent="Views" unique_id=777189132]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.12, 1.005, 0.45)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.12, 1.005, 0.45)
 script = ExtResource("21_sg8ra")
 back = &"Right"
 screen = 1
