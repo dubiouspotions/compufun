@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/cardboard.tres" id="1_card"]
+[ext_resource type="Material" path="res://materials/box_print.tres" id="2_print"]
+[ext_resource type="Material" path="res://materials/paper.tres" id="3_paper"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_box"]
+size = Vector3(0.5, 0.45, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_band"]
+size = Vector3(0.506, 0.15, 0.406)
+
+[sub_resource type="BoxMesh" id="BoxMesh_picture"]
+size = Vector3(0.2, 0.1, 0.006)
+
+[node name="ComputerBox" type="Node3D"]
+
+[node name="Box" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.225, 0)
+material_override = ExtResource("1_card")
+mesh = SubResource("BoxMesh_box")
+
+[node name="Band" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+material_override = ExtResource("2_print")
+mesh = SubResource("BoxMesh_band")
+
+[node name="Picture" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11, 0.3, 0.205)
+material_override = ExtResource("3_paper")
+mesh = SubResource("BoxMesh_picture")
