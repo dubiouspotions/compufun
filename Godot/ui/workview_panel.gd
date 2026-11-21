@@ -18,7 +18,7 @@ func _sync() -> void:
 	if job == null:
 		_state.text = "No computer in focus."
 	elif job.case_open:
-		_state.text = "Take a part out, or put one in."
+		_state.text = "Click the side panel to put it back on." if _inside_done(job) else "Take a part out, or put one in."
 	elif job.hardware_fixed:
 		_state.text = "Hardware: done."
 	elif job.powered:

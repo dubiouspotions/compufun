@@ -204,6 +204,10 @@ size = Vector3(0.42, 0.02, 0.42)
 unique_name_in_owner = true
 transform = Transform3D(0, -1, 0, 0, 0, 1, -1, 0, 0, 0, 0.0065, 0)
 
+[node name="PanelOff" type="Marker3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, -0.104528, -0.994522, 0, 0.994522, -0.104528, 0, 0.2088, -0.214)
+
 [node name="PanelScrews" type="Marker3D" parent="." unique_id=1479054847]
 unique_name_in_owner = true
 

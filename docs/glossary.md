@@ -75,7 +75,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Place**: Where a part sits inside a computer. A job holds one piece per place, or none when the player took it out (`Job.places`).
 *Avoid:* slot (that is a job's place on the counter).
 
-**Side panel**: The panel that the player lifts off a computer to reach its parts, held by two screws (`Job.case_open`, `Job.panel_screws`). In the Workview the computer stands until the player clicks its top; then it lies on its side, the side panel up (`Job.lying`), in every view until the player stands it up with the panel on.
+**Side panel**: The panel that the player lifts off a computer to reach its parts, held by two screws (`Job.case_open`, `Job.panel_screws`). In the Workview the computer stands until the player clicks its top; then it lies on its side, the side panel up (`Job.lying`), in every view until the player stands it up with the panel on. Taken off, the panel leans against the back of the case until a click puts it back on.
 *Avoid:* lid, cover, shell.
 
 **Mat**: The strip in front of an open computer where the player lays the pieces that they took out (`Job.mat`).
