@@ -47,3 +47,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 **Debug menu**: The F2 panel in debug builds that sets the time of day, the day cycle and the rain.
 *Avoid:* dev menu, cheat menu.
+
+**Conversation**: One exchange with a customer: the lines they say, then the replies the player picks. A `Conversation` resource in the `Customer` file, found by its id (`arrive`).
+*Avoid:* dialog, dialogue tree, script.
+
+**Dialogue tab**: The editor tab (`addons/dialogue_editor/`) that lists every customer and edits their conversations.
+*Avoid:* admin UI, dialogue tool, dialogue editor.
