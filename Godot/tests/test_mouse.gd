@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## The desktop's mouse: the left-handed button swap, double-clicks at the setup's speed, and the
-## pointer trail. Scripts that name ComputerState load at run time.
+## Mouse Properties: the pages' pending settings, the left-handed button swap, double-clicks at
+## the setup's speed, and the pointer trail. Scripts that name ComputerState load at run time.
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"
 const MOUSE_INPUT_PATH := "res://win95/mouse_input.gd"
@@ -20,14 +20,68 @@ func run() -> void:
 	state.job = job
 	root.add_child(state)
 	await process_frame
+	var setup: Win95Setup = state.setup
 	check("the computer runs", state.is_on, true)
 
+	_check_pages(state, setup)
 	await _check_buttons(state)
 	_check_double_click(state)
 	_check_trails(state)
 
 	state.free()
 	game.jobs = [] as Array[Job]
+
+
+func _check_pages(state: Node, setup: Win95Setup) -> void:
+	var desktop: Control = load("res://win95/desktop.gd").new()
+	desktop.computer = state
+	root.add_child(desktop)
+	var sheet: Node = load("res://win95/applets/mouse.tscn").instantiate()
+	desktop.add_child(sheet)
+	var tabs: Node = sheet.get_node("%Tabs")
+	check("four tabs", tabs.get_children().map(func(n: Node) -> String: return n.name), ["Buttons", "Pointers", "Motion", "General"])
+	var buttons: Node = tabs.get_node("Buttons")
+	var motion: Node = tabs.get_node("Motion")
+	check("Buttons loads the setup", buttons.call(&"pending"), {&"left_handed": false, &"double_click_ms": 500})
+	var left: CheckBox = sheet.get_node("%LeftHanded")
+	left.button_pressed = true
+	check("Left-handed is pending", buttons.call(&"pending")[&"left_handed"], true)
+	check("the picture and the texts swap", [(sheet.get_node("%Picture") as TextureRect).texture, (sheet.get_node("%LeftButton") as Label).text],
+		[buttons.get(&"left_handed_picture"), buttons.get(&"menu_text")])
+	check("an edit enables Apply", (sheet.get_node("%Apply") as Button).disabled, false)
+	var speed: HSlider = sheet.get_node("%DoubleClick")
+	speed.value = speed.max_value
+	check("Fast is the shortest gap", buttons.call(&"pending")[&"double_click_ms"], 100)
+	speed.value = speed.min_value
+	check("Slow is the longest gap", buttons.call(&"pending")[&"double_click_ms"], 900)
+	var jack: AtlasTexture = (sheet.get_node("%Jack") as TextureRect).texture
+	var test_area: Control = sheet.get_node("%TestArea")
+	test_area.gui_input.emit(_button(MOUSE_BUTTON_LEFT, true, Vector2(40, 40)))
+	check("one click leaves the jack in its box", jack.region.position.x, 0.0)
+	test_area.gui_input.emit(_button(MOUSE_BUTTON_LEFT, true, Vector2(40, 40)))
+	check("a double-click pops it out", jack.region.position.x > 0.0, true)
+
+	check("Motion loads no trail", motion.call(&"pending"), {&"pointer_speed": 3, &"pointer_trails": 0})
+	var length: HSlider = sheet.get_node("%TrailLength")
+	check("the trail slider is greyed at Long", [length.editable, length.value], [false, 7.0])
+	(sheet.get_node("%ShowTrails") as CheckBox).button_pressed = true
+	check("ticking shows a Long trail", [length.editable, motion.call(&"pending")[&"pointer_trails"]], [true, 7])
+	length.value = length.min_value
+	(sheet.get_node("%Speed") as HSlider).value = 6
+	check("Short and fast", motion.call(&"pending"), {&"pointer_speed": 6, &"pointer_trails": 2})
+	(sheet.get_node("%ShowTrails") as CheckBox).button_pressed = false
+	check("unticked is no trail", motion.call(&"pending")[&"pointer_trails"], 0)
+
+	(sheet.get_node("%Apply") as Button).pressed.emit()
+	check("Apply sets the copy", [setup.left_handed, setup.double_click_ms, setup.pointer_speed, setup.pointer_trails], [true, 900, 6, 0])
+	sheet.free()
+
+	state.apply_settings({&"pointer_trails": 4, &"left_handed": false, &"double_click_ms": 500} as Dictionary[StringName, Variant])
+	sheet = load("res://win95/applets/mouse.tscn").instantiate()
+	desktop.add_child(sheet)
+	check("a trail loads ticked", [(sheet.get_node("%ShowTrails") as CheckBox).button_pressed, (sheet.get_node("%TrailLength") as HSlider).value], [true, 4.0])
+	check("an unedited sheet keeps Apply grey", (sheet.get_node("%Apply") as Button).disabled, true)
+	desktop.free()
 
 
 func _check_buttons(state: Node) -> void:
