@@ -18,5 +18,5 @@ enum Trigger {
 ## Plays only the first time it matches.
 @export var once: bool = false
 @export var lines: Array[DialogueLine] = []
-## How every line is said, unless the line has its own; null says them plainly.
-@export var voice_type: VoiceType
+## The voice effect of every line, unless the line has its own; null for none.
+@export var effect: VoiceEffect

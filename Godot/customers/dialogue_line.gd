@@ -7,8 +7,8 @@ extends Resource
 ## One of [constant Person.POSES]; the inspector shows them as a dropdown. It sets the portrait and
 ## the mood of the voice (voices/moods/).
 @export var pose: StringName = &"neutral"
-## How this line is said; null takes its conversation's voice type.
-@export var voice_type: VoiceType
+## The voice effect of this line; null takes its conversation's.
+@export var effect: VoiceEffect
 
 
 func _validate_property(property: Dictionary) -> void:

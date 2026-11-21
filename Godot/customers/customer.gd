@@ -16,9 +16,9 @@ extends Resource
 ## the head, with -Z the way the face looks, and the hat stays above y = 0 at the front to keep the
 ## face clear.
 @export var hat: PackedScene
-## The Chimera voice that speaks this customer's lines. A change needs new voice files: run
-## voices/render_voices.gd.
-@export_enum("male", "female", "child") var voice: String = "male"
+## Who speaks this customer's lines: the bottom layer of their voice (voices/persons/). A new
+## body needs new voice files: run voices/render_voices.gd.
+@export var voice: VoicePerson = preload("res://voices/persons/man.tres")
 
 
 ## The name the dialogue shows: the person's nickname, or [member display_name] while that is empty.

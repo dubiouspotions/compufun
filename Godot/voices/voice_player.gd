@@ -43,22 +43,24 @@ func _ready() -> void:
 	bus = BUS
 
 
-## Starts saying [param line] in [param voice] (male, female or child), shaped by
-## [param voice_type] (null says it plainly), and returns its length in seconds, or 0 when the
-## length is not known yet (a live line in a browser). A pre-rendered WAV has no voice type.
-func say(line: DialogueLine, voice: String, voice_type: VoiceType = null) -> float:
+## Starts saying [param line] as [param person], in the mood of its pose, under [param effect]
+## (null for none), and returns its length in seconds, or 0 when the length is not known yet (a
+## live line in a browser). A pre-rendered WAV has only the person's body and the mood's rate,
+## pitch and swing.
+func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) -> float:
 	hush()
 	if line == null or line.text.strip_edges().is_empty():
 		return 0.0
-	if not BODIES.has(voice):
-		push_error("VoicePlayer: no voice \"%s\"; have %s" % [voice, ", ".join(BODIES.keys())])
+	if person == null or not BODIES.has(person.body):
+		push_error("VoicePlayer: no voice person, or one with an unknown body, for \"%s\"" % line.text)
 		return 0.0
+	var voice := person.body
 	var mood := Voices.mood(line.pose)
 	var rate := mood.rate * (1.0 + randf_range(-rate_jitter, rate_jitter))
 	var pitch := mood.pitch * (1.0 + randf_range(-pitch_jitter, pitch_jitter))
 	var swing := mood.swing * (1.0 + randf_range(-swing_jitter, swing_jitter))
 	pitch_scale = 1.0
-	var type_text := voice_type.encode() if voice_type != null else ""
+	var type_text := Voices.layer(person, mood, effect)
 	var web := _web_voice()
 	if web != null:
 		web.say(line.text, BODIES[voice], rate, pitch, swing, db_to_linear(volume_db), type_text)

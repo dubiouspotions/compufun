@@ -86,7 +86,7 @@ func _on_timer() -> void:
 	_last = line
 	_label.text = "%s: %s" % [_customer.spoken_name(), line.text]
 	show()
-	_timer.start(maxf(show_seconds, _voice.say(line, _customer.voice, VoiceType.of(line, _conversation))))
+	_timer.start(maxf(show_seconds, _voice.say(line, _customer.voice, VoiceEffect.of(line, _conversation))))
 
 
 # The mood group of the line at [param step]: up through the groups, then round the angriest ones.
