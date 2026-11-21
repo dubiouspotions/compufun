@@ -33,6 +33,10 @@ Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actio
 
 ## Credits
 
+- `Godot/win95/sounds/boot_power_on.ogg`: cut from "PC startup" by bratij on Freesound (https://freesound.org/people/bratij/sounds/841351/), CC0.
+- `Godot/win95/sounds/boot_post_beep.ogg`: cut from "PC speaker error beep" by CZghost on Freesound (https://freesound.org/people/CZghost/sounds/264823/), CC0.
+- `Godot/win95/sounds/boot_drive.ogg`: cut from "Electronic, Computer, Hard Drive - 1990s Compaq Hard Drive, Spooling Up, Turning Off - Close Perspective Memory Access Noise" by jaegrover on Freesound (https://freesound.org/people/jaegrover/sounds/262872/), CC0.
+- `Godot/win95/sounds/boot_startup.ogg`: cut from "1990s Operating System Start Sound - Optimistic" by Johnmode on Freesound (https://freesound.org/people/Johnmode/sounds/818343/), CC0.
 - `Godot/win95/theme/fonts/`: W95FA Pixel, a pixel-grid version of [W95FA](https://fontsarena.com/w95fa-by-alina-sava/) by Alina Sava (FontsArena), SIL OFL 1.1 (`ofl.txt`).
 - `Godot/voices/`: the customers' voices, rendered with [Chimera](https://github.com/jamesondh/chimera-vocal-synth) by Jameson Hodge, MIT. The game ships only the rendered WAV files.
 - `.claude/skills/godot-master/`: the godot-master agent skill from [Game-Dev-Agentic-Skills](https://github.com/thedivergentai/Game-Dev-Agentic-Skills), LGPL-3.0. Not part of the game.

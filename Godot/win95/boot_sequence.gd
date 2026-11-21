@@ -1,6 +1,7 @@
 extends Control
 ## A 1995 PC booting: the BIOS power-on self test, "Starting Windows 95...", the splash screen,
-## then the desktop beneath. Any key or click skips it. Frees itself when done.
+## then the desktop beneath, with a sound for each stage. Any key or click skips to the desktop.
+## Frees itself when the startup sound has played.
 
 ## The boot reached the desktop, or the player skipped it.
 signal finished
@@ -33,12 +34,24 @@ signal finished
 @export var post_hold_seconds: float = 1.0
 @export var starting_seconds: float = 1.5
 @export var splash_seconds: float = 3.0
+@export_group("Sounds")
+## Plays as the POST starts: the switch and the fan spinning up.
+@export var power_on_sound: AudioStream
+## Plays when the memory test passes.
+@export var post_beep_sound: AudioStream
+## Plays from drive detection through "Starting Windows 95...".
+@export var drive_sound: AudioStream
+## Plays as the desktop appears, also after a skip.
+@export var startup_sound: AudioStream
+@export_group("")
+
 ## The colours that scroll along the bottom of the splash screen.
 @export var bar_colors: PackedColorArray = [Color8(0, 0, 128), Color8(0, 128, 255), Color8(255, 255, 255), Color8(0, 128, 255)]
 
 var _skipped: bool = false
 var _playing: bool = false
 var _bar_offset: float = 0.0
+var _players: Array[AudioStreamPlayer] = []
 
 @onready var _post: Label = %Post
 @onready var _starting: Label = %Starting
@@ -75,14 +88,27 @@ func play() -> void:
 	focus_mode = Control.FOCUS_ALL
 	grab_focus.call_deferred()
 	await _run()
+	for player in _players:
+		player.stop()
+	hide()
+	set_process(false)
 	finished.emit()
+	if startup_sound:
+		_sound(startup_sound)
+		# The stream's length, not the player's finished: with no audio device that never fires.
+		await get_tree().create_timer(startup_sound.get_length()).timeout
 	queue_free()
 
 
 func _run() -> void:
 	_show_stage(_post)
 	_post.text = ""
+	_sound(power_on_sound)
+	var drive_started := false
 	for line in post_lines:
+		if not drive_started and line.strip_edges().begins_with("Detecting"):
+			drive_started = true
+			_sound(drive_sound)
 		if line == "%MEMORY%":
 			if not await _count_memory():
 				return
@@ -109,6 +135,7 @@ func _count_memory() -> bool:
 		if not await _wait(memory_test_seconds / steps):
 			return false
 	_post.text += " OK\n"
+	_sound(post_beep_sound)
 	return true
 
 
@@ -134,3 +161,14 @@ func _draw_bar() -> void:
 		_bar.draw_rect(Rect2(x, 0, width, _bar.size.y), bar_colors[i % count])
 		x += width
 		i += 1
+
+
+## Plays [param stream] on a new player and returns it; null plays nothing.
+func _sound(stream: AudioStream) -> AudioStreamPlayer:
+	var player := AudioStreamPlayer.new()
+	player.stream = stream
+	add_child(player)
+	_players.append(player)
+	if stream:
+		player.play()
+	return player

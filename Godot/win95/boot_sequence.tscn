@@ -2,6 +2,10 @@
 
 [ext_resource type="Script" path="res://win95/boot_sequence.gd" id="script"]
 [ext_resource type="SystemFont" path="res://win95/theme/dos_font.tres" id="mono"]
+[ext_resource type="AudioStream" path="res://win95/sounds/boot_power_on.ogg" id="power_on"]
+[ext_resource type="AudioStream" path="res://win95/sounds/boot_post_beep.ogg" id="post_beep"]
+[ext_resource type="AudioStream" path="res://win95/sounds/boot_drive.ogg" id="drive"]
+[ext_resource type="AudioStream" path="res://win95/sounds/boot_startup.ogg" id="startup"]
 
 [sub_resource type="Gradient" id="sky_gradient"]
 colors = PackedColorArray(0.18, 0.4, 0.85, 1, 0.62, 0.8, 1, 1)
@@ -16,6 +20,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0, 0, 0, 1)
 script = ExtResource("script")
+power_on_sound = ExtResource("power_on")
+post_beep_sound = ExtResource("post_beep")
+drive_sound = ExtResource("drive")
+startup_sound = ExtResource("startup")
 
 [node name="Post" type="Label" parent="."]
 unique_name_in_owner = true
