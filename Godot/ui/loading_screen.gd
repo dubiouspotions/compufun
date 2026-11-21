@@ -10,6 +10,8 @@ const GAME_SCENE: String = "res://main.tscn"
 @export var hold_seconds: float = 0.3
 ## How long the letters take to turn see-through, in seconds.
 @export var reveal_seconds: float = 0.6
+## How long the cut-out logo then stays, before the paper fades, in seconds.
+@export var cutout_seconds: float = 1.2
 ## How long the white paper then takes to fade away, in seconds.
 @export var paper_seconds: float = 0.6
 
@@ -67,6 +69,7 @@ func _reveal(scene: PackedScene) -> void:
 	var fade := create_tween()
 	fade.tween_method(func(hole: float) -> void: paper.set_shader_parameter("hole", hole), 0.0, 1.0, reveal_seconds)
 	fade.parallel().tween_property(%Logo, "modulate:a", 0.0, reveal_seconds)
+	fade.tween_interval(cutout_seconds)
 	fade.tween_property(_paper, "modulate:a", 0.0, paper_seconds)
 	fade.tween_callback(queue_free)
 
