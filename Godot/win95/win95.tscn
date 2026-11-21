@@ -5,6 +5,8 @@
 [ext_resource type="Texture2D" uid="uid://e7gvt0vfnhnb" path="res://win95/theme/icons/29.png" id="4_d5dma"]
 [ext_resource type="PackedScene" path="res://win95/task_button.tscn" id="5_d5dma"]
 [ext_resource type="PackedScene" uid="uid://nu7hal0154hv" path="res://win95/welcome_window.tscn" id="welcome_window"]
+[ext_resource type="PackedScene" path="res://win95/desktop_icons.tscn" id="desktop_icons"]
+[ext_resource type="PackedScene" path="res://win95/systray.tscn" id="systray"]
 
 [node name="Win95" type="Control" unique_id=1752664516]
 texture_filter = 1
@@ -31,6 +33,9 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_d5dma")
 stretch_mode = 5
+
+[node name="DesktopIcons" parent="Desktop" instance=ExtResource("desktop_icons")]
+layout_mode = 1
 
 [node name="WelcomeWindow" parent="Desktop" unique_id=1584676698 instance=ExtResource("welcome_window")]
 layout_mode = 0
@@ -70,5 +75,13 @@ alignment = 0
 
 [node name="TaskButton" parent="TaskBar/HBoxContainer" unique_id=480996942 instance=ExtResource("5_d5dma")]
 layout_mode = 2
+theme_type_variation = &"TaskbarButtonActive"
 button_pressed = true
 text = "Welcome"
+
+[node name="Spacer" type="Control" parent="TaskBar/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Systray" parent="TaskBar/HBoxContainer" instance=ExtResource("systray")]
+layout_mode = 2

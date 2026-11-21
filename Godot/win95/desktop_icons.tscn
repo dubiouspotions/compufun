@@ -1,0 +1,35 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://win95/icon_view.gd" id="icon_view"]
+[ext_resource type="PackedScene" path="res://win95/file_icon.tscn" id="file_icon"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/my_computer_32.png" id="my_computer"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/network_neighborhood_32.png" id="network"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/recycle_bin_empty_32.png" id="recycle_bin"]
+
+[node name="DesktopIcons" type="VFlowContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 2.0
+offset_bottom = -28.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+script = ExtResource("icon_view")
+on_desktop = true
+
+[node name="MyComputer" parent="." instance=ExtResource("file_icon")]
+layout_mode = 2
+text = "My Computer"
+icon = ExtResource("my_computer")
+
+[node name="NetworkNeighborhood" parent="." instance=ExtResource("file_icon")]
+layout_mode = 2
+text = "Network Neighborhood"
+icon = ExtResource("network")
+
+[node name="RecycleBin" parent="." instance=ExtResource("file_icon")]
+layout_mode = 2
+text = "Recycle Bin"
+icon = ExtResource("recycle_bin")
