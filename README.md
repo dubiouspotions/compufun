@@ -20,7 +20,8 @@ Concept:
 
 1. Install [Git LFS](https://git-lfs.com) and run `git lfs install` before cloning.
 2. Open `Godot/project.godot` in Godot 4.7.2.
-3. To export locally, run `./export.sh all` (or `web`, `mac`, `windows`, `linux`) from `Godot/`. It needs the 4.7.2 export templates.
+3. To play the latest `main` without the editor, double-click `Play HumanError.app` (macOS) or `Play HumanError.bat` (Windows). It pulls, imports and starts the game. It needs the standard Godot 4.7, not the .NET build: in `/Applications` on macOS; on Windows it searches Desktop and Downloads, or asks once.
+4. To export locally, run `./export.sh all` (or `web`, `mac`, `windows`, `linux`) from `Godot/`. It needs the 4.7.2 export templates.
 
 Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actions. Pushing to `deploy`, or a manual run, also uploads them to itch.io.
 

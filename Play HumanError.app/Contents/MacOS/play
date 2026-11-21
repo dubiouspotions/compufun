@@ -1,0 +1,43 @@
+#!/bin/bash
+# Pulls the latest main, imports the project and starts the game. Errors show in a dialog.
+# Godot: $GODOT, else the first Godot*.app whose version starts with GODOT_VERSION and is not mono.
+set -u
+GODOT_VERSION="4.7"
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+repo="$(cd "$(dirname "$0")/../../.." && pwd)"
+
+fail() {
+	osascript -e 'on run argv' -e 'display alert "Play HumanError" message (item 1 of argv) as critical' -e 'end run' "$1" >/dev/null
+	exit 1
+}
+
+command -v git >/dev/null || fail "git is not installed. Run: xcode-select --install"
+git lfs version >/dev/null 2>&1 || fail "Git LFS is not installed. Run: brew install git-lfs && git lfs install"
+
+branch="$(git -C "$repo" rev-parse --abbrev-ref HEAD 2>&1)" || fail "$repo is not a git checkout: $branch"
+[ "$branch" = "main" ] || fail "You are on the branch '$branch', not main. Switch to main first."
+out="$(git -C "$repo" pull --rebase --autostash 2>&1)" || fail "git pull failed:
+
+$(echo "$out" | tail -15)"
+
+godot=""
+if [ -n "${GODOT:-}" ]; then
+	godot="$GODOT"
+	[ -x "$godot" ] || fail "GODOT is set to $godot, which is not a program."
+else
+	shopt -s nullglob
+	for app in /Applications/Godot*.app "$HOME"/Applications/Godot*.app; do
+		version="$("$app/Contents/MacOS/Godot" --version 2>/dev/null)"
+		if [[ "$version" == "$GODOT_VERSION"* && "$version" != *mono* ]]; then
+			godot="$app/Contents/MacOS/Godot"
+			break
+		fi
+	done
+	[ -n "$godot" ] || fail "Cannot find Godot $GODOT_VERSION (not the .NET/mono build) in /Applications or ~/Applications. Install it there, or set GODOT to the path of its Godot program."
+fi
+
+out="$("$godot" --headless --path "$repo/Godot" --import 2>&1)" || fail "The Godot import failed:
+
+$(echo "$out" | grep -E "ERROR" | tail -15)"
+
+exec "$godot" --path "$repo/Godot"
