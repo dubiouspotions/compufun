@@ -1,0 +1,73 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/paint.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/document_config_16.png" id="icon"]
+
+[node name="Paint" type="PanelContainer"]
+theme = ExtResource("theme")
+script = ExtResource("script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Paint"
+icon = ExtResource("icon")
+show_minimize = true
+show_maximize = true
+
+[node name="MenuBar" type="MenuBar" parent="VBox"]
+layout_mode = 2
+prefer_global_menu = false
+
+[node name="File" type="PopupMenu" parent="VBox/MenuBar"]
+unique_name_in_owner = true
+item_count = 2
+item_0/text = "New"
+item_0/id = 0
+item_1/text = "Close"
+item_1/id = 1
+
+[node name="Body" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="Rows" type="VBoxContainer" parent="VBox/Body"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CanvasField" type="PanelContainer" parent="VBox/Body/Rows"]
+layout_mode = 2
+theme_type_variation = &"FieldPanel"
+
+[node name="Canvas" type="TextureRect" parent="VBox/Body/Rows/CanvasField"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 200)
+layout_mode = 2
+mouse_filter = 0
+stretch_mode = 2
+
+[node name="Colors" type="HBoxContainer" parent="VBox/Body/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Current" type="ColorRect" parent="VBox/Body/Rows/Colors"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+
+[node name="Palette" type="GridContainer" parent="VBox/Body/Rows/Colors"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 1
+theme_override_constants/v_separation = 1
+columns = 8
