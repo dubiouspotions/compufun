@@ -50,6 +50,14 @@ download_godot() {
 	echo "$app/Contents/MacOS/Godot"
 }
 
+# Stop the game if it runs (from this launcher or the editor), but not the editor itself.
+for pid in $(pgrep -x Godot); do
+	cmd="$(ps -o args= -p "$pid")"
+	[[ "$cmd" == *"--path $repo/Godot"* ]] || continue
+	[[ " $cmd " == *" -e "* || " $cmd " == *" --editor "* ]] && continue
+	kill "$pid" 2>/dev/null
+done
+
 if git --version >/dev/null 2>&1 && git lfs version >/dev/null 2>&1; then
 	git="git"
 elif [ -x "$desktop_git/bin/git" ]; then

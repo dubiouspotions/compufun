@@ -10,6 +10,9 @@ set "GODOT_DOWNLOAD=4.7.2"
 set "GODOT_HOME=%LOCALAPPDATA%\Programs\Godot"
 cd /d "%~dp0"
 
+rem Stop the game if it runs (from this launcher or the editor), but not the editor itself.
+powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $c = ([string]$_.CommandLine).Replace('\','/'); $_.Name -like 'Godot*' -and ($c -like '*--path Godot*' -or $c -like '*%CD:\=/%/Godot*') -and $c -notmatch ' (-e|--editor)( |$)' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"
+
 where git >nul 2>&1 || (
 	for /f "delims=" %%d in ('dir /b /ad /o:n "%LOCALAPPDATA%\GitHubDesktop\app-*" 2^>nul') do set "DESKTOP_GIT=%LOCALAPPDATA%\GitHubDesktop\%%d\resources\app\git\cmd"
 	if defined DESKTOP_GIT set "PATH=!DESKTOP_GIT!;!PATH!"
