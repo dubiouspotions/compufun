@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://rooms/hotspot.gd" id="1_yb10e"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3dcpp"]
+resource_local_to_scene = true
+
+[node name="Hotspot" type="Area3D" unique_id=1249052464]
+script = ExtResource("1_yb10e")
+
+[node name="Shape" type="CollisionShape3D" parent="." unique_id=737831403]
+unique_name_in_owner = true
+shape = SubResource("BoxShape3D_3dcpp")
+
+[node name="Label" type="Label3D" parent="." unique_id=1196304157]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37, 0)
+pixel_size = 0.0011
+billboard = 1
+no_depth_test = true
+fixed_size = true
+text = "THING"
+outline_size = 10

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Customer" format=3]
+
+[ext_resource type="Resource" path="res://people/placeholder_a/person.tres" id="1_teewq"]
+[ext_resource type="Resource" path="res://problems/dust_overheat.tres" id="2_7x3xp"]
+[ext_resource type="Script" path="res://customers/customer.gd" id="3_tc2lv"]
+
+[resource]
+script = ExtResource("3_tc2lv")
+display_name = "Sample customer 1"
+person = ExtResource("1_teewq")
+lines = PackedStringArray("Hi. My computer starts Windows, and then it just turns off.", "It gets warm, I think.")
+replies = PackedStringArray("I\'ll take a look.", "Leave it on the counter.")
+problem = ExtResource("2_7x3xp")

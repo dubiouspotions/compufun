@@ -1,0 +1,61 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/dialogue_overlay.gd" id="1_6w78s"]
+
+[node name="DialogueOverlay" type="Control" unique_id=574008241]
+layout_mode = 3
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1_6w78s")
+
+[node name="Panel" type="PanelContainer" parent="." unique_id=152360911]
+layout_mode = 0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 160.0
+offset_top = -380.0
+offset_right = -160.0
+offset_bottom = -110.0
+
+[node name="Row" type="HBoxContainer" parent="Panel" unique_id=855170329]
+layout_mode = 2
+
+[node name="Text" type="VBoxContainer" parent="Panel/Row" unique_id=1893410204]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="Panel/Row/Text" unique_id=1618515961]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="LineLabel" type="Label" parent="Panel/Row/Text" unique_id=52238823]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/Row/Text" unique_id=1921619111]
+layout_mode = 2
+
+[node name="NextButton" type="Button" parent="Panel/Row/Text/Buttons" unique_id=1665177363]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Next"
+
+[node name="Replies" type="HBoxContainer" parent="Panel/Row/Text/Buttons" unique_id=574002705]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Portrait" type="PanelContainer" parent="Panel/Row" unique_id=1813881329]
+custom_minimum_size = Vector2(240, 240)
+layout_mode = 2
+
+[node name="PortraitLabel" type="Label" parent="Panel/Row/Portrait" unique_id=578793518]
+unique_name_in_owner = true
+layout_mode = 2
+text = "PORTRAIT"
+horizontal_alignment = 1
+vertical_alignment = 1

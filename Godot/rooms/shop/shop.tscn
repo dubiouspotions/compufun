@@ -1,0 +1,313 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://rooms/shop/shop.gd" id="1_2b3xu"]
+[ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="2_5fjqb"]
+[ext_resource type="Script" path="res://rooms/view_marker.gd" id="3_erljy"]
+[ext_resource type="PackedScene" path="res://customers/customer_body.tscn" id="4_jsidf"]
+
+[sub_resource type="Environment" id="Environment_hc3ie"]
+background_mode = 1
+background_color = Color(0.25, 0.25, 0.25, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 0.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_spp1l"]
+albedo_color = Color(0.42, 0.42, 0.42, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_i6kk3"]
+size = Vector3(8, 0.1, 10)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6khcs"]
+albedo_color = Color(0.72, 0.72, 0.72, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hop3w"]
+size = Vector3(8, 0.1, 10)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8o2ef"]
+size = Vector3(8, 3, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_v05ha"]
+size = Vector3(8, 3, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_0h1nv"]
+size = Vector3(0.1, 3, 10)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7ksee"]
+size = Vector3(0.1, 3, 10)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sn16c"]
+albedo_color = Color(0.3, 0.3, 0.3, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_f8muu"]
+size = Vector3(1, 2.1, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_adr22"]
+albedo_color = Color(0.6, 0.6, 0.6, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_yjj10"]
+size = Vector3(3, 1, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_swhtf"]
+size = Vector3(0.45, 0.4, 0.4)
+
+[sub_resource type="QuadMesh" id="QuadMesh_y5yy5"]
+size = Vector2(0.36, 0.27)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4tacs"]
+albedo_color = Color(0.5, 0.5, 0.5, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mslom"]
+size = Vector3(0.45, 0.45, 0.45)
+
+[sub_resource type="BoxMesh" id="BoxMesh_kwqp3"]
+size = Vector3(0.5, 2, 3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_35cdj"]
+size = Vector3(0.8, 0.8, 0.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_q4845"]
+size = Vector3(0.45, 0.4, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mjyfn"]
+size = Vector3(0.8, 0.75, 1.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_p5y1l"]
+size = Vector3(0.4, 0.4, 0.45)
+
+[sub_resource type="QuadMesh" id="QuadMesh_ejly0"]
+size = Vector2(0.36, 0.27)
+
+[sub_resource type="BoxMesh" id="BoxMesh_b7xrx"]
+size = Vector3(0.22, 0.1, 0.25)
+
+[sub_resource type="Curve3D" id="Curve3D_ydxbd"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, -7.4, 0, 0, 0, 0, 0, 0, 0, 0, -1.95),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[node name="Shop" type="Node3D" unique_id=155582397]
+script = ExtResource("1_2b3xu")
+
+[node name="Environment" type="WorldEnvironment" parent="." unique_id=1621569437]
+environment = SubResource("Environment_hc3ie")
+
+[node name="Light" type="DirectionalLight3D" parent="." unique_id=2067335254]
+transform = Transform3D(0.81915206, -0.46984634, 0.32898995, 0, 0.57357645, 0.81915206, -0.57357645, -0.6710101, 0.46984634, 0, 0, 0)
+light_energy = 0.8
+
+[node name="Camera" type="Camera3D" parent="." unique_id=1717544501]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+current = true
+
+[node name="Room" type="Node3D" parent="." unique_id=716976642]
+
+[node name="Floor" type="MeshInstance3D" parent="Room" unique_id=909654804]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, -3)
+material_override = SubResource("StandardMaterial3D_spp1l")
+mesh = SubResource("BoxMesh_i6kk3")
+
+[node name="Ceiling" type="MeshInstance3D" parent="Room" unique_id=1707326758]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.05, -3)
+material_override = SubResource("StandardMaterial3D_6khcs")
+mesh = SubResource("BoxMesh_hop3w")
+
+[node name="WallBack" type="MeshInstance3D" parent="Room" unique_id=1073713469]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 2.05)
+material_override = SubResource("StandardMaterial3D_6khcs")
+mesh = SubResource("BoxMesh_8o2ef")
+
+[node name="WallFront" type="MeshInstance3D" parent="Room" unique_id=1453984389]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -8.05)
+material_override = SubResource("StandardMaterial3D_6khcs")
+mesh = SubResource("BoxMesh_v05ha")
+
+[node name="WallLeft" type="MeshInstance3D" parent="Room" unique_id=825687455]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.05, 1.5, -3)
+material_override = SubResource("StandardMaterial3D_6khcs")
+mesh = SubResource("BoxMesh_0h1nv")
+
+[node name="WallRight" type="MeshInstance3D" parent="Room" unique_id=337787235]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.05, 1.5, -3)
+material_override = SubResource("StandardMaterial3D_6khcs")
+mesh = SubResource("BoxMesh_7ksee")
+
+[node name="Door" type="MeshInstance3D" parent="Room" unique_id=575661119]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, -7.97)
+material_override = SubResource("StandardMaterial3D_sn16c")
+mesh = SubResource("BoxMesh_f8muu")
+
+[node name="DoorLabel" type="Label3D" parent="Room" unique_id=371205381]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, -7.9)
+pixel_size = 0.0011
+billboard = 1
+no_depth_test = true
+fixed_size = true
+text = "DOOR"
+outline_size = 10
+
+[node name="Counter" type="MeshInstance3D" parent="Room" unique_id=680940487]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -1.2)
+material_override = SubResource("StandardMaterial3D_adr22")
+mesh = SubResource("BoxMesh_yjj10")
+
+[node name="CounterLabel" type="Label3D" parent="Room" unique_id=2066355347]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, 1.12, -1.2)
+pixel_size = 0.0011
+billboard = 1
+no_depth_test = true
+fixed_size = true
+text = "COUNTER"
+outline_size = 10
+
+[node name="BenchMonitor" type="MeshInstance3D" parent="Room" unique_id=1840137956]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 1.2, -1.25)
+material_override = SubResource("StandardMaterial3D_sn16c")
+mesh = SubResource("BoxMesh_swhtf")
+
+[node name="BenchScreen" type="MeshInstance3D" parent="Room" unique_id=920458943]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 1.22, -1.045)
+mesh = SubResource("QuadMesh_y5yy5")
+
+[node name="BenchMonitorHotspot" parent="Room" unique_id=1249052464 instance=ExtResource("2_5fjqb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 1.2, -1.25)
+label_text = "MONITOR"
+view = &"Screen"
+size = Vector3(0.5, 0.45, 0.45)
+
+[node name="CounterComputer" parent="Room" unique_id=725613595 instance=ExtResource("2_5fjqb")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 1.235, -1.2)
+label_text = "CUSTOMER'S COMPUTER"
+view = &"Workview"
+size = Vector3(0.47, 0.47, 0.47)
+
+[node name="Case" type="MeshInstance3D" parent="Room/CounterComputer" unique_id=1580652035]
+material_override = SubResource("StandardMaterial3D_4tacs")
+mesh = SubResource("BoxMesh_mslom")
+
+[node name="Shelf" type="MeshInstance3D" parent="Room" unique_id=1824984794]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.6, 1, 0)
+material_override = SubResource("StandardMaterial3D_adr22")
+mesh = SubResource("BoxMesh_kwqp3")
+
+[node name="ShelfLabel" type="Label3D" parent="Room" unique_id=1534739257]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3, 2.2, 0)
+pixel_size = 0.0011
+billboard = 1
+no_depth_test = true
+fixed_size = true
+text = "SHELF: SPARE PARTS"
+outline_size = 10
+
+[node name="Table" type="MeshInstance3D" parent="Room" unique_id=1966930083]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.4, 1.4)
+material_override = SubResource("StandardMaterial3D_adr22")
+mesh = SubResource("BoxMesh_35cdj")
+
+[node name="OldComputer" type="MeshInstance3D" parent="Room" unique_id=613400376]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, 1.4)
+material_override = SubResource("StandardMaterial3D_sn16c")
+mesh = SubResource("BoxMesh_q4845")
+
+[node name="OldComputerLabel" type="Label3D" parent="Room" unique_id=229851288]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.4, 1.4)
+pixel_size = 0.0011
+billboard = 1
+no_depth_test = true
+fixed_size = true
+text = "OLD COMPUTER"
+outline_size = 10
+
+[node name="Desk" type="MeshInstance3D" parent="Room" unique_id=1727068798]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6, 0.375, 0)
+material_override = SubResource("StandardMaterial3D_adr22")
+mesh = SubResource("BoxMesh_mjyfn")
+
+[node name="DeskLabel" type="Label3D" parent="Room" unique_id=785741611]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6, 0.9, 0.7)
+pixel_size = 0.0011
+billboard = 1
+no_depth_test = true
+fixed_size = true
+text = "DESK"
+outline_size = 10
+
+[node name="WorkMonitor" type="MeshInstance3D" parent="Room" unique_id=437321127]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.75, 0.95, -0.2)
+material_override = SubResource("StandardMaterial3D_sn16c")
+mesh = SubResource("BoxMesh_p5y1l")
+
+[node name="WorkScreen" type="MeshInstance3D" parent="Room" unique_id=1510318955]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.549, 0.97, -0.2)
+mesh = SubResource("QuadMesh_ejly0")
+
+[node name="WorkComputer" parent="Room" unique_id=2038808082 instance=ExtResource("2_5fjqb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.75, 0.95, -0.2)
+label_text = "WORK COMPUTER: CompufunDB"
+view = &"CompufunDB"
+size = Vector3(0.45, 0.45, 0.5)
+
+[node name="PhoneBody" type="MeshInstance3D" parent="Room" unique_id=1511705888]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 0.8, 0.5)
+material_override = SubResource("StandardMaterial3D_sn16c")
+mesh = SubResource("BoxMesh_b7xrx")
+
+[node name="Phone" parent="Room" unique_id=627993361 instance=ExtResource("2_5fjqb")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 0.82, 0.5)
+label_text = "PHONE"
+action = 1
+size = Vector3(0.3, 0.2, 0.3)
+
+[node name="Views" type="Node3D" parent="." unique_id=1402030994]
+unique_name_in_owner = true
+
+[node name="Main" type="Marker3D" parent="Views" unique_id=376194692]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+script = ExtResource("3_erljy")
+left = &"Left"
+right = &"Right"
+
+[node name="Left" type="Marker3D" parent="Views" unique_id=215700232]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 1.6, 0)
+script = ExtResource("3_erljy")
+right = &"Main"
+
+[node name="Right" type="Marker3D" parent="Views" unique_id=1997505267]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0, 1.6, 0)
+script = ExtResource("3_erljy")
+left = &"Main"
+
+[node name="Workview" type="Marker3D" parent="Views" unique_id=606959746]
+transform = Transform3D(1, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, -0.5, 1.9, -0.55)
+script = ExtResource("3_erljy")
+back = &"Main"
+screen = 3
+
+[node name="Screen" type="Marker3D" parent="Views" unique_id=1689767554]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 1.22, -0.75)
+script = ExtResource("3_erljy")
+back = &"Main"
+screen = 2
+
+[node name="CompufunDB" type="Marker3D" parent="Views" unique_id=67607712]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.15, 0.97, -0.2)
+script = ExtResource("3_erljy")
+back = &"Right"
+screen = 1
+
+[node name="CustomerPath" type="Path3D" parent="." unique_id=196646371]
+curve = SubResource("Curve3D_ydxbd")
+
+[node name="CustomerFollow" type="PathFollow3D" parent="CustomerPath" unique_id=1693110132]
+unique_name_in_owner = true
+rotation_mode = 0
+loop = false
+
+[node name="CustomerBody" parent="CustomerPath/CustomerFollow" unique_id=1000666462 instance=ExtResource("4_jsidf")]
+unique_name_in_owner = true

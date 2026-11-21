@@ -1,0 +1,59 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/monitor_bezel.gd" id="1_rc0eh"]
+[ext_resource type="PackedScene" path="res://win95/desktop_stub.tscn" id="2_jr16l"]
+
+[node name="MonitorBezel" type="Control" unique_id=947288806]
+layout_mode = 3
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_rc0eh")
+desktop_scene = ExtResource("2_jr16l")
+
+[node name="Bezel" type="Panel" parent="." unique_id=382665268]
+custom_minimum_size = Vector2(1000, 820)
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = -410.0
+offset_right = 500.0
+offset_bottom = 410.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BezelLabel" type="Label" parent="Bezel" unique_id=845520026]
+custom_minimum_size = Vector2(600, 40)
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 20.0
+offset_right = 300.0
+offset_bottom = 60.0
+grow_horizontal = 2
+text = "MONITOR BEZEL (placeholder)"
+horizontal_alignment = 1
+
+[node name="ScreenContainer" type="SubViewportContainer" parent="." unique_id=312858844]
+custom_minimum_size = Vector2(800, 600)
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ScreenBuffer" type="SubViewport" parent="ScreenContainer" unique_id=574816976]
+unique_name_in_owner = true
+gui_embed_subwindows = true
+size = Vector2i(800, 600)
+render_target_update_mode = 4

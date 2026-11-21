@@ -15,3 +15,20 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 **Deploy**: Uploading the exported builds to itch.io, which CI does from the `deploy` branch or a manual run.
 *Avoid:* release, publish.
+
+## Game
+
+**View**: A fixed point of view in a room, such as Main, Left, Right, or a close-up (Workview, Screen, CompufunDB). In the scene it is a `ViewMarker` node with the view's name.
+*Avoid:* camera, room view, screen.
+
+**Hotspot**: A thing in a room that the player clicks (`rooms/hotspot.tscn`).
+*Avoid:* button, clickable, interactable.
+
+**Post-it**: The repair ticket on the customer's computer: the perceived issue and the Done box.
+*Avoid:* ticket, note.
+
+**CompufunDB**: The database on the work computer that maps a set of symptoms to the repair steps. It lists every `Problem` file.
+*Avoid:* Company Database, BBS, database.
+
+**Screen buffer**: The 800 x 600 viewport that runs the Win95 desktop. The 3D monitor and the Screen View both show it.
+*Avoid:* desktop viewport, screen texture.

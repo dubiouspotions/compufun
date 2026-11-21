@@ -1,3 +1,52 @@
 [gd_scene format=3 uid="uid://da3hapbt480yc"]
 
-[node name="Main" type="Node" unique_id=986731220]
+[ext_resource type="Script" path="res://main.gd" id="1_kek77"]
+[ext_resource type="Resource" path="res://days/day_1.tres" id="2_4c57u"]
+[ext_resource type="PackedScene" path="res://rooms/shop/shop.tscn" id="3_efxa6"]
+[ext_resource type="PackedScene" path="res://ui/monitor_bezel.tscn" id="4_dg77c"]
+[ext_resource type="PackedScene" path="res://ui/compufun_db.tscn" id="5_ycdy4"]
+[ext_resource type="PackedScene" path="res://ui/workview_panel.tscn" id="6_w48qg"]
+[ext_resource type="PackedScene" path="res://ui/post_it.tscn" id="7_vivmo"]
+[ext_resource type="PackedScene" path="res://ui/dialogue_overlay.tscn" id="8_2cqfq"]
+[ext_resource type="PackedScene" path="res://ui/view_nav.tscn" id="9_yaehf"]
+
+[node name="Main" type="Node" unique_id=367146307]
+script = ExtResource("1_kek77")
+first_day = ExtResource("2_4c57u")
+
+[node name="World" type="SubViewportContainer" parent="." unique_id=51554]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+stretch = true
+
+[node name="WorldBuffer" type="SubViewport" parent="World" unique_id=1072269095]
+physics_object_picking = true
+
+[node name="Shop" parent="World/WorldBuffer" unique_id=155582397 instance=ExtResource("3_efxa6")]
+unique_name_in_owner = true
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=1956761064]
+
+[node name="ScreenView" parent="UI" unique_id=947288806 instance=ExtResource("4_dg77c")]
+unique_name_in_owner = true
+anchors_preset = 15
+
+[node name="CompufunDB" parent="UI" unique_id=981690516 instance=ExtResource("5_ycdy4")]
+unique_name_in_owner = true
+anchors_preset = 8
+
+[node name="WorkviewPanel" parent="UI" unique_id=1779327767 instance=ExtResource("6_w48qg")]
+unique_name_in_owner = true
+anchors_preset = 6
+
+[node name="PostIt" parent="UI" unique_id=1993570074 instance=ExtResource("7_vivmo")]
+unique_name_in_owner = true
+
+[node name="DialogueOverlay" parent="UI" unique_id=574008241 instance=ExtResource("8_2cqfq")]
+unique_name_in_owner = true
+anchors_preset = 15
+
+[node name="ViewNav" parent="UI" unique_id=1301884336 instance=ExtResource("9_yaehf")]
+unique_name_in_owner = true
+anchors_preset = 15
