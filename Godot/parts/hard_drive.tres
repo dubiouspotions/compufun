@@ -7,3 +7,4 @@
 script = ExtResource("1_part")
 display_name = "Hard drive"
 model = ExtResource("3_model")
+screw_points = PackedVector3Array(-0.04, 0.027, -0.06, 0.04, 0.027, -0.06)

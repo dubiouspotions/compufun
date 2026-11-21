@@ -15,15 +15,23 @@ var places: Dictionary[Part, Piece] = {}
 var mat: Array[Piece] = []
 ## The side panel is off and the computer lies open in the Workview.
 var case_open: bool = false
-## True when every place holds a piece, none is broken, and the case is closed. Setting it is for
+## How many screws hold the side panel.
+const PANEL_SCREWS: int = 2
+## The screws of the side panel: true while it is in. The panel comes off only when all are out.
+var panel_screws: Array[bool] = []
+## The screws of each place, in the order of Part.screw_points: true while it is in. A part comes
+## out only when all of its screws are out.
+var screws: Dictionary[Part, Array] = {}
+## True when every place holds a piece, none is broken, every screw is in, and the case is closed.
+## Setting it is for
 ## restore, the presets and the debug menu: true repairs the computer, false breaks the problem's
 ## part again.
 var hardware_fixed: bool:
 	get:
-		if case_open:
+		if case_open or panel_screws.has(false):
 			return false
 		for part: Part in Part.every():
-			if not places.has(part) or places[part].broken:
+			if not places.has(part) or places[part].broken or screws[part].has(false):
 				return false
 		return true
 	set(value):
@@ -69,9 +77,20 @@ func piece(part: Part) -> Piece:
 # Puts a piece in every place; the problem's broken part breaks when [param break_part] is true.
 func _fill(break_part: bool) -> void:
 	places.clear()
+	screws.clear()
 	var broken_part: Part = customer.problem.broken_part if customer.problem != null else null
 	for part: Part in Part.every():
 		places[part] = Piece.new(part, break_part and part == broken_part)
+		screws[part] = Job.all_in(part.screw_points.size())
+	panel_screws.assign(Job.all_in(PANEL_SCREWS))
+
+
+## [param count] screws, all in.
+static func all_in(count: int) -> Array[bool]:
+	var screwed: Array[bool] = []
+	screwed.resize(count)
+	screwed.fill(true)
+	return screwed
 
 
 ## The job as plain data, for the F9 report.
@@ -86,6 +105,8 @@ func snapshot() -> Dictionary:
 		"powered": powered,
 		"post_it_ticked": post_it_ticked,
 		"case_open": case_open,
+		"panel_screws": panel_screws.duplicate(),
+		"screws": Job.screws_data(screws),
 		"parts": Job.pieces_data(places.values()),
 		"mat": Job.pieces_data(mat),
 	}
@@ -109,3 +130,11 @@ static func pieces_from(data: Array) -> Variant:
 			return "no part '%s'" % part_id
 		pieces.append(Piece.new(load("res://parts/%s.tres" % part_id), text.ends_with("!")))
 	return pieces
+
+
+## [param by_part] as plain data: part id to the screws, true while in.
+static func screws_data(by_part: Dictionary[Part, Array]) -> Dictionary:
+	var data := {}
+	for part: Part in by_part:
+		data[String(part.id())] = by_part[part].duplicate()
+	return data

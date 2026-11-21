@@ -9,3 +9,4 @@ script = ExtResource("1_part")
 display_name = "Graphics card"
 sits_on = ExtResource("2_under")
 model = ExtResource("3_model")
+screw_points = PackedVector3Array(0.087, 0.026, 0.035)
