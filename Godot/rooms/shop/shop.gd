@@ -17,9 +17,12 @@ signal view_requested(view: StringName)
 @onready var _counter_computer: Hotspot = %CounterComputer
 @onready var _bench_monitor: CrtMonitor = %BenchMonitor
 @onready var _open_sign: OpenSign = %OpenSign
+@onready var _door_bell: AudioStreamPlayer3D = %DoorBell
+@onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
 
 var _shown_view: StringName = &""
 var _walking: bool = false
+var _calling: bool = false
 var _camera_tween: Tween
 
 
@@ -76,6 +79,10 @@ func _sync() -> void:
 	if walking and not _walking:
 		_walk_in()
 	_walking = walking
+	var calling := Game.phase == Game.Phase.CALLING
+	if calling and not _calling:
+		_phone_receiver.play()
+	_calling = calling
 
 
 func _move_camera(view_name: StringName) -> void:
@@ -97,6 +104,7 @@ func _move_camera(view_name: StringName) -> void:
 
 
 func _walk_in() -> void:
+	_door_bell.play()
 	_follow.progress_ratio = 0.0
 	var tween := create_tween()
 	tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds)
