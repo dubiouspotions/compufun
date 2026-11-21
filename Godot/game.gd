@@ -20,13 +20,14 @@ enum Visit {
 	PICKUP, ## The visitor takes a finished computer home.
 }
 
-## The time of day. The customers move it forward; time does not pass on its own.
+## The time of day. The customers and closing move it forward; time does not pass on its own.
 enum Daypart {
-	NONE, ## Before the first customer of the day.
-	MORNING, ## The first customer came in.
+	NONE, ## No day has started.
+	MORNING, ## The day started; the first customer comes in.
 	MIDDAY, ## The second customer came in.
-	EVENING, ## The third customer came in.
-	NIGHT, ## The player closed the shop.
+	AFTERNOON, ## The third customer came in.
+	EVENING, ## The player closed the shop.
+	NIGHT, ## Not reached in play; the debug menu shows it.
 }
 
 enum VisitorState {
@@ -51,7 +52,7 @@ var phase: Phase = Phase.IDLE
 var day: Day
 ## How many of [member Day.customers] have come in today, 0 to day.customers.size().
 var arrivals: int = 0
-## Set by each arrival and by [method close_shop]; the Outside shows it.
+## Set by [method start_day], each arrival and [method close_shop]; the Outside shows it.
 var daypart: Daypart = Daypart.NONE
 ## The computers on the counter, oldest drop-off first. Jobs left overnight stay.
 var jobs: Array[Job] = []
@@ -120,7 +121,7 @@ func start_day(new_day: Day) -> void:
 		return
 	day = new_day
 	arrivals = 0
-	daypart = Daypart.NONE
+	daypart = Daypart.MORNING
 	phase = Phase.OPEN
 	_set_visitor(null, Visit.NONE)
 	_try_arrival()
@@ -456,13 +457,13 @@ func can_close() -> bool:
 	return phase == Phase.OPEN and day != null and arrivals >= day.customers.size() and visitor == null
 
 
-## Closes the shop for the night: DAY_OVER and [constant Daypart.NIGHT]. Jobs stay on the counter. Does nothing when
-## [method can_close] is false.
+## Closes the shop for the night: DAY_OVER and [constant Daypart.EVENING]. Jobs stay on the counter.
+## Does nothing when [method can_close] is false.
 func close_shop() -> void:
 	if not can_close():
 		return
 	phase = Phase.DAY_OVER
-	daypart = Daypart.NIGHT
+	daypart = Daypart.EVENING
 	changed.emit()
 
 
@@ -514,7 +515,7 @@ func restore(state: Dictionary) -> String:
 	var new_arrivals := int(state.get("arrivals", 0))
 	if new_arrivals < 0 or new_arrivals > new_day.customers.size():
 		return _refuse("day %d has %d customers, not %d arrivals" % [number, new_day.customers.size(), new_arrivals])
-	var default_daypart := "NIGHT" if new_phase == Phase.DAY_OVER else String(Daypart.find_key(mini(new_arrivals, Daypart.EVENING)))
+	var default_daypart := String(Daypart.find_key(Daypart.EVENING if new_phase == Phase.DAY_OVER else _daypart_of(new_arrivals)))
 	var new_daypart: Variant = _enum_value(Daypart, state.get("daypart", default_daypart), "daypart")
 	if new_daypart is String:
 		return _refuse(new_daypart)
@@ -668,7 +669,7 @@ func _try_arrival() -> bool:
 	if not _arrival_due():
 		return false
 	arrivals += 1
-	daypart = mini(arrivals, Daypart.EVENING) as Daypart
+	daypart = _daypart_of(arrivals)
 	_set_visitor(day.customers[arrivals - 1], Visit.DROP_OFF)
 	return true
 
@@ -735,6 +736,12 @@ func _start_talk() -> void:
 
 func _seen_key(who: Customer, c: Conversation) -> String:
 	return "%s/%s" % [who.resource_path.get_file().get_basename(), c.id]
+
+
+## The daypart after [param count] arrivals: morning until the second customer, then midday, then
+## afternoon.
+static func _daypart_of(count: int) -> Daypart:
+	return clampi(count, 1, Daypart.AFTERNOON) as Daypart
 
 
 ## Why [param d] can't be played, or "".

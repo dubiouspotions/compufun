@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## Each arrival moves the day on (morning, midday, evening), closing makes it night, and the
-## sky outside follows.
+## The day starts in the morning, the second and third arrivals make it midday and afternoon,
+## closing makes it evening, and the sky outside follows.
 
 const GAME := preload("res://game.gd")
 
@@ -16,6 +16,7 @@ func run() -> void:
 	day.customers = [pierre, javve, pierre]
 	day.gap_seconds = 10.0
 
+	check("no day: no daypart", game.daypart, GAME.Daypart.NONE)
 	game.start_day(day)
 	check("first arrival: morning", game.daypart, GAME.Daypart.MORNING)
 	check("the sky shows the morning", outside.hour, outside.morning_hour)
@@ -23,12 +24,13 @@ func run() -> void:
 	check("midday arrival", [game.arrivals, game.daypart], [2, GAME.Daypart.MIDDAY])
 	check("the sky shows midday", outside.hour, outside.midday_hour)
 	serve()
-	check("evening arrival", [game.arrivals, game.daypart], [3, GAME.Daypart.EVENING])
-	check("the sky shows the evening", outside.hour, outside.evening_hour)
+	check("afternoon arrival", [game.arrivals, game.daypart], [3, GAME.Daypart.AFTERNOON])
+	check("the sky shows the afternoon", outside.hour, outside.afternoon_hour)
 	serve()
 	game.close_shop()
-	check("closed: night", [game.phase, game.daypart], [GAME.Phase.DAY_OVER, GAME.Daypart.NIGHT])
-	check("the sky shows the night", outside.hour, outside.night_hour)
+	check("closed: evening", [game.phase, game.daypart], [GAME.Phase.DAY_OVER, GAME.Daypart.EVENING])
+	check("the sky shows the evening", outside.hour, outside.evening_hour)
+	check("a closed day restores as evening", [game.restore({"phase": "DAY_OVER"}), game.daypart], ["", GAME.Daypart.EVENING])
 
 
 ## Plays the visitor's drop-off to the end and waits out the gap to the next customer.

@@ -4,7 +4,7 @@ extends CanvasLayer
 ## Outside node in the scene (the group "outside").
 
 const TIME_BUTTONS: Dictionary = {"MorningButton": Game.Daypart.MORNING, "NoonButton": Game.Daypart.MIDDAY,
-	"EveningButton": Game.Daypart.EVENING, "NightButton": Game.Daypart.NIGHT}
+	"AfternoonButton": Game.Daypart.AFTERNOON, "EveningButton": Game.Daypart.EVENING, "NightButton": Game.Daypart.NIGHT}
 const DEFAULT_DAY_MINUTES: float = 10.0
 
 var _outside: Outside

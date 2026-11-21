@@ -99,7 +99,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Visitor**: The customer who is in the shop now, to drop off or to pick up a computer (`Game.visitor`). Only one at a time.
 *Avoid:* current customer.
 
-**Daypart**: The time of day in the game: morning, midday, evening or night (`Game.daypart`). Each customer who comes in moves it forward, and closing the shop makes it night; time does not pass on its own.
+**Daypart**: The time of day in the game: morning, midday, afternoon or evening (`Game.daypart`). The day starts in the morning, the second and third customers who come in make it midday and afternoon, and closing the shop makes it evening; time does not pass on its own. The Outside shows it.
 *Avoid:* hour, time, clock.
 
 **Debug menu**: The F2 panel in debug builds, with three tabs: World (the time of day, the day cycle, the rain), Game (the `Game` state) and Presets.

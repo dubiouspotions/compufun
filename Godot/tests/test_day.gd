@@ -40,7 +40,7 @@ func run() -> void:
 	check("O2 in slot 1, focus stays", [slots(), game.focus == job_of("O1")], [["O1@0", "O2@1"], true])
 	check("can close after every customer", game.can_close(), true)
 	game.close_shop()
-	check("DAY_OVER, night, jobs stay", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.NIGHT, 2])
+	check("DAY_OVER, evening, jobs stay", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.EVENING, 2])
 	tick(1000.0)
 	check("nothing happens at night", [game.phase, game.visitor], [GAME.Phase.DAY_OVER, null])
 
@@ -102,7 +102,7 @@ func run() -> void:
 	tick(59.0)
 	check("59 s: nobody yet", game.arrivals, 2)
 	tick(2.0)
-	check("C comes, evening", [game.arrivals, game.daypart], [3, GAME.Daypart.EVENING])
+	check("C comes, afternoon", [game.arrivals, game.daypart], [3, GAME.Daypart.AFTERNOON])
 	drop_off("C")
 	check("C in the free slot 2, focused", [slots(), game.focus == job_of("C")], [["O1@0", "O2@1", "B@3", "C@2"], true])
 
@@ -116,7 +116,7 @@ func run() -> void:
 
 	check("can close", game.can_close(), true)
 	game.close_shop()
-	check("DAY_OVER, night, 3 jobs overnight", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.NIGHT, 3])
+	check("DAY_OVER, evening, 3 jobs overnight", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.EVENING, 3])
 
 
 func customer(display_name: String, problem: Problem, has_pickup: bool) -> Customer:

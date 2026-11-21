@@ -12,9 +12,10 @@ extends Node3D
 			_apply()
 ## Real minutes for one full day, for the debug menu. 0 stops the clock; the game keeps it at 0.
 @export_range(0.0, 120.0, 0.5) var day_minutes: float = 0.0
-## The [member hour] that each Game.Daypart shows. Before the first customer, [member hour] stays.
+## The [member hour] that each Game.Daypart shows. Before the first day, [member hour] stays.
 @export_range(0.0, 24.0, 0.01) var morning_hour: float = 9.0
 @export_range(0.0, 24.0, 0.01) var midday_hour: float = 13.0
+@export_range(0.0, 24.0, 0.01) var afternoon_hour: float = 17.0
 @export_range(0.0, 24.0, 0.01) var evening_hour: float = 19.0
 @export_range(0.0, 24.0, 0.01) var night_hour: float = 23.0
 @export var raining: bool = false:
@@ -77,6 +78,8 @@ func hour_of(daypart: int) -> float:
 			return morning_hour
 		Game.Daypart.MIDDAY:
 			return midday_hour
+		Game.Daypart.AFTERNOON:
+			return afternoon_hour
 		Game.Daypart.EVENING:
 			return evening_hour
 		Game.Daypart.NIGHT:
