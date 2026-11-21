@@ -30,6 +30,7 @@
 [ext_resource type="PackedScene" path="res://props/open_sign.tscn" id="28_open_sign"]
 [ext_resource type="AudioStream" path="res://sounds/door_bell.wav" id="29_door_bell"]
 [ext_resource type="AudioStream" path="res://sounds/phone_receiver.wav" id="30_phone_receiver"]
+[ext_resource type="Texture2D" path="res://materials/textures/poster_commercial_placeholder.png" id="31_commercial"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -437,6 +438,11 @@ size = Vector3(0.32, 0.42, 0.46)
 
 [node name="Poster" parent="Room" instance=ExtResource("23_poster")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 1.5, -5.445)
+
+[node name="CommercialPoster" parent="Room" instance=ExtResource("23_poster")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.97, 1.65, -4.95)
+texture = ExtResource("31_commercial")
+size = Vector2(0.56, 0.8)
 
 [node name="Phone" parent="Room" unique_id=902915224 instance=ExtResource("13_ojat2")]
 unique_name_in_owner = true

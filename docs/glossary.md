@@ -48,6 +48,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Open sign**: The sign that hangs in the shop window (`props/open_sign.tscn`). It reads OPEN while the shop is open; the player clicks it to close the shop for the night, once every customer of the day has come in.
 *Avoid:* closed sign, shop sign.
 
+**Poster**: A paper picture on a shop wall (`props/poster.tscn`); each one sets its picture and size in the inspector. The shop has the "It's not a bug" poster on the front wall and the commercial poster on the right wall (`Room/CommercialPoster`).
+*Avoid:* ad, advert, sign.
+
 **Job**: One customer's computer on the counter, with its slot, its repair state and its post-it (`Job`, in `Game.jobs`). It stays from the drop-off to the pickup, overnight too.
 *Avoid:* order, ticket, repair.
 
