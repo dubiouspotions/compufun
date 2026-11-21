@@ -2,3 +2,9 @@
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Blender backup files
+*.blend1
+
+# The GitHub wiki, cloned by tools/sync-wiki.sh (its own git repo)
+/wiki/

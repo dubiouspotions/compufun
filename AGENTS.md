@@ -26,6 +26,8 @@ start, keep changes small, and push often so that nobody builds on a stale tree.
 - **Honest, critical review over flattery.** Push back with concrete alternatives.
 - **Stuck on a missing tool, credential, or service? Stop and ask early.** One click from your
   human beats a session spent on workarounds. Keep working on the unblocked parts meanwhile.
+- **The wiki is the design, and the code follows it.** Read `wiki/Architecture.md` before you
+  add or change structure, and keep the page and the code in sync. See "The wiki" below.
 - **Deep discoveries go in docs/**, with a row in docs/index.md. Cross-project learnings (tool
   quirks, workflow preferences) go in the agent's own memory, not in this repo.
 
@@ -63,6 +65,26 @@ whole spec.
 | If you touch… | Read first |
 |---|---|
 | Any GDScript | [docs/code-standard.md](docs/code-standard.md) |
+| Structure: a scene tree, resource type, folder, autoload or buffer | [wiki/Architecture.md](wiki/Architecture.md) |
+| Gameplay or story | [wiki/Game-Concept-&-Loop.md](wiki/Game-Concept-&-Loop.md), [wiki/Storyline.md](wiki/Storyline.md) |
+
+## The wiki
+
+The design lives in the GitHub wiki: the concept and loop, the story and the architecture.
+`tools/sync-wiki.sh` clones it into `wiki/` (ignored by git) or pulls it. Claude Code runs it at
+the start of every session and loads `wiki/Architecture.md` through the include at the bottom of
+this file. Other agents run `bash tools/sync-wiki.sh` and read the page first.
+
+- **Check the wiki when you pull and before you push.** Run `bash tools/sync-wiki.sh` with every
+  `git pull`. Before you push, check that the page still matches your change.
+- **The code follows the page.** When the work needs something that `wiki/Architecture.md`
+  doesn't say, or says otherwise, stop and ask your human. Change the page first, then the code.
+- **Keep them in sync.** When a change adds, moves or removes something that the page names (a
+  folder, a resource type, a scene, an autoload), update the page in the same piece of work.
+- **The page holds the team's decisions.** Change a decision only with your human's yes.
+  Recording what the code now does needs no yes.
+- **The wiki is its own git repo.** Edit and commit in `wiki/`, run `git -C wiki pull --rebase`,
+  and push it together with the code that matches it.
 
 ## Error handling: fail fast and early
 
@@ -156,8 +178,9 @@ the README's credits. Prefer Godot's built-in features; an addon you don't add c
   non-.NET `barichello/godot-ci` image, so C# doesn't build.
 - The Godot project lives in `Godot/`. CI (`.github/workflows/godot.yml`) runs there, and the
   export preset names (`Web`, `Windows Desktop`, `MacOS`, `Linux`) must stay as they are.
-- The Web export is a release target, and it has no threads. Check web-sensitive changes
-  (audio, loading, shaders) in the web build, not just the editor.
+- **Web-first.** The Web export (itch.io) is the main target, and it has no threads. Check
+  web-sensitive changes (audio, loading, shaders) in the web build, not just the editor. For now
+  we design for a 1080p window.
 - 3D assets come from Meshy as `.glb` and go through LFS.
 - The `godot-master` skill (`.claude/skills/`) is reference material. Where it disagrees with
   this brief or docs/code-standard.md, the brief wins.
@@ -191,5 +214,7 @@ The project is: @README.md
 
 The documentation index is: @docs/index.md
 
-Agents that don't expand `@` includes: read [README.md](README.md) and
-[docs/index.md](docs/index.md) first.
+The architecture is: @wiki/Architecture.md
+
+Agents that don't expand `@` includes: read [README.md](README.md),
+[docs/index.md](docs/index.md) and [wiki/Architecture.md](wiki/Architecture.md) first.

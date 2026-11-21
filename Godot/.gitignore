@@ -22,3 +22,6 @@ build.log
 
 # A place to put private files
 exploration/
+
+# Safe-save temp files that Godot leaves behind when a rename fails (often on Windows)
+*.tmp

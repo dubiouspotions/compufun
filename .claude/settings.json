@@ -23,5 +23,19 @@
       "Read(*.pem)",
       "Read(*.key)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/tools/sync-wiki.sh\"",
+            "timeout": 30,
+            "statusMessage": "Syncing the wiki"
+          }
+        ]
+      }
+    ]
   }
 }
