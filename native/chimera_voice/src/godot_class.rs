@@ -1,6 +1,8 @@
 //! ChimeraVoice for GDScript: load the dictionary, start a line, pull its samples each frame.
 
-use crate::Speaker;
+use crate::{Speaker, Tweaks};
+use chimera::phonetics::Intonation;
+use chimera::voice::human_voice::SourcePatch;
 use godot::prelude::*;
 
 struct ChimeraVoiceExtension;
@@ -25,6 +27,51 @@ impl ChimeraVoice {
     #[func]
     fn is_ready(&self) -> bool {
         self.speaker.is_ready()
+    }
+
+    /// For a debug tool: overrides for every `start` until `clear_tweaks`. Keys, all optional:
+    /// female, child (a body blend, 0..1); scale, pharynx, tongue, lips, folds (factors on the
+    /// body); open_phase (added); glide, pressure, breathiness, tension, fry, roughness,
+    /// vibrato_depth, vibrato_rate, drift, brightness (the voice source); voiced (bool);
+    /// intonation ("statement", "question" or "flat").
+    #[func]
+    fn set_tweaks(&mut self, tweaks: VarDictionary) {
+        let num = |key: &str| tweaks.get(key).and_then(|v| v.try_to::<f64>().ok());
+        let mut t = Tweaks::default();
+        if num("female").is_some() || num("child").is_some() {
+            t.mix = Some((num("female").unwrap_or(0.0), num("child").unwrap_or(0.0)));
+        }
+        let shape = ["scale", "pharynx", "tongue", "lips", "folds"].map(|k| num(k));
+        if shape.iter().any(|v| v.is_some()) {
+            t.shape = Some(shape.map(|v| v.unwrap_or(1.0)));
+        }
+        t.open_phase = num("open_phase").unwrap_or(0.0);
+        t.source = SourcePatch {
+            glide: num("glide"),
+            pressure: num("pressure"),
+            breathiness: num("breathiness"),
+            tension: num("tension"),
+            fry: num("fry"),
+            roughness: num("roughness"),
+            vibrato_depth: num("vibrato_depth"),
+            vibrato_rate: num("vibrato_rate"),
+            drift: num("drift"),
+            brightness: num("brightness"),
+            voiced: tweaks.get("voiced").and_then(|v| v.try_to::<bool>().ok()),
+            ..Default::default()
+        };
+        t.intonation = match tweaks.get("intonation").and_then(|v| v.try_to::<GString>().ok()).map(|s| s.to_string()).as_deref() {
+            Some("statement") => Some(Intonation::Statement),
+            Some("question") => Some(Intonation::Question),
+            Some("flat") => Some(Intonation::Flat),
+            _ => None,
+        };
+        self.speaker.set_tweaks(t);
+    }
+
+    #[func]
+    fn clear_tweaks(&mut self) {
+        self.speaker.set_tweaks(Tweaks::default());
     }
 
     /// Body 0 male, 1 female, 2 child; accent < 0 is the default. Returns samples, 0 on failure.
