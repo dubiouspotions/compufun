@@ -4,6 +4,7 @@ extends Node3D
 ## pushes it open away from them (in when they come from the street, out when they leave), and once
 ## they are through the door closer swings it back, past shut and back a few times, until it rests.
 ## It follows where the customers are on every frame, so a restore or a skipped walk leaves it right.
+## While the shop is closed (any phase but OPEN and CALLING) it is locked: it stays shut (#103).
 ## It also lets the street in: the street's bus is near silent and muffled while the door is shut,
 ## and opens up with it.
 
@@ -83,6 +84,8 @@ func _process(delta: float) -> void:
 # Which side of the doorway the nearest customer within open_distance is on: -1 the street, 1 the
 # shop, 0 nobody near.
 func _nearest_side() -> float:
+	if not (Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING):
+		return 0.0
 	var hinge := get_parent_node_3d().global_transform * position
 	var shut := get_parent_node_3d().global_basis * Basis(Vector3.UP, _closed_yaw)
 	var doorway := hinge + shut * doorway_offset
