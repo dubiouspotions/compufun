@@ -16,7 +16,7 @@ func run() -> void:
 	check("five parts, in order", Part.every().map(func(p: Part) -> StringName: return p.id()), Part.IDS)
 
 	# Pierre brings Dust Overheat; a customer from a file can be restored.
-	var pierre: Customer = load("res://customers/pierre.tres")
+	var pierre: Customer = load("res://customers/skater_bro.tres")
 	check("Pierre has Dust Overheat", pierre.problem, dust)
 	game.start_day(make_day(1, [pierre]))
 	game.customer_arrived()

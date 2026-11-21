@@ -114,11 +114,11 @@ func run() -> void:
 	check("DAY_OVER, evening, 3 jobs overnight", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.EVENING, 3])
 
 	# The next day comes from its file; the jobs stay overnight; day 7 is the last.
-	var overnight := [{"customer": "res://customers/pierre.tres", "slot": 2}]
+	var overnight := [{"customer": "res://customers/skater_bro.tres", "slot": 2}]
 	check("restore day 1, closed", game.restore({"day": 1, "phase": "DAY_OVER", "arrivals": 2, "jobs": overnight}), "")
 	check("day 1 has a next day", game.has_next_day(), true)
 	game.start_next_day()
-	check("day 2: open, morning, nobody in yet, the job stayed", [game.day_number, game.phase, game.daypart, game.arrivals, slots()], [2, OPEN, GAME.Daypart.MORNING, 0, ["Pierre@2"]])
+	check("day 2: open, morning, nobody in yet, the job stayed", [game.day_number, game.phase, game.daypart, game.arrivals, slots()], [2, OPEN, GAME.Daypart.MORNING, 0, ["Skater bro@2"]])
 	check("restore day 7", game.restore({"day": 7, "phase": "DAY_OVER", "arrivals": 2}), "")
 	check("day 7 is the last", game.has_next_day(), false)
 
