@@ -1,0 +1,122 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/ms_dos_prompt.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/application_16.png" id="icon"]
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="file"]
+
+[sub_resource type="Resource" id="f_sys"]
+script = ExtResource("file")
+name = "SYSTEM"
+is_folder = true
+
+[sub_resource type="Resource" id="f_com"]
+script = ExtResource("file")
+name = "COMMAND.COM"
+
+[sub_resource type="Resource" id="f_pbrush"]
+script = ExtResource("file")
+name = "PBRUSH"
+
+[sub_resource type="Resource" id="f_notepad"]
+script = ExtResource("file")
+name = "NOTEPAD.EXE"
+
+[sub_resource type="Resource" id="f_win"]
+script = ExtResource("file")
+name = "WINDOWS"
+is_folder = true
+children = [SubResource("f_com"), SubResource("f_pbrush"), SubResource("f_notepad"), SubResource("f_sys")]
+
+[sub_resource type="Resource" id="f_prog"]
+script = ExtResource("file")
+name = "PROGRA~1"
+is_folder = true
+
+[sub_resource type="Resource" id="f_auto"]
+script = ExtResource("file")
+name = "AUTOEXEC.BAT"
+
+[sub_resource type="Resource" id="f_config"]
+script = ExtResource("file")
+name = "CONFIG.SYS"
+
+[sub_resource type="Resource" id="f_io"]
+script = ExtResource("file")
+name = "IO.SYS"
+
+[sub_resource type="StyleBoxFlat" id="black"]
+bg_color = Color(0, 0, 0, 1)
+content_margin_left = 4.0
+content_margin_top = 2.0
+content_margin_right = 4.0
+content_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxEmpty" id="none"]
+
+[sub_resource type="SystemFont" id="mono"]
+font_names = PackedStringArray("Courier New", "Courier", "Monospace")
+
+[node name="MsDosPrompt" type="PanelContainer"]
+theme = ExtResource("theme")
+script = ExtResource("script")
+custom_minimum_size = Vector2(560, 340)
+drive_c = Array[ExtResource("file")]([SubResource("f_win"), SubResource("f_prog"), SubResource("f_auto"), SubResource("f_config"), SubResource("f_io")])
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "MS-DOS Prompt"
+icon = ExtResource("icon")
+show_minimize = true
+show_maximize = true
+
+[node name="Screen" type="PanelContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("black")
+
+[node name="Scroll" type="ScrollContainer" parent="VBox/Screen"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Lines" type="VBoxContainer" parent="VBox/Screen/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Output" type="Label" parent="VBox/Screen/Scroll/Lines"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.753, 0.753, 0.753, 1)
+theme_override_fonts/font = SubResource("mono")
+autowrap_mode = 3
+
+[node name="Input" type="HBoxContainer" parent="VBox/Screen/Scroll/Lines"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Prompt" type="Label" parent="VBox/Screen/Scroll/Lines/Input"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.753, 0.753, 0.753, 1)
+theme_override_fonts/font = SubResource("mono")
+text = "C:\\WINDOWS>"
+
+[node name="Command" type="LineEdit" parent="VBox/Screen/Scroll/Lines/Input"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.753, 0.753, 0.753, 1)
+theme_override_colors/caret_color = Color(0.753, 0.753, 0.753, 1)
+theme_override_fonts/font = SubResource("mono")
+theme_override_styles/normal = SubResource("none")
+theme_override_styles/focus = SubResource("none")
+caret_blink = true
+context_menu_enabled = false

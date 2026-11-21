@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="app_email"]
 [ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
 [ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
+[ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="app_ms_dos_prompt"]
 
 [node name="Win95" type="Control" unique_id=1752664516]
 texture_filter = 1
@@ -87,7 +88,7 @@ alignment = 0
 
 [node name="StartMenu" type="PopupMenu" parent="TaskBar/HBoxContainer/StartButton"]
 script = ExtResource("start_menu")
-programs = Array[PackedScene]([ExtResource("app_calculator"), ExtResource("app_notepad"), ExtResource("app_wordpad"), ExtResource("app_paint"), ExtResource("app_email"), ExtResource("app_volume_control"), ExtResource("app_defrag")])
+programs = Array[PackedScene]([ExtResource("app_calculator"), ExtResource("app_notepad"), ExtResource("app_wordpad"), ExtResource("app_paint"), ExtResource("app_email"), ExtResource("app_volume_control"), ExtResource("app_defrag"), ExtResource("app_ms_dos_prompt")])
 shut_down = ExtResource("shut_down")
 shut_down_icon = ExtResource("shut_down_icon")
 
