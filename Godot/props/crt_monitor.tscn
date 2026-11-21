@@ -23,6 +23,9 @@ size = Vector3(0.36, 0.28, 0.01)
 [sub_resource type="BoxMesh" id="BoxMesh_degauss"]
 size = Vector3(0.03, 0.012, 0.008)
 
+[sub_resource type="BoxMesh" id="BoxMesh_power"]
+size = Vector3(0.018, 0.018, 0.01)
+
 [sub_resource type="QuadMesh" id="QuadMesh_wurup"]
 size = Vector2(0.33333, 0.25)
 
@@ -64,3 +67,8 @@ mesh = SubResource("QuadMesh_wurup")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.095, 0.132)
 material_override = ExtResource("3_wbfy6")
 mesh = SubResource("BoxMesh_degauss")
+
+[node name="PowerButton" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.155, 0.095, 0.132)
+material_override = ExtResource("3_wbfy6")
+mesh = SubResource("BoxMesh_power")

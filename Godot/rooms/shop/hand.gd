@@ -2,9 +2,13 @@ class_name Hand
 extends Node3D
 ## What the player holds (Game.hand), as a first-person held item (wiki: Hardware Repair): the part's
 ## own model low in the view, with its name beside it and BROKEN when it is broken. A child of the
-## room's camera, so it follows every view and turn; it has no collision, so clicks reach the room
-## behind it. It keeps the same place and size on screen whatever the camera's field of view.
-## Hidden while the hand is empty, and lowered out of the picture in [member lowered_in_views].
+## room's camera, so it follows every view and turn. It keeps the same place and size on screen
+## whatever the camera's field of view. Hidden while the hand is empty, and lowered out of the picture
+## in [member lowered_in_views].
+##
+## The player can drag the part out of the hand: dropped on a hotspot that takes a drop
+## ([member Hotspot.takes_drop]) it acts as a click there; dropped anywhere else it goes back into the
+## hand. A click on the part that doesn't drag reaches the room behind it.
 
 ## Where the part is held on screen: x from -1 (left edge) to 1 (right edge), y from -1 (bottom) to
 ## 1 (top).
@@ -26,12 +30,23 @@ extends Node3D
 @export var raise_seconds: float = 0.18
 ## The views where the hand goes down, out of the picture: the views where a screen fills the view.
 @export var lowered_in_views: Array[StringName] = [&"Screen", &"CompuFunDB"]
+## The longest side of the part while the player drags it, as a share of the view's height. Smaller
+## than [member shown_size], and up and right of the mouse, so that the place under the mouse shows.
+@export_range(0.02, 1.0) var dragged_size: float = 0.12
+## How far the mouse moves, in pixels of the world buffer, before a press on the part becomes a drag.
+@export var drag_threshold: float = 3.0
 
 var _held: Piece
 var _time: float = 0.0
 var _lowered: float = 0.0  # 1 while the part is below the view, 0 while it is up
 var _lowering_to: float = 0.0
 var _lowering: Tween
+var _model: Node3D
+var _box: AABB  # around _model's meshes, in its own space
+var _press: InputEventMouseButton  # the press on the part, while the button is down
+var _dragging: bool = false
+var _mouse: Vector2  # in pixels of the world buffer
+var _passing: bool = false
 
 @onready var _camera: Camera3D = get_parent() as Camera3D
 @onready var _holder: Node3D = %Holder
@@ -68,14 +83,87 @@ func _process(delta: float) -> void:
 	var bob := sin(_time * TAU * sway_speed)
 	var drift := cos(_time * TAU * sway_speed * 0.5)
 	var below := (1.0 + screen_position.y) * 0.5 + shown_size  # just out of the bottom of the view
-	position = Vector3(
-		screen_position.x * half_height * view.x / view.y + drift * sway * height,
-		screen_position.y * half_height + (bob * sway - _lowered * below) * height,
-		-distance)
+	var at := Vector2(screen_position.x * view.x / view.y, screen_position.y) * 0.5
+	if _dragging:
+		at = Vector2(_mouse.x - view.x * 0.5, view.y * 0.5 - _mouse.y) / view.y + Vector2.ONE * dragged_size * 0.6
+		if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):  # released over the UI, which kept the release
+			_drop(_mouse)
+	position = Vector3(at.x + drift * sway, at.y + bob * sway - _lowered * below, 0.0) * height
+	position.z = -distance
 	scale = Vector3.ONE * height
+	_holder.scale = Vector3.ONE * (dragged_size / shown_size if _dragging else 1.0)
+	_name.visible = not _dragging
+	_broken.visible = not _dragging and _held != null and _held.broken
 	_holder.rotation_degrees = held_rotation_degrees + Vector3(bob, drift, 0.0) * sway_degrees
 	_name.pixel_size = 1.0 / view.y
 	_broken.pixel_size = _name.pixel_size
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	var mouse := event as InputEventMouse
+	if mouse == null or _passing:
+		return
+	_mouse = mouse.position
+	var button := mouse as InputEventMouseButton
+	if button != null and button.button_index == MOUSE_BUTTON_LEFT:
+		if button.pressed and _press == null and _under(button.position):
+			_press = button
+			get_viewport().set_input_as_handled()  # physics picking skips handled events: the room under the part gets no press
+		elif not button.pressed and _press != null:
+			get_viewport().set_input_as_handled()
+			if _dragging:
+				_drop(button.position)
+			else:
+				_pass_click.call_deferred(_press, button)
+				_press = null
+	elif _press != null and not _dragging and _mouse.distance_to(_press.position) > drag_threshold:
+		_dragging = true
+
+
+# True when [param at], in pixels of the world buffer, is on the part in the hand.
+func _under(at: Vector2) -> bool:
+	if _model == null or not visible or _lowered > 0.5:
+		return false
+	var rect := Rect2(_camera.unproject_position(_model.global_transform * _box.position), Vector2.ZERO)
+	for corner: int in 8:
+		rect = rect.expand(_camera.unproject_position(_model.global_transform * _box.get_endpoint(corner)))
+	return rect.has_point(at)
+
+
+# Drops the dragged part at [param at], in pixels of the world buffer: a click on the nearest hotspot
+# there that takes a drop. When the part is still in the hand after it, the part comes back up.
+func _drop(at: Vector2) -> void:
+	_dragging = false
+	_press = null
+	var target := _drop_target(at)
+	if target != null:
+		target.clicked.emit(target)
+	if Game.hand == _held and _held != null:
+		_lowered = 1.0
+		_lowering_to = -1.0
+		_sync()
+
+
+func _drop_target(at: Vector2) -> Hotspot:
+	var from := _camera.project_ray_origin(at)
+	var dir := _camera.project_ray_normal(at)
+	var nearest: Hotspot = null
+	var nearest_distance := INF
+	for node: Node in get_tree().get_nodes_in_group(Hotspot.DROP_TARGETS):
+		var hotspot := node as Hotspot
+		var hit := hotspot.ray_distance(from, dir)
+		if hit >= 0.0 and hit < nearest_distance:
+			nearest = hotspot
+			nearest_distance = hit
+	return nearest
+
+
+# Sends a press and release that didn't drag on to the room behind the part.
+func _pass_click(press: InputEventMouseButton, release: InputEventMouseButton) -> void:
+	_passing = true
+	get_viewport().push_input(press, true)
+	get_viewport().push_input(release, true)
+	_passing = false
 
 
 func _sync() -> void:
@@ -96,36 +184,28 @@ func _sync() -> void:
 # Swaps in the model of [param piece], below the view, for _sync to raise it.
 func _hold(piece: Piece) -> void:
 	_held = piece
+	_model = null
+	_press = null
+	_dragging = false
 	for child: Node in _holder.get_children():
 		child.queue_free()
 	if _held == null:
 		return
 	_name.text = _held.part.display_name
-	_broken.visible = _held.broken
 	_lowered = 1.0
 	_lowering_to = -1.0
 	_process(0.0)
 	if _held.part.model == null:
 		push_error("Hand: %s has no model" % _held.part.resource_path)
 		return
-	var model := _held.part.model.instantiate() as Node3D
-	_holder.add_child(model)
-	var box := _bounds(model)
-	var longest := maxf(box.size.x, maxf(box.size.y, box.size.z))
+	_model = _held.part.model.instantiate() as Node3D
+	_holder.add_child(_model)
+	# So close to the camera, the room's lights would throw a huge shadow of the part.
+	for mesh: Node in _model.find_children("*", "MeshInstance3D", true, false):
+		(mesh as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_box = Part.bounds(_model)
+	var longest := maxf(_box.size.x, maxf(_box.size.y, _box.size.z))
 	var fit := shown_size / maxf(longest, 0.001)
-	model.scale = Vector3.ONE * fit
-	model.position = -box.get_center() * fit
+	_model.scale = Vector3.ONE * fit
+	_model.position = -_box.get_center() * fit
 
-
-# The box around the model's meshes, in the model's own space. Turns off their shadows on the way:
-# so close to the camera, the room's lights would throw a huge shadow of the part.
-func _bounds(model: Node3D) -> AABB:
-	var box := AABB()
-	var first := true
-	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
-		var mesh := node as MeshInstance3D
-		mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		var part_box: AABB = mesh.transform * mesh.get_aabb()
-		box = part_box if first else box.merge(part_box)
-		first = false
-	return box

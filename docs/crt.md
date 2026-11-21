@@ -24,12 +24,14 @@ Each monitor has its own `CrtTube`, a child of its `ScreenView`. It animates the
 (`main.gd` adds it with `ScreenView.add_look()`). So the close-up and the 3D screen show one tube,
 and the bench's power cuts and lost signals leave the work computer alone. They are not global
 uniforms for that reason. `ScreenView` calls `reconcile()` on every `Game.changed`: the tube is on
-while the shop is open, and has a signal while its content's `has_picture()` says so (the bench: a
+while its monitor is switched on (`ScreenView.switched_on`: on at the start, flipped by the bench
+monitor's power button), and has a signal while its content's `has_picture()` says so (the bench: a
 running computer is connected; CompuFunDB: always):
 
-- **Shop opens:** power-on: a switch clunk, static, a degauss, and a dim, oversized picture that
+- **The game starts:** the tube is already on and warm, silently.
+- **Power button, on:** a switch clunk, static, a degauss, and a dim, oversized picture that
   warms up over 3 seconds.
-- **Shop closes:** power-off: the picture collapses to a white-hot line, then a dot that fades.
+- **Power button, off:** the picture collapses to a white-hot line, then a dot that fades.
 - **A running computer connects:** a relay click, black while the monitor finds the signal, then
   the picture rolls and locks.
 - **The signal goes** (cable off, computer off): the picture tears and rolls away, a relay click,

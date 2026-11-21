@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="VoicePerson" format=3]
+
+[ext_resource type="Script" path="res://voices/voice_person.gd" id="1_person"]
+
+[resource]
+script = ExtResource("1_person")
+body = "male"

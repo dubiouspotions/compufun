@@ -112,6 +112,16 @@ func follow(rect: Rect2) -> void:
 	_screen.set_closeness(smoothstep(0.5, 1.0, rect.size.x / open_size.x))
 
 
+## Whether the monitor's power switch is on. It starts on; [method toggle_power] flips it.
+var switched_on: bool = true
+
+
+## Flips the monitor's power switch, with the tube's power-on or power-off.
+func toggle_power() -> void:
+	switched_on = not switched_on
+	_sync()
+
+
 ## Degausses the monitor: the picture shakes and the magnetised colours clear.
 func degauss() -> void:
 	_tube.degauss()
@@ -121,7 +131,7 @@ func _sync() -> void:
 	var has_picture: bool = _content != null and (not _content.has_method(&"has_picture") or _content.call(&"has_picture"))
 	var pointer: bool = _content == null or not _content.has_method(&"pointer_visible") or _content.call(&"pointer_visible")
 	_screen.cursor_visible = draw_cursor and has_picture and pointer
-	_tube.reconcile(Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING, has_picture, Game.day.warp if Game.day != null else 0.0)
+	_tube.reconcile(switched_on, has_picture, Game.day.warp if Game.day != null else 0.0)
 
 
 # Replaces the image of the arrow shape, which Controls and the 3D world show; the hotspot hand stays.

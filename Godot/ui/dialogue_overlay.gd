@@ -305,7 +305,7 @@ func replay() -> void:
 func _speak(line: DialogueLine) -> void:
 	_voice.hush()
 	if _voiced:
-		_voice.say(line, _customer.voice, VoiceType.of(line, _conversation))
+		_voice.say(line, _customer.voice, VoiceEffect.of(line, _conversation))
 
 
 func _show_whole_line() -> void:

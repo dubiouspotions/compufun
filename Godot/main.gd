@@ -18,6 +18,8 @@ var _dialogue_for: int = -1
 @onready var _screen_views: Array[ScreenView] = [%ScreenView, %CompuFunDBView]
 @onready var _post_it_label: PostItLabel = %PostItLabel
 @onready var _end_of_day: EndOfDay = %EndOfDay
+@onready var _crash: Crash = %Crash
+@onready var _phone: PhoneCall = %PhoneCall
 @onready var _world: SubViewportContainer = $World
 @onready var _world_buffer: SubViewport = $World/WorldBuffer
 
@@ -40,7 +42,10 @@ func _ready() -> void:
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
 	_shop.close_requested.connect(_end_of_day.ask)
+	_shop.crashed.connect(_crash.show_crash)
+	_shop.phone_requested.connect(_phone.open)
 	_shop.degauss_requested.connect((%ScreenView as ScreenView).degauss)
+	_shop.monitor_power_requested.connect((%ScreenView as ScreenView).toggle_power)
 	_dialogue.finished.connect(Game.dialogue_finished)
 	Game.changed.connect(_sync)
 	Game.start_day(first_day)
@@ -61,9 +66,10 @@ func _follow_camera() -> void:
 	_dialogue.position.x = _shop.turn_from_main() * _dialogue.size.x
 	var scale := _world.size / Vector2(_world_buffer.size)
 	var post_it := _shop.pinned_post_it()
-	_post_it_label.visible = post_it != null
-	if post_it != null:
-		var paper := _shop.post_it_rect(post_it)
+	var paper := _shop.post_it_rect(post_it) if post_it != null else Rect2()
+	var on_screen := paper.has_area() and paper.intersects(Rect2(Vector2.ZERO, Vector2(_world_buffer.size)))
+	_post_it_label.visible = on_screen
+	if on_screen:
 		_post_it_label.job = post_it.job
 		_post_it_label.follow(Rect2(_world.position + paper.position * scale, paper.size * scale))
 	for view: ScreenView in _screen_views:
@@ -89,6 +95,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		Game.go_to_view(marker.left)
 	elif event.is_action_pressed(&"turn_right"):
 		Game.go_to_view(marker.right)
+	elif event.is_action_pressed(&"look_up") and marker.up != &"":
+		Game.go_to_view(marker.up)
 	elif event.is_action_pressed(&"go_back"):
 		_go_back()
 	else:

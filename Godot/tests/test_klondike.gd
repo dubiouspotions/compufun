@@ -86,7 +86,7 @@ func run() -> void:
 	print("Solitaire window: ", size)
 
 	# What the Start menu lists: ComputerState.installed_programs(), which names the Game autoload.
-	for customer in ["javve", "pierre"]:
+	for customer in ["young_entrepreneur", "skater_bro"]:
 		var setup := (load("res://customers/%s.tres" % customer) as Customer).computer.win95_setup
 		var sol := setup.file_at("C:\\WINDOWS\\SOL.EXE")
 		check("%s has Solitaire as C:\\WINDOWS\\SOL.EXE" % customer, sol != null and sol.program == load("res://win95/solitaire/solitaire.tscn"), true)

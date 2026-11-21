@@ -20,21 +20,24 @@ Godot/               the Godot project: everything the game loads
   parts/             part.gd and piece.gd, and one Part per part: <id>.tres
   materials/         one shared material per surface; textures/ holds the PNGs
   rooms/             hotspot.tscn and view_marker.gd, shared by all rooms
-  rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying open in the Workview), bench.tscn (the bench screen, keyboard and VGA cable), pipedream.tscn (the Win95 Pipes that grow with the warp), hand.tscn (the part in the hand, held in front of the camera), their meshes and textures
+  rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying on its side), bench.tscn (the bench screen, keyboard and VGA cable), pipedream.tscn (the Win95 Pipes that grow with the warp), ceiling_mouse.tscn (the easter egg in the ceiling), storage_bin.tscn (the bin where the player puts parts away), hand.tscn (the part in the hand, held in front of the camera), the_end.tscn (the body with the pipe through the chest, at the end), their meshes and textures
   people/<name>/     person.tres, portrait_<pose>.png, face.png
   customers/         one .tres per customer, customer_body.tscn, job.gd (one computer on the counter)
   customers/<name>/  the pictures in that customer's files, such as pierre/castle_01.png
   voices/            one .wav per customer line, rendered by Chimera; voices.gd names and renders them
-  voices/moods/      the mood of each pose (VoiceMood): the speed, pitch and pitch swing of the voice
-  voices/types/      voice types (VoiceType), made in the Voice Lab: a base voice, an alternate, and a curve
+  voices/persons/    voice persons (VoicePerson): who speaks, a body with its build and timbre; the bottom layer
+  voices/moods/      the mood of each pose (VoiceMood): speed, pitch, pitch swing and more; the middle layer
+  voices/effects/    voice effects (VoiceEffect): a base, an alternate and a curve; the top layer
   voices/live/       the live voice: live_voice.js (web), the dictionary; tools/build-voice.sh adds the wasm, the libraries and the .gdextension
   sounds/            sound effects: the audio files, and one SoundSet .tres per effect (its takes,
                      volume and pitch range), exported where the effect happens
   problems/          one .tres per problem
   days/              day_1.tres to day_7.tres
-  ui/                loading screen, dialogue overlay, post-it, post-it label (the Workview post-it's text), end of day (the close-the-shop question, the night between two days), screen view, bench screen, CRT screen and tube, debug menu, F9 screen, theme.tres
+  ui/                loading screen, dialogue overlay, phone call (whom to call for a pickup), post-it label (the Workview post-it's text), end of day (the close-the-shop question, the night between two days), crash (the bluescreen over the window at the end), screen view, bench screen, CRT screen and tube, debug menu, F9 screen, theme.tres
   ui/logos/          the CompuFun logos (the loading screen, the boot splash, the sign in the shop)
   win95/             the Win95 interface (the Win95 developer's folder)
+  win95/applets/     the Control Panel's applets: applet.gd, one Applet .tres per icon, and each one's property sheet
+  win95/theme/schemes/  Win95's 27 colour schemes, one Win95Palette each, read from the VM's registry
   win95/theme/icons_extracted/  every icon in a Windows 95 install, named, with manifest.json (docs/win95-icons.md)
   win95/midi/        recordings that .mid files play in Media Player (Godot plays no MIDI)
   win95/solitaire/   Solitaire: the rules (klondike.gd), the window, the table and the card pictures
@@ -43,7 +46,7 @@ Godot/               the Godot project: everything the game loads
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
 feedback/            the F9 reports (outside Godot, so Godot does not import them)
-tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; make_castle_renders.py renders Pierre's castle pictures; make_crt_sounds.py synthesizes the bench screen's sounds; extract_win95_icons.py extracts the Win95 icons; chimera-moods.patch
+tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; make_castle_renders.py renders Pierre's castle pictures; make_crt_sounds.py synthesizes the bench screen's sounds; extract_win95_icons.py extracts the Win95 icons; make_mouse_squeak.py synthesizes the ceiling mouse's squeak; make_end_sounds.sh makes the sounds of the end; make_trees.gd builds the tree meshes of the Outside; chimera-moods.patch
 wiki/                the GitHub wiki, cloned by tools/sync-wiki.sh (ignored by the repo)
 docs/                the rules for people and agents: this code layout, code standard, build, gotchas, glossary
 .github/workflows/   CI: tests and export on push, itch.io deploy, Discord notifications

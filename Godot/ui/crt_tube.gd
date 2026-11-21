@@ -25,7 +25,8 @@ extends Node
 @export var degauss_sound: AudioStream = preload("res://sounds/crt_degauss.wav")
 @export var relay_sound: AudioStream = preload("res://sounds/crt_relay.wav")
 
-var _on: bool = false
+# Monitors stand switched on: the game starts with a warm picture and no power-on sound.
+var _on: bool = true
 var _signal: bool = false
 var _warp: float = 0.0
 var _values: Dictionary[StringName, float] = {}
@@ -42,8 +43,8 @@ func _ready() -> void:
 		player.stream = sound
 		add_child(player)
 		_players[sound] = player
-	_set_value(0.0, &"crt_power")
-	_set_value(0.0, &"crt_warmup")
+	_set_value(1.0, &"crt_power")
+	_set_value(1.0, &"crt_warmup")
 	_set_value(0.0, &"crt_degauss")
 	_set_value(1.0, &"crt_sync")  # the monitor's own NO SIGNAL box is a steady picture
 	_set_value(0.0, &"crt_magnetization")

@@ -1,8 +1,8 @@
 class_name OpenCase
 extends Node3D
-## A job's computer lying on its side in the Workview (wiki: Hardware Repair): the side panel and its
-## two screws, or the open case with its pieces and the mat. It draws the job from Game on every
-## change and acts through Game. What the player can use now has a thin pulsing outline; where the
+## A job's computer lying on its side (wiki: Hardware Repair): the side panel on with its two screws,
+## or the open case with its pieces and the mat and the panel leaning against its back (PanelOff),
+## where a click puts it back on. It draws the job from Game on every change and acts through Game. What the player can use now has a thin pulsing outline; where the
 ## piece in the hand can go shows a see-through ghost of it; the screwdriver hovers over a screw.
 
 const HOTSPOT: PackedScene = preload("res://rooms/hotspot.tscn")
@@ -58,6 +58,8 @@ var _driver_materials: Array[StandardMaterial3D] = []
 @onready var _eye: Marker3D = %Eye
 @onready var _panel: MeshInstance3D = %Panel
 @onready var _panel_hotspot: Hotspot = %PanelHotspot
+@onready var _panel_on: Transform3D = _panel.transform
+@onready var _panel_off: Transform3D = (%PanelOff as Node3D).transform
 @onready var _panel_screws: Node3D = %PanelScrews
 @onready var _driver: Node3D = %Screwdriver
 @onready var _outside: Array[MeshInstance3D] = [%Panel as MeshInstance3D, $Shell/Bezel as MeshInstance3D]
@@ -88,7 +90,7 @@ func _ready() -> void:
 		_watch(spot)
 	_mat_surface.clicked.connect(func(_h: Hotspot) -> void: Game.put_on_mat(job))
 	_watch(_mat_surface)
-	_panel_hotspot.clicked.connect(func(_h: Hotspot) -> void: Game.open_case(job, true))
+	_panel_hotspot.clicked.connect(func(_h: Hotspot) -> void: Game.open_case(job, not job.case_open))
 	_watch(_panel_hotspot)
 	if _panel_screws.get_child_count() != Job.PANEL_SCREWS:
 		push_error("OpenCase: %d panel screw markers, but Job.PANEL_SCREWS is %d" % [_panel_screws.get_child_count(), Job.PANEL_SCREWS])
@@ -127,8 +129,8 @@ func _sync() -> void:
 	if job == null:
 		return
 	var closed := not job.case_open
-	_panel.visible = closed
-	_panel_hotspot.set_enabled(active and closed and not job.powered and not job.panel_screws.has(true))
+	_panel.transform = _panel_on if closed else _panel_off
+	_panel_hotspot.set_enabled(active and (not closed or (not job.powered and not job.panel_screws.has(true))))
 	for i: int in _screws.size():
 		(_screws[i][0] as Node3D).visible = closed and job.panel_screws[i]
 		(_screws[i][1] as Hotspot).set_enabled(active and Game.can_turn(job, i))
@@ -248,7 +250,7 @@ func _sync_highlights() -> void:
 		var spot_hotspot := _spot(i).get_node("Hotspot") as Hotspot
 		if spot_hotspot.input_ray_pickable:
 			_highlight(_mat_shown[i], spot_hotspot)
-	if _mat_surface.input_ray_pickable and Game.hand != null:
+	if _mat_surface == _hovered and Game.hand != null:  # the mat is wide: a ghost only where the player points
 		_add_ghost(Game.hand.part.model, _spot(job.mat.size()), _mat_surface)
 	if _panel_hotspot.input_ray_pickable:
 		_highlight(_panel, _panel_hotspot)

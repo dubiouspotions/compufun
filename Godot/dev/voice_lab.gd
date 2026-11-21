@@ -1,19 +1,31 @@
 class_name VoiceLab
 extends Control
-## The Voice Lab, a dev tool for making voice types (VoiceType): a base voice, an alternate voice
-## and a curve over the line that says where the alternate plays. The curve is drawn over the
-## line's waveform, so you see which words it lands on. Each side has the four character macros
-## and the most-used levers; "All levers" opens the rest. Save writes voices/types/<name>.tres,
-## which the Dialogue tab gives to a conversation or a line. It speaks through ChimeraVoice, the
-## engine the game uses. Open it from the Dev menu (F3 or Cmd+3), or run dev/voice_lab.tscn.
-## While it is open the game is paused and its sounds are held.
+## The Voice Lab, a dev tool for the three layers of a voice (docs: Voices.layer). A line is said by
+## a person (VoicePerson: who speaks, voices/persons/), in a mood (VoiceMood: how, one per pose,
+## voices/moods/), under an effect (VoiceEffect: a corruption, voices/effects/). Pick one of each
+## to hear them together; the layer chosen at the top is the one the levers edit and Save writes.
+## Each layer has its own levers: a person its build and timbre, a mood its delivery, an effect
+## its corruption. A lever starts from what the layers below give it, and stays out of its layer
+## while it sits there.
+## An effect has a base, an alternate and a curve over the line that says where the alternate
+## plays, drawn over the line's waveform. It speaks through ChimeraVoice, the engine the game uses.
+## Open it from the Dev menu (F3 or Cmd+3), or run dev/voice_lab.tscn. While it is open the game
+## is paused and its sounds are held.
 
 const MIX_RATE: float = 22050.0
 const BODIES: PackedStringArray = ["Male", "Female", "Child"]
 const INTONATIONS: PackedStringArray = ["Line", "Statement", "Question", "Flat"]
 const SIDES: PackedStringArray = ["Base", "Alternate"]
+const LAYERS: PackedStringArray = ["Person", "Mood", "Effect"]
 const CUSTOMERS: String = "res://customers"
-const TYPES: String = "res://voices/types"
+## What the levers edit: the effect's two sides, the person and the mood.
+enum { BASE, ALT, PERSON, MOOD }
+## The levers of a person: its build and timbre.
+const PERSON_KEYS: PackedStringArray = ["female", "child", "scale", "pharynx", "tongue", "lips", "folds", "open_phase",
+	"pressure", "brightness", "pitch", "rate", "breathiness", "roughness", "tension", "fry", "glide", "drift", "vibrato_depth", "vibrato_rate"]
+## The levers of a mood. Rate, pitch and melody are the mood's own fields; the rest are settings.
+const MOOD_KEYS: PackedStringArray = ["rate", "pitch", "accent", "tension", "breathiness", "roughness", "pressure", "brightness", "fry", "glide", "drift", "vibrato_depth"]
+const MOOD_FIELDS: Dictionary = {"rate": "rate", "pitch": "pitch", "accent": "swing"}
 ## The curve presets: name and points.
 const CURVES: Array = [
 	["Full", [Vector2(0, 1), Vector2(1, 1)]],
@@ -24,7 +36,10 @@ const CURVES: Array = [
 	["Off", [Vector2(0, 0), Vector2(1, 0)]],
 ]
 ## The levers each side shows; the rest are under "All levers".
-const COMMON: PackedStringArray = ["pitch", "rate", "accent", "breathiness", "roughness", "fry", "ring_mix", "metal_ms", "bits", "stutter", "static", "reverb"]
+## Effects only: the person and the mood own the human voice.
+const COMMON: PackedStringArray = ["ring_mix", "metal_ms", "bits", "hold", "stutter", "dropout", "static", "wobble", "distortion", "chorus", "delay", "reverb"]
+## The lever group that belongs to persons and moods, left out of an effect's levers.
+const HUMAN_GROUP: String = "Human voice"
 
 ## Each lever: [key, label, min, max, step, default]. The key is the voice type's (see
 ## native/chimera_voice/src/voice_type.rs); a lever at its default is left out of the voice.
@@ -105,24 +120,33 @@ const ACCENT := Color("7c8cff")
 const CHANGED := Color("ffb454")
 
 var _engine: Object
-var _type: VoiceType
-## Per side (0 base, 1 alternate): every lever, by key. A lever can show twice (common and all),
-## so each key holds a list of sliders.
-var _sliders: Array[Dictionary] = [{}, {}]
+## The working copies of the three layers; Save writes the one being edited.
+var _person: VoicePerson
+var _mood: VoiceMood
+var _effect: VoiceEffect
+## The layer the levers edit: 0 person, 1 mood, 2 effect.
+var _layer: int = 0
+## Per target (BASE, ALT, PERSON, MOOD): every lever, by key. A lever can show twice (common and
+## all), so each key holds a list of sliders.
+var _sliders: Array[Dictionary] = [{}, {}, {}, {}]
 var _macros: Array[Dictionary] = [{}, {}]
-var _switches: Array[Dictionary] = [{}, {}]  # "voiced" -> CheckButton, "intonation" -> ButtonGroup
-var _lines: Array = []  # [label, DialogueLine, voice]
-var _pose: StringName = &"neutral"
+## Per target: "voiced" -> CheckButton, "intonation" -> ButtonGroup, "body" -> ButtonGroup.
+var _switches: Array[Dictionary] = [{}, {}, {}, {}]
+var _lines: Array = []  # [label, DialogueLine, VoicePerson or null, VoiceEffect or null]
 var _samples: PackedFloat32Array = PackedFloat32Array()
 var _was_paused: bool = false
 var _held: Array[Node] = []
 var _dragging: int = -1
 
-var _type_picker: OptionButton
-var _type_name: LineEdit
+## Per layer: the picker of saved ones, and what each item is (a path, or a pose for moods).
+var _pickers: Array[OptionButton] = []
+var _picked: Array[Array] = [[], [], []]
+var _tabs: ButtonGroup
+var _name: LineEdit
+var _save: Button
+var _cards: Array[Control] = []
 var _timeline: Control
 var _text: LineEdit
-var _voice: ButtonGroup
 var _auto: CheckButton
 var _loop: CheckButton
 var _status: Label
@@ -134,14 +158,19 @@ var _respeak: Timer
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_hold_game()
-	_type = _new_type()
+	_person = VoicePerson.new()
+	_mood = VoiceMood.new()
+	_effect = _new_effect()
 	_build()
-	_show_type()
+	_pick(0, _picked[0].find(Voices.PERSONS_DIR + "man.tres"))
+	_pick(1, _picked[1].find(&"neutral"))
+	_pick(2, 0)
+	_show_layer(0)
 	_engine = _make_engine()
 	if _engine == null:
 		_status.text = "No ChimeraVoice extension with voice types in this build. Run tools/build-voice.sh, then reopen."
 		return
-	_status.text = "Shape the base and the alternate, draw where the alternate plays, then Save."
+	_status.text = "Pick a person, a mood and an effect; edit one of them, then Save."
 	speak()
 
 
@@ -170,7 +199,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## Says the text through the voice type being edited, the whole line at once, and plays it.
+## Says the text through all three layers, the whole line at once, and plays it.
 func speak() -> void:
 	if _engine == null:
 		return
@@ -178,10 +207,9 @@ func speak() -> void:
 	if text.is_empty():
 		_status.text = "Nothing to say: the line is empty."
 		return
-	var mood := Voices.mood(_pose)
 	var started := Time.get_ticks_usec()
-	_engine.set_voice_type(_type.encode())
-	if _engine.start(text, _voice.get_pressed_button().get_index(), MIX_RATE, mood.rate, mood.pitch, mood.swing) <= 0:
+	_engine.set_voice_type(Voices.layer(_person, _mood, _effect))
+	if _engine.start(text, VoicePlayer.BODIES.get(_person.body, 0), MIX_RATE, _mood.rate, _mood.pitch, _mood.swing) <= 0:
 		_status.text = "Chimera said nothing for \"%s\"." % text
 		return
 	_samples = PackedFloat32Array()
@@ -193,8 +221,8 @@ func speak() -> void:
 	_player.stream = _to_wav(_samples)
 	_player.play()
 	_timeline.queue_redraw()
-	_status.text = "%.2f s, rendered in %.0f ms. Base %d settings, alternate %d." % [_samples.size() / MIX_RATE,
-		(Time.get_ticks_usec() - started) / 1000.0, _type.base.size(), _type.alternate.size()]
+	_status.text = "%.2f s, rendered in %.0f ms. Person %d settings, mood %d, effect %d + %d." % [_samples.size() / MIX_RATE,
+		(Time.get_ticks_usec() - started) / 1000.0, _person.settings.size(), _mood.settings.size(), _effect.base.size(), _effect.alternate.size()]
 
 
 # The game stops while the lab is open: the tree pauses, and every playing sound of the game is
@@ -219,10 +247,10 @@ func _release_game() -> void:
 		get_tree().paused = _was_paused
 
 
-func _new_type() -> VoiceType:
-	var t := VoiceType.new()
-	t.curve = _curve_from(CURVES[3][1])
-	return t
+func _new_effect() -> VoiceEffect:
+	var effect := VoiceEffect.new()
+	effect.curve = _curve_from(CURVES[3][1])
+	return effect
 
 
 func _curve_from(points: Array) -> Curve:
@@ -232,12 +260,37 @@ func _curve_from(points: Array) -> Curve:
 	return curve
 
 
-func _settings(side: int) -> Dictionary:
-	return _type.base if side == 0 else _type.alternate
+func _settings(target: int) -> Dictionary:
+	return [_effect.base, _effect.alternate, _person.settings, _mood.settings][target]
 
 
-func _value(side: int, key: String) -> float:
-	return float(_settings(side).get(key, _spec(key)[5]))
+func _value(target: int, key: String) -> float:
+	if target == MOOD and MOOD_FIELDS.has(key):
+		return _mood.get(MOOD_FIELDS[key])
+	return float(_settings(target).get(key, _below(target, key)))
+
+
+# What a lever of [param target] is when the layer leaves it out: the value the layers under it
+# give, or Chimera's. A lever at this value stays out of its layer, and Reset returns to it.
+func _below(target: int, key: String) -> float:
+	var value: float = _spec(key)[5]
+	if target == PERSON or (target == MOOD and MOOD_FIELDS.has(key)):
+		return value
+	value = _person.settings.get(key, value)
+	if target == MOOD:
+		return value
+	if key == "accent":
+		value = _mood.swing  # an effect's melody sits on the mood's pitch swing
+	return _mood.settings.get(key, value)
+
+
+# The layer that gives [param target]'s lever its value from below, or "" when it is Chimera's.
+func _below_from(target: int, key: String) -> String:
+	if target in [BASE, ALT] and (_mood.settings.has(key) or key == "accent"):
+		return "mood"
+	if target in [MOOD, BASE, ALT] and not (target == MOOD and MOOD_FIELDS.has(key)) and _person.settings.has(key):
+		return "person"
+	return ""
 
 
 func _spec(key: String) -> Array:
@@ -249,46 +302,71 @@ func _spec(key: String) -> Array:
 	return []
 
 
-# Writes a lever into a side, left out at its default so the voice stays sparse, and shows it on
-# every slider of that lever.
-func _set_lever(side: int, key: String, value: float) -> void:
-	if is_equal_approx(value, _spec(key)[5]):
-		_settings(side).erase(key)
+# Writes a lever into a target, left out at its default so the layer stays sparse, and shows it on
+# every slider of that lever. A mood's rate, pitch and melody are its own fields.
+func _set_lever(target: int, key: String, value: float) -> void:
+	if target == MOOD and MOOD_FIELDS.has(key):
+		_mood.set(MOOD_FIELDS[key], value)
+	elif is_equal_approx(value, _below(target, key)):
+		_settings(target).erase(key)
 	else:
-		_settings(side)[key] = value
-	for slider: HSlider in _sliders[side].get(key, []):
+		_settings(target)[key] = value
+	for slider: HSlider in _sliders[target].get(key, []):
 		slider.set_value_no_signal(value)
-		_describe(slider, key)
+		_describe(slider, target, key)
 
 
-func _store_switches(side: int) -> void:
-	var voiced: CheckButton = _switches[side]["voiced"]
-	if voiced.button_pressed:
-		_settings(side).erase("voiced")
-	else:
-		_settings(side)["voiced"] = 0.0
-	var tune: int = (_switches[side]["intonation"] as ButtonGroup).get_pressed_button().get_index()
-	if tune == 0:
-		_settings(side).erase("intonation")
-	else:
-		_settings(side)["intonation"] = float(tune)
+func _store_switches(target: int) -> void:
+	var switches := _switches[target]
+	if switches.has("voiced"):
+		if (switches["voiced"] as CheckButton).button_pressed:
+			_settings(target).erase("voiced")
+		else:
+			_settings(target)["voiced"] = 0.0
+	if switches.has("intonation"):
+		var tune: int = (switches["intonation"] as ButtonGroup).get_pressed_button().get_index()
+		if tune == 0:
+			_settings(target).erase("intonation")
+		else:
+			_settings(target)["intonation"] = float(tune)
+	if switches.has("body"):
+		_person.body = BODIES[(switches["body"] as ButtonGroup).get_pressed_button().get_index()].to_lower()
 	_on_changed()
 
 
-# Shows the whole type on every lever, switch and macro, storing nothing.
-func _show_type() -> void:
+# Shows every layer on every lever, switch and macro, storing nothing.
+func _show_all() -> void:
+	for target in 4:
+		for key: String in _sliders[target]:
+			for slider: HSlider in _sliders[target][key]:
+				slider.set_value_no_signal(_value(target, key))
+				_describe(slider, target, key)
+		var switches := _switches[target]
+		if switches.has("voiced"):
+			(switches["voiced"] as CheckButton).set_pressed_no_signal(_value(target, "voiced") >= 0.5 if _settings(target).has("voiced") else true)
+		if switches.has("intonation"):
+			var tune := int(_settings(target).get("intonation", 0.0))
+			_press(switches["intonation"], tune)
+		if switches.has("body"):
+			var body := maxi(0, BODIES.find(_person.body.capitalize()))
+			_press(switches["body"], body)
 	for side in 2:
-		for key: String in _sliders[side]:
-			for slider: HSlider in _sliders[side][key]:
-				slider.set_value_no_signal(_value(side, key))
-				_describe(slider, key)
-		(_switches[side]["voiced"] as CheckButton).set_pressed_no_signal(_value(side, "voiced") >= 0.5 if _settings(side).has("voiced") else true)
-		var tune := int(_settings(side).get("intonation", 0.0))
-		(_switches[side]["intonation"] as ButtonGroup).get_buttons()[tune].set_pressed_no_signal(true)
 		for macro: String in _macros[side]:
 			(_macros[side][macro] as HSlider).set_value_no_signal(0.0)
 		_refresh_macros(side)
 	_timeline.queue_redraw()
+
+
+# Presses one button of a group without its signals; the others let go, as a click would do.
+func _press(group: ButtonGroup, index: int) -> void:
+	var buttons := group.get_buttons()
+	for i in buttons.size():
+		buttons[i].set_pressed_no_signal(i == index)
+
+
+# The effect's curve shows while the effect is edited, or when the picked effect does something.
+func _curve_shown() -> bool:
+	return _layer == 2 or not (_effect.base.is_empty() and _effect.alternate.is_empty())
 
 
 func _to_wav(samples: PackedFloat32Array) -> AudioStreamWAV:
@@ -322,54 +400,110 @@ func _make_engine() -> Object:
 	return engine if engine.is_ready() else null
 
 
-func _save_type() -> void:
-	var name_text := _type_name.text.strip_edges().to_snake_case().validate_filename()
+# --- The three layers: picking, editing and saving ---------------------------------------------
+
+func _dir(layer: int) -> String:
+	return [Voices.PERSONS_DIR, Voices.MOODS_DIR, Voices.EFFECTS_DIR][layer]
+
+
+# Fills a layer's picker: "New" and the saved persons or effects, or every pose's mood.
+func _fill_picker(layer: int) -> void:
+	var picker := _pickers[layer]
+	picker.clear()
+	_picked[layer] = []
+	if layer == 1:
+		for pose: StringName in Person.POSES:
+			var saved := ResourceLoader.exists(Voices.MOODS_DIR + String(pose) + ".tres")
+			picker.add_item(String(pose).capitalize() + ("" if saved else " (neutral's)"))
+			_picked[layer].append(pose)
+		return
+	picker.add_item("New person" if layer == 0 else "No effect")
+	_picked[layer].append("")
+	var dir := _dir(layer)
+	for file_name in (DirAccess.get_files_at(dir) if DirAccess.dir_exists_absolute(dir) else PackedStringArray()):
+		if file_name.ends_with(".tres"):
+			picker.add_item(file_name.get_basename().capitalize())
+			_picked[layer].append(dir + file_name)
+
+
+# Loads the picked item of a layer into its working copy.
+func _pick(layer: int, index: int) -> void:
+	index = maxi(0, index)
+	_pickers[layer].select(index)
+	var item: Variant = _picked[layer][index]
+	if layer == 1:
+		_mood = Voices.mood(item).duplicate(true)
+	elif String(item).is_empty():
+		if layer == 0:
+			_person = VoicePerson.new()
+		else:
+			_effect = _new_effect()
+	else:
+		var loaded := load(item)
+		if (layer == 0 and not loaded is VoicePerson) or (layer == 2 and not loaded is VoiceEffect):
+			_status.text = "%s is not a %s." % [item, "VoicePerson" if layer == 0 else "VoiceEffect"]
+			return
+		if layer == 0:
+			_person = loaded.duplicate(true)
+		else:
+			_effect = loaded.duplicate(true)
+			if _effect.curve == null:
+				_effect.curve = _curve_from(CURVES[5][1])
+	if layer == _layer:
+		_show_name()
+	_show_all()
+	_on_changed()
+
+
+func _show_layer(layer: int) -> void:
+	_layer = layer
+	_press(_tabs, layer)
+	for i in _cards.size():
+		_cards[i].visible = i == layer
+	_save.text = "Save " + LAYERS[layer].to_lower()
+	_show_all()  # a lower layer may have changed what this one starts from
+	_show_name()
+	_timeline.queue_redraw()
+
+
+func _show_name() -> void:
+	var item: Variant = _picked[_layer][_pickers[_layer].selected]
+	_name.editable = _layer != 1
+	if _layer == 1:
+		_name.text = String(item)
+		_name.tooltip_text = "A mood belongs to its pose; pick another mood to save that one."
+	else:
+		_name.text = String(item).get_file().get_basename()
+		_name.tooltip_text = ""
+	_name.placeholder_text = ["Name, e.g. Old man", "", "Name, e.g. Cambion rasp"][_layer]
+
+
+# Writes the layer being edited to its folder, reads it back, and picks the saved file.
+func _save_layer() -> void:
+	var name_text := _name.text.strip_edges().to_snake_case().validate_filename()
+	if _layer == 1:
+		name_text = String(_picked[1][_pickers[1].selected])  # a mood keeps its pose's name
 	if name_text.is_empty():
-		_status.text = "Name the voice type first."
+		_status.text = "Name the %s first." % LAYERS[_layer].to_lower()
 		return
-	var err := DirAccess.make_dir_recursive_absolute(TYPES)
+	var dir := _dir(_layer)
+	var err := DirAccess.make_dir_recursive_absolute(dir)
 	if err != OK:
-		_status.text = "Can't make %s: %s" % [TYPES, error_string(err)]
+		_status.text = "Can't make %s: %s" % [dir, error_string(err)]
 		return
-	var path := "%s/%s.tres" % [TYPES, name_text]
-	err = ResourceSaver.save(_type, path)
+	var path := dir + name_text + ".tres"
+	var layer: Resource = [_person, _mood, _effect][_layer]
+	err = ResourceSaver.save(layer, path)
 	if err != OK:
 		_status.text = "Can't save %s: %s" % [path, error_string(err)]
 		return
-	_status.text = "Saved %s. Pick it in the Dialogue tab." % path
-	_fill_types(path)
-
-
-func _fill_types(selected := "") -> void:
-	_type_picker.clear()
-	_type_picker.add_item("New voice type")
-	_type_picker.set_item_metadata(0, "")
-	var files := DirAccess.get_files_at(TYPES) if DirAccess.dir_exists_absolute(TYPES) else PackedStringArray()
-	for file_name in files:
-		if file_name.ends_with(".tres"):
-			var path := TYPES.path_join(file_name)
-			_type_picker.add_item(file_name.get_basename().capitalize())
-			_type_picker.set_item_metadata(_type_picker.item_count - 1, path)
-			if path == selected:
-				_type_picker.select(_type_picker.item_count - 1)
-
-
-func _pick_type(index: int) -> void:
-	var path: String = _type_picker.get_item_metadata(index)
-	if path.is_empty():
-		_type = _new_type()
-		_type_name.text = ""
-	else:
-		var loaded := load(path) as VoiceType
-		if loaded == null:
-			_status.text = "%s is not a VoiceType." % path
-			return
-		_type = loaded.duplicate(true) as VoiceType
-		if _type.curve == null:
-			_type.curve = _curve_from(CURVES[5][1])
-		_type_name.text = path.get_file().get_basename()
-	_show_type()
-	_on_changed()
+	var back := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_REPLACE)
+	if back == null or back.get_script() != layer.get_script():
+		_status.text = "Saved %s, but it doesn't read back as a %s." % [path, LAYERS[_layer]]
+		return
+	_fill_picker(_layer)
+	_pick(_layer, _picked[_layer].find(StringName(name_text) if _layer == 1 else path))
+	_status.text = "Saved %s.%s" % [path, " Rendered voice files change with it: run render_voices.gd." if _layer == 1 else ""]
 
 
 func _find_lines() -> void:
@@ -380,10 +514,10 @@ func _find_lines() -> void:
 			for conversation: Conversation in customer.conversations:
 				if conversation != null:
 					for line: DialogueLine in conversation.lines:
-						_lines.append(["%s · %s" % [customer.spoken_name(), line.text.left(50)], line, customer.voice])
+						_lines.append(["%s · %s" % [customer.spoken_name(), line.text.left(50)], line, customer.voice, VoiceEffect.of(line, conversation)])
 		elif resource is Conversation:
 			for line: DialogueLine in resource.lines:
-				_lines.append(["Everyone · %s" % line.text.left(50), line, ""])
+				_lines.append(["Everyone · %s" % line.text.left(50), line, null, VoiceEffect.of(line, resource)])
 
 
 func _resources(dir: String) -> PackedStringArray:
@@ -396,15 +530,17 @@ func _resources(dir: String) -> PackedStringArray:
 	return found
 
 
+# A line from the game brings its pose's mood, its customer's person and its effect along.
 func _pick_line(index: int) -> void:
 	if index <= 0:
 		return
 	var picked: Array = _lines[index - 1]
 	var line: DialogueLine = picked[1]
 	_text.text = line.text
-	_pose = line.pose
-	if picked[2] != "":
-		_voice.get_buttons()[BODIES.find(String(picked[2]).capitalize())].set_pressed_no_signal(true)
+	_pick(1, _picked[1].find(line.pose))
+	if picked[2] != null:
+		_pick(0, _picked[0].find((picked[2] as VoicePerson).resource_path))
+	_pick(2, _picked[2].find((picked[3] as VoiceEffect).resource_path) if picked[3] != null else 0)
 	speak()
 
 
@@ -434,11 +570,15 @@ func _build() -> void:
 	var line_card := _line_card()
 	line_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page.add_child(line_card)
+	_cards.append(_layer_card(PERSON, "Person", "Who speaks: the body, its build and its timbre", PERSON_KEYS, "body"))
+	_cards.append(_layer_card(MOOD, "Mood", "How a line in this pose is said, over any person", MOOD_KEYS, "intonation"))
 	var sides := HBoxContainer.new()
 	sides.add_theme_constant_override("separation", 16)
-	page.add_child(sides)
 	for side in 2:
 		sides.add_child(_side_card(side))
+	_cards.append(sides)
+	for card in _cards:
+		page.add_child(card)
 	_all_levers = _all_levers_panel()
 	add_child(_all_levers)
 	_player = AudioStreamPlayer.new()
@@ -448,7 +588,8 @@ func _build() -> void:
 	_respeak.wait_time = 0.25
 	_respeak.timeout.connect(speak)
 	add_child(_respeak)
-	_fill_types()
+	for layer in 3:
+		_fill_picker(layer)
 
 
 func _top_bar() -> Control:
@@ -462,26 +603,28 @@ func _top_bar() -> Control:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(spacer)
-	_type_picker = OptionButton.new()
-	_type_picker.custom_minimum_size.x = 260
-	_type_picker.fit_to_longest_item = false
-	_type_picker.item_selected.connect(_pick_type)
-	row.add_child(_type_picker)
-	_type_name = LineEdit.new()
-	_type_name.placeholder_text = "Name, e.g. Cambion rasp"
-	_type_name.custom_minimum_size.x = 260
-	row.add_child(_type_name)
-	var save := Button.new()
-	save.text = "Save type"
-	save.theme_type_variation = &"AccentButton"
-	save.pressed.connect(_save_type)
-	row.add_child(save)
+	row.add_child(_label("Edit", 14, DIM))
+	_tabs = ButtonGroup.new()
+	var tabs := _segmented(LAYERS, _tabs)
+	tabs.custom_minimum_size.x = 300
+	row.add_child(tabs)
+	for button in _tabs.get_buttons():
+		button.toggled.connect(func(on: bool) -> void:
+			if on:
+				_show_layer(button.get_index()))
+	_name = LineEdit.new()
+	_name.custom_minimum_size.x = 240
+	row.add_child(_name)
+	_save = Button.new()
+	_save.theme_type_variation = &"AccentButton"
+	_save.pressed.connect(_save_layer)
+	row.add_child(_save)
 	var copy := Button.new()
 	copy.text = "Copy"
-	copy.tooltip_text = "Copy the voice type's text form"
+	copy.tooltip_text = "Copy the text form of all three layers together"
 	copy.pressed.connect(func() -> void:
-		DisplayServer.clipboard_set(_type.encode())
-		_status.text = "Copied the voice type's text form.")
+		DisplayServer.clipboard_set(Voices.layer(_person, _mood, _effect))
+		_status.text = "Copied the voice's text form.")
 	row.add_child(copy)
 	var close := Button.new()
 	close.text = "Close  Esc"
@@ -490,14 +633,14 @@ func _top_bar() -> Control:
 	return row
 
 
-# The line, the voice that says it, and the timeline: its waveform with the curve over it.
+# The line, the three layers that say it, and the timeline: its waveform, with the effect's curve.
 func _line_card() -> Control:
-	var card := _card("Line", "Drag the points where the alternate should play · double-click adds one · right-click removes one")
+	var card := _card("Line", "Effect: drag the points where the alternate plays · double-click adds one · right-click removes one")
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 	card[1].add_child(row)
 	var picker := OptionButton.new()
-	picker.custom_minimum_size.x = 340
+	picker.custom_minimum_size.x = 300
 	picker.fit_to_longest_item = false
 	picker.add_item("Pick a line from the game")
 	_find_lines()
@@ -510,16 +653,16 @@ func _line_card() -> Control:
 	_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_text.text_submitted.connect(func(_t: String) -> void: speak())
 	row.add_child(_text)
-	_voice = ButtonGroup.new()
-	var bodies := _segmented(BODIES, _voice)
-	bodies.custom_minimum_size.x = 260
-	row.add_child(bodies)
-	for button in _voice.get_buttons():
-		button.toggled.connect(func(on: bool) -> void:
-			if on:
-				_on_changed())
+	for layer in 3:
+		row.add_child(_label(LAYERS[layer], 14, DIM))
+		var layer_picker := OptionButton.new()
+		layer_picker.custom_minimum_size.x = 170
+		layer_picker.fit_to_longest_item = false
+		layer_picker.item_selected.connect(func(index: int) -> void: _pick(layer, index))
+		row.add_child(layer_picker)
+		_pickers.append(layer_picker)
 	_timeline = Control.new()
-	_timeline.custom_minimum_size.y = 220
+	_timeline.custom_minimum_size.y = 200
 	_timeline.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_timeline.mouse_filter = Control.MOUSE_FILTER_STOP
 	_timeline.draw.connect(_draw_timeline)
@@ -555,14 +698,48 @@ func _line_card() -> Control:
 		var button := Button.new()
 		button.text = preset[0]
 		button.pressed.connect(func() -> void:
-			_type.curve = _curve_from(preset[1])
+			_effect.curve = _curve_from(preset[1])
 			_timeline.queue_redraw()
 			_on_changed())
 		bottom.add_child(button)
 	return card[0]
 
 
-# One side of the type: its four macros and the common levers, two columns.
+# The levers of a person or a mood, in three columns, with its switch (the body or the tune).
+func _layer_card(target: int, title: String, hint: String, keys: PackedStringArray, switch: String) -> Control:
+	var card := _card(title, hint)
+	var head: HBoxContainer = card[1].get_child(0)
+	var group := ButtonGroup.new()
+	var options := BODIES if switch == "body" else INTONATIONS
+	var buttons := _segmented(options, group)
+	buttons.custom_minimum_size.x = 300
+	head.add_child(buttons)
+	for button in group.get_buttons():
+		button.toggled.connect(func(on: bool) -> void:
+			if on:
+				_store_switches(target))
+	_switches[target] = {switch: group}
+	var reset := Button.new()
+	reset.text = "Reset"
+	reset.pressed.connect(func() -> void:
+		_settings(target).clear()
+		if target == MOOD:
+			for key: String in MOOD_FIELDS:
+				_set_lever(MOOD, key, _spec(key)[5])
+		_show_all()
+		_on_changed())
+	head.add_child(reset)
+	var levers := GridContainer.new()
+	levers.columns = 3
+	levers.add_theme_constant_override("h_separation", 24)
+	levers.add_theme_constant_override("v_separation", 4)
+	card[1].add_child(levers)
+	for key in keys:
+		levers.add_child(_slider_row(target, _spec(key)))
+	return card[0]
+
+
+# One side of the effect: its four macros and the common levers, two columns.
 func _side_card(side: int) -> Control:
 	var card := _card(SIDES[side], "Plays where the curve is low" if side == 0 else "Plays where the curve is high")
 	card[0].size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -575,7 +752,7 @@ func _side_card(side: int) -> Control:
 	reset.text = "Reset"
 	reset.pressed.connect(func() -> void:
 		_settings(side).clear()
-		_show_type()
+		_show_all()
 		_on_changed())
 	head.add_child(reset)
 	var macros := GridContainer.new()
@@ -646,6 +823,8 @@ func _all_levers_panel() -> Control:
 		columns.add_theme_constant_override("separation", 28)
 		page.add_child(columns)
 		for group: Array in GROUPS:
+			if group[0] == HUMAN_GROUP:
+				continue
 			var column := VBoxContainer.new()
 			column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			column.add_theme_constant_override("separation", 2)
@@ -709,10 +888,11 @@ func _refresh_macros(side: int) -> void:
 func _apply_macro(side: int, moved: String) -> void:
 	for key: String in MACROS[moved]:
 		var spec := _spec(key)
-		var value: float = spec[5]
+		var below := _below(side, key)
+		var value := below
 		for macro: String in MACROS:
 			if MACROS[macro].has(key):
-				value += (_macros[side][macro] as HSlider).value * (MACROS[macro][key] - spec[5])
+				value += (_macros[side][macro] as HSlider).value * (MACROS[macro][key] - below)
 		_set_lever(side, key, clampf(value, spec[2], spec[3]))
 
 
@@ -772,7 +952,7 @@ func _slider_row(side: int, spec: Array, compact := false) -> Control:
 	chip.custom_minimum_size.x = 64 if compact else 76
 	chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	row.add_child(chip)
-	var reset := _reset_button(func() -> void: _set_lever(side, spec[0], spec[5]))
+	var reset := _reset_button(func() -> void: _set_lever(side, spec[0], _below(side, spec[0])))
 	reset.name = "Reset"
 	reset.pressed.connect(_on_changed)
 	row.add_child(reset)
@@ -785,17 +965,21 @@ func _slider_row(side: int, spec: Array, compact := false) -> Control:
 	row.gui_input.connect(func(event: InputEvent) -> void:
 		var click := event as InputEventMouseButton
 		if click and click.double_click:
-			_set_lever(side, spec[0], spec[5])
+			_set_lever(side, spec[0], _below(side, spec[0]))
 			_on_changed())
-	_describe(slider, spec[0])
+	_describe(slider, side, spec[0])
 	return row
 
 
-# Shows a slider's value, and marks its row when it differs from the default.
-func _describe(slider: HSlider, key: String) -> void:
+# Shows a slider's value, and marks its row when this layer changes it from what the layers below
+# give; the tooltip says where that value comes from.
+func _describe(slider: HSlider, target: int, key: String) -> void:
 	var spec := _spec(key)
 	var row := slider.get_parent()
-	var changed := not is_equal_approx(slider.value, spec[5])
+	var below := _below(target, key)
+	var changed := not is_equal_approx(slider.value, below)
+	var from := _below_from(target, key)
+	row.tooltip_text = "Without this layer: %s%s (%s)" % [snappedf(below, spec[4]), UNITS.get(key, ""), "from the " + from if from != "" else "Chimera's"]
 	var chip: Label = row.get_node("Value")
 	var shown := snappedf(slider.value, spec[4])
 	chip.text = (str(int(shown)) if spec[4] >= 1.0 else str(shown)) + UNITS.get(key, "")
@@ -932,7 +1116,8 @@ func _dot(diameter: int, color: Color) -> ImageTexture:
 	return ImageTexture.create_from_image(image)
 
 
-# --- The timeline: the line's waveform, and over it the curve that says where the alternate plays.
+# --- The timeline: the line's waveform, and over it the effect's curve that says where the
+# alternate plays.
 
 func _area() -> Rect2:
 	return Rect2(Vector2(12, 12), _timeline.size - Vector2(24, 24))
@@ -949,14 +1134,16 @@ func _to_curve(at: Vector2) -> Vector2:
 
 
 func _point_near(at: Vector2) -> int:
-	for i in _type.curve.point_count:
-		if _to_screen(_type.curve.get_point_position(i)).distance_to(at) < 12.0:
+	for i in _effect.curve.point_count:
+		if _to_screen(_effect.curve.get_point_position(i)).distance_to(at) < 12.0:
 			return i
 	return -1
 
 
 func _on_timeline_input(event: InputEvent) -> void:
-	var curve := _type.curve
+	if not _curve_shown():
+		return
+	var curve := _effect.curve
 	var click := event as InputEventMouseButton
 	if click and click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
 		var near := _point_near(click.position)
@@ -988,7 +1175,7 @@ func _on_timeline_input(event: InputEvent) -> void:
 func _draw_timeline() -> void:
 	var r := _area()
 	_timeline.draw_style_box(_box(Color("0f1116"), 12), Rect2(Vector2.ZERO, _timeline.size))
-	var curve := _type.curve
+	var curve := _effect.curve if _curve_shown() else null
 	# Where the alternate plays: shaded from the bottom up to the curve.
 	if curve != null:
 		var fill := PackedVector2Array([_to_screen(Vector2(0, 0))])

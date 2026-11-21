@@ -14,6 +14,8 @@
 [ext_resource type="Script" path="res://win95/computer_state.gd" id="computer_state"]
 [ext_resource type="PackedScene" path="res://win95/no_signal.tscn" id="no_signal"]
 [ext_resource type="AudioStream" uid="uid://d1khoniyciy2a" path="res://win95/sounds/ding.ogg" id="ding"]
+[ext_resource type="Script" path="res://win95/pointer_trails.gd" id="pointer_trails"]
+[ext_resource type="Script" path="res://win95/mouse_input.gd" id="mouse_input"]
 
 [node name="Win95" type="Control" unique_id=1752664516]
 texture_filter = 1
@@ -37,6 +39,16 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("desktop")
+
+[node name="DesktopColour" type="ColorRect" parent="Desktop"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0.5019608, 0.5019608, 1)
 
 [node name="DesktopBackground" type="TextureRect" parent="Desktop" unique_id=1777346285]
 layout_mode = 1
@@ -99,12 +111,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 3
 
-[node name="Owner" type="Label" parent="TaskBar/HBoxContainer"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-mouse_filter = 2
-
 [node name="Systray" parent="TaskBar/HBoxContainer" unique_id=1819389400 instance=ExtResource("systray")]
 unique_name_in_owner = true
 layout_mode = 2
@@ -112,3 +118,20 @@ layout_mode = 2
 [node name="NoSignal" parent="." instance=ExtResource("no_signal")]
 unique_name_in_owner = true
 layout_mode = 1
+
+[node name="PointerTrails" type="Control" parent="." node_paths=PackedStringArray("computer", "screen")]
+z_index = 100
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("pointer_trails")
+computer = NodePath("../ComputerState")
+screen = NodePath("..")
+
+[node name="MouseInput" type="Node" parent="." node_paths=PackedStringArray("computer")]
+script = ExtResource("mouse_input")
+computer = NodePath("../ComputerState")

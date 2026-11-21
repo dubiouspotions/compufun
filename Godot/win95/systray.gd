@@ -26,6 +26,18 @@ const _SPEAKER_MUTED := preload("res://win95/theme/icons/tray_speaker_muted_16.p
 		if is_node_ready():
 			_sync()
 
+## The computer whose clock the taskbar shows, ComputerState.now(), re-read on its changed signal.
+## Null shows the real time of day.
+var computer: ComputerState:
+	set(value):
+		if computer != null:
+			computer.changed.disconnect(_sync)
+		computer = value
+		if computer != null:
+			computer.changed.connect(_sync)
+		if is_node_ready():
+			_sync()
+
 @onready var _speaker: TextureButton = %Speaker
 @onready var _clock: Label = %Clock
 @onready var _popup: PopupPanel = %VolumePopup
@@ -62,4 +74,4 @@ func _sync() -> void:
 	_speaker.texture_normal = _SPEAKER_MUTED if muted else _SPEAKER
 	_mute.set_pressed_no_signal(muted)
 	_slider.set_value_no_signal(volume)
-	_clock.text = Win95Time.clock(Time.get_time_dict_from_system())
+	_clock.text = Win95Time.clock(computer.now() if computer != null else Time.get_time_dict_from_system())

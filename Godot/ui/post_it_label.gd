@@ -7,6 +7,8 @@ extends Control
 ## The largest font size, as a fraction of the paper's width on screen. The text shrinks below it
 ## when it doesn't fit, as on a paper that the camera sees at a slant.
 @export_range(0.02, 0.5) var font_fraction: float = 0.1
+## The largest font size in pixels, however close the paper comes.
+@export_range(1, 256) var max_font_size: int = 48
 
 ## The job whose post-it this is, or null to show nothing.
 var job: Job:
@@ -31,11 +33,23 @@ func _ready() -> void:
 func follow(rect: Rect2) -> void:
 	position = rect.position.round()
 	size = rect.size.round()
-	var font_size := maxi(1, roundi(rect.size.x * font_fraction))
-	while font_size > 1 and not (_fits(_issue, font_size) and _fits(_pickup, font_size)):
-		font_size -= 1
+	var font_size := fitting_font_size()
 	for label: Label in [_issue, _pickup]:
 		label.add_theme_font_size_override(&"font_size", font_size)
+
+
+## The largest font size, 1 to [member max_font_size], at which both texts fit their parts of the
+## paper at the current [member Control.size]; 1 when none fits. Measures at most 8 sizes.
+func fitting_font_size() -> int:
+	var low := 1
+	var high := clampi(roundi(size.x * font_fraction), 1, max_font_size)
+	while low < high:
+		var mid := (low + high + 1) / 2
+		if _fits(_issue, mid) and _fits(_pickup, mid):
+			low = mid
+		else:
+			high = mid - 1
+	return low
 
 
 # Measures from the anchors: the labels take the new size of this control only on the next frame.

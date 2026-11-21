@@ -25,65 +25,185 @@ pose = &"neutral"
 
 [sub_resource type="Resource" id="line_5"]
 script = ExtResource("dl")
+text = "Hi, um... I have a computer?"
+pose = &"neutral"
+
+[sub_resource type="Resource" id="line_6"]
+script = ExtResource("dl")
+text = "Is the shop open?"
+pose = &"neutral"
+
+[sub_resource type="Resource" id="line_7"]
+script = ExtResource("dl")
+text = "The sign said open..."
+pose = &"neutral"
+
+[sub_resource type="Resource" id="line_8"]
+script = ExtResource("dl")
+text = "Knock knock?"
+pose = &"neutral"
+
+[sub_resource type="Resource" id="line_9"]
+script = ExtResource("dl")
 text = "Are you there?"
 pose = &"thinking"
 
-[sub_resource type="Resource" id="line_6"]
+[sub_resource type="Resource" id="line_10"]
 script = ExtResource("dl")
 text = "Is anybody back there?"
 pose = &"thinking"
 
-[sub_resource type="Resource" id="line_7"]
+[sub_resource type="Resource" id="line_11"]
 script = ExtResource("dl")
 text = "Hmm... hello?"
 pose = &"thinking"
 
-[sub_resource type="Resource" id="line_8"]
+[sub_resource type="Resource" id="line_12"]
+script = ExtResource("dl")
+text = "Maybe they're in the back."
+pose = &"thinking"
+
+[sub_resource type="Resource" id="line_13"]
+script = ExtResource("dl")
+text = "Should I ring the bell again?"
+pose = &"thinking"
+
+[sub_resource type="Resource" id="line_14"]
+script = ExtResource("dl")
+text = "Did I come on the wrong day?"
+pose = &"thinking"
+
+[sub_resource type="Resource" id="line_15"]
+script = ExtResource("dl")
+text = "This is the computer shop, right?"
+pose = &"thinking"
+
+[sub_resource type="Resource" id="line_16"]
+script = ExtResource("dl")
+text = "I can hear someone in there..."
+pose = &"thinking"
+
+[sub_resource type="Resource" id="line_17"]
 script = ExtResource("dl")
 text = "Hello?"
 pose = &"irritated01"
 
-[sub_resource type="Resource" id="line_9"]
+[sub_resource type="Resource" id="line_18"]
 script = ExtResource("dl")
 text = "Excuse me..."
 pose = &"irritated01"
 
-[sub_resource type="Resource" id="line_10"]
+[sub_resource type="Resource" id="line_19"]
 script = ExtResource("dl")
 text = "Hello-o?"
 pose = &"irritated01"
 
-[sub_resource type="Resource" id="line_11"]
+[sub_resource type="Resource" id="line_20"]
+script = ExtResource("dl")
+text = "Excuse me, sir?"
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="line_21"]
+script = ExtResource("dl")
+text = "Um. Hello?"
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="line_22"]
+script = ExtResource("dl")
+text = "I'm right here."
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="line_23"]
+script = ExtResource("dl")
+text = "Could I get some help, please?"
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="line_24"]
+script = ExtResource("dl")
+text = "Yoo-hoo?"
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="line_25"]
 script = ExtResource("dl")
 text = "Are you busy?"
 pose = &"irritated02"
 
-[sub_resource type="Resource" id="line_12"]
+[sub_resource type="Resource" id="line_26"]
 script = ExtResource("dl")
 text = "I'm still waiting here."
 pose = &"irritated02"
 
-[sub_resource type="Resource" id="line_13"]
+[sub_resource type="Resource" id="line_27"]
 script = ExtResource("dl")
 text = "Can someone help me?"
 pose = &"irritated02"
 
-[sub_resource type="Resource" id="line_14"]
+[sub_resource type="Resource" id="line_28"]
+script = ExtResource("dl")
+text = "I've been standing here a while."
+pose = &"irritated02"
+
+[sub_resource type="Resource" id="line_29"]
+script = ExtResource("dl")
+text = "Is this a bad time?"
+pose = &"irritated02"
+
+[sub_resource type="Resource" id="line_30"]
+script = ExtResource("dl")
+text = "My parking runs out soon."
+pose = &"irritated02"
+
+[sub_resource type="Resource" id="line_31"]
+script = ExtResource("dl")
+text = "Hello? HELLO?"
+pose = &"irritated02"
+
+[sub_resource type="Resource" id="line_32"]
+script = ExtResource("dl")
+text = "I can wait. I guess."
+pose = &"irritated02"
+
+[sub_resource type="Resource" id="line_33"]
 script = ExtResource("dl")
 text = "I can go somewhere else."
 pose = &"irritated03"
 
-[sub_resource type="Resource" id="line_15"]
+[sub_resource type="Resource" id="line_34"]
 script = ExtResource("dl")
 text = "I don't have all day."
 pose = &"irritated03"
 
-[sub_resource type="Resource" id="line_16"]
+[sub_resource type="Resource" id="line_35"]
 script = ExtResource("dl")
 text = "Unbelievable."
+pose = &"irritated03"
+
+[sub_resource type="Resource" id="line_36"]
+script = ExtResource("dl")
+text = "Some service this is."
+pose = &"irritated03"
+
+[sub_resource type="Resource" id="line_37"]
+script = ExtResource("dl")
+text = "I'll take it to the place across town."
+pose = &"irritated03"
+
+[sub_resource type="Resource" id="line_38"]
+script = ExtResource("dl")
+text = "Is this how you treat customers?"
+pose = &"irritated03"
+
+[sub_resource type="Resource" id="line_39"]
+script = ExtResource("dl")
+text = "Do you even work here?"
+pose = &"irritated03"
+
+[sub_resource type="Resource" id="line_40"]
+script = ExtResource("dl")
+text = "Fine. FINE. I'll just stand here."
 pose = &"irritated03"
 
 [resource]
 script = ExtResource("cv")
 id = &"waiting"
-lines = Array[ExtResource("dl")]([SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4"), SubResource("line_5"), SubResource("line_6"), SubResource("line_7"), SubResource("line_8"), SubResource("line_9"), SubResource("line_10"), SubResource("line_11"), SubResource("line_12"), SubResource("line_13"), SubResource("line_14"), SubResource("line_15"), SubResource("line_16")])
+lines = Array[ExtResource("dl")]([SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4"), SubResource("line_5"), SubResource("line_6"), SubResource("line_7"), SubResource("line_8"), SubResource("line_9"), SubResource("line_10"), SubResource("line_11"), SubResource("line_12"), SubResource("line_13"), SubResource("line_14"), SubResource("line_15"), SubResource("line_16"), SubResource("line_17"), SubResource("line_18"), SubResource("line_19"), SubResource("line_20"), SubResource("line_21"), SubResource("line_22"), SubResource("line_23"), SubResource("line_24"), SubResource("line_25"), SubResource("line_26"), SubResource("line_27"), SubResource("line_28"), SubResource("line_29"), SubResource("line_30"), SubResource("line_31"), SubResource("line_32"), SubResource("line_33"), SubResource("line_34"), SubResource("line_35"), SubResource("line_36"), SubResource("line_37"), SubResource("line_38"), SubResource("line_39"), SubResource("line_40")])

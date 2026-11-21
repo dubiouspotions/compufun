@@ -1,0 +1,51 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/crash.gd" id="1_crash"]
+[ext_resource type="PackedScene" path="res://win95/bluescreen.tscn" id="2_bluescreen"]
+[ext_resource type="AudioStream" path="res://win95/sounds/chord.wav" id="3_chord"]
+
+[node name="Crash" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_crash")
+
+[node name="Blue" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0.667, 1)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Screen" type="SubViewportContainer" parent="Center"]
+texture_filter = 1
+custom_minimum_size = Vector2(1280, 960)
+layout_mode = 2
+stretch = true
+stretch_shrink = 2
+
+[node name="Buffer" type="SubViewport" parent="Center/Screen"]
+handle_input_locally = false
+size = Vector2i(640, 480)
+render_target_update_mode = 4
+
+[node name="Bluescreen" parent="Center/Screen/Buffer" instance=ExtResource("2_bluescreen")]
+dismissable = false
+
+[node name="Chord" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("3_chord")

@@ -16,18 +16,22 @@ const _BIN_FULL := preload("res://win95/theme/icons/recycle_bin_full_32.png")
 const _COVER := preload("res://win95/cover_screen.gd")
 const _SHARED_PALETTE := preload("res://win95/theme/palette.tres")
 const _ICONS := "res://win95/theme/icons/"
-## The meta key on a FileIcon that holds its Win95File.
+## The meta key on a FileIcon that holds its Win95File, or its Applet in the Control Panel.
 const _FILE_META := &"win95_file"
+## The View submenu's items: action id to folder view and label.
+const _VIEW_IDS := {&"large_icons": [IconView.FolderView.LARGE_ICONS, "Large Icons"], &"small_icons": [IconView.FolderView.SMALL_ICONS, "Small Icons"],
+	&"list": [IconView.FolderView.LIST, "List"], &"details": [IconView.FolderView.DETAILS, "Details"]}
 
-## What an icon view shows: the desktop, a folder, drive C, My Computer or the Recycle Bin.
+## What an icon view shows: the desktop, a folder, drive C, My Computer, the Control Panel or the
+## Recycle Bin.
 class Listing:
 	extends RefCounted
 	var title: String = ""
 	## 32 x 32; the title bar shows its 16 px twin.
 	var icon: Texture2D
 	var kind: StringName = &"folder"
-	## Returns the Array of Win95Files to show. For a folder, the desktop or drive C it is the live
-	## Array, which New Folder adds to.
+	## Returns the Array of Win95Files, or of Applets for the Control Panel, to show. For a folder,
+	## the desktop or drive C it is the live Array, which New Folder adds to.
 	var files: Callable
 	var creatable: bool = false
 	## What the listing shows: a folder's Win95File, or a name such as &"drive_c". Two windows never
@@ -64,6 +68,7 @@ static var _stock_palette: Win95Palette
 var _setup_icons: Array[FileIcon] = []
 var _listings: Dictionary[IconView, Listing] = {}
 var _drive_c: Win95File
+var _control_panel: Win95File
 var _drives: Array[Win95File] = []
 var _context: ContextMenu
 var _context_view: IconView
@@ -91,6 +96,7 @@ func _ready() -> void:
 	add_child(_context)
 	_context.chosen.connect(_on_action)
 	_wire_view(_icons)
+	_systray.computer = _state
 	_systray.mute_toggled.connect(func(_muted: bool) -> void: _state.set_sound(_systray.volume, _systray.muted))
 	_systray.volume_changed.connect(func(_volume: float) -> void: _state.set_sound(_systray.volume, _systray.muted))
 	_no_signal.visible = not _state.is_on
@@ -110,16 +116,11 @@ func _on_booted() -> void:
 	for child in get_children():
 		if child.get_script() == _COVER:
 			child.queue_free()
-	if is_inside_tree():
-		_apply_palette(setup.palette)
-	if setup.wallpaper != null:
-		_background.texture = setup.wallpaper
-		# As Win95 showed them: a small pattern tiles, a picture fills the screen.
-		var tiles := setup.wallpaper.get_width() * 2 < _background.size.x
-		_background.stretch_mode = TextureRect.STRETCH_TILE if tiles else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_apply_look()
 	_drive_c = _folder("(C:)", "drive_hard_32.png")
+	_control_panel = _folder("Control Panel", "folder_control_panel_32.png")
 	_drives.assign([_folder("3\u00bd Floppy (A:)", "drive_floppy_35_32.png"), _drive_c, _folder("(D:)", "drive_cdrom_32.png"),
-		_folder("Control Panel", "folder_control_panel_32.png"), _folder("Printers", "folder_printers_32.png")])
+		_control_panel, _folder("Printers", "folder_printers_32.png")])
 	_listings.clear()
 	_listings[_icons] = Listing.new("Desktop", null, &"desktop", func() -> Array: return _state.setup.desktop, true, &"desktop")
 	_fill(_icons)
@@ -129,6 +130,8 @@ func _on_booted() -> void:
 		_boot.queue_free()
 	_boot = _BOOT.instantiate()
 	_boot.floppy_in_a = setup.floppy_in_a
+	if _state.job != null and _state.job.customer.computer != null:
+		_boot.hardware = _state.job.customer.computer.hardware
 	_floppy_heard = setup.floppy_in_a
 	pointer_visible = false
 	_boot.finished.connect(func() -> void:
@@ -145,6 +148,22 @@ func _on_powered_off() -> void:
 	if is_instance_valid(_boot):
 		_boot.queue_free()
 	_no_signal.show()
+
+
+# The setup's colour scheme and wallpaper, as they are now: on boot and after every change.
+func _apply_look() -> void:
+	var setup := _state.setup
+	if is_inside_tree():
+		_apply_palette(setup.palette)
+	_background.texture = setup.wallpaper
+	if setup.wallpaper != null:
+		_background.stretch_mode = wallpaper_stretch(setup.wallpaper, _background.size.x)
+
+
+## How a desktop [param screen_width] pixels wide shows [param wallpaper], as Win95 showed them:
+## a small pattern tiles, a picture fills the screen.
+static func wallpaper_stretch(wallpaper: Texture2D, screen_width: float) -> TextureRect.StretchMode:
+	return TextureRect.STRETCH_TILE if wallpaper.get_width() * 2 < screen_width else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 
 # Every bevel draws with the one shared palette; the desktop on screen sets it, also on entering the tree.
@@ -172,6 +191,8 @@ func _apply_sound() -> void:
 func _on_changed() -> void:
 	_apply_sound()
 	if _state.setup != null:
+		if _state.is_on:
+			_apply_look()
 		if is_instance_valid(_boot):
 			_boot.floppy_in_a = _state.setup.floppy_in_a
 		if _state.setup.floppy_in_a != _floppy_heard:
@@ -181,27 +202,34 @@ func _on_changed() -> void:
 		_fill(view)
 
 
-## Lists the view's Win95Files again, keeping the selection. On the desktop, the system icons from
+## Lists the view's Win95Files or Applets again, keeping the selection. On the desktop, the system icons from
 ## desktop_icons.tscn stay and the Recycle Bin shows whether it is empty.
 func _fill(view: IconView) -> void:
 	var listing: Listing = _listings[view]
-	var keep: Array[Win95File] = []
+	var keep: Array[Resource] = []
 	for item in view.selected_items():
-		var file := _file_of(item)
-		if file != null:
-			keep.append(file)
-	var focused := _file_of(view.focus_item()) if view.focus_item() != null else null
+		var entry := _entry_of(item)
+		if entry != null:
+			keep.append(entry)
+	var focused := _entry_of(view.focus_item()) if view.focus_item() != null else null
 	var old: Array = _setup_icons if view == _icons else view.get_children()
 	for item: Node in old:
 		item.queue_free()
 	var added: Array[FileIcon] = []
-	for file: Win95File in listing.files.call():
-		var item := view.add_item(file.name, file.icon)
-		item.set_meta(_FILE_META, file)
-		item.name_edited.connect(func(_old: String, new_text: String) -> void: _state.rename_file(file, new_text))
-		item.selected = keep.has(file)
-		item.stub = ComputerState.is_program_name(file.name) and file.program == null
-		if file == focused:
+	for entry: Resource in listing.files.call():
+		var item := view.add_item(entry.get(&"name"), entry.get(&"icon"))
+		item.set_meta(_FILE_META, entry)
+		if entry is Applet:
+			item.renamable = false
+			item.stub = (entry as Applet).sheet == null
+			item.details = PackedStringArray([(entry as Applet).description])
+		else:
+			var file: Win95File = entry
+			item.name_edited.connect(func(_old: String, new_text: String) -> void: _state.rename_file(file, new_text))
+			item.stub = ComputerState.is_program_name(file.name) and file.program == null
+			item.details = FileDetails.cells(listing.kind, file, _state)
+		item.selected = keep.has(entry)
+		if entry == focused:
 			view.set_focus_item(item)
 		added.append(item)
 	if view == _icons:
@@ -218,6 +246,10 @@ func _folder(folder_name: String, icon_file: String) -> Win95File:
 
 
 func _file_of(item: FileIcon) -> Win95File:
+	return _entry_of(item) as Win95File
+
+
+func _entry_of(item: FileIcon) -> Resource:
 	return item.get_meta(_FILE_META) if item.has_meta(_FILE_META) else null
 
 
@@ -229,18 +261,30 @@ func _wire_view(view: IconView) -> void:
 
 func _open_item(item: FileIcon) -> void:
 	var file := _file_of(item)
-	if item.name == &"MyComputer":
-		_show(Listing.new("My Computer", load(_ICONS + "my_computer_32.png"), &"my_computer", func() -> Array: return _drives, false, &"my_computer"))
+	var folder_view := (item.get_parent() as IconView).folder_view
+	var applet := _entry_of(item) as Applet
+	if applet != null:
+		if applet.sheet != null:
+			_desktop.open(applet.sheet)
+	elif item.name == &"MyComputer":
+		_show(Listing.new("My Computer", load(_ICONS + "my_computer_32.png"), &"my_computer", func() -> Array: return _drives, false, &"my_computer"), folder_view)
 	elif item.name == &"RecycleBin":
-		_show(Listing.new("Recycle Bin", _BIN_EMPTY, &"recycle_bin", func() -> Array: return _state.setup.recycle_bin, false, &"recycle_bin"))
+		_show(Listing.new("Recycle Bin", _BIN_EMPTY, &"recycle_bin", func() -> Array: return _state.setup.recycle_bin, false, &"recycle_bin"), folder_view)
 	elif file == null or _listing_of_item(item).kind == &"recycle_bin":
 		return
+	elif file == _control_panel:
+		open_control_panel(folder_view)
 	elif file == _drive_c:
-		_show(Listing.new("(C:)", file.icon, &"folder", func() -> Array: return _state.setup.drive_c, true, &"drive_c"))
+		_show(Listing.new("(C:)", file.icon, &"folder", func() -> Array: return _state.setup.drive_c, true, &"drive_c"), folder_view)
 	elif file.is_folder:
-		_show(Listing.new(file.name, file.icon, &"folder", func() -> Array: return file.children, not _drives.has(file), file))
+		_show(Listing.new(file.name, file.icon, &"folder", func() -> Array: return file.children, not _drives.has(file), file), folder_view)
 	else:
 		open_file(file)
+
+
+## Opens the Control Panel folder in [param folder_view], or brings it to the front.
+func open_control_panel(folder_view := IconView.FolderView.LARGE_ICONS) -> void:
+	_show(Listing.new("Control Panel", _control_panel.icon, &"control_panel", func() -> Array: return _state.control_panel(), false, &"control_panel"), folder_view)
 
 
 ## Opens [param file] as Win95 does: a program file runs while its name ends in .EXE or .COM;
@@ -288,7 +332,8 @@ func _listing_of_item(item: FileIcon) -> Listing:
 	return _listings.get(item.get_parent() as IconView)
 
 
-func _show(listing: Listing) -> void:
+# A new window takes the folder view of the window that opened it, as in Win95.
+func _show(listing: Listing, folder_view: IconView.FolderView) -> void:
 	if _state.setup.fragmented:
 		await get_tree().create_timer(_FRAGMENTED_OPEN_SECONDS).timeout  # the disk seeks all over
 	for view: IconView in _listings.keys():
@@ -305,6 +350,8 @@ func _show(listing: Listing) -> void:
 		_listings.erase(view)
 		window.queue_free())
 	_listings[view] = listing
+	view.columns = FileDetails.columns(listing.kind)
+	view.folder_view = folder_view
 	_fill(view)
 
 
@@ -318,7 +365,7 @@ func _entries_for(view: IconView, item: FileIcon) -> Array[ContextMenu.Entry]:
 	var listing: Listing = _listings[view]
 	var properties := ContextMenu.item("Properties", &"properties")
 	if item == null:
-		return _background_entries(listing)
+		return _background_entries(listing, view)
 	var multi := view.selected_items().size() > 1
 	if listing.kind == &"recycle_bin":
 		return _entries([["Restore", &"restore"], [], ["Cut"], [], ["Delete", &"purge"], [], properties])
@@ -337,6 +384,8 @@ func _entries_for(view: IconView, item: FileIcon) -> Array[ContextMenu.Entry]:
 	var file := _file_of(item)
 	if listing.kind == &"my_computer":
 		return _entries([["Open", &"open", true], ["Explore"], ["Find..."], [], ["Create Shortcut"], [], properties])
+	if listing.kind == &"control_panel":
+		return _entries([["Open", &"open", true], [], ["Create Shortcut"]])
 	var entries := _entries([["Open", &"open", true]])
 	if file != null and file.is_folder:
 		entries.append_array(_entries([["Explore"], ["Find..."]]))
@@ -348,9 +397,12 @@ func _entries_for(view: IconView, item: FileIcon) -> Array[ContextMenu.Entry]:
 	return entries
 
 
-func _background_entries(listing: Listing) -> Array[ContextMenu.Entry]:
+func _background_entries(listing: Listing, view: IconView) -> Array[ContextMenu.Entry]:
 	var arrange := ContextMenu.submenu("Arrange Icons", _entries([["by Name"], ["by Type"], ["by Size"], ["by Date"], [], ["Auto Arrange"]]))
-	var view_menu := ContextMenu.submenu("View", _entries([ContextMenu.item("Large Icons", &"", false, false, true), ["Small Icons"], ["List"], ["Details"]]))
+	var views: Array[ContextMenu.Entry] = []
+	for id: StringName in _VIEW_IDS:
+		views.append(ContextMenu.item(_VIEW_IDS[id][1], id, false, false, view.folder_view == _VIEW_IDS[id][0]))
+	var view_menu := ContextMenu.submenu("View", views)
 	var new_menu := ContextMenu.submenu("New", _entries([["Folder", &"new_folder"], ["Shortcut"], [], ["Text Document"], ["WordPad Document"], ["Bitmap Image"], ["Wave Sound"]]))
 	var paste := ContextMenu.item("Paste", &"", false, true)
 	var paste_shortcut := ContextMenu.item("Paste Shortcut", &"", false, true)
@@ -387,6 +439,9 @@ func _on_action(id: StringName) -> void:
 	var item := _context_item if is_instance_valid(_context_item) else null
 	var listing: Listing = _listings[view]
 	var files := _files(view.selected_items())
+	if _VIEW_IDS.has(id):
+		view.folder_view = _VIEW_IDS[id][0]
+		return
 	match id:
 		&"open":
 			for selected in view.selected_items():

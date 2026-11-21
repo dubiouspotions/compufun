@@ -1,31 +1,25 @@
 class_name ViewNav
 extends Control
-## The turn buttons, the Back button, the view name and the status line. It shows a view marker
-## and asks for view changes; it does not change the view itself.
+## The Back button, the view name and the status line. It shows a view marker and asks for view
+## changes; it does not change the view itself. The arrow keys turn and look up (main.gd).
 
-## The player pressed a turn button or Back.
+## The player pressed Back.
 signal view_requested(view: StringName)
 
 var _marker: ViewMarker
 
-@onready var _left: Button = %LeftButton
-@onready var _right: Button = %RightButton
 @onready var _back: Button = %BackButton
 @onready var _view_label: Label = %ViewLabel
 @onready var _status_label: Label = %StatusLabel
 
 
 func _ready() -> void:
-	_left.pressed.connect(func() -> void: _request(&"left"))
-	_right.pressed.connect(func() -> void: _request(&"right"))
 	_back.pressed.connect(func() -> void: _request(&"back"))
 
 
-## Shows the buttons that [param marker] allows. null hides them.
+## Shows the Back button when [param marker] allows Back. null hides it.
 func show_marker(marker: ViewMarker) -> void:
 	_marker = marker
-	_left.visible = marker != null and marker.left != &""
-	_right.visible = marker != null and marker.right != &""
 	_back.visible = marker != null and marker.back != &""
 	_view_label.text = String(Game.view)
 	_status_label.text = _status_text()
@@ -42,6 +36,8 @@ func _status_text() -> String:
 			return "No day has started."
 		Game.Phase.DAY_OVER:
 			return "Day %d is over." % Game.day.number
+		Game.Phase.ENDED:
+			return "Day %d: the end." % Game.day.number
 		Game.Phase.CALLING:
 			return "Day %d: calling a customer." % Game.day.number
 		_:

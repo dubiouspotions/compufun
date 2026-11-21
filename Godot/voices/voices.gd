@@ -5,6 +5,8 @@ class_name Voices
 
 const DIR: String = "res://voices/"
 const MOODS_DIR: String = "res://voices/moods/"
+const PERSONS_DIR: String = "res://voices/persons/"
+const EFFECTS_DIR: String = "res://voices/effects/"
 ## The editor setting with the path of the chimera binary: Editor Settings > Humanerror > Voices.
 const CHIMERA_SETTING: String = "humanerror/voices/chimera_path"
 # The import settings of a new voice file: 22 kHz and QOA keep the web download small.
@@ -42,6 +44,24 @@ static func mood(pose: StringName) -> VoiceMood:
 	return VoiceMood.new()
 
 
+## The text form of a voice for ChimeraVoice and the web voice: [param person] at the bottom,
+## [param mood] over it and [param effect] on top, each layer's settings over the ones below.
+## Any layer may be null.
+static func layer(person: VoicePerson, mood: VoiceMood, effect: VoiceEffect) -> String:
+	var below: Dictionary = {}
+	if person != null:
+		below.merge(person.settings, true)
+	if mood != null:
+		below.merge(mood.settings, true)
+	if effect == null:
+		return VoiceEffect.encode(below, {}, null)
+	var base := below.duplicate()
+	base.merge(effect.base, true)
+	var alternate := below.duplicate()
+	alternate.merge(effect.alternate, true)
+	return VoiceEffect.encode(base, alternate, effect.curve)
+
+
 ## The voice file of [param line] in [param voice]. Its name is a hash of all that shapes the
 ## sound (the voice, the mood of the line's pose and the text), so an edited line never finds
 ## old audio.
@@ -66,10 +86,10 @@ static func stream_of(line: DialogueLine, voice: String) -> AudioStream:
 	return stream
 
 
-## Says [param line] in [param voice] through the ChimeraVoice extension, shaped by
-## [param voice_type], and returns the whole line as a WAV; null with the error pushed when the
+## Says [param line] as [param person] in the mood of its pose, under [param effect], through the
+## ChimeraVoice extension, and returns the whole line as a WAV; null with the error pushed when the
 ## extension is missing. For the editor: the game streams lines with VoicePlayer instead.
-static func say_live(line: DialogueLine, voice: String, voice_type: VoiceType) -> AudioStreamWAV:
+static func say_live(line: DialogueLine, person: VoicePerson, effect: VoiceEffect) -> AudioStreamWAV:
 	if not ClassDB.class_exists(&"ChimeraVoice"):
 		push_error("Voices: no ChimeraVoice extension; build it with tools/build-voice.sh")
 		return null
@@ -83,8 +103,8 @@ static func say_live(line: DialogueLine, voice: String, voice_type: VoiceType) -
 		return null
 	engine.load_dict(gz.decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP).get_string_from_utf8())
 	var shape := mood(line.pose)
-	engine.set_voice_type(voice_type.encode() if voice_type != null else "")
-	if engine.start(line.text, VoicePlayer.BODIES.get(voice, 0), VoicePlayer.MIX_RATE, shape.rate, shape.pitch, shape.swing) <= 0:
+	engine.set_voice_type(layer(person, shape, effect))
+	if engine.start(line.text, VoicePlayer.BODIES.get(person.body, 0), VoicePlayer.MIX_RATE, shape.rate, shape.pitch, shape.swing) <= 0:
 		push_error("Voices: ChimeraVoice said nothing for \"%s\"" % line.text)
 		return null
 	var samples := PackedFloat32Array()

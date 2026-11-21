@@ -1,0 +1,410 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://win95/property_sheet.tscn" id="sheet"]
+[ext_resource type="Script" path="res://win95/applets/system_general.gd" id="general"]
+[ext_resource type="Script" path="res://win95/applets/system_performance.gd" id="performance"]
+[ext_resource type="Script" path="res://win95/group_box.gd" id="group_box"]
+[ext_resource type="Texture2D" path="res://win95/applets/system_monitor.png" id="monitor"]
+[ext_resource type="Texture2D" path="res://win95/applets/device_tree.png" id="tree"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/laptop_docking_station_32.png" id="profiles"]
+
+[sub_resource type="ButtonGroup" id="view"]
+
+[node name="SystemProperties" instance=ExtResource("sheet")]
+has_apply = false
+
+[node name="TitleBar" parent="VBox" index="0"]
+title = "System Properties"
+
+[node name="General" type="Control" parent="VBox/Body/Column/Tabs"]
+custom_minimum_size = Vector2(388, 356)
+layout_mode = 2
+script = ExtResource("general")
+
+[node name="Monitor" type="TextureRect" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 46.0
+offset_top = 43.0
+offset_right = 46.0
+offset_bottom = 43.0
+mouse_filter = 2
+texture = ExtResource("monitor")
+stretch_mode = 2
+
+[node name="SystemLabel" type="Label" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 204.0
+offset_top = 19.0
+offset_right = 204.0
+offset_bottom = 19.0
+text = "System:"
+
+[node name="Windows" type="Label" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 222.0
+offset_top = 37.0
+offset_right = 222.0
+offset_bottom = 37.0
+text = "Microsoft Windows 95"
+
+[node name="Version" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 222.0
+offset_top = 55.0
+offset_right = 222.0
+offset_bottom = 55.0
+text = ""
+
+[node name="RegisteredLabel" type="Label" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 204.0
+offset_top = 99.0
+offset_right = 204.0
+offset_bottom = 99.0
+text = "Registered to:"
+
+[node name="Owner" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 222.0
+offset_top = 116.0
+offset_right = 222.0
+offset_bottom = 116.0
+text = ""
+
+[node name="Organization" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 222.0
+offset_top = 134.0
+offset_right = 222.0
+offset_bottom = 134.0
+text = ""
+
+[node name="ProductId" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 222.0
+offset_top = 152.0
+offset_right = 222.0
+offset_bottom = 152.0
+text = ""
+
+[node name="ComputerLabel" type="Label" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 204.0
+offset_top = 201.0
+offset_right = 204.0
+offset_bottom = 201.0
+text = "Computer:"
+
+[node name="Processor" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 222.0
+offset_top = 219.0
+offset_right = 222.0
+offset_bottom = 219.0
+text = ""
+
+[node name="Memory" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 222.0
+offset_top = 237.0
+offset_right = 222.0
+offset_bottom = 237.0
+text = ""
+
+[node name="Device Manager" type="Control" parent="VBox/Body/Column/Tabs"]
+visible = false
+custom_minimum_size = Vector2(388, 356)
+layout_mode = 2
+
+[node name="ByType" type="CheckBox" parent="VBox/Body/Column/Tabs/Device Manager"]
+offset_left = 18.0
+offset_top = 16.0
+offset_right = 18.0
+offset_bottom = 16.0
+focus_mode = 0
+disabled = true
+button_pressed = true
+button_group = SubResource("view")
+text = "View devices by type"
+
+[node name="ByConnection" type="CheckBox" parent="VBox/Body/Column/Tabs/Device Manager"]
+offset_left = 167.0
+offset_top = 16.0
+offset_right = 167.0
+offset_bottom = 16.0
+focus_mode = 0
+disabled = true
+button_group = SubResource("view")
+text = "View devices by connection"
+
+[node name="Devices" type="PanelContainer" parent="VBox/Body/Column/Tabs/Device Manager"]
+offset_left = 17.0
+offset_top = 39.0
+offset_right = 370.0
+offset_bottom = 306.0
+mouse_filter = 2
+theme_type_variation = &"FieldPanel"
+
+[node name="Picture" type="TextureRect" parent="VBox/Body/Column/Tabs/Device Manager/Devices"]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("tree")
+stretch_mode = 2
+
+[node name="Properties" type="Button" parent="VBox/Body/Column/Tabs/Device Manager"]
+offset_left = 17.0
+offset_top = 314.0
+offset_right = 101.0
+offset_bottom = 337.0
+focus_mode = 0
+disabled = true
+text = "Properties"
+
+[node name="Refresh" type="Button" parent="VBox/Body/Column/Tabs/Device Manager"]
+offset_left = 107.0
+offset_top = 314.0
+offset_right = 191.0
+offset_bottom = 337.0
+focus_mode = 0
+disabled = true
+text = "Refresh"
+
+[node name="Remove" type="Button" parent="VBox/Body/Column/Tabs/Device Manager"]
+offset_left = 197.0
+offset_top = 314.0
+offset_right = 281.0
+offset_bottom = 337.0
+focus_mode = 0
+disabled = true
+text = "Remove"
+
+[node name="Print" type="Button" parent="VBox/Body/Column/Tabs/Device Manager"]
+offset_left = 287.0
+offset_top = 314.0
+offset_right = 370.0
+offset_bottom = 337.0
+focus_mode = 0
+disabled = true
+text = "Print..."
+
+[node name="Hardware Profiles" type="Control" parent="VBox/Body/Column/Tabs"]
+visible = false
+custom_minimum_size = Vector2(388, 356)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="VBox/Body/Column/Tabs/Hardware Profiles"]
+offset_left = 17.0
+offset_top = 16.0
+offset_right = 17.0
+offset_bottom = 16.0
+mouse_filter = 2
+texture = ExtResource("profiles")
+stretch_mode = 2
+
+[node name="About" type="Label" parent="VBox/Body/Column/Tabs/Hardware Profiles"]
+offset_left = 69.0
+offset_top = 17.0
+offset_right = 69.0
+offset_bottom = 17.0
+text = "Hardware profiles provide a way to create hardware\nconfigurations that you can choose from at startup."
+
+[node name="When" type="Label" parent="VBox/Body/Column/Tabs/Hardware Profiles"]
+offset_left = 69.0
+offset_top = 56.0
+offset_right = 69.0
+offset_bottom = 56.0
+text = "There are only a few circumstances in which you may want to\ncreate hardware profiles. For more information, see Help."
+
+[node name="Profiles" type="ItemList" parent="VBox/Body/Column/Tabs/Hardware Profiles"]
+offset_left = 17.0
+offset_top = 104.0
+offset_right = 370.0
+offset_bottom = 199.0
+focus_mode = 0
+mouse_filter = 2
+item_count = 1
+item_0/text = "Original Configuration"
+
+[node name="Copy" type="Button" parent="VBox/Body/Column/Tabs/Hardware Profiles"]
+offset_left = 17.0
+offset_top = 218.0
+offset_right = 131.0
+offset_bottom = 242.0
+focus_mode = 0
+disabled = true
+text = "Copy..."
+
+[node name="Rename" type="Button" parent="VBox/Body/Column/Tabs/Hardware Profiles"]
+offset_left = 136.0
+offset_top = 218.0
+offset_right = 250.0
+offset_bottom = 242.0
+focus_mode = 0
+disabled = true
+text = "Rename..."
+
+[node name="Delete" type="Button" parent="VBox/Body/Column/Tabs/Hardware Profiles"]
+offset_left = 256.0
+offset_top = 218.0
+offset_right = 370.0
+offset_bottom = 242.0
+focus_mode = 0
+disabled = true
+text = "Delete"
+
+[node name="Performance" type="Control" parent="VBox/Body/Column/Tabs"]
+visible = false
+custom_minimum_size = Vector2(388, 356)
+layout_mode = 2
+script = ExtResource("performance")
+
+[node name="Status" type="Control" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 13.0
+offset_top = 17.0
+offset_right = 375.0
+offset_bottom = 278.0
+mouse_filter = 2
+script = ExtResource("group_box")
+text = "Performance status"
+
+[node name="MemoryLabel" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 30.0
+offset_top = 34.0
+offset_right = 30.0
+offset_bottom = 34.0
+text = "Memory:"
+
+[node name="PerformanceMemory" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+unique_name_in_owner = true
+offset_left = 144.0
+offset_top = 34.0
+offset_right = 144.0
+offset_bottom = 34.0
+text = ""
+
+[node name="ResourcesLabel" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 30.0
+offset_top = 55.0
+offset_right = 30.0
+offset_bottom = 55.0
+text = "System Resources:"
+
+[node name="Resources" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 144.0
+offset_top = 55.0
+offset_right = 144.0
+offset_bottom = 55.0
+text = "96% free"
+
+[node name="FileSystemLabel" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 30.0
+offset_top = 76.0
+offset_right = 30.0
+offset_bottom = 76.0
+text = "File System:"
+
+[node name="FileSystem" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 144.0
+offset_top = 76.0
+offset_right = 144.0
+offset_bottom = 76.0
+text = "Some drives are using MS-DOS compatibilty"
+
+[node name="VirtualMemoryLabel" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 30.0
+offset_top = 97.0
+offset_right = 30.0
+offset_bottom = 97.0
+text = "Virtual Memory:"
+
+[node name="VirtualMemory" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 144.0
+offset_top = 97.0
+offset_right = 144.0
+offset_bottom = 97.0
+text = "32-bit"
+
+[node name="CompressionLabel" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 30.0
+offset_top = 118.0
+offset_right = 30.0
+offset_bottom = 118.0
+text = "Disk Compression:"
+
+[node name="Compression" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 144.0
+offset_top = 118.0
+offset_right = 144.0
+offset_bottom = 118.0
+text = "Not installed"
+
+[node name="PcCardsLabel" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 30.0
+offset_top = 139.0
+offset_right = 30.0
+offset_bottom = 139.0
+text = "PC Cards (PCMCIA):"
+
+[node name="PcCards" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 144.0
+offset_top = 139.0
+offset_right = 144.0
+offset_bottom = 139.0
+text = "No PCMCIA sockets installed"
+
+[node name="Select" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 30.0
+offset_top = 167.0
+offset_right = 30.0
+offset_bottom = 167.0
+text = "Select an item and then click Details for more information."
+
+[node name="Problems" type="ItemList" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 29.0
+offset_top = 184.0
+offset_right = 359.0
+offset_bottom = 241.0
+focus_mode = 0
+mouse_filter = 2
+item_count = 1
+item_0/text = "Drive A: using MS-DOS compatibility mode file system."
+
+[node name="Details" type="Button" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 284.0
+offset_top = 244.0
+offset_right = 359.0
+offset_bottom = 267.0
+focus_mode = 0
+disabled = true
+text = "Details..."
+
+[node name="Advanced" type="Control" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 13.0
+offset_top = 289.0
+offset_right = 375.0
+offset_bottom = 342.0
+mouse_filter = 2
+script = ExtResource("group_box")
+text = "Advanced settings"
+
+[node name="FileSystemButton" type="Button" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 29.0
+offset_top = 304.0
+offset_right = 134.0
+offset_bottom = 327.0
+focus_mode = 0
+disabled = true
+text = "File System..."
+
+[node name="Graphics" type="Button" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 140.0
+offset_top = 304.0
+offset_right = 245.0
+offset_bottom = 327.0
+focus_mode = 0
+disabled = true
+text = "Graphics..."
+
+[node name="VirtualMemoryButton" type="Button" parent="VBox/Body/Column/Tabs/Performance"]
+offset_left = 251.0
+offset_top = 304.0
+offset_right = 359.0
+offset_bottom = 327.0
+focus_mode = 0
+disabled = true
+text = "Virtual Memory..."

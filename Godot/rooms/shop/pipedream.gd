@@ -14,12 +14,14 @@ const STARTS: Array[Vector3i] = [
 	Vector3i(1, -1, 0), Vector3i.LEFT, Vector3i(-1, 1, 0), Vector3i(-1, -1, 0),
 ]
 
-## The day's warp, 0 to 1 ([member Day.warp]). The pipes grow, or shrink, to match it at
-## [member grow_speed].
+## The day's warp, 0 to 1 ([member Day.warp]). The pipes grow to match it at [member grow_speed];
+## a lower warp, as after a reboot, takes them away at once.
 var warp: float = 0.0:
 	set(value):
 		warp = value
 		if is_node_ready():
+			_shown = minf(_shown, amount(warp))
+			_show()
 			set_process(not is_equal_approx(_shown, amount(warp)))
 
 ## The warp of the first day with pipes. Below it, none show.

@@ -30,13 +30,17 @@ func _initialize() -> void:
 		var customer := resource as Customer
 		if customer == null:
 			continue
-		voices[customer.voice] = true
+		if customer.voice == null:
+			push_error("render_voices: %s has no voice person" % path)
+			errors += 1
+			continue
+		voices[customer.voice.body] = true
 		for conversation: Conversation in customer.conversations:
 			if conversation == null:
 				continue
 			for line: DialogueLine in conversation.lines:
 				if line != null and not line.text.strip_edges().is_empty():
-					wanted[Voices.path_of(line, customer.voice)] = [line, customer.voice, path]
+					wanted[Voices.path_of(line, customer.voice.body)] = [line, customer.voice.body, path]
 	for conversation in shared:
 		for voice: String in voices:
 			for line: DialogueLine in conversation.lines:

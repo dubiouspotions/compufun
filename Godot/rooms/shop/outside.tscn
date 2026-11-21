@@ -18,6 +18,8 @@
 [ext_resource type="PackedScene" path="res://props/lamp_post.tscn" id="16_sv7u7"]
 [ext_resource type="Material" path="res://materials/light_panel.tres" id="17_4ev3q"]
 [ext_resource type="AudioStream" path="res://sounds/city_ambience.ogg" id="18_city"]
+[ext_resource type="ArrayMesh" path="res://props/tree_round_b.tres" id="tree_round_b"]
+[ext_resource type="ArrayMesh" path="res://props/tree_pine_b.tres" id="tree_pine_b"]
 
 [sub_resource type="Gradient" id="Gradient_qlyq4"]
 offsets = PackedFloat32Array(0, 0.24, 0.29, 0.5, 0.71, 0.77, 0.83, 1)
@@ -249,9 +251,11 @@ transform = Transform3D(-0.4119765, 0, -0.965803, 0, 1.05, 0, 0.965803, 0, -0.41
 
 [node name="Tree2" parent="." unique_id=1256582865 instance=ExtResource("8_g7kd1")]
 transform = Transform3D(-0.3991046, 0, -0.8840902, 0, 0.97, 0, 0.8840902, 0, -0.3991046, 0.2, 0, -18.5)
+mesh = ExtResource("tree_round_b")
 
 [node name="Tree3" parent="." unique_id=1816139160 instance=ExtResource("9_iqjyn")]
 transform = Transform3D(-0.0144976, 0, 1.0498999, 0, 1.05, 0, -1.0498999, 0, -0.0144976, 5, 0, -17.5)
+mesh = ExtResource("tree_pine_b")
 
 [node name="Tree4" parent="." unique_id=175037614 instance=ExtResource("8_g7kd1")]
 transform = Transform3D(-0.8005508, 0, -0.6638663, 0, 1.04, 0, 0.6638663, 0, -0.8005508, 7, 0, -14.6)
@@ -261,9 +265,11 @@ transform = Transform3D(-0.9925901, 0, -0.1215107, 0, 1, 0, 0.1215107, 0, -0.992
 
 [node name="Tree6" parent="." unique_id=1116846330 instance=ExtResource("9_iqjyn")]
 transform = Transform3D(-1.3800143, 0, -0.23571256, 0, 1.4, 0, 0.23571256, 0, -1.3800143, -11, 0, -15.6)
+mesh = ExtResource("tree_pine_b")
 
 [node name="Tree7" parent="." unique_id=172276533 instance=ExtResource("8_g7kd1")]
 transform = Transform3D(1.4513679, 0, 0.37885535, 0, 1.5, 0, -0.37885535, 0, 1.4513679, 11.5, 0, -10)
+mesh = ExtResource("tree_round_b")
 
 [node name="Tree8" parent="." unique_id=834999383 instance=ExtResource("9_iqjyn")]
 transform = Transform3D(1.6990236, 0, 0.05761334, 0, 1.7, 0, -0.05761334, 0, 1.6990236, 14, 0, -11.6)

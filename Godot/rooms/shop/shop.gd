@@ -6,8 +6,14 @@ extends Node3D
 signal view_requested(view: StringName)
 ## The player clicked the Open sign while [method Game.can_close] is true.
 signal close_requested
+## The end has played in the room: time for the bluescreen.
+signal crashed
+## The player picked up the phone, to call a customer.
+signal phone_requested
 ## The player pressed the Degauss button of the bench screen.
 signal degauss_requested
+## The player pressed the power button of the bench screen.
+signal monitor_power_requested
 
 ## The close-up of the computer in focus.
 const WORKVIEW: StringName = &"Workview"
@@ -30,6 +36,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
+@onready var _the_end: TheEnd = %TheEnd
 @onready var _hand: Hand = %Hand
 @onready var _trash_can: TrashCan = %TrashCan
 
@@ -62,8 +69,11 @@ func _ready() -> void:
 	_job_slots.power_clicked.connect(func(job: Job) -> void: Game.set_powered(job, not job.powered))
 	_bench.view_requested.connect(view_requested.emit)
 	_bench.plug_grabbed.connect(_on_plug_grabbed)
+	_the_end.view_requested.connect(view_requested.emit)
+	_the_end.crashed.connect(crashed.emit)
 	_bench.degauss_pressed.connect(degauss_requested.emit)
 	_trash_can.trash_requested.connect(Game.trash_part)
+	_bench.power_pressed.connect(monitor_power_requested.emit)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -122,9 +132,13 @@ func pinned_post_it() -> PostIt3D:
 
 
 ## The paper of [param post_it] as the camera sees it now: the rect around its corners, in pixels
-## of the world buffer.
+## of the world buffer. Empty while a corner is behind the camera, as during a turn.
 func post_it_rect(post_it: PostIt3D) -> Rect2:
-	return _rect_on_screen(post_it.paper_corners())
+	var corners := post_it.paper_corners()
+	for corner: Vector3 in corners:
+		if _camera.is_position_behind(corner):
+			return Rect2()
+	return _rect_on_screen(corners)
 
 
 func _rect_on_screen(corners: Array[Vector3]) -> Rect2:
@@ -171,6 +185,7 @@ func _sync() -> void:
 	_job_slots.show_jobs(Game.jobs, null if Game.view == WORKVIEW else Game.focus)  # the Workview centres it already
 	_play_changes()
 	_pipedream.warp = Game.warp
+	_the_end.ended = Game.phase == Game.Phase.ENDED
 	# Deferred: a computer turns to lie or stand on the same change, and the cable must reach its new socket.
 	_bench.lay_cable.call_deferred(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
 	var workview_moved := _follow_focus()
@@ -212,16 +227,17 @@ func _move_camera(view_name: StringName) -> void:
 		_camera.global_transform = marker.global_transform
 		_camera.fov = marker.fov
 		return
+	var seconds := marker.turn_seconds if marker.turn_seconds > 0.0 else turn_seconds
 	_camera_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_parallel()
-	_camera_tween.tween_property(_camera, "global_position", marker.global_position, turn_seconds)
-	_camera_tween.tween_property(_camera, "quaternion", marker.global_basis.get_rotation_quaternion(), turn_seconds)
-	_camera_tween.tween_property(_camera, "fov", marker.fov, turn_seconds)
+	_camera_tween.tween_property(_camera, "global_position", marker.global_position, seconds)
+	_camera_tween.tween_property(_camera, "quaternion", marker.global_basis.get_rotation_quaternion(), seconds)
+	_camera_tween.tween_property(_camera, "fov", marker.fov, seconds)
 
 
 ## Moves the Workview marker to the eye of the computer in focus, standing or lying. True when it
 ## moved.
 func _follow_focus() -> bool:
-	var lying := Game.lies(Game.focus)
+	var lying := Game.focus != null and Game.focus.lying
 	if Game.focus == _workview_job and lying == _workview_lying:
 		return false
 	_workview_job = Game.focus
@@ -284,7 +300,7 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 		Hotspot.Action.GO_TO_VIEW:
 			view_requested.emit(hotspot.view)
 		Hotspot.Action.CALL_CUSTOMER:
-			Game.call_customer()
+			phone_requested.emit()
 		Hotspot.Action.CLOSE_SHOP:
 			if Game.can_close():
 				close_requested.emit()

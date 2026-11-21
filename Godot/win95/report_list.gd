@@ -17,11 +17,14 @@ class Column:
 	var icon: Texture2D
 	## In pixels; the last column takes the rest of the width.
 	var width: float = 80.0
+	## Ends the title and the texts at the right edge, as Win95 does for sizes.
+	var right_aligned: bool = false
 
-	func _init(column_title: String, column_width: float, column_icon: Texture2D = null) -> void:
+	func _init(column_title: String, column_width: float, column_icon: Texture2D = null, align_right := false) -> void:
 		title = column_title
 		width = column_width
 		icon = column_icon
+		right_aligned = align_right
 
 
 class Row:
@@ -111,7 +114,7 @@ func _draw() -> void:
 		var width := _width(i, x)
 		var cell := Rect2(x, 0, width, _HEADER_HEIGHT)
 		draw_style_box(header, cell)
-		_draw_cell(cell, _columns[i].icon if _columns[i].icon else _columns[i].title, font, font_size, ink)
+		_draw_cell(cell, _columns[i].icon if _columns[i].icon else _columns[i].title, font, font_size, ink, _columns[i].right_aligned)
 		x += width
 	for r in _rows.size():
 		var y := _HEADER_HEIGHT + r * _ROW_HEIGHT
@@ -125,7 +128,7 @@ func _draw() -> void:
 		for i in _columns.size():
 			var width := _width(i, x)
 			if i < row.cells.size() and row.cells[i] != null:
-				_draw_cell(Rect2(x, y, width, _ROW_HEIGHT), row.cells[i], row_font, font_size, color)
+				_draw_cell(Rect2(x, y, width, _ROW_HEIGHT), row.cells[i], row_font, font_size, color, _columns[i].right_aligned)
 			x += width
 
 
@@ -133,18 +136,27 @@ func _width(column: int, x: float) -> float:
 	return maxf(_columns[column].width, size.x - x) if column == _columns.size() - 1 else _columns[column].width
 
 
-func _draw_cell(cell: Rect2, content: Variant, font: Font, font_size: int, color: Color) -> void:
+func _draw_cell(cell: Rect2, content: Variant, font: Font, font_size: int, color: Color, right_aligned: bool) -> void:
 	if content is Texture2D:
 		var icon := content as Texture2D
 		draw_texture(icon, (cell.position + (cell.size - icon.get_size()) / 2.0).floor())
 		return
-	var text := _fit(str(content), font, font_size, cell.size.x - 2.0 * _PAD)
+	draw_text(self, cell, str(content), font, font_size, color, _PAD, right_aligned)
+
+
+## Draws [param text] on [param canvas] in [param cell], centred vertically, [param pad] pixels in
+## from the left edge, or from the right one when [param right_aligned]; cut with "..." to fit.
+static func draw_text(canvas: CanvasItem, cell: Rect2, text: String, font: Font, font_size: int, color: Color, pad: float, right_aligned := false) -> void:
+	var fitted := fit(text, font, font_size, cell.size.x - 2.0 * pad)
 	var baseline := cell.position.y + floorf((cell.size.y - font.get_height(font_size)) / 2.0) + font.get_ascent(font_size)
-	draw_string(font, Vector2(cell.position.x + _PAD, baseline), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+	var x := cell.position.x + pad
+	if right_aligned:  # the advance after the last glyph already leaves 1 px
+		x = cell.end.x - (pad - 1.0) - font.get_string_size(fitted, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	canvas.draw_string(font, Vector2(x, baseline), fitted, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 
 
-# Win95 cuts a text that doesn't fit and ends it with "...".
-static func _fit(text: String, font: Font, font_size: int, width: float) -> String:
+## [param text] as Win95 fits it into [param width] pixels: whole, or cut and ended with "...".
+static func fit(text: String, font: Font, font_size: int, width: float) -> String:
 	if font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x <= width:
 		return text
 	while text.length() > 0 and font.get_string_size(text + "...", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > width:

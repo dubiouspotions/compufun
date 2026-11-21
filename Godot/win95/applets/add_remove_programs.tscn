@@ -1,0 +1,219 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://win95/property_sheet.tscn" id="sheet"]
+[ext_resource type="Script" path="res://win95/applets/add_remove_page.gd" id="page"]
+[ext_resource type="Script" path="res://win95/group_box.gd" id="group_box"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/computer_install_software_32.png" id="install"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/recycle_bin_full_documents_appwiz_32.png" id="uninstall"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/windows_setup_disk_32.png" id="startup"]
+[ext_resource type="Texture2D" path="res://win95/applets/windows_setup_components.png" id="components"]
+
+[node name="AddRemoveProgramsProperties" instance=ExtResource("sheet")]
+
+[node name="TitleBar" parent="VBox" index="0"]
+title = "Add/Remove Programs Properties"
+
+[node name="Install" type="Control" parent="VBox/Body/Column/Tabs"]
+custom_minimum_size = Vector2(345, 351)
+layout_mode = 2
+script = ExtResource("page")
+metadata/_tab_name = "Install/Uninstall"
+
+[node name="InstallIcon" type="TextureRect" parent="VBox/Body/Column/Tabs/Install"]
+offset_left = 13.0
+offset_top = 11.0
+offset_right = 13.0
+offset_bottom = 11.0
+mouse_filter = 2
+texture = ExtResource("install")
+stretch_mode = 2
+
+[node name="InstallText" type="Label" parent="VBox/Body/Column/Tabs/Install"]
+offset_left = 63.0
+offset_top = 12.0
+offset_right = 63.0
+offset_bottom = 12.0
+text = "To install a new program from a floppy disk or CD-ROM\ndrive, click Install."
+
+[node name="InstallButton" type="Button" parent="VBox/Body/Column/Tabs/Install"]
+offset_left = 235.0
+offset_top = 59.0
+offset_right = 331.0
+offset_bottom = 82.0
+focus_mode = 0
+disabled = true
+text = "Install..."
+
+[node name="Rule" type="HSeparator" parent="VBox/Body/Column/Tabs/Install"]
+offset_left = 13.0
+offset_top = 94.0
+offset_right = 331.0
+offset_bottom = 96.0
+mouse_filter = 2
+
+[node name="UninstallIcon" type="TextureRect" parent="VBox/Body/Column/Tabs/Install"]
+offset_left = 13.0
+offset_top = 109.0
+offset_right = 13.0
+offset_bottom = 109.0
+mouse_filter = 2
+texture = ExtResource("uninstall")
+stretch_mode = 2
+
+[node name="UninstallText" type="Label" parent="VBox/Body/Column/Tabs/Install"]
+offset_left = 62.0
+offset_top = 110.0
+offset_right = 62.0
+offset_bottom = 110.0
+text = "The following software can be automatically removed by\nWindows. To remove a program or to modify its installed\ncomponents, select it from the list and click\nAdd/Remove."
+
+[node name="Programs" type="ItemList" parent="VBox/Body/Column/Tabs/Install"]
+unique_name_in_owner = true
+offset_left = 13.0
+offset_top = 171.0
+offset_right = 331.0
+offset_bottom = 292.0
+
+[node name="AddRemove" type="Button" parent="VBox/Body/Column/Tabs/Install"]
+unique_name_in_owner = true
+offset_left = 235.0
+offset_top = 315.0
+offset_right = 331.0
+offset_bottom = 338.0
+focus_mode = 0
+disabled = true
+text = "Add/Remove..."
+
+[node name="Windows Setup" type="Control" parent="VBox/Body/Column/Tabs"]
+visible = false
+custom_minimum_size = Vector2(345, 351)
+layout_mode = 2
+
+[node name="About" type="Label" parent="VBox/Body/Column/Tabs/Windows Setup"]
+offset_left = 14.0
+offset_top = 12.0
+offset_right = 14.0
+offset_bottom = 12.0
+text = "To add or remove a component, click the check box. A shaded box\nmeans that only part of the component will be installed. To see\nwhat's included in a component, click Details."
+
+[node name="ComponentsLabel" type="Label" parent="VBox/Body/Column/Tabs/Windows Setup"]
+offset_left = 13.0
+offset_top = 56.0
+offset_right = 13.0
+offset_bottom = 56.0
+text = "Components:"
+
+[node name="Components" type="PanelContainer" parent="VBox/Body/Column/Tabs/Windows Setup"]
+offset_left = 13.0
+offset_top = 72.0
+offset_right = 333.0
+offset_bottom = 166.0
+mouse_filter = 2
+theme_type_variation = &"FieldPanel"
+
+[node name="Picture" type="TextureRect" parent="VBox/Body/Column/Tabs/Windows Setup/Components"]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("components")
+stretch_mode = 2
+
+[node name="RequiredLabel" type="Label" parent="VBox/Body/Column/Tabs/Windows Setup"]
+offset_left = 14.0
+offset_top = 177.0
+offset_right = 14.0
+offset_bottom = 177.0
+text = "Space required:"
+
+[node name="Required" type="Label" parent="VBox/Body/Column/Tabs/Windows Setup"]
+offset_left = 240.0
+offset_top = 177.0
+offset_right = 303.0
+offset_bottom = 190.0
+horizontal_alignment = 2
+text = "0.0 MB"
+
+[node name="AvailableLabel" type="Label" parent="VBox/Body/Column/Tabs/Windows Setup"]
+offset_left = 14.0
+offset_top = 193.0
+offset_right = 14.0
+offset_bottom = 193.0
+text = "Space available on disk:"
+
+[node name="Available" type="Label" parent="VBox/Body/Column/Tabs/Windows Setup"]
+offset_left = 240.0
+offset_top = 193.0
+offset_right = 303.0
+offset_bottom = 206.0
+horizontal_alignment = 2
+text = "33.9 MB"
+
+[node name="Description" type="Control" parent="VBox/Body/Column/Tabs/Windows Setup"]
+offset_left = 13.0
+offset_top = 216.0
+offset_right = 331.0
+offset_bottom = 308.0
+mouse_filter = 2
+script = ExtResource("group_box")
+text = "Description"
+
+[node name="DescriptionText" type="Label" parent="VBox/Body/Column/Tabs/Windows Setup"]
+offset_left = 23.0
+offset_top = 229.0
+offset_right = 23.0
+offset_bottom = 229.0
+text = "Includes options to change keyboard, sound, display, and\nmouse behavior for people with mobility, hearing and visual\nimpairments."
+
+[node name="Selected" type="Label" parent="VBox/Body/Column/Tabs/Windows Setup"]
+offset_left = 23.0
+offset_top = 282.0
+offset_right = 23.0
+offset_bottom = 282.0
+text = "0 of 1 components selected"
+
+[node name="Details" type="Button" parent="VBox/Body/Column/Tabs/Windows Setup"]
+offset_left = 242.0
+offset_top = 276.0
+offset_right = 322.0
+offset_bottom = 299.0
+focus_mode = 0
+disabled = true
+text = "Details..."
+
+[node name="HaveDisk" type="Button" parent="VBox/Body/Column/Tabs/Windows Setup"]
+offset_left = 250.0
+offset_top = 315.0
+offset_right = 330.0
+offset_bottom = 338.0
+focus_mode = 0
+disabled = true
+text = "Have Disk..."
+
+[node name="Startup Disk" type="Control" parent="VBox/Body/Column/Tabs"]
+visible = false
+custom_minimum_size = Vector2(345, 351)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="VBox/Body/Column/Tabs/Startup Disk"]
+offset_left = 13.0
+offset_top = 11.0
+offset_right = 13.0
+offset_bottom = 11.0
+mouse_filter = 2
+texture = ExtResource("startup")
+stretch_mode = 2
+
+[node name="About" type="Label" parent="VBox/Body/Column/Tabs/Startup Disk"]
+offset_left = 63.0
+offset_top = 12.0
+offset_right = 63.0
+offset_bottom = 12.0
+text = "If you have trouble starting Windows, you can use a\nstartup disk to start your computer, run diagnostic\nprograms, and fix any problems. To create a startup disk,\nclick Create Disk. You will need one floppy disk."
+
+[node name="CreateDisk" type="Button" parent="VBox/Body/Column/Tabs/Startup Disk"]
+offset_left = 226.0
+offset_top = 85.0
+offset_right = 331.0
+offset_bottom = 108.0
+focus_mode = 0
+disabled = true
+text = "Create Disk..."

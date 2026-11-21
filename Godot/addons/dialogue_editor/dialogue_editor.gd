@@ -7,7 +7,6 @@ extends VBoxContainer
 
 const CUSTOMERS_DIR := "res://customers/"
 const ERROR_COLOR := Color(1.0, 0.45, 0.45)
-const VOICES: Array[String] = ["male", "female", "child"]
 
 var _customers: Array[Customer] = []
 var _customer: Customer
@@ -22,6 +21,8 @@ var _customer_list: ItemList
 var _new_customer: LineEdit
 var _name_edit: LineEdit
 var _voice_picker: OptionButton
+## The voice persons that _voice_picker lists, in its order.
+var _persons: Array[VoicePerson] = []
 var _preview: AudioStreamPlayer
 var _conversation_list: ItemList
 var _new_conversation: LineEdit
@@ -57,8 +58,6 @@ func _ready() -> void:
 	voice_row.add_child(_label("Voice"))
 	_voice_picker = OptionButton.new()
 	_voice_picker.size_flags_horizontal = SIZE_EXPAND_FILL
-	for voice: String in VOICES:
-		_voice_picker.add_item(voice)
 	_voice_picker.item_selected.connect(_on_voice_selected)
 	voice_row.add_child(_voice_picker)
 	middle.add_child(_button("Person, problem: open in inspector", _open_in_inspector))
@@ -193,7 +192,7 @@ func _summary(customer: Customer) -> String:
 			lines.append([line.text, line.pose] if line != null else null)
 		var when: Array = [c.when.from_day, c.when.to_day, c.when.need_flags, c.when.not_flags] if c.when != null else []
 		conversations.append([c.id, c.trigger, c.once, when, lines])
-	return var_to_str([customer.display_name, customer.voice, conversations])
+	return var_to_str([customer.display_name, customer.voice.resource_path if customer.voice != null else "", conversations])
 
 
 func _create_customer(file_name: String) -> void:
@@ -232,7 +231,7 @@ func _select_customer(index: int) -> void:
 	_name_edit.text = _customer.spoken_name() if _customer != null else ""
 	_voice_picker.disabled = _customer == null
 	if _customer != null:
-		_voice_picker.select(VOICES.find(_customer.voice))
+		_fill_persons()
 	_conversation_list.clear()
 	if _customer == null:
 		_select_conversation(-1)
@@ -262,8 +261,22 @@ func _on_name_changed(text: String) -> void:
 func _on_voice_selected(index: int) -> void:
 	if _customer == null:
 		return
-	_customer.voice = VOICES[index]
+	_customer.voice = _persons[index]
 	_touch()
+
+
+# Lists the voice persons of voices/persons/ (made in the Voice Lab, F3), with the customer's.
+func _fill_persons() -> void:
+	_persons.clear()
+	_voice_picker.clear()
+	for resource: Resource in _saved(Voices.PERSONS_DIR):
+		if resource is VoicePerson:
+			_persons.append(resource)
+			_voice_picker.add_item(resource.resource_path.get_file().get_basename().capitalize())
+	if _customer.voice != null and not _persons.has(_customer.voice):
+		_persons.append(_customer.voice)
+		_voice_picker.add_item("%s (not in voices/persons)" % _customer.voice.resource_path.get_file().get_basename())
+	_voice_picker.select(_persons.find(_customer.voice))
 
 
 ## Says [param line] in the customer's voice. A missing voice file is rendered first, which needs
@@ -272,23 +285,28 @@ func _play_line(line: DialogueLine) -> void:
 	if line.text.strip_edges().is_empty():
 		_fail("The line has no text to say")
 		return
-	var voice_type := VoiceType.of(line, _conversation)
-	if voice_type != null:
-		# A voice type is spoken live, as the game does; a rendered WAV has none.
-		var live := Voices.say_live(line, _customer.voice, voice_type)
+	if _customer.voice == null:
+		_fail("%s has no voice person; pick one under Voice" % _customer.display_name)
+		return
+	var effect := VoiceEffect.of(line, _conversation)
+	var person := _customer.voice.resource_path.get_file().get_basename()
+	if ClassDB.class_exists(&"ChimeraVoice"):
+		# Live, as the game says it: the person, the mood and the effect, all three layers.
+		var live := Voices.say_live(line, _customer.voice, effect)
 		if live == null:
-			_fail("Couldn't say the line live with its voice type; see the Output panel")
+			_fail("Couldn't say the line live; see the Output panel")
 			return
 		_preview.stream = live
 		_preview.play()
-		_show_status("Playing live (%s, %s, %s)" % [_customer.voice, line.pose, voice_type.resource_path.get_file().get_basename()])
+		_show_status("Playing live (%s, %s, %s)" % [person, line.pose, effect.resource_path.get_file().get_basename() if effect != null else "no effect"])
 		return
-	var path := Voices.path_of(line, _customer.voice)
+	var voice := _customer.voice.body
+	var path := Voices.path_of(line, voice)
 	if not FileAccess.file_exists(path):
 		var chimera: String = EditorInterface.get_editor_settings().get_setting(Voices.CHIMERA_SETTING)
 		var problem := Voices.chimera_problem(chimera)
 		if problem == "":
-			problem = Voices.render(line, _customer.voice, chimera)
+			problem = Voices.render(line, voice, chimera)
 		if problem != "":
 			_fail(problem)
 			return
@@ -299,7 +317,7 @@ func _play_line(line: DialogueLine) -> void:
 		return
 	_preview.stream = stream
 	_preview.play()
-	_show_status("Playing %s (%s, %s)" % [path.get_file(), _customer.voice, line.pose])
+	_show_status("Playing %s (%s, %s)" % [path.get_file(), voice, line.pose])
 
 
 func _open_in_inspector() -> void:
@@ -400,9 +418,9 @@ func _render_when() -> void:
 		c.once = on
 		_changed_when())
 	row.add_child(once)
-	row.add_child(_label("Voice type"))
-	row.add_child(_voice_type_picker(c.voice_type, "Plain", func(picked: VoiceType) -> void:
-		c.voice_type = picked
+	row.add_child(_label("Effect"))
+	row.add_child(_effect_picker(c.effect, "None", func(picked: VoiceEffect) -> void:
+		c.effect = picked
 		_touch()))
 
 	var days := HBoxContainer.new()
@@ -474,8 +492,8 @@ func _line_row(index: int) -> Control:
 	side.custom_minimum_size.x = 160
 	row.add_child(side)
 	side.add_child(_pose_picker(line))
-	side.add_child(_voice_type_picker(line.voice_type, "Conversation's", func(picked: VoiceType) -> void:
-		line.voice_type = picked
+	side.add_child(_effect_picker(line.effect, "Conversation's", func(picked: VoiceEffect) -> void:
+		line.effect = picked
 		_touch()))
 	var buttons := HBoxContainer.new()
 	side.add_child(buttons)
@@ -495,26 +513,37 @@ func _line_row(index: int) -> Control:
 	return row
 
 
-## A dropdown of the voice types in voices/types/ (made in the Voice Lab, F3), with
-## [param empty_label] for none; [param on_pick] gets the picked VoiceType or null.
-func _voice_type_picker(current: VoiceType, empty_label: String, on_pick: Callable) -> OptionButton:
+## A dropdown of the voice effects in voices/effects/ (made in the Voice Lab, F3), with
+## [param empty_label] for none; [param on_pick] gets the picked VoiceEffect or null.
+func _effect_picker(current: VoiceEffect, empty_label: String, on_pick: Callable) -> OptionButton:
 	var picker := OptionButton.new()
 	picker.add_item(empty_label)
-	var types: Array = [null]
-	var dir := "res://voices/types"
-	for file_name in (DirAccess.get_files_at(dir) if DirAccess.dir_exists_absolute(dir) else PackedStringArray()):
-		if file_name.ends_with(".tres"):
-			var loaded := load(dir.path_join(file_name)) as VoiceType
-			if loaded == null:
-				continue
-			types.append(loaded)
-			picker.add_item(file_name.get_basename().capitalize())
-	if current != null and not types.has(current):
-		types.append(current)
-		picker.add_item("%s (not in voices/types)" % current.resource_path.get_file().get_basename())
-	picker.select(types.find(current))
-	picker.item_selected.connect(func(index: int) -> void: on_pick.call(types[index]))
+	var effects: Array = [null]
+	for resource: Resource in _saved(Voices.EFFECTS_DIR):
+		if resource is VoiceEffect:
+			effects.append(resource)
+			picker.add_item(resource.resource_path.get_file().get_basename().capitalize())
+	if current != null and not effects.has(current):
+		effects.append(current)
+		picker.add_item("%s (not in voices/effects)" % current.resource_path.get_file().get_basename())
+	picker.select(effects.find(current))
+	picker.item_selected.connect(func(index: int) -> void: on_pick.call(effects[index]))
 	return picker
+
+
+## Every .tres in [param dir], loaded; one that won't load is reported and left out.
+static func _saved(dir: String) -> Array[Resource]:
+	var found: Array[Resource] = []
+	if not DirAccess.dir_exists_absolute(dir):
+		return found
+	for file_name in DirAccess.get_files_at(dir):
+		if file_name.ends_with(".tres"):
+			var resource := load(dir.path_join(file_name))
+			if resource == null:
+				push_error("Dialogue: can't load %s" % dir.path_join(file_name))
+				continue
+			found.append(resource)
+	return found
 
 
 ## A dropdown of [constant Person.POSES], marking those the customer's person has no portrait

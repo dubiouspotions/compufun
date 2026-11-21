@@ -33,7 +33,9 @@
 [ext_resource type="AudioStream" path="res://sounds/phone_receiver.wav" id="30_phone_receiver"]
 [ext_resource type="Texture2D" path="res://materials/textures/poster_commercial_placeholder.png" id="31_commercial"]
 [ext_resource type="PackedScene" path="res://props/week_calendar.tscn" id="week_calendar"]
+[ext_resource type="PackedScene" path="res://rooms/shop/the_end.tscn" id="the_end"]
 [ext_resource type="PackedScene" path="res://rooms/shop/hand.tscn" id="hand"]
+[ext_resource type="PackedScene" path="res://rooms/shop/ceiling_mouse.tscn" id="ceiling_mouse"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -498,19 +500,28 @@ material_override = ExtResource("18_y5vne")
 mesh = SubResource("BoxMesh_2i8xi")
 
 [node name="Note0" type="MeshInstance3D" parent="Room" unique_id=2138284774]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.945, 1.82, 0.38)
+transform = Transform3D(0, 0, -1, 0.08715574, 0.9961947, 0, 0.9961947, -0.08715574, 0, 3.945, 1.735, 0.3)
 material_override = ExtResource("19_a76lc")
 mesh = SubResource("QuadMesh_max4p")
 
 [node name="Note1" type="MeshInstance3D" parent="Room" unique_id=759308835]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.945, 1.82, 0.6)
+transform = Transform3D(0, 0, -1, -0.06975647, 0.9975641, 0, 0.9975641, 0.06975647, 0, 3.945, 1.47, 0.31)
 material_override = ExtResource("19_a76lc")
 mesh = SubResource("QuadMesh_tgmyf")
 
 [node name="WeekCalendar" parent="Room" instance=ExtResource("week_calendar")]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.944, 1.49, 0.7)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.944, 1.64, 0.85)
+
+[node name="PinBoardLogo" parent="Room" instance=ExtResource("7_mjyfn")]
+transform = Transform3D(0, 0, -0.18, 0, 0.18, 0, 0.18, 0, 0, 3.945, 1.925, 0.3)
 
 [node name="Outside" parent="." unique_id=724951497 instance=ExtResource("20_788ts")]
+unique_name_in_owner = true
+
+[node name="CeilingMouse" parent="Room" instance=ExtResource("ceiling_mouse")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0.45)
+
+[node name="TheEnd" parent="." instance=ExtResource("the_end")]
 unique_name_in_owner = true
 
 [node name="Views" type="Node3D" parent="." unique_id=1753390285]
@@ -521,7 +532,13 @@ transform = Transform3D(1, 0, 0, 0, 0.99254614, 0.12186935, 0, -0.12186935, 0.99
 script = ExtResource("21_sg8ra")
 left = &"Left"
 right = &"Right"
+up = &"Up"
 faces_customer = true
+
+[node name="Up" type="Marker3D" parent="Views"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 1.55, 0.7)
+script = ExtResource("21_sg8ra")
+back = &"Main"
 
 [node name="Storage" type="Marker3D" parent="Views"]
 transform = Transform3D(1, 0, 0, 0, 0.9135455, 0.4067366, 0, -0.4067366, 0.9135455, -5.4, 1.55, 0.4)
@@ -553,6 +570,17 @@ script = ExtResource("21_sg8ra")
 back = &"Main"
 screen = 2
 fov = 40.0
+
+[node name="EndUp" type="Marker3D" parent="Views"]
+transform = Transform3D(1, 0, 0, 0, 0.9396926, -0.34202015, 0, 0.34202015, 0.9396926, 0, 1.55, 0.7)
+script = ExtResource("21_sg8ra")
+turn_seconds = 0.2
+
+[node name="End" type="Marker3D" parent="Views"]
+transform = Transform3D(1, 0, 0, 0, 0.17364818, 0.98480775, 0, -0.98480775, 0.17364818, 0, 1.62, 0.6)
+script = ExtResource("21_sg8ra")
+fov = 75.0
+turn_seconds = 1.2
 
 [node name="CompuFunDB" type="Marker3D" parent="Views" unique_id=777189132]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.2266, 1.005, 0.45)

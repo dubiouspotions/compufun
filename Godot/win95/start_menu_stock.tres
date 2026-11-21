@@ -1,13 +1,23 @@
 [gd_resource type="Resource" script_class="Win95File" format=3]
 
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/disk_drive_box_32.png" id="icon_disk_drive_box"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/speaker_loud_32.png" id="icon_speaker_loud"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/media_devices_32.png" id="icon_media_devices"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/playing_cards_hand_32.png" id="icon_playing_cards_hand"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/calculator_spreadsheet_32.png" id="icon_calculator_spreadsheet"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/notepad_32.png" id="icon_notepad"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/crayon_scribble_32.png" id="icon_crayon_scribble"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/document_pencil_32.png" id="icon_document_pencil"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/inbox_32.png" id="icon_inbox"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/ms_dos_window_32.png" id="icon_ms_dos_window"]
 [ext_resource type="Script" path="res://win95/win95_file.gd" id="file"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/program_group_32.png" id="group"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons/application_32.png" id="app"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/explorer_32.png" id="app"]
 
 [sub_resource type="Resource" id="f1"]
 script = ExtResource("file")
 name = "Disk Defragmenter"
-icon = ExtResource("app")
+icon = ExtResource("icon_disk_drive_box")
 target = "C:\\WINDOWS\\DEFRAG.EXE"
 
 [sub_resource type="Resource" id="f2"]
@@ -20,19 +30,19 @@ children = Array[Resource]([SubResource("f1")])
 [sub_resource type="Resource" id="f3"]
 script = ExtResource("file")
 name = "Volume Control"
-icon = ExtResource("app")
+icon = ExtResource("icon_speaker_loud")
 target = "C:\\WINDOWS\\SNDVOL32.EXE"
 
 [sub_resource type="Resource" id="media_player"]
 script = ExtResource("file")
 name = "Media Player"
-icon = ExtResource("app")
+icon = ExtResource("icon_media_devices")
 target = "C:\\WINDOWS\\MPLAYER.EXE"
 
 [sub_resource type="Resource" id="solitaire"]
 script = ExtResource("file")
 name = "Solitaire"
-icon = ExtResource("app")
+icon = ExtResource("icon_playing_cards_hand")
 target = "C:\\WINDOWS\\SOL.EXE"
 
 [sub_resource type="Resource" id="games"]
@@ -52,25 +62,25 @@ children = Array[Resource]([SubResource("f3"), SubResource("media_player")])
 [sub_resource type="Resource" id="f5"]
 script = ExtResource("file")
 name = "Calculator"
-icon = ExtResource("app")
+icon = ExtResource("icon_calculator_spreadsheet")
 target = "C:\\WINDOWS\\CALC.EXE"
 
 [sub_resource type="Resource" id="f6"]
 script = ExtResource("file")
 name = "Notepad"
-icon = ExtResource("app")
+icon = ExtResource("icon_notepad")
 target = "C:\\WINDOWS\\NOTEPAD.EXE"
 
 [sub_resource type="Resource" id="f7"]
 script = ExtResource("file")
 name = "Paint"
-icon = ExtResource("app")
+icon = ExtResource("icon_crayon_scribble")
 target = "C:\\WINDOWS\\PBRUSH.EXE"
 
 [sub_resource type="Resource" id="f8"]
 script = ExtResource("file")
 name = "WordPad"
-icon = ExtResource("app")
+icon = ExtResource("icon_document_pencil")
 target = "C:\\WINDOWS\\WORDPAD.EXE"
 
 [sub_resource type="Resource" id="f9"]
@@ -90,13 +100,13 @@ children = Array[Resource]([])
 [sub_resource type="Resource" id="f11"]
 script = ExtResource("file")
 name = "Microsoft Exchange"
-icon = ExtResource("app")
+icon = ExtResource("icon_inbox")
 target = "C:\\WINDOWS\\EXCHNG32.EXE"
 
 [sub_resource type="Resource" id="f12"]
 script = ExtResource("file")
 name = "MS-DOS Prompt"
-icon = ExtResource("app")
+icon = ExtResource("icon_ms_dos_window")
 target = "C:\\WINDOWS\\COMMAND.COM"
 
 [sub_resource type="Resource" id="f13"]

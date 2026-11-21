@@ -5,10 +5,12 @@ extends Marker3D
 
 enum Screen { NONE, COMPUFUN_DB, WIN95, WORKVIEW }
 
-## The view to the left of this one. Empty: the player cannot turn left.
+## The view to the left of this one, that Left or A goes to. Empty: the player cannot turn left.
 @export var left: StringName = &""
-## The view to the right of this one. Empty: the player cannot turn right.
+## The view to the right of this one, that Right or D goes to. Empty: the player cannot turn right.
 @export var right: StringName = &""
+## The view above this one, that Up or W goes to. Empty: the player cannot look up.
+@export var up: StringName = &""
 ## The view that Back (the down arrow button, Esc, Down or S) goes to. Empty: no Back.
 @export var back: StringName = &""
 ## The player sees the customer at the counter from here, so the customer talks to them.
@@ -17,3 +19,5 @@ enum Screen { NONE, COMPUFUN_DB, WIN95, WORKVIEW }
 @export var screen: Screen = Screen.NONE
 ## The vertical field of view of the camera, in degrees. Lower is flatter.
 @export_range(20.0, 100.0) var fov: float = 50.0
+## How long the camera takes to turn to this view, in seconds; 0 uses the room's turn_seconds.
+@export_range(0.0, 10.0, 0.05, "suffix:s") var turn_seconds: float = 0.0

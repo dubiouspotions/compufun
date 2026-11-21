@@ -3,7 +3,7 @@
 [ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
 [ext_resource type="Script" path="res://win95/defrag.gd" id="script"]
 [ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons/drive_hard_16.png" id="icon"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/disk_drive_box_16.png" id="icon"]
 
 [node name="Defrag" type="PanelContainer"]
 theme = ExtResource("theme")

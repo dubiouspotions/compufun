@@ -1,7 +1,8 @@
 @tool
 class_name FileIcon
-extends VBoxContainer
-## A 32 px icon with its name below, as on the desktop and in folder windows.
+extends BoxContainer
+## A 32 px icon with its name below, as on the desktop and in folder windows; or, [member compact],
+## a 16 px icon with its name on the right, as in the Small Icons, List and Details views.
 
 ## The player clicked the icon once. [param additive]: Ctrl (Cmd on a Mac) was held;
 ## [param extend]: Shift was held; [param on_name]: the click hit the name, not the picture.
@@ -14,6 +15,12 @@ signal context_clicked(at: Vector2)
 signal name_edited(old_text: String, new_text: String)
 
 const _WRAP_WIDTH := 70.0
+const _COMPACT_HEIGHT := 17.0
+const _SMALL_ICON := 16.0
+## Win95's name box in a compact row: 2 px around the text.
+const _COMPACT_PAD := 2.0
+## The space between a Details column's edge and its text, in the rows and in the header.
+const CELL_PAD := 7.0
 ## The stock teal under a focused, unselected desktop icon, which the focus dots invert.
 const _DESKTOP_COLOR := Color(0, 0.5, 0.5)
 
@@ -59,11 +66,45 @@ static var _selected_material: ShaderMaterial
 	set(value):
 		stub = value
 		_sync()
+## Lays the icon out in one 17 px row: the 16 px twin of [member icon] (Win95File.small_icon, or
+## [member icon] scaled down), then the name, cut with "..." to fit [member row_width].
+@export var compact := false:
+	set(value):
+		compact = value
+		_sync()
+## In a compact row: the row's width in pixels; the name gets what the icon leaves. With
+## [member columns], the Name column's width instead.
+@export var row_width := 112.0:
+	set(value):
+		row_width = value
+		_sync()
+## The Details columns, Name first, or empty outside Details. The row draws [member details] in
+## the columns after Name.
+var columns: Array[ReportList.Column] = []:
+	set(value):
+		columns = value
+		_sync()
+## The texts of the Details columns after Name, in their order; FileDetails.cells makes them.
+var details: PackedStringArray = []:
+	set(value):
+		details = value
+		queue_redraw()
+
+var _large_minimum := Vector2.ZERO
+var _large_separation := 0
 
 
 func _ready() -> void:
+	_large_minimum = custom_minimum_size
+	_large_separation = get_theme_constant("separation")
 	%Name.draw.connect(_draw_focus)
 	_sync()
+
+
+# Only the picture and the name take clicks, as in Win95, so the rest of the cell or row is
+# empty space that starts a selection rectangle.
+func _has_point(point: Vector2) -> bool:
+	return Rect2((%Icon as Control).position, (%Icon as Control).size).merge(Rect2((%Name as Control).position, (%Name as Control).size)).has_point(point)
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -92,7 +133,11 @@ func _sync() -> void:
 	if not is_node_ready():
 		return
 	var icon_rect: TextureRect = %Icon
-	icon_rect.texture = Stub.mark(icon) if stub else icon
+	var picture := icon
+	if compact:
+		var small := Win95File.small_icon(icon)
+		picture = small if small != null else icon
+	icon_rect.texture = Stub.mark(picture) if stub else picture
 	icon_rect.material = _selection_material() if selected and active else null
 	var label: Label = %Name
 	label.text = text
@@ -101,12 +146,53 @@ func _sync() -> void:
 		label.theme_type_variation = &"IconLabelSelected"
 	else:
 		label.theme_type_variation = &"DesktopIconLabel" if on_desktop else &"IconLabel"
-	# The name box hugs the wrapped text, as Win95 draws the selection behind the name only.
+	_sync_layout(icon_rect, label)
+	queue_redraw()
+
+
+func _sync_layout(icon_rect: TextureRect, label: Label) -> void:
+	if vertical == compact:
+		vertical = not compact
+	queue_sort()  # setting vertical sorts at once, before the sizes below change
+	add_theme_constant_override("separation", 0 if compact else _large_separation)
+	icon_rect.custom_minimum_size = Vector2.ONE * (_SMALL_ICON if compact else 32.0)
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE if compact else TextureRect.EXPAND_KEEP_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_SCALE if compact else TextureRect.STRETCH_KEEP
+	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF if compact else TextServer.AUTOWRAP_WORD_SMART
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER if compact else VERTICAL_ALIGNMENT_TOP
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS if compact else TextServer.OVERRUN_NO_TRIMMING
+	# The name box hugs the text, as Win95 draws the selection behind the name only.
 	var font := label.get_theme_font("font")
 	var size := label.get_theme_font_size("font_size")
-	var block := font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, _WRAP_WIDTH, size)
-	var box := label.get_theme_stylebox("normal")
-	label.custom_minimum_size.x = ceilf(block.x) + box.get_margin(SIDE_LEFT) + box.get_margin(SIDE_RIGHT)
+	if not compact:
+		custom_minimum_size = _large_minimum
+		var block := font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, _WRAP_WIDTH, size)
+		var box := label.get_theme_stylebox("normal")
+		label.custom_minimum_size = Vector2(ceilf(block.x) + box.get_margin(SIDE_LEFT) + box.get_margin(SIDE_RIGHT), 0)
+		return
+	var name_width := columns[0].width if not columns.is_empty() else row_width
+	var row := 0.0
+	for column in columns:
+		row += column.width
+	custom_minimum_size = Vector2(row if not columns.is_empty() else row_width, _COMPACT_HEIGHT)
+	var wide := ceilf(font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x) + 2.0 * _COMPACT_PAD
+	label.custom_minimum_size = Vector2(minf(wide, name_width - _SMALL_ICON), _COMPACT_HEIGHT)
+
+
+func _draw() -> void:
+	if not compact or columns.is_empty():
+		return
+	var font := get_theme_font("font", &"Label")
+	var font_size := get_theme_font_size("font_size", &"Label")
+	var ink := get_theme_color("font_color", &"IconLabel")
+	var x := columns[0].width
+	for i in range(1, columns.size()):
+		var column := columns[i]
+		if i - 1 < details.size():
+			ReportList.draw_text(self, Rect2(x, 0, column.width, size.y), details[i - 1], font, font_size, ink, CELL_PAD, column.right_aligned)
+		x += column.width
 
 
 # Win95 XORs the dots onto the name's background, so they are its inverse: yellow on the selection.

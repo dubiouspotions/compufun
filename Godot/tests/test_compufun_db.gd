@@ -2,7 +2,7 @@ extends "res://tests/test.gd"
 ## A computer on the counter gets one CompuFunDB record; the record, with its marked symptoms and
 ## ticked repairs, survives a snapshot and a restore, and a malformed record is refused.
 
-const CUSTOMER: String = "res://customers/pierre.tres"
+const CUSTOMER: String = "res://customers/skater_bro.tres"
 
 
 func run() -> void:

@@ -20,6 +20,8 @@ const PRESETS: Dictionary[String, Dictionary] = {
 	"Day 1 over, both computers overnight": {"day": 1, "phase": "DAY_OVER", "arrivals": 2,
 			"jobs": [{"customer": "res://customers/skater_bro.tres", "slot": 0},
 				{"customer": "res://customers/young_entrepreneur.tres", "slot": 1, "order": 1}]},
+	"Day 7, ready to close for the end": {"day": 7, "arrivals": 2},
+	"The end": {"day": 7, "phase": "ENDED", "arrivals": 2},
 }
 
 var _status: Label

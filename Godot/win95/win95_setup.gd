@@ -34,6 +34,33 @@ var recent_documents: Array[Win95File] = []
 @export_range(0, 100) var volume: float = 75.0
 @export var muted: bool = false
 
+@export_group("Mouse")
+## Mouse > Buttons: the left and right buttons swap.
+@export var left_handed: bool = false
+## Mouse > Buttons: the longest gap between the two clicks of a double-click, in milliseconds.
+@export_range(100, 900) var double_click_ms: int = 500
+## Mouse > Motion: 0 draws no trail; 1 to 7, from short to long, draws that many ghost pointers.
+@export_range(0, 7) var pointer_trails: int = 0
+## Mouse > Motion: the pointer speed slider, 0 (slow) to 6 (fast). Saved; the pointer moves as before.
+@export_range(0, 6) var pointer_speed: int = 3
+
+@export_group("Clock")
+## How far this computer's clock is ahead of the game's time, in seconds; negative is behind.
+## Date/Time sets it, and the taskbar clock and file dates read it (ComputerState.now()).
+@export var clock_offset_seconds: int = 0
+
+@export_group("System")
+## What System > General shows under "Microsoft Windows 95", for example "4.00.950".
+@export var version: String = "4.00.950"
+## System > General, "Registered to": the owner, the organisation and the product ID. An empty
+## owner shows the customer's display_name.
+@export var registered_owner: String = ""
+@export var registered_organization: String = ""
+@export var product_id: String = "12345-OEM-0012345-12345"
+## System > General, "Computer": the processor and the memory.
+@export var processor: String = "Pentium(r)"
+@export var memory_mb: int = 16
+
 @export_group("Drives")
 ## A floppy is in drive A:. The PC tries to boot from it and stops on "Non-System disk or disk
 ## error", so Windows does not start until the floppy is out.

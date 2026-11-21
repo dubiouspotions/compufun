@@ -111,13 +111,16 @@ templates (Editor > Manage Export Templates).
 
 ## Voices
 
-**Voice types.** A conversation, or a single line, can have a `VoiceType`: a base voice, an
-alternate voice and a curve over the line that says how much of the alternate plays at each moment.
-Make them in the Voice Lab (Dev menu, F3 or Cmd+3) and pick them in the Dialogue tab. The live voice
-blends the two as it speaks, with the same Rust code on desktop and in the browser
+**Layers.** A line's voice is three layers, each over the one below (`Voices.layer`): the
+customer's `VoicePerson` (`voices/persons/`), the `VoiceMood` of the line's pose (`voices/moods/`)
+and a `VoiceEffect` (`voices/effects/`) of the line or its conversation. Make all three in the
+Voice Lab (Dev menu, F3 or Cmd+3); pick persons and effects in the Dialogue tab. An effect has a
+base, an alternate and a curve over the line that says how much of the alternate plays at each
+moment. The live voice blends the two as it speaks, with the same Rust code on desktop and in the browser
 (`native/chimera_voice/src/voice_type.rs` and `fx.rs`): speed, pitch, melody, body and intonation
 take the curve's average once per line; the voice source and the effects follow the curve. A
-pre-rendered WAV has no voice type, so a line plays its type only where the live voice is built.
+pre-rendered WAV has only the person's body and the mood's speed, pitch and swing, so the rest of
+the layers plays only where the live voice is built.
 
 **Live.** `VoicePlayer` speaks each line as it plays: in the web build Chimera runs as wasm in a
 Web Worker (`voices/live/live_voice.js`), on desktop as the `ChimeraVoice` extension
@@ -132,11 +135,11 @@ tools/build-voice.sh
 ```
 
 **Rendered.** Each customer line plays a WAV in `Godot/voices/`, which [Chimera](https://github.com/jamesondh/chimera-vocal-synth)
-renders from the text, in the customer's `voice` and the mood of the line's pose
+renders from the text, in the body of the customer's `voice` person and the mood of the line's pose
 (`Godot/voices/moods/<pose>.tres`: speed, pitch and pitch swing). A line without its file is
 silent, and a debug run warns about it. Conversations that every customer shares, such as what
 they say while they wait, live in `Godot/customers/conversations/`; they are rendered in each
-voice that a customer has.
+body that a customer's person has.
 
 1. Once: install [Rust](https://rustup.rs), then clone Chimera outside this repo, at the commit
    that the patch fits, and build its CLI with our mood patch. The binary finds Chimera's data
