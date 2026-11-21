@@ -155,9 +155,13 @@ func _apply_look() -> void:
 		_apply_palette(setup.palette)
 	_background.texture = setup.wallpaper
 	if setup.wallpaper != null:
-		# As Win95 showed them: a small pattern tiles, a picture fills the screen.
-		var tiles := setup.wallpaper.get_width() * 2 < _background.size.x
-		_background.stretch_mode = TextureRect.STRETCH_TILE if tiles else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		_background.stretch_mode = wallpaper_stretch(setup.wallpaper, _background.size.x)
+
+
+## How a desktop [param screen_width] pixels wide shows [param wallpaper], as Win95 showed them:
+## a small pattern tiles, a picture fills the screen.
+static func wallpaper_stretch(wallpaper: Texture2D, screen_width: float) -> TextureRect.StretchMode:
+	return TextureRect.STRETCH_TILE if wallpaper.get_width() * 2 < screen_width else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 
 # Every bevel draws with the one shared palette; the desktop on screen sets it, also on entering the tree.
