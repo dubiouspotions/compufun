@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" path="res://people/office_girl/face.png" id="1_vjqfv"]
 [ext_resource type="Texture2D" path="res://people/office_girl/portrait_angry.png" id="2_cfflx"]
+[ext_resource type="Texture2D" path="res://people/office_girl/portrait_despair.png" id="11_despair"]
 [ext_resource type="Texture2D" path="res://people/office_girl/portrait_happy.png" id="3_2aehu"]
 [ext_resource type="Texture2D" path="res://people/office_girl/portrait_irritated01.png" id="4_2nyeh"]
 [ext_resource type="Texture2D" path="res://people/office_girl/portrait_irritated02.png" id="5_hkje7"]
@@ -18,6 +19,7 @@ nickname = "Office girl"
 email = "sam.hilton@utsa.edu"
 portraits = Dictionary[StringName, Texture2D]({
 &"angry": ExtResource("2_cfflx"),
+&"despair": ExtResource("11_despair"),
 &"happy": ExtResource("3_2aehu"),
 &"irritated01": ExtResource("4_2nyeh"),
 &"irritated02": ExtResource("5_hkje7"),

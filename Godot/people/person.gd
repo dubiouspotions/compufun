@@ -4,7 +4,7 @@ extends Resource
 
 ## Poses a line of dialogue can show. A person may have no photo for some of them.
 const POSES: Array[StringName] = [
-	&"neutral", &"happy", &"angry", &"problem", &"thinking",
+	&"neutral", &"happy", &"angry", &"despair", &"problem", &"thinking",
 	&"irritated01", &"irritated02", &"irritated03",
 	&"trust", &"bye", &"explanation",
 ]
