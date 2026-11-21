@@ -60,6 +60,7 @@ var _boot: Node
 
 
 func _ready() -> void:
+	_desktop.computer = _state
 	if _stock_palette == null:
 		_stock_palette = _SHARED_PALETTE.duplicate() as Win95Palette
 	_state.booted.connect(_on_booted)
@@ -272,6 +273,8 @@ func _entries_for(view: IconView, item: FileIcon) -> Array[ContextMenu.Entry]:
 		&"RecycleBin":
 			return _entries([["Open", &"open", true], ["Explore"], ContextMenu.item("Empty Recycle Bin", &"empty_bin", false, _state.setup.recycle_bin.is_empty()),
 				[], ["Create Shortcut"], [], ["Properties"]])
+		&"Inbox":
+			return _entries([["Open", &"open", true], [], ["Create Shortcut"], ["Delete"], ["Rename"], [], ["Properties"]])
 		&"NetworkNeighborhood":
 			return _entries([["Open", &"open", true], ["Explore"], ["Find Computer..."], [], ["Map Network Drive..."],
 				["Disconnect Network Drive..."], [], ["Create Shortcut"], ["Rename", &"rename"], [], ["Properties"]])

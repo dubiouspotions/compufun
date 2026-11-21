@@ -15,6 +15,10 @@ const GROUP: StringName = &"win95_desktop"
 ## The height of the taskbar at the bottom; a new window opens above it.
 @export var taskbar_height := 28.0
 
+## The computer whose desktop this is. Windows read and change it through this; its Win95 screen
+## sets it before any window opens.
+var computer: ComputerState
+
 var _opened: int = 0
 ## The player clicked the desktop outside every window; the next window that activates ends it.
 var _desktop_active := false

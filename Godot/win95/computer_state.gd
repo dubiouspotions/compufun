@@ -64,6 +64,30 @@ func write_picture(file: Win95File, image: Image) -> void:
 	_changed()
 
 
+## Marks [param email] read, as opening it in Exchange does.
+func mark_read(email: Email) -> void:
+	if setup == null or email.read:
+		return
+	email.read = true
+	_changed()
+
+
+## Moves [param email] to [param folder], as Exchange's Delete moves it to Deleted Items.
+func move_email(email: Email, folder: Email.Folder) -> void:
+	if setup == null or email.folder == folder:
+		return
+	email.folder = folder
+	_changed()
+
+
+## Removes [param email] for good, as deleting it from Deleted Items does.
+func purge_email(email: Email) -> void:
+	if setup == null or not setup.emails.has(email):
+		return
+	setup.emails.erase(email)
+	_changed()
+
+
 ## Moves [param files] into the Recycle Bin, and remembers where each came from.
 func delete_files(files: Array[Win95File]) -> void:
 	if setup == null or files.is_empty():
@@ -245,12 +269,9 @@ func _sync() -> void:
 
 # Win95 dates a save with its clock: the game's date, and the time that the taskbar shows.
 func _stamp(file: Win95File) -> void:
-	var date: Dictionary = Game.date
-	var time := Time.get_time_dict_from_system()
-	var weekdays := ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-	var months := ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-	file.modified = "%s, %s %d, %d %d:%02d:%02d %s" % [weekdays[date.weekday], months[date.month - 1], date.day, date.year,
-		(time.hour + 11) % 12 + 1, time.minute, time.second, "AM" if time.hour < 12 else "PM"]
+	var now: Dictionary = Game.date
+	now.merge(Time.get_time_dict_from_system(), true)
+	file.modified = "%s %s" % [Win95Time.long_date(now), Win95Time.clock(now, true)]
 
 
 func _changed() -> void:

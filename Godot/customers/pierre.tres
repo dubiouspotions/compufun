@@ -323,6 +323,7 @@ script = ExtResource("9_5i8g7")
 from = "Kent <kent@modemlandia.se>"
 to = "pierre@modemlandia.se"
 subject = "Re: the castle"
+sent = "1996-05-30 08:12"
 body = "Did the render finish overnight? Mine took 14 hours.
 
 Tip: take the side panel off. It runs cooler.
@@ -334,6 +335,7 @@ script = ExtResource("9_5i8g7")
 from = "Modemlandia <support@modemlandia.se>"
 to = "pierre@modemlandia.se"
 subject = "Welcome to Modemlandia!"
+sent = "1996-03-11 14:03"
 body = "Welcome! Your account is ready. Dial 08-555 123 45 to connect.
 
 You can call our support line on weekdays, 9 to 17."
@@ -345,6 +347,7 @@ folder = 1
 from = "pierre@modemlandia.se"
 to = "Kent <kent@modemlandia.se>"
 subject = "the castle"
+sent = "1996-05-29 23:01"
 body = "Starting the big render tonight. If the house burns down, you know why."
 read = true
 
@@ -354,6 +357,7 @@ folder = 2
 from = "Modemlandia <offers@modemlandia.se>"
 to = "pierre@modemlandia.se"
 subject = "Double your speed: 28.8k is here"
+sent = "1996-05-21 10:30"
 body = "Upgrade to our new 28.8k lines for only 49 kr more a month!"
 read = true
 

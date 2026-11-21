@@ -62,6 +62,4 @@ func _sync() -> void:
 	_speaker.texture_normal = _SPEAKER_MUTED if muted else _SPEAKER
 	_mute.set_pressed_no_signal(muted)
 	_slider.set_value_no_signal(volume)
-	var now := Time.get_time_dict_from_system()
-	var hour: int = now.hour
-	_clock.text = "%d:%02d %s" % [(hour + 11) % 12 + 1, now.minute, "PM" if hour >= 12 else "AM"]
+	_clock.text = Win95Time.clock(Time.get_time_dict_from_system())

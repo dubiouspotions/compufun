@@ -1,0 +1,130 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/mail_message.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/mail_read_16.png" id="icon"]
+
+[node name="MailMessage" type="PanelContainer"]
+custom_minimum_size = Vector2(440, 290)
+offset_right = 440.0
+offset_bottom = 290.0
+theme = ExtResource("theme")
+script = ExtResource("script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Microsoft Exchange"
+icon = ExtResource("icon")
+show_minimize = true
+show_maximize = true
+
+[node name="MenuBar" type="MenuBar" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+prefer_global_menu = false
+
+[node name="ToolbarMargin" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 2
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_bottom = 3
+
+[node name="Toolbar" type="HBoxContainer" parent="VBox/ToolbarMargin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Rule" type="HSeparator" parent="VBox"]
+layout_mode = 2
+
+[node name="HeaderMargin" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="Header" type="GridContainer" parent="VBox/HeaderMargin"]
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 2
+columns = 2
+
+[node name="FromLabel" type="Label" parent="VBox/HeaderMargin/Header"]
+layout_mode = 2
+text = "From:"
+
+[node name="From" type="Label" parent="VBox/HeaderMargin/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+
+[node name="SentLabel" type="Label" parent="VBox/HeaderMargin/Header"]
+layout_mode = 2
+text = "Sent:"
+
+[node name="Sent" type="Label" parent="VBox/HeaderMargin/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ToLabel" type="Label" parent="VBox/HeaderMargin/Header"]
+layout_mode = 2
+text = "To:"
+
+[node name="To" type="Label" parent="VBox/HeaderMargin/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+clip_text = true
+
+[node name="CcLabel" type="Label" parent="VBox/HeaderMargin/Header"]
+layout_mode = 2
+text = "Cc:"
+
+[node name="Cc" type="Label" parent="VBox/HeaderMargin/Header"]
+layout_mode = 2
+
+[node name="SubjectLabel" type="Label" parent="VBox/HeaderMargin/Header"]
+layout_mode = 2
+text = "Subject:"
+
+[node name="SubjectField" type="PanelContainer" parent="VBox/HeaderMargin/Header"]
+layout_mode = 2
+theme_type_variation = &"FieldPanel"
+
+[node name="Subject" type="Label" parent="VBox/HeaderMargin/Header/SubjectField"]
+unique_name_in_owner = true
+layout_mode = 2
+clip_text = true
+
+[node name="BodyMargin" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 2
+theme_override_constants/margin_right = 2
+
+[node name="Body" type="TextEdit" parent="VBox/BodyMargin"]
+unique_name_in_owner = true
+layout_mode = 2
+editable = false
+wrap_mode = 1
+
+[node name="StatusGap" type="Control" parent="VBox"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+
+[node name="StatusBar" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Rest" type="PanelContainer" parent="VBox/StatusBar"]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"StatusWell"

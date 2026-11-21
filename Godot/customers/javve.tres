@@ -230,6 +230,7 @@ script = ExtResource("7_pq1pi")
 from = "Lisa <lisa@modemlandia.se>"
 to = "javve@modemlandia.se"
 subject = "Did you listen??"
+sent = "1996-05-30 22:47"
 body = "Did you listen to the mix I sent? You haven't said a word. Is it that bad?"
 
 [sub_resource type="Resource" id="Resource_jonve"]
@@ -237,6 +238,7 @@ script = ExtResource("7_pq1pi")
 from = "Lisa <lisa@modemlandia.se>"
 to = "javve@modemlandia.se"
 subject = "Rehearsal"
+sent = "1996-05-27 18:20"
 body = "Rehearsal moves to Thursday. Bring the setlist."
 read = true
 
@@ -246,6 +248,7 @@ folder = 1
 from = "javve@modemlandia.se"
 to = "Lisa <lisa@modemlandia.se>"
 subject = "Re: Rehearsal"
+sent = "1996-05-27 19:02"
 body = "Thursday works. My computer has gone completely silent, so I'm taking it to the shop on Saturday."
 read = true
 
