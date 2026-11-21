@@ -407,4 +407,5 @@ initial_velocity_max = 14.0
 [node name="CityAmbience" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("18_city")
 volume_db = -14.0
+bus = &"Street"
 autoplay = true

@@ -342,6 +342,7 @@ unique_name_in_owner = true
 stream = ExtResource("9_step")
 volume_db = -4.0
 unit_size = 4.0
+area_mask = 1
 
 [node name="Computer" parent="." unique_id=1682646323 instance=ExtResource("9_w6f8g")]
 unique_name_in_owner = true

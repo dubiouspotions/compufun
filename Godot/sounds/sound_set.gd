@@ -4,6 +4,10 @@ extends Resource
 ## repeated sound doesn't sound copied. Make one .tres per effect in sounds/ and export it where
 ## the effect happens.
 
+## The physics layer of the sound zones (rooms/shop/sound_zones.tscn). A 3D player hears the zones
+## only with this layer in its area_mask; Godot's default mask is 0.
+const SOUND_ZONES: int = 1
+
 ## The takes; one is picked at random each time.
 @export var sounds: Array[AudioStream] = []
 @export_range(-40.0, 12.0, 0.5) var volume_db: float = 0.0
@@ -23,9 +27,12 @@ func play_on(player: Node) -> void:
 
 
 ## Plays a random take from where [param at] is: in 3D when it is a Node3D, else flat. The player
-## is a new child of [param at] that frees itself when the take is over.
+## is a new child of [param at] that frees itself when the take is over. A 3D take sounds like the
+## room it is in (rooms/shop/sound_zones.tscn).
 func play_at(at: Node) -> void:
 	var player: Node = AudioStreamPlayer3D.new() if at is Node3D else AudioStreamPlayer.new()
+	if player is AudioStreamPlayer3D:
+		(player as AudioStreamPlayer3D).area_mask = SOUND_ZONES
 	at.add_child(player)
 	play_on(player)
 	var stream: AudioStream = player.get(&"stream")

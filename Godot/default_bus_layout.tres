@@ -1,5 +1,17 @@
 [gd_resource type="AudioBusLayout" format=3]
 
+[sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_street"]
+resource_name = "LowPassFilter"
+cutoff_hz = 500.0
+
+[sub_resource type="AudioEffectReverb" id="AudioEffectReverb_room"]
+resource_name = "Reverb"
+room_size = 0.3
+damping = 0.6
+spread = 0.6
+dry = 0.0
+wet = 0.6
+
 [resource]
 bus/1/name = &"Voice"
 bus/1/solo = false
@@ -13,3 +25,19 @@ bus/2/mute = false
 bus/2/bypass_fx = false
 bus/2/volume_db = 0.0
 bus/2/send = &"Master"
+bus/3/name = &"Street"
+bus/3/solo = false
+bus/3/mute = false
+bus/3/bypass_fx = false
+bus/3/volume_db = -20.0
+bus/3/send = &"Master"
+bus/3/effect/0/effect = SubResource("AudioEffectLowPassFilter_street")
+bus/3/effect/0/enabled = true
+bus/4/name = &"Room"
+bus/4/solo = false
+bus/4/mute = false
+bus/4/bypass_fx = false
+bus/4/volume_db = 0.0
+bus/4/send = &"Master"
+bus/4/effect/0/effect = SubResource("AudioEffectReverb_room")
+bus/4/effect/0/enabled = true
