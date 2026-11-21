@@ -529,6 +529,31 @@ axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 region_rect = Rect2(4, 4, 4, 4)
 
+[sub_resource type="AtlasTexture" id="hslider_thumb"]
+atlas = ExtResource("atlas")
+region = Rect2(76, 31, 11, 21)
+
+[sub_resource type="AtlasTexture" id="hslider_thumb_disabled"]
+atlas = ExtResource("atlas")
+region = Rect2(88, 31, 11, 21)
+
+[sub_resource type="AtlasTexture" id="hslider_tick"]
+atlas = ExtResource("atlas")
+region = Rect2(100, 31, 1, 2)
+
+[sub_resource type="StyleBox" id="hslider_groove"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 0.0
+content_margin_top = 2.0
+content_margin_right = 0.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+kind = 4
+palette = ExtResource("palette")
+expand_margin_top = 2.0
+expand_margin_bottom = -2.0
+
 [resource]
 default_font = ExtResource("font_regular")
 default_font_size = 12
@@ -613,6 +638,15 @@ HScrollBar/styles/scroll = SubResource("scroll_track")
 HScrollBar/styles/scroll_focus = SubResource("scroll_track")
 HSeparator/constants/separation = 2
 HSeparator/styles/separator = SubResource("menu_separator")
+HSlider/constants/grabber_offset = -1
+HSlider/constants/tick_offset = 9
+HSlider/icons/grabber = SubResource("hslider_thumb")
+HSlider/icons/grabber_disabled = SubResource("hslider_thumb_disabled")
+HSlider/icons/grabber_highlight = SubResource("hslider_thumb")
+HSlider/icons/tick = SubResource("hslider_tick")
+HSlider/styles/grabber_area = SubResource("slider_fill")
+HSlider/styles/grabber_area_highlight = SubResource("slider_fill")
+HSlider/styles/slider = SubResource("hslider_groove")
 IconLabel/base_type = &"Label"
 IconLabel/colors/font_color = Color(0, 0, 0, 1)
 IconLabel/styles/normal = SubResource("icon_label")
