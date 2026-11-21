@@ -1,19 +1,20 @@
 class_name OpenCase
 extends Node3D
 ## A job's computer lying on its side in the Workview (wiki: Hardware Repair): the side panel and its
-## screws, or the open case with its pieces, their screws and the mat. It draws the job from Game on
-## every change, acts through Game, and shows a screwdriver at each screw that turns. Everything that
-## the player can use now has an outline; the screwdriver hovers over a screw under the mouse.
+## two screws, or the open case with its pieces and the mat. It draws the job from Game on every
+## change and acts through Game. What the player can use now has a thin pulsing outline; where the
+## piece in the hand can go shows a see-through ghost of it; the screwdriver hovers over a screw.
 
 const HOTSPOT: PackedScene = preload("res://rooms/hotspot.tscn")
 const SCREW_MATERIAL: Material = preload("res://materials/metal.tres")
 
 ## The seconds that the screwdriver turns one screw.
 @export var screw_seconds: float = 0.45
-## The outline of what the player can use now, and of the one under the mouse. The colours of the
-## computers' own outlines (JobComputer).
-@export var usable_color: Color = Color(1.0, 0.82, 0.2)
-@export var hover_color: Color = Color(0.75, 0.9, 1.0)
+## The outline and ghost colour of what the player can use now, and of the one under the mouse.
+@export var usable_color: Color = Color(1.0, 0.84, 0.35)
+@export var hover_color: Color = Color(0.8, 0.95, 1.0)
+## How far the outline stands out from a mesh, in metres.
+@export var outline_width: float = 0.0035
 ## How high the screwdriver hovers over a screw under the mouse, and how far it bobs, in metres.
 @export var hover_height: float = 0.03
 @export var bob: float = 0.006
@@ -27,7 +28,7 @@ var job: Job:
 		if is_node_ready():
 			_post_it.job = value
 ## True while the player works on this computer: in focus, in the Workview. JobComputer sets it.
-## Only an active case takes clicks.
+## Only an active case takes clicks and shows highlights.
 var active: bool = false:
 	set(value):
 		active = value
@@ -36,23 +37,26 @@ var active: bool = false:
 
 var _shown: Dictionary[StringName, Node3D] = {}
 var _mat_shown: Array[Node3D] = []
-# "<part id>:<index>" (the panel's id is "panel") to [screw head, hotspot].
-var _screws: Dictionary[String, Array] = {}
+# Panel screw index to [screw head, hotspot].
+var _screws: Array[Array] = []
+var _outline: StandardMaterial3D
+var _outline_hover: StandardMaterial3D
+var _ghost: StandardMaterial3D
+var _ghost_hover: StandardMaterial3D
+var _outlined: Array[MeshInstance3D] = []
+var _ghosts: Array[Node3D] = []
+var _hovered: Hotspot
+var _hovered_screw: int = -1
 var _turning: Tween
 var _bobbing: Tween
 var _fading: Tween
-var _outlines: Dictionary[Hotspot, MeshInstance3D] = {}
-var _usable: StandardMaterial3D
-var _hovering: StandardMaterial3D
-var _hovered: Hotspot
-var _hovered_screw: String = ""
 var _driver_materials: Array[StandardMaterial3D] = []
 
 @onready var _places: Node3D = %Places
 @onready var _spots: Node3D = %Spots
 @onready var _mat_surface: Hotspot = %MatSurface
 @onready var _eye: Marker3D = %Eye
-@onready var _panel: Node3D = %Panel
+@onready var _panel: MeshInstance3D = %Panel
 @onready var _panel_hotspot: Hotspot = %PanelHotspot
 @onready var _panel_screws: Node3D = %PanelScrews
 @onready var _post_it: PostIt3D = %PostIt
@@ -62,8 +66,13 @@ var _driver_materials: Array[StandardMaterial3D] = []
 
 
 func _ready() -> void:
-	_usable = _outline_material(usable_color)
-	_hovering = _outline_material(hover_color)
+	_outline = _outline_material(usable_color)
+	_outline_hover = _outline_material(hover_color)
+	_ghost = _ghost_material(usable_color)
+	_ghost_hover = _ghost_material(hover_color)
+	var pulse := create_tween().set_loops().set_trans(Tween.TRANS_SINE)
+	pulse.tween_method(_pulse, 0.0, 1.0, 0.7)
+	pulse.tween_method(_pulse, 1.0, 0.0, 0.7)
 	for mesh: MeshInstance3D in _driver.find_children("*", "MeshInstance3D"):
 		var own := (mesh.material_override as StandardMaterial3D).duplicate() as StandardMaterial3D
 		mesh.material_override = own
@@ -86,7 +95,7 @@ func _ready() -> void:
 	if _panel_screws.get_child_count() != Job.PANEL_SCREWS:
 		push_error("OpenCase: %d panel screw markers, but Job.PANEL_SCREWS is %d" % [_panel_screws.get_child_count(), Job.PANEL_SCREWS])
 	for i: int in _panel_screws.get_child_count():
-		_add_screw(_panel_screws.get_child(i), Vector3.ZERO, null, i)
+		_add_screw(_panel_screws.get_child(i) as Node3D, i)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -127,8 +136,9 @@ func _sync() -> void:
 	var closed := not job.case_open
 	_panel.visible = closed
 	_panel_hotspot.set_enabled(active and closed and not job.powered and not job.panel_screws.has(true))
-	for i: int in job.panel_screws.size():
-		_sync_screw("panel:%d" % i, closed and job.panel_screws[i], Game.can_turn(job, null, i))
+	for i: int in _screws.size():
+		(_screws[i][0] as Node3D).visible = closed and job.panel_screws[i]
+		(_screws[i][1] as Hotspot).set_enabled(active and Game.can_turn(job, i))
 	for part: Part in Part.every():
 		var place := _place(part)
 		if place == null:
@@ -139,40 +149,24 @@ func _sync() -> void:
 			if shown != null:
 				shown.queue_free()
 				_shown.erase(part.id())
-				for i: int in part.screw_points.size():
-					_screws.erase("%s:%d" % [part.id(), i])
 			else:
-				_shown[part.id()] = _show_part(part, place)
-		for i: int in part.screw_points.size():
-			_sync_screw("%s:%d" % [part.id(), i], piece != null and job.screws[part][i], Game.can_turn(job, part, i))
+				_shown[part.id()] = _show_model(part, place)
 		(place.get_node("Hotspot") as Hotspot).set_enabled(active and (Game.can_take(job, part) or Game.can_put(job, part)))
 	for shown: Node3D in _mat_shown:
 		shown.queue_free()
 	_mat_shown.clear()
 	for i: int in job.mat.size():
-		var spot := _spots.get_child(mini(i, _spots.get_child_count() - 1)) as Node3D
-		_mat_shown.append(_show_model(job.mat[i].part, spot))
+		_mat_shown.append(_show_model(job.mat[i].part, _spot(i)))
 	for i: int in _spots.get_child_count():
 		(_spots.get_child(i).get_node("Hotspot") as Hotspot).set_enabled(active and Game.hand == null and i < job.mat.size())
 	_mat_surface.set_enabled(active and Game.hand != null)
-	_sync_outlines()
+	if _hovered != null and not _hovered.input_ray_pickable:
+		_on_hover(_hovered, -1, false)
+	_sync_highlights()
 
 
-func _sync_screw(key: String, screwed_in: bool, can_turn: bool) -> void:
-	var screw: Array = _screws.get(key, [])
-	if screw.is_empty():
-		return
-	(screw[0] as Node3D).visible = screwed_in
-	(screw[1] as Hotspot).set_enabled(active and can_turn)
-
-
-# The model of a piece in its place, with a screw head and a hotspot at each of the part's screws.
-func _show_part(part: Part, place: Node3D) -> Node3D:
-	var model := _show_model(part, place)
-	if model != null:
-		for i: int in part.screw_points.size():
-			_add_screw(model, part.screw_points[i], part, i)
-	return model
+func _spot(index: int) -> Node3D:
+	return _spots.get_child(mini(index, _spots.get_child_count() - 1)) as Node3D
 
 
 func _show_model(part: Part, where: Node3D) -> Node3D:
@@ -184,7 +178,7 @@ func _show_model(part: Part, where: Node3D) -> Node3D:
 	return model
 
 
-func _add_screw(parent: Node3D, at: Vector3, part: Part, index: int) -> void:
+func _add_screw(marker: Node3D, index: int) -> void:
 	var head := MeshInstance3D.new()
 	var mesh := CylinderMesh.new()
 	mesh.top_radius = 0.008
@@ -194,75 +188,134 @@ func _add_screw(parent: Node3D, at: Vector3, part: Part, index: int) -> void:
 	mesh.rings = 1
 	head.mesh = mesh
 	head.material_override = SCREW_MATERIAL
-	head.position = at + Vector3(0, 0.002, 0)
-	parent.add_child(head)
+	head.position = Vector3(0, 0.002, 0)
+	marker.add_child(head)
 	var hotspot := HOTSPOT.instantiate() as Hotspot
 	hotspot.size = Vector3(0.04, 0.02, 0.04)
-	hotspot.position = at + Vector3(0, 0.006, 0)
-	parent.add_child(hotspot)
-	var key := "%s:%d" % [part.id() if part != null else &"panel", index]
-	hotspot.clicked.connect(func(_h: Hotspot) -> void: _turn(part, index, head.global_position))
-	_screws[key] = [head, hotspot]
-	_watch(hotspot, key)
+	hotspot.position = Vector3(0, 0.006, 0)
+	marker.add_child(hotspot)
+	hotspot.clicked.connect(func(_h: Hotspot) -> void: _turn(index, head.global_position))
+	_screws.append([head, hotspot])
+	_watch(hotspot, index)
 
 
-func _turn(part: Part, index: int, at: Vector3) -> void:
-	var was_in: bool = job.panel_screws[index] if part == null else job.screws[part][index]
-	if Game.turn_screw(job, part, index):
+func _turn(index: int, at: Vector3) -> void:
+	var was_in: bool = job.panel_screws[index]
+	if Game.turn_screw(job, index):
 		_screw(at, was_in)
 
 
-# --- Outlines and hover --------------------------------------------------------------------------
+# --- Highlights ----------------------------------------------------------------------------------
 
-# An inverted hull, as on JobComputer: a slightly bigger box with its front faces culled.
+# An inverted hull on top of a mesh: its front faces culled, grown along the normals.
 func _outline_material(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.cull_mode = BaseMaterial3D.CULL_FRONT
+	material.grow = true
+	material.grow_amount = outline_width
 	material.albedo_color = color
 	return material
 
 
-# Gives [param hotspot] an outline and follows the mouse over it; [param screw_key] names a screw.
-func _watch(hotspot: Hotspot, screw_key: String = "") -> void:
-	var box := BoxMesh.new()
-	box.size = hotspot.size + Vector3.ONE * 0.006
-	var outline := MeshInstance3D.new()
-	outline.mesh = box
-	outline.visible = false
-	hotspot.add_child(outline)
-	_outlines[hotspot] = outline
-	hotspot.mouse_entered.connect(_on_hover.bind(hotspot, screw_key, true))
-	hotspot.mouse_exited.connect(_on_hover.bind(hotspot, screw_key, false))
-	hotspot.tree_exiting.connect(func() -> void:
-		_outlines.erase(hotspot)
-		if _hovered == hotspot:
-			_hovered = null)
+func _ghost_material(color: Color) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color = Color(color, 0.35)
+	return material
 
 
-func _sync_outlines() -> void:
-	if _hovered != null and not _hovered.input_ray_pickable:
-		_on_hover(_hovered, _hovered_screw, false)
-	for hotspot: Hotspot in _outlines:
-		var outline := _outlines[hotspot]
-		outline.visible = hotspot.input_ray_pickable
-		outline.material_override = _hovering if hotspot == _hovered else _usable
+func _pulse(t: float) -> void:
+	_outline.albedo_color = usable_color.lerp(Color.WHITE, 0.35 * t)
+	_ghost.albedo_color.a = 0.25 + 0.2 * t
 
 
-func _on_hover(hotspot: Hotspot, screw_key: String, entered: bool) -> void:
+# Outlines what can be taken, turned or lifted; shows a ghost where the hand's piece can go.
+func _sync_highlights() -> void:
+	for mesh: MeshInstance3D in _outlined:
+		if is_instance_valid(mesh):
+			mesh.material_overlay = null
+	_outlined.clear()
+	for ghost: Node3D in _ghosts:
+		ghost.queue_free()
+	_ghosts.clear()
+	if not active:
+		return
+	for part: Part in Part.every():
+		var place := _place(part)
+		var hotspot := place.get_node("Hotspot") as Hotspot if place != null else null
+		if hotspot == null or not hotspot.input_ray_pickable:
+			continue
+		if job.piece(part) != null:
+			_highlight(_shown.get(part.id()), hotspot)
+		elif Game.hand != null:
+			_add_ghost(Game.hand.part.model, place, hotspot)
+	for i: int in _mat_shown.size():
+		var spot_hotspot := _spot(i).get_node("Hotspot") as Hotspot
+		if spot_hotspot.input_ray_pickable:
+			_highlight(_mat_shown[i], spot_hotspot)
+	if _mat_surface.input_ray_pickable and Game.hand != null:
+		_add_ghost(Game.hand.part.model, _spot(job.mat.size()), _mat_surface)
+	if _panel_hotspot.input_ray_pickable:
+		_highlight(_panel, _panel_hotspot)
+	for i: int in _screws.size():
+		var head := _screws[i][0] as MeshInstance3D
+		var hotspot := _screws[i][1] as Hotspot
+		if not hotspot.input_ray_pickable:
+			continue
+		if head.visible:
+			_highlight(head, hotspot)
+		else:
+			var ghost := MeshInstance3D.new()
+			ghost.mesh = head.mesh
+			ghost.position = head.position
+			ghost.material_override = _ghost_hover if hotspot == _hovered else _ghost
+			head.get_parent().add_child(ghost)
+			_ghosts.append(ghost)
+
+
+func _highlight(node: Node3D, hotspot: Hotspot) -> void:
+	if node == null:
+		return
+	var meshes: Array[Node] = node.find_children("*", "MeshInstance3D", true, false)
+	if node is MeshInstance3D:
+		meshes.append(node)
+	for mesh: MeshInstance3D in meshes:
+		mesh.material_overlay = _outline_hover if hotspot == _hovered else _outline
+		_outlined.append(mesh)
+
+
+func _add_ghost(model: PackedScene, where: Node3D, hotspot: Hotspot) -> void:
+	if model == null or where == null:
+		return
+	var ghost := model.instantiate() as Node3D
+	for mesh: MeshInstance3D in ghost.find_children("*", "MeshInstance3D", true, false):
+		mesh.material_override = _ghost_hover if hotspot == _hovered else _ghost
+	where.add_child(ghost)
+	_ghosts.append(ghost)
+
+
+# Follows the mouse over [param hotspot]; [param screw] is its panel screw index, or -1.
+func _watch(hotspot: Hotspot, screw: int = -1) -> void:
+	hotspot.mouse_entered.connect(_on_hover.bind(hotspot, screw, true))
+	hotspot.mouse_exited.connect(_on_hover.bind(hotspot, screw, false))
+
+
+func _on_hover(hotspot: Hotspot, screw: int, entered: bool) -> void:
 	if entered:
 		_hovered = hotspot
 	elif _hovered == hotspot:
 		_hovered = null
-	_sync_outlines()
-	if screw_key == "":
+	_sync_highlights()
+	if screw < 0:
 		return
 	if entered:
-		_hovered_screw = screw_key
+		_hovered_screw = screw
 		if _turning == null:
-			_hover_over(screw_key)
-	elif _hovered_screw == screw_key:
-		_hovered_screw = ""
+			_hover_over(screw)
+	elif _hovered_screw == screw:
+		_hovered_screw = -1
 		if _turning == null:
 			_fade(false)
 
@@ -270,8 +323,8 @@ func _on_hover(hotspot: Hotspot, screw_key: String, entered: bool) -> void:
 # --- The screwdriver -----------------------------------------------------------------------------
 
 # The screwdriver fades in over the screw and bobs until the player clicks.
-func _hover_over(screw_key: String) -> void:
-	var head: Node3D = _screws[screw_key][0]
+func _hover_over(screw: int) -> void:
+	var head: Node3D = _screws[screw][0]
 	var top := head.global_position + Vector3(0, hover_height, 0)
 	_driver.global_position = top
 	_driver.rotation = Vector3.ZERO
@@ -300,7 +353,7 @@ func _screw(at: Vector3, unscrewing: bool) -> void:
 	_turning.parallel().tween_property(_driver, "global_position", at + lift if unscrewing else at, screw_seconds)
 	_turning.tween_callback(func() -> void:
 		_turning = null
-		if _hovered_screw != "" and _screws.has(_hovered_screw) and (_screws[_hovered_screw][1] as Hotspot).input_ray_pickable:
+		if _hovered_screw >= 0 and (_screws[_hovered_screw][1] as Hotspot).input_ray_pickable:
 			_hover_over(_hovered_screw)
 		else:
 			_fade(false))
