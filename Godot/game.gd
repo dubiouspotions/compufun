@@ -81,7 +81,8 @@ var records: Array[DbRecord] = []
 ## The day on which CompuFunDB last started up (the work computer booted and the modem dialled
 ## up); 0 before its first start-up.
 var db_day: int = 0
-## What the visitor says while TALKING, or null when no conversation matches.
+## What the visitor says while TALKING, or what the called customer says on the phone while
+## CALLING; null when no conversation matches.
 var conversation: Conversation
 ## Goes up every time a visitor starts to walk in, also on [method restore]. A scene that
 ## remembers it can tell a new visit from a re-read of the same one.
@@ -596,6 +597,7 @@ func call_customer(job: Job) -> void:
 		return
 	phase = Phase.CALLING
 	calling = job
+	_play(job.customer, Conversation.Trigger.PHONE)
 	changed.emit()
 
 
@@ -856,6 +858,8 @@ func restore(state: Dictionary) -> String:
 	conversation = null
 	if visitor_state == VisitorState.TALKING:
 		_start_talk()
+	elif phase == Phase.CALLING:
+		_play(calling.customer, Conversation.Trigger.PHONE)
 	changed.emit()
 	return ""
 
@@ -959,12 +963,17 @@ func _set_visitor(customer: Customer, why: Visit) -> void:
 ## Picks what the TALKING visitor says, and remembers that it played. A pickup visitor with
 ## nothing to say takes the computer and leaves.
 func _start_talk() -> void:
-	var trigger := Conversation.Trigger.PICKUP if visit == Visit.PICKUP else Conversation.Trigger.ARRIVE
-	conversation = matching_conversation(visitor, trigger)
-	if conversation != null:
-		seen[_seen_key(visitor, conversation)] = true
-	elif visit == Visit.PICKUP:
+	_play(visitor, Conversation.Trigger.PICKUP if visit == Visit.PICKUP else Conversation.Trigger.ARRIVE)
+	if conversation == null and visit == Visit.PICKUP:
 		_leave()
+
+
+# Sets [member conversation] to what [param who] says for [param trigger] now, and remembers that
+# it played.
+func _play(who: Customer, trigger: Conversation.Trigger) -> void:
+	conversation = matching_conversation(who, trigger)
+	if conversation != null:
+		seen[_seen_key(who, conversation)] = true
 
 
 func _seen_key(who: Customer, c: Conversation) -> String:

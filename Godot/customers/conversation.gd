@@ -8,6 +8,7 @@ extends Resource
 enum Trigger {
 	ARRIVE, ## The customer brings a computer to the counter.
 	PICKUP, ## The customer comes back for a finished computer. With no match, they take it and go.
+	PHONE, ## The player calls the customer: what they say when they answer. With no match, a short hello.
 }
 
 ## Unique within its customer, for example &"arrive".

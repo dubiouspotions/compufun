@@ -144,7 +144,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Flag**: A fact of the story in `Game.flags`: a name and a number. 0 or missing means not set.
 *Avoid:* variable, story state, switch.
 
-**Trigger**: The moment a conversation can play, such as `ARRIVE` when a customer brings a computer, or `PICKUP` when they come back for it.
+**Trigger**: The moment a conversation can play: `ARRIVE` when a customer brings a computer, `PICKUP` when they come back for it, or `PHONE` when they answer the player's call.
 *Avoid:* event, hook.
 
 **Condition**: The days and flags that a conversation needs to play (`Condition` resource).
