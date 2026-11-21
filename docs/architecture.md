@@ -46,6 +46,7 @@ Godot/               the Godot project: everything the game loads
   win95/solitaire/   Solitaire: the rules (klondike.gd), the window, the table and the card pictures
   compufun_db/       CompuFunDB, the DOS database on the work computer, its VGA font, and the work computer's boot (a 386)
   addons/dialogue_editor/  the Dialogue tab in the editor
+  addons/week_board/  the Week tab in the editor: the days, their customers and warp, and the flags
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
 feedback/            the F9 reports (outside Godot, so Godot does not import them)

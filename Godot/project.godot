@@ -37,7 +37,7 @@ text_editor/behavior/indent/type=0
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/dialogue_editor/plugin.cfg")
+enabled=PackedStringArray("res://addons/dialogue_editor/plugin.cfg", "res://addons/week_board/plugin.cfg")
 
 [gui]
 

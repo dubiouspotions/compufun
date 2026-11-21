@@ -7,6 +7,8 @@ extends VBoxContainer
 
 const CUSTOMERS_DIR := "res://customers/"
 const ERROR_COLOR := Color(1.0, 0.45, 0.45)
+## The group of the Dialogue tab, so another tab can call [method show_customer].
+const GROUP := &"dialogue_editor"
 
 var _customers: Array[Customer] = []
 var _customer: Customer
@@ -30,6 +32,7 @@ var _detail: VBoxContainer
 
 
 func _ready() -> void:
+	add_to_group(GROUP)
 	size_flags_vertical = SIZE_EXPAND_FILL
 	var bar := HBoxContainer.new()
 	add_child(bar)
@@ -88,26 +91,47 @@ func refresh() -> void:
 	if _customer_list == null:
 		return
 	var selected_path := _customer.resource_path if _customer != null else ""
-	_customers.clear()
 	_customer_list.clear()
-	var dir := DirAccess.open(CUSTOMERS_DIR)
-	if dir == null:
-		_fail("Couldn't open %s: %s" % [CUSTOMERS_DIR, error_string(DirAccess.get_open_error())])
-		return
-	for file: String in dir.get_files():
-		if not file.ends_with(".tres"):
-			continue
-		var path := CUSTOMERS_DIR + file
-		var customer := load(path) as Customer
-		if customer == null:
-			_fail("%s is not a Customer, or doesn't load" % path)
-			continue
-		_customers.append(customer)
+	var errors: Array[String] = []
+	_customers = load_customers(errors)
+	for error: String in errors:
+		_fail(error)
+	for customer: Customer in _customers:
 		_customer_list.add_item(_customer_label(customer))
 	var index := _customers.find_custom(func(c: Customer) -> bool: return c.resource_path == selected_path)
 	if index >= 0:
 		_customer_list.select(index)
 	_select_customer(index)
+
+
+## Shows the customer saved at [param path], as a click on it in the list does.
+func show_customer(path: String) -> void:
+	refresh()
+	var index := _customers.find_custom(func(c: Customer) -> bool: return c.resource_path == path)
+	if index < 0:
+		_fail("%s is not in %s" % [path, CUSTOMERS_DIR])
+		return
+	_customer_list.select(index)
+	_select_customer(index)
+
+
+## Every Customer file in [constant CUSTOMERS_DIR]. Adds a message to [param errors] for each file
+## that doesn't load as a Customer, and for a folder that doesn't open.
+static func load_customers(errors: Array[String]) -> Array[Customer]:
+	var customers: Array[Customer] = []
+	var dir := DirAccess.open(CUSTOMERS_DIR)
+	if dir == null:
+		errors.append("Couldn't open %s: %s" % [CUSTOMERS_DIR, error_string(DirAccess.get_open_error())])
+		return customers
+	for file: String in dir.get_files():
+		if not file.ends_with(".tres"):
+			continue
+		var customer := load(CUSTOMERS_DIR + file) as Customer
+		if customer == null:
+			errors.append("%s is not a Customer, or doesn't load" % (CUSTOMERS_DIR + file))
+			continue
+		customers.append(customer)
+	return customers
 
 
 ## Saves every customer with unsaved edits, and reads each file back to check it.
@@ -237,7 +261,7 @@ func _select_customer(index: int) -> void:
 		_select_conversation(-1)
 		return
 	for c: Conversation in _customer.conversations:
-		_conversation_list.add_item(_conversation_label(c))
+		_conversation_list.add_item(conversation_label(c))
 	var keep := _customer.conversations.find(_conversation)
 	if keep < 0 and not _customer.conversations.is_empty():
 		keep = 0
@@ -458,6 +482,7 @@ func _render_when() -> void:
 			_condition().set(field, names)
 			_changed_when())
 		flags_row.add_child(edit)
+
 	var sets_row := HBoxContainer.new()
 	_detail.add_child(sets_row)
 	sets_row.add_child(_label("Sets flags"))
@@ -499,7 +524,6 @@ static func parse_flags(text: String) -> Variant:
 	return flags
 
 
-
 func _condition() -> Condition:
 	if _conversation.when == null:
 		_conversation.when = Condition.new()
@@ -507,12 +531,12 @@ func _condition() -> Condition:
 
 
 func _changed_when() -> void:
-	_conversation_list.set_item_text(_customer.conversations.find(_conversation), _conversation_label(_conversation))
+	_conversation_list.set_item_text(_customer.conversations.find(_conversation), conversation_label(_conversation))
 	_touch()
 
 
 ## The id and when it plays, for the conversation list.
-func _conversation_label(c: Conversation) -> String:
+static func conversation_label(c: Conversation) -> String:
 	if c == null:
 		return "(empty)"
 	var parts: PackedStringArray = [Conversation.Trigger.keys()[c.trigger]]
@@ -617,7 +641,7 @@ func _pose_picker(line: DialogueLine) -> OptionButton:
 
 func _on_id_changed(text: String) -> void:
 	_conversation.id = StringName(text)
-	_conversation_list.set_item_text(_customer.conversations.find(_conversation), _conversation_label(_conversation))
+	_conversation_list.set_item_text(_customer.conversations.find(_conversation), conversation_label(_conversation))
 	_touch()
 
 
