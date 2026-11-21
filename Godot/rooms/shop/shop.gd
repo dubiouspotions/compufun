@@ -169,6 +169,14 @@ func post_it_rect(post_it: PostIt3D) -> Rect2:
 	return _rect_in_front(post_it.paper_corners())
 
 
+## How far the text on [param post_it] is turned as the camera sees it now, in quarter turns
+## clockwise: 0 upright, -1 reading from the bottom up, as on a computer lying on its left side.
+func post_it_quarter_turns(post_it: PostIt3D) -> int:
+	var corners := post_it.paper_corners()
+	var up := _camera.unproject_position(corners[0]) - _camera.unproject_position(corners[3])
+	return roundi(Vector2.UP.angle_to(up) / (PI * 0.5))
+
+
 ## The open sign's board as the camera sees it now, in pixels of the world buffer. Empty while a
 ## corner is behind the camera.
 func open_sign_rect() -> Rect2:

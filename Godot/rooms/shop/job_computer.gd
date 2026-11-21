@@ -48,7 +48,6 @@ var _hovered: bool = false
 var _pose: float = 0.0
 var _tip: Tween
 var _upright: Dictionary[Node3D, Transform3D] = {}
-var _upright_post_it: Vector3
 
 @onready var _tower: PcTower = $Tower
 @onready var _hotspot: Hotspot = %Hotspot
@@ -79,10 +78,9 @@ func _ready() -> void:
 	_open_case.dress(job.customer.computer)
 	_post_it.job = job
 	_open_case.job = job
-	for node: Node3D in [_tower, _power_light, _power_hotspot, _cable_socket, _hotspot]:
+	for node: Node3D in [_tower, _power_light, _power_hotspot, _cable_socket, _hotspot, _post_it_anchor]:
 		_upright[node] = node.transform
 	_pose = 1.0 if job.lying else 0.0
-	_upright_post_it = _post_it_anchor.position
 	Game.changed.connect(_sync_case)
 	(_outline.material_override as StandardMaterial3D).albedo_color = hover_color
 	_sync_case()
@@ -157,8 +155,6 @@ func _set_pose(t: float) -> void:
 	var pose := Transform3D.IDENTITY.interpolate_with(LYING, t)
 	for node: Node3D in _upright:
 		node.transform = pose * _upright[node]
-	# Only the position turns: the square paper covers the same spot either way, and its check stays where PostItLabel expects it.
-	_post_it_anchor.position = pose * _upright_post_it
 	_tower.visible = t < 1.0
 	_open_case.visible = t >= 1.0
 	_fit_outline.call_deferred()  # after the open case has drawn this change

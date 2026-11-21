@@ -49,7 +49,8 @@ func _sync() -> void:
 	_pickup.font = font
 
 
-## The four corners of the paper, in world space.
+## The four corners of the paper, in world space: top left, top right, bottom right and bottom left,
+## as its text reads.
 func paper_corners() -> Array[Vector3]:
 	var half := (_paper.mesh as QuadMesh).size * 0.5
 	var corners: Array[Vector3] = []

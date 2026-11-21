@@ -28,11 +28,15 @@ func _ready() -> void:
 	_sync()
 
 
-## Lays the text over [param rect]: the paper as the camera sees it, in canvas coordinates. Both
-## texts get the same font size, the largest at which each fits its part of the paper.
-func follow(rect: Rect2) -> void:
-	position = rect.position.round()
-	size = rect.size.round()
+## Lays the text over [param rect]: the paper as the camera sees it, in canvas coordinates, with the
+## text turned [param quarter_turns] quarter turns clockwise, as on a computer lying on its side (see
+## [method Shop.post_it_quarter_turns]). Both texts get the same font size, the largest at which
+## each fits its part of the paper.
+func follow(rect: Rect2, quarter_turns: int = 0) -> void:
+	size = (Vector2(rect.size.y, rect.size.x) if quarter_turns % 2 != 0 else rect.size).round()
+	pivot_offset = size * 0.5
+	position = (rect.get_center() - pivot_offset).round()
+	rotation = quarter_turns * PI * 0.5
 	var font_size := fitting_font_size()
 	for label: Label in [_issue, _pickup]:
 		label.add_theme_font_size_override(&"font_size", font_size)
