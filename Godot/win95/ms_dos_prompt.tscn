@@ -3,7 +3,7 @@
 [ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
 [ext_resource type="Script" path="res://win95/ms_dos_prompt.gd" id="script"]
 [ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons/application_16.png" id="icon"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/ms_dos_window_16.png" id="icon"]
 [ext_resource type="Script" path="res://win95/win95_file.gd" id="file"]
 [ext_resource type="FontVariation" path="res://win95/theme/dos_font.tres" id="mono"]
 

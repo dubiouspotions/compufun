@@ -15,6 +15,8 @@ Names follow `theme/icons/` where the icons match (`my_computer`, `start_run`, `
 
 Every image is 16-colour (4-bit) or black and white (1-bit); none of the install's icons has 256 colours.
 
+The install has no Accessories, so Calculator, Paint, WordPad, Solitaire, Media Player, Volume Control and Defrag wear the nearest icons in the set (`calculator_spreadsheet`, `crayon_scribble`, `document_pencil`, `playing_cards_hand`, `media_devices`, `speaker_loud`, `disk_drive_box`). Four of those, and `ms_dos_window`, ship only at 32 x 32: their `_16.png` is not extracted but shrunk with nearest-neighbour, as Win95 drew a big icon small. A re-extract leaves them be; delete them if the disk ever brings real ones.
+
 ## Re-extracting
 
 The script reads any copy of a Windows 95 C: drive. The set here comes from the disk of the win95ctl research VM (`~/Dev/win95ctl/vm/disk.qcow2` on the Macs that have it). Reading that disk needs no VM lock: `qemu-img convert -U` copies it while the VM runs, and mtools reads the copy.

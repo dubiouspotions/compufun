@@ -3,6 +3,7 @@
 [ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
 [ext_resource type="Script" path="res://win95/calculator.gd" id="script"]
 [ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/calculator_spreadsheet_16.png" id="icon"]
 
 [node name="Calculator" type="PanelContainer"]
 theme = ExtResource("theme")
@@ -16,6 +17,7 @@ theme_override_constants/separation = 0
 unique_name_in_owner = true
 layout_mode = 2
 title = "Calculator"
+icon = ExtResource("icon")
 show_minimize = true
 
 [node name="Body" type="MarginContainer" parent="VBox"]

@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" path="res://win95/solitaire/cards.png" id="faces"]
 [ext_resource type="Texture2D" path="res://win95/solitaire/back.png" id="back"]
 [ext_resource type="Texture2D" path="res://win95/solitaire/recycle.png" id="recycle"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/playing_cards_hand_16.png" id="icon"]
 
 [node name="Solitaire" type="PanelContainer"]
 theme = ExtResource("theme")
@@ -20,6 +21,7 @@ theme_override_constants/separation = 0
 unique_name_in_owner = true
 layout_mode = 2
 title = "Solitaire"
+icon = ExtResource("icon")
 show_minimize = true
 
 [node name="MenuBar" type="MenuBar" parent="VBox"]

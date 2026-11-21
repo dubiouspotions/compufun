@@ -1,5 +1,15 @@
 [gd_resource type="Resource" script_class="Customer" format=3]
 
+[ext_resource type="Texture2D" path="res://win95/theme/icons/inbox_32.png" id="icon_inbox"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/speaker_loud_32.png" id="icon_speaker_loud"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/disk_drive_box_32.png" id="icon_disk_drive_box"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/playing_cards_hand_32.png" id="icon_playing_cards_hand"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/media_devices_32.png" id="icon_media_devices"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/ms_dos_window_32.png" id="icon_ms_dos_window"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/notepad_32.png" id="icon_notepad"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/document_pencil_32.png" id="icon_document_pencil"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/crayon_scribble_32.png" id="icon_crayon_scribble"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/calculator_spreadsheet_32.png" id="icon_calculator_spreadsheet"]
 [ext_resource type="Script" path="res://customers/hardware.gd" id="hardware_script"]
 [ext_resource type="Resource" path="res://people/young_entrepreneur/person.tres" id="1_yvxm1"]
 [ext_resource type="Resource" path="res://problems/no_sound.tres" id="2_qmaft"]
@@ -140,70 +150,70 @@ modified = "Saturday, October 21, 1995 3:47:19 PM"
 [sub_resource type="Resource" id="Program_inbox"]
 script = ExtResource("2_egn44")
 name = "EXCHNG32.EXE"
-icon = ExtResource("application_icon")
+icon = ExtResource("icon_inbox")
 modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_inbox")
 
 [sub_resource type="Resource" id="Program_volume_control"]
 script = ExtResource("2_egn44")
 name = "SNDVOL32.EXE"
-icon = ExtResource("application_icon")
+icon = ExtResource("icon_speaker_loud")
 modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_volume_control")
 
 [sub_resource type="Resource" id="Program_defrag"]
 script = ExtResource("2_egn44")
 name = "DEFRAG.EXE"
-icon = ExtResource("application_icon")
+icon = ExtResource("icon_disk_drive_box")
 modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_defrag")
 
 [sub_resource type="Resource" id="Program_solitaire"]
 script = ExtResource("2_egn44")
 name = "SOL.EXE"
-icon = ExtResource("application_icon")
+icon = ExtResource("icon_playing_cards_hand")
 modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_solitaire")
 
 [sub_resource type="Resource" id="Program_media_player"]
 script = ExtResource("2_egn44")
 name = "MPLAYER.EXE"
-icon = ExtResource("application_icon")
+icon = ExtResource("icon_media_devices")
 modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_media_player")
 
 [sub_resource type="Resource" id="Program_ms_dos_prompt"]
 script = ExtResource("2_egn44")
 name = "COMMAND.COM"
-icon = ExtResource("application_icon")
+icon = ExtResource("icon_ms_dos_window")
 modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_ms_dos_prompt")
 
 [sub_resource type="Resource" id="Program_notepad"]
 script = ExtResource("2_egn44")
 name = "NOTEPAD.EXE"
-icon = ExtResource("application_icon")
+icon = ExtResource("icon_notepad")
 modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_notepad")
 
 [sub_resource type="Resource" id="Program_wordpad"]
 script = ExtResource("2_egn44")
 name = "WORDPAD.EXE"
-icon = ExtResource("application_icon")
+icon = ExtResource("icon_document_pencil")
 modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_wordpad")
 
 [sub_resource type="Resource" id="Program_paint"]
 script = ExtResource("2_egn44")
 name = "PBRUSH.EXE"
-icon = ExtResource("application_icon")
+icon = ExtResource("icon_crayon_scribble")
 modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_paint")
 
 [sub_resource type="Resource" id="Program_calculator"]
 script = ExtResource("2_egn44")
 name = "CALC.EXE"
-icon = ExtResource("application_icon")
+icon = ExtResource("icon_calculator_spreadsheet")
 modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_calculator")
 
