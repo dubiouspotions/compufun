@@ -112,8 +112,8 @@ func _sync() -> void:
 		Game.VisitorState.WALKING_IN:
 			if _walk_in_arrival != Game.arrival:
 				_walk_in()
-		Game.VisitorState.TALKING:
-			# A restore can skip the walk; the visitor still stands at the counter.
+		Game.VisitorState.NONE, Game.VisitorState.TALKING:
+			# A restore can end a walk halfway; its tween must not reach Game.
 			if _walk_tween != null:
 				_walk_tween.kill()
 			_body.rotation.y = 0.0
