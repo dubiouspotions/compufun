@@ -23,6 +23,13 @@ float wipe(float t, float x) {
 	return 1.0 - smoothstep(front - softness, front + softness, x);
 }
 
+// The node's modulate and the vertex colour, which the custom COLOR below must keep.
+varying vec4 tint;
+
+void vertex() {
+	tint = COLOR;
+}
+
 void fragment() {
 	float here = ink(texture(TEXTURE, UV));
 	float least = here;
@@ -34,5 +41,5 @@ void fragment() {
 	float edge = here - least;
 	float outline = edge * outline_color.a * wipe(progress / outline_share, UV.x);
 	float filled = wipe((progress - outline_share) / (1.0 - outline_share), UV.x);
-	COLOR = vec4(mix(outline_color.rgb, ink_color.rgb, filled), max(outline, here * ink_color.a * filled));
+	COLOR = vec4(mix(outline_color.rgb, ink_color.rgb, filled), max(outline, here * ink_color.a * filled)) * tint;
 }
