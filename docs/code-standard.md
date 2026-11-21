@@ -20,7 +20,8 @@ How GDScript is written in this repo. Where this file is silent, follow the offi
   and enum values: `CONSTANT_CASE`.
 - Signals are named in the past tense for what happened (`door_opened`), not as a command.
 - Private members start with `_`. Other scripts don't touch them.
-- Indent with tabs (`.editorconfig` sets this for external editors).
+- Indent with tabs. `[editor_overrides]` in `project.godot` sets this for Godot's script editor,
+  and `.editorconfig` for external editors.
 
 ## Scenes and nodes
 
