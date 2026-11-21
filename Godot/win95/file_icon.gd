@@ -14,6 +14,8 @@ signal context_clicked(at: Vector2)
 signal name_edited(old_text: String, new_text: String)
 
 const _WRAP_WIDTH := 70.0
+## The stock teal under a focused, unselected desktop icon, which the focus dots invert.
+const _DESKTOP_COLOR := Color(0, 0.5, 0.5)
 
 static var _selected_material: ShaderMaterial
 
@@ -35,14 +37,27 @@ static var _selected_material: ShaderMaterial
 @export var opens: PackedScene
 ## A click on the name of the selected icon edits the name, as in Win95.
 @export var renamable := true
-## Draws the icon and its name in the selection colour.
+## Draws the icon and its name in the selection colour, while [member active].
 @export var selected := false:
 	set(value):
 		selected = value
 		_sync()
+## Draws Win95's dotted focus rectangle around the name, while [member active]: the icon that the
+## keyboard acts on.
+@export var focused := false:
+	set(value):
+		focused = value
+		_sync()
+## The icon's view is in the active window (or is the active desktop). Win95 hides the selection
+## and the focus of the other views.
+@export var active := true:
+	set(value):
+		active = value
+		_sync()
 
 
 func _ready() -> void:
+	%Name.draw.connect(_draw_focus)
 	_sync()
 
 
@@ -73,10 +88,11 @@ func _sync() -> void:
 		return
 	var icon_rect: TextureRect = %Icon
 	icon_rect.texture = icon
-	icon_rect.material = _selection_material() if selected else null
+	icon_rect.material = _selection_material() if selected and active else null
 	var label: Label = %Name
 	label.text = text
-	if selected:
+	label.queue_redraw()
+	if selected and active:
 		label.theme_type_variation = &"IconLabelSelected"
 	else:
 		label.theme_type_variation = &"DesktopIconLabel" if on_desktop else &"IconLabel"
@@ -86,6 +102,30 @@ func _sync() -> void:
 	var block := font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, _WRAP_WIDTH, size)
 	var box := label.get_theme_stylebox("normal")
 	label.custom_minimum_size.x = ceilf(block.x) + box.get_margin(SIDE_LEFT) + box.get_margin(SIDE_RIGHT)
+
+
+# Win95 XORs the dots onto the name's background, so they are its inverse: yellow on the selection.
+func _draw_focus() -> void:
+	if not (focused and active):
+		return
+	var label: Label = %Name
+	var under := Color.WHITE
+	var box := label.get_theme_stylebox("normal") as StyleBoxFlat
+	if box != null and box.bg_color.a > 0.0:
+		under = box.bg_color
+	elif on_desktop:
+		under = _DESKTOP_COLOR
+	var color := Color(1.0 - under.r, 1.0 - under.g, 1.0 - under.b)
+	var w := int(label.size.x)
+	var h := int(label.size.y)
+	for x in w:
+		for y: int in [0, h - 1]:
+			if (x + y) % 2 == 0:
+				label.draw_rect(Rect2(x, y, 1, 1), color)
+	for y in range(1, h - 1):
+		for x: int in [0, w - 1]:
+			if (x + y) % 2 == 0:
+				label.draw_rect(Rect2(x, y, 1, 1), color)
 
 
 static func _selection_material() -> ShaderMaterial:

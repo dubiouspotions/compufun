@@ -3,7 +3,9 @@ extends FlowContainer
 ## A grid of FileIcons that the player selects as in Win95: click one, Ctrl-click (Cmd on a Mac)
 ## to toggle one, Shift-click for a range, or drag a rectangle from empty space; Ctrl-drag toggles.
 ## Use a VFlowContainer for the desktop (column by column) and an HFlowContainer for folder windows
-## (row by row). Right-click asks for a context menu; Delete, F2, Enter and Shift+F10 work as in Win95.
+## (row by row). Right-click asks for a context menu, also after a rectangle dragged with the right
+## button; Delete, F2, Enter and Shift+F10 work as in Win95. As in Win95, the selection and the
+## focus rectangle show only while the view's window, or for the desktop's view the desktop, is active.
 
 ## The player double-clicked an icon.
 signal item_opened(item: FileIcon)
@@ -21,11 +23,17 @@ const _BAND_SHADER := preload("res://win95/drag_outline.gdshader")
 ## Draws the names white, for icons on the desktop wallpaper.
 @export var on_desktop := false
 
-## The icon that Shift-click ranges from: the last one clicked without Shift.
+## The icon that Shift-click ranges from and that has the focus rectangle: the last one clicked
+## without Shift.
 var _anchor: FileIcon
+var _active := true
+var _desktop: Win95Desktop
+## The window that holds this view, or null for the desktop's own icons.
+var _window: Control
 var _band: ColorRect
 var _band_start := Vector2.ZERO
 var _banding := false
+var _band_button := MOUSE_BUTTON_NONE
 ## The selection when a Ctrl-drag started; the rectangle toggles icons against it.
 var _before_band: Array[FileIcon] = []
 
@@ -39,6 +47,7 @@ func _ready() -> void:
 		_wire(child)
 		items_changed.emit())
 	child_exiting_tree.connect(func(_child: Node) -> void: items_changed.emit.call_deferred())
+	items_changed.connect(_sync_focus)
 	var material := ShaderMaterial.new()
 	material.shader = _BAND_SHADER
 	material.set_shader_parameter("thickness", 1.0)
@@ -50,6 +59,36 @@ func _ready() -> void:
 	_band.visible = false
 	add_child(_band, false, Node.INTERNAL_MODE_BACK)
 	focus_mode = Control.FOCUS_ALL
+	_find_desktop()
+	_sync_focus()
+
+
+func _find_desktop() -> void:
+	var node: Node = self
+	while node != null and not node is Win95Desktop:
+		if node.has_signal(&"activated"):
+			_window = node as Control
+		node = node.get_parent()
+	_desktop = node as Win95Desktop
+	if _desktop != null:
+		_desktop.windows_changed.connect(_sync_active)
+		_sync_active()
+
+
+func _sync_active() -> void:
+	var active := _desktop.active_window() == _window
+	if active != _active:
+		_active = active
+		_sync_focus()
+
+
+# The anchor has the focus rectangle; with no anchor, the first icon, as in a folder just opened.
+func _sync_focus() -> void:
+	var items := _items()
+	var focus: FileIcon = _anchor if is_instance_valid(_anchor) and items.has(_anchor) else items.front() if not items.is_empty() else null
+	for item in items:
+		item.active = _active
+		item.focused = item == focus
 
 
 ## Adds an icon at the end of the grid and returns it.
@@ -94,15 +133,9 @@ func _gui_input(event: InputEvent) -> void:
 		_key(key)
 		return
 	var button := event as InputEventMouseButton
-	if button and button.button_index == MOUSE_BUTTON_RIGHT:
+	if button and button.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
 		accept_event()
-		if not button.pressed:  # on release, like FileIcon
-			grab_focus()
-			_select(null)
-			context_requested.emit(null, button.global_position)
-		return
-	if button and button.button_index == MOUSE_BUTTON_LEFT:
-		if button.pressed:
+		if button.pressed and not _banding:
 			grab_focus()
 			var additive := button.ctrl_pressed or button.meta_pressed
 			_before_band = selected_items()
@@ -111,9 +144,13 @@ func _gui_input(event: InputEvent) -> void:
 				_select(null)
 			_band_start = button.global_position
 			_banding = true
-		elif _banding:
+			_band_button = button.button_index
+		elif not button.pressed and _banding and button.button_index == _band_button:
 			_banding = false
 			_band.hide()
+			if button.button_index == MOUSE_BUTTON_RIGHT:  # on release, like FileIcon
+				var selected := selected_items()
+				context_requested.emit(selected[0] if not selected.is_empty() else null, button.global_position)
 		return
 	var motion := event as InputEventMouseMotion
 	if motion and _banding:
@@ -148,6 +185,10 @@ func _key(key: InputEventKey) -> void:
 		KEY_DELETE:
 			if not selected.is_empty():
 				delete_requested.emit(selected)
+		KEY_A:
+			if not (key.ctrl_pressed or key.meta_pressed):
+				return
+			select_all()
 		KEY_F2:
 			if selected.size() == 1 and selected[0].renamable:
 				selected[0].start_rename()
@@ -170,6 +211,7 @@ func _on_clicked(additive: bool, extend: bool, on_name: bool, item: FileIcon) ->
 	if additive:
 		item.selected = not item.selected
 		_anchor = item
+		_sync_focus()
 	elif extend and is_instance_valid(_anchor):
 		var items := _items()
 		var from := items.find(_anchor)
@@ -182,6 +224,26 @@ func _on_clicked(additive: bool, extend: bool, on_name: bool, item: FileIcon) ->
 		_select(item)
 
 
+## The icon with the focus rectangle, or null when the view is empty.
+func focus_item() -> FileIcon:
+	for item in _items():
+		if item.focused:
+			return item
+	return null
+
+
+## Moves the focus rectangle to [param item], as a click does, without selecting it.
+func set_focus_item(item: FileIcon) -> void:
+	_anchor = item
+	_sync_focus()
+
+
+## Selects every icon, as Edit > Select All and Ctrl+A do.
+func select_all() -> void:
+	for item in _items():
+		item.selected = true
+
+
 ## Selects only [param item], or nothing when it is null.
 func select_only(item: FileIcon) -> void:
 	_select(item)
@@ -192,6 +254,7 @@ func _select(item: FileIcon) -> void:
 		other.selected = other == item
 	if item != null:
 		_anchor = item
+	_sync_focus()
 
 
 func _items() -> Array[FileIcon]:

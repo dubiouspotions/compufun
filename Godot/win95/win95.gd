@@ -144,6 +144,7 @@ func _fill(view: IconView) -> void:
 		var file := _file_of(item)
 		if file != null:
 			keep.append(file)
+	var focused := _file_of(view.focus_item()) if view.focus_item() != null else null
 	var old: Array = _setup_icons if view == _icons else view.get_children()
 	for item: Node in old:
 		item.queue_free()
@@ -153,6 +154,8 @@ func _fill(view: IconView) -> void:
 		item.set_meta(_FILE_META, file)
 		item.name_edited.connect(func(_old: String, new_text: String) -> void: _state.rename_file(file, new_text))
 		item.selected = keep.has(file)
+		if file == focused:
+			view.set_focus_item(item)
 		added.append(item)
 	if view == _icons:
 		_setup_icons = added
