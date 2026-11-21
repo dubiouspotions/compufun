@@ -16,6 +16,9 @@ const _HEAD_RUN := 6
 ## Hands cover the head, so the usual crown scale blows the pose up. Match the neutral portrait's height instead.
 const _MATCH_NEUTRAL_HEIGHT := "jonny/portrait_irritated03.png"
 
+## How long the portrait takes to rise from behind the box when a conversation starts, in seconds;
+## 0 shows it at once.
+@export_range(0.0, 2.0) var rise_seconds: float = 0.45
 ## The share of the crown-to-hem distance that sits above the portrait's slot: 0.18 is about half
 ## a head over the top edge; a negative value keeps the whole head inside a framed slot.
 @export_range(-0.5, 0.5) var head_above: float = 0.18
@@ -51,6 +54,10 @@ var _voiced: bool = false
 var _time: float = 0.0
 # The voice level that moves the portrait, smoothed: 0 to 1.
 var _talk: float = 0.0
+var _rise: Tween
+# Where the portrait's slot stands when it has risen: its offset_top and offset_bottom in the scene.
+var _slot_top: float
+var _slot_bottom: float
 # The characters typed so far of the current line; -1 when the whole line shows.
 var _typed: float = -1.0
 
@@ -65,6 +72,8 @@ var _typed: float = -1.0
 func _ready() -> void:
 	_next.pressed.connect(_on_next)
 	_portrait_slot.resized.connect(_fit_portrait)
+	_slot_top = _portrait_slot.offset_top
+	_slot_bottom = _portrait_slot.offset_bottom
 
 
 func _process(delta: float) -> void:
@@ -106,7 +115,26 @@ func start(customer: Customer, conversation: Conversation) -> void:
 	else:
 		_lines = conversation.lines
 		_voiced = true
+	_rise_portrait()
 	_show_line()
+
+
+## Slides the portrait up from under the box's bottom edge, where PortraitClip hides it, to where
+## it stands in the scene.
+func _rise_portrait() -> void:
+	if _rise != null:
+		_rise.kill()
+	_portrait_slot.offset_top = _slot_top
+	_portrait_slot.offset_bottom = _slot_bottom
+	if rise_seconds <= 0.0:
+		return
+	# The head reaches above the slot, so the slot starts more than its own height down.
+	var drop := (_slot_bottom - _slot_top) * 1.5
+	_portrait_slot.offset_top = _slot_top + drop
+	_portrait_slot.offset_bottom = _slot_bottom + drop
+	_rise = create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_rise.tween_property(_portrait_slot, "offset_top", _slot_top, rise_seconds)
+	_rise.tween_property(_portrait_slot, "offset_bottom", _slot_bottom, rise_seconds)
 
 
 ## Shows the portrait of [param pose]. A pose the person has no portrait for shows "neutral".
