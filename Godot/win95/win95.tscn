@@ -19,6 +19,7 @@
 [ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
 [ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
 [ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="app_ms_dos_prompt"]
+[ext_resource type="PackedScene" path="res://win95/boot_sequence.tscn" id="boot_sequence"]
 
 [node name="Win95" type="Control" unique_id=1752664516]
 texture_filter = 1
@@ -104,3 +105,6 @@ size_flags_horizontal = 3
 
 [node name="Systray" parent="TaskBar/HBoxContainer" unique_id=1819389400 instance=ExtResource("systray")]
 layout_mode = 2
+
+[node name="BootSequence" parent="." instance=ExtResource("boot_sequence")]
+layout_mode = 1
