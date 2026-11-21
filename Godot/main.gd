@@ -33,6 +33,7 @@ func _ready() -> void:
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
 	_shop.close_requested.connect(_end_of_day.ask)
+	_shop.degauss_requested.connect(_screen_view.degauss)
 	_screen_view.outside_clicked.connect(_go_back)
 	_dialogue.finished.connect(Game.dialogue_finished)
 	_post_it.ticked.connect(Game.tick_post_it)

@@ -6,6 +6,8 @@ extends Node3D
 signal view_requested(view: StringName)
 ## The player clicked the Open sign while [method Game.can_close] is true.
 signal close_requested
+## The player pressed the Degauss button of the bench screen.
+signal degauss_requested
 
 ## The close-up of the computer in focus.
 const WORKVIEW: StringName = &"Workview"
@@ -46,6 +48,7 @@ func _ready() -> void:
 	_job_slots.power_clicked.connect(func(job: Job) -> void: Game.set_powered(job, not job.powered))
 	_bench.view_requested.connect(view_requested.emit)
 	_bench.plug_grabbed.connect(_on_plug_grabbed)
+	_bench.degauss_pressed.connect(degauss_requested.emit)
 	Game.changed.connect(_sync)
 	_sync()
 
