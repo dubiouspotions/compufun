@@ -1,3 +1,4 @@
+@tool
 extends Button
 ## A taskbar button for one window. Its text turns bold while it is pressed, which marks the active window.
 
