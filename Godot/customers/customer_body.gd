@@ -2,9 +2,10 @@ class_name CustomerBody
 extends Node3D
 ## The 3D customer: one placeholder body for all customers. It wears the person's photos: the face
 ## photo on the face, the average colour of the face photo on the skin, and the shirt from the
-## clothes portrait. The trousers take the customer's colour, and the head wears the customer's hat.
-## It walks, with footsteps, while it moves, and carries a computer in when the shop says so
-## (carrying).
+## clothes portrait. The back of the shirt repeats a strip at the side of the portrait's clothes, so
+## that buttons, pockets and prints stay on the front. The trousers take the customer's colour, and the
+## head wears the customer's hat. It walks, with footsteps, while it moves, and carries a computer in
+## when the shop says so (carrying).
 
 # The shirt parameters that a portrait sets; without a portrait they come from shirt_material.
 const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color", &"uv_rect", &"tint_texture",
@@ -20,6 +21,9 @@ const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color",
 @export_range(0.0, 0.7) var face_lift: float = 0.15
 ## The portrait pose whose clothes the shirt shows.
 @export var clothes_pose: StringName = &"neutral"
+## The width of the strip at the side of each shirt part that its back shows, as a share of the
+## part's width in the texture. Wider shows more of the front's details on the back.
+@export_range(0.05, 0.5) var back_strip: float = 0.15
 ## The speed, in metres per second, at which the walk plays at its own pace.
 @export var walk_speed: float = 1.4
 ## How far the arms swing while the body walks without a computer, in degrees.
@@ -62,6 +66,10 @@ func _ready() -> void:
 	_face.set_shader_parameter("uv_rect", _face_rect())
 	_skin = _own_copy(skin_material)
 	_shirt = _own_copy(shirt_material)
+	for node: Node in find_children("*", "MeshInstance3D"):
+		var part := node as MeshInstance3D
+		if part.material_override == _shirt:
+			part.mesh = _back_from_side(part)
 	_trousers = _own_copy(trousers_material)
 	_last_position = global_position
 	_computer.visible = carrying
@@ -166,6 +174,60 @@ func _wear_hat(customer: Customer) -> void:
 func _face_rect() -> Vector4:
 	var corner := Vector2((1.0 - face_scale) * 0.5, 1.0 - face_lift - face_scale)
 	return Vector4(-corner.x / face_scale, -corner.y / face_scale, 1.0 / face_scale, 1.0 / face_scale)
+
+
+# A copy of the part's mesh whose back faces (+Z; the body looks along -Z) have their own vertices,
+# with UVs that repeat the strip at the part's +X side across the back instead of mirroring the front.
+# Along each ring of the back, the vertices alternate between the two edges of the strip.
+func _back_from_side(part: MeshInstance3D) -> ArrayMesh:
+	var mesh := part.mesh
+	assert(mesh != null and mesh.get_surface_count() == 1, "CustomerBody: %s needs one surface" % part.name)
+	var arrays := mesh.surface_get_arrays(0)
+	for kept: int in [Mesh.ARRAY_COLOR, Mesh.ARRAY_TEX_UV2, Mesh.ARRAY_BONES, Mesh.ARRAY_WEIGHTS]:
+		assert(arrays[kept] == null, "CustomerBody: %s has vertex data that the back copy drops" % part.name)
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	var tangents: PackedFloat32Array = arrays[Mesh.ARRAY_TANGENT] if arrays[Mesh.ARRAY_TANGENT] != null else PackedFloat32Array()
+	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	var u_min := INF
+	var u_max := -INF
+	for uv: Vector2 in uvs:
+		u_min = minf(u_min, uv.x)
+		u_max = maxf(u_max, uv.x)
+	var strip := (u_max - u_min) * back_strip
+	var back_corners: Array[int] = []
+	var rings: Dictionary[float, Array] = {}
+	for corner: int in indices.size():
+		var first := corner - corner % 3
+		var facing := normals[indices[first]] + normals[indices[first + 1]] + normals[indices[first + 2]]
+		if facing.z <= 0.3 * facing.length():
+			continue
+		back_corners.append(corner)
+		var ring: Array = rings.get_or_add(snappedf(vertices[indices[corner]].y, 0.001), [])
+		if not ring.has(indices[corner]):
+			ring.append(indices[corner])
+	var back_copy: Dictionary[int, int] = {}
+	for ring: Array in rings.values():
+		ring.sort_custom(func(a: int, b: int) -> bool: return vertices[a].x > vertices[b].x)
+		for rank: int in ring.size():
+			var index: int = ring[rank]
+			back_copy[index] = vertices.size()
+			vertices.append(vertices[index])
+			normals.append(normals[index])
+			if not tangents.is_empty():
+				tangents.append_array(tangents.slice(index * 4, index * 4 + 4))
+			uvs.append(Vector2(u_min + strip * (rank % 2), uvs[index].y))
+	for corner: int in back_corners:
+		indices[corner] = back_copy[indices[corner]]
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TANGENT] = tangents if not tangents.is_empty() else null
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var copy := ArrayMesh.new()
+	copy.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return copy
 
 
 func _own_copy(shared: ShaderMaterial) -> ShaderMaterial:
