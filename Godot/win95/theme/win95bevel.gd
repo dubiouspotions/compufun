@@ -11,6 +11,7 @@ enum Kind {
 	FIELD, # 2 px recess: text fields, lists, pressed caption buttons
 	TOGGLED, # a button that stays pushed in, like the active taskbar button
 	DEFAULT, # the default button of a dialog: a black frame around a raised button
+	TAB, # a property sheet tab: raised, with cut top corners and no bottom edge
 }
 
 ## What fills the inside of the edge. DITHER is a checkerboard of highlight and face.
@@ -41,6 +42,24 @@ var _dither_colors := PackedColorArray()
 			palette.changed.connect(emit_changed)
 		emit_changed()
 
+## Grows the drawn edge past the rect, in pixels, without moving the content; negative shrinks it.
+@export var expand_margin_left := 0.0:
+	set(value):
+		expand_margin_left = value
+		emit_changed()
+@export var expand_margin_top := 0.0:
+	set(value):
+		expand_margin_top = value
+		emit_changed()
+@export var expand_margin_right := 0.0:
+	set(value):
+		expand_margin_right = value
+		emit_changed()
+@export var expand_margin_bottom := 0.0:
+	set(value):
+		expand_margin_bottom = value
+		emit_changed()
+
 
 func _init() -> void:
 	# A saved .tres can set the margins before the script attaches; only fill in unset ones.
@@ -49,9 +68,14 @@ func _init() -> void:
 			set_content_margin(side, 2.0)
 
 
+func _get_draw_rect(rect: Rect2) -> Rect2:
+	return rect.grow_individual(expand_margin_left, expand_margin_top, expand_margin_right, expand_margin_bottom)
+
+
 func _draw(to_canvas_item: RID, rect: Rect2) -> void:
 	var p := palette if palette else _stock_palette
-	var r := Rect2(rect.position.round(), rect.size.round())
+	var drawn := _get_draw_rect(rect)
+	var r := Rect2(drawn.position.round(), drawn.size.round())
 	var inner := r.grow(-1)
 	match kind:
 		Kind.RAISED:
@@ -75,20 +99,44 @@ func _draw(to_canvas_item: RID, rect: Rect2) -> void:
 			_edge(to_canvas_item, r, p.dark_shadow_color, p.dark_shadow_color)
 			_edge(to_canvas_item, inner, p.highlight_color, p.dark_shadow_color)
 			_edge(to_canvas_item, inner.grow(-1), p.light_color, p.shadow_color)
+		Kind.TAB:
+			_draw_tab(to_canvas_item, r, p)
+			return
 	var face := inner
 	if kind == Kind.DEFAULT:
 		face = inner.grow(-2)
 	elif kind != Kind.SUNKEN:
 		face = inner.grow(-1)
+	_fill(to_canvas_item, face, p)
+
+
+func _fill(ci: RID, face: Rect2, p: Win95Palette) -> void:
 	if not face.has_area():
 		return
 	match fill:
 		Fill.FACE:
-			RenderingServer.canvas_item_add_rect(to_canvas_item, face, p.face_color)
+			RenderingServer.canvas_item_add_rect(ci, face, p.face_color)
 		Fill.WINDOW:
-			RenderingServer.canvas_item_add_rect(to_canvas_item, face, p.window_color)
+			RenderingServer.canvas_item_add_rect(ci, face, p.window_color)
 		Fill.DITHER:
-			_draw_dither(to_canvas_item, face, p.highlight_color, p.face_color)
+			_draw_dither(ci, face, p.highlight_color, p.face_color)
+
+
+func _draw_tab(ci: RID, r: Rect2, p: Win95Palette) -> void:
+	if r.size.x < 4 or r.size.y < 2:
+		return
+	var x := r.position.x
+	var y := r.position.y
+	var w := r.size.x
+	var h := r.size.y
+	RenderingServer.canvas_item_add_rect(ci, Rect2(x, y + 2, 1, h - 2), p.highlight_color)
+	RenderingServer.canvas_item_add_rect(ci, Rect2(x + 1, y + 1, 1, 1), p.highlight_color)
+	RenderingServer.canvas_item_add_rect(ci, Rect2(x + 2, y, w - 4, 1), p.highlight_color)
+	RenderingServer.canvas_item_add_rect(ci, Rect2(x + w - 2, y + 1, 1, 1), p.dark_shadow_color)
+	RenderingServer.canvas_item_add_rect(ci, Rect2(x + w - 2, y + 2, 1, h - 2), p.shadow_color)
+	RenderingServer.canvas_item_add_rect(ci, Rect2(x + w - 1, y + 2, 1, h - 2), p.dark_shadow_color)
+	_fill(ci, Rect2(x + 2, y + 1, w - 4, 1), p)
+	_fill(ci, Rect2(x + 1, y + 2, w - 3, h - 2), p)
 
 
 # Tiles the face with regions of one cached texture; a canvas item's texture repeat is off by default.

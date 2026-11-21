@@ -479,6 +479,56 @@ script = ExtResource("bevel")
 kind = 4
 palette = ExtResource("palette")
 
+[sub_resource type="StyleBox" id="tab"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 7.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 1.0
+script = ExtResource("bevel")
+kind = 7
+palette = ExtResource("palette")
+expand_margin_top = -2.0
+
+[sub_resource type="StyleBox" id="tab_selected"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 7.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 3.0
+script = ExtResource("bevel")
+kind = 7
+palette = ExtResource("palette")
+expand_margin_left = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 1.0
+
+[sub_resource type="StyleBox" id="tab_panel"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+script = ExtResource("bevel")
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBoxTexture" id="tab_focus"]
+texture = ExtResource("atlas")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+expand_margin_left = -1.0
+expand_margin_top = -3.0
+expand_margin_right = -1.0
+expand_margin_bottom = -1.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+region_rect = Rect2(4, 4, 4, 4)
+
 [resource]
 default_font = ExtResource("font_regular")
 default_font_size = 12
@@ -648,6 +698,28 @@ StartButton/styles/normal = SubResource("taskbar_button")
 StartButton/styles/pressed = SubResource("start_button_pressed")
 StatusWell/base_type = &"PanelContainer"
 StatusWell/styles/panel = SubResource("status_well")
+TabBar/colors/font_disabled_color = Color(0.502, 0.502, 0.502, 1)
+TabBar/colors/font_hovered_color = Color(0, 0, 0, 1)
+TabBar/colors/font_selected_color = Color(0, 0, 0, 1)
+TabBar/colors/font_unselected_color = Color(0, 0, 0, 1)
+TabBar/constants/h_separation = 0
+TabBar/styles/tab_disabled = SubResource("tab")
+TabBar/styles/tab_focus = SubResource("tab_focus")
+TabBar/styles/tab_hovered = SubResource("tab")
+TabBar/styles/tab_selected = SubResource("tab_selected")
+TabBar/styles/tab_unselected = SubResource("tab")
+TabContainer/colors/font_disabled_color = Color(0.502, 0.502, 0.502, 1)
+TabContainer/colors/font_hovered_color = Color(0, 0, 0, 1)
+TabContainer/colors/font_selected_color = Color(0, 0, 0, 1)
+TabContainer/colors/font_unselected_color = Color(0, 0, 0, 1)
+TabContainer/constants/icon_separation = 0
+TabContainer/constants/side_margin = 2
+TabContainer/styles/panel = SubResource("tab_panel")
+TabContainer/styles/tab_disabled = SubResource("tab")
+TabContainer/styles/tab_focus = SubResource("tab_focus")
+TabContainer/styles/tab_hovered = SubResource("tab")
+TabContainer/styles/tab_selected = SubResource("tab_selected")
+TabContainer/styles/tab_unselected = SubResource("tab")
 Taskbar/base_type = &"PanelContainer"
 Taskbar/styles/panel = SubResource("taskbar")
 TaskbarButton/base_type = &"Button"
