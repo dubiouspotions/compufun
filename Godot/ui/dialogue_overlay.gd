@@ -36,18 +36,19 @@ func _ready() -> void:
 	_portrait_slot.resized.connect(_fit_portrait)
 
 
-## Starts the conversation [param id] of [param customer] at the first line. A missing
+## Starts [param conversation] of [param customer] at the first line. A null or empty
 ## conversation shows the error in the box, so the player can still go on.
-func start(customer: Customer, id: StringName) -> void:
+func start(customer: Customer, conversation: Conversation) -> void:
 	if customer == null:
 		push_error("DialogueOverlay.start: no customer")
 		return
 	_customer = customer
 	_line = 0
 	_name.text = customer.display_name
-	var conversation := customer.conversation(id)
 	if conversation == null or conversation.lines.is_empty():
-		var message := "%s has no conversation '%s' with lines" % [customer.resource_path, id]
+		var message := ("%s has no conversation for day %d and flags %s" % [customer.resource_path,
+				Game.day_number, Game.flags]) if conversation == null else (
+				"%s: the conversation '%s' has no lines" % [customer.resource_path, conversation.id])
 		push_error("DialogueOverlay.start: " + message)
 		var error_line := DialogueLine.new()
 		error_line.text = "ERROR: " + message

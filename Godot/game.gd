@@ -1,7 +1,7 @@
 extends Node
 ## The state that the whole game shares (autoload "Game"): the day, the visitor, the jobs on the
-## counter, the computer in focus, the cable, the phone and the view. Scenes call its methods, and
-## re-read the state on [signal changed].
+## counter, the computer in focus, the cable, the phone, the view, the flags and the conversations
+## that have played. Scenes call its methods, and re-read the state on [signal changed].
 
 ## Emitted after every change of the state. Listeners re-read the whole state.
 signal changed
@@ -42,11 +42,8 @@ const MAX_JOBS: int = 4
 const MAX_CUSTOMERS: int = 3
 ## How long a phone call takes, in seconds.
 const CALL_SECONDS: float = 2.0
-## The conversation that a customer has when they bring a computer.
-const ARRIVE_CONVERSATION: StringName = &"arrive"
-## The conversation that a customer has when they pick up a computer. Optional: without it, the
-## customer takes the computer and leaves.
-const PICKUP_CONVERSATION: StringName = &"pickup"
+## Where [method restore] finds day N.
+const DAY_PATH: String = "res://days/day_%d.tres"
 
 var phase: Phase = Phase.IDLE
 var day: Day
@@ -66,6 +63,20 @@ var visit: Visit = Visit.NONE
 var visitor_state: VisitorState = VisitorState.NONE
 ## The name of the current view marker in the room, for example &"Main".
 var view: StringName = &"Main"
+## The facts of the story: a name and a number. A flag that is 0 or missing is not set.
+var flags: Dictionary[StringName, int] = {}
+## The conversations that have played, as "<customer file name>/<conversation id>".
+var seen: Dictionary[String, bool] = {}
+## What the visitor says while TALKING, or null when no conversation matches.
+var conversation: Conversation
+## Goes up every time a visitor starts to walk in, also on [method restore]. A scene that
+## remembers it can tell a new visit from a re-read of the same one.
+var arrival: int = 0
+
+## The number of the day, 1 to 7, or 0 before the first day.
+var day_number: int:
+	get:
+		return day.number if day != null else 0
 
 var _next_order: int = 0
 var _gap_elapsed: float = 0.0
@@ -77,16 +88,10 @@ var _pickup: Job
 ## counter is full. Jobs left overnight stay. Refuses a day that is null, has no customers, has more
 ## than [constant MAX_CUSTOMERS], or has a customer with no problem, and keeps the current state.
 func start_day(new_day: Day) -> void:
-	if new_day == null or new_day.customers.is_empty():
-		push_error("Game.start_day: the day is null or has no customers: %s" % new_day)
+	var invalid := _check_day(new_day)
+	if invalid != "":
+		push_error("Game.start_day: " + invalid)
 		return
-	if new_day.customers.size() > MAX_CUSTOMERS:
-		push_error("Game.start_day: day %d has %d customers; the most is %d" % [new_day.number, new_day.customers.size(), MAX_CUSTOMERS])
-		return
-	for c: Customer in new_day.customers:
-		if c == null or c.problem == null:
-			push_error("Game.start_day: day %d has a customer with no problem: %s" % [new_day.number, c])
-			return
 	day = new_day
 	arrivals = 0
 	daypart = Daypart.NONE
@@ -103,15 +108,14 @@ func go_to_view(view_name: StringName) -> void:
 	changed.emit()
 
 
-## The room calls this when the visitor reaches the counter: TALKING. A pickup visitor without the
-## [constant PICKUP_CONVERSATION] takes the computer and leaves at once.
+## The room calls this when the visitor reaches the counter: TALKING, with the first conversation
+## that matches. A pickup visitor with no matching conversation takes the computer and leaves.
 func customer_arrived() -> void:
 	if visitor_state != VisitorState.WALKING_IN:
 		push_error("Game.customer_arrived: no visitor is walking in (visitor state %s)" % VisitorState.find_key(visitor_state))
 		return
 	visitor_state = VisitorState.TALKING
-	if visit == Visit.PICKUP and visitor.conversation(PICKUP_CONVERSATION) == null:
-		_leave()
+	_start_talk()
 	changed.emit()
 
 
@@ -122,6 +126,7 @@ func dialogue_finished() -> void:
 	if visitor_state != VisitorState.TALKING:
 		push_error("Game.dialogue_finished: no visitor is talking (visitor state %s)" % VisitorState.find_key(visitor_state))
 		return
+	conversation = null
 	_leave()
 	changed.emit()
 
@@ -134,6 +139,37 @@ func customer_left() -> void:
 		return
 	_set_visitor(null, Visit.NONE)
 	changed.emit()
+
+
+## The number of [param flag_name]; 0 when it is not set.
+func flag(flag_name: StringName) -> int:
+	return flags.get(flag_name, 0)
+
+
+## Sets [param flag_name] to [param value]. 0 removes it.
+func set_flag(flag_name: StringName, value: int = 1) -> void:
+	if flag_name == &"":
+		push_error("Game.set_flag: no flag name")
+		return
+	if value == 0:
+		flags.erase(flag_name)
+	else:
+		flags[flag_name] = value
+	changed.emit()
+
+
+## The first conversation of [param who] with [param trigger] whose condition matches now, and
+## that has not played if it plays once. null when none matches.
+func matching_conversation(who: Customer, trigger: Conversation.Trigger) -> Conversation:
+	for c: Conversation in who.conversations:
+		if c == null or c.trigger != trigger:
+			continue
+		if c.once and seen.has(_seen_key(who, c)):
+			continue
+		if c.when != null and not c.when.is_met(day_number, flags):
+			continue
+		return c
+	return null
 
 
 ## Puts [param job] in focus for the Workview. null takes the focus away. The job must be on the
@@ -248,11 +284,11 @@ func close_shop() -> void:
 	changed.emit()
 
 
-## The state as plain data, for the F9 report.
+## The state as plain data: for the F9 report, the presets of the debug menu, and [method restore].
 func snapshot() -> Dictionary:
 	return {
 		"phase": String(Phase.find_key(phase)),
-		"day": day.number if day != null else 0,
+		"day": day_number,
 		"arrivals": arrivals,
 		"daypart": String(Daypart.find_key(daypart)),
 		"visitor": visitor.resource_path if visitor != null else "",
@@ -262,7 +298,131 @@ func snapshot() -> Dictionary:
 		"focus_slot": focus.slot if focus != null else -1,
 		"connected_slot": connected.slot if connected != null else -1,
 		"view": String(view),
+		"conversation": String(conversation.id) if conversation != null else "",
+		"flags": flags.duplicate(),
+		"seen": seen.keys(),
 	}
+
+
+## Sets the state from [param state], in the format of [method snapshot]. A missing key takes its
+## value at the start of a day: day 1, OPEN, nobody in the shop, no arrivals, an empty counter, no
+## flags, nothing seen, the daypart of the arrivals; a missing view keeps the current one. The
+## conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
+func restore(state: Dictionary) -> String:
+	var known := snapshot()
+	for key: Variant in state:
+		if not key is String or not known.has(key):
+			return _refuse("unknown key %s" % key)
+	var number := int(state.get("day", 1))
+	var path := DAY_PATH % number
+	if not ResourceLoader.exists(path):
+		return _refuse("there is no day %d (%s)" % [number, path])
+	var new_day := load(path) as Day
+	var invalid := _check_day(new_day)
+	if invalid != "":
+		return _refuse(invalid)
+	if new_day.number != number:
+		return _refuse("%s says it is day %d" % [path, new_day.number])
+	var new_phase: Variant = _enum_value(Phase, state.get("phase", "OPEN"), "phase")
+	if new_phase is String:
+		return _refuse(new_phase)
+	if new_phase == Phase.IDLE:
+		return _refuse("the phase IDLE can't be set; start a day instead")
+	var new_arrivals := int(state.get("arrivals", 0))
+	if new_arrivals < 0 or new_arrivals > new_day.customers.size():
+		return _refuse("day %d has %d customers, not %d arrivals" % [number, new_day.customers.size(), new_arrivals])
+	var default_daypart := "NIGHT" if new_phase == Phase.DAY_OVER else String(Daypart.find_key(mini(new_arrivals, Daypart.EVENING)))
+	var new_daypart: Variant = _enum_value(Daypart, state.get("daypart", default_daypart), "daypart")
+	if new_daypart is String:
+		return _refuse(new_daypart)
+
+	var new_jobs: Array[Job] = []
+	var slots: Array[int] = []
+	var given_jobs: Array = state.get("jobs", [])
+	if given_jobs.size() > MAX_JOBS:
+		return _refuse("%d jobs, but the counter holds %d" % [given_jobs.size(), MAX_JOBS])
+	for i: int in given_jobs.size():
+		var data: Dictionary = given_jobs[i]
+		var owner := _customer_at(str(data.get("customer", "")))
+		if owner == null or owner.problem == null:
+			return _refuse("job %d: no customer with a problem at '%s'" % [i, data.get("customer", "")])
+		var slot := int(data.get("slot", i))
+		if slot < 0 or slot >= MAX_JOBS or slots.has(slot):
+			return _refuse("job %d: the slot %d is taken or not 0 to %d" % [i, slot, MAX_JOBS - 1])
+		slots.append(slot)
+		var job := Job.new(owner, slot, int(data.get("order", i)))
+		job.hardware_fixed = bool(data.get("hardware_fixed", false))
+		job.software_fixed = bool(data.get("software_fixed", false))
+		job.powered = bool(data.get("powered", false))
+		job.post_it_ticked = bool(data.get("post_it_ticked", false))
+		if job.post_it_ticked and not job.fixed:
+			return _refuse("job %d: the post-it can be ticked only when the problem is fixed" % i)
+		new_jobs.append(job)
+	var new_focus: Variant = _job_in(new_jobs, int(state.get("focus_slot", -1)), "focus_slot")
+	var new_connected: Variant = _job_in(new_jobs, int(state.get("connected_slot", -1)), "connected_slot")
+	for picked: Variant in [new_focus, new_connected]:
+		if picked is String:
+			return _refuse(picked)
+
+	var visitor_path := str(state.get("visitor", ""))
+	var new_visitor: Customer = null
+	if visitor_path != "":
+		new_visitor = _customer_at(visitor_path)
+		if new_visitor == null:
+			return _refuse("no customer at '%s'" % visitor_path)
+	var new_visit: Variant = _enum_value(Visit, state.get("visit", "NONE" if new_visitor == null else "DROP_OFF"), "visit")
+	var new_visitor_state: Variant = _enum_value(VisitorState, state.get("visitor_state", "NONE" if new_visitor == null else "WALKING_IN"), "visitor_state")
+	for value: Variant in [new_visit, new_visitor_state]:
+		if value is String:
+			return _refuse(value)
+	if (new_visitor == null) != (new_visit == Visit.NONE) or (new_visitor == null) != (new_visitor_state == VisitorState.NONE):
+		return _refuse("visitor, visit and visitor_state must all be set, or all be none")
+	if new_visitor != null and new_phase != Phase.OPEN:
+		return _refuse("a visitor can be in the shop only while it is OPEN")
+	var new_pickup: Job = null
+	var handed_over: bool = new_visitor_state == VisitorState.WALKING_OUT
+	if new_visit == Visit.PICKUP and not handed_over:
+		var ticked := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.post_it_ticked)
+		if ticked.is_empty():
+			return _refuse("%s picks up, but has no ticked job" % _who(new_visitor))
+		new_pickup = ticked[0]
+	if new_visit == Visit.DROP_OFF and not handed_over and new_jobs.size() >= MAX_JOBS:
+		return _refuse("%s drops off, but the counter is full" % _who(new_visitor))
+	if new_phase == Phase.CALLING and not new_jobs.any(func(j: Job) -> bool: return j.post_it_ticked):
+		return _refuse("CALLING needs a ticked post-it")
+
+	var new_flags: Dictionary[StringName, int] = {}
+	var given_flags: Dictionary = state.get("flags", {})
+	for key: Variant in given_flags:
+		if int(given_flags[key]) != 0:
+			new_flags[StringName(str(key))] = int(given_flags[key])
+	var new_seen: Dictionary[String, bool] = {}
+	for key: Variant in state.get("seen", []):
+		new_seen[str(key)] = true
+
+	day = new_day
+	phase = new_phase
+	arrivals = new_arrivals
+	daypart = new_daypart
+	jobs = new_jobs
+	focus = new_focus
+	connected = new_connected
+	visitor = new_visitor
+	visit = new_visit
+	visitor_state = new_visitor_state
+	_pickup = new_pickup
+	_next_order = jobs.reduce(func(top: int, j: Job) -> int: return maxi(top, j.order + 1), 0)
+	_gap_elapsed = 0.0
+	_call_left = CALL_SECONDS
+	view = StringName(str(state.get("view", view)))
+	flags = new_flags
+	seen = new_seen
+	arrival += 1
+	conversation = null
+	if visitor_state == VisitorState.TALKING:
+		_start_talk()
+	changed.emit()
+	return ""
 
 
 func _process(delta: float) -> void:
@@ -338,7 +498,64 @@ func _set_visitor(customer: Customer, why: Visit) -> void:
 	visitor = customer
 	visit = why
 	visitor_state = VisitorState.WALKING_IN if customer != null else VisitorState.NONE
+	conversation = null
+	if customer != null:
+		arrival += 1
 	_gap_elapsed = 0.0
+
+
+## Picks what the TALKING visitor says, and remembers that it played. A pickup visitor with
+## nothing to say takes the computer and leaves.
+func _start_talk() -> void:
+	var trigger := Conversation.Trigger.PICKUP if visit == Visit.PICKUP else Conversation.Trigger.ARRIVE
+	conversation = matching_conversation(visitor, trigger)
+	if conversation != null:
+		seen[_seen_key(visitor, conversation)] = true
+	elif visit == Visit.PICKUP:
+		_leave()
+
+
+func _seen_key(who: Customer, c: Conversation) -> String:
+	return "%s/%s" % [who.resource_path.get_file().get_basename(), c.id]
+
+
+## Why [param d] can't be played, or "".
+func _check_day(d: Day) -> String:
+	if d == null or d.customers.is_empty():
+		return "the day is null or has no customers: %s" % d
+	if d.customers.size() > MAX_CUSTOMERS:
+		return "day %d has %d customers; the most is %d" % [d.number, d.customers.size(), MAX_CUSTOMERS]
+	for c: Customer in d.customers:
+		if c == null or c.problem == null:
+			return "day %d has a customer with no problem: %s" % [d.number, c]
+	return ""
+
+
+## The Customer at [param path], or null when there is none.
+static func _customer_at(path: String) -> Customer:
+	return load(path) as Customer if path != "" and ResourceLoader.exists(path) else null
+
+
+## The value of [param enum_type] named [param value_name], or a String that says why not.
+static func _enum_value(enum_type: Dictionary, value_name: Variant, key: String) -> Variant:
+	if not enum_type.has(str(value_name)):
+		return "%s can't be %s; use one of %s" % [key, value_name, enum_type.keys()]
+	return enum_type[str(value_name)]
+
+
+## The job in [param slot] (-1: null), or a String that says why there is none.
+static func _job_in(in_jobs: Array[Job], slot: int, key: String) -> Variant:
+	if slot == -1:
+		return null
+	for j: Job in in_jobs:
+		if j.slot == slot:
+			return j
+	return "%s %d: no job in that slot" % [key, slot]
+
+
+func _refuse(reason: String) -> String:
+	push_error("Game.restore: " + reason)
+	return reason
 
 
 static func _who(customer: Customer) -> String:
