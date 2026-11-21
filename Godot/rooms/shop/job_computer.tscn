@@ -88,14 +88,13 @@ visible = false
 
 [node name="Screwdriver" parent="." instance=ExtResource("screwdriver")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.3, 0.011, 0.03)
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, -0.075, 0.011, 0.27)
 
 [node name="ScrewdriverOutline" type="Sprite3D" parent="."]
 unique_name_in_owner = true
 visible = false
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.3, 0.003, 0.105)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.003, 0.27)
 pixel_size = 0.001
-flip_v = true
 shaded = false
 double_sided = true
 alpha_cut = 1
@@ -104,5 +103,5 @@ texture = ExtResource("screwdriver_outline")
 
 [node name="ScrewdriverHotspot" parent="." instance=ExtResource("3_hotspot")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0.015, 0.105)
-size = Vector3(0.05, 0.03, 0.17)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0.27)
+size = Vector3(0.17, 0.03, 0.04)
