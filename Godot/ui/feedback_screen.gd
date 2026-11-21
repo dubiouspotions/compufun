@@ -1,14 +1,21 @@
 class_name FeedbackScreen
 extends CanvasLayer
 ## F9 feedback, for us only: it works in a run from the editor, not in an exported game. F9 stops
-## the game and shows a screenshot. The player drags boxes, types a note and picks Bug or Idea.
-## The report goes to <repo>/feedback/<time>_<name>/: shot.png (with the boxes) and report.json
-## (the note, the boxes and what is under them, the Game state, the room and the build).
+## the game and shows a screenshot. The player draws on it, types a note and picks Bug or Idea.
+## The report goes to <repo>/feedback/<time>_<name>/: shot.png (with the marks) and report.json
+## (the note, the marks and what is under them, the Game state, the room and the build).
 
-const HINT: String = "F9 feedback: drag a box around what you mean. Ctrl+Z (Cmd+Z): undo. Esc: cancel."
-const MIN_BOX: float = 6.0
-const BOX_COLOR: Color = Color(1.0, 0.15, 0.15)
-const BOX_WIDTH: int = 4
+const HINT: String = "Draw on the picture: circle or underline what you mean."
+const NO_SHOT_HINT: String = "No screenshot (a headless run?). The report saves without one."
+const STROKE_WIDTH: float = 5.0
+const STROKE_COLOR: Color = Color(1.0, 0.2, 0.2)
+const EDGE_COLOR: Color = Color(0.05, 0.05, 0.05, 0.85)
+## The shortest stroke that counts as a mark, in canvas pixels.
+const MIN_STROKE: float = 4.0
+## The distance between two recorded points of a stroke, in canvas pixels.
+const POINT_STEP: float = 3.0
+## The most points per mark in report.json.
+const MAX_REPORT_POINTS: int = 100
 const TOAST_SECONDS: float = 3.0
 const ACCENTS: Dictionary = {
 	"á": "a", "à": "a", "â": "a", "ä": "a", "å": "a", "é": "e", "è": "e", "ê": "e", "ë": "e",
@@ -19,27 +26,30 @@ const ACCENTS: Dictionary = {
 @export var output_dir: String = ""
 
 var _shot: Image
-var _boxes_list: Array[Rect2] = []
-var _dragging: bool = false
-var _drag_from: Vector2
-var _drag_rect: Rect2
+var _strokes: Array[PackedVector2Array] = []
+var _current: PackedVector2Array = PackedVector2Array()
+var _drawing: bool = false
 var _was_paused: bool = false
 
 @onready var _root: Control = %Root
 @onready var _picture: TextureRect = %Picture
-@onready var _boxes: Control = %Boxes
+@onready var _marks: Control = %Marks
 @onready var _status: Label = %Status
+@onready var _count: Label = %MarkCount
 @onready var _note: LineEdit = %Note
-@onready var _toast: Label = %Toast
+@onready var _toast: Control = %Toast
+@onready var _toast_label: Label = %ToastLabel
 
 
 func _ready() -> void:
 	_root.visible = false
 	_toast.visible = false
-	_boxes.gui_input.connect(_on_boxes_input)
-	_boxes.draw.connect(_draw_boxes)
+	_marks.gui_input.connect(_on_marks_input)
+	_marks.draw.connect(_draw_marks)
 	(%BugButton as Button).pressed.connect(_save.bind("bug"))
 	(%IdeaButton as Button).pressed.connect(_save.bind("idea"))
+	(%UndoButton as Button).pressed.connect(undo)
+	(%ClearButton as Button).pressed.connect(clear_marks)
 	(%CancelButton as Button).pressed.connect(close)
 
 
@@ -67,29 +77,42 @@ func _input(event: InputEvent) -> void:
 func open() -> void:
 	_shot = _take_screenshot()
 	_picture.texture = ImageTexture.create_from_image(_shot) if _shot != null else null
-	_status.text = HINT if _shot != null else "No screenshot (a headless run?). The report saves without one."
-	_boxes_list.clear()
-	_dragging = false
+	_status.text = HINT if _shot != null else NO_SHOT_HINT
+	_strokes.clear()
+	_current = PackedVector2Array()
+	_drawing = false
 	_note.text = ""
 	_was_paused = get_tree().paused
 	get_tree().paused = true
 	_root.visible = true
 	_note.grab_focus()
-	_boxes.queue_redraw()
+	_changed()
 
 
 ## Closes the screen without a report, and lets the game run again.
 func close() -> void:
 	_root.visible = false
-	_dragging = false
+	_drawing = false
 	get_tree().paused = _was_paused
 
 
-## Removes the last box.
+## Removes the last mark.
 func undo() -> void:
-	if not _boxes_list.is_empty():
-		_boxes_list.pop_back()
-		_boxes.queue_redraw()
+	if not _strokes.is_empty():
+		_strokes.pop_back()
+		_changed()
+
+
+## Removes every mark.
+func clear_marks() -> void:
+	_strokes.clear()
+	_changed()
+
+
+func _changed() -> void:
+	var n := _strokes.size()
+	_count.text = "No marks" if n == 0 else ("1 mark" if n == 1 else "%d marks" % n)
+	_marks.queue_redraw()
 
 
 func _take_screenshot() -> Image:
@@ -103,30 +126,49 @@ func _take_screenshot() -> Image:
 	return image.get_region(crop) if crop.has_area() else image
 
 
-func _on_boxes_input(event: InputEvent) -> void:
+func _on_marks_input(event: InputEvent) -> void:
 	var button := event as InputEventMouseButton
 	if button != null and button.button_index == MOUSE_BUTTON_LEFT:
 		if button.pressed:
-			_dragging = true
-			_drag_from = button.position
-			_drag_rect = Rect2(button.position, Vector2.ZERO)
-		elif _dragging:
-			_dragging = false
-			var rect := _drag_rect.abs()
-			if rect.size.x >= MIN_BOX and rect.size.y >= MIN_BOX:
-				_boxes_list.append(rect)
-		_boxes.queue_redraw()
+			_drawing = true
+			_current = PackedVector2Array([button.position])
+		elif _drawing:
+			_drawing = false
+			_current.append(button.position)
+			if _bounds(_current).size.length() >= MIN_STROKE:
+				_strokes.append(_current)
+			_current = PackedVector2Array()
+			_changed()
+		_marks.queue_redraw()
+		return
 	var motion := event as InputEventMouseMotion
-	if motion != null and _dragging:
-		_drag_rect = Rect2(_drag_from, motion.position - _drag_from)
-		_boxes.queue_redraw()
+	if motion != null and _drawing:
+		if _current.is_empty() or _current[_current.size() - 1].distance_to(motion.position) >= POINT_STEP:
+			_current.append(motion.position)
+			_marks.queue_redraw()
 
 
-func _draw_boxes() -> void:
-	for rect: Rect2 in _boxes_list:
-		_boxes.draw_rect(rect, BOX_COLOR, false, BOX_WIDTH)
-	if _dragging:
-		_boxes.draw_rect(_drag_rect.abs(), BOX_COLOR, false, BOX_WIDTH)
+func _draw_marks() -> void:
+	for stroke: PackedVector2Array in _strokes:
+		_draw_stroke(stroke)
+	if _drawing:
+		_draw_stroke(_current)
+
+
+func _draw_stroke(stroke: PackedVector2Array) -> void:
+	if stroke.size() < 2:
+		return
+	_marks.draw_polyline(stroke, EDGE_COLOR, STROKE_WIDTH + 4.0, true)
+	_marks.draw_polyline(stroke, STROKE_COLOR, STROKE_WIDTH, true)
+
+
+func _bounds(stroke: PackedVector2Array) -> Rect2:
+	if stroke.is_empty():
+		return Rect2()
+	var rect := Rect2(stroke[0], Vector2.ZERO)
+	for point: Vector2 in stroke:
+		rect = rect.expand(point)
+	return rect
 
 
 func _save(kind: String) -> void:
@@ -138,20 +180,22 @@ func _save(kind: String) -> void:
 	if err != OK:
 		_fail("cannot make %s: %s" % [folder, error_string(err)])
 		return
-	var boxes: Array[Dictionary] = []
-	for rect: Rect2 in _boxes_list:
-		boxes.append({
-			"rect": [rect.position.x / canvas_size.x, rect.position.y / canvas_size.y,
-				rect.size.x / canvas_size.x, rect.size.y / canvas_size.y],
-			"hotspot": _hotspot_at(rect.get_center()),
-			"ui": _control_at(rect.get_center()),
+	var marks: Array[Dictionary] = []
+	for stroke: PackedVector2Array in _strokes:
+		var bounds := _bounds(stroke)
+		marks.append({
+			"bounds": [bounds.position.x / canvas_size.x, bounds.position.y / canvas_size.y,
+				bounds.size.x / canvas_size.x, bounds.size.y / canvas_size.y],
+			"points": _report_points(stroke, canvas_size),
+			"hotspot": _hotspot_at(bounds.get_center()),
+			"ui": _control_at(bounds.get_center()),
 		})
 	var report := {
 		"kind": kind,
 		"note": _note.text,
 		"time": Time.get_datetime_string_from_system(),
 		"author": author,
-		"boxes": boxes,
+		"marks": marks,
 		"game": Game.snapshot(),
 		"camera": _camera_info(),
 		"open_screens": _open_screens(),
@@ -165,7 +209,7 @@ func _save(kind: String) -> void:
 	}
 	if _shot != null:
 		var marked := _shot.duplicate() as Image
-		_mark(marked, canvas_size)
+		_paint_marks(marked, canvas_size)
 		err = marked.save_png(folder.path_join("shot.png"))
 		if err != OK:
 			_fail("cannot write %s: %s" % [folder.path_join("shot.png"), error_string(err)])
@@ -182,7 +226,16 @@ func _save(kind: String) -> void:
 		return
 	print("F9 report saved: %s" % folder)
 	close()
-	_show_toast("Report saved: %s" % folder.get_file())
+	_show_toast("Report saved: feedback/%s" % folder.get_file())
+
+
+## The points of [param stroke] from 0 to 1, at most MAX_REPORT_POINTS of them.
+func _report_points(stroke: PackedVector2Array, canvas_size: Vector2) -> Array:
+	var step := maxi(1, ceili(float(stroke.size()) / MAX_REPORT_POINTS))
+	var points: Array = []
+	for i: int in range(0, stroke.size(), step):
+		points.append([snappedf(stroke[i].x / canvas_size.x, 0.0001), snappedf(stroke[i].y / canvas_size.y, 0.0001)])
+	return points
 
 
 func _fail(message: String) -> void:
@@ -191,28 +244,39 @@ func _fail(message: String) -> void:
 
 
 func _show_toast(text: String) -> void:
-	_toast.text = text
+	_toast_label.text = text
 	_toast.visible = true
 	await get_tree().create_timer(TOAST_SECONDS).timeout
 	_toast.visible = false
 
 
-## Draws the boxes into the screenshot, at the scale of the picture.
-func _mark(image: Image, canvas_size: Vector2) -> void:
+## Paints the marks into the screenshot, at the scale of the picture, with a dark edge.
+func _paint_marks(image: Image, canvas_size: Vector2) -> void:
 	var scale := Vector2(image.get_size()) / canvas_size
+	var radius := STROKE_WIDTH * 0.5 * scale.x
+	for stroke: PackedVector2Array in _strokes:
+		_paint_stroke(image, stroke, scale, radius + 2.0, EDGE_COLOR)
+	for stroke: PackedVector2Array in _strokes:
+		_paint_stroke(image, stroke, scale, radius, STROKE_COLOR)
+
+
+func _paint_stroke(image: Image, stroke: PackedVector2Array, scale: Vector2, radius: float, color: Color) -> void:
+	for i: int in range(1, stroke.size()):
+		var a := stroke[i - 1] * scale
+		var b := stroke[i] * scale
+		var steps := maxi(1, ceili(a.distance_to(b) / maxf(radius * 0.5, 1.0)))
+		for s: int in steps + 1:
+			_paint_disc(image, a.lerp(b, float(s) / steps), radius, color)
+
+
+func _paint_disc(image: Image, center: Vector2, radius: float, color: Color) -> void:
 	var bounds := Rect2i(Vector2i.ZERO, image.get_size())
-	for rect: Rect2 in _boxes_list:
-		var r := Rect2i(Rect2(rect.position * scale, rect.size * scale))
-		var edges: Array[Rect2i] = [
-			Rect2i(r.position.x, r.position.y, r.size.x, BOX_WIDTH),
-			Rect2i(r.position.x, r.end.y - BOX_WIDTH, r.size.x, BOX_WIDTH),
-			Rect2i(r.position.x, r.position.y, BOX_WIDTH, r.size.y),
-			Rect2i(r.end.x - BOX_WIDTH, r.position.y, BOX_WIDTH, r.size.y),
-		]
-		for edge: Rect2i in edges:
-			var clipped := edge.intersection(bounds)
-			if clipped.has_area():
-				image.fill_rect(clipped, BOX_COLOR)
+	var r := ceili(radius)
+	for dy: int in range(-r, r + 1):
+		var half := floori(sqrt(maxf(radius * radius - dy * dy, 0.0)))
+		var row := Rect2i(roundi(center.x) - half, roundi(center.y) + dy, half * 2 + 1, 1).intersection(bounds)
+		if row.has_area():
+			image.fill_rect(row, color)
 
 
 ## The name of the nearest visible hotspot under [param point] (canvas coordinates), or "".
