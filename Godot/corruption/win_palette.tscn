@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/win_palette.gd" id="1_script"]
+
+[node name="WinPalette" type="Node"]
+script = ExtResource("1_script")
+title = "The colours drift towards Windows shades"
+stages = 3

@@ -1,6 +1,6 @@
-// The PSX look on a whole picture: an optional vignette, a 4 x 4 ordered dither, then fewer
-// colours. Put it in the material of the SubViewportContainer that shows the 3D world, or of a
-// TextureRect (a portrait).
+// The PSX look on a whole picture: an optional vignette, an optional drift towards the Windows
+// colours, a 4 x 4 ordered dither, then fewer colours. Put it in the material of the
+// SubViewportContainer that shows the 3D world, or of a TextureRect (a portrait).
 // Set the node's texture_filter to Nearest. With a palette, each pixel takes the nearest palette
 // colour instead of the colour cut.
 shader_type canvas_item;
@@ -17,12 +17,21 @@ uniform float dither : hint_range(0.0, 2.0) = 1.0;
 uniform float vignette : hint_range(0.0, 1.0) = 0.0;
 /** Where the darkening starts, as a share of the distance from the centre to a corner. */
 uniform float vignette_start : hint_range(0.0, 1.0) = 0.4;
+/** How far the colours drift towards the 16 colours of Windows 95: 0 = no change, 1 = only those. */
+uniform float windows_shades : hint_range(0.0, 1.0) = 0.0;
 
 const float BAYER[16] = float[16](
 	0.0, 8.0, 2.0, 10.0,
 	12.0, 4.0, 14.0, 6.0,
 	3.0, 11.0, 1.0, 9.0,
 	15.0, 7.0, 13.0, 5.0);
+
+// The 16 colours of VGA, the Windows 95 palette.
+const vec3 WINDOWS_COLORS[16] = vec3[16](
+	vec3(0.0), vec3(0.5, 0.0, 0.0), vec3(0.0, 0.5, 0.0), vec3(0.5, 0.5, 0.0),
+	vec3(0.0, 0.0, 0.5), vec3(0.5, 0.0, 0.5), vec3(0.0, 0.5, 0.5), vec3(0.75),
+	vec3(0.5), vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(1.0, 1.0, 0.0),
+	vec3(0.0, 0.0, 1.0), vec3(1.0, 0.0, 1.0), vec3(0.0, 1.0, 1.0), vec3(1.0));
 
 vec3 nearest_palette_color(vec3 c) {
 	vec3 best = c;
@@ -38,6 +47,19 @@ vec3 nearest_palette_color(vec3 c) {
 	return best;
 }
 
+vec3 nearest_windows_color(vec3 c) {
+	vec3 best = WINDOWS_COLORS[0];
+	float best_distance = 1.0e9;
+	for (int i = 0; i < 16; i++) {
+		vec3 d = c - WINDOWS_COLORS[i];
+		if (dot(d, d) < best_distance) {
+			best_distance = dot(d, d);
+			best = WINDOWS_COLORS[i];
+		}
+	}
+	return best;
+}
+
 void fragment() {
 	vec4 source = texture(TEXTURE, UV);
 	float from_centre = length(UV - 0.5) / length(vec2(0.5));
@@ -45,6 +67,8 @@ void fragment() {
 	// The pattern follows the pixels of the source picture, so it scales up with the picture.
 	ivec2 cell = ivec2(floor(UV / TEXTURE_PIXEL_SIZE)) % 4;
 	float offset = (BAYER[cell.y * 4 + cell.x] + 0.5) / 16.0 - 0.5;
+	// The drift dithers between the Windows colours, as a 16-colour picture does.
+	source.rgb = mix(source.rgb, nearest_windows_color(source.rgb + offset * 0.25), windows_shades);
 	vec3 c;
 	if (palette_size > 0) {
 		c = nearest_palette_color(source.rgb + offset * dither / float(palette_size));
