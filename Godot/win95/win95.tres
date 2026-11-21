@@ -664,6 +664,10 @@ kind = 8
 palette = ExtResource("palette")
 expand_margin_bottom = -1.0
 
+[sub_resource type="AtlasTexture" id="caption_help"]
+atlas = ExtResource("atlas")
+region = Rect2(100, 41, 6, 9)
+
 [resource]
 default_font = ExtResource("font_regular")
 default_font_size = 12
@@ -687,6 +691,14 @@ CaptionCloseButton/styles/hover = SubResource("caption")
 CaptionCloseButton/styles/hover_pressed = SubResource("caption_pressed")
 CaptionCloseButton/styles/normal = SubResource("caption")
 CaptionCloseButton/styles/pressed = SubResource("caption_pressed")
+CaptionHelpButton/base_type = &"Button"
+CaptionHelpButton/icons/icon = SubResource("caption_help")
+CaptionHelpButton/styles/disabled = SubResource("caption")
+CaptionHelpButton/styles/focus = SubResource("no_focus")
+CaptionHelpButton/styles/hover = SubResource("caption")
+CaptionHelpButton/styles/hover_pressed = SubResource("caption_pressed")
+CaptionHelpButton/styles/normal = SubResource("caption")
+CaptionHelpButton/styles/pressed = SubResource("caption_pressed")
 CaptionMaximizeButton/base_type = &"Button"
 CaptionMaximizeButton/icons/icon = SubResource("caption_maximize")
 CaptionMaximizeButton/styles/disabled = SubResource("caption")
