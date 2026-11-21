@@ -9,7 +9,26 @@ var customer: Customer
 var slot: int = 0
 ## Counts up with each drop-off, across days: a lower order is an older job.
 var order: int = 0
-var hardware_fixed: bool = false
+## The pieces in the computer, one per Part; a part that is out has no key.
+var places: Dictionary[Part, Piece] = {}
+## The pieces that the player took out and put down on the mat beside the computer.
+var mat: Array[Piece] = []
+## The side panel is off and the computer lies open in the Workview.
+var case_open: bool = false
+## True when every place holds a piece, none is broken, and the case is closed. Setting it is for
+## restore, the presets and the debug menu: true repairs the computer, false breaks the problem's
+## part again.
+var hardware_fixed: bool:
+	get:
+		if case_open:
+			return false
+		for part: Part in Part.every():
+			if not places.has(part) or places[part].broken:
+				return false
+		return true
+	set(value):
+		_fill(not value)
+		case_open = false
 var software_fixed: bool = false
 ## The computer is switched on.
 var powered: bool = false
@@ -39,6 +58,20 @@ func _init(job_customer: Customer, job_slot: int, job_order: int) -> void:
 	customer = job_customer
 	slot = job_slot
 	order = job_order
+	_fill(true)
+
+
+## The piece in the place of [param part], or null when that place is empty.
+func piece(part: Part) -> Piece:
+	return places.get(part)
+
+
+# Puts a piece in every place; the problem's broken part breaks when [param break_part] is true.
+func _fill(break_part: bool) -> void:
+	places.clear()
+	var broken_part: Part = customer.problem.broken_part if customer.problem != null else null
+	for part: Part in Part.every():
+		places[part] = Piece.new(part, break_part and part == broken_part)
 
 
 ## The job as plain data, for the F9 report.
@@ -52,4 +85,27 @@ func snapshot() -> Dictionary:
 		"software_fixed": software_fixed,
 		"powered": powered,
 		"post_it_ticked": post_it_ticked,
+		"case_open": case_open,
+		"parts": Job.pieces_data(places.values()),
+		"mat": Job.pieces_data(mat),
 	}
+
+
+## [param pieces] as plain data: "<part id>" for a working piece, "<part id>!" for a broken one.
+static func pieces_data(pieces: Array) -> Array[String]:
+	var data: Array[String] = []
+	for each: Piece in pieces:
+		data.append(String(each.part.id()) + ("!" if each.broken else ""))
+	return data
+
+
+## The pieces that [param data] names (see [method pieces_data]), or an error message.
+static func pieces_from(data: Array) -> Variant:
+	var pieces: Array[Piece] = []
+	for entry: Variant in data:
+		var text := str(entry)
+		var part_id := StringName(text.trim_suffix("!"))
+		if part_id not in Part.IDS:
+			return "no part '%s'" % part_id
+		pieces.append(Piece.new(load("res://parts/%s.tres" % part_id), text.ends_with("!")))
+	return pieces

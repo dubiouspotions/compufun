@@ -1,10 +1,12 @@
 [gd_resource type="Resource" script_class="Problem" format=3]
 
 [ext_resource type="Script" path="res://problems/problem.gd" id="1_2cyam"]
+[ext_resource type="Resource" path="res://parts/fan.tres" id="9_fan"]
 
 [resource]
 script = ExtResource("1_2cyam")
 short_name = &"dust_overheat"
+broken_part = ExtResource("9_fan")
 perceived_issue = "Windows starts and turns off"
 symptoms = PackedStringArray("Windows starts booting but the computer turns off (heat warning?)", "The fan is full of dust")
 hardware_steps = PackedStringArray("Remove the computer shell", "Remove the fan, throw it in the trash", "Get a new fan from storage", "Install the fan", "Remount the shell")

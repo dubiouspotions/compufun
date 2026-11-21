@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="Part" format=3]
+
+[ext_resource type="Script" path="res://parts/part.gd" id="1_part"]
+
+[resource]
+script = ExtResource("1_part")
+display_name = "Motherboard"

@@ -13,6 +13,9 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 @export var location: Location = Location.HARDWARE
 ## The symptoms. Their combination is unique to this problem.
 @export var symptoms: PackedStringArray = []
+## The part that is broken, for a hardware problem: the player must replace it. null for a
+## software problem.
+@export var broken_part: Part
 @export var hardware_steps: PackedStringArray = []
 @export var software_steps: PackedStringArray = []
 ## How the problem breaks the computer's Win95 setup and when that is fixed; null when the problem
