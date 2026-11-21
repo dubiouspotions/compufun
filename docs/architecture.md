@@ -22,6 +22,7 @@ Godot/               the Godot project: everything the game loads
   rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying open in the Workview), bench.tscn (the bench screen, keyboard and VGA cable), their meshes and textures
   people/<name>/     person.tres, portrait_<pose>.png, face.png
   customers/         one .tres per customer, customer_body.tscn, job.gd (one computer on the counter)
+  customers/<name>/  the pictures in that customer's files, such as pierre/castle_01.png
   voices/            one .wav per customer line, rendered by Chimera; voices.gd names and renders them
   voices/moods/      the mood of each pose (VoiceMood): the speed, pitch and pitch swing of the voice
   voices/live/       the live voice: live_voice.js (web), the dictionary; tools/build-voice.sh adds the wasm, the libraries and the .gdextension
@@ -35,7 +36,7 @@ Godot/               the Godot project: everything the game loads
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
 feedback/            the F9 reports (outside Godot, so Godot does not import them)
-tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; chimera-moods.patch
+tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; make_castle_renders.py renders Pierre's castle pictures; chimera-moods.patch
 wiki/                the GitHub wiki, cloned by tools/sync-wiki.sh (ignored by the repo)
 docs/                the rules for people and agents: this code layout, code standard, build, gotchas, glossary
 .github/workflows/   CI: tests and export on push, itch.io deploy, Discord notifications

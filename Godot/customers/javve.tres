@@ -38,16 +38,34 @@ lines = Array[ExtResource("dl")]([SubResource("DialogueLine_1")])
 script = ExtResource("2_egn44")
 name = "demo final.mid"
 icon = ExtResource("3_aw2vg")
+modified = "Monday, May 20, 1996 11:48:26 PM"
 
 [sub_resource type="Resource" id="Resource_skkob"]
 script = ExtResource("2_egn44")
 name = "demo final 2.mid"
 icon = ExtResource("3_aw2vg")
+modified = "Sunday, May 26, 1996 12:15:03 AM"
 
 [sub_resource type="Resource" id="Resource_1wfhb"]
 script = ExtResource("2_egn44")
 name = "lyrics.txt"
 icon = ExtResource("4_qsrht")
+contents = "DIAL TONE HEART (demo final)
+
+I call you up at two a.m.
+The line goes beep, and beep again.
+You never pick up, you never do.
+I leave the modem on for you.
+
+  Dial tone heart, dial tone heart,
+  static where we fell apart.
+  I hear you in the hum, I hear you in the dark,
+  nothing on the line but my dial tone heart.
+
+Verse 2: ??? (Lisa has ideas)
+Bridge: la la la (FIX THIS)
+"
+modified = "Tuesday, May 28, 1996 1:33:09 AM"
 
 [sub_resource type="Resource" id="Resource_r3t4y"]
 script = ExtResource("2_egn44")
@@ -59,58 +77,117 @@ is_folder = true
 script = ExtResource("2_egn44")
 name = "WIN.INI"
 icon = ExtResource("6_m26x5")
+contents = "[windows]
+load=
+run=
+NullPort=None
+device=
+
+[Desktop]
+TileWallpaper=0
+WallpaperStyle=0
+
+[intl]
+iCountry=46
+sCountry=Sweden
+sLanguage=sve
+
+[extensions]
+txt=notepad.exe ^.txt
+ini=notepad.exe ^.ini
+bmp=pbrush.exe ^.bmp
+
+[mci extensions]
+mid=Sequencer
+wav=WaveAudio
+"
+modified = "Saturday, October 21, 1995 4:04:37 PM"
 
 [sub_resource type="Resource" id="Resource_irgbr"]
 script = ExtResource("2_egn44")
 name = "SYSTEM.INI"
 icon = ExtResource("6_m26x5")
+contents = "[boot]
+shell=Explorer.exe
+system.drv=system.drv
+drivers=mmsystem.dll power.drv
+display.drv=pnpdrvr.drv
+mouse.drv=mouse.drv
+keyboard.drv=keyboard.drv
+
+[boot.description]
+keyboard.typ=Standard 101/102-Key or Microsoft Natural Keyboard
+mouse.drv=Standard mouse
+display.drv=Standard Display Adapter (VGA)
+
+[386Enh]
+ebios=*ebios
+woafont=dosapp.fon
+device=*vmouse
+device=*vshare
+keyboard=*vkd
+display=*vdd,*vflatd
+
+[drivers]
+wave=sb16snd.drv
+midimapper=midimap.drv
+"
+modified = "Saturday, October 21, 1995 3:47:19 PM"
 
 [sub_resource type="Resource" id="Program_inbox"]
 script = ExtResource("2_egn44")
 name = "EXCHNG32.EXE"
 icon = ExtResource("application_icon")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_inbox")
 
 [sub_resource type="Resource" id="Program_volume_control"]
 script = ExtResource("2_egn44")
 name = "SNDVOL32.EXE"
 icon = ExtResource("application_icon")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_volume_control")
 
 [sub_resource type="Resource" id="Program_defrag"]
 script = ExtResource("2_egn44")
 name = "DEFRAG.EXE"
 icon = ExtResource("application_icon")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_defrag")
 
 [sub_resource type="Resource" id="Program_ms_dos_prompt"]
 script = ExtResource("2_egn44")
 name = "COMMAND.COM"
 icon = ExtResource("application_icon")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_ms_dos_prompt")
 
 [sub_resource type="Resource" id="Program_notepad"]
 script = ExtResource("2_egn44")
 name = "NOTEPAD.EXE"
 icon = ExtResource("application_icon")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_notepad")
 
 [sub_resource type="Resource" id="Program_wordpad"]
 script = ExtResource("2_egn44")
 name = "WORDPAD.EXE"
 icon = ExtResource("application_icon")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_wordpad")
 
 [sub_resource type="Resource" id="Program_paint"]
 script = ExtResource("2_egn44")
 name = "PBRUSH.EXE"
 icon = ExtResource("application_icon")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_paint")
 
 [sub_resource type="Resource" id="Program_calculator"]
 script = ExtResource("2_egn44")
 name = "CALC.EXE"
 icon = ExtResource("application_icon")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_calculator")
 
 [sub_resource type="Resource" id="Resource_46tg0"]
@@ -124,11 +201,22 @@ children = Array[Resource]([SubResource("Resource_r3t4y"), SubResource("Resource
 script = ExtResource("2_egn44")
 name = "setlist.txt"
 icon = ExtResource("4_qsrht")
+contents = "SETLIST - Thursday rehearsal
+
+1. Dial Tone Heart
+2. Farsta Nights
+3. Save As
+4. Lisa's song (no name yet)
+5. General Protection Fault (slow version)
+6. Dial Tone Heart again, if there's time
+"
+modified = "Monday, May 27, 1996 8:10:41 PM"
 
 [sub_resource type="Resource" id="Resource_mfpdg"]
 script = ExtResource("2_egn44")
 name = "rehearsal.wav"
 icon = ExtResource("3_aw2vg")
+modified = "Saturday, May 18, 1996 6:02:55 PM"
 
 [sub_resource type="Resource" id="Resource_17xmd"]
 script = ExtResource("2_egn44")
