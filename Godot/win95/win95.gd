@@ -18,6 +18,9 @@ const _SHARED_PALETTE := preload("res://win95/theme/palette.tres")
 const _ICONS := "res://win95/theme/icons/"
 ## The meta key on a FileIcon that holds its Win95File.
 const _FILE_META := &"win95_file"
+## The View submenu's items: action id to folder view and label.
+const _VIEW_IDS := {&"large_icons": [IconView.FolderView.LARGE_ICONS, "Large Icons"], &"small_icons": [IconView.FolderView.SMALL_ICONS, "Small Icons"],
+	&"list": [IconView.FolderView.LIST, "List"], &"details": [IconView.FolderView.DETAILS, "Details"]}
 
 ## What an icon view shows: the desktop, a folder, drive C, My Computer or the Recycle Bin.
 class Listing:
@@ -201,6 +204,7 @@ func _fill(view: IconView) -> void:
 		item.name_edited.connect(func(_old: String, new_text: String) -> void: _state.rename_file(file, new_text))
 		item.selected = keep.has(file)
 		item.stub = ComputerState.is_program_name(file.name) and file.program == null
+		item.details = FileDetails.cells(listing.kind, file, _state)
 		if file == focused:
 			view.set_focus_item(item)
 		added.append(item)
@@ -229,16 +233,17 @@ func _wire_view(view: IconView) -> void:
 
 func _open_item(item: FileIcon) -> void:
 	var file := _file_of(item)
+	var folder_view := (item.get_parent() as IconView).folder_view
 	if item.name == &"MyComputer":
-		_show(Listing.new("My Computer", load(_ICONS + "my_computer_32.png"), &"my_computer", func() -> Array: return _drives, false, &"my_computer"))
+		_show(Listing.new("My Computer", load(_ICONS + "my_computer_32.png"), &"my_computer", func() -> Array: return _drives, false, &"my_computer"), folder_view)
 	elif item.name == &"RecycleBin":
-		_show(Listing.new("Recycle Bin", _BIN_EMPTY, &"recycle_bin", func() -> Array: return _state.setup.recycle_bin, false, &"recycle_bin"))
+		_show(Listing.new("Recycle Bin", _BIN_EMPTY, &"recycle_bin", func() -> Array: return _state.setup.recycle_bin, false, &"recycle_bin"), folder_view)
 	elif file == null or _listing_of_item(item).kind == &"recycle_bin":
 		return
 	elif file == _drive_c:
-		_show(Listing.new("(C:)", file.icon, &"folder", func() -> Array: return _state.setup.drive_c, true, &"drive_c"))
+		_show(Listing.new("(C:)", file.icon, &"folder", func() -> Array: return _state.setup.drive_c, true, &"drive_c"), folder_view)
 	elif file.is_folder:
-		_show(Listing.new(file.name, file.icon, &"folder", func() -> Array: return file.children, not _drives.has(file), file))
+		_show(Listing.new(file.name, file.icon, &"folder", func() -> Array: return file.children, not _drives.has(file), file), folder_view)
 	else:
 		open_file(file)
 
@@ -288,7 +293,8 @@ func _listing_of_item(item: FileIcon) -> Listing:
 	return _listings.get(item.get_parent() as IconView)
 
 
-func _show(listing: Listing) -> void:
+# A new window takes the folder view of the window that opened it, as in Win95.
+func _show(listing: Listing, folder_view: IconView.FolderView) -> void:
 	if _state.setup.fragmented:
 		await get_tree().create_timer(_FRAGMENTED_OPEN_SECONDS).timeout  # the disk seeks all over
 	for view: IconView in _listings.keys():
@@ -305,6 +311,8 @@ func _show(listing: Listing) -> void:
 		_listings.erase(view)
 		window.queue_free())
 	_listings[view] = listing
+	view.columns = FileDetails.columns(listing.kind)
+	view.folder_view = folder_view
 	_fill(view)
 
 
@@ -318,7 +326,7 @@ func _entries_for(view: IconView, item: FileIcon) -> Array[ContextMenu.Entry]:
 	var listing: Listing = _listings[view]
 	var properties := ContextMenu.item("Properties", &"properties")
 	if item == null:
-		return _background_entries(listing)
+		return _background_entries(listing, view)
 	var multi := view.selected_items().size() > 1
 	if listing.kind == &"recycle_bin":
 		return _entries([["Restore", &"restore"], [], ["Cut"], [], ["Delete", &"purge"], [], properties])
@@ -348,9 +356,12 @@ func _entries_for(view: IconView, item: FileIcon) -> Array[ContextMenu.Entry]:
 	return entries
 
 
-func _background_entries(listing: Listing) -> Array[ContextMenu.Entry]:
+func _background_entries(listing: Listing, view: IconView) -> Array[ContextMenu.Entry]:
 	var arrange := ContextMenu.submenu("Arrange Icons", _entries([["by Name"], ["by Type"], ["by Size"], ["by Date"], [], ["Auto Arrange"]]))
-	var view_menu := ContextMenu.submenu("View", _entries([ContextMenu.item("Large Icons", &"", false, false, true), ["Small Icons"], ["List"], ["Details"]]))
+	var views: Array[ContextMenu.Entry] = []
+	for id: StringName in _VIEW_IDS:
+		views.append(ContextMenu.item(_VIEW_IDS[id][1], id, false, false, view.folder_view == _VIEW_IDS[id][0]))
+	var view_menu := ContextMenu.submenu("View", views)
 	var new_menu := ContextMenu.submenu("New", _entries([["Folder", &"new_folder"], ["Shortcut"], [], ["Text Document"], ["WordPad Document"], ["Bitmap Image"], ["Wave Sound"]]))
 	var paste := ContextMenu.item("Paste", &"", false, true)
 	var paste_shortcut := ContextMenu.item("Paste Shortcut", &"", false, true)
@@ -387,6 +398,9 @@ func _on_action(id: StringName) -> void:
 	var item := _context_item if is_instance_valid(_context_item) else null
 	var listing: Listing = _listings[view]
 	var files := _files(view.selected_items())
+	if _VIEW_IDS.has(id):
+		view.folder_view = _VIEW_IDS[id][0]
+		return
 	match id:
 		&"open":
 			for selected in view.selected_items():

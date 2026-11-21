@@ -39,6 +39,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Running copy**: The `Win95Setup` that a computer runs, copied from its Win95 setup at the first boot and kept by `Game` for the whole game. The player's changes and the problems' breaks land here.
 *Avoid:* live setup, save state.
 
+**Folder view**: How a Win95 folder window lays out its icons: Large Icons, Small Icons, List or Details, as its View menu names them (`IconView.folder_view`). Each window has its own; a folder opens in the folder view of the window that opened it.
+*Avoid:* view (a point of view in a room), view mode, display mode.
+
 **Report**: One F9 feedback report: a folder in `feedback/` with `shot.png` and `report.json`.
 *Avoid:* ticket, bug report, feedback file.
 
