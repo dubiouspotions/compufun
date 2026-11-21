@@ -1,0 +1,70 @@
+[gd_scene format=3 uid="uid://bxpxy4dr04bri"]
+
+[ext_resource type="Theme" uid="uid://cg0mcpaggb3c5" path="res://win95/win95.tres" id="1_cq1mh"]
+[ext_resource type="Texture2D" uid="uid://dy2k4ui5xt3mp" path="res://win95/wallpapers/win95-default.png" id="2_d5dma"]
+[ext_resource type="FontFile" uid="uid://foknlu6tjkl7" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="3_j3aih"]
+[ext_resource type="Texture2D" uid="uid://e7gvt0vfnhnb" path="res://win95/theme/icons/29.png" id="4_d5dma"]
+[ext_resource type="Texture2D" uid="uid://0qcpslabqpsq" path="res://win95/theme/icons/30.png" id="5_7q2i6"]
+
+[node name="Win95" type="Control" unique_id=1752664516]
+texture_filter = 1
+custom_minimum_size = Vector2(800, 600)
+custom_maximum_size = Vector2(800, 600)
+layout_mode = 3
+anchors_preset = 0
+theme = ExtResource("1_cq1mh")
+
+[node name="Desktop" type="Control" parent="." unique_id=2083738143]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DesktopBackground" type="TextureRect" parent="Desktop" unique_id=1777346285]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_d5dma")
+stretch_mode = 5
+
+[node name="TaskBar" type="PanelContainer" parent="." unique_id=492109658]
+custom_minimum_size = Vector2(0, 28)
+custom_maximum_size = Vector2(-1, 28)
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -2.0
+offset_top = -28.0
+offset_right = 2.0
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TaskBar" unique_id=158504101]
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="TaskBar/HBoxContainer" unique_id=790930874]
+layout_mode = 2
+theme_override_constants/icon_max_width = 18
+theme_override_fonts/font = ExtResource("3_j3aih")
+toggle_mode = true
+text = "Start	"
+icon = ExtResource("4_d5dma")
+alignment = 0
+
+[node name="SomeApp" type="Button" parent="TaskBar/HBoxContainer" unique_id=1496803715]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+theme_override_constants/icon_max_width = 18
+toggle_mode = true
+button_pressed = true
+text = "Nevyn's App"
+icon = ExtResource("5_7q2i6")
+alignment = 0
