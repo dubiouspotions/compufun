@@ -112,7 +112,10 @@ func _open_on(at: Vector2, entries: Array[Entry], screen: Vector2) -> void:
 		corner.x = maxf(0.0, at.x - full.x)
 	if corner.y + full.y > screen.y:
 		corner.y = maxf(0.0, at.y - full.y)
+	if get_parent() is Control and not visible:
+		PopupCatcher.attach(self, get_parent())
 	popup(Rect2i(Vector2i(corner), Vector2i(full)))
+	grab_focus()  # a popup closes when it loses focus, so it must have it to begin with
 	_rows.grab_focus.call_deferred()
 	_rows.queue_redraw()
 
