@@ -150,6 +150,11 @@ func _process(delta: float) -> void:
 	if _typing == null or _shown >= _typing.text.length():
 		_typing = null
 		set_process(false)
+		if _waiting_job() != null:
+			_type_up(_waiting_job())
+		else:
+			_column = Column.CHECKS
+			_move(0)
 	queue_redraw()
 
 
@@ -221,6 +226,13 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if key.pressed and _on_key(key):
 		get_viewport().set_input_as_handled()
+
+
+## The player opened the screen: the character types up every computer on the counter that has no
+## record yet.
+func screen_opened() -> void:
+	if _typing == null and _waiting_job() != null:
+		_type_up(_waiting_job())
 
 
 func _on_click(button: InputEventMouseButton) -> void:
