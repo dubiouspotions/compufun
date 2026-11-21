@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/shop_windows.gd" id="1_sign"]
+[ext_resource type="Texture2D" path="res://corruption/shop_windows/flag_glass.png" id="2_flag"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flag"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("2_flag")
+texture_filter = 0
+
+[node name="ShopWindows" type="Node"]
+script = ExtResource("1_sign")
+title = "The shop windows become Windows-logo windows"
+flag_glass = SubResource("StandardMaterial3D_flag")
