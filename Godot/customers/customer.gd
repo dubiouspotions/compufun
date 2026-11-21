@@ -11,6 +11,11 @@ extends Resource
 @export var computer: Computer
 ## The trousers colour of the 3D customer. It tints the denim texture.
 @export var trousers_color: Color = Color(0.46, 0.56, 0.74)
+## The hat that the 3D customer wears, such as props/cap.tscn; null for none. Match the hat in the
+## portrait. The scene's root must be a Node3D: its origin sits at the brow line in the middle of
+## the head, with -Z the way the face looks, and the hat stays above y = 0 at the front to keep the
+## face clear.
+@export var hat: PackedScene
 ## The Chimera voice that speaks this customer's lines. A change needs new voice files: run
 ## voices/render_voices.gd.
 @export_enum("male", "female", "child") var voice: String = "male"

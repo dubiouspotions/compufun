@@ -2,8 +2,9 @@ class_name CustomerBody
 extends Node3D
 ## The 3D customer: one placeholder body for all customers. It wears the person's photos: the face
 ## photo on the face, the average colour of the face photo on the skin, and the shirt from the
-## clothes portrait. The trousers take the customer's colour. It walks, with footsteps, while it moves,
-## and carries a computer in when the shop says so (carrying).
+## clothes portrait. The trousers take the customer's colour, and the head wears the customer's hat.
+## It walks, with footsteps, while it moves, and carries a computer in when the shop says so
+## (carrying).
 
 # The shirt parameters that a portrait sets; without a portrait they come from shirt_material.
 const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color", &"uv_rect", &"tint_texture",
@@ -39,6 +40,7 @@ var _skin: ShaderMaterial
 var _shirt: ShaderMaterial
 var _trousers: ShaderMaterial
 var _last_position: Vector3
+var _hat: Node3D
 
 ## True while the body carries a computer in. The shop sets it for a drop-off.
 var carrying: bool = false:
@@ -52,6 +54,7 @@ var carrying: bool = false:
 @onready var _computer: PcTower = %Computer
 @onready var _shoulder_left: Node3D = $ShoulderL
 @onready var _shoulder_right: Node3D = $ShoulderR
+@onready var _hat_mount: Node3D = %HatMount
 
 
 func _ready() -> void:
@@ -136,6 +139,27 @@ func show_customer(customer: Customer) -> void:
 			_shirt.set_shader_parameter(parameter, shirt_material.get_shader_parameter(parameter))
 	var trousers: Color = trousers_material.get_shader_parameter("albedo_color")
 	_trousers.set_shader_parameter("albedo_color", customer.trousers_color if customer != null else trousers)
+	_wear_hat(customer)
+
+
+func _wear_hat(customer: Customer) -> void:
+	if _hat != null:
+		_hat.queue_free()
+		_hat = null
+	var scene := customer.hat if customer != null else null
+	if scene == null:
+		return
+	var hat := scene.instantiate()
+	if hat == null:
+		push_error("CustomerBody: the hat %s of %s doesn't instantiate" % [scene.resource_path, customer.resource_path])
+		return
+	if not hat is Node3D:
+		push_error("CustomerBody: the hat %s of %s has a %s root, not a Node3D" % [scene.resource_path,
+			customer.resource_path, hat.get_class()])
+		hat.free()
+		return
+	_hat = hat
+	_hat_mount.add_child(_hat)
 
 
 # The uv_rect that shows the whole face photo at face_scale, centred, face_lift above the chin.
