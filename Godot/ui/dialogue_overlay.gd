@@ -1,6 +1,7 @@
 class_name DialogueOverlay
 extends Control
 ## A customer talks: their portrait, one line of a conversation at a time.
+## The portrait sways and breathes, and shakes in time with the voice.
 
 ## The player clicked OK on the last line.
 signal finished
@@ -17,11 +18,31 @@ const _HEAD_ABOVE := 0.18
 ## Hands cover the head, so the usual crown scale blows the pose up. Match the neutral portrait's height instead.
 const _MATCH_NEUTRAL_HEIGHT := "jonny/portrait_irritated03.png"
 
+## How far the portrait sways from side to side, as if keeping its balance, in degrees.
+@export_range(0.0, 5.0) var sway_degrees: float = 0.4
+## How long one sway, there and back, takes, in seconds.
+@export_range(1.0, 20.0) var sway_seconds: float = 6.0
+## How much the portrait rises with each breath, as a share of its height.
+@export_range(0.0, 0.05) var breath_rise: float = 0.005
+## How long one breath takes, in seconds.
+@export_range(1.0, 10.0) var breath_seconds: float = 3.5
+## How much the portrait stretches up with the voice at its loudest, as a share of its height.
+@export_range(0.0, 0.1) var talk_rise: float = 0.02
+## How far the portrait tips to each side with the voice at its loudest, in degrees.
+@export_range(0.0, 10.0) var talk_degrees: float = 1.2
+## How many times a second the portrait tips to and fro while the voice is loud.
+@export_range(1.0, 15.0) var talk_shakes: float = 5.0
+## How quickly the talking follows the voice's level: higher is snappier, lower is smoother.
+@export_range(1.0, 60.0) var talk_follow: float = 25.0
+
 var _customer: Customer
 var _lines: Array[DialogueLine] = []
 var _line: int = 0
 # False while the box shows its own error line, which has no voice.
 var _voiced: bool = false
+var _time: float = 0.0
+# The voice level that moves the portrait, smoothed: 0 to 1.
+var _talk: float = 0.0
 
 @onready var _name: Label = %NameLabel
 @onready var _text: Label = %LineLabel
@@ -34,6 +55,18 @@ var _voiced: bool = false
 func _ready() -> void:
 	_next.pressed.connect(_on_next)
 	_portrait_slot.resized.connect(_fit_portrait)
+
+
+func _process(delta: float) -> void:
+	if not is_visible_in_tree():
+		return
+	_time += delta
+	_talk = lerpf(_talk, _voice.level() if _voiced else 0.0, minf(delta * talk_follow, 1.0))
+	var sway := sway_degrees * sin(TAU * _time / sway_seconds)
+	var shake := talk_degrees * _talk * sin(TAU * _time * talk_shakes)
+	var breath := breath_rise * (0.5 + 0.5 * sin(TAU * _time / breath_seconds))
+	_portrait.rotation = deg_to_rad(sway + shake)
+	_portrait.scale = Vector2(1.0, 1.0 + breath + talk_rise * _talk)
 
 
 ## Starts [param conversation] of [param customer] at the first line. A null or empty
@@ -111,6 +144,8 @@ func _fit_portrait() -> void:
 	_portrait.offset_right = left + draw.x
 	_portrait.offset_top = top
 	_portrait.offset_bottom = top + draw.y
+	# Sway, breathe and talk from the hem at the bottom centre of the slot.
+	_portrait.pivot_offset = Vector2(_portrait_slot.size.x * 0.5 - left, -top)
 
 
 ## Drawn height of the neutral portrait next to [param path], in pixels. Negative when it cannot be measured.
