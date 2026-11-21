@@ -1,6 +1,6 @@
 class_name ViewNav
 extends Control
-## The turn buttons, the Back button, the view name and the status line. It shows a view marker
+## The turn buttons, the Back button and the status line. It shows a view marker
 ## and asks for view changes; it does not change the view itself.
 
 ## The player pressed a turn button, the up button or Back.
@@ -16,7 +16,6 @@ var _pulse: Tween
 @onready var _right: Button = %RightButton
 @onready var _up: Button = %UpButton
 @onready var _back: Button = %BackButton
-@onready var _view_label: Label = %ViewLabel
 @onready var _status_label: Label = %StatusLabel
 
 
@@ -35,7 +34,6 @@ func show_marker(marker: ViewMarker) -> void:
 	_up.visible = marker != null and marker.up != &""
 	_back.visible = marker != null and marker.back != &""
 	_sync_pulse(_up.visible and CeilingMouse.stage() == CeilingMouse.Stage.SQUEAKING)
-	_view_label.text = String(Game.view)
 	_status_label.text = _status_text()
 
 
