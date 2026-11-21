@@ -102,11 +102,12 @@ func _set_hovered(on: bool) -> void:
 	_sync_outline()
 
 
-# The computer lies on its side while the player works on it (in focus, in the Workview) and while it
-# is open. Its power button, power light and VGA socket turn with it.
+# The computer lies on its side while the player works on it (in focus, in the Workview); otherwise it
+# stands, open or not, so that two computers never lie over each other. Its power button, power
+# light and VGA socket turn with it.
 func _sync_case() -> void:
 	var working := Game.focus == job and Game.view == &"Workview"
-	var lying := working or job.case_open
+	var lying := working
 	_tower.visible = not lying
 	_post_it_anchor.visible = not lying
 	_open_case.visible = lying
