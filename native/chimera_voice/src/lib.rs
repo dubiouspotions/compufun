@@ -246,7 +246,7 @@ impl Speaker {
 
 /// Pulls the pitch of every planned gesture toward the nearest note of a major pentatonic scale on
 /// the line's own pitch `root` (Hz), by `amount` from 0 (speech) to 1 (on the notes), and shortens
-/// the glide between pitch targets, so the line sounds sung.
+/// the glide between pitch targets, so the line sounds sung; at 1 it steps between notes.
 fn tune(gestures: &mut [Gesture], root: f64, amount: f64) {
     const NOTES: [f64; 6] = [0.0, 2.0, 4.0, 7.0, 9.0, 12.0];
     for g in gestures.iter_mut() {
@@ -261,8 +261,9 @@ fn tune(gestures: &mut [Gesture], root: f64, amount: f64) {
         let snapped = root * 2f64.powf((octave + note) / 12.0);
         g.targets.set(ControlKey::F0, f + (snapped - f) * amount);
         if g.targets.iter().count() == 1 {
-            g.ramp_in *= 1.0 - 0.8 * amount;
-            g.ramp_out *= 1.0 - 0.8 * amount;
+            // At 1 the pitch steps from note to note, as hard autotune does.
+            g.ramp_in *= 1.0 - 0.97 * amount;
+            g.ramp_out *= 1.0 - 0.97 * amount;
         }
     }
 }
