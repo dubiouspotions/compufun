@@ -49,7 +49,8 @@ const DAY_PATH: String = "res://days/day_%d.tres"
 
 var phase: Phase = Phase.IDLE
 var day: Day
-## How many of [member Day.customers] have come in today, 0 to day.customers.size().
+## How far down [member Day.customers] today has come, 0 to day.customers.size(): every customer
+## before it came in, or stays away for good ([method is_gone]).
 var arrivals: int = 0
 ## Set by [method start_day], each arrival and [method close_shop]; the Outside shows it.
 var daypart: Daypart = Daypart.NONE
@@ -197,6 +198,32 @@ func day_numbers() -> Array[int]:
 		if ResourceLoader.exists(DAY_PATH % number):
 			found.append(number)
 	return found
+
+
+## Sends the visitor, a [member Customer.regular] customer, away for good, as the [x] of the
+## corruption sign customer_x does: they vanish at once, with every computer of theirs on the
+## counter, and never come in again, also not on a later day or for a pickup ([method is_gone]).
+## Fails with an error when nobody is in or the visitor is not regular.
+func dismiss_visitor() -> void:
+	if visitor == null or not visitor.regular:
+		push_error("Game.dismiss_visitor: the visitor is not a regular customer: %s" % (_who(visitor) if visitor != null else "nobody is in"))
+		return
+	flags[gone_flag(visitor)] = 1
+	for job: Job in jobs.filter(func(j: Job) -> bool: return j.customer == visitor):
+		_take_off_counter(job)
+	_pickup = null
+	_set_visitor(null, Visit.NONE)
+	changed.emit()
+
+
+## True when [method dismiss_visitor] sent [param who] away for good.
+func is_gone(who: Customer) -> bool:
+	return flag(gone_flag(who)) != 0
+
+
+## The flag that records that [param who] is gone for good: gone_<customer file name>.
+func gone_flag(who: Customer) -> StringName:
+	return StringName("gone_" + _id_of(who))
 
 
 ## The number of [param flag_name]; 0 when it is not set.
@@ -575,10 +602,10 @@ func hang_up() -> void:
 	changed.emit()
 
 
-## True when the shop can close: it is open, every customer of the day has come in, and nobody is
-## in it.
+## True when the shop can close: it is open, every customer of the day has come in or is gone for
+## good, and nobody is in it.
 func can_close() -> bool:
-	return phase == Phase.OPEN and day != null and arrivals >= day.customers.size() and visitor == null
+	return phase == Phase.OPEN and day != null and _next_arrival() < 0 and visitor == null
 
 
 ## Closes the shop for the night: DAY_OVER and [constant Daypart.EVENING]. Jobs stay on the counter.
@@ -679,6 +706,12 @@ func restore(state: Dictionary) -> String:
 	if new_daypart is String:
 		return _refuse(new_daypart)
 
+	var new_flags: Dictionary[StringName, int] = {}
+	var given_flags: Dictionary = state.get("flags", {})
+	for key: Variant in given_flags:
+		if int(given_flags[key]) != 0:
+			new_flags[StringName(str(key))] = int(given_flags[key])
+
 	var new_jobs: Array[Job] = []
 	var slots: Array[int] = []
 	var given_jobs: Array = state.get("jobs", [])
@@ -689,6 +722,8 @@ func restore(state: Dictionary) -> String:
 		var owner := _customer_at(str(data.get("customer", "")))
 		if owner == null or owner.problem == null:
 			return _refuse("job %d: no customer with a problem at '%s'" % [i, data.get("customer", "")])
+		if new_flags.has(gone_flag(owner)):
+			return _refuse("job %d: %s is gone for good (%s)" % [i, _who(owner), gone_flag(owner)])
 		var slot := int(data.get("slot", i))
 		if slot < 0 or slot >= MAX_JOBS or slots.has(slot):
 			return _refuse("job %d: the slot %d is taken or not 0 to %d" % [i, slot, MAX_JOBS - 1])
@@ -735,6 +770,8 @@ func restore(state: Dictionary) -> String:
 		new_visitor = _customer_at(visitor_path)
 		if new_visitor == null:
 			return _refuse("no customer at '%s'" % visitor_path)
+		if new_flags.has(gone_flag(new_visitor)):
+			return _refuse("the visitor %s is gone for good (%s)" % [_who(new_visitor), gone_flag(new_visitor)])
 	var new_visit: Variant = _enum_value(Visit, state.get("visit", "NONE" if new_visitor == null else "DROP_OFF"), "visit")
 	var new_visitor_state: Variant = _enum_value(VisitorState, state.get("visitor_state", "NONE" if new_visitor == null else "WALKING_IN"), "visitor_state")
 	for value: Variant in [new_visit, new_visitor_state]:
@@ -758,11 +795,6 @@ func restore(state: Dictionary) -> String:
 	if new_calling != null and not new_calling.fixed:
 		return _refuse("CALLING about a computer that isn't fixed")
 
-	var new_flags: Dictionary[StringName, int] = {}
-	var given_flags: Dictionary = state.get("flags", {})
-	for key: Variant in given_flags:
-		if int(given_flags[key]) != 0:
-			new_flags[StringName(str(key))] = int(given_flags[key])
 	var hand_pieces: Variant = Job.pieces_from(state.get("hand", []))
 	if hand_pieces is String:
 		return _refuse("the hand: %s" % hand_pieces)
@@ -839,14 +871,24 @@ func _restart_wait() -> void:
 
 ## Lets the next customer of the day in when one is due and the shop has room. True when one came.
 func _try_arrival() -> bool:
-	if phase != Phase.OPEN or visitor != null or jobs.size() >= MAX_JOBS or arrivals >= day.customers.size():
+	if phase != Phase.OPEN or visitor != null or jobs.size() >= MAX_JOBS:
 		return false
-	if not _arrival_due():
+	var next := _next_arrival()
+	if next < 0 or not _arrival_due():
 		return false
-	arrivals += 1
+	arrivals = next + 1
 	daypart = _daypart_of(arrivals)
-	_set_visitor(day.customers[arrivals - 1], Visit.DROP_OFF)
+	_set_visitor(day.customers[next], Visit.DROP_OFF)
 	return true
+
+
+## The index in [member Day.customers] of the next customer to come in today, past those who are
+## gone for good; -1 when none is left.
+func _next_arrival() -> int:
+	for i: int in range(arrivals, day.customers.size()):
+		if not is_gone(day.customers[i]):
+			return i
+	return -1
 
 
 ## Debug: ends the wait that runs now, so the next event comes at once: the next customer (when
@@ -862,13 +904,18 @@ func _leave() -> void:
 	if visit == Visit.DROP_OFF:
 		_drop_off(visitor)
 	elif visit == Visit.PICKUP:
-		jobs.erase(_pickup)
-		if focus == _pickup:
-			focus = null
-		if connected == _pickup:
-			connected = null
+		_take_off_counter(_pickup)
 		_pickup = null
 	visitor_state = VisitorState.WALKING_OUT
+
+
+# The computer of [param job] leaves the counter, the focus and the cable.
+func _take_off_counter(job: Job) -> void:
+	jobs.erase(job)
+	if focus == job:
+		focus = null
+	if connected == job:
+		connected = null
 
 
 func _drop_off(customer: Customer) -> void:
@@ -906,7 +953,12 @@ func _start_talk() -> void:
 
 
 func _seen_key(who: Customer, c: Conversation) -> String:
-	return "%s/%s" % [who.resource_path.get_file().get_basename(), c.id]
+	return "%s/%s" % [_id_of(who), c.id]
+
+
+## The file name of [param who], which names them in [member seen] and in the flags.
+static func _id_of(who: Customer) -> String:
+	return who.resource_path.get_file().get_basename()
 
 
 ## The daypart after [param count] arrivals: morning until the second customer, then midday, then
