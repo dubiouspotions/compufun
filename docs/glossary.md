@@ -54,6 +54,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Job**: One customer's computer on the counter, with its slot, its repair state and its post-it (`Job`, in `Game.jobs`). It stays from the drop-off to the pickup, overnight too.
 *Avoid:* order, ticket, repair.
 
+**Slot**: One of the `Game.MAX_JOBS` places on the work mat where a job's computer stands (`Job.slot`). In the scene it is a `Slot<n>` marker in `rooms/shop/job_slots.tscn`.
+*Avoid:* place, spot, position.
+
 **Visitor**: The customer who is in the shop now, to drop off or to pick up a computer (`Game.visitor`). Only one at a time.
 *Avoid:* current customer.
 

@@ -5,6 +5,9 @@ extends Node3D
 ## A hotspot asks to go to a view.
 signal view_requested(view: StringName)
 
+## The close-up of the computer in focus.
+const WORKVIEW: StringName = &"Workview"
+
 ## The seconds that the camera takes to move to another view.
 @export var turn_seconds: float = 0.35
 ## The seconds that a customer takes from the alley to the counter, and back.
@@ -16,7 +19,7 @@ signal view_requested(view: StringName)
 @onready var _views: Node3D = %Views
 @onready var _follow: PathFollow3D = %CustomerFollow
 @onready var _body: CustomerBody = %CustomerBody
-@onready var _counter_computer: Hotspot = %CounterComputer
+@onready var _job_slots: JobSlots = %JobSlots
 @onready var _bench_monitor: CrtMonitor = %BenchMonitor
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
@@ -34,6 +37,7 @@ func _ready() -> void:
 		var hotspot := node as Hotspot
 		if hotspot != null:
 			hotspot.clicked.connect(_on_hotspot_clicked)
+	_job_slots.job_clicked.connect(_on_job_clicked)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -73,9 +77,9 @@ func set_desktop_texture(texture: Texture2D) -> void:
 
 
 func _sync() -> void:
+	_job_slots.show_jobs(Game.jobs, null if Game.view == WORKVIEW else Game.focus)  # the Workview centres it already
 	if Game.view != _shown_view:
 		_move_camera(Game.view)
-	_counter_computer.set_enabled(Game.focus != null)
 	_body.visible = Game.visitor != null
 	_body.show_customer(Game.visitor)
 	var leaving := Game.visitor_state == Game.VisitorState.WALKING_OUT
@@ -140,3 +144,8 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 				Game.close_shop()
 			else:
 				_open_sign.wobble()
+
+
+func _on_job_clicked(job: Job) -> void:
+	Game.focus_job(job)
+	view_requested.emit(WORKVIEW)

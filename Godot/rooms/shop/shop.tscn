@@ -24,7 +24,7 @@
 [ext_resource type="PackedScene" path="res://props/poster.tscn" id="23_poster"]
 [ext_resource type="PackedScene" path="res://props/trash_can.tscn" id="24_trash"]
 [ext_resource type="PackedScene" path="res://props/modem.tscn" id="25_modem"]
-[ext_resource type="PackedScene" path="res://props/work_mat.tscn" id="26_workmat"]
+[ext_resource type="PackedScene" path="res://rooms/shop/job_slots.tscn" id="26_jobslots"]
 [ext_resource type="PackedScene" path="res://rooms/shop/storage.tscn" id="27_storage"]
 [ext_resource type="PackedScene" path="res://props/open_sign.tscn" id="28_open_sign"]
 [ext_resource type="AudioStream" path="res://sounds/door_bell.wav" id="29_door_bell"]
@@ -385,17 +385,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 1.25, -1.25)
 view = &"Screen"
 size = Vector3(0.46, 0.42, 0.42)
 
-[node name="WorkMat" parent="Room" instance=ExtResource("26_workmat")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 1, -1.2)
-
-[node name="CounterComputer" parent="Room" unique_id=1844475975 instance=ExtResource("13_ojat2")]
+[node name="JobSlots" parent="Room" instance=ExtResource("26_jobslots")]
 unique_name_in_owner = true
-transform = Transform3D(0.95105654, 0, -0.30901697, 0, 1, 0, 0.30901697, 0, 0.95105654, -0.55, 1.214, -1.2)
-view = &"Workview"
-size = Vector3(0.24, 0.46, 0.46)
-
-[node name="Tower" parent="Room/CounterComputer" unique_id=1682646323 instance=ExtResource("14_qg2fl")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.225, 1, -1.2)
 
 [node name="Storage" parent="Room" instance=ExtResource("27_storage")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.95, 0, 0.5)

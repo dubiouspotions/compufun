@@ -1,0 +1,35 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://rooms/shop/job_computer.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://props/pc_tower.tscn" id="2_tower"]
+[ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="3_hotspot"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_outline"]
+size = Vector3(0.22, 0.45, 0.45)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_outline"]
+resource_local_to_scene = true
+cull_mode = 1
+shading_mode = 0
+albedo_color = Color(1, 0.82, 0.2, 1)
+
+[node name="JobComputer" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Tower" parent="." instance=ExtResource("2_tower")]
+
+[node name="Outline" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0)
+visible = false
+cast_shadow = 0
+material_override = SubResource("StandardMaterial3D_outline")
+mesh = SubResource("BoxMesh_outline")
+
+[node name="Hotspot" parent="." instance=ExtResource("3_hotspot")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0)
+size = Vector3(0.24, 0.46, 0.46)
+
+[node name="PostItAnchor" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0.216)
