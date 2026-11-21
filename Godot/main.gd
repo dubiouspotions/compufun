@@ -12,7 +12,6 @@ var _dialogue_for: int = -1
 
 @onready var _shop: Shop = %Shop
 @onready var _nav: ViewNav = %ViewNav
-@onready var _post_it: PostIt = %PostIt
 @onready var _dialogue: DialogueOverlay = %DialogueOverlay
 @onready var _calling: CustomerCalling = %CustomerCalling
 @onready var _workview: WorkviewPanel = %WorkviewPanel
@@ -43,7 +42,6 @@ func _ready() -> void:
 	_shop.close_requested.connect(_end_of_day.ask)
 	_shop.degauss_requested.connect((%ScreenView as ScreenView).degauss)
 	_dialogue.finished.connect(Game.dialogue_finished)
-	_post_it.ticked.connect(Game.tick_post_it)
 	Game.changed.connect(_sync)
 	Game.start_day(first_day)
 	_sync()
@@ -111,8 +109,6 @@ func _sync() -> void:
 	_workview.visible = screen == ViewMarker.Screen.WORKVIEW
 	for view: ScreenView in _screen_views:
 		view.set_open(screen == view.screen)
-	_post_it.job = Game.focus
-	_post_it.visible = Game.focus != null
 	var talking := Game.visitor_state == Game.VisitorState.TALKING
 	var facing := talking and marker != null and marker.faces_customer
 	# Looking away hushes the line, and looking back says it again from its start.

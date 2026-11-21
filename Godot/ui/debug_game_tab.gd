@@ -2,7 +2,7 @@ extends VBoxContainer
 ## The Game tab of the debug menu: the Game state, editable. Every edit goes through
 ## Game.restore(), so the tab can set only states that restore accepts, and shows why when not.
 
-const JOB_FLAGS: Array[String] = ["hardware_fixed", "software_fixed", "powered", "post_it_ticked"]
+const JOB_FLAGS: Array[String] = ["hardware_fixed", "software_fixed", "powered"]
 
 var _status: Label
 var _rows: VBoxContainer

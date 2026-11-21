@@ -448,7 +448,7 @@ func _on_counter(job: Job, what: String) -> bool:
 
 ## The running computer of [param job] reports whether its software has the problem, after every
 ## change it makes. Unlike fix(), this can turn back to false (muting again un-fixes no_sound), and
-## then the post-it unticks. The job must be on the counter.
+## the computer is no longer ready for pickup. The job must be on the counter.
 func set_software_fixed(job: Job, fixed: bool) -> void:
 	if job == null or job not in jobs:
 		push_error("Game.set_software_fixed: the job is not on the counter: %s" % job)
@@ -456,21 +456,6 @@ func set_software_fixed(job: Job, fixed: bool) -> void:
 	if fixed == job.software_fixed:
 		return
 	job.software_fixed = fixed
-	if not job.fixed:
-		job.post_it_ticked = false  # the tick claimed a fix that is gone
-	changed.emit()
-
-
-## Ticks the post-it of [param job]. Fails with an error unless the job is on the counter and
-## [member Job.fixed].
-func tick_post_it(job: Job) -> void:
-	if job == null or job not in jobs:
-		push_error("Game.tick_post_it: the job is not on the counter: %s" % job)
-		return
-	if not job.fixed:
-		push_error("Game.tick_post_it: the job of %s is not fixed" % _who(job.customer))
-		return
-	job.post_it_ticked = true
 	changed.emit()
 
 
@@ -496,13 +481,13 @@ func _set_in(items: Array[String], item: String, present: bool) -> void:
 	changed.emit()
 
 
-## True when the phone can call: the shop is open, nobody is in it, and a post-it is ticked.
+## True when the phone can call: the shop is open, nobody is in it, and a computer is fixed.
 func can_call() -> bool:
-	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.post_it_ticked)
+	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.fixed)
 
 
 ## Calls for [constant CALL_SECONDS] (phase CALLING; CompuFunDB is offline, as the land-line cuts
-## the modem). Then the customer of the oldest ticked job walks in for a PICKUP. Does nothing when
+## the modem). Then the customer of the oldest fixed computer walks in for a PICKUP. Does nothing when
 ## [method can_call] is false.
 func call_customer() -> void:
 	if not can_call():
@@ -618,7 +603,6 @@ func restore(state: Dictionary) -> String:
 		job.hardware_fixed = bool(data.get("hardware_fixed", false))
 		job.software_fixed = bool(data.get("software_fixed", false))
 		job.powered = bool(data.get("powered", false))
-		job.post_it_ticked = bool(data.get("post_it_ticked", false))
 		for key: String in ["marked_symptoms", "ticked_repairs"]:
 			if not data.get(key, []) is Array:
 				return _refuse("job %d: %s is not a list: %s" % [i, key, data[key]])
@@ -645,8 +629,6 @@ func restore(state: Dictionary) -> String:
 			job.panel_screws.assign(panel.map(func(v: Variant) -> bool: return bool(v)))
 		if job.powered and not can_power_on(job):
 			return _refuse("job %d: a computer that is open or misses a part can't be on" % i)
-		if job.post_it_ticked and not job.fixed:
-			return _refuse("job %d: the post-it can be ticked only when the problem is fixed" % i)
 		new_jobs.append(job)
 	var new_focus: Variant = _job_in(new_jobs, int(state.get("focus_slot", -1)), "focus_slot")
 	var new_connected: Variant = _job_in(new_jobs, int(state.get("connected_slot", -1)), "connected_slot")
@@ -672,14 +654,14 @@ func restore(state: Dictionary) -> String:
 	var new_pickup: Job = null
 	var handed_over: bool = new_visitor_state == VisitorState.WALKING_OUT
 	if new_visit == Visit.PICKUP and not handed_over:
-		var ticked := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.post_it_ticked)
-		if ticked.is_empty():
-			return _refuse("%s picks up, but has no ticked job" % _who(new_visitor))
-		new_pickup = ticked[0]
+		var ready := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.fixed)
+		if ready.is_empty():
+			return _refuse("%s picks up, but has no fixed computer" % _who(new_visitor))
+		new_pickup = ready[0]
 	if new_visit == Visit.DROP_OFF and not handed_over and new_jobs.size() >= MAX_JOBS:
 		return _refuse("%s drops off, but the counter is full" % _who(new_visitor))
-	if new_phase == Phase.CALLING and not new_jobs.any(func(j: Job) -> bool: return j.post_it_ticked):
-		return _refuse("CALLING needs a ticked post-it")
+	if new_phase == Phase.CALLING and not new_jobs.any(func(j: Job) -> bool: return j.fixed):
+		return _refuse("CALLING needs a fixed computer")
 
 	var new_flags: Dictionary[StringName, int] = {}
 	var given_flags: Dictionary = state.get("flags", {})
@@ -770,12 +752,12 @@ func skip_wait() -> void:
 
 func _end_call() -> void:
 	phase = Phase.OPEN
-	var ticked := jobs.filter(func(j: Job) -> bool: return j.post_it_ticked)
-	if ticked.is_empty():
-		push_error("Game: the call ended, but no post-it is ticked")
+	var ready := jobs.filter(func(j: Job) -> bool: return j.fixed)
+	if ready.is_empty():
+		push_error("Game: the call ended, but no computer is fixed")
 	else:
-		ticked.sort_custom(func(a: Job, b: Job) -> bool: return a.order < b.order)
-		_pickup = ticked[0]
+		ready.sort_custom(func(a: Job, b: Job) -> bool: return a.order < b.order)
+		_pickup = ready[0]
 		_set_visitor(_pickup.customer, Visit.PICKUP)
 	changed.emit()
 

@@ -8,7 +8,6 @@
 [ext_resource type="PackedScene" path="res://compufun_db/compufun_db.tscn" id="6_yaehf"]
 [ext_resource type="PackedScene" path="res://ui/bench_screen.tscn" id="13_bench"]
 [ext_resource type="PackedScene" path="res://ui/workview_panel.tscn" id="7_074og"]
-[ext_resource type="PackedScene" path="res://ui/post_it.tscn" id="8_cegan"]
 [ext_resource type="PackedScene" path="res://ui/dialogue_overlay.tscn" id="9_82xsv"]
 [ext_resource type="PackedScene" path="res://ui/view_nav.tscn" id="10_getpj"]
 [ext_resource type="PackedScene" path="res://ui/debug_menu.tscn" id="11_ryguw"]
@@ -61,9 +60,6 @@ magnetize_per_second = 0.0
 [node name="WorkviewPanel" parent="UI" unique_id=1779327767 instance=ExtResource("7_074og")]
 unique_name_in_owner = true
 anchors_preset = 6
-
-[node name="PostIt" parent="UI" unique_id=1993570074 instance=ExtResource("8_cegan")]
-unique_name_in_owner = true
 
 [node name="DialogueOverlay" parent="UI" unique_id=574008241 instance=ExtResource("9_82xsv")]
 unique_name_in_owner = true

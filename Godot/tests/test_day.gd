@@ -68,21 +68,15 @@ func run() -> void:
 	game.connect_cable(job_b)
 	game.fix(Problem.Location.SOFTWARE)
 	check("B software fixed via the cable, focus stays A", [job_b.fixed, game.focus == job_a], [true, true])
-	game.tick_post_it(job_of("O1"))
-	check("an unfixed post-it does not tick", job_of("O1").post_it_ticked, false)
-	check("can't call before a tick", game.can_call(), false)
-	game.tick_post_it(job_b)
-	game.tick_post_it(job_a)
-	check("A and B ticked", [job_a.post_it_ticked, job_b.post_it_ticked], [true, true])
+	check("A and B are ready for pickup, O1 isn't", [job_a.fixed, job_b.fixed, job_of("O1").fixed], [true, true, false])
 
 	game.set_software_fixed(job_b, false)
-	check("B's software breaks again: the post-it unticks", [job_b.fixed, job_b.post_it_ticked], [false, false])
+	check("B's software breaks again: B isn't ready", [job_b.fixed, game.can_call()], [false, true])
 	game.set_software_fixed(job_b, true)
-	game.tick_post_it(job_b)
 	game.set_powered(job_a, true)
-	check("power is per job", [job_a.powered, job_b.powered, job_b.post_it_ticked], [true, false, true])
+	check("power is per job", [job_a.powered, job_b.powered, job_b.fixed], [true, false, true])
 
-	# The oldest ticked job is picked up.
+	# The oldest fixed computer is picked up.
 	check("can call", game.can_call(), true)
 	var changes: Array[int] = [0]
 	game.changed.connect(func() -> void: changes[0] += 1)

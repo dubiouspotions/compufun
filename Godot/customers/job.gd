@@ -39,8 +39,6 @@ var software_fixed: bool = false
 var powered: bool = false
 ## Game.setup_for has broken the computer's running copy as the problem says.
 var broken: bool = false
-## The player ticked Done on the post-it. Only true when [member fixed] is.
-var post_it_ticked: bool = false
 ## The symptoms that the player marked in CompuFunDB, as Problem.symptoms spells them.
 var marked_symptoms: Array[String] = []
 ## The repair steps that the player ticked in CompuFunDB, as the Problem spells them.
@@ -102,7 +100,6 @@ func snapshot() -> Dictionary:
 		"hardware_fixed": hardware_fixed,
 		"software_fixed": software_fixed,
 		"powered": powered,
-		"post_it_ticked": post_it_ticked,
 		"marked_symptoms": marked_symptoms.duplicate(),
 		"ticked_repairs": ticked_repairs.duplicate(),
 		"case_open": case_open,
