@@ -4,6 +4,10 @@ extends "res://win95/window.gd"
 
 const DIVIDE_BY_ZERO: String = "Cannot divide by zero."
 
+## Every result in a computer that runs Cambion (Computer.cambion) is this number while the
+## corruption sign corruption/calc_666.tscn is on; "" shows the true result.
+static var cambion_result: String = ""
+
 var _entry: String = "0"
 ## True when the next digit starts a new number.
 var _new_entry: bool = true
@@ -11,12 +15,16 @@ var _accumulator: float = 0.0
 ## The operator waiting for its right operand, or "".
 var _pending: String = ""
 var _error: bool = false
+var _in_cambion: bool = false
 
 @onready var _display: Label = %Display
 
 
 func _ready() -> void:
 	super()
+	var desktop := get_parent() as Win95Desktop
+	var job := desktop.computer.job if desktop != null and desktop.computer != null else null
+	_in_cambion = job != null and job.customer.computer != null and job.customer.computer.cambion
 	var keys: Array = %Keys.get_children()
 	keys.append(%Equals)
 	for button: Button in keys:
@@ -37,10 +45,13 @@ func press(key: String) -> void:
 			return
 		_entry = key if _entry == "0" and key != "." else _entry + key
 	elif key in ["+", "-", "*", "/", "="]:
-		if _pending != "" and not _new_entry:
+		var computed := _pending != "" and not _new_entry
+		if computed:
 			_accumulator = _apply(_accumulator, _pending, _entry.to_float())
 		elif _pending == "":
 			_accumulator = _entry.to_float()
+		if (computed or key == "=") and _in_cambion and cambion_result != "":
+			_accumulator = cambion_result.to_float()
 		_pending = "" if key == "=" else key
 		_new_entry = true
 		_entry = _format(_accumulator)
