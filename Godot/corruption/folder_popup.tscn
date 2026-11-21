@@ -1,0 +1,82 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/folder_popup.gd" id="1_script"]
+[ext_resource type="Theme" path="res://win95/win95.tres" id="2_theme"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="3_title_bar"]
+[ext_resource type="PackedScene" path="res://win95/file_icon.tscn" id="4_file_icon"]
+[ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="5_hotspot"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/folder_open_16.png" id="7_folder_16"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/folder_closed_32.png" id="8_folder_32"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/document_text_32.png" id="9_text_32"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_window"]
+shading_mode = 0
+texture_filter = 0
+
+[sub_resource type="QuadMesh" id="QuadMesh_window"]
+size = Vector2(1.2, 0.7)
+
+[node name="FolderPopup" type="Node3D"]
+script = ExtResource("1_script")
+title = "A folder window pops up in the shop"
+stages = 2
+
+[node name="Screen" type="SubViewport" parent="."]
+unique_name_in_owner = true
+disable_3d = true
+gui_disable_input = true
+size = Vector2i(240, 140)
+render_target_update_mode = 0
+
+[node name="Window" type="PanelContainer" parent="Screen"]
+offset_right = 240.0
+offset_bottom = 140.0
+theme = ExtResource("2_theme")
+
+[node name="VBox" type="VBoxContainer" parent="Screen/Window"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="Screen/Window/VBox" instance=ExtResource("3_title_bar")]
+layout_mode = 2
+title = "C:\\COMPUFUN"
+icon = ExtResource("7_folder_16")
+show_minimize = true
+show_maximize = true
+
+[node name="Field" type="PanelContainer" parent="Screen/Window/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_type_variation = &"FieldPanel"
+
+[node name="Items" type="HFlowContainer" parent="Screen/Window/VBox/Field"]
+layout_mode = 2
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+
+[node name="Storage" parent="Screen/Window/VBox/Field/Items" instance=ExtResource("4_file_icon")]
+layout_mode = 2
+text = "Storage"
+icon = ExtResource("8_folder_32")
+
+[node name="Customers" parent="Screen/Window/VBox/Field/Items" instance=ExtResource("4_file_icon")]
+layout_mode = 2
+text = "Customers"
+icon = ExtResource("8_folder_32")
+
+[node name="You" parent="Screen/Window/VBox/Field/Items" instance=ExtResource("4_file_icon")]
+layout_mode = 2
+text = "you.txt"
+icon = ExtResource("9_text_32")
+
+[node name="Sheet" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.99254614, 0.12186935, 0, -0.12186935, 0.99254614, 1.1, 1.7, -2)
+cast_shadow = 0
+material_override = SubResource("StandardMaterial3D_window")
+mesh = SubResource("QuadMesh_window")
+
+[node name="CloseHotspot" parent="Sheet" instance=ExtResource("5_hotspot")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.535, 0.2925, 0.02)
+size = Vector3(0.1, 0.08, 0.04)
