@@ -96,7 +96,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Computer mouse**: The part that the ceiling mouse drops (`parts/mouse.tres`). No computer has a place for it. Always say *computer mouse* for the part, so it never means the animal.
 *Avoid:* mouse (alone), peripheral.
 
-**Ceiling mouse**: The easter egg: the animal in the hole above the player that squeaks and drops the computer mouse, once in the whole game (`CeilingMouse`, the flag `ceiling_mouse`).
+**Ceiling mouse**: The easter egg, off for now (`CeilingMouse.enabled`): the animal in the hole above the player that squeaks and drops the computer mouse, once in the whole game (`CeilingMouse`, the flag `ceiling_mouse`).
 *Avoid:* rat, the mouse (alone).
 
 **Up View**: The view straight up at the ceiling, from the Main View with Up or W.
