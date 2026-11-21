@@ -17,6 +17,7 @@ Godot/               the Godot project: everything the game loads
   shaders/crt_looks/ the CRT looks: the Screen View's (crt.gdshader) and the 3D bench screen's (crt_world.gdshader)
   props/             one scene per placeholder model: crt_monitor, pc_tower, counter, shelf, part_box, ...
   props/parts/       the model of each part: motherboard, cpu, fan, ram, gpu, hard_drive
+  props/case_fronts/ the fronts of the computer cases (Computer.case_front): drive bays, floppy drives, badges
   parts/             part.gd and piece.gd, and one Part per part or place: <id>.tres (ram_1 and ram_2 are the RAM slots)
   materials/         one shared material per surface; textures/ holds the PNGs
   rooms/             hotspot.tscn and view_marker.gd, shared by all rooms

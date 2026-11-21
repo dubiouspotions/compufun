@@ -5,18 +5,10 @@
 [ext_resource type="Material" path="res://materials/power_button.tres" id="3_power"]
 [ext_resource type="Script" path="res://props/pc_tower.gd" id="4_script"]
 [ext_resource type="Material" path="res://materials/vga_blue_plastic.tres" id="6_vga"]
+[ext_resource type="PackedScene" path="res://props/case_fronts/classic.tscn" id="7_front"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_ub7ej"]
 size = Vector3(0.19, 0.42, 0.42)
-
-[sub_resource type="BoxMesh" id="BoxMesh_6m82v"]
-size = Vector3(0.15, 0.035, 0.006)
-
-[sub_resource type="BoxMesh" id="BoxMesh_7lhel"]
-size = Vector3(0.15, 0.035, 0.006)
-
-[sub_resource type="BoxMesh" id="BoxMesh_uux2d"]
-size = Vector3(0.1, 0.01, 0.006)
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_power"]
 top_radius = 0.016
@@ -43,20 +35,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0)
 material_override = ExtResource("1_gdnc6")
 mesh = SubResource("BoxMesh_ub7ej")
 
-[node name="Bay1" type="MeshInstance3D" parent="." unique_id=1841051948]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, 0.211)
-material_override = ExtResource("2_7echm")
-mesh = SubResource("BoxMesh_6m82v")
+[node name="Front" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0.21)
 
-[node name="Bay2" type="MeshInstance3D" parent="." unique_id=1611120741]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.31, 0.211)
-material_override = ExtResource("2_7echm")
-mesh = SubResource("BoxMesh_7lhel")
-
-[node name="Floppy" type="MeshInstance3D" parent="." unique_id=714635268]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0.211)
-material_override = ExtResource("2_7echm")
-mesh = SubResource("BoxMesh_uux2d")
+[node name="Classic" parent="Front" instance=ExtResource("7_front")]
 
 [node name="Power" type="MeshInstance3D" parent="." unique_id=1464632202]
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.13, 0.215)

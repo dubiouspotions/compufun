@@ -100,14 +100,15 @@ func _ready() -> void:
 	_sync()
 
 
-## Gives the outside of the case (the side panel and the front) the case material and the stickers
-## of [param computer], as PcTower.dress does for the upright tower; null keeps plain beige plastic.
-## The left side lies on the mat, so its stickers don't show.
+## Gives the outside of the case (the side panel and the front) the case material, the case front
+## and the stickers of [param computer], as PcTower.dress does for the upright tower; null keeps plain
+## beige plastic and the classic front. The left side lies on the mat, so its stickers don't show.
 func dress(computer: Computer) -> void:
 	var case_material: Material = computer.case_material if computer != null else null
 	if case_material != null:
 		for part: MeshInstance3D in _outside:
 			part.material_override = case_material
+	Computer.mount_front(computer, %Front)
 	Sticker.stick(computer.stickers if computer != null else ([] as Array[Sticker]), _sticker_faces)
 
 

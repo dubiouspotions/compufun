@@ -66,8 +66,11 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Hat**: The scene that a 3D customer wears on the head (`Customer.hat`), matching the hat in the portrait and clear of the face. `CustomerBody` puts it on the `HatMount` at the brow line. Pierre wears the cap (`props/cap.tscn`) backwards.
 *Avoid:* headwear, accessory, attachment.
 
-**Sticker**: A small picture on the front or a side of a customer's computer case (a `Sticker` in `Computer.stickers`), shown with the poster prop. A computer has any number of stickers, or none. The case material (`Computer.case_material`) and the stickers tell the computers on the counter apart.
+**Sticker**: A small picture on the front or a side of a customer's computer case (a `Sticker` in `Computer.stickers`), shown with the poster prop. A computer has any number of stickers, or none. The case material (`Computer.case_material`), the case front and the stickers tell the computers on the counter apart.
 *Avoid:* decal, label, badge.
+
+**Case front**: The drive bays, floppy drives, buttons and badges on the front of a customer's computer case (`Computer.case_front`, a scene in `props/case_fronts/`); a computer without one has the classic front. The power button, the power light and the post-it are the same on every case.
+*Avoid:* bezel, faceplate, front panel.
 
 **Week calendar**: The paper wall calendar on the pin board in the Right view (`props/week_calendar.tscn`): the month and year, then one column per day of the game with its weekday and date, Saturday and Sunday in red. Each day that has passed is crossed out; a day has passed when the shop closes for its night.
 *Avoid:* calendar prop, day counter.
