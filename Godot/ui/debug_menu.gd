@@ -1,9 +1,9 @@
 class_name DebugMenu
 extends CanvasLayer
-## The debug menu, F2 (debug builds only): the time of day, the day cycle and the rain of the
+## The debug menu, F2 (debug builds only). The World tab: the time of day, the day cycle and the rain of the
 ## Outside node in the scene (the group "outside").
 
-const PRESETS: Dictionary = {"MorningButton": Game.Daypart.MORNING, "NoonButton": Game.Daypart.MIDDAY,
+const TIME_BUTTONS: Dictionary = {"MorningButton": Game.Daypart.MORNING, "NoonButton": Game.Daypart.MIDDAY,
 	"EveningButton": Game.Daypart.EVENING, "NightButton": Game.Daypart.NIGHT}
 const DEFAULT_DAY_MINUTES: float = 10.0
 
@@ -21,8 +21,8 @@ var _outside: Outside
 func _ready() -> void:
 	_panel.visible = false
 	_slider.value_changed.connect(_on_slider)
-	for button_name: String in PRESETS:
-		(get_node("%" + button_name) as Button).pressed.connect(_on_preset.bind(PRESETS[button_name]))
+	for button_name: String in TIME_BUTTONS:
+		(get_node("%" + button_name) as Button).pressed.connect(_on_time_button.bind(TIME_BUTTONS[button_name]))
 	_cycle.toggled.connect(_on_cycle)
 	_minutes.value_changed.connect(_on_minutes)
 	_rain.toggled.connect(_on_rain)
@@ -77,7 +77,7 @@ func _on_slider(value: float) -> void:
 		_slider.set_value_no_signal(value)
 
 
-func _on_preset(daypart: int) -> void:
+func _on_time_button(daypart: int) -> void:
 	if _outside != null:
 		_on_slider(_outside.hour_of(daypart))
 
