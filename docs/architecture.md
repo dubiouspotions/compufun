@@ -1,7 +1,9 @@
 # Architecture
 
-The game is a blank Godot project so far. Update this file as structure appears: a row per
-area, and the dependency rules between them.
+The design and the target structure are in the wiki: [wiki/Architecture.md](../wiki/Architecture.md)
+(`bash tools/sync-wiki.sh` fetches it). This file holds only the repo facts that the wiki doesn't:
+the repo layout and the load-bearing build settings. Don't copy the wiki here. When the two
+disagree, the wiki wins.
 
 ## Layout
 
@@ -12,10 +14,12 @@ area, and the dependency rules between them.
 | `Godot/export_presets.cfg` | Export presets for Web, Windows, macOS and Linux. CI uses them by name. |
 | `.github/workflows/` | CI: export on push, itch.io deploy, Discord notifications. |
 | `docs/` | Documentation for people and agents; start at [index.md](index.md). |
+| `tools/` | Scripts for people and agents. `sync-wiki.sh` clones or pulls the wiki. |
+| `wiki/` | The GitHub wiki, a separate git repo. Ignored by this repo. |
 
 ## Where state lives
 
-Nothing yet.
+See "The game state and the loop" in [wiki/Architecture.md](../wiki/Architecture.md).
 
 ## Load-bearing decisions
 
