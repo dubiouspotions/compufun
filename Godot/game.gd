@@ -33,6 +33,7 @@ enum VisitorState {
 	NONE, ## Nobody is in the shop.
 	WALKING_IN, ## The visitor walks from the door to the counter.
 	TALKING, ## The visitor talks at the counter.
+	WALKING_OUT, ## The visitor has handed the computer over and walks from the counter to the door.
 }
 
 ## The places on the counter. A full counter holds back the next drop-off.
@@ -110,18 +111,28 @@ func customer_arrived() -> void:
 		return
 	visitor_state = VisitorState.TALKING
 	if visit == Visit.PICKUP and visitor.conversation(PICKUP_CONVERSATION) == null:
-		_end_visit()
+		_leave()
 	changed.emit()
 
 
 ## The dialogue calls this after its last line. A drop-off puts the computer in the first free slot
 ## (in focus if nothing is); a pickup takes its job off the counter and clears [member focus] and
-## [member connected] if they pointed at it. Then the visitor leaves.
+## [member connected] if they pointed at it. Then the visitor walks out (WALKING_OUT).
 func dialogue_finished() -> void:
 	if visitor_state != VisitorState.TALKING:
 		push_error("Game.dialogue_finished: no visitor is talking (visitor state %s)" % VisitorState.find_key(visitor_state))
 		return
-	_end_visit()
+	_leave()
+	changed.emit()
+
+
+## The room calls this when the visitor who walks out reaches the door. The visit ends, and the
+## wait for the next customer starts.
+func customer_left() -> void:
+	if visitor_state != VisitorState.WALKING_OUT:
+		push_error("Game.customer_left: no visitor is walking out (visitor state %s)" % VisitorState.find_key(visitor_state))
+		return
+	_set_visitor(null, Visit.NONE)
 	changed.emit()
 
 
@@ -296,7 +307,8 @@ func _end_call() -> void:
 	changed.emit()
 
 
-func _end_visit() -> void:
+# The visitor hands the computer over and turns to the door; they stay the visitor until they leave.
+func _leave() -> void:
 	if visit == Visit.DROP_OFF:
 		_drop_off(visitor)
 	elif visit == Visit.PICKUP:
@@ -306,7 +318,7 @@ func _end_visit() -> void:
 		if connected == _pickup:
 			connected = null
 		_pickup = null
-	_set_visitor(null, Visit.NONE)
+	visitor_state = VisitorState.WALKING_OUT
 
 
 func _drop_off(customer: Customer) -> void:

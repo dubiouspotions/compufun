@@ -7,8 +7,10 @@ signal view_requested(view: StringName)
 
 ## The seconds that the camera takes to move to another view.
 @export var turn_seconds: float = 0.35
-## The seconds that a customer takes from the alley to the counter.
+## The seconds that a customer takes from the alley to the counter, and back.
 @export var walk_seconds: float = 7.0
+## The seconds that a customer takes to turn around at the counter before walking out.
+@export var about_face_seconds: float = 0.4
 
 @onready var _camera: Camera3D = %Camera
 @onready var _views: Node3D = %Views
@@ -23,6 +25,7 @@ signal view_requested(view: StringName)
 var _shown_view: StringName = &""
 var _walking: bool = false
 var _calling: bool = false
+var _leaving: bool = false
 var _camera_tween: Tween
 
 
@@ -75,7 +78,9 @@ func _sync() -> void:
 	_counter_computer.set_enabled(Game.focus != null)
 	_body.visible = Game.visitor != null
 	_body.show_customer(Game.visitor)
-	_body.carrying = Game.visit == Game.Visit.DROP_OFF
+	var leaving := Game.visitor_state == Game.VisitorState.WALKING_OUT
+	# In with the computer on a drop-off, out with it on a pickup.
+	_body.carrying = (Game.visit == Game.Visit.DROP_OFF) != leaving
 	var walking := Game.visitor_state == Game.VisitorState.WALKING_IN
 	if walking and not _walking:
 		_walk_in()
@@ -84,6 +89,9 @@ func _sync() -> void:
 	if calling and not _calling:
 		_phone_receiver.play()
 	_calling = calling
+	if leaving and not _leaving:
+		_walk_out()
+	_leaving = leaving
 
 
 func _move_camera(view_name: StringName) -> void:
@@ -106,10 +114,19 @@ func _move_camera(view_name: StringName) -> void:
 
 func _walk_in() -> void:
 	_door_bell.play()
+	_body.rotation.y = 0.0
 	_follow.progress_ratio = 0.0
 	var tween := create_tween()
 	tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds)
 	tween.finished.connect(Game.customer_arrived)
+
+
+# The path runs from the door to the counter, so the visitor turns around and walks it backwards.
+func _walk_out() -> void:
+	var tween := create_tween()
+	tween.tween_property(_body, "rotation:y", PI, about_face_seconds)
+	tween.tween_property(_follow, "progress_ratio", 0.0, walk_seconds)
+	tween.finished.connect(Game.customer_left)
 
 
 func _on_hotspot_clicked(hotspot: Hotspot) -> void:
