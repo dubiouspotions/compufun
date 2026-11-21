@@ -28,6 +28,11 @@ it. Parse-check the scripts you changed:
 A script that uses an autoload, such as `Game`, always fails this check with "Identifier not
 found: Game": the check does not load autoloads. That line is not your error; run the scene.
 
+After a pull, a class that a teammate added (`class_name`) can be missing from the class cache, so
+every script that uses it fails with "Identifier ... not declared", and `--import` does not fix
+it. An editor scan does: open the project in the editor, or run
+`"$GODOT" --headless --editor --quit`.
+
 Then run the scene you changed, in the editor or without it: `tools/run.sh [res://scene.tscn]`
 imports and plays the main scene, or the scene you name. It refuses while the editor has the
 project open (see the gotcha about two Godot processes).
@@ -79,7 +84,8 @@ templates (Editor > Manage Export Templates).
 **Live.** `VoicePlayer` speaks each line as it plays: in the web build Chimera runs as wasm in a
 Web Worker (`voices/live/live_voice.js`), on desktop as the `ChimeraVoice` extension
 (`native/chimera_voice/`). Without them, as on a machine that has not built them, it plays the
-line's WAV, rendered as below. Build them once with Rust installed (CI builds them for every
+line's WAV, rendered as below. The Voice Lab, in the Dev menu (F3 or Cmd+3), puts every Chimera
+setting on a slider, with glitch effects, to try voices out. Build them once with Rust installed (CI builds them for every
 platform on each push):
 
 ```sh
