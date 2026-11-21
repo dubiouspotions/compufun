@@ -140,18 +140,18 @@ func _sync() -> void:
 			continue
 		var piece := job.piece(part)
 		var shown: Node3D = _shown.get(part.id())
-		if (piece != null) != (shown != null):
-			if shown != null:
-				shown.queue_free()
-				_shown.erase(part.id())
-			else:
-				_shown[part.id()] = _show_model(piece.part, place)
+		if shown != null and (piece == null or shown.get_meta(&"piece") != piece):
+			shown.queue_free()
+			_shown.erase(part.id())
+			shown = null
+		if piece != null and shown == null:
+			_shown[part.id()] = _show_model(piece, place)
 		(place.get_node("Hotspot") as Hotspot).set_enabled(active and (Game.can_take(job, part) or Game.can_put(job, part)))
 	for shown: Node3D in _mat_shown:
 		shown.queue_free()
 	_mat_shown.clear()
 	for i: int in job.mat.size():
-		_mat_shown.append(_show_model(job.mat[i].part, _spot(i)))
+		_mat_shown.append(_show_model(job.mat[i], _spot(i)))
 	for i: int in _spots.get_child_count():
 		(_spots.get_child(i).get_node("Hotspot") as Hotspot).set_enabled(active and Game.hand == null and i < job.mat.size())
 	_mat_surface.set_enabled(active and Game.hand != null)
@@ -164,11 +164,11 @@ func _spot(index: int) -> Node3D:
 	return _spots.get_child(mini(index, _spots.get_child_count() - 1)) as Node3D
 
 
-func _show_model(part: Part, where: Node3D) -> Node3D:
-	if part.model == null:
-		push_error("OpenCase: %s has no model" % part.resource_path)
+func _show_model(piece: Piece, where: Node3D) -> Node3D:
+	var model := piece.make_model()
+	if model == null:
 		return null
-	var model := part.model.instantiate() as Node3D
+	model.set_meta(&"piece", piece)
 	where.add_child(model)
 	return model
 

@@ -201,10 +201,9 @@ func _hold(piece: Piece) -> void:
 	_lowered = 1.0
 	_lowering_to = -1.0
 	_process(0.0)
-	if _held.part.model == null:
-		push_error("Hand: %s has no model" % _held.part.resource_path)
+	_model = _held.make_model()
+	if _model == null:
 		return
-	_model = _held.part.model.instantiate() as Node3D
 	_holder.add_child(_model)
 	# So close to the camera, the room's lights would throw a huge shadow of the part.
 	for mesh: Node in _model.find_children("*", "MeshInstance3D", true, false):

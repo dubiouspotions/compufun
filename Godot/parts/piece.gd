@@ -10,3 +10,16 @@ var broken: bool = false
 func _init(piece_part: Part, piece_broken: bool = false) -> void:
 	part = piece_part
 	broken = piece_broken
+
+
+## A new instance of the part's [member Part.model], its Broken child shown only when this piece is
+## broken (see [member Part.model]). null, with an error, when the part has no model.
+func make_model() -> Node3D:
+	if part.model == null:
+		push_error("Piece: %s has no model" % part.resource_path)
+		return null
+	var model := part.model.instantiate() as Node3D
+	var broken_look := model.get_node_or_null(^"Broken") as Node3D
+	if broken_look != null:
+		broken_look.visible = broken
+	return model

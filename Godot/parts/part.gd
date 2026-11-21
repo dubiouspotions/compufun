@@ -15,7 +15,8 @@ const IDS: Array[StringName] = [&"motherboard", &"cpu", &"fan", &"ram_1", &"ram_
 ## null: the part sits in the case itself.
 @export var sits_on: Part
 ## The 3D model: in the computer, on the mat and on its storage box. Flat side down, origin at the
-## bottom centre.
+## bottom centre. An optional child named Broken, hidden in the scene, is how a broken piece looks,
+## such as the fan's dust; [method Piece.make_model] shows it.
 @export var model: PackedScene
 ## For a place: the part whose pieces go in it, when that is another part, as a RAM slot takes RAM.
 ## null: this part's own pieces.
@@ -43,7 +44,7 @@ static func named(part_id: StringName) -> Part:
 	return load(path) as Part if ResourceLoader.exists(path) else null
 
 
-## The box around the meshes of [param model], an instance of a part's [member model], in the
+## The box around the shown meshes of [param model], an instance of a part's [member model], in the
 ## model's own space.
 static func bounds(model: Node3D) -> AABB:
 	var box := AABB()
@@ -51,10 +52,14 @@ static func bounds(model: Node3D) -> AABB:
 	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
 		var mesh := node as MeshInstance3D
 		var to_model := mesh.transform
+		var shown := mesh.visible
 		var above := mesh.get_parent() as Node3D
 		while above != null and above != model:
 			to_model = above.transform * to_model
+			shown = shown and above.visible
 			above = above.get_parent() as Node3D
+		if not shown:
+			continue
 		var mesh_box: AABB = to_model * mesh.get_aabb()
 		box = mesh_box if first else box.merge(mesh_box)
 		first = false

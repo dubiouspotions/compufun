@@ -4,6 +4,7 @@
 [ext_resource type="Material" path="res://materials/rubber.tres" id="2_0a0wj"]
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="3_78ofj"]
 [ext_resource type="Material" path="res://materials/beige_plastic.tres" id="4_ws6xp"]
+[ext_resource type="Material" path="res://materials/dust.tres" id="5_dust"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_ohcte"]
 size = Vector3(0.06, 0.006, 0.06)
@@ -42,6 +43,22 @@ bottom_radius = 0.009
 height = 0.006
 radial_segments = 8
 rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_dust_cake"]
+top_radius = 0.026
+bottom_radius = 0.029
+height = 0.007
+radial_segments = 10
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_dust_fins"]
+size = Vector3(0.068, 0.016, 0.056)
+
+[sub_resource type="SphereMesh" id="SphereMesh_dust_clump"]
+radius = 0.013
+height = 0.014
+radial_segments = 6
+rings = 3
 
 [node name="Fan" type="Node3D" unique_id=297887095]
 
@@ -94,3 +111,36 @@ mesh = SubResource("CylinderMesh_le4xs")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.041, 0)
 material_override = ExtResource("4_ws6xp")
 mesh = SubResource("CylinderMesh_xdd4e")
+
+[node name="Broken" type="Node3D" parent="."]
+visible = false
+
+[node name="Cake" type="MeshInstance3D" parent="Broken"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0415, 0)
+material_override = ExtResource("5_dust")
+mesh = SubResource("CylinderMesh_dust_cake")
+
+[node name="Fins" type="MeshInstance3D" parent="Broken"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.016, 0)
+material_override = ExtResource("5_dust")
+mesh = SubResource("BoxMesh_dust_fins")
+
+[node name="Clump0" type="MeshInstance3D" parent="Broken"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.026, 0.04, 0.024)
+material_override = ExtResource("5_dust")
+mesh = SubResource("SphereMesh_dust_clump")
+
+[node name="Clump1" type="MeshInstance3D" parent="Broken"]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 1.2, -0.031, 0.034, -0.008)
+material_override = ExtResource("5_dust")
+mesh = SubResource("SphereMesh_dust_clump")
+
+[node name="Clump2" type="MeshInstance3D" parent="Broken"]
+transform = Transform3D(0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, 0.008, 0.046, -0.014)
+material_override = ExtResource("5_dust")
+mesh = SubResource("SphereMesh_dust_clump")
+
+[node name="Clump3" type="MeshInstance3D" parent="Broken"]
+transform = Transform3D(1.1, 0, 0, 0, 0.6, 0, 0, 0, 0.8, -0.012, 0.039, 0.03)
+material_override = ExtResource("5_dust")
+mesh = SubResource("SphereMesh_dust_clump")

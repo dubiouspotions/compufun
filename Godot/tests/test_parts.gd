@@ -132,6 +132,13 @@ func run() -> void:
 	back.hardware_fixed = false
 	check("set broken", back.piece(fan).broken, true)
 
+	# A broken fan carries its dust wherever its model shows; a new one is clean.
+	var dusty := Piece.new(fan, true).make_model()
+	var clean := Piece.new(fan).make_model()
+	check("dust on the broken fan only", [dusty.get_node(^"Broken").visible, clean.get_node(^"Broken").visible], [true, false])
+	dusty.free()
+	clean.free()
+
 
 func make_day(number: int, customers: Array[Customer]) -> Day:
 	var d := Day.new()
