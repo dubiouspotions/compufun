@@ -31,6 +31,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
 @onready var _hand: Hand = %Hand
+@onready var _trash_can: TrashCan = %TrashCan
 
 ## Plays when a part comes into the player's hand, and when it leaves it (put in, on the mat, away).
 @export var part_take_sound: SoundSet = preload("res://sounds/part_take.tres")
@@ -62,6 +63,7 @@ func _ready() -> void:
 	_bench.view_requested.connect(view_requested.emit)
 	_bench.plug_grabbed.connect(_on_plug_grabbed)
 	_bench.degauss_pressed.connect(degauss_requested.emit)
+	_trash_can.trash_requested.connect(Game.trash_part)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -290,8 +292,6 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 				_open_sign.wobble()
 		Hotspot.Action.TAKE_PART:
 			Game.take_new_part(hotspot.part)
-		Hotspot.Action.TRASH_PART:
-			Game.trash_part()
 
 
 # Plays the sound of each hand and cable change since the last sync, whatever made it.
