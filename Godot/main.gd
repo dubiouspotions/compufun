@@ -1,6 +1,9 @@
 extends Node
 ## The game: the world buffer with the room, the UI on top, and the day that starts.
 
+## The dev tools (F3); the folder is left out of exports, so a shipped game has none.
+const DEV_MENU: String = "res://dev/dev_menu.tscn"
+
 ## The day that starts when the game starts.
 @export var first_day: Day
 
@@ -20,6 +23,8 @@ var _dialogue_for: int = -1
 
 
 func _ready() -> void:
+	if OS.is_debug_build() and ResourceLoader.exists(DEV_MENU):
+		add_child(load(DEV_MENU).instantiate())
 	_shop.set_desktop_texture(_screen_view.screen_texture())
 	_screen_view.fade_seconds = _shop.turn_seconds
 	# Right before drawing, after the camera tween moved: the copy never lags behind the 3D screen.

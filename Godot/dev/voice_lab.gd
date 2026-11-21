@@ -1,7 +1,7 @@
 class_name VoiceLab
 extends Control
 ## The Voice Lab, a dev tool: says a line with every Chimera parameter on a slider, then runs it
-## through glitch effects. Open it from the Dev menu (F3 or Cmd+3), or run ui/voice_lab.tscn.
+## through glitch effects. Open it from the Dev menu (F3 or Cmd+3), or run dev/voice_lab.tscn.
 ## While it is open the game is paused and its sounds are held. It needs the ChimeraVoice extension
 ## (tools/build-voice.sh); the game's voices are not changed.
 

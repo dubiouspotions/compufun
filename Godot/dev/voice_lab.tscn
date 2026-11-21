@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://ui/voice_lab.gd" id="script"]
+[ext_resource type="Script" path="res://dev/voice_lab.gd" id="script"]
 
 [node name="VoiceLab" type="Control"]
 layout_mode = 3

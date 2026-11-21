@@ -85,7 +85,8 @@ templates (Editor > Manage Export Templates).
 Web Worker (`voices/live/live_voice.js`), on desktop as the `ChimeraVoice` extension
 (`native/chimera_voice/`). Without them, as on a machine that has not built them, it plays the
 line's WAV, rendered as below. The Voice Lab, in the Dev menu (F3 or Cmd+3), puts every Chimera
-setting on a slider, with glitch effects, to try voices out. Build them once with Rust installed (CI builds them for every
+setting on a slider, with glitch effects, to try voices out. Dev tools live in `Godot/dev/`, which
+every export preset leaves out: a shipped game has none. Build them once with Rust installed (CI builds them for every
 platform on each push):
 
 ```sh
