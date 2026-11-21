@@ -18,7 +18,7 @@ signal view_requested(view: StringName)
 @onready var _bench_monitor: CrtMonitor = %BenchMonitor
 
 var _shown_view: StringName = &""
-var _walk_index: int = -1
+var _walking: bool = false
 var _camera_tween: Tween
 
 
@@ -68,11 +68,13 @@ func set_desktop_texture(texture: Texture2D) -> void:
 func _sync() -> void:
 	if Game.view != _shown_view:
 		_move_camera(Game.view)
-	_counter_computer.set_enabled(Game.phase == Game.Phase.REPAIR or Game.phase == Game.Phase.CALLING)
-	_body.visible = Game.phase == Game.Phase.WALKING_IN or Game.phase == Game.Phase.TALKING
-	_body.show_customer(Game.customer)
-	if Game.phase == Game.Phase.WALKING_IN and _walk_index != Game.customer_index:
+	_counter_computer.set_enabled(Game.focus != null)
+	_body.visible = Game.visitor != null
+	_body.show_customer(Game.visitor)
+	var walking := Game.visitor_state == Game.VisitorState.WALKING_IN
+	if walking and not _walking:
 		_walk_in()
+	_walking = walking
 
 
 func _move_camera(view_name: StringName) -> void:
@@ -94,7 +96,6 @@ func _move_camera(view_name: StringName) -> void:
 
 
 func _walk_in() -> void:
-	_walk_index = Game.customer_index
 	_follow.progress_ratio = 0.0
 	var tween := create_tween()
 	tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds)

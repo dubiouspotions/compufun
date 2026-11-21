@@ -4,7 +4,7 @@ extends Node
 ## The day that starts when the game starts.
 @export var first_day: Day
 
-var _dialogue_for: int = -1
+var _talking: bool = false
 
 @onready var _shop: Shop = %Shop
 @onready var _nav: ViewNav = %ViewNav
@@ -79,9 +79,12 @@ func _sync() -> void:
 	_compufun_db.visible = screen == ViewMarker.Screen.COMPUFUN_DB
 	_workview.visible = screen == ViewMarker.Screen.WORKVIEW
 	_screen_view.set_open(screen == ViewMarker.Screen.WIN95)
-	_post_it.visible = Game.phase == Game.Phase.REPAIR or Game.phase == Game.Phase.CALLING
-	var talking := Game.phase == Game.Phase.TALKING
-	if talking and _dialogue_for != Game.customer_index:
-		_dialogue_for = Game.customer_index
-		_dialogue.start(Game.customer, &"arrive")
+	if screen == ViewMarker.Screen.WIN95 and Game.connected == null and Game.focus != null:
+		Game.connect_cable.call_deferred(Game.focus)  # Bridge until the VGA cable exists: the Screen View connects the focused job.
+	_post_it.job = Game.focus
+	_post_it.visible = Game.focus != null
+	var talking := Game.visitor_state == Game.VisitorState.TALKING
+	if talking and not _talking:
+		_dialogue.start(Game.visitor, Game.ARRIVE_CONVERSATION if Game.visit == Game.Visit.DROP_OFF else Game.PICKUP_CONVERSATION)
+	_talking = talking
 	_dialogue.visible = talking

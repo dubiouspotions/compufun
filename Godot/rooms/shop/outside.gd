@@ -1,8 +1,8 @@
 class_name Outside
 extends Node3D
 ## The world outside the shop windows: the back alley, the sky, the sun (moonlight at night), the
-## lamps, the fog and the rain. It runs the time of day and the weather. The colour gradients go
-## over one day: the left end is midnight, the middle is noon.
+## lamps, the fog and the rain. It shows the time of day of Game.daypart, and the weather. The colour
+## gradients go over one day: the left end is midnight, the middle is noon.
 
 ## The time of day in hours, 0 to 24.
 @export_range(0.0, 24.0, 0.01) var hour: float = 13.0:
@@ -10,8 +10,13 @@ extends Node3D
 		hour = fposmod(value, 24.0)
 		if is_node_ready():
 			_apply()
-## Real minutes for one full day. 0 stops the clock.
+## Real minutes for one full day, for the debug menu. 0 stops the clock; the game keeps it at 0.
 @export_range(0.0, 120.0, 0.5) var day_minutes: float = 0.0
+## The [member hour] that each Game.Daypart shows. Before the first customer, [member hour] stays.
+@export_range(0.0, 24.0, 0.01) var morning_hour: float = 9.0
+@export_range(0.0, 24.0, 0.01) var midday_hour: float = 13.0
+@export_range(0.0, 24.0, 0.01) var evening_hour: float = 19.0
+@export_range(0.0, 24.0, 0.01) var night_hour: float = 23.0
 @export var raining: bool = false:
 	set(value):
 		raining = value
@@ -40,6 +45,7 @@ extends Node3D
 var _lamps: Array[Light3D] = []
 var _lamp_energy: Array[float] = []
 var _glows: Array[Node3D] = []
+var _shown_daypart: int = -1
 
 @onready var _sun: DirectionalLight3D = %Sun
 @onready var _skylight: DirectionalLight3D = %Skylight
@@ -60,6 +66,31 @@ func _ready() -> void:
 		if is_ancestor_of(node) and node is Node3D:
 			_glows.append(node as Node3D)
 	_apply()
+	Game.changed.connect(_follow_game)
+	_follow_game()
+
+
+## The hour that [param daypart] (a Game.Daypart) shows, or [member hour] for NONE.
+func hour_of(daypart: int) -> float:
+	match daypart:
+		Game.Daypart.MORNING:
+			return morning_hour
+		Game.Daypart.MIDDAY:
+			return midday_hour
+		Game.Daypart.EVENING:
+			return evening_hour
+		Game.Daypart.NIGHT:
+			return night_hour
+		_:
+			return hour
+
+
+# Only on a change of daypart, so the debug menu can set another hour until the next one.
+func _follow_game() -> void:
+	if Game.daypart == _shown_daypart:
+		return
+	_shown_daypart = Game.daypart
+	hour = hour_of(Game.daypart)
 
 
 func _process(delta: float) -> void:

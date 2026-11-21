@@ -42,7 +42,11 @@ func _status_text() -> String:
 			return "No day has started."
 		Game.Phase.DAY_OVER:
 			return "Day %d is over." % Game.day.number
+		Game.Phase.CALLING:
+			return "Day %d: calling a customer." % Game.day.number
 		_:
-			return "Day %d, customer %d of %d: %s" % [
-				Game.day.number, Game.customer_index + 1, Game.day.customers.size(),
-				String(Game.Phase.find_key(Game.phase)).to_lower().replace("_", " ")]
+			var status := "Day %d, %d of %d customers in, %d on the counter" % [
+				Game.day.number, Game.arrivals, Game.day.customers.size(), Game.jobs.size()]
+			if Game.visitor != null:
+				status += ": %s %s" % [Game.visitor.display_name, String(Game.VisitorState.find_key(Game.visitor_state)).to_lower().replace("_", " ")]
+			return status + "."

@@ -10,16 +10,17 @@ signal problem_fixed(problem: Problem)
 
 
 func _ready() -> void:
-	_fix.pressed.connect(func() -> void: problem_fixed.emit(Game.problem))
+	_fix.pressed.connect(func() -> void: problem_fixed.emit(Game.connected.problem))
 	Game.changed.connect(_sync)
 	_sync()
 
 
 func _sync() -> void:
-	if Game.phase != Game.Phase.REPAIR:
+	var job := Game.connected
+	if job == null:
 		_info.text = "No computer is connected."
-	elif Game.software_fixed:
+	elif job.software_fixed:
 		_info.text = "Software: done."
 	else:
-		_info.text = "The customer's computer: %s" % Game.problem.perceived_issue
-	_fix.disabled = Game.phase != Game.Phase.REPAIR or Game.software_fixed
+		_info.text = "The customer's computer: %s" % job.problem.perceived_issue
+	_fix.disabled = job == null or job.software_fixed

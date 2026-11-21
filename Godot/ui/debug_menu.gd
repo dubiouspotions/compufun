@@ -1,9 +1,10 @@
 class_name DebugMenu
 extends CanvasLayer
 ## The debug menu, F2 (debug builds only): the time of day, the day cycle and the rain of the
-## Outside node in the scene (the group "outside").
+## Outside node in the scene (the group "outside"), and closing the shop.
 
-const PRESETS: Dictionary = {"MorningButton": 9.0, "NoonButton": 13.0, "EveningButton": 19.0, "NightButton": 23.0}
+const PRESETS: Dictionary = {"MorningButton": Game.Daypart.MORNING, "NoonButton": Game.Daypart.MIDDAY,
+	"EveningButton": Game.Daypart.EVENING, "NightButton": Game.Daypart.NIGHT}
 const DEFAULT_DAY_MINUTES: float = 10.0
 
 var _outside: Outside
@@ -15,13 +16,15 @@ var _outside: Outside
 @onready var _minutes: SpinBox = %MinutesBox
 @onready var _rain: CheckBox = %RainBox
 @onready var _fps: Label = %FpsLabel
+@onready var _close_shop: Button = %CloseShopButton
 
 
 func _ready() -> void:
 	_panel.visible = false
 	_slider.value_changed.connect(_on_slider)
 	for button_name: String in PRESETS:
-		(get_node("%" + button_name) as Button).pressed.connect(_on_slider.bind(PRESETS[button_name]))
+		(get_node("%" + button_name) as Button).pressed.connect(_on_preset.bind(PRESETS[button_name]))
+	_close_shop.pressed.connect(Game.close_shop)
 	_cycle.toggled.connect(_on_cycle)
 	_minutes.value_changed.connect(_on_minutes)
 	_rain.toggled.connect(_on_rain)
@@ -62,6 +65,7 @@ func _process(_delta: float) -> void:
 	if not _panel.visible:
 		return
 	_fps.text = "%d FPS" % Engine.get_frames_per_second()
+	_close_shop.disabled = not Game.can_close()
 	if _outside == null:
 		return
 	var minutes := int(_outside.hour * 60.0)
@@ -74,6 +78,11 @@ func _on_slider(value: float) -> void:
 	if _outside != null:
 		_outside.hour = value
 		_slider.set_value_no_signal(value)
+
+
+func _on_preset(daypart: int) -> void:
+	if _outside != null:
+		_on_slider(_outside.hour_of(daypart))
 
 
 func _on_cycle(on: bool) -> void:

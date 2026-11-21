@@ -1,8 +1,8 @@
 class_name ComputerState
 extends Node
-## The live Win95 state of the computer on the bench. It follows Game: when a new customer's
-## computer reaches REPAIR, it copies that computer's Win95Setup and applies the problem's break;
-## Game.bench_powered switches it on and off. Each running desktop has its own ComputerState.
+## The live Win95 state of the computer that the cable is connected to (Game.connected). When the
+## cable moves to another job, it copies that computer's Win95Setup and applies the problem's
+## break; the job's power switches it on and off. Each running desktop has its own ComputerState.
 
 ## The power came on. [member setup] is ready: rebuild everything from it.
 signal booted
@@ -16,7 +16,7 @@ signal changed
 var setup: Win95Setup
 var is_on: bool = false
 
-var _customer: Customer
+var _job: Job
 
 
 func _ready() -> void:
@@ -49,14 +49,14 @@ func rename_file(file: Win95File, new_name: String) -> void:
 
 
 func _sync() -> void:
-	var customer := Game.customer if Game.phase == Game.Phase.REPAIR else null
-	if customer != _customer:
-		_customer = customer
+	var job: Job = Game.connected
+	if job != _job:
+		_job = job
 		setup = null
-		var computer := customer.computer if customer != null else null
+		var computer := job.customer.computer if job != null else null
 		if computer != null and computer.win95_setup != null:
-			boot(computer.win95_setup, customer.problem)
-	var on := setup != null and Game.bench_powered
+			boot(computer.win95_setup, job.problem)
+	var on := setup != null and job.powered
 	if on == is_on:
 		return
 	is_on = on
@@ -72,6 +72,5 @@ func _changed() -> void:
 
 
 func _report_fixed() -> void:
-	var problem := Game.problem
-	if setup != null and problem != null and problem.software_check != null:
-		Game.set_software_fixed(problem.software_check.is_fixed(setup))
+	if setup != null and _job != null and _job.problem.software_check != null:
+		Game.set_software_fixed(_job, _job.problem.software_check.is_fixed(setup))
