@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/wood.tres" id="1_36ffd"]
+[ext_resource type="Material" path="res://materials/wood_dark.tres" id="2_aqd8b"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="3_ix6rg"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_c7sxr"]
+size = Vector3(3, 0.95, 0.55)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7j4v4"]
+size = Vector3(3.1, 0.05, 0.66)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fvkdp"]
+size = Vector3(2.96, 0.1, 0.5)
+
+[node name="Counter" type="Node3D" unique_id=714382428]
+
+[node name="Body" type="MeshInstance3D" parent="." unique_id=1475906715]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.475, 0)
+material_override = ExtResource("1_36ffd")
+mesh = SubResource("BoxMesh_c7sxr")
+
+[node name="Top" type="MeshInstance3D" parent="." unique_id=2014722031]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.975, 0)
+material_override = ExtResource("2_aqd8b")
+mesh = SubResource("BoxMesh_7j4v4")
+
+[node name="Kick" type="MeshInstance3D" parent="." unique_id=1322494681]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0.04)
+material_override = ExtResource("3_ix6rg")
+mesh = SubResource("BoxMesh_fvkdp")

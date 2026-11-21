@@ -1,0 +1,58 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://props/crt_monitor.gd" id="1_45gi1"]
+[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="2_m053x"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="3_wbfy6"]
+[ext_resource type="Material" path="res://materials/screen_off.tres" id="4_rttwc"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_jbdi3"]
+size = Vector3(0.24, 0.03, 0.22)
+
+[sub_resource type="BoxMesh" id="BoxMesh_m1gpq"]
+size = Vector3(0.08, 0.04, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_q4u36"]
+size = Vector3(0.42, 0.36, 0.14)
+
+[sub_resource type="BoxMesh" id="BoxMesh_65dfy"]
+size = Vector3(0.32, 0.28, 0.24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_suyqh"]
+size = Vector3(0.36, 0.28, 0.01)
+
+[sub_resource type="QuadMesh" id="QuadMesh_wurup"]
+size = Vector2(0.33, 0.25)
+
+[node name="CrtMonitor" type="Node3D" unique_id=2092350324]
+script = ExtResource("1_45gi1")
+
+[node name="Base" type="MeshInstance3D" parent="." unique_id=1111927980]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0)
+material_override = ExtResource("2_m053x")
+mesh = SubResource("BoxMesh_jbdi3")
+
+[node name="Neck" type="MeshInstance3D" parent="." unique_id=972589674]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+material_override = ExtResource("2_m053x")
+mesh = SubResource("BoxMesh_m1gpq")
+
+[node name="Front" type="MeshInstance3D" parent="." unique_id=1212632510]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0.06)
+material_override = ExtResource("2_m053x")
+mesh = SubResource("BoxMesh_q4u36")
+
+[node name="Tube" type="MeshInstance3D" parent="." unique_id=260752710]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, -0.13)
+material_override = ExtResource("2_m053x")
+mesh = SubResource("BoxMesh_65dfy")
+
+[node name="Recess" type="MeshInstance3D" parent="." unique_id=1320169663]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.255, 0.131)
+material_override = ExtResource("3_wbfy6")
+mesh = SubResource("BoxMesh_suyqh")
+
+[node name="Screen" type="MeshInstance3D" parent="." unique_id=1793724958]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.255, 0.137)
+material_override = ExtResource("4_rttwc")
+mesh = SubResource("QuadMesh_wurup")

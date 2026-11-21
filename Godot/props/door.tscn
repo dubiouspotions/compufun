@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/wood_dark.tres" id="1_8066x"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="2_bdq0j"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_l856d"]
+size = Vector3(1.16, 2.14, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_3uck6"]
+size = Vector3(0.12, 0.03, 0.03)
+
+[node name="Door" type="Node3D" unique_id=806004170]
+
+[node name="Panel" type="MeshInstance3D" parent="." unique_id=1845588947]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.58, 1.07, 0)
+material_override = ExtResource("1_8066x")
+mesh = SubResource("BoxMesh_l856d")
+
+[node name="Handle" type="MeshInstance3D" parent="." unique_id=1764969810]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, 1, 0.045)
+material_override = ExtResource("2_bdq0j")
+mesh = SubResource("BoxMesh_3uck6")

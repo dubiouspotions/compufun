@@ -35,3 +35,6 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 **Report**: One F9 feedback report: a folder in `feedback/` with `shot.png` and `report.json`.
 *Avoid:* ticket, bug report, feedback file.
+
+**Prop**: A placeholder model scene in `Godot/props/`, such as `crt_monitor.tscn`. A room places props; it does not copy their parts.
+*Avoid:* asset, model, object.

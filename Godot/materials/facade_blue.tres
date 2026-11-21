@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="1_wlq08"]
+[ext_resource type="Texture2D" path="res://materials/textures/facade.png" id="2_svl7e"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_wlq08")
+shader_parameter/albedo_texture = ExtResource("2_svl7e")
+shader_parameter/albedo_color = Color(0.78, 0.86, 1, 1)
+shader_parameter/snap = null
+shader_parameter/affine = null
+shader_parameter/world_uv = true
+shader_parameter/uv_scale = 0.25

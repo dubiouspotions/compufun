@@ -1,27 +1,29 @@
 class_name CustomerBody
 extends Node3D
-## The 3D customer: one grey body for all customers, with the face texture of the person.
+## The 3D customer: one placeholder body for all customers. The face shows the person's face
+## texture, or [member default_face] until the person has one.
 
-const NO_FACE_COLOR: Color = Color(0.45, 0.45, 0.45)
+const FACE_SHADER: Shader = preload("res://shaders/psx_world.gdshader")
+
+## The face when the person has no face texture yet.
+@export var default_face: Texture2D
 
 var _shown: Customer
+var _has_shown: bool = false
 
 @onready var _face: MeshInstance3D = %Face
-@onready var _face_label: Label3D = %FaceLabel
-@onready var _name_label: Label3D = %NameLabel
 
 
-## Shows the name and the face of [param customer]. null clears them.
+## Shows the face of [param customer]. null shows the default face.
 func show_customer(customer: Customer) -> void:
-	if customer == _shown:
+	if _has_shown and customer == _shown:
 		return
+	_has_shown = true
 	_shown = customer
-	_name_label.text = customer.display_name if customer != null else ""
-	var face: Texture2D = null
-	if customer != null and customer.person != null:
+	var face := default_face
+	if customer != null and customer.person != null and customer.person.face != null:
 		face = customer.person.face
-	var material := StandardMaterial3D.new()
-	material.albedo_texture = face
-	material.albedo_color = Color.WHITE if face != null else NO_FACE_COLOR
+	var material := ShaderMaterial.new()
+	material.shader = FACE_SHADER
+	material.set_shader_parameter("albedo_texture", face)
 	_face.material_override = material
-	_face_label.visible = face == null

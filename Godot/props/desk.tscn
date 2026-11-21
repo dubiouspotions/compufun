@@ -1,0 +1,46 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/wood.tres" id="1_liwnl"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="2_7f6sa"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_ow4sl"]
+size = Vector3(0.8, 0.04, 1.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bakjf"]
+size = Vector3(0.04, 0.71, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_r02xc"]
+size = Vector3(0.04, 0.71, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jxlw8"]
+size = Vector3(0.04, 0.71, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_h8027"]
+size = Vector3(0.04, 0.71, 0.04)
+
+[node name="Desk" type="Node3D" unique_id=148116219]
+
+[node name="Top" type="MeshInstance3D" parent="." unique_id=2107143946]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.73, 0)
+material_override = ExtResource("1_liwnl")
+mesh = SubResource("BoxMesh_ow4sl")
+
+[node name="Leg0" type="MeshInstance3D" parent="." unique_id=632547714]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 0.355, 0.76)
+material_override = ExtResource("2_7f6sa")
+mesh = SubResource("BoxMesh_bakjf")
+
+[node name="Leg1" type="MeshInstance3D" parent="." unique_id=1428070354]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 0.355, 0.76)
+material_override = ExtResource("2_7f6sa")
+mesh = SubResource("BoxMesh_r02xc")
+
+[node name="Leg2" type="MeshInstance3D" parent="." unique_id=558049263]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 0.355, -0.76)
+material_override = ExtResource("2_7f6sa")
+mesh = SubResource("BoxMesh_jxlw8")
+
+[node name="Leg3" type="MeshInstance3D" parent="." unique_id=488028759]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 0.355, -0.76)
+material_override = ExtResource("2_7f6sa")
+mesh = SubResource("BoxMesh_h8027")

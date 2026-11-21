@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="1_svq0u"]
+[ext_resource type="Texture2D" path="res://materials/textures/wood.png" id="2_0obp0"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_svq0u")
+shader_parameter/albedo_texture = ExtResource("2_0obp0")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)
+shader_parameter/snap = null
+shader_parameter/affine = null
+shader_parameter/world_uv = true
+shader_parameter/uv_scale = 1.5

@@ -1,0 +1,42 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/rubber.tres" id="1_m0cvp"]
+[ext_resource type="Material" path="res://materials/light_panel.tres" id="2_4yuqi"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_jn1y4"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 4.0
+radial_segments = 8
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_sjn1l"]
+size = Vector3(0.05, 0.05, 0.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_5o2a6"]
+size = Vector3(0.22, 0.1, 0.36)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6bgod"]
+size = Vector3(0.18, 0.01, 0.3)
+
+[node name="LampPost" type="Node3D" unique_id=1778814953]
+
+[node name="Pole" type="MeshInstance3D" parent="." unique_id=869360366]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+material_override = ExtResource("1_m0cvp")
+mesh = SubResource("CylinderMesh_jn1y4")
+
+[node name="Arm" type="MeshInstance3D" parent="." unique_id=1292568597]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.95, -0.33)
+material_override = ExtResource("1_m0cvp")
+mesh = SubResource("BoxMesh_sjn1l")
+
+[node name="Head" type="MeshInstance3D" parent="." unique_id=807537071]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.92, -0.68)
+material_override = ExtResource("1_m0cvp")
+mesh = SubResource("BoxMesh_5o2a6")
+
+[node name="Glow" type="MeshInstance3D" parent="." unique_id=2065430380]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.865, -0.68)
+material_override = ExtResource("2_4yuqi")
+mesh = SubResource("BoxMesh_6bgod")

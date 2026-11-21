@@ -1,0 +1,30 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="1_eb6a4"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="2_34wid"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_dtkp1"]
+size = Vector3(0.18, 0.06, 0.21)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xy3yg"]
+size = Vector3(0.09, 0.006, 0.09)
+
+[sub_resource type="BoxMesh" id="BoxMesh_5o6os"]
+size = Vector3(0.21, 0.045, 0.055)
+
+[node name="Phone" type="Node3D" unique_id=803377635]
+
+[node name="Base" type="MeshInstance3D" parent="." unique_id=478349419]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
+material_override = ExtResource("1_eb6a4")
+mesh = SubResource("BoxMesh_dtkp1")
+
+[node name="Keypad" type="MeshInstance3D" parent="." unique_id=1994843124]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.062, 0.045)
+material_override = ExtResource("2_34wid")
+mesh = SubResource("BoxMesh_xy3yg")
+
+[node name="Handset" type="MeshInstance3D" parent="." unique_id=740869814]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.085, -0.045)
+material_override = ExtResource("1_eb6a4")
+mesh = SubResource("BoxMesh_5o6os")
