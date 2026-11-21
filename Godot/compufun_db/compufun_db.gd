@@ -58,7 +58,6 @@ var _bg: PackedColorArray = []
 
 
 func _ready() -> void:
-	focus_mode = Control.FOCUS_ALL
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	if font == null:
 		push_error("CompuFunDB: font is empty")
@@ -68,7 +67,6 @@ func _ready() -> void:
 	add_child(_keys)
 	set_process(false)
 	Game.changed.connect(queue_redraw)
-	grab_focus.call_deferred()
 
 
 func _on_mouse_exited() -> void:
@@ -215,13 +213,17 @@ func _gui_input(event: InputEvent) -> void:
 		_on_click(button)
 		accept_event()
 		return
+
+
+# The keys come here, not to _gui_input: that needs the GUI focus, which the screen doesn't have
+# until the player clicks it. The CRT screen passes the keys only while it is open.
+func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
-	if key != null and key.pressed and _on_key(key):
-		accept_event()
+	if key.pressed and _on_key(key):
+		get_viewport().set_input_as_handled()
 
 
 func _on_click(button: InputEventMouseButton) -> void:
-	grab_focus()
 	var cell := Vector2i((button.position / CELL).floor())
 	var column := _column_at(cell.x)
 	if column < 0 or _offline():
