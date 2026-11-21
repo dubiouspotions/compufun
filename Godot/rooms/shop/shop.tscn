@@ -360,7 +360,7 @@ transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.42
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.85, 0.75, 1.2)
 
 [node name="PhoneProp" parent="Room" unique_id=803377635 instance=ExtResource("17_djiw7")]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.45, 0.75, 1.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.15, 1, -1.05)
 
 [node name="WorkComputer" parent="Room" unique_id=397139589 instance=ExtResource("13_ojat2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.72, 1, 0.45)
@@ -369,7 +369,7 @@ size = Vector3(0.32, 0.42, 0.46)
 
 [node name="Phone" parent="Room" unique_id=902915224 instance=ExtResource("13_ojat2")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.45, 0.83, 1.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.15, 1.08, -1.05)
 action = 1
 size = Vector3(0.26, 0.16, 0.26)
 
