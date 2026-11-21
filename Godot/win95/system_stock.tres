@@ -1,0 +1,116 @@
+[gd_resource type="Resource" script_class="Win95File" format=3]
+
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="file"]
+[ext_resource type="Script" path="res://win95/applets/applet.gd" id="applet"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/folder_closed_32.png" id="folder_icon"]
+[ext_resource type="Resource" path="res://win95/applets/display.tres" id="display"]
+[ext_resource type="Resource" path="res://win95/applets/regional_settings.tres" id="regional_settings"]
+[ext_resource type="Resource" path="res://win95/applets/mouse.tres" id="mouse"]
+[ext_resource type="Resource" path="res://win95/applets/keyboard.tres" id="keyboard"]
+[ext_resource type="Resource" path="res://win95/applets/printers.tres" id="printers"]
+[ext_resource type="Resource" path="res://win95/applets/fonts.tres" id="fonts"]
+[ext_resource type="Resource" path="res://win95/applets/system.tres" id="system"]
+[ext_resource type="Resource" path="res://win95/applets/add_new_hardware.tres" id="add_new_hardware"]
+[ext_resource type="Resource" path="res://win95/applets/date_time.tres" id="date_time"]
+[ext_resource type="Resource" path="res://win95/applets/modems.tres" id="modems"]
+[ext_resource type="Resource" path="res://win95/applets/joystick.tres" id="joystick"]
+[ext_resource type="Resource" path="res://win95/applets/multimedia.tres" id="multimedia"]
+[ext_resource type="Resource" path="res://win95/applets/sounds.tres" id="sounds"]
+[ext_resource type="Resource" path="res://win95/applets/add_remove_programs.tres" id="add_remove_programs"]
+[ext_resource type="Resource" path="res://win95/applets/network.tres" id="network"]
+[ext_resource type="Resource" path="res://win95/applets/passwords.tres" id="passwords"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/display_properties_32.png" id="icon_DESK"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/regional_settings_32.png" id="icon_INTL"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/mouse_32.png" id="icon_MAIN"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/system_32.png" id="icon_SYSDM"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/date_time_32.png" id="icon_TIMEDATE"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/modem_phone_32.png" id="icon_MODEM"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/joystick_32.png" id="icon_JOY"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/multimedia_device_32.png" id="icon_MMSYS"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/add_remove_programs_32.png" id="icon_APPWIZ"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/network_control_panel_32.png" id="icon_NETCPL"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/keys_grey_32.png" id="icon_PASSWORD"]
+
+[sub_resource type="Resource" id="DESK"]
+script = ExtResource("file")
+name = "DESK.CPL"
+icon = ExtResource("icon_DESK")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("applet")]([ExtResource("display")])
+
+[sub_resource type="Resource" id="INTL"]
+script = ExtResource("file")
+name = "INTL.CPL"
+icon = ExtResource("icon_INTL")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("applet")]([ExtResource("regional_settings")])
+
+[sub_resource type="Resource" id="MAIN"]
+script = ExtResource("file")
+name = "MAIN.CPL"
+icon = ExtResource("icon_MAIN")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("applet")]([ExtResource("mouse"), ExtResource("keyboard"), ExtResource("printers"), ExtResource("fonts")])
+
+[sub_resource type="Resource" id="SYSDM"]
+script = ExtResource("file")
+name = "SYSDM.CPL"
+icon = ExtResource("icon_SYSDM")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("applet")]([ExtResource("system"), ExtResource("add_new_hardware")])
+
+[sub_resource type="Resource" id="TIMEDATE"]
+script = ExtResource("file")
+name = "TIMEDATE.CPL"
+icon = ExtResource("icon_TIMEDATE")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("applet")]([ExtResource("date_time")])
+
+[sub_resource type="Resource" id="MODEM"]
+script = ExtResource("file")
+name = "MODEM.CPL"
+icon = ExtResource("icon_MODEM")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("applet")]([ExtResource("modems")])
+
+[sub_resource type="Resource" id="JOY"]
+script = ExtResource("file")
+name = "JOY.CPL"
+icon = ExtResource("icon_JOY")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("applet")]([ExtResource("joystick")])
+
+[sub_resource type="Resource" id="MMSYS"]
+script = ExtResource("file")
+name = "MMSYS.CPL"
+icon = ExtResource("icon_MMSYS")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("applet")]([ExtResource("multimedia"), ExtResource("sounds")])
+
+[sub_resource type="Resource" id="APPWIZ"]
+script = ExtResource("file")
+name = "APPWIZ.CPL"
+icon = ExtResource("icon_APPWIZ")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("applet")]([ExtResource("add_remove_programs")])
+
+[sub_resource type="Resource" id="NETCPL"]
+script = ExtResource("file")
+name = "NETCPL.CPL"
+icon = ExtResource("icon_NETCPL")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("applet")]([ExtResource("network")])
+
+[sub_resource type="Resource" id="PASSWORD"]
+script = ExtResource("file")
+name = "PASSWORD.CPL"
+icon = ExtResource("icon_PASSWORD")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("applet")]([ExtResource("passwords")])
+
+[resource]
+script = ExtResource("file")
+name = "SYSTEM"
+icon = ExtResource("folder_icon")
+is_folder = true
+children = Array[Resource]([SubResource("DESK"), SubResource("INTL"), SubResource("MAIN"), SubResource("SYSDM"), SubResource("TIMEDATE"), SubResource("MODEM"), SubResource("JOY"), SubResource("MMSYS"), SubResource("APPWIZ"), SubResource("NETCPL"), SubResource("PASSWORD")])

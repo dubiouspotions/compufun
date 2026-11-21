@@ -29,6 +29,7 @@
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_multimedia.png" id="sticker_multimedia"]
 [ext_resource type="Script" path="res://customers/sticker.gd" id="sticker_script"]
 [ext_resource type="Resource" path="res://win95/start_menu_stock.tres" id="start_menu"]
+[ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
 
 [sub_resource type="Resource" id="DialogueLine_1"]
 script = ExtResource("dl")
@@ -73,12 +74,6 @@ Verse 2: ??? (Lisa has ideas)
 Bridge: la la la (FIX THIS)
 "
 modified = "Tuesday, May 28, 1996 1:33:09 AM"
-
-[sub_resource type="Resource" id="Resource_r3t4y"]
-script = ExtResource("2_egn44")
-name = "System"
-icon = ExtResource("5_lymrw")
-is_folder = true
 
 [sub_resource type="Resource" id="Resource_4fbej"]
 script = ExtResource("2_egn44")
@@ -216,7 +211,7 @@ script = ExtResource("2_egn44")
 name = "Windows"
 icon = ExtResource("5_lymrw")
 is_folder = true
-children = Array[Resource]([ExtResource("start_menu"), SubResource("Resource_r3t4y"), SubResource("Resource_4fbej"), SubResource("Resource_irgbr"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator"), SubResource("Program_inbox"), SubResource("Program_volume_control"), SubResource("Program_defrag"), SubResource("Program_solitaire"), SubResource("Program_ms_dos_prompt"), SubResource("Program_media_player")])
+children = Array[Resource]([ExtResource("start_menu"), ExtResource("system_folder"), SubResource("Resource_4fbej"), SubResource("Resource_irgbr"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator"), SubResource("Program_inbox"), SubResource("Program_volume_control"), SubResource("Program_defrag"), SubResource("Program_solitaire"), SubResource("Program_ms_dos_prompt"), SubResource("Program_media_player")])
 
 [sub_resource type="Resource" id="Resource_y6rli"]
 script = ExtResource("2_egn44")

@@ -158,3 +158,14 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 **Dialogue tab**: The editor tab (`addons/dialogue_editor/`) that lists every customer and edits their conversations.
 *Avoid:* admin UI, dialogue tool, dialogue editor.
+
+## Win95
+
+**Control Panel**: The Win95 folder that lists the applets of every `.CPL` file in `C:\WINDOWS\SYSTEM` of the running copy, plus the Fonts and Printers folders. It opens from My Computer and from Start > Settings.
+*Avoid:* settings, control center.
+
+**Applet**: One icon in the Control Panel, such as Display or Mouse (`Applet` resource): its name, description, icon and property sheet. A `.CPL` file holds one or more applets in `Win95File.applets`; renaming or moving the file hides them.
+*Avoid:* control panel item, CPL (that is the file).
+
+**Property sheet**: A Win95 dialog with tabs and OK, Cancel and Apply (`win95/property_sheet.tscn`). Its pages edit pending values; Apply and OK commit them to the running copy through `ComputerState`.
+*Avoid:* properties dialog, settings window.

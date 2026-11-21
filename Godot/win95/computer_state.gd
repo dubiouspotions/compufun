@@ -13,6 +13,9 @@ signal powered_off
 signal changed
 
 const _NEW_FOLDER_ICON := preload("res://win95/theme/icons/folder_closed_32.png")
+const _SYSTEM_PATH := "C:\\WINDOWS\\SYSTEM"
+const _PROGRAM_FILES_PATH := "C:\\Program Files"
+const _START_MENU_PATH := "C:\\WINDOWS\\Start Menu"
 
 ## The running copy; null when the computer has no Win95 setup. Change it only through the setters
 ## here, so that Game hears whether the problem is fixed.
@@ -39,6 +42,93 @@ func set_sound(volume: float, muted: bool) -> void:
 	setup.volume = volume
 	setup.muted = muted
 	_changed()
+
+
+## Sets each Win95Setup property in [param values] (property name to value) and reports once, as
+## a property sheet's Apply does. A name that Win95Setup lacks is a programmer error, and then
+## nothing changes.
+func apply_settings(values: Dictionary[StringName, Variant]) -> void:
+	if setup == null:
+		return
+	for property in values:
+		if not property in setup:
+			push_error("ComputerState.apply_settings: Win95Setup has no setting %s" % property)
+			return
+	var any := false
+	for property in values:
+		if setup.get(property) != values[property]:
+			setup.set(property, values[property])
+			any = true
+	if any:
+		_changed()
+
+
+## The Control Panel's icons: the applets of every file in C:\WINDOWS\SYSTEM whose name ends in
+## .CPL, sorted by name as Win95 lists them.
+func control_panel() -> Array[Applet]:
+	var applets: Array[Applet] = []
+	var system := setup.file_at(_SYSTEM_PATH) if setup != null else null
+	if system == null:
+		return applets
+	for file: Win95File in system.children:
+		if not file.is_folder and file.name.get_extension().to_lower() == "cpl":
+			applets.append_array(file.applets)
+	applets.sort_custom(func(a: Applet, b: Applet) -> bool: return a.name.naturalnocasecmp_to(b.name) < 0)
+	return applets
+
+
+## The programs that Add/Remove Programs lists: the folders in C:\Program Files, by name.
+func removable_programs() -> Array[Win95File]:
+	var found: Array[Win95File] = []
+	var program_files := setup.file_at(_PROGRAM_FILES_PATH) if setup != null else null
+	if program_files != null:
+		for file: Win95File in program_files.children:
+			if file.is_folder:
+				found.append(file)
+	found.sort_custom(func(a: Win95File, b: Win95File) -> bool: return a.name.naturalnocasecmp_to(b.name) < 0)
+	return found
+
+
+## Removes [param folder], one of [method removable_programs], for good, with every shortcut in the
+## Start Menu that points into it, as an uninstaller does.
+func uninstall(folder: Win95File) -> void:
+	var program_files := setup.file_at(_PROGRAM_FILES_PATH) if setup != null else null
+	if program_files == null or not program_files.children.has(folder):
+		push_error("ComputerState.uninstall: %s is not in %s" % [folder.name, _PROGRAM_FILES_PATH])
+		return
+	var inside := (_PROGRAM_FILES_PATH + "\\" + folder.name + "\\").to_lower()
+	program_files.children.erase(folder)
+	var start_menu := setup.file_at(_START_MENU_PATH)
+	if start_menu != null:
+		_remove_shortcuts(start_menu.children, inside)
+	_changed()
+
+
+func _remove_shortcuts(container: Array, inside: String) -> void:
+	for i in range(container.size() - 1, -1, -1):
+		var file: Win95File = container[i]
+		if file.is_folder:
+			_remove_shortcuts(file.children, inside)
+		elif file.target.to_lower().begins_with(inside):
+			container.remove_at(i)
+
+
+## This computer's clock: the game's date and the real time of day, moved by the setup's
+## clock_offset_seconds. A Time datetime dictionary, weekday included.
+func now() -> Dictionary:
+	var offset := setup.clock_offset_seconds if setup != null else 0
+	return Time.get_datetime_dict_from_unix_time(_game_unix() + offset)
+
+
+## The clock_offset_seconds that makes [method now] show [param t], a Time datetime dictionary.
+func offset_for(t: Dictionary) -> int:
+	return Time.get_unix_time_from_datetime_dict(t) - _game_unix()
+
+
+func _game_unix() -> int:
+	var t: Dictionary = Game.date
+	t.merge(Time.get_time_dict_from_system(), true)
+	return Time.get_unix_time_from_datetime_dict(t)
 
 
 func rename_file(file: Win95File, new_name: String) -> void:
@@ -323,11 +413,9 @@ func start_defrag() -> void:
 	_changed()
 
 
-# Win95 dates a save with its clock: the game's date, and the time that the taskbar shows.
 func _stamp(file: Win95File) -> void:
-	var now: Dictionary = Game.date
-	now.merge(Time.get_time_dict_from_system(), true)
-	file.modified = "%s %s" % [Win95Time.long_date(now), Win95Time.clock(now, true)]
+	var t := now()
+	file.modified = "%s %s" % [Win95Time.long_date(t), Win95Time.clock(t, true)]
 
 
 func _changed() -> void:

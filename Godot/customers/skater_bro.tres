@@ -35,6 +35,7 @@
 [ext_resource type="Texture2D" path="res://win95/theme/icons/bitmap_32.png" id="icon_bitmap"]
 [ext_resource type="PackedScene" path="res://props/cap.tscn" id="hat_cap"]
 [ext_resource type="Resource" path="res://win95/start_menu_stock.tres" id="start_menu"]
+[ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
 
 [sub_resource type="Resource" id="DialogueLine_1"]
 script = ExtResource("dl")
@@ -90,12 +91,6 @@ name = "Renders"
 icon = ExtResource("5_ko7w1")
 is_folder = true
 children = Array[Resource]([SubResource("Resource_3rdml"), SubResource("Resource_7iqh2"), SubResource("Resource_ndhw4")])
-
-[sub_resource type="Resource" id="Resource_4f8u6"]
-script = ExtResource("2_nepbl")
-name = "System"
-icon = ExtResource("5_ko7w1")
-is_folder = true
 
 [sub_resource type="Resource" id="Resource_rx540"]
 script = ExtResource("2_nepbl")
@@ -234,7 +229,7 @@ script = ExtResource("2_nepbl")
 name = "Windows"
 icon = ExtResource("5_ko7w1")
 is_folder = true
-children = Array[Resource]([ExtResource("start_menu"), SubResource("Resource_4f8u6"), SubResource("Resource_rx540"), SubResource("Resource_rkt6m"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator"), SubResource("Program_inbox"), SubResource("Program_volume_control"), SubResource("Program_defrag"), SubResource("Program_solitaire"), SubResource("Program_ms_dos_prompt"), SubResource("Program_media_player")])
+children = Array[Resource]([ExtResource("start_menu"), ExtResource("system_folder"), SubResource("Resource_rx540"), SubResource("Resource_rkt6m"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator"), SubResource("Program_inbox"), SubResource("Program_volume_control"), SubResource("Program_defrag"), SubResource("Program_solitaire"), SubResource("Program_ms_dos_prompt"), SubResource("Program_media_player")])
 
 [sub_resource type="Resource" id="Resource_wafo6"]
 script = ExtResource("2_nepbl")
