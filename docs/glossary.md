@@ -33,6 +33,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Screen buffer**: The 1280 x 960 viewport that runs the Win95 desktop. The 3D monitor and the Screen View both show it.
 *Avoid:* desktop viewport, screen texture.
 
+**Win95 setup**: The `Win95Setup` resource of one customer's computer: what the Win95 desktop looks like and holds when it boots. `ComputerState` holds the running copy.
+*Avoid:* computer config, Windows config, desktop data.
+
 **Report**: One F9 feedback report: a folder in `feedback/` with `shot.png` and `report.json`.
 *Avoid:* ticket, bug report, feedback file.
 
