@@ -25,6 +25,13 @@ signal _any_key
 ## Windows 95...", no splash, no startup sound.
 @export var boots_windows: bool = true
 @export var memory_test_seconds: float = 1.5
+## A broken memory module is in: the memory test stops and the computer halts until it is switched
+## off.
+@export var memory_fails: bool = false
+## How far a failing memory test counts, as a share of the memory. The same for every module, so the
+## screen never tells which one is broken.
+@export_range(0.0, 1.0) var memory_fail_share: float = 0.4
+@export_multiline var memory_fail_text: String = "Memory test fail\n\nSystem halted"
 ## How long the video card's BIOS banner shows before the POST, while the monitor warms up, in
 ## seconds.
 @export var warm_up_seconds: float = 4.2
@@ -61,6 +68,7 @@ signal _any_key
 @export var bar_speed: float = 320.0
 
 var _skipped: bool = false
+var _halted: bool = false
 ## True while the disk error waits for a key: a key then tries again instead of skipping.
 var _awaiting_key: bool = false
 var _playing: bool = false
@@ -108,6 +116,8 @@ func play() -> void:
 	focus_mode = Control.FOCUS_ALL
 	grab_focus.call_deferred()
 	await _run_post()
+	if _halted:
+		return
 	if not _skipped:
 		await _run_summary()
 	if floppy_in_a:
@@ -184,14 +194,20 @@ func _run_windows() -> void:
 	await _wait(splash_seconds)
 
 
-## Counts the memory test up on the last line; false when the player skipped.
+## Counts the memory test up on the last line; false when the player skipped, or when the test
+## failed and the computer halted. A skip doesn't get past a failing test.
 func _count_memory() -> bool:
 	var before := _post.text
 	var steps := 30
-	for i in steps + 1:
+	var last := roundi(steps * memory_fail_share) if memory_fails else steps
+	for i in last + 1:
 		_post.text = before + "Memory Test :  %dK" % (hardware.memory_kb * i / steps)
-		if not await _wait(memory_test_seconds / steps):
+		if not await _wait(memory_test_seconds / steps) and not memory_fails:
 			return false
+	if memory_fails:
+		_halted = true
+		_print("\n" + memory_fail_text)
+		return false
 	_post.text += " OK\n"
 	return true
 

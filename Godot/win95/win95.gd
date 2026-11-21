@@ -147,8 +147,12 @@ func _on_booted() -> void:
 		_boot.queue_free()
 	_boot = _BOOT.instantiate()
 	_boot.floppy_in_a = setup.floppy_in_a
-	if _state.job != null and _state.job.customer.computer != null:
-		_boot.hardware = _state.job.customer.computer.hardware
+	if _state.job != null:
+		var computer := _state.job.customer.computer
+		var hardware: Hardware = computer.hardware.duplicate() if computer != null and computer.hardware != null else Hardware.new()
+		hardware.memory_kb = int(hardware.memory_kb * _state.job.memory_share())
+		_boot.hardware = hardware
+		_boot.memory_fails = _state.job.memory_fails()
 	_floppy_heard = setup.floppy_in_a
 	pointer_visible = false
 	_boot.finished.connect(func() -> void:
