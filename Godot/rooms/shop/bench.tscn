@@ -1,0 +1,84 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://rooms/shop/bench.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://props/crt_monitor.tscn" id="2_monitor"]
+[ext_resource type="PackedScene" path="res://props/keyboard.tscn" id="3_keyboard"]
+[ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="4_hotspot"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="5_plastic"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_outline"]
+cull_mode = 1
+shading_mode = 0
+albedo_color = Color(0.75, 0.9, 1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_plug"]
+size = Vector3(0.034, 0.016, 0.045)
+
+[node name="Bench" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Monitor" parent="." instance=ExtResource("2_monitor")]
+unique_name_in_owner = true
+
+[node name="Keyboard" parent="." instance=ExtResource("3_keyboard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.23)
+
+[node name="ScreenHotspot" parent="." instance=ExtResource("4_hotspot")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+view = &"Screen"
+size = Vector3(0.46, 0.42, 0.42)
+
+[node name="ScreenSocket" type="Marker3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.1, 0.12, -0.25)
+
+[node name="PlugRest" type="Marker3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.3, 0.008, 0.02)
+
+[node name="Cable" type="Path3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Cord" type="CSGPolygon3D" parent="Cable"]
+polygon = PackedVector2Array(-0.007, -0.007, -0.007, 0.007, 0.007, 0.007, 0.007, -0.007)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+smooth_faces = true
+material = ExtResource("5_plastic")
+
+[node name="Outline" type="CSGPolygon3D" parent="Cable"]
+unique_name_in_owner = true
+visible = false
+cast_shadow = 0
+polygon = PackedVector2Array(-0.011, -0.011, -0.011, 0.011, 0.011, 0.011, 0.011, -0.011)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_local = true
+path_joined = false
+material = SubResource("StandardMaterial3D_outline")
+
+[node name="Plug" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Body" type="MeshInstance3D" parent="Plug"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.022)
+material_override = ExtResource("5_plastic")
+mesh = SubResource("BoxMesh_plug")
+
+[node name="CableHotspot" parent="." instance=ExtResource("4_hotspot")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0.05, -0.12)
+size = Vector3(0.18, 0.12, 0.44)

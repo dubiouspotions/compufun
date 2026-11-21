@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" path="res://props/phone.tscn" id="17_djiw7"]
 [ext_resource type="Material" path="res://materials/cardboard.tres" id="18_y5vne"]
 [ext_resource type="Material" path="res://materials/paper.tres" id="19_a76lc"]
+[ext_resource type="PackedScene" path="res://rooms/shop/bench.tscn" id="bench"]
 [ext_resource type="PackedScene" path="res://rooms/shop/outside.tscn" id="20_788ts"]
 [ext_resource type="Script" path="res://rooms/view_marker.gd" id="21_sg8ra"]
 [ext_resource type="PackedScene" path="res://customers/customer_body.tscn" id="22_rqm4b"]
@@ -373,17 +374,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -3.9)
 [node name="Counter" parent="Room" unique_id=714382428 instance=ExtResource("10_b7xrx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.75, 0, -1.2)
 
-[node name="BenchMonitor" parent="Room" unique_id=2092350324 instance=ExtResource("11_ydxbd")]
+[node name="Bench" parent="Room" instance=ExtResource("bench")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 1, -1.25)
-
-[node name="BenchKeyboard" parent="Room" unique_id=2136396100 instance=ExtResource("12_ymhy8")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 1, -0.98)
-
-[node name="BenchMonitorHotspot" parent="Room" unique_id=484566507 instance=ExtResource("13_ojat2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 1.25, -1.25)
-view = &"Screen"
-size = Vector3(0.46, 0.42, 0.42)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.08, 1, -1.18)
 
 [node name="JobSlots" parent="Room" instance=ExtResource("26_jobslots")]
 unique_name_in_owner = true
@@ -514,7 +507,7 @@ back = &"Main"
 screen = 3
 
 [node name="Screen" type="Marker3D" parent="Views" unique_id=1028610608]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 1.255, -0.7266)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.08, 1.255, -0.6566)
 script = ExtResource("21_sg8ra")
 back = &"Main"
 screen = 2

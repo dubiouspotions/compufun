@@ -41,6 +41,16 @@ func workview_transform(job: Job, fallback: Transform3D) -> Transform3D:
 	return computer.workview_transform()
 
 
+## The VGA socket of the computer of [param job] (see [method JobComputer.cable_socket]). Fails with
+## an error and returns null when the job has no computer on the counter.
+func cable_socket(job: Job) -> Node3D:
+	var computer: JobComputer = _computers.get(job)
+	if computer == null:
+		push_error("JobSlots.cable_socket: the job in slot %d has no computer on the counter" % job.slot)
+		return null
+	return computer.cable_socket()
+
+
 func _add_computer(job: Job) -> JobComputer:
 	var slot := _slots.get_node_or_null("Slot%d" % job.slot) as Marker3D
 	if slot == null:

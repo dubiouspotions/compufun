@@ -20,7 +20,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _follow: PathFollow3D = %CustomerFollow
 @onready var _body: CustomerBody = %CustomerBody
 @onready var _job_slots: JobSlots = %JobSlots
-@onready var _bench_monitor: CrtMonitor = %BenchMonitor
+@onready var _bench: Bench = %Bench
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
@@ -39,6 +39,7 @@ func _ready() -> void:
 		if hotspot != null:
 			hotspot.clicked.connect(_on_hotspot_clicked)
 	_job_slots.job_clicked.connect(_on_job_clicked)
+	_bench.view_requested.connect(view_requested.emit)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -63,22 +64,23 @@ func turn_from_main() -> float:
 	return yaw / (2.0 * half_width)
 
 
-## The screen of the CRT on the counter as the camera sees it now, in pixels of the world buffer.
+## The bench screen as the camera sees it now, in pixels of the world buffer.
 func bench_screen_rect() -> Rect2:
-	var corners := _bench_monitor.screen_corners()
+	var corners := _bench.screen_corners()
 	var rect := Rect2(_camera.unproject_position(corners[0]), Vector2.ZERO)
 	for corner: Vector3 in corners:
 		rect = rect.expand(_camera.unproject_position(corner))
 	return rect
 
 
-## Shows [param texture] (the screen buffer) on the CRT on the counter.
+## Shows [param texture] (the screen buffer) on the bench screen.
 func set_desktop_texture(texture: Texture2D) -> void:
-	_bench_monitor.set_screen_texture(texture)
+	_bench.set_screen_texture(texture)
 
 
 func _sync() -> void:
 	_job_slots.show_jobs(Game.jobs, null if Game.view == WORKVIEW else Game.focus)  # the Workview centres it already
+	_bench.lay_cable(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
 	var workview_moved := _follow_focus()
 	if Game.view != _shown_view or (workview_moved and Game.view == WORKVIEW):
 		_move_camera(Game.view)
@@ -163,5 +165,8 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 
 
 func _on_job_clicked(job: Job) -> void:
+	if _bench.holding:
+		_bench.plug_into(job)
+		return
 	Game.focus_job(job)
 	view_requested.emit(WORKVIEW)

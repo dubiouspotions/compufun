@@ -58,7 +58,7 @@ var daypart: Daypart = Daypart.NONE
 var jobs: Array[Job] = []
 ## The computer that the player works on in the Workview, or null for none.
 var focus: Job
-## The computer that the keyboard cable is connected to, or null when the cable hangs free.
+## The computer that the VGA cable is connected to, or null when the cable hangs free.
 var connected: Job
 ## The customer in the shop, or null when nobody is in.
 var visitor: Customer
@@ -146,8 +146,8 @@ func focus_job(job: Job) -> void:
 	changed.emit()
 
 
-## Connects the keyboard cable to [param job], which then boots on the screen. null disconnects.
-## The job must be on the counter.
+## Connects the VGA cable to [param job]: the bench screen shows that computer as the cable left
+## it. null disconnects. The job must be on the counter.
 func connect_cable(job: Job) -> void:
 	if job != null and job not in jobs:
 		push_error("Game.connect_cable: the job of %s is not on the counter" % _who(job.customer))

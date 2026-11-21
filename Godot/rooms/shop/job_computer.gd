@@ -25,6 +25,7 @@ var _hovered: bool = false
 @onready var _hotspot: Hotspot = %Hotspot
 @onready var _outline: MeshInstance3D = %Outline
 @onready var _workview_eye: Marker3D = %WorkviewEye
+@onready var _cable_socket: Marker3D = %CableSocket
 @onready var _post_it: PostIt3D = %PostIt
 
 
@@ -39,6 +40,11 @@ func _ready() -> void:
 ## Where the Workview camera looks at this computer from, in world space.
 func workview_transform() -> Transform3D:
 	return _workview_eye.global_transform
+
+
+## The VGA socket that the bench cable plugs into; its +Z points out of the socket.
+func cable_socket() -> Node3D:
+	return _cable_socket
 
 
 ## Stops taking clicks, before the computer leaves the counter.

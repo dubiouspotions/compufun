@@ -81,8 +81,6 @@ func _sync() -> void:
 	_compufun_db.visible = screen == ViewMarker.Screen.COMPUFUN_DB
 	_workview.visible = screen == ViewMarker.Screen.WORKVIEW
 	_screen_view.set_open(screen == ViewMarker.Screen.WIN95)
-	if screen == ViewMarker.Screen.WIN95 and Game.connected == null and Game.focus != null:
-		Game.connect_cable.call_deferred(Game.focus)  # Bridge until the VGA cable exists: the Screen View connects the focused job.
 	_post_it.job = Game.focus
 	_post_it.visible = Game.focus != null
 	var talking := Game.visitor_state == Game.VisitorState.TALKING

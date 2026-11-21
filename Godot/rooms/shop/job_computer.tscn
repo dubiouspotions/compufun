@@ -42,3 +42,7 @@ transform = Transform3D(0.99862953, -0.05233596, 0, 0.05233596, 0.99862953, 0, 0
 [node name="WorkviewEye" type="Marker3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 0.88294756, 0.46947157, 0, -0.46947157, 0.88294756, 0, 0.5, 0.72)
+
+[node name="CableSocket" type="Marker3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.095, 0.08, -0.12)
