@@ -18,6 +18,9 @@ signal plug_grabbed
 ## The plug follows the mouse on an upright plane facing the player, this far in front of the
 ## bench (local z), in metres; in front of the computers, so that they don't hide the plug.
 @export var drag_depth: float = 0.32
+## How far the connected cable bows forward of the counter's back, towards %PlugRest, before it
+## turns back to the computers, in metres; this slack makes it read as a loose cable.
+@export var slack: float = 0.28
 
 ## True while the player drags the plug. [method lay_cable] leaves the plug where it is meanwhile.
 var dragging: bool = false:
@@ -61,7 +64,7 @@ func set_screen_texture(texture: Texture2D) -> void:
 ## [member dragging].
 func lay_cable(socket: Node3D) -> void:
 	if not dragging:
-		_lay(_local(socket if socket != null else _rest))
+		_lay(_local(socket if socket != null else _rest), socket != null)
 
 
 ## Moves the plug to where the mouse ray from [param from] along [param dir] (world space) meets
@@ -74,23 +77,27 @@ func drag_plug(from: Vector3, dir: Vector3) -> void:
 	var point := local_from + local_dir * ((drag_depth - local_from.z) / local_dir.z)
 	var rest := _local(_rest)
 	point.y = maxf(point.y, rest.origin.y)
-	_lay(Transform3D(rest.basis, point))
+	_lay(Transform3D(rest.basis, point), false)
 
 
-# The cable runs along the counter at the height of %PlugRest, behind the computers.
-func _lay(finish: Transform3D) -> void:
+# The cable runs along the counter at the height of %PlugRest, behind the computers. With
+# [param loose], it first snakes forward past %PlugRest and back, in an S.
+func _lay(finish: Transform3D, loose: bool) -> void:
 	var start := _local(_screen_socket)
-	var counter := _local(_rest).origin.y
+	var rest := _local(_rest).origin
+	var counter := rest.y
 	var out_of_screen := start.origin + start.basis.z * socket_reach
 	var into_end := finish.origin + finish.basis.z * socket_reach
 	var behind := Vector3(out_of_screen.x, counter, out_of_screen.z)
-	var points: Array[Vector3] = [
-		start.origin,
-		behind,
+	var points: Array[Vector3] = [start.origin, behind]
+	if loose:
+		points.append(Vector3(rest.x, counter, behind.z + slack))
+		points.append(Vector3(lerpf(rest.x, into_end.x, 0.5), counter, behind.z + slack * 0.15))
+	points.append_array([
 		Vector3(into_end.x, counter, behind.z),
 		Vector3(into_end.x, counter, into_end.z),
 		finish.origin,
-	]
+	])
 	var curve := Curve3D.new()
 	for i in points.size():
 		curve.add_point(points[i])
