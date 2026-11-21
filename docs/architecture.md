@@ -29,7 +29,7 @@ Godot/               the Godot project: everything the game loads
   win95/             the Win95 interface (the Win95 developer's folder)
   addons/dialogue_editor/  the Dialogue tab in the editor
 feedback/            the F9 reports (outside Godot, so Godot does not import them)
-tools/               scripts; sync-wiki.sh clones or pulls the wiki into wiki/; chimera-moods.patch
+tools/               scripts; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; chimera-moods.patch
 wiki/                the GitHub wiki, cloned by tools/sync-wiki.sh (ignored by the repo)
 docs/                the rules for people and agents: this code layout, code standard, build, gotchas, glossary
 .github/workflows/   CI: export on push, itch.io deploy, Discord notifications

@@ -25,7 +25,9 @@ it. Parse-check the scripts you changed:
 "$GODOT" --headless --check-only --script res://path/to/changed.gd
 ```
 
-Then run the scene you changed in the editor.
+Then run the scene you changed, in the editor or without it: `tools/run.sh [res://scene.tscn]`
+imports and plays the main scene, or the scene you name. It refuses while the editor has the
+project open (see the gotcha about two Godot processes).
 
 A headless `--script` that extends `SceneTree` can drive a scene for a quick test. Add the scene in
 `_initialize()` and `await process_frame` before you touch it: until then its `_ready()` has not run.

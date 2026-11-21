@@ -14,6 +14,14 @@ Format — symptom first, because that's what a future reader is searching for:
 
 ## Godot 4.7.2
 
+**The editor saves scenes and resources with data missing, or one scene's content under another
+scene's path.** We saw this after other Godot processes (headless `--import` runs and test runs)
+used the same `Godot/.godot/` caches as the open editor; its UID cache then held two UIDs for
+one file. The cause is not confirmed. Run one Godot per checkout at a time: close the editor
+before headless runs, or play with `tools/run.sh`, which refuses while the editor is open. To
+recover, quit Godot, move `Godot/.godot/` out of the repo, and reopen. Diff every editor save
+before you commit it. — 2026-11
+
 **A scene shows as modified right after you open the project.** The editor adds a `uid=` to the
 `[gd_scene]` header and a `unique_id=` to each node on first save. Commit that change on its own.
 — 2026-11
