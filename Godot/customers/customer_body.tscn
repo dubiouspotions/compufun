@@ -1,41 +1,85 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://customers/customer_body.gd" id="1_s3dhs"]
+[ext_resource type="Script" path="res://customers/customer_body.gd" id="1_raa3r"]
+[ext_resource type="Texture2D" path="res://materials/textures/face_placeholder.png" id="2_02ont"]
+[ext_resource type="Material" path="res://materials/trousers.tres" id="3_dpsq6"]
+[ext_resource type="Material" path="res://materials/shirt.tres" id="4_w6f8g"]
+[ext_resource type="Material" path="res://materials/skin.tres" id="5_ki8ny"]
+[ext_resource type="Material" path="res://materials/hair.tres" id="6_l8b2o"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ojc21"]
-albedo_color = Color(0.55, 0.55, 0.55, 1)
+[sub_resource type="BoxMesh" id="BoxMesh_vw5jt"]
+size = Vector3(0.15, 0.85, 0.17)
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_2trei"]
-radius = 0.25
-height = 1.7
+[sub_resource type="BoxMesh" id="BoxMesh_tro7t"]
+size = Vector3(0.15, 0.85, 0.17)
 
-[sub_resource type="QuadMesh" id="QuadMesh_8kyrw"]
-size = Vector2(0.28, 0.28)
+[sub_resource type="BoxMesh" id="BoxMesh_pkni2"]
+size = Vector3(0.42, 0.6, 0.24)
 
-[node name="CustomerBody" type="Node3D" unique_id=1000666462]
-script = ExtResource("1_s3dhs")
+[sub_resource type="BoxMesh" id="BoxMesh_cgwyv"]
+size = Vector3(0.11, 0.62, 0.13)
 
-[node name="Body" type="MeshInstance3D" parent="." unique_id=2093005851]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-material_override = SubResource("StandardMaterial3D_ojc21")
-mesh = SubResource("CapsuleMesh_2trei")
+[sub_resource type="BoxMesh" id="BoxMesh_bd2in"]
+size = Vector3(0.11, 0.62, 0.13)
 
-[node name="Face" type="MeshInstance3D" parent="." unique_id=1013771772]
+[sub_resource type="BoxMesh" id="BoxMesh_850if"]
+size = Vector3(0.1, 0.08, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_5jfhg"]
+size = Vector3(0.24, 0.26, 0.24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_u5l00"]
+size = Vector3(0.26, 0.07, 0.26)
+
+[sub_resource type="QuadMesh" id="QuadMesh_7vx27"]
+size = Vector2(0.24, 0.26)
+
+[node name="CustomerBody" type="Node3D" unique_id=940875588]
+script = ExtResource("1_raa3r")
+default_face = ExtResource("2_02ont")
+
+[node name="LegL" type="MeshInstance3D" parent="." unique_id=1600057074]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.09, 0.425, 0)
+material_override = ExtResource("3_dpsq6")
+mesh = SubResource("BoxMesh_vw5jt")
+
+[node name="LegR" type="MeshInstance3D" parent="." unique_id=1303234932]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.425, 0)
+material_override = ExtResource("3_dpsq6")
+mesh = SubResource("BoxMesh_tro7t")
+
+[node name="Torso" type="MeshInstance3D" parent="." unique_id=649485976]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+material_override = ExtResource("4_w6f8g")
+mesh = SubResource("BoxMesh_pkni2")
+
+[node name="ArmL" type="MeshInstance3D" parent="." unique_id=624927516]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.27, 1.14, 0)
+material_override = ExtResource("4_w6f8g")
+mesh = SubResource("BoxMesh_cgwyv")
+
+[node name="ArmR" type="MeshInstance3D" parent="." unique_id=88728728]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.27, 1.14, 0)
+material_override = ExtResource("4_w6f8g")
+mesh = SubResource("BoxMesh_bd2in")
+
+[node name="Neck" type="MeshInstance3D" parent="." unique_id=1687136843]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.49, 0)
+material_override = ExtResource("5_ki8ny")
+mesh = SubResource("BoxMesh_850if")
+
+[node name="Head" type="MeshInstance3D" parent="." unique_id=298606218]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.66, 0)
+material_override = ExtResource("5_ki8ny")
+mesh = SubResource("BoxMesh_5jfhg")
+
+[node name="Hair" type="MeshInstance3D" parent="." unique_id=1595370187]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.805, 0)
+material_override = ExtResource("6_l8b2o")
+mesh = SubResource("BoxMesh_u5l00")
+
+[node name="Face" type="MeshInstance3D" parent="." unique_id=1549305725]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0.26)
-mesh = SubResource("QuadMesh_8kyrw")
-
-[node name="FaceLabel" type="Label3D" parent="." unique_id=1350032569]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0.27)
-pixel_size = 0.002
-text = "FACE"
-
-[node name="NameLabel" type="Label3D" parent="." unique_id=307482984]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.95, 0)
-pixel_size = 0.0011
-billboard = 1
-no_depth_test = true
-fixed_size = true
-outline_size = 10
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 1.66, -0.1205)
+material_override = ExtResource("5_ki8ny")
+mesh = SubResource("QuadMesh_7vx27")

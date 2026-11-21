@@ -12,11 +12,16 @@ var _dialogue_for: int = -1
 @onready var _dialogue: DialogueOverlay = %DialogueOverlay
 @onready var _compufun_db: CompufunDB = %CompufunDB
 @onready var _workview: WorkviewPanel = %WorkviewPanel
-@onready var _screen_view: MonitorBezel = %ScreenView
+@onready var _screen_view: ScreenView = %ScreenView
+@onready var _world: SubViewportContainer = $World
+@onready var _world_buffer: SubViewport = $World/WorldBuffer
 
 
 func _ready() -> void:
 	_shop.set_desktop_texture(_screen_view.screen_texture())
+	_screen_view.fade_seconds = _shop.turn_seconds
+	# Right before drawing, after the camera tween moved: the copy never lags behind the 3D screen.
+	RenderingServer.frame_pre_draw.connect(_follow_screen)
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
 	_dialogue.finished.connect(Game.dialogue_finished)
@@ -24,6 +29,24 @@ func _ready() -> void:
 	Game.changed.connect(_sync)
 	Game.start_day(first_day)
 	_sync()
+
+
+func _process(_delta: float) -> void:
+	# frame_pre_draw fires only when a frame is drawn; a headless run draws none.
+	_follow_screen()
+
+
+func _exit_tree() -> void:
+	if RenderingServer.frame_pre_draw.is_connected(_follow_screen):
+		RenderingServer.frame_pre_draw.disconnect(_follow_screen)
+
+
+func _follow_screen() -> void:
+	if not _screen_view.visible:
+		return
+	var pixels := _shop.bench_screen_rect()
+	var scale := _world.size / Vector2(_world_buffer.size)
+	_screen_view.follow(Rect2(_world.position + pixels.position * scale, pixels.size * scale))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -47,7 +70,7 @@ func _sync() -> void:
 	var screen := marker.screen if marker != null else ViewMarker.Screen.NONE
 	_compufun_db.visible = screen == ViewMarker.Screen.COMPUFUN_DB
 	_workview.visible = screen == ViewMarker.Screen.WORKVIEW
-	_screen_view.visible = screen == ViewMarker.Screen.WIN95
+	_screen_view.set_open(screen == ViewMarker.Screen.WIN95)
 	_post_it.visible = Game.phase == Game.Phase.REPAIR or Game.phase == Game.Phase.CALLING
 	var talking := Game.phase == Game.Phase.TALKING
 	if talking and _dialogue_for != Game.customer_index:

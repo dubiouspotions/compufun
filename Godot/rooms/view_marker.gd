@@ -13,3 +13,5 @@ enum Screen { NONE, COMPUFUN_DB, WIN95, WORKVIEW }
 @export var back: StringName = &""
 ## The UI screen that opens in this view.
 @export var screen: Screen = Screen.NONE
+## The vertical field of view of the camera, in degrees. Lower is flatter.
+@export_range(20.0, 100.0) var fov: float = 50.0

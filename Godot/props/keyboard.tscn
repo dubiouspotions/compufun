@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="1_4fnh8"]
+[ext_resource type="Material" path="res://materials/keyboard_keys.tres" id="2_37y2g"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_8g07j"]
+size = Vector3(0.46, 0.03, 0.17)
+
+[sub_resource type="BoxMesh" id="BoxMesh_road4"]
+size = Vector3(0.42, 0.01, 0.12)
+
+[node name="Keyboard" type="Node3D" unique_id=2136396100]
+
+[node name="Base" type="MeshInstance3D" parent="." unique_id=1325612835]
+transform = Transform3D(1, 0, 0, 0, 0.9975641, -0.06975647, 0, 0.06975647, 0.9975641, 0, 0.015, 0)
+material_override = ExtResource("1_4fnh8")
+mesh = SubResource("BoxMesh_8g07j")
+
+[node name="Keys" type="MeshInstance3D" parent="." unique_id=1900485174]
+transform = Transform3D(1, 0, 0, 0, 0.9975641, -0.06975647, 0, 0.06975647, 0.9975641, 0, 0.034, 0.004)
+material_override = ExtResource("2_37y2g")
+mesh = SubResource("BoxMesh_road4")

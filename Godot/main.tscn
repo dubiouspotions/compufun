@@ -1,55 +1,59 @@
 [gd_scene format=3 uid="uid://da3hapbt480yc"]
 
-[ext_resource type="Script" path="res://main.gd" id="1_kek77"]
-[ext_resource type="Resource" path="res://days/day_1.tres" id="2_4c57u"]
-[ext_resource type="PackedScene" path="res://rooms/shop/shop.tscn" id="3_efxa6"]
-[ext_resource type="PackedScene" path="res://ui/monitor_bezel.tscn" id="4_dg77c"]
-[ext_resource type="PackedScene" path="res://ui/compufun_db.tscn" id="5_ycdy4"]
-[ext_resource type="PackedScene" path="res://ui/workview_panel.tscn" id="6_w48qg"]
-[ext_resource type="PackedScene" path="res://ui/post_it.tscn" id="7_vivmo"]
-[ext_resource type="PackedScene" path="res://ui/dialogue_overlay.tscn" id="8_2cqfq"]
-[ext_resource type="PackedScene" path="res://ui/view_nav.tscn" id="9_yaehf"]
-[ext_resource type="PackedScene" path="res://ui/feedback_screen.tscn" id="10_fdbk"]
+[ext_resource type="Script" path="res://main.gd" id="1_efxa6"]
+[ext_resource type="Resource" path="res://days/day_1.tres" id="2_dg77c"]
+[ext_resource type="Material" path="res://shaders/psx_post_world.tres" id="3_ycdy4"]
+[ext_resource type="PackedScene" path="res://rooms/shop/shop.tscn" id="4_w48qg"]
+[ext_resource type="PackedScene" path="res://ui/screen_view.tscn" id="5_vivmo"]
+[ext_resource type="PackedScene" path="res://ui/compufun_db.tscn" id="6_2cqfq"]
+[ext_resource type="PackedScene" path="res://ui/workview_panel.tscn" id="7_yaehf"]
+[ext_resource type="PackedScene" path="res://ui/post_it.tscn" id="8_074og"]
+[ext_resource type="PackedScene" path="res://ui/dialogue_overlay.tscn" id="9_cegan"]
+[ext_resource type="PackedScene" path="res://ui/view_nav.tscn" id="10_82xsv"]
+[ext_resource type="PackedScene" path="res://ui/feedback_screen.tscn" id="11_getpj"]
 
-[node name="Main" type="Node" unique_id=367146307]
-script = ExtResource("1_kek77")
-first_day = ExtResource("2_4c57u")
+[node name="Main" type="Node" unique_id=1319809716]
+script = ExtResource("1_efxa6")
+first_day = ExtResource("2_dg77c")
 
-[node name="World" type="SubViewportContainer" parent="." unique_id=51554]
+[node name="World" type="SubViewportContainer" parent="." unique_id=1172208525]
+texture_filter = 1
+material = ExtResource("3_ycdy4")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 stretch = true
+stretch_shrink = 4
 
-[node name="WorldBuffer" type="SubViewport" parent="World" unique_id=1072269095]
+[node name="WorldBuffer" type="SubViewport" parent="World" unique_id=1560836612]
 physics_object_picking = true
 
-[node name="Shop" parent="World/WorldBuffer" unique_id=155582397 instance=ExtResource("3_efxa6")]
+[node name="Shop" parent="World/WorldBuffer" unique_id=1399348759 instance=ExtResource("4_w48qg")]
 unique_name_in_owner = true
 
-[node name="UI" type="CanvasLayer" parent="." unique_id=1956761064]
+[node name="UI" type="CanvasLayer" parent="." unique_id=997956155]
 
-[node name="ScreenView" parent="UI" unique_id=947288806 instance=ExtResource("4_dg77c")]
+[node name="ScreenView" parent="UI" unique_id=947288806 instance=ExtResource("5_vivmo")]
 unique_name_in_owner = true
 anchors_preset = 15
 
-[node name="CompufunDB" parent="UI" unique_id=981690516 instance=ExtResource("5_ycdy4")]
+[node name="CompufunDB" parent="UI" unique_id=981690516 instance=ExtResource("6_2cqfq")]
 unique_name_in_owner = true
 anchors_preset = 8
 
-[node name="WorkviewPanel" parent="UI" unique_id=1779327767 instance=ExtResource("6_w48qg")]
+[node name="WorkviewPanel" parent="UI" unique_id=1779327767 instance=ExtResource("7_yaehf")]
 unique_name_in_owner = true
 anchors_preset = 6
 
-[node name="PostIt" parent="UI" unique_id=1993570074 instance=ExtResource("7_vivmo")]
+[node name="PostIt" parent="UI" unique_id=1993570074 instance=ExtResource("8_074og")]
 unique_name_in_owner = true
 
-[node name="DialogueOverlay" parent="UI" unique_id=574008241 instance=ExtResource("8_2cqfq")]
-unique_name_in_owner = true
-anchors_preset = 15
-
-[node name="ViewNav" parent="UI" unique_id=1301884336 instance=ExtResource("9_yaehf")]
+[node name="DialogueOverlay" parent="UI" unique_id=574008241 instance=ExtResource("9_cegan")]
 unique_name_in_owner = true
 anchors_preset = 15
 
-[node name="Feedback" parent="." instance=ExtResource("10_fdbk")]
+[node name="ViewNav" parent="UI" unique_id=1301884336 instance=ExtResource("10_82xsv")]
+unique_name_in_owner = true
+anchors_preset = 15
+
+[node name="Feedback" parent="." unique_id=842827844 instance=ExtResource("11_getpj")]

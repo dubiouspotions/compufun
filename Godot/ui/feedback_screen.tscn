@@ -309,6 +309,12 @@ size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 1)
 text = "No marks"
 
+[node name="SendBox" type="CheckBox" parent="Root/Bar/Rows/Buttons" unique_id=1594302217]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Send to GitHub"
+
 [node name="UndoButton" type="Button" parent="Root/Bar/Rows/Buttons" unique_id=1832900416]
 unique_name_in_owner = true
 layout_mode = 2

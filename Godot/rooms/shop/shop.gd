@@ -7,21 +7,19 @@ signal view_requested(view: StringName)
 
 ## The seconds that the camera takes to move to another view.
 @export var turn_seconds: float = 0.35
-## The seconds that a customer takes from the door to the counter.
-@export var walk_seconds: float = 3.0
+## The seconds that a customer takes from the street to the counter.
+@export var walk_seconds: float = 4.0
 
 @onready var _camera: Camera3D = %Camera
 @onready var _views: Node3D = %Views
 @onready var _follow: PathFollow3D = %CustomerFollow
 @onready var _body: CustomerBody = %CustomerBody
 @onready var _counter_computer: Hotspot = %CounterComputer
-@onready var _phone: Hotspot = %Phone
-@onready var _bench_screen: MeshInstance3D = %BenchScreen
+@onready var _bench_monitor: CrtMonitor = %BenchMonitor
 
 var _shown_view: StringName = &""
 var _walk_index: int = -1
 var _camera_tween: Tween
-var _hotspots: Array[Hotspot] = []
 
 
 func _ready() -> void:
@@ -29,7 +27,6 @@ func _ready() -> void:
 		var hotspot := node as Hotspot
 		if hotspot != null:
 			hotspot.clicked.connect(_on_hotspot_clicked)
-			_hotspots.append(hotspot)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -42,23 +39,24 @@ func view_marker(view_name: StringName) -> ViewMarker:
 	return marker
 
 
-## Shows [param texture] (the screen buffer) on the screen of the bench monitor.
+## The screen of the CRT on the counter as the camera sees it now, in pixels of the world buffer.
+func bench_screen_rect() -> Rect2:
+	var corners := _bench_monitor.screen_corners()
+	var rect := Rect2(_camera.unproject_position(corners[0]), Vector2.ZERO)
+	for corner: Vector3 in corners:
+		rect = rect.expand(_camera.unproject_position(corner))
+	return rect
+
+
+## Shows [param texture] (the screen buffer) on the CRT on the counter.
 func set_desktop_texture(texture: Texture2D) -> void:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_texture = texture
-	_bench_screen.material_override = material
+	_bench_monitor.set_screen_texture(texture)
 
 
 func _sync() -> void:
 	if Game.view != _shown_view:
 		_move_camera(Game.view)
-	var marker := view_marker(Game.view)
-	var close_up := marker != null and marker.screen != ViewMarker.Screen.NONE
-	for hotspot: Hotspot in _hotspots:
-		hotspot.show_label(not close_up)
 	_counter_computer.set_enabled(Game.phase == Game.Phase.REPAIR or Game.phase == Game.Phase.CALLING)
-	_phone.set_label("PHONE: call the customer" if Game.can_call() else "PHONE")
 	_body.visible = Game.phase == Game.Phase.WALKING_IN or Game.phase == Game.Phase.TALKING
 	_body.show_customer(Game.customer)
 	if Game.phase == Game.Phase.WALKING_IN and _walk_index != Game.customer_index:
@@ -75,10 +73,12 @@ func _move_camera(view_name: StringName) -> void:
 		_camera_tween.kill()
 	if first:
 		_camera.global_transform = marker.global_transform
+		_camera.fov = marker.fov
 		return
 	_camera_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_parallel()
 	_camera_tween.tween_property(_camera, "global_position", marker.global_position, turn_seconds)
 	_camera_tween.tween_property(_camera, "quaternion", marker.global_basis.get_rotation_quaternion(), turn_seconds)
+	_camera_tween.tween_property(_camera, "fov", marker.fov, turn_seconds)
 
 
 func _walk_in() -> void:

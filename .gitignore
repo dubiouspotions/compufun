@@ -10,3 +10,6 @@ desktop.ini
 /wiki/
 
 .vscode/settings.json
+
+# F9 reports: GitHub issues are the record; these folders are the local backups
+/feedback/
