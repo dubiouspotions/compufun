@@ -11,12 +11,13 @@ func run() -> void:
 	await process_frame
 	var hotspot: Area3D = sign.get_node("%Hotspot")
 	var outline: Node3D = sign.get_node("%Outline")
+	var day_1: Day = load("res://days/day_1.tres")
 	var asked := [0]
 	sign.connect("close_requested", func() -> void: asked[0] += 1)
 
-	check("restore day 1, one customer still to come", game.restore({"day": 1, "arrivals": 1}), "")
+	check("restore day 1, one customer still to come", game.restore({"day": 1, "arrivals": day_1.customers.size() - 1}), "")
 	check("before the last customer: no clicks, no outline", [game.can_close(), hotspot.input_ray_pickable, outline.visible], [false, false, false])
-	check("restore day 1, every customer came and left", game.restore({"day": 1, "arrivals": 2}), "")
+	check("restore day 1, every customer came and left", game.restore({"day": 1, "arrivals": day_1.customers.size()}), "")
 	check("closable: clicks and the outline", [game.can_close(), hotspot.input_ray_pickable, outline.visible], [true, true, true])
 	hotspot.emit_signal("clicked", hotspot)
 	check("a click asks to close", asked[0], 1)
