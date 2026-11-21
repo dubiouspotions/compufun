@@ -1,0 +1,59 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/property_sheet.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+
+[node name="PropertySheet" type="PanelContainer"]
+offset_right = 200.0
+offset_bottom = 100.0
+theme = ExtResource("theme")
+script = ExtResource("script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Properties"
+
+[node name="Body" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+
+[node name="Column" type="VBoxContainer" parent="VBox/Body"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Tabs" type="TabContainer" parent="VBox/Body/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Buttons" type="HBoxContainer" parent="VBox/Body/Column"]
+layout_mode = 2
+alignment = 2
+theme_override_constants/separation = 6
+
+[node name="Ok" type="Button" parent="VBox/Body/Column/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+theme_type_variation = &"DefaultButton"
+text = "OK"
+
+[node name="Cancel" type="Button" parent="VBox/Body/Column/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+text = "Cancel"
+
+[node name="Apply" type="Button" parent="VBox/Body/Column/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+text = "Apply"

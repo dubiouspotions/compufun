@@ -60,6 +60,28 @@ func run() -> void:
 	state.write_text(todo, "party")
 	check("a save is dated by the computer's clock", todo.modified.begins_with("Friday, December 31, 1999 11:59"), true)
 
+	var page_script := GDScript.new()
+	page_script.source_code = "extends \"res://win95/property_page.gd\"\nvar loaded: int = -1\nfunc load_from(c: Node) -> void:\n\tloaded = c.setup.pointer_trails\nfunc pending() -> Dictionary[StringName, Variant]:\n\treturn {&\"pointer_trails\": 7}\n"
+	check("the test page compiles", page_script.reload(), OK)
+	var desktop: Control = load("res://win95/desktop.gd").new()  # loaded at run time, like ComputerState
+	desktop.computer = state
+	root.add_child(desktop)
+	var sheet: Node = load("res://win95/property_sheet.tscn").instantiate()
+	var page := Control.new()
+	page.set_script(page_script)
+	sheet.get_node("%Tabs").add_child(page)
+	sheet.get_node("%Tabs").add_child(Control.new())  # a tab that only shows
+	desktop.add_child(sheet)
+	var apply_button: Button = sheet.get_node("%Apply")
+	check("pages load from the running copy", [sheet.call(&"pages").size(), page.get(&"loaded"), apply_button.disabled], [1, 4, true])
+	page.emit_signal(&"edited")
+	check("an edit enables Apply", apply_button.disabled, false)
+	apply_button.pressed.emit()
+	check("Apply commits and greys", [setup.pointer_trails, apply_button.disabled], [7, true])
+	(sheet.get_node("%Ok") as Button).pressed.emit()
+	check("OK closes and frees", sheet.is_queued_for_deletion(), true)
+	desktop.free()
+
 	state.free()
 	game.jobs = [] as Array[Job]
 
