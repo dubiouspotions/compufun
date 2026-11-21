@@ -1,0 +1,32 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/clippy_jumpscare.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://corruption/clippy_jumpscare/clippy.png" id="2_clippy"]
+
+[node name="ClippyJumpscare" type="Node3D"]
+script = ExtResource("1_script")
+title = "Clippy in the dark storage room"
+stages = 2
+
+[node name="Clippy" type="Sprite3D" parent="."]
+unique_name_in_owner = true
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0.8, -0.8)
+cast_shadow = 0
+pixel_size = 0.005
+alpha_cut = 1
+texture_filter = 0
+texture = ExtResource("2_clippy")
+
+[node name="Dark" type="CanvasLayer" parent="."]
+
+[node name="LightsOut" type="ColorRect" parent="Dark"]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.94)
