@@ -2,9 +2,11 @@ class_name Crash
 extends Control
 ## The bluescreen over the whole window at the end (Game.Phase.ENDED), at a whole-number scale of
 ## its 640 x 480. While it shows, the game stands still (the tree pauses); any key or click reboots
-## it on day 1 (Game.reboot).
+## it on day 1 (Game.reboot). The Win95 Critical Stop chord plays as it comes.
 
 var _shown: bool = false
+
+@onready var _chord: AudioStreamPlayer = %Chord
 
 
 func _ready() -> void:
@@ -25,6 +27,8 @@ func _sync() -> void:
 func _show(on: bool) -> void:
 	if on == _shown and visible == on:
 		return
+	if on and not _shown:
+		_chord.play()
 	_shown = on
 	visible = on
 	get_tree().paused = on
