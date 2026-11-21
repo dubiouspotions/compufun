@@ -11,6 +11,8 @@ enum Screen { NONE, COMPUFUN_DB, WIN95, WORKVIEW }
 @export var right: StringName = &""
 ## The view that Back (the down arrow button, Esc, Down or S) goes to. Empty: no Back.
 @export var back: StringName = &""
+## The player sees the customer at the counter from here, so the customer talks to them.
+@export var faces_customer: bool = false
 ## The UI screen that opens in this view.
 @export var screen: Screen = Screen.NONE
 ## The vertical field of view of the camera, in degrees. Lower is flatter.

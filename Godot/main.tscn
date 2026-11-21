@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://ui/view_nav.tscn" id="10_getpj"]
 [ext_resource type="PackedScene" path="res://ui/debug_menu.tscn" id="11_ryguw"]
 [ext_resource type="PackedScene" path="res://ui/feedback_screen.tscn" id="12_d13ii"]
+[ext_resource type="PackedScene" path="res://ui/customer_calling.tscn" id="customer_calling"]
 
 [node name="Main" type="Node" unique_id=934000901]
 script = ExtResource("1_dg77c")
@@ -56,6 +57,9 @@ unique_name_in_owner = true
 anchors_preset = 15
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="CustomerCalling" parent="UI" instance=ExtResource("customer_calling")]
+unique_name_in_owner = true
 
 [node name="ViewNav" parent="UI" unique_id=1301884336 instance=ExtResource("10_getpj")]
 unique_name_in_owner = true
