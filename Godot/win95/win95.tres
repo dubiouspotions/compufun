@@ -462,7 +462,15 @@ region = Rect2(78, 14, 16, 16)
 atlas = ExtResource("atlas")
 region = Rect2(95, 14, 16, 16)
 
+[sub_resource type="AtlasTexture" id="slider_thumb"]
+atlas = ExtResource("atlas")
+region = Rect2(0, 55, 21, 11)
+
+[sub_resource type="StyleBoxEmpty" id="slider_fill"]
+
 [sub_resource type="StyleBox" id="slider_groove"]
+resource_local_to_scene = false
+resource_name = ""
 content_margin_left = 2.0
 content_margin_top = 0.0
 content_margin_right = 2.0
@@ -470,12 +478,6 @@ content_margin_bottom = 0.0
 script = ExtResource("bevel")
 kind = 4
 palette = ExtResource("palette")
-
-[sub_resource type="StyleBoxEmpty" id="slider_fill"]
-
-[sub_resource type="AtlasTexture" id="slider_thumb"]
-atlas = ExtResource("atlas")
-region = Rect2(0, 55, 21, 11)
 
 [resource]
 default_font = ExtResource("font_regular")
@@ -633,6 +635,7 @@ PopupMenu/icons/unchecked_disabled = SubResource("menu_blank")
 PopupMenu/styles/hover = SubResource("menu_hover")
 PopupMenu/styles/panel = SubResource("window")
 PopupMenu/styles/separator = SubResource("menu_separator")
+PopupPanel/styles/panel = SubResource("window")
 ProgressBar/colors/font_color = Color(0, 0, 0, 1)
 ProgressBar/styles/background = SubResource("progress_bg")
 ProgressBar/styles/fill = SubResource("progress_fill")
@@ -693,7 +696,6 @@ VScrollBar/styles/grabber_highlight = SubResource("scroll_thumb")
 VScrollBar/styles/grabber_pressed = SubResource("scroll_thumb")
 VScrollBar/styles/scroll = SubResource("scroll_track")
 VScrollBar/styles/scroll_focus = SubResource("scroll_track")
-PopupPanel/styles/panel = SubResource("window")
 VSlider/icons/grabber = SubResource("slider_thumb")
 VSlider/icons/grabber_disabled = SubResource("slider_thumb")
 VSlider/icons/grabber_highlight = SubResource("slider_thumb")

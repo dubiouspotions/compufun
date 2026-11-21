@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://da3hapbt480yc"]
 
-[ext_resource type="Script" path="res://main.gd" id="1_dg77c"]
+[ext_resource type="Script" uid="uid://b4amnsokwgsds" path="res://main.gd" id="1_dg77c"]
 [ext_resource type="Resource" path="res://days/day_1.tres" id="2_ycdy4"]
 [ext_resource type="Material" path="res://shaders/psx_post_world.tres" id="3_w48qg"]
 [ext_resource type="PackedScene" path="res://rooms/shop/shop.tscn" id="4_vivmo"]
@@ -27,7 +27,10 @@ stretch = true
 stretch_shrink = 4
 
 [node name="WorldBuffer" type="SubViewport" parent="World" unique_id=146023764]
+handle_input_locally = false
 physics_object_picking = true
+size = Vector2i(480, 270)
+render_target_update_mode = 4
 
 [node name="Shop" parent="World/WorldBuffer" unique_id=1771311348 instance=ExtResource("4_vivmo")]
 unique_name_in_owner = true
@@ -51,10 +54,14 @@ unique_name_in_owner = true
 [node name="DialogueOverlay" parent="UI" unique_id=574008241 instance=ExtResource("9_82xsv")]
 unique_name_in_owner = true
 anchors_preset = 15
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="ViewNav" parent="UI" unique_id=1301884336 instance=ExtResource("10_getpj")]
 unique_name_in_owner = true
 anchors_preset = 15
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="DebugMenu" parent="." unique_id=1072510775 instance=ExtResource("11_ryguw")]
 
