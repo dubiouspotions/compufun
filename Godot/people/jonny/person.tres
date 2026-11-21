@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" path="res://people/jonny/portrait_irritated03.png" id="6_gwpgh"]
 [ext_resource type="Texture2D" path="res://people/jonny/portrait_neutral.png" id="7_7f0l5"]
 [ext_resource type="Texture2D" path="res://people/jonny/portrait_problem.png" id="8_ccea2"]
-[ext_resource type="Texture2D" path="res://people/jonny/portrait_question.png" id="9_05m0v"]
+[ext_resource type="Texture2D" path="res://people/jonny/portrait_thinking.png" id="9_05m0v"]
 [ext_resource type="Script" path="res://people/person.gd" id="10_trcd2"]
 
 [resource]
@@ -22,6 +22,6 @@ portraits = Dictionary[StringName, Texture2D]({
 &"irritated03": ExtResource("6_gwpgh"),
 &"neutral": ExtResource("7_7f0l5"),
 &"problem": ExtResource("8_ccea2"),
-&"question": ExtResource("9_05m0v")
+&"thinking": ExtResource("9_05m0v")
 })
 face = ExtResource("1_rmxyo")
