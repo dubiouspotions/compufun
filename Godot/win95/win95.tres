@@ -358,16 +358,16 @@ region_rect = Rect2(0, 48, 6, 6)
 
 [sub_resource type="StyleBoxFlat" id="title_active"]
 content_margin_left = 2.0
-content_margin_top = 2.0
+content_margin_top = 1.0
 content_margin_right = 2.0
-content_margin_bottom = 2.0
+content_margin_bottom = 1.0
 bg_color = Color(0, 0, 0.502, 1)
 
 [sub_resource type="StyleBoxFlat" id="title_inactive"]
 content_margin_left = 2.0
-content_margin_top = 2.0
+content_margin_top = 1.0
 content_margin_right = 2.0
-content_margin_bottom = 2.0
+content_margin_bottom = 1.0
 bg_color = Color(0.502, 0.502, 0.502, 1)
 
 [sub_resource type="StyleBoxFlat" id="tooltip"]
