@@ -4,7 +4,11 @@ extends Node3D
 ## has ticked Done, a green check and the prompt to call the customer.
 
 ## False hides the 3D text, for a post-it that PostItLabel writes on in sharp UI text.
-@export var text_3d: bool = true
+@export var text_3d: bool = true:
+	set(value):
+		text_3d = value
+		if is_node_ready():
+			_sync()
 
 ## The job whose post-it this is, or null for a blank post-it.
 var job: Job:

@@ -6,7 +6,6 @@
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="4_7jy72"]
 [ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="5_54tg8"]
 [ext_resource type="Material" path="res://materials/vga_blue_plastic.tres" id="6_agwkd"]
-[ext_resource type="PackedScene" path="res://props/post_it_3d.tscn" id="post_it"]
 [ext_resource type="Material" path="res://materials/power_button.tres" id="20_power"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_4ktm6"]
@@ -199,11 +198,6 @@ size = Vector3(0.42, 0.02, 0.42)
 [node name="StickerRight" type="Marker3D" parent="Panel"]
 unique_name_in_owner = true
 transform = Transform3D(0, -1, 0, 0, 0, 1, -1, 0, 0, 0, 0.0065, 0)
-
-[node name="PostIt" parent="Panel" instance=ExtResource("post_it")]
-unique_name_in_owner = true
-transform = Transform3D(0.9986295, -0.05233596, 0, 0, 0, 1, -0.05233596, -0.9986295, 0, 0.06, 0.0075, 0.04)
-text_3d = false
 
 [node name="PanelScrews" type="Marker3D" parent="." unique_id=1479054847]
 unique_name_in_owner = true

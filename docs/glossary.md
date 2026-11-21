@@ -24,7 +24,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Hotspot**: A thing in a room that the player clicks (`rooms/hotspot.tscn`).
 *Avoid:* button, clickable, interactable.
 
-**Post-it**: The repair ticket on a computer on the counter: the perceived issue and the Done box. Each computer wears one (`props/post_it_3d.tscn`), with a green check once Done is ticked. It sits on the front of the standing case and on the side panel of the lying one, and comes off with the panel. In the Workview, `ui/post_it_label.tscn` writes its text in sharp UI text over the paper. The UI post-it (`ui/post_it.tscn`) shows the job in focus and has the Done box.
+**Post-it**: The repair ticket on a computer on the counter: the perceived issue and the Done box. Each computer wears one (`props/post_it_3d.tscn`), with a green check once Done is ticked. It sits on the front of the case, below the power button, standing or lying. In the Workview, `ui/post_it_label.tscn` writes its text in sharp UI text over the paper. The UI post-it (`ui/post_it.tscn`) shows the job in focus and has the Done box.
 *Avoid:* ticket, note.
 
 **CompuFunDB**: The database on the work computer. For each computer on the counter it shows what the customer reported, what to check for that report, and what to fix once the checks are marked. It reads every `Problem` file.

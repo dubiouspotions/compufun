@@ -45,6 +45,7 @@ var powered: bool = false:
 
 var _hovered: bool = false
 var _upright: Dictionary[Node3D, Transform3D] = {}
+var _upright_post_it: Vector3
 
 @onready var _tower: PcTower = $Tower
 @onready var _hotspot: Hotspot = %Hotspot
@@ -68,6 +69,7 @@ func _ready() -> void:
 	_open_case.job = job
 	for node: Node3D in [_power_light, _power_hotspot, _cable_socket]:
 		_upright[node] = node.transform
+	_upright_post_it = _post_it_anchor.position
 	Game.changed.connect(_sync_case)
 	_sync_case()
 	_sync_outline()
@@ -80,10 +82,10 @@ func workview_transform() -> Transform3D:
 	return _open_case.eye_transform()
 
 
-## The post-it that the player reads in the Workview: the one on the side panel while the computer
-## lies with its panel on, else null.
+## The post-it that the player reads in the Workview: the one on the front while the computer lies,
+## else null.
 func pinned_post_it() -> PostIt3D:
-	return _open_case.post_it() if _open_case.visible else null
+	return _post_it if _open_case.visible else null
 
 
 ## The VGA socket that the bench cable plugs into; its +Z points out of the socket.
@@ -110,17 +112,19 @@ func _set_hovered(on: bool) -> void:
 
 # The computer lies on its side while the player works on it (in focus, in the Workview); otherwise it
 # stands, open or not, so that two computers never lie over each other. Its power button, power
-# light and VGA socket turn with it.
+# light, VGA socket and post-it turn with it.
 func _sync_case() -> void:
 	var working := Game.focus == job and Game.view == &"Workview"
 	var lying := working
 	_tower.visible = not lying
-	_post_it_anchor.visible = not lying
 	_open_case.visible = lying
 	_open_case.active = working
+	_post_it.text_3d = not lying
 	var pose := LYING if lying else Transform3D.IDENTITY
 	for node: Node3D in _upright:
 		node.transform = pose * _upright[node]
+	# Only the position turns: the square paper covers the same spot either way, and its check stays where PostItLabel expects it.
+	_post_it_anchor.position = pose * _upright_post_it
 	_hotspot.set_enabled(not working)
 	_sync_outline()
 
