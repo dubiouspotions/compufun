@@ -7,7 +7,7 @@ extends Node3D
 const PSX_WORLD: Shader = preload("res://shaders/psx_world.gdshader")
 
 ## The diameter of the clock, in metres.
-@export_range(0.1, 1.0, 0.01) var diameter: float = 0.36:
+@export_range(0.1, 1.0, 0.01) var diameter: float = 0.45:
 	set(value):
 		diameter = value
 		_apply_look()
@@ -65,7 +65,7 @@ func _ready() -> void:
 		var mark := MeshInstance3D.new()
 		var mesh := QuadMesh.new()
 		mesh.size = Vector2(0.05, 0.1) if quarter else Vector2(0.03, 0.06)
-		mesh.center_offset = Vector3(0.0, 0.42 - mesh.size.y * 0.5, 0.0)
+		mesh.center_offset = Vector3(0.0, 0.38 - mesh.size.y * 0.5, 0.0)
 		mark.mesh = mesh
 		mark.material_override = _hand_material
 		mark.position.z = 0.115
