@@ -8,7 +8,7 @@ func run() -> void:
 	var fan: Part = load("res://parts/fan.tres")
 	check("the computer mouse has no place in a computer", [mouse.fits_computer(), fan.fits_computer()], [false, true])
 	check("a part by its id", [Part.named(&"mouse"), Part.named(&"toaster")], [mouse, null])
-	check("every() keeps the computer's five parts", Part.every().size(), 5)
+	check("every() keeps the computer's seven places", Part.every().size(), 7)
 
 	# A customer leaves a computer on the counter, so a snapshot has a day to restore.
 	var customer: Customer = load("res://customers/skater_bro.tres")
@@ -51,5 +51,5 @@ func run() -> void:
 	check("no place for the computer mouse", [game.can_put(job, mouse), game.put_part(job)], [false, false])
 	check("the mat takes it", game.put_on_mat(job), true)
 	var state: Dictionary = game.snapshot()
-	state["jobs"][0]["parts"].append("mouse")
-	check("a computer mouse in a place: refused", game.restore(state).contains("no place for mouse"), true)
+	state["jobs"][0]["parts"]["mouse"] = "mouse"
+	check("a computer mouse in a place: refused", game.restore(state).contains("no place 'mouse'"), true)

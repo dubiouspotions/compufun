@@ -1,0 +1,46 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/pcb.tres" id="1_pcb"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="2_chip"]
+[ext_resource type="Material" path="res://materials/gold.tres" id="3_gold"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_board"]
+size = Vector3(0.12, 0.003, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_chip"]
+size = Vector3(0.016, 0.002, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_edge"]
+size = Vector3(0.11, 0.0005, 0.004)
+
+[node name="Ram" type="Node3D"]
+
+[node name="Board" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0015, 0)
+material_override = ExtResource("1_pcb")
+mesh = SubResource("BoxMesh_board")
+
+[node name="Chip0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.039, 0.004, -0.003)
+material_override = ExtResource("2_chip")
+mesh = SubResource("BoxMesh_chip")
+
+[node name="Chip1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.013, 0.004, -0.003)
+material_override = ExtResource("2_chip")
+mesh = SubResource("BoxMesh_chip")
+
+[node name="Chip2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.013, 0.004, -0.003)
+material_override = ExtResource("2_chip")
+mesh = SubResource("BoxMesh_chip")
+
+[node name="Chip3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.039, 0.004, -0.003)
+material_override = ExtResource("2_chip")
+mesh = SubResource("BoxMesh_chip")
+
+[node name="Edge" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.00325, 0.013)
+material_override = ExtResource("3_gold")
+mesh = SubResource("BoxMesh_edge")

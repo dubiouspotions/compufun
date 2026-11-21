@@ -9,7 +9,8 @@ var customer: Customer
 var slot: int = 0
 ## Counts up with each drop-off, across days: a lower order is an older job.
 var order: int = 0
-## The pieces in the computer, one per Part; a part that is out has no key.
+## The pieces in the computer, keyed by their place (see [constant Part.IDS]); an empty place has no
+## key.
 var places: Dictionary[Part, Piece] = {}
 ## The pieces that the player took out and put down on the mat beside the computer.
 var mat: Array[Piece] = []
@@ -18,14 +19,15 @@ var mat: Array[Piece] = []
 var lying: bool = false
 ## The side panel is off. The computer lies open.
 var case_open: bool = false
+## The id of the part that the BIOS memory test counts.
+const RAM: StringName = &"ram"
 ## How many screws hold the side panel.
 const PANEL_SCREWS: int = 2
 ## The screws of the side panel: true while it is in. The panel comes off only when all are out.
 var panel_screws: Array[bool] = []
 ## True when every place holds a piece, none is broken, and the side panel is on with its screws in.
-## Setting it is for
-## restore, the presets and the debug menu: true repairs the computer, false breaks the problem's
-## part again.
+## Setting it is for restore, the presets and the debug menu: true repairs the computer, false
+## breaks the problem's part again, in a random place when several take it.
 var hardware_fixed: bool:
 	get:
 		if case_open or panel_screws.has(false):
@@ -67,17 +69,34 @@ func _init(job_customer: Customer, job_slot: int, job_order: int) -> void:
 	_fill(true)
 
 
-## The piece in the place of [param part], or null when that place is empty.
+## The piece in the place [param part], or null when that place is empty.
 func piece(part: Part) -> Piece:
 	return places.get(part)
 
 
-# Puts a piece in every place; the problem's broken part breaks when [param break_part] is true.
+## The share of the computer's memory that its RAM places hold, 0 to 1. 1 for a computer without
+## RAM places.
+func memory_share() -> float:
+	var slots := Part.every().filter(func(place: Part) -> bool: return place.piece_part().id() == RAM)
+	if slots.is_empty():
+		return 1.0
+	return slots.filter(func(place: Part) -> bool: return places.has(place)).size() / float(slots.size())
+
+
+## True while a broken RAM piece is in: the BIOS memory test fails.
+func memory_fails() -> bool:
+	return places.values().any(func(each: Piece) -> bool: return each.broken and each.part.id() == RAM)
+
+
+# Puts a piece in every place. When [param break_part] is true, the problem's broken part breaks,
+# in one random place of those that take it, so the player can't learn which.
 func _fill(break_part: bool) -> void:
 	places.clear()
 	var broken_part: Part = customer.problem.broken_part if customer.problem != null else null
-	for part: Part in Part.every():
-		places[part] = Piece.new(part, break_part and part == broken_part)
+	var takers := Part.every().filter(func(place: Part) -> bool: return place.piece_part() == broken_part)
+	var bad: Part = takers.pick_random() if break_part and not takers.is_empty() else null
+	for place: Part in Part.every():
+		places[place] = Piece.new(place.piece_part(), place == bad)
 	panel_screws.assign(Job.all_in(PANEL_SCREWS))
 
 
@@ -102,9 +121,17 @@ func snapshot() -> Dictionary:
 		"lying": lying,
 		"case_open": case_open,
 		"panel_screws": panel_screws.duplicate(),
-		"parts": Job.pieces_data(places.values()),
+		"parts": places_data(),
 		"mat": Job.pieces_data(mat),
 	}
+
+
+## The pieces in their places as plain data: place id to piece (see [method pieces_data]).
+func places_data() -> Dictionary[String, String]:
+	var data: Dictionary[String, String] = {}
+	for place: Part in places:
+		data[String(place.id())] = Job.pieces_data([places[place]])[0]
+	return data
 
 
 ## [param pieces] as plain data: "<part id>" for a working piece, "<part id>!" for a broken one.

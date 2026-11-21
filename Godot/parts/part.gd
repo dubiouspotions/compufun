@@ -1,12 +1,13 @@
 @tool
 class_name Part
 extends Resource
-## One kind of computer part, such as the CPU. Every computer has one of each part in [constant IDS],
-## in the places that the wiki page Hardware Repair shows. A part file not in [constant IDS], such as
-## the computer mouse, has no place in a computer. The file is parts/<id>.tres.
+## One kind of computer part, such as the CPU. Every computer has a place for each part in
+## [constant IDS], as the wiki page Hardware Repair shows; most places take a piece of their own part,
+## but the two RAM slots both take RAM. A part that no place takes, such as the computer mouse, has
+## no place in a computer. The file is parts/<id>.tres.
 
-## The id of every part that a computer has a place for, in the order that they go in.
-const IDS: Array[StringName] = [&"motherboard", &"cpu", &"fan", &"gpu", &"hard_drive"]
+## The id of every place in a computer, in the order that they go in.
+const IDS: Array[StringName] = [&"motherboard", &"cpu", &"fan", &"ram_1", &"ram_2", &"gpu", &"hard_drive"]
 
 ## The name that the player reads.
 @export var display_name: String = ""
@@ -16,6 +17,9 @@ const IDS: Array[StringName] = [&"motherboard", &"cpu", &"fan", &"gpu", &"hard_d
 ## The 3D model: in the computer, on the mat and on its storage box. Flat side down, origin at the
 ## bottom centre.
 @export var model: PackedScene
+## For a place: the part whose pieces go in it, when that is another part, as a RAM slot takes RAM.
+## null: this part's own pieces.
+@export var takes: Part
 
 
 ## The part's id, from its file name, such as &"cpu".
@@ -23,9 +27,14 @@ func id() -> StringName:
 	return StringName(resource_path.get_file().get_basename())
 
 
-## True when a computer has a place for this part (its id is in [constant IDS]).
+## The part whose pieces go in this place (see [member takes]).
+func piece_part() -> Part:
+	return takes if takes != null else self
+
+
+## True when a computer has a place that takes this part.
 func fits_computer() -> bool:
-	return id() in IDS
+	return Part.every().any(func(place: Part) -> bool: return place.piece_part() == self)
 
 
 ## The part with the id [param part_id] (parts/<id>.tres), or null when there is no such Part file.
@@ -52,7 +61,7 @@ static func bounds(model: Node3D) -> AABB:
 	return box
 
 
-## Every part that a computer has a place for, in the order that they go in. A file that is missing fails loudly.
+## Every place in a computer, in the order that they go in. A file that is missing fails loudly.
 static func every() -> Array[Part]:
 	var parts: Array[Part] = []
 	for part_id: StringName in IDS:

@@ -13,7 +13,7 @@ func run() -> void:
 	var board: Part = load("res://parts/motherboard.tres")
 	var gpu: Part = load("res://parts/gpu.tres")
 	check("Dust Overheat breaks the fan", dust.broken_part, fan)
-	check("five parts, in order", Part.every().map(func(p: Part) -> StringName: return p.id()), Part.IDS)
+	check("seven places, in order", Part.every().map(func(p: Part) -> StringName: return p.id()), Part.IDS)
 
 	# Pierre brings Dust Overheat; a customer from a file can be restored.
 	var pierre: Customer = load("res://customers/skater_bro.tres")
@@ -23,7 +23,7 @@ func run() -> void:
 	game.dialogue_finished()
 	game.customer_left()
 	var job: Job = game.jobs[0]
-	check("a full computer, its fan broken", [job.places.size(), job.piece(fan).broken, job.piece(cpu).broken], [5, true, false])
+	check("a full computer, its fan broken", [job.places.size(), job.piece(fan).broken, job.piece(cpu).broken], [7, true, false])
 	check("not fixed yet", job.hardware_fixed, false)
 	check("the side panel's screws in", job.panel_screws, [true, true])
 
@@ -52,7 +52,9 @@ func run() -> void:
 	check("open: it doesn't stand up", [game.stand_up(job), job.lying], [false, true])
 	check("no panel, no panel screws", game.turn_screw(job, 0), false)
 	game.set_powered(job, true)
-	check("open: no power", job.powered, false)
+	check("open: it still runs, for testing", job.powered, true)
+	check("running: nothing comes out", game.take_part(job, fan), false)
+	game.set_powered(job, false)
 
 	# The real order: the fan sits on the CPU, the CPU and the GPU on the motherboard.
 	check("the CPU is under the fan", game.take_part(job, cpu), false)
@@ -66,19 +68,27 @@ func run() -> void:
 	check("the CPU goes on the mat", [game.put_on_mat(job), job.mat.size(), game.hand], [true, 1, null])
 	check("the GPU comes out freely: only the panel is screwed", game.take_part(job, gpu), true)
 	game.put_on_mat(job)
+	check("the RAM sits on the motherboard too", game.take_part(job, board), false)
+	for slot: Part in [Part.named(&"ram_1"), Part.named(&"ram_2")]:
+		game.take_part(job, slot)
+		game.put_on_mat(job)
 	check("the motherboard comes out last", game.take_part(job, board), true)
 	check("an empty place: no power", game.can_power_on(job), false)
-	game.put_on_mat(job)
+	game.put_on_mat(job)  # the mat: [cpu, gpu, ram, ram, motherboard]
 	game.take_from_mat(job, 0)
 	check("the CPU can't go in before the motherboard", game.put_part(job), false)
-	game.put_on_mat(job)
-	game.take_from_mat(job, 1)  # the mat is now [gpu, cpu]: index 1 after the CPU went back
+	game.put_on_mat(job)  # [gpu, ram, ram, motherboard, cpu]
+	game.take_from_mat(job, 3)
 	check("taken back from the mat: the motherboard", game.hand.part, board)
 	check("the motherboard goes in", game.put_part(job), true)
-	game.take_from_mat(job, 1)
+	game.take_from_mat(job, 3)
 	check("then the CPU", [game.hand.part, game.put_part(job)], [cpu, true])
 	game.take_from_mat(job, 0)
-	check("then the GPU", [game.hand.part, game.put_part(job), job.mat.size()], [gpu, true, 0])
+	check("then the GPU", [game.hand.part, game.put_part(job)], [gpu, true])
+	for i in 2:
+		game.take_from_mat(job, 0)
+		game.put_part(job)
+	check("then the RAM, and the mat is empty", [job.piece(Part.named(&"ram_2")) != null, job.mat.size()], [true, 0])
 	check("a new fan from the storage", [game.take_new_part(fan), game.hand.broken], [true, false])
 	check("a piece only fits its own place", game.can_put(job, cpu), false)
 	game.put_part(job)
@@ -105,19 +115,19 @@ func run() -> void:
 	game.put_on_mat(job)
 	game.take_new_part(gpu)
 	var saved: Dictionary = game.snapshot()
-	check("the snapshot names the pieces", [saved["jobs"][0]["parts"].size(), saved["jobs"][0]["mat"], saved["hand"]], [4, ["fan"], ["gpu"]])
+	check("the snapshot names the pieces", [saved["jobs"][0]["parts"].size(), saved["jobs"][0]["mat"], saved["hand"]], [6, ["fan"], ["gpu"]])
 	game.trash_part()
 	check("restore", game.restore(saved), "")
 	check("a restore keeps it lying", game.jobs[0].lying, true)
 	var back: Job = game.jobs[0]
 	check("restored", [back.case_open, back.piece(fan), back.mat.size(), game.hand.part], [true, null, 1, gpu])
 	check("the panel's screws restored", back.panel_screws, [false, false])
-	saved["jobs"][0]["parts"] = ["fan", "fan"]
-	check("two fans in one place: refused", game.restore(saved).contains("two pieces"), true)
+	saved["jobs"][0]["parts"]["cpu"] = "fan"
+	check("a fan in the CPU's place: refused", game.restore(saved).contains("takes cpu, not fan"), true)
 
 	# The debug menu and the presets set hardware_fixed: true repairs, false breaks the part again.
 	back.hardware_fixed = true
-	check("set fixed", [back.hardware_fixed, back.case_open, back.places.size(), back.panel_screws], [true, false, 5, [true, true]])
+	check("set fixed", [back.hardware_fixed, back.case_open, back.places.size(), back.panel_screws], [true, false, 7, [true, true]])
 	back.hardware_fixed = false
 	check("set broken", back.piece(fan).broken, true)
 

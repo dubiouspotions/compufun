@@ -16,8 +16,8 @@ Godot/               the Godot project: everything the game loads
   shaders/           psx_world.gdshader, psx_post.gdshader, psx_post_world.tres (the world's post material)
   shaders/crt_looks/ the CRT looks: the Screen View's (crt.gdshader) and the 3D bench screen's (crt_world.gdshader)
   props/             one scene per placeholder model: crt_monitor, pc_tower, counter, shelf, part_box, ...
-  props/parts/       the model of each part: motherboard, cpu, fan, gpu, hard_drive
-  parts/             part.gd and piece.gd, and one Part per part: <id>.tres
+  props/parts/       the model of each part: motherboard, cpu, fan, ram, gpu, hard_drive
+  parts/             part.gd and piece.gd, and one Part per part or place: <id>.tres (ram_1 and ram_2 are the RAM slots)
   materials/         one shared material per surface; textures/ holds the PNGs
   rooms/             hotspot.tscn and view_marker.gd, shared by all rooms
   rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying on its side), bench.tscn (the bench screen, keyboard and VGA cable), pipedream.tscn (the Win95 Pipes that grow with the warp), ceiling_mouse.tscn (the easter egg in the ceiling), storage_bin.tscn (the bin where the player puts parts away), hand.tscn (the part in the hand, held in front of the camera), the_end.tscn (the body with the pipe through the chest, at the end), their meshes and textures

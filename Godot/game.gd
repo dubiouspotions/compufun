@@ -358,9 +358,13 @@ func set_powered(job: Job, on: bool) -> void:
 	changed.emit()
 
 
-## True when [param job] can switch on: it stands, its case is closed and every place holds a piece.
+## True when [param job] can switch on: every place holds a piece, except that of the places that
+## take the same part, such as the RAM slots, one is enough. It runs lying and open too, for testing.
 func can_power_on(job: Job) -> bool:
-	return not job.lying and not job.case_open and job.places.size() == Part.every().size()
+	for place: Part in Part.every():
+		if job.piece(place) == null and not job.places.keys().any(func(other: Part) -> bool: return other.piece_part() == place.piece_part()):
+			return false
+	return true
 
 
 # --- Hardware repair (wiki: Hardware Repair). Each move returns false and changes nothing when the
@@ -378,10 +382,10 @@ func open_case(job: Job, open: bool) -> bool:
 	return true
 
 
-## True when the piece of [param part] can come out of [param job] into the empty hand: the case is
-## open, the piece is in, and no piece sits on it.
+## True when the piece in the place [param part] can come out of [param job] into the empty hand: the
+## computer is off, the case is open, the piece is in, and no piece sits on it.
 func can_take(job: Job, part: Part) -> bool:
-	if hand != null or not job.case_open or job.piece(part) == null:
+	if hand != null or job.powered or not job.case_open or job.piece(part) == null:
 		return false
 	for other: Part in job.places:
 		if other.sits_on == part:
@@ -389,10 +393,10 @@ func can_take(job: Job, part: Part) -> bool:
 	return true
 
 
-## True when the piece in the hand can go into its place in [param job]: the case is open, the
-## place is empty, and the part that it sits on is in.
+## True when the piece in the hand can go into the place [param part] of [param job]: the place takes
+## it, the computer is off, the case is open, the place is empty, and the part that it sits on is in.
 func can_put(job: Job, part: Part) -> bool:
-	if hand == null or hand.part != part or not part.fits_computer() or not job.case_open or job.piece(part) != null:
+	if hand == null or hand.part != part.piece_part() or job.powered or not job.case_open or job.piece(part) != null:
 		return false
 	return part.sits_on == null or job.piece(part.sits_on) != null
 
@@ -423,11 +427,17 @@ func take_part(job: Job, part: Part) -> bool:
 	return true
 
 
-## Puts the piece in the hand into its place in [param job] (see [method can_put]).
-func put_part(job: Job) -> bool:
-	if not _on_counter(job, "put_part") or hand == null or not can_put(job, hand.part):
+## Puts the piece in the hand into the place [param place] of [param job] (see [method can_put]);
+## null picks the first place that can take it.
+func put_part(job: Job, place: Part = null) -> bool:
+	if not _on_counter(job, "put_part") or hand == null:
 		return false
-	job.places[hand.part] = hand
+	if place == null:
+		var free := Part.every().filter(func(each: Part) -> bool: return can_put(job, each))
+		place = free[0] if not free.is_empty() else null
+	if place == null or not can_put(job, place):
+		return false
+	job.places[place] = hand
 	hand = null
 	changed.emit()
 	return true
@@ -733,16 +743,21 @@ func restore(state: Dictionary) -> String:
 		job.software_fixed = bool(data.get("software_fixed", false))
 		job.powered = bool(data.get("powered", false))
 		if data.has("parts"):
-			var pieces: Variant = Job.pieces_from(data["parts"])
-			if pieces is String:
-				return _refuse("job %d: %s" % [i, pieces])
+			var given_places: Variant = data["parts"]
+			if given_places is not Dictionary:
+				return _refuse("job %d: parts must map a place id to a piece, not %s" % [i, given_places])
 			job.places.clear()
-			for each: Piece in pieces:
-				if not each.part.fits_computer():
-					return _refuse("job %d: a computer has no place for %s" % [i, each.part.id()])
-				if job.places.has(each.part):
-					return _refuse("job %d: two pieces in the place of %s" % [i, each.part.id()])
-				job.places[each.part] = each
+			for place_id: Variant in given_places:
+				var place := Part.named(StringName(str(place_id)))
+				if place == null or place.id() not in Part.IDS:
+					return _refuse("job %d: a computer has no place '%s'" % [i, place_id])
+				var pieces: Variant = Job.pieces_from([given_places[place_id]])
+				if pieces is String:
+					return _refuse("job %d: %s" % [i, pieces])
+				var each: Piece = pieces[0]
+				if each.part != place.piece_part():
+					return _refuse("job %d: the place %s takes %s, not %s" % [i, place_id, place.piece_part().id(), each.part.id()])
+				job.places[place] = each
 		var mat_pieces: Variant = Job.pieces_from(data.get("mat", []))
 		if mat_pieces is String:
 			return _refuse("job %d: the mat: %s" % [i, mat_pieces])
@@ -755,7 +770,7 @@ func restore(state: Dictionary) -> String:
 				return _refuse("job %d: the side panel has %d screws, not %d" % [i, Job.PANEL_SCREWS, panel.size()])
 			job.panel_screws.assign(panel.map(func(v: Variant) -> bool: return bool(v)))
 		if job.powered and not can_power_on(job):
-			return _refuse("job %d: a computer that is open or misses a part can't be on" % i)
+			return _refuse("job %d: a computer that misses a part can't be on" % i)
 		new_jobs.append(job)
 	var new_focus: Variant = _job_in(new_jobs, int(state.get("focus_slot", -1)), "focus_slot")
 	var new_connected: Variant = _job_in(new_jobs, int(state.get("connected_slot", -1)), "connected_slot")

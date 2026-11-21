@@ -21,6 +21,7 @@
 [ext_resource type="Resource" path="res://parts/fan.tres" id="22_fan"]
 [ext_resource type="Resource" path="res://parts/gpu.tres" id="22_gpu"]
 [ext_resource type="Resource" path="res://parts/hard_drive.tres" id="22_hard_drive"]
+[ext_resource type="Resource" path="res://parts/ram.tres" id="22_ram"]
 [ext_resource type="PackedScene" path="res://rooms/shop/storage_bin.tscn" id="storage_bin"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
@@ -348,6 +349,10 @@ part = ExtResource("22_gpu")
 [node name="Box_hard_drive" parent="Parts" instance=ExtResource("21_box")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.56, 0.75, 0.12)
 part = ExtResource("22_hard_drive")
+
+[node name="Box_ram" parent="Parts" instance=ExtResource("21_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, -0.17)
+part = ExtResource("22_ram")
 
 [node name="BinRack" parent="Parts" instance=ExtResource("13_bin_rack")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.93, -0.4)

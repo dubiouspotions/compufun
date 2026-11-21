@@ -19,14 +19,8 @@ size = Vector3(0.004, 0.006, 0.05)
 [sub_resource type="BoxMesh" id="BoxMesh_2hvqp"]
 size = Vector3(0.008, 0.01, 0.13)
 
-[sub_resource type="BoxMesh" id="BoxMesh_6ls5x"]
-size = Vector3(0.003, 0.03, 0.12)
-
 [sub_resource type="BoxMesh" id="BoxMesh_vnd0r"]
 size = Vector3(0.008, 0.01, 0.13)
-
-[sub_resource type="BoxMesh" id="BoxMesh_68xe3"]
-size = Vector3(0.003, 0.03, 0.12)
 
 [sub_resource type="BoxMesh" id="BoxMesh_ql1sn"]
 size = Vector3(0.012, 0.01, 0.15)
@@ -103,20 +97,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.002, 0.017, -0.05)
 material_override = ExtResource("4_gt5mm")
 mesh = SubResource("BoxMesh_2hvqp")
 
-[node name="Ram0" type="MeshInstance3D" parent="." unique_id=428121103]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.002, 0.035, -0.05)
-material_override = ExtResource("1_w1nlv")
-mesh = SubResource("BoxMesh_6ls5x")
-
 [node name="RamSlot1" type="MeshInstance3D" parent="." unique_id=1149118377]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.016, 0.017, -0.05)
 material_override = ExtResource("4_gt5mm")
 mesh = SubResource("BoxMesh_vnd0r")
-
-[node name="Ram1" type="MeshInstance3D" parent="." unique_id=1196859130]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.016, 0.035, -0.05)
-material_override = ExtResource("1_w1nlv")
-mesh = SubResource("BoxMesh_68xe3")
 
 [node name="AgpSlot" type="MeshInstance3D" parent="." unique_id=1064061049]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.065, 0.017, 0.02)

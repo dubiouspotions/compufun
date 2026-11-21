@@ -145,7 +145,7 @@ func _sync() -> void:
 				shown.queue_free()
 				_shown.erase(part.id())
 			else:
-				_shown[part.id()] = _show_model(part, place)
+				_shown[part.id()] = _show_model(piece.part, place)
 		(place.get_node("Hotspot") as Hotspot).set_enabled(active and (Game.can_take(job, part) or Game.can_put(job, part)))
 	for shown: Node3D in _mat_shown:
 		shown.queue_free()
@@ -379,7 +379,7 @@ func _on_place_clicked(part: Part) -> void:
 	if Game.can_take(job, part):
 		Game.take_part(job, part)
 	else:
-		Game.put_part(job)
+		Game.put_part(job, part)
 
 
 func _on_spot_clicked(index: int) -> void:
