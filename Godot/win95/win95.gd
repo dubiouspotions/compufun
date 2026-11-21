@@ -63,6 +63,12 @@ var pointer_visible := false:
 
 ## How long a folder takes to open on a fragmented drive C.
 const _FRAGMENTED_OPEN_SECONDS := 2.0
+## The stalls of a hanging Windows, in seconds, longer each time; after the last it stays stuck.
+const _HANG_STALLS: Array[float] = [0.1, 0.2, 0.35, 0.6]
+## The seconds that Windows runs between two stalls.
+const _HANG_RUN_SECONDS := 0.1
+## How far the sounds' pitch sags while Windows hangs; 1 keeps it.
+const _HANG_PITCH := 0.55
 
 static var _stock_palette: Win95Palette
 var _setup_icons: Array[FileIcon] = []
@@ -76,6 +82,8 @@ var _context_item: FileIcon
 var _boot: Node
 ## Whether a floppy was in A: at the last change, to hear it go in or out.
 var _floppy_heard: bool = false
+## Counts hangs, so that a boot or a power cut stops the one in progress.
+var _hangs: int = 0
 
 @onready var _state: ComputerState = %ComputerState
 @onready var _desktop: Win95Desktop = $Desktop
@@ -91,6 +99,7 @@ func _ready() -> void:
 		_stock_palette = _SHARED_PALETTE.duplicate() as Win95Palette
 	_state.booted.connect(_on_booted)
 	_state.powered_off.connect(_on_powered_off)
+	_state.hanging.connect(_on_hanging)
 	_state.changed.connect(_on_changed)
 	_context = ContextMenu.new()
 	add_child(_context)
@@ -111,6 +120,7 @@ func _enter_tree() -> void:
 
 
 func _on_booted() -> void:
+	_end_hang()
 	var setup := _state.setup
 	_desktop.close_all()
 	for child in get_children():
@@ -144,6 +154,7 @@ func _on_booted() -> void:
 
 
 func _on_powered_off() -> void:
+	_end_hang()
 	pointer_visible = false
 	if is_instance_valid(_boot):
 		_boot.queue_free()
@@ -164,6 +175,34 @@ func _apply_look() -> void:
 ## a small pattern tiles, a picture fills the screen.
 static func wallpaper_stretch(wallpaper: Texture2D, screen_width: float) -> TextureRect.StretchMode:
 	return TextureRect.STRETCH_TILE if wallpaper.get_width() * 2 < screen_width else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+
+
+# Windows chokes: it stalls for longer and longer, until it stops for good, and its sounds stutter
+# and sag. A stalled node doesn't process: clicks and keys do nothing, and its sounds pause. The
+# pointer still moves, as it did on a hung Win95.
+func _on_hanging(_seconds: float) -> void:
+	_hangs += 1
+	var hang := _hangs
+	# The sag runs only while Windows does, so it fits in the runs between the stalls.
+	var sag_seconds := _HANG_STALLS.size() * _HANG_RUN_SECONDS
+	for player: AudioStreamPlayer in find_children("*", "AudioStreamPlayer", true, false):
+		player.create_tween().tween_property(player, "pitch_scale", player.pitch_scale * _HANG_PITCH, sag_seconds)
+	var tree := get_tree()
+	for stall: float in _HANG_STALLS:
+		process_mode = Node.PROCESS_MODE_DISABLED
+		await tree.create_timer(stall).timeout
+		if hang != _hangs:
+			return
+		process_mode = Node.PROCESS_MODE_INHERIT
+		await tree.create_timer(_HANG_RUN_SECONDS).timeout
+		if hang != _hangs:
+			return
+	process_mode = Node.PROCESS_MODE_DISABLED
+
+
+func _end_hang() -> void:
+	_hangs += 1
+	process_mode = Node.PROCESS_MODE_INHERIT
 
 
 # Every bevel draws with the one shared palette; the desktop on screen sets it, also on entering the tree.

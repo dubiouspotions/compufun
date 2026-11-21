@@ -18,10 +18,12 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 @export var broken_part: Part
 @export var hardware_steps: PackedStringArray = []
 @export var software_steps: PackedStringArray = []
-## For a hardware problem that shows in Windows: the seconds after the desktop appears, which is
-## when the startup sound starts, until the computer switches itself off, as an overheating one
-## does, until the hardware is fixed. 0 keeps it running.
-@export var shuts_down_after: float = 0.0
+## For a hardware problem that shows in Windows, as an overheating computer does, until the
+## hardware is fixed: the seconds after the desktop appears, which is when the startup sound
+## starts, until Windows stutters and hangs. 0 keeps it running.
+@export var hangs_after: float = 0.0
+## The seconds from the start of the hang until the computer reboots.
+@export var hang_seconds: float = 4.0
 ## How the problem breaks the computer's Win95 setup and when that is fixed; null when the problem
 ## has no software part.
 @export var software_check: SoftwareCheck

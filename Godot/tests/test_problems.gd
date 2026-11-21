@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
 ## The software problems: Noimages breaks and fixes by a file name, a defrag finishes overnight
-## only while the computer stays on, and an overheating computer switches itself off.
+## only while the computer stays on, and an overheating computer hangs and reboots.
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run time: it names the Game autoload
 
@@ -28,8 +28,9 @@ func run() -> void:
 	check("switched off: still fragmented", [game.setups[switched_off.customer.computer].fragmented, switched_off.software_fixed], [true, false])
 
 	var overheat := (load("res://problems/dust_overheat.tres") as Problem).duplicate() as Problem
-	check("dust_overheat switches the computer off", overheat.shuts_down_after > 0.0, true)
-	overheat.shuts_down_after = 0.05
+	check("dust_overheat hangs Windows", overheat.hangs_after > 0.0, true)
+	overheat.hangs_after = 0.05
+	overheat.hang_seconds = 0.05
 	var hot := job_with(overheat, 2)
 	hot.powered = true
 	game.jobs = [hot] as Array[Job]
@@ -37,15 +38,24 @@ func run() -> void:
 	state.job = hot
 	root.add_child(state)
 	await process_frame
+	var events: Array[String] = []
+	state.hanging.connect(func(_seconds: float) -> void: events.append("hang"))
+	state.booted.connect(func() -> void: events.append("boot"))
 	state.reached_desktop()
-	await create_timer(0.2).timeout
-	check("an overheating computer switches itself off", hot.powered, false)
+	await create_timer(0.3).timeout
+	check("an overheating computer hangs, then reboots", events, ["hang", "boot"])
+	check("the reboot keeps the power on", hot.powered, true)
+	events.clear()
+	overheat.hang_seconds = 0.2
+	state.reached_desktop()
+	await create_timer(0.1).timeout
 	hot.hardware_fixed = true
-	game.set_powered(hot, true)
-	await process_frame
+	await create_timer(0.3).timeout
+	check("a hang still reboots when the fan is fixed meanwhile", events, ["hang", "boot"])
+	events.clear()
 	state.reached_desktop()
-	await create_timer(0.2).timeout
-	check("with a new fan it stays on", hot.powered, true)
+	await create_timer(0.3).timeout
+	check("with a new fan it stays up", events, [])
 	state.free()
 	game.jobs = [] as Array[Job]
 

@@ -5,8 +5,10 @@ extends Node
 ## computer's running copy from Game.setup_for, which outlives this node: a power cycle or a return
 ## visit keeps the player's changes. It follows the job's power.
 
-## The power came on. [member setup] is ready: rebuild everything from it.
+## The power came on, or the computer rebooted. [member setup] is ready: rebuild everything from it.
 signal booted
+## Windows starts to hang, as an overheating computer does; it reboots [param seconds] later.
+signal hanging(seconds: float)
 ## The power went off.
 signal powered_off
 ## A setter changed [member setup]; re-read what you show.
@@ -24,7 +26,7 @@ var is_on: bool = false
 ## The job whose computer this is. Set once, before the node enters the tree.
 var job: Job
 
-## Counts boots, so that a shutdown timer from an earlier boot does nothing.
+## Counts boots, so that a hang timer from an earlier boot does nothing.
 var _boots: int = 0
 
 
@@ -394,15 +396,25 @@ func _sync() -> void:
 		powered_off.emit()
 
 
-## The desktop appeared after a boot. A problem that switches the computer off starts counting.
+## The desktop appeared after a boot. A problem that hangs Windows starts counting: the computer
+## hangs, then reboots, and does it again after every boot until the hardware is fixed.
 func reached_desktop() -> void:
-	var seconds := job.problem.shuts_down_after
-	if seconds <= 0.0 or job.hardware_fixed:
+	var problem := job.problem
+	if problem.hangs_after <= 0.0 or job.hardware_fixed:
 		return
 	var boot := _boots
-	await get_tree().create_timer(seconds).timeout
-	if boot == _boots and is_on and not job.hardware_fixed and job in Game.jobs:
-		Game.set_powered(job, false)
+	await get_tree().create_timer(problem.hangs_after).timeout
+	if not _still_on(boot) or job.hardware_fixed:
+		return
+	hanging.emit(problem.hang_seconds)
+	await get_tree().create_timer(problem.hang_seconds).timeout
+	if _still_on(boot):  # hung is hung, also if the fan was fixed meanwhile
+		_boots += 1
+		booted.emit()
+
+
+func _still_on(boot: int) -> bool:
+	return boot == _boots and is_on and job in Game.jobs
 
 
 ## Starts Disk Defragmenter on drive C. It finishes overnight while the computer stays on.
