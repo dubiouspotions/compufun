@@ -1,10 +1,10 @@
 class_name TheEnd
 extends Node3D
 ## The end of the game in the shop (Game.Phase.ENDED): a calm moment in the evening, then
-## Pipedream pipes stab out through the player's chest from behind, and their head jerks up in
-## shock. They look down at the stubs in their hands; then the pipes push on through with a rumble and a cloud of blood, one
-## bends off like in the screensaver, and the world crashes into the bluescreen. Each stab jerks the
-## chest along. The body, the pipes and the blood are the children of Body, in world space, so move
+## Pipedream pipes stab out through the player's chest from behind, and their head jerks up with a
+## groan of shock. They look down at the stubs in their hands; then the pipes push on through with a
+## groan of pain, a rumble and a cloud of blood, one bends off like in the screensaver, and the
+## world crashes into the bluescreen. Each stab jerks the chest along. The body, the pipes and the blood are the children of Body, in world space, so move
 ## them in the editor; each pipe under Pipes stabs along its own axis, and its place in the scene is
 ## where it ends up. Bend (a joint, and an arm under Grow that grows along its x) shows after the push.
 
@@ -64,6 +64,8 @@ var _chest_rest: Vector3
 @onready var _splatter: CPUParticles3D = %Splatter
 @onready var _pierce: AudioStreamPlayer = %Pierce
 @onready var _rumble: AudioStreamPlayer = %Rumble
+@onready var _shock_groan: AudioStreamPlayer = %ShockGroan
+@onready var _pain_groan: AudioStreamPlayer = %PainGroan
 
 
 func _ready() -> void:
@@ -77,8 +79,8 @@ func _play() -> void:
 	for tween: Tween in [_sequence, _jerk]:
 		if tween != null:
 			tween.kill()
-	_pierce.stop()
-	_rumble.stop()
+	for sound: AudioStreamPlayer in [_pierce, _rumble, _shock_groan, _pain_groan]:
+		sound.stop()
 	_splatter.emitting = false
 	_chest_blood.visible = false
 	_bleeding.visible = false
@@ -94,11 +96,13 @@ func _play() -> void:
 	_sequence.tween_interval(calm_seconds)
 	_stab(second_metres, 1.0)
 	_sequence.tween_interval(flinch_seconds)
+	_sequence.tween_callback(_shock_groan.play)
 	_sequence.tween_callback(view_requested.emit.bind(up_view))
 	_sequence.tween_interval(shock_seconds)
 	_sequence.tween_callback(view_requested.emit.bind(down_view))
 	_sequence.tween_interval(down_seconds)
 	_sequence.tween_callback(_rumble.play)
+	_sequence.tween_callback(_pain_groan.play)
 	_stab(0.0, second_pitch)
 	_sequence.tween_callback(_bend.show)
 	_sequence.tween_property(_grow, "scale:x", 1.0, bend_seconds)

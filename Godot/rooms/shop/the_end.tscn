@@ -4,6 +4,8 @@
 [ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="2_psx"]
 [ext_resource type="AudioStream" path="res://sounds/end_rumble.wav" id="3_rumble"]
 [ext_resource type="AudioStream" path="res://sounds/end_pierce.wav" id="4_pierce"]
+[ext_resource type="AudioStream" path="res://sounds/end_groan_1.wav" id="5_groan_1"]
+[ext_resource type="AudioStream" path="res://sounds/end_groan_2.wav" id="6_groan_2"]
 
 [sub_resource type="ShaderMaterial" id="shirt_mat"]
 render_priority = 0
@@ -137,6 +139,14 @@ stream = ExtResource("3_rumble")
 [node name="Pierce" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
 stream = ExtResource("4_pierce")
+
+[node name="ShockGroan" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("5_groan_1")
+
+[node name="PainGroan" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("6_groan_2")
 
 [node name="Body" type="Node3D" parent="."]
 unique_name_in_owner = true
