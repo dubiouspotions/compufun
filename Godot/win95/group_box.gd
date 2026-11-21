@@ -1,24 +1,27 @@
 @tool
+class_name GroupBox
 extends Control
-## A Win95 group box: an etched frame with its title set into the top edge, drawn behind the
-## controls that it groups. Place those controls as its siblings; it holds none.
+## A Win95 group box: an etched frame around related controls, with a caption that breaks its top
+## edge. The frame fills the node's rect and the caption sits across its top edge, so the caption
+## reaches 4 px above the rect. Lay the controls out as children, at absolute positions.
 
 const _PALETTE := preload("res://win95/theme/palette.tres")
+## From the frame's left edge to the caption's first pixel.
+const _CAPTION_X := 10.0
+## The gap in the top edge, before and after the caption.
+const _GAP_BEFORE := 3.0
+const _GAP_AFTER := 2.0
+## From the frame's top edge down to the caption's baseline.
+const _BASELINE := 5.0
 
-## The text in the gap of the top edge; empty draws an unbroken frame.
-@export var title: String = "":
+## The caption; empty draws an unbroken frame.
+@export var text := "":
 	set(value):
-		title = value
-		queue_redraw()
-## Where the title starts, in pixels from the left edge.
-@export var title_x: int = 10:
-	set(value):
-		title_x = value
+		text = value
 		queue_redraw()
 
 
 func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_PALETTE.changed.connect(queue_redraw)
 
 
@@ -27,21 +30,18 @@ func _draw() -> void:
 	var h := size.y
 	var shadow := _PALETTE.shadow_color
 	var light := _PALETTE.highlight_color
-	_frame(Rect2(0, 0, w, h), shadow, light)
-	_frame(Rect2(1, 1, w - 2, h - 2), light, shadow)
-	if title == "":
+	draw_rect(Rect2(0, 0, w - 1, 1), shadow)
+	draw_rect(Rect2(0, 0, 1, h - 1), shadow)
+	draw_rect(Rect2(1, h - 2, w - 2, 1), shadow)
+	draw_rect(Rect2(w - 2, 1, 1, h - 2), shadow)
+	draw_rect(Rect2(1, 1, w - 3, 1), light)
+	draw_rect(Rect2(1, 1, 1, h - 3), light)
+	draw_rect(Rect2(0, h - 1, w, 1), light)
+	draw_rect(Rect2(w - 1, 0, 1, h), light)
+	if text.is_empty():
 		return
-	var font := get_theme_font("font", &"Label")
-	var font_size := get_theme_font_size("font_size", &"Label")
-	var width := font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-	draw_rect(Rect2(title_x - 3, 0, width + 5, 2), _PALETTE.face_color)
-	# The capitals start 4 px above the frame, as in Win95.
-	draw_string(font, Vector2(title_x, font.get_ascent(font_size) - 5), title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, get_theme_color("font_color", &"Label"))
-
-
-# Top and left edges in [param top_left], bottom and right in [param bottom_right], 1 px each.
-func _frame(r: Rect2, top_left: Color, bottom_right: Color) -> void:
-	draw_rect(Rect2(r.position.x, r.position.y, r.size.x - 1, 1), top_left)
-	draw_rect(Rect2(r.position.x, r.position.y, 1, r.size.y - 1), top_left)
-	draw_rect(Rect2(r.position.x, r.end.y - 1, r.size.x, 1), bottom_right)
-	draw_rect(Rect2(r.end.x - 1, r.position.y, 1, r.size.y), bottom_right)
+	var font := get_theme_font(&"font", &"Label")
+	var font_size := get_theme_font_size(&"font_size", &"Label")
+	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	draw_rect(Rect2(_CAPTION_X - _GAP_BEFORE, 0, _GAP_BEFORE + width + _GAP_AFTER, 2), _PALETTE.face_color)
+	draw_string(font, Vector2(_CAPTION_X, _BASELINE), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, get_theme_color(&"font_color", &"Label"))
