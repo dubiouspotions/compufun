@@ -79,7 +79,8 @@ func stop() -> void:
 
 ## Moves the box to the edge of the screen toward the customer, with its arrow pointing at them.
 ## [param direction] is Shop.customer_direction(); zero puts the box at the top, without an arrow.
-func point_to(direction: Vector2) -> void:
+## The box moves in from the edge past each of [param avoid], with its arrow clear of them too.
+func point_to(direction: Vector2, avoid: Array[Rect2] = []) -> void:
 	var screen := get_viewport_rect().size
 	var side := Vector2.ZERO
 	if direction != Vector2.ZERO:
@@ -92,6 +93,18 @@ func point_to(direction: Vector2) -> void:
 	else:
 		at.y = margin + 48.0 if side.y <= 0.0 else screen.y - size.y - margin
 		at.x = (screen.x - size.x) * 0.5 + clampf(direction.x, -1.0, 1.0) * free.x * 0.5
+	var reach := arrow_size + margin * 0.5
+	for rect: Rect2 in avoid:
+		if not Rect2(at, size).grow(reach).intersects(rect):
+			continue
+		if side.x > 0.0:
+			at.x = minf(at.x, rect.position.x - reach - size.x)
+		elif side.x < 0.0:
+			at.x = maxf(at.x, rect.end.x + reach)
+		elif side.y > 0.0:
+			at.y = minf(at.y, rect.position.y - reach - size.y)
+		else:
+			at.y = maxf(at.y, rect.end.y + reach)
 	position = at.round()
 	if side != _side:
 		_side = side

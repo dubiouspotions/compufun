@@ -44,6 +44,15 @@ func show_back_strip(on: bool, height: float) -> void:
 	_back_strip_fade.tween_property(_back_strip, "modulate:a", 1.0 if on else 0.0, back_strip_fade_seconds)
 
 
+## The buttons on screen now, in the coordinates of the UI layer, for UI that must not cover them.
+func button_rects() -> Array[Rect2]:
+	var rects: Array[Rect2] = []
+	for button: Button in [_left, _right, _back]:
+		if button.is_visible_in_tree():
+			rects.append(button.get_global_rect())
+	return rects
+
+
 func _request(direction: StringName) -> void:
 	if _marker != null:
 		view_requested.emit(_marker.get(direction))
