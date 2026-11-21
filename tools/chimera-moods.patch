@@ -1,0 +1,61 @@
+diff --git a/crates/chimera-cli/src/main.rs b/crates/chimera-cli/src/main.rs
+index 6d647f5..37fed16 100644
+--- a/crates/chimera-cli/src/main.rs
++++ b/crates/chimera-cli/src/main.rs
+@@ -18,7 +18,9 @@ const USAGE: &str = "\
+ usage: chimera <command> [args] [--float]
+ 
+   render speech  <out> [\"ipa / ipa\"] [male|female|child]
+-  render text    <out> [\"English text.\"] [male|female|child]
++  render text    <out> [\"English text.\"] [male|female|child] [rate] [pitch] [accent]
++                 (rate and pitch multiply the speed and the speaking f0; accent is the pitch
++                 excursion of stressed syllables, 0.14 by default)
+   render turkish <out> [\"Türkçe metin.\"] [male|female|child]
+   render song    [outdir] [male|female|child]
+   render notes   <in.json> <out> [male|female|child] [--artic tracks.json] [--tele voice.tele]
+diff --git a/crates/chimera-cli/src/render.rs b/crates/chimera-cli/src/render.rs
+index 67fda05..fa57557 100644
+--- a/crates/chimera-cli/src/render.rs
++++ b/crates/chimera-cli/src/render.rs
+@@ -184,8 +184,14 @@ pub fn say(g: &EnglishG2P, text: &str, body_name: &str) -> Result<Spoken, String
+ 
+ /// Say phrases from any G2P the way `render text` does (see [`say`]).
+ pub fn say_phrases(phrases: &[Phrase], body_name: &str) -> Result<Spoken, String> {
++    say_phrases_styled(phrases, body_name, 1.0, 1.0, None)
++}
++
++/// [`say_phrases`] with a speaking-rate multiplier, a pitch multiplier on the body's speaking f0,
++/// and the pitch excursion of stressed syllables (None keeps the planner's default).
++pub fn say_phrases_styled(phrases: &[Phrase], body_name: &str, rate: f64, pitch: f64, accent: Option<f64>) -> Result<Spoken, String> {
+     let b = body(body_name)?;
+-    let f0 = text_f0(body_name);
++    let f0 = text_f0(body_name) * pitch;
+     let shown: Vec<String> = phrases
+         .iter()
+         .map(|p| {
+@@ -217,6 +223,8 @@ pub fn say_phrases(phrases: &[Phrase], body_name: &str) -> Result<Spoken, String
+             body: body_name.into(),
+             t0: 0.05,
+             f0: Some(f0),
++            rate: Some(rate),
++            accent,
+             ..Default::default()
+         },
+     );
+@@ -232,9 +240,15 @@ pub fn text(ctx: &Ctx, a: &[String]) -> Result<(), String> {
+     let name = arg(a, 0, "out/text");
+     let text = arg(a, 1, "Hello world.");
+     let body_name = arg(a, 2, "male");
++    let number = |i: usize, name: &str| -> Result<Option<f64>, String> {
++        a.get(i).map(|s| s.parse::<f64>().map_err(|_| format!("{name} is not a number: {s}"))).transpose()
++    };
++    let rate = number(3, "rate")?.unwrap_or(1.0);
++    let pitch = number(4, "pitch")?.unwrap_or(1.0);
++    let accent = number(5, "accent")?;
+     let g = g2p()?;
+     let t = Instant::now();
+-    let s = say(&g, text, body_name)?;
++    let s = say_phrases_styled(&g.to_phrases(text), body_name, rate, pitch, accent)?;
+     let ms = ms_since(t);
+     println!("{}", s.shown);
+     let file = wav_name(name);

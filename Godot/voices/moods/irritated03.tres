@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="VoiceMood" format=3]
+
+[ext_resource type="Script" path="res://voices/voice_mood.gd" id="1_mood"]
+
+[resource]
+script = ExtResource("1_mood")
+rate = 1.14
+pitch = 1.08
+swing = 0.04

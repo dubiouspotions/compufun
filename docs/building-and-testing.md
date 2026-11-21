@@ -44,29 +44,34 @@ templates (Editor > Manage Export Templates).
 ## Voices
 
 Each customer line plays a WAV in `Godot/voices/`, which [Chimera](https://github.com/jamesondh/chimera-vocal-synth)
-renders from the text. After you add or edit a line, or change a customer's `voice`, render the
-missing files. A line without a file is silent, and a debug run warns about it.
+renders from the text, in the customer's `voice` and the mood of the line's pose
+(`Godot/voices/moods/<pose>.tres`: speed, pitch and pitch swing). A line without its file is
+silent, and a debug run warns about it.
 
-1. Once: install [Rust](https://rustup.rs), clone Chimera outside this repo, and build its CLI.
-   The binary finds Chimera's data through the checkout, so keep the checkout where it is.
+1. Once: install [Rust](https://rustup.rs), then clone Chimera outside this repo, at the commit
+   that the patch fits, and build its CLI with our mood patch. The binary finds Chimera's data
+   through the checkout, so keep the checkout where it is.
 
    ```sh
-   git clone https://github.com/jamesondh/chimera-vocal-synth.git
-   cd chimera-vocal-synth && cargo build --release -p chimera-cli
+   git clone https://github.com/jamesondh/chimera-vocal-synth.git && cd chimera-vocal-synth
+   git checkout caf270a && git apply /path/to/humanerror/tools/chimera-moods.patch
+   cargo build --release -p chimera-cli
    ```
 
    If the build fails with "error loading known_hosts", your git sends GitHub through SSH. Run
    the build with `CARGO_NET_GIT_FETCH_WITH_CLI=true` in front.
-2. Render, then import:
+2. In the editor: set Editor Settings > Humanerror > Voices > Chimera Path to
+   `chimera-vocal-synth/target/release/chimera` (`chimera.exe` on Windows). In the Dialogue tab,
+   pick each customer's voice, and press Play on a line to hear it. Play renders a missing file.
+3. Or render every missing file at once, then import:
 
    ```sh
-   CHIMERA=/path/to/chimera-vocal-synth/target/release/chimera "$GODOT" --headless --script res://voices/render_voices.gd
+   CHIMERA=/path/to/chimera "$GODOT" --headless --script res://voices/render_voices.gd
    "$GODOT" --headless --import
    ```
 
-   On Windows, `CHIMERA` points to `chimera.exe`.
-3. Commit the new `.wav` and `.wav.import` files. The tool lists the files that no line uses any
-   more; remove those with `git rm`.
+4. Commit the new `.wav` and `.wav.import` files. `render_voices.gd` lists the files that no
+   line uses any more; remove those with `git rm`.
 
 ## CI
 

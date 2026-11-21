@@ -19,7 +19,8 @@ Godot/               the Godot project: everything the game loads
   rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain), their meshes and textures
   people/<name>/     person.tres, portrait_<pose>.png, face.png
   customers/         one .tres per customer, customer_body.tscn
-  voices/            one .wav per customer line, rendered by Chimera; render_voices.gd renders them
+  voices/            one .wav per customer line, rendered by Chimera; voices.gd names and renders them
+  voices/moods/      the mood of each pose (VoiceMood): the speed, pitch and pitch swing of the voice
   sounds/            sound effects, such as footstep.wav
   problems/          one .tres per problem
   days/              day_1.tres to day_7.tres
@@ -28,7 +29,7 @@ Godot/               the Godot project: everything the game loads
   win95/             the Win95 interface (the Win95 developer's folder)
   addons/dialogue_editor/  the Dialogue tab in the editor
 feedback/            the F9 reports (outside Godot, so Godot does not import them)
-tools/               scripts; sync-wiki.sh clones or pulls the wiki into wiki/
+tools/               scripts; sync-wiki.sh clones or pulls the wiki into wiki/; chimera-moods.patch
 wiki/                the GitHub wiki, cloned by tools/sync-wiki.sh (ignored by the repo)
 docs/                the rules for people and agents: this code layout, code standard, build, gotchas, glossary
 .github/workflows/   CI: export on push, itch.io deploy, Discord notifications

@@ -4,14 +4,9 @@ extends Resource
 ## One line that a customer says, with the portrait pose to show while they say it.
 
 @export_multiline var text: String = ""
-## One of [constant Person.POSES]; the inspector shows them as a dropdown.
+## One of [constant Person.POSES]; the inspector shows them as a dropdown. It sets the portrait and
+## the mood of the voice (voices/moods/).
 @export var pose: StringName = &"neutral"
-
-
-## The voice file of this line in [param voice]. Its name is a hash of the voice and the text, so
-## an edited line never finds old audio. voices/render_voices.gd renders the file.
-func voice_path(voice: String) -> String:
-	return "res://voices/%s.wav" % ("%s|%s" % [voice, text]).md5_text()
 
 
 func _validate_property(property: Dictionary) -> void:

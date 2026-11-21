@@ -213,7 +213,7 @@ func _speak(line: DialogueLine) -> void:
 	_voice.stop()
 	if not _voiced or line == null or line.text.strip_edges().is_empty():
 		return
-	var path := line.voice_path(_customer.voice)
+	var path := Voices.path_of(line, _customer.voice)
 	if not ResourceLoader.exists(path):
 		push_warning("DialogueOverlay: no voice for \"%s\" (%s). Render it: see docs/building-and-testing.md" % [line.text, path])
 		return
