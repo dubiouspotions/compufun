@@ -12,6 +12,12 @@ extends Resource
 @export var drive_c: Array[Win95File] = []
 ## The files in the Recycle Bin. Restoring one of these puts it on the desktop.
 @export var recycle_bin: Array[Win95File] = []
+## Drive C is fragmented: Windows boots slower and folders take seconds to open, until Disk
+## Defragmenter has run overnight.
+@export var fragmented: bool = false
+## Disk Defragmenter is running; it finishes overnight if the computer stays on. Only while the
+## game runs.
+var defragmenting: bool = false
 ## Where each file in the Recycle Bin was deleted from: the desktop, drive_c or a folder's
 ## children. Only while the game runs.
 var deleted_from: Dictionary[Win95File, Array] = {}

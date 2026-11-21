@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
-## Repairs Dust Overheat through the Game API, as the wiki page Hardware Repair says: the side panel
-## and its screws, the real order, one piece in the hand, the mat, the storage, the trash, power,
-## and a restore.
+## Repairs Dust Overheat through the Game API, as the wiki page Hardware Repair says: laying it down,
+## the side panel and its screws, the real order, one piece in the hand, the mat, the storage, the
+## trash, power, and a restore.
 
 const GAME := preload("res://game.gd")
 
@@ -26,6 +26,16 @@ func run() -> void:
 	check("a full computer, its fan broken", [job.places.size(), job.piece(fan).broken, job.piece(cpu).broken], [5, true, false])
 	check("not fixed yet", job.hardware_fixed, false)
 	check("the side panel's screws in", job.panel_screws, [true, true])
+
+	# The Workview shows the computer standing until the player lays it down; leaving stands it up.
+	game.focus_job(job)
+	check("outside the Workview it doesn't lie down", game.lay_down(job), false)
+	game.go_to_view(&"Workview")
+	check("in the Workview it stands", game.lies(job), false)
+	check("a click on the case lays it down", [game.lay_down(job), game.lies(job)], [true, true])
+	check("it lies already", game.lay_down(job), false)
+	game.go_to_view(&"Main")
+	check("leaving the Workview stands it up", [game.lies(job), game.laid_down], [false, false])
 
 	# The case: closed parts can't move, and a computer that is on doesn't open.
 	check("closed: the fan can't come out", game.take_part(job, fan), false)

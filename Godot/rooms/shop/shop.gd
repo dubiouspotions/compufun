@@ -47,6 +47,7 @@ var _shown_view: StringName = &""
 var _heard_hand: Variant = null
 var _heard_cable: Job
 var _workview_job: Job
+var _workview_lying: bool = false
 var _walk_in_arrival: int = -1
 var _walk_out_arrival: int = -1
 var _walk_tween: Tween
@@ -222,11 +223,14 @@ func _move_camera(view_name: StringName) -> void:
 	_camera_tween.tween_property(_camera, "fov", marker.fov, seconds)
 
 
-## Moves the Workview marker to the computer in focus. True when it moved.
+## Moves the Workview marker to the eye of the computer in focus, standing or lying. True when it
+## moved.
 func _follow_focus() -> bool:
-	if Game.focus == _workview_job:
+	var lying := Game.lies(Game.focus)
+	if Game.focus == _workview_job and lying == _workview_lying:
 		return false
 	_workview_job = Game.focus
+	_workview_lying = lying
 	if Game.focus == null:
 		return false
 	var marker := view_marker(WORKVIEW)
@@ -246,6 +250,15 @@ func _walk_in() -> void:
 	_walk_tween = create_tween()
 	_walk_tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds)
 	_walk_tween.finished.connect(Game.customer_arrived)
+
+
+## Debug: ends the customer's walk in or out at once, as if it had run its course. False when
+## nobody is walking.
+func skip_walk() -> bool:
+	if _walk_tween == null or not _walk_tween.is_running():
+		return false
+	_walk_tween.custom_step(1e6)
+	return true
 
 
 # The path runs from the door to the counter, so the visitor turns around and walks it backwards.
@@ -308,5 +321,8 @@ func _drop_plug(job: Job) -> void:
 
 
 func _on_job_clicked(job: Job) -> void:
+	if Game.view == WORKVIEW and job == Game.focus:
+		Game.lay_down(job)
+		return
 	Game.focus_job(job)
 	view_requested.emit(WORKVIEW)

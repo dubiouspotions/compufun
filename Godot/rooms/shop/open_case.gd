@@ -27,7 +27,7 @@ var job: Job:
 		job = value
 		if is_node_ready():
 			_sync()
-## True while the player works on this computer: in focus, in the Workview. JobComputer sets it.
+## True while the player works in this computer: laid down in the Workview. JobComputer sets it.
 ## Only an active case takes clicks and shows highlights.
 var active: bool = false:
 	set(value):

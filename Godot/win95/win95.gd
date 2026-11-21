@@ -54,6 +54,9 @@ var pointer_visible := false:
 			pointer_visible = value
 			pointer_changed.emit()
 
+## How long a folder takes to open on a fragmented drive C.
+const _FRAGMENTED_OPEN_SECONDS := 2.0
+
 static var _stock_palette: Win95Palette
 var _setup_icons: Array[FileIcon] = []
 var _listings: Dictionary[IconView, Listing] = {}
@@ -124,7 +127,11 @@ func _on_booted() -> void:
 	_boot.floppy_in_a = setup.floppy_in_a
 	_floppy_heard = setup.floppy_in_a
 	pointer_visible = false
-	_boot.finished.connect(func() -> void: pointer_visible = true)
+	_boot.finished.connect(func() -> void:
+		pointer_visible = true
+		_state.reached_desktop())
+	if setup.fragmented:
+		_boot.splash_seconds *= 3.0  # a fragmented disk loads Windows slowly
 	add_child(_boot)
 	move_child(_boot, _no_signal.get_index())
 
@@ -270,6 +277,8 @@ func _listing_of_item(item: FileIcon) -> Listing:
 
 
 func _show(listing: Listing) -> void:
+	if _state.setup.fragmented:
+		await get_tree().create_timer(_FRAGMENTED_OPEN_SECONDS).timeout  # the disk seeks all over
 	for view: IconView in _listings.keys():
 		if view != _icons and is_same(_listings[view].key, listing.key) and _desktop.windows().has(view.owner):
 			_desktop.activate(view.owner)

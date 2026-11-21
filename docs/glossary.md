@@ -60,7 +60,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Sticker**: A small picture on the front or a side of a customer's computer case (a `Sticker` in `Computer.stickers`), shown with the poster prop. A computer has any number of stickers, or none. The case material (`Computer.case_material`) and the stickers tell the computers on the counter apart.
 *Avoid:* decal, label, badge.
 
-**Week calendar**: The calendar on the pin board in the Right view (`props/week_calendar.tscn`): the seven days of the game with their dates, and a red cross on each day that has passed. A day has passed when the shop closes for its night.
+**Week calendar**: The calendar on the pin board in the Right view (`props/week_calendar.tscn`): one cell per day of the game with its weekday and date, Saturday and Sunday in red, and a check mark on each day that has passed. A day has passed when the shop closes for its night.
 *Avoid:* calendar prop, day counter.
 
 **Job**: One customer's computer on the counter, with its slot, its repair state and its post-it (`Job`, in `Game.jobs`). It stays from the drop-off to the pickup, overnight too.
@@ -75,7 +75,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Place**: Where a part sits inside a computer. A job holds one piece per place, or none when the player took it out (`Job.places`).
 *Avoid:* slot (that is a job's place on the counter).
 
-**Side panel**: The panel that the player lifts off a computer to reach its parts, held by two screws (`Job.case_open`, `Job.panel_screws`). In the Workview the computer lies on its side, the side panel up.
+**Side panel**: The panel that the player lifts off a computer to reach its parts, held by two screws (`Job.case_open`, `Job.panel_screws`). In the Workview the computer stands until the player clicks its top; then it lies on its side, the side panel up (`Game.lay_down`).
 *Avoid:* lid, cover, shell.
 
 **Mat**: The strip in front of an open computer where the player lays the pieces that they took out (`Job.mat`).

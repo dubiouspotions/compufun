@@ -2,8 +2,6 @@
 
 [ext_resource type="Script" path="res://win95/boot_sequence.gd" id="script"]
 [ext_resource type="AudioStream" path="res://win95/sounds/boot_power_on.ogg" id="power_on"]
-[ext_resource type="AudioStream" path="res://win95/sounds/boot_post_beep.ogg" id="post_beep"]
-[ext_resource type="AudioStream" path="res://win95/sounds/boot_drive.ogg" id="drive"]
 [ext_resource type="AudioStream" path="res://win95/sounds/boot_startup.ogg" id="startup"]
 [ext_resource type="Texture2D" path="res://win95/theme/boot_logo.png" id="logo"]
 [ext_resource type="Script" path="res://win95/energy_star.gd" id="energy_star"]
@@ -22,8 +20,6 @@ color = Color(0, 0, 0, 1)
 script = ExtResource("script")
 bar_gradient = SubResource("bar")
 power_on_sound = ExtResource("power_on")
-post_beep_sound = ExtResource("post_beep")
-drive_sound = ExtResource("drive")
 startup_sound = ExtResource("startup")
 
 [node name="Post" type="RichTextLabel" parent="."]
@@ -59,6 +55,7 @@ bbcode_enabled = true
 scroll_active = false
 
 [node name="EnergyStar" type="Control" parent="Post"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -68,19 +65,6 @@ offset_top = 4.0
 offset_right = -36.0
 offset_bottom = 100.0
 script = ExtResource("energy_star")
-
-[node name="Starting" type="Label" parent="."]
-unique_name_in_owner = true
-visible = false
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = 8.0
-theme_override_colors/font_color = Color(0.667, 0.667, 0.667, 1)
-theme_override_fonts/font = ExtResource("vga_font")
-theme_override_font_sizes/font_size = 16
-text = "Starting Windows 95..."
 
 [node name="Splash" type="TextureRect" parent="."]
 unique_name_in_owner = true

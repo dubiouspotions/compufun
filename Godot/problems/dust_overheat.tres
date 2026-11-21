@@ -11,3 +11,4 @@ perceived_issue = "Windows starts and turns off"
 symptoms = PackedStringArray("Windows starts booting but the computer turns off (heat warning?)", "The fan is full of dust")
 hardware_steps = PackedStringArray("Remove the computer shell", "Remove the fan, throw it in the trash", "Get a new fan from storage", "Install the fan", "Remount the shell")
 software_steps = PackedStringArray()
+shuts_down_after = 20.0

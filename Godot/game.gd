@@ -57,8 +57,13 @@ var arrivals: int = 0
 var daypart: Daypart = Daypart.NONE
 ## The computers on the counter, oldest drop-off first. Jobs left overnight stay.
 var jobs: Array[Job] = []
-## The computer that the player works on in the Workview, or null for none.
-var focus: Job
+## The computer that the player works on in the Workview, or null for none. A new focus stands the
+## computer up again (see [member laid_down]).
+var focus: Job:
+	set(value):
+		if value != focus:
+			laid_down = false
+		focus = value
 ## The computer that the VGA cable is connected to, or null when the cable hangs free.
 var connected: Job
 ## The part in the player's hand, or null. The hand holds one piece at a time.
@@ -67,8 +72,15 @@ var hand: Piece
 var visitor: Customer
 var visit: Visit = Visit.NONE
 var visitor_state: VisitorState = VisitorState.NONE
-## The name of the current view marker in the room, for example &"Main".
-var view: StringName = &"Main"
+## The name of the current view marker in the room, for example &"Main". A new view stands the
+## computer in focus up again (see [member laid_down]).
+var view: StringName = &"Main":
+	set(value):
+		if value != view:
+			laid_down = false
+		view = value
+## True after [method lay_down], until the view or the focus changes. See [method lies].
+var laid_down: bool = false
 ## The facts of the story: a name and a number. A flag that is 0 or missing is not set.
 var flags: Dictionary[StringName, int] = {}
 ## The conversations that have played, as "<customer file name>/<conversation id>".
@@ -113,8 +125,21 @@ func date_of(number: int) -> Dictionary:
 	return Time.get_datetime_dict_from_unix_time(unix)
 
 
+# A computer left on overnight finishes what it was doing: Disk Defragmenter.
+func _finish_overnight_work() -> void:
+	for job in jobs:
+		var setup: Win95Setup = setups.get(job.customer.computer)
+		if setup == null or not job.powered or not setup.defragmenting:
+			continue
+		setup.defragmenting = false
+		setup.fragmented = false
+		if job.problem.software_check != null:
+			job.software_fixed = job.problem.software_check.is_fixed(setup)
+
+
 ## Starts [param new_day] in the morning: the shop opens, and its first customer comes in after
-## [member Day.first_wait_seconds] unless the counter is full. Jobs left overnight stay. Refuses a day that is null, has no customers, has more
+## [member Day.first_wait_seconds] unless the counter is full. Jobs left overnight stay, and those
+## computers that stayed on finish their Disk Defragmenter run. Refuses a day that is null, has no customers, has more
 ## than [constant MAX_CUSTOMERS], or has a customer with no problem, and keeps the current state.
 func start_day(new_day: Day) -> void:
 	var invalid := _check_day(new_day)
@@ -122,6 +147,7 @@ func start_day(new_day: Day) -> void:
 		push_error("Game.start_day: " + invalid)
 		return
 	day = new_day
+	_finish_overnight_work()
 	arrivals = 0
 	daypart = Daypart.MORNING
 	phase = Phase.OPEN
@@ -208,6 +234,22 @@ func matching_conversation(who: Customer, trigger: Conversation.Trigger) -> Conv
 			continue
 		return c
 	return null
+
+
+## Lays the computer in focus on its side in the Workview, so the player can reach its side panel.
+## False, and nothing changes, when [param job] is not in focus in the Workview or already lies.
+func lay_down(job: Job) -> bool:
+	if job == null or job != focus or view != &"Workview" or lies(job):
+		return false
+	laid_down = true
+	changed.emit()
+	return true
+
+
+## True while [param job] lies on its side: in focus in the Workview, and laid down or open. An open
+## computer lies there from the start; elsewhere every computer stands.
+func lies(job: Job) -> bool:
+	return job != null and job == focus and view == &"Workview" and (laid_down or job.case_open)
 
 
 ## Puts [param job] in focus for the Workview. null takes the focus away. The job must be on the
@@ -529,6 +571,7 @@ func snapshot() -> Dictionary:
 		"connected_slot": connected.slot if connected != null else -1,
 		"hand": Job.pieces_data([hand] if hand != null else []),
 		"view": String(view),
+		"laid_down": laid_down,
 		"conversation": String(conversation.id) if conversation != null else "",
 		"flags": flags.duplicate(),
 		"seen": seen.keys(),
@@ -681,6 +724,7 @@ func restore(state: Dictionary) -> String:
 	_restart_wait()
 	_call_left = CALL_SECONDS
 	view = StringName(str(state.get("view", view)))
+	laid_down = bool(state.get("laid_down", false))
 	flags = new_flags
 	seen = new_seen
 	arrival += 1
@@ -728,6 +772,13 @@ func _try_arrival() -> bool:
 	daypart = _daypart_of(arrivals)
 	_set_visitor(day.customers[arrivals - 1], Visit.DROP_OFF)
 	return true
+
+
+## Debug: ends the wait that runs now, so the next event comes at once: the next customer (when
+## the counter has room) or the end of the phone call.
+func skip_wait() -> void:
+	_waited = _wait
+	_call_left = 0.0
 
 
 func _end_call() -> void:
