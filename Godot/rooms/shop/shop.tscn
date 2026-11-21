@@ -36,6 +36,7 @@
 [ext_resource type="PackedScene" path="res://rooms/shop/the_end.tscn" id="the_end"]
 [ext_resource type="PackedScene" path="res://rooms/shop/hand.tscn" id="hand"]
 [ext_resource type="PackedScene" path="res://rooms/shop/ceiling_mouse.tscn" id="ceiling_mouse"]
+[ext_resource type="PackedScene" path="res://props/wall_clock.tscn" id="wall_clock"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -511,6 +512,9 @@ mesh = SubResource("QuadMesh_tgmyf")
 
 [node name="WeekCalendar" parent="Room" instance=ExtResource("week_calendar")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.944, 1.64, 0.85)
+
+[node name="WallClock" parent="Room" instance=ExtResource("wall_clock")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.0, 2.7, -5.45)
 
 [node name="PinBoardLogo" parent="Room" instance=ExtResource("7_mjyfn")]
 transform = Transform3D(0, 0, -0.18, 0, 0.18, 0, 0.18, 0, 0, 3.945, 1.925, 0.3)
