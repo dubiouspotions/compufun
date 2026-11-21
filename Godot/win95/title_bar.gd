@@ -7,6 +7,8 @@ signal minimize_pressed
 signal maximize_pressed
 ## The player dragged the title bar with the left button by `relative` pixels.
 signal drag_moved(relative: Vector2)
+## The player released the left button after pressing it on the title bar.
+signal drag_ended
 
 @export var title := "":
 	set(value):
@@ -43,6 +45,9 @@ func _gui_input(event: InputEvent) -> void:
 	var motion := event as InputEventMouseMotion
 	if motion and motion.button_mask & MOUSE_BUTTON_MASK_LEFT:
 		drag_moved.emit(motion.relative)
+	var button := event as InputEventMouseButton
+	if button and button.button_index == MOUSE_BUTTON_LEFT and not button.pressed:
+		drag_ended.emit()
 
 
 func _sync() -> void:
