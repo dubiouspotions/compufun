@@ -81,6 +81,7 @@ func _gui_input(event: InputEvent) -> void:
 	var pixels := Vector2(buffer.size)
 	var bent := mouse.duplicate() as InputEventMouse
 	bent.position = bend(mouse.position / size) * pixels
+	bent.global_position = bent.position  # controls in the buffer read either
 	var motion := bent as InputEventMouseMotion
 	if motion != null:
 		motion.relative = bent.position - bend((mouse.position - motion.relative) / size) * pixels
