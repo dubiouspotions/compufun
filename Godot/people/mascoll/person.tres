@@ -25,3 +25,4 @@ portraits = Dictionary[StringName, Texture2D]({
 &"thinking": ExtResource("9_sqa7d")
 })
 face = ExtResource("1_3sn63")
+shirt_rect = Rect2(0.34, 0.4, 0.36, 0.6)

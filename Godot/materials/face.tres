@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="1_face"]
+[ext_resource type="Texture2D" path="res://materials/textures/face_placeholder.png" id="2_face"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_face")
+shader_parameter/albedo_texture = ExtResource("2_face")
+shader_parameter/tint_texture = ExtResource("2_face")
+shader_parameter/edge_fade = 0.12
