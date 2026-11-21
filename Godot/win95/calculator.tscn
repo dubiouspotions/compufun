@@ -1,0 +1,268 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/calculator.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+
+[node name="Calculator" type="PanelContainer"]
+theme = ExtResource("theme")
+script = ExtResource("script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Calculator"
+show_minimize = true
+
+[node name="MenuBar" type="MenuBar" parent="VBox"]
+layout_mode = 2
+prefer_global_menu = false
+
+[node name="Edit" type="PopupMenu" parent="VBox/MenuBar"]
+unique_name_in_owner = true
+item_count = 2
+item_0/text = "Copy"
+item_0/id = 0
+item_1/text = "Paste"
+item_1/id = 1
+
+[node name="View" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 2
+item_0/text = "Standard"
+item_0/checkable = 2
+item_0/checked = true
+item_0/id = 0
+item_1/text = "Scientific"
+item_1/checkable = 2
+item_1/disabled = true
+item_1/id = 1
+
+[node name="Help" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 1
+item_0/text = "About Calculator"
+item_0/disabled = true
+item_0/id = 0
+
+[node name="Body" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+
+[node name="Rows" type="VBoxContainer" parent="VBox/Body"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="DisplayField" type="PanelContainer" parent="VBox/Body/Rows"]
+layout_mode = 2
+theme_type_variation = &"FieldPanel"
+
+[node name="Display" type="Label" parent="VBox/Body/Rows/DisplayField"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0."
+horizontal_alignment = 2
+clip_text = true
+
+[node name="Keys" type="HBoxContainer" parent="VBox/Body/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Memory" type="VBoxContainer" parent="VBox/Body/Rows/Keys"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="MemoryWell" type="PanelContainer" parent="VBox/Body/Rows/Keys/Memory"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+theme_type_variation = &"StatusWell"
+
+[node name="MemoryFlag" type="Label" parent="VBox/Body/Rows/Keys/Memory/MemoryWell"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MC" type="Button" parent="VBox/Body/Rows/Keys/Memory"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "MC"
+
+[node name="MR" type="Button" parent="VBox/Body/Rows/Keys/Memory"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "MR"
+
+[node name="MS" type="Button" parent="VBox/Body/Rows/Keys/Memory"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "MS"
+
+[node name="MPlus" type="Button" parent="VBox/Body/Rows/Keys/Memory"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "M+"
+
+[node name="Main" type="VBoxContainer" parent="VBox/Body/Rows/Keys"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="Clear" type="HBoxContainer" parent="VBox/Body/Rows/Keys/Main"]
+layout_mode = 2
+alignment = 2
+theme_override_constants/separation = 6
+
+[node name="Backspace" type="Button" parent="VBox/Body/Rows/Keys/Main/Clear"]
+custom_minimum_size = Vector2(60, 28)
+layout_mode = 2
+focus_mode = 0
+text = "Backspace"
+
+[node name="CE" type="Button" parent="VBox/Body/Rows/Keys/Main/Clear"]
+custom_minimum_size = Vector2(60, 28)
+layout_mode = 2
+focus_mode = 0
+text = "CE"
+
+[node name="C" type="Button" parent="VBox/Body/Rows/Keys/Main/Clear"]
+custom_minimum_size = Vector2(60, 28)
+layout_mode = 2
+focus_mode = 0
+text = "C"
+
+[node name="Pad" type="GridContainer" parent="VBox/Body/Rows/Keys/Main"]
+layout_mode = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 5
+columns = 5
+
+[node name="Seven" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "7"
+
+[node name="Eight" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "8"
+
+[node name="Nine" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "9"
+
+[node name="Divide" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "/"
+
+[node name="Sqrt" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "sqrt"
+
+[node name="Four" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "4"
+
+[node name="Five" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "5"
+
+[node name="Six" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "6"
+
+[node name="Multiply" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "*"
+
+[node name="Percent" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "%"
+
+[node name="One" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "1"
+
+[node name="Two" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "2"
+
+[node name="Three" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "3"
+
+[node name="Minus" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "-"
+
+[node name="Reciprocal" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "1/x"
+
+[node name="Zero" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "0"
+
+[node name="Negate" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "+/-"
+
+[node name="Point" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "."
+
+[node name="Plus" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "+"
+
+[node name="Equals" type="Button" parent="VBox/Body/Rows/Keys/Main/Pad"]
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+focus_mode = 0
+text = "="
