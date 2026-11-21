@@ -1,6 +1,7 @@
 extends CanvasLayer
 ## The loading screen: the CompuFun logo draws itself in while main.tscn loads. Then the game starts
-## underneath, the logo's letters turn into windows onto it, and the white paper fades away.
+## underneath, the logo's letters turn into windows onto it, and the paper zooms in through one
+## letter until the game fills the screen.
 
 const GAME_SCENE: String = "res://main.tscn"
 
@@ -10,10 +11,16 @@ const GAME_SCENE: String = "res://main.tscn"
 @export var hold_seconds: float = 0.3
 ## How long the letters take to turn see-through, in seconds.
 @export var reveal_seconds: float = 0.6
-## How long the cut-out logo then stays, before the paper fades, in seconds.
+## How long the cut-out logo then stays, before the zoom, in seconds.
 @export var cutout_seconds: float = 1.2
-## How long the white paper then takes to fade away, in seconds.
-@export var paper_seconds: float = 0.6
+## Where the zoom goes: a point deep inside the logo's ink, in pixels of the logo picture. Its hole
+## grows until it covers the screen. The thickest stroke zooms the shortest: measure again if the
+## logo changes.
+@export var zoom_point: Vector2 = Vector2(49, 242)
+## How far the paper zooms in. The hole around zoom_point must then cover the screen.
+@export var zoom_scale: float = 40.0
+## How long the zoom takes, in seconds. The paper also fades in the last 30 %.
+@export var zoom_seconds: float = 0.9
 
 # Set on the first frame: the web build has no threads, so the load may block until then.
 var _start_ms: int = -1
@@ -70,7 +77,10 @@ func _reveal(scene: PackedScene) -> void:
 	fade.tween_method(func(hole: float) -> void: paper.set_shader_parameter("hole", hole), 0.0, 1.0, reveal_seconds)
 	fade.parallel().tween_property(%Logo, "modulate:a", 0.0, reveal_seconds)
 	fade.tween_interval(cutout_seconds)
-	fade.tween_property(_paper, "modulate:a", 0.0, paper_seconds)
+	var picture := (%Logo as TextureRect).texture.get_size()
+	_paper.pivot_offset = logo.position + zoom_point * logo.size / picture
+	fade.tween_property(_paper, "scale", Vector2.ONE * zoom_scale, zoom_seconds).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
+	fade.parallel().tween_property(_paper, "modulate:a", 0.0, zoom_seconds * 0.3).set_delay(zoom_seconds * 0.7)
 	fade.tween_callback(queue_free)
 
 
