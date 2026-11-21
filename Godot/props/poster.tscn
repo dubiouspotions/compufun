@@ -1,12 +1,27 @@
 [gd_scene format=3]
 
-[ext_resource type="Material" path="res://materials/poster_not_a_bug.tres" id="1_material"]
+[ext_resource type="Script" path="res://props/poster.gd" id="1_script"]
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="2_shader"]
+[ext_resource type="Texture2D" path="res://materials/textures/poster_not_a_bug.png" id="3_texture"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sheet"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)
+shader_parameter/snap = 1.0
+shader_parameter/affine = 0.5
+shader_parameter/world_uv = false
+shader_parameter/uv_scale = 1.0
 
 [sub_resource type="QuadMesh" id="QuadMesh_sheet"]
+resource_local_to_scene = true
 size = Vector2(0.32, 0.457)
 
 [node name="Poster" type="Node3D"]
+script = ExtResource("1_script")
+texture = ExtResource("3_texture")
 
 [node name="Sheet" type="MeshInstance3D" parent="."]
-material_override = ExtResource("1_material")
+material_override = SubResource("ShaderMaterial_sheet")
 mesh = SubResource("QuadMesh_sheet")
