@@ -38,6 +38,7 @@
 [ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="app_ms_dos_prompt"]
 [ext_resource type="PackedScene" path="res://win95/media_player.tscn" id="app_media_player"]
 [ext_resource type="Material" path="res://materials/black_plastic.tres" id="case_black"]
+[ext_resource type="PackedScene" path="res://props/case_fronts/turbo.tscn" id="front_turbo"]
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_turbo.png" id="sticker_turbo"]
 [ext_resource type="Script" path="res://customers/sticker.gd" id="sticker_script"]
 [ext_resource type="Texture2D" path="res://customers/pierre/castle_01.png" id="castle_01"]
@@ -417,6 +418,7 @@ script = ExtResource("1_43eac")
 hardware = SubResource("Hardware_machine")
 win95_setup = SubResource("Resource_x8y54")
 case_material = ExtResource("case_black")
+case_front = ExtResource("front_turbo")
 stickers = Array[ExtResource("sticker_script")]([SubResource("Sticker_turbo")])
 
 [resource]

@@ -1,0 +1,88 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="1_dark"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="2_metal"]
+[ext_resource type="Material" path="res://materials/red_plastic.tres" id="3_red"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_bay"]
+size = Vector3(0.15, 0.035, 0.006)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tray"]
+size = Vector3(0.11, 0.006, 0.004)
+
+[sub_resource type="BoxMesh" id="BoxMesh_button"]
+size = Vector3(0.014, 0.006, 0.006)
+
+[sub_resource type="BoxMesh" id="BoxMesh_led"]
+size = Vector3(0.005, 0.003, 0.004)
+
+[sub_resource type="BoxMesh" id="BoxMesh_floppy"]
+size = Vector3(0.1, 0.01, 0.006)
+
+[sub_resource type="BoxMesh" id="BoxMesh_slot"]
+size = Vector3(0.045, 0.006, 0.004)
+
+[node name="Multimedia" type="Node3D"]
+
+[node name="CdRom" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0.001)
+material_override = ExtResource("2_metal")
+mesh = SubResource("BoxMesh_bay")
+
+[node name="Tray" type="MeshInstance3D" parent="CdRom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.012, 0.004, 0.002)
+material_override = ExtResource("1_dark")
+mesh = SubResource("BoxMesh_tray")
+
+[node name="Eject" type="MeshInstance3D" parent="CdRom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.058, -0.008, 0.002)
+material_override = ExtResource("1_dark")
+mesh = SubResource("BoxMesh_button")
+
+[node name="Busy" type="MeshInstance3D" parent="CdRom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.035, -0.008, 0.002)
+material_override = ExtResource("3_red")
+mesh = SubResource("BoxMesh_led")
+
+[node name="Bay2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0.001)
+material_override = ExtResource("1_dark")
+mesh = SubResource("BoxMesh_bay")
+
+[node name="Floppy" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.02, 0.045, 0.001)
+material_override = ExtResource("1_dark")
+mesh = SubResource("BoxMesh_floppy")
+
+[node name="Speaker" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.055, -0.09, 0.001)
+
+[node name="Slot1" type="MeshInstance3D" parent="Speaker"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+material_override = ExtResource("1_dark")
+mesh = SubResource("BoxMesh_slot")
+
+[node name="Slot2" type="MeshInstance3D" parent="Speaker"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.036, 0)
+material_override = ExtResource("1_dark")
+mesh = SubResource("BoxMesh_slot")
+
+[node name="Slot3" type="MeshInstance3D" parent="Speaker"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.012, 0)
+material_override = ExtResource("1_dark")
+mesh = SubResource("BoxMesh_slot")
+
+[node name="Slot4" type="MeshInstance3D" parent="Speaker"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.012, 0)
+material_override = ExtResource("1_dark")
+mesh = SubResource("BoxMesh_slot")
+
+[node name="Slot5" type="MeshInstance3D" parent="Speaker"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.036, 0)
+material_override = ExtResource("1_dark")
+mesh = SubResource("BoxMesh_slot")
+
+[node name="Slot6" type="MeshInstance3D" parent="Speaker"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0)
+material_override = ExtResource("1_dark")
+mesh = SubResource("BoxMesh_slot")

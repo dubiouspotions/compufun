@@ -1,6 +1,8 @@
 [gd_resource type="Resource" script_class="Customer" format=3]
 
 [ext_resource type="Texture2D" path="res://win95/theme/icons/inbox_32.png" id="icon_inbox"]
+[ext_resource type="Material" path="res://materials/yellowed_plastic.tres" id="case_yellowed"]
+[ext_resource type="PackedScene" path="res://props/case_fronts/drive_door.tscn" id="front_drive_door"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/speaker_loud_32.png" id="icon_speaker_loud"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/disk_drive_box_32.png" id="icon_disk_drive_box"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/playing_cards_hand_32.png" id="icon_playing_cards_hand"]
@@ -215,6 +217,8 @@ pci_devices = PackedStringArray()
 script = ExtResource("1_2x16c")
 win95_setup = SubResource("Setup_accountant")
 hardware = SubResource("Hardware_486")
+case_material = ExtResource("case_yellowed")
+case_front = ExtResource("front_drive_door")
 
 [sub_resource type="Resource" id="Line_arrive_1"]
 script = ExtResource("dl")

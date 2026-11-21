@@ -38,6 +38,8 @@
 [ext_resource type="PackedScene" path="res://win95/media_player.tscn" id="app_media_player"]
 [ext_resource type="AudioStream" path="res://win95/midi/passport.mp3" id="passport"]
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_multimedia.png" id="sticker_multimedia"]
+[ext_resource type="Material" path="res://materials/grey_plastic.tres" id="case_grey"]
+[ext_resource type="PackedScene" path="res://props/case_fronts/multimedia.tscn" id="front_multimedia"]
 [ext_resource type="Script" path="res://customers/sticker.gd" id="sticker_script"]
 [ext_resource type="Resource" path="res://win95/start_menu_stock.tres" id="start_menu"]
 [ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
@@ -309,6 +311,8 @@ script = ExtResource("1_2x16c")
 cambion = true
 hardware = SubResource("Hardware_machine")
 win95_setup = SubResource("Resource_8iaji")
+case_material = ExtResource("case_grey")
+case_front = ExtResource("front_multimedia")
 stickers = Array[ExtResource("sticker_script")]([SubResource("Sticker_multimedia")])
 
 [resource]
