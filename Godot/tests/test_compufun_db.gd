@@ -12,9 +12,9 @@ func run() -> void:
 	var record: DbRecord = game.enter_job(job, "Pierre: turns off")
 	check("the record is the job's", game.record_of(job), record)
 	check("the record keeps the job's order", record.job_order, 7)
-	game.mark_symptom(record, "The fan is full of dust", true)
-	game.mark_symptom(record, "The fan is full of dust", true)
-	check("a symptom is marked once", record.marked_symptoms, ["The fan is full of dust"])
+	game.mark_symptom(record, "Fan clogged with dust", true)
+	game.mark_symptom(record, "Fan clogged with dust", true)
+	check("a symptom is marked once", record.marked_symptoms, ["Fan clogged with dust"])
 	game.tick_repair(record, "Install the fan", true)
 	game.tick_repair(record, "Install the fan", false)
 	check("a repair unticks", record.ticked_repairs, [])
@@ -23,7 +23,7 @@ func run() -> void:
 	check("restore the snapshot", game.restore(game.snapshot()), "")
 	var restored: DbRecord = game.records[0]
 	check("the text survives", restored.text, "Pierre: turns off")
-	check("the marks survive", restored.marked_symptoms, ["The fan is full of dust"])
+	check("the marks survive", restored.marked_symptoms, ["Fan clogged with dust"])
 	check("the ticks survive", restored.ticked_repairs, ["Install the fan"])
 	check("the job still has its record", game.record_of(game.jobs[0]), restored)
 

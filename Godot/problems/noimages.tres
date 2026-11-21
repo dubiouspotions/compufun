@@ -13,6 +13,6 @@ script = ExtResource("problem")
 short_name = &"noimages"
 perceived_issue = "Can't open images"
 location = 1
-symptoms = PackedStringArray("Error message when opening images (can't find .exe)", "Customer tampering (If asked customer informs problem appeared after their action)", "Error message/Link corrupted when following link to image program in start menu")
+symptoms = PackedStringArray("Images won't open: program not found", "Customer changed something", "Start menu shortcut broken")
 software_steps = PackedStringArray("Go to programs", "Add \".exe\" back to image editor program")
 software_check = SubResource("FileCheck_paint")
