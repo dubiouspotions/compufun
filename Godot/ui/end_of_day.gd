@@ -1,8 +1,10 @@
 class_name EndOfDay
 extends Control
-## Asks the player, in a Win95 message box, whether to end the day. While the day is over
-## (Game.Phase.DAY_OVER), the screen fades to black and the sound fades out; when a new day
-## starts, both come back at once.
+## Asks the player, in a Win95 message box, whether to end the day, and plays the night after
+## Game.close_shop(): a short wait in the evening, the screen and the sound fade out, a black pause,
+## the sound comes back with the next day's title on the black screen, then that day starts
+## (Game.start_next_day) and the shop fades in. After the last day the screen stays black with
+## [member week_over_text]. It follows Game.phase: leaving DAY_OVER in any way fades the shop back in.
 
 const _MessageBox := preload("res://win95/message_box.gd")
 
@@ -10,15 +12,26 @@ const _MessageBox := preload("res://win95/message_box.gd")
 @export var question: String = "Do you want to end the day?"
 ## The title of the message box.
 @export var title: String = "Close the shop"
-## How long the fade to black and the fade of the sound take, in seconds.
+## The title on the black screen before a day starts; %d is the day's number.
+@export var day_title: String = "DAY %d"
+## The text on the black screen after the last day.
+@export_multiline var week_over_text: String = "That was the week at CompuFun.\nThanks for playing!"
+## How long the shop stays in the evening light after closing, in seconds.
+@export var dusk_seconds: float = 3.0
+## How long each fade of the screen and the sound takes, in seconds.
 @export var fade_seconds: float = 2.0
+## How long the screen stays black and silent, in seconds.
+@export var black_seconds: float = 5.0
+## How long the day's title shows before the shop fades in, in seconds.
+@export var title_seconds: float = 3.0
 
 var _night: bool = false
-var _fade: Tween
+var _sequence: Tween
 
 @onready var _dialog: SubViewportContainer = %Dialog
 @onready var _box: _MessageBox = %MessageBox
 @onready var _black: ColorRect = %Black
+@onready var _title: Label = %Title
 @onready var _master: int = AudioServer.get_bus_index(&"Master")
 
 
@@ -48,16 +61,34 @@ func _sync() -> void:
 	if night == _night:
 		return
 	_night = night
-	if _fade != null:
-		_fade.kill()
+	if _sequence != null:
+		_sequence.kill()
+	_sequence = create_tween()
 	if night:
-		_black.show()
-		_fade = create_tween().set_parallel()
-		_fade.tween_property(_black, "modulate:a", 1.0, fade_seconds).from(0.0)
-		_fade.tween_method(_set_volume, 1.0, 0.0, fade_seconds)
+		_play_night()
 	else:
-		_black.hide()
 		_set_volume(1.0)
+		_sequence.tween_property(_black, "modulate:a", 0.0, fade_seconds)
+		_sequence.tween_callback(_black.hide)
+
+
+func _play_night() -> void:
+	_title.hide()
+	_sequence.tween_interval(dusk_seconds)
+	_sequence.tween_callback(_black.show)
+	_sequence.tween_property(_black, "modulate:a", 1.0, fade_seconds).from(0.0)
+	_sequence.parallel().tween_method(_set_volume, 1.0, 0.0, fade_seconds)
+	_sequence.tween_interval(black_seconds)
+	_sequence.tween_callback(_show_title)
+	_sequence.tween_method(_set_volume, 0.0, 1.0, fade_seconds)
+	if Game.has_next_day():
+		_sequence.tween_interval(title_seconds)
+		_sequence.tween_callback(Game.start_next_day)
+
+
+func _show_title() -> void:
+	_title.text = day_title % (Game.day_number + 1) if Game.has_next_day() else week_over_text
+	_title.show()
 
 
 func _set_volume(linear: float) -> void:

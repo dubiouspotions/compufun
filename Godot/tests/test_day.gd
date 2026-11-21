@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
 ## Plays two days through the Game API: drop-offs, a full counter that holds back the next
-## customer, focus, fixes, post-its, the phone, the oldest-first pickup, and closing the shop.
+## customer, focus, fixes, post-its, the phone, the oldest-first pickup, closing the shop, and the
+## next day from the day files.
 
 const GAME := preload("res://game.gd")
 const OPEN := GAME.Phase.OPEN
@@ -117,6 +118,15 @@ func run() -> void:
 	check("can close", game.can_close(), true)
 	game.close_shop()
 	check("DAY_OVER, evening, 3 jobs overnight", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.EVENING, 3])
+
+	# The next day comes from its file; the jobs stay overnight; day 7 is the last.
+	var overnight := [{"customer": "res://customers/pierre.tres", "slot": 2}]
+	check("restore day 1, closed", game.restore({"day": 1, "phase": "DAY_OVER", "arrivals": 2, "jobs": overnight}), "")
+	check("day 1 has a next day", game.has_next_day(), true)
+	game.start_next_day()
+	check("day 2: open, morning, nobody in yet, the job stayed", [game.day_number, game.phase, game.daypart, game.arrivals, slots()], [2, OPEN, GAME.Daypart.MORNING, 0, ["Pierre@2"]])
+	check("restore day 7", game.restore({"day": 7, "phase": "DAY_OVER", "arrivals": 2}), "")
+	check("day 7 is the last", game.has_next_day(), false)
 
 
 func customer(display_name: String, problem: Problem, has_pickup: bool) -> Customer:

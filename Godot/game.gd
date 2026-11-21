@@ -468,6 +468,24 @@ func close_shop() -> void:
 	changed.emit()
 
 
+## True when a day file follows the current day at [constant DAY_PATH]; false after the last day.
+func has_next_day() -> bool:
+	return day != null and ResourceLoader.exists(DAY_PATH % (day_number + 1))
+
+
+## Starts the day after the current one (see [method start_day]), from its file at
+## [constant DAY_PATH]. Jobs left overnight stay. Fails with an error, keeping the state, when that
+## file is missing, isn't a Day or has another day number.
+func start_next_day() -> void:
+	var number := day_number + 1
+	var path := DAY_PATH % number
+	var next := load(path) as Day if ResourceLoader.exists(path) else null
+	if next == null or next.number != number:
+		push_error("Game.start_next_day: %s is not day %d: %s" % [path, number, next])
+		return
+	start_day(next)
+
+
 ## The state as plain data: for the F9 report, the presets of the debug menu, and [method restore].
 func snapshot() -> Dictionary:
 	return {
