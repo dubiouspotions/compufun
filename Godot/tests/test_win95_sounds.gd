@@ -6,6 +6,7 @@ extends "res://tests/test.gd"
 const WIN95 := "res://win95/win95.tscn"
 const BOOT := "res://win95/boot_sequence.tscn"
 const MESSAGE := "res://win95/message_box.tscn"
+const SHUT_DOWN := "res://win95/shut_down.tscn"
 const MEDIA_PLAYER := "res://win95/media_player.tscn"
 
 
@@ -53,13 +54,17 @@ func run() -> void:
 
 	var win95_desktop: Node = loud.get_node("Desktop")
 	var box: Node = win95_desktop.open(load(MESSAGE), false)
-	box.error_sound = beep()
-	box.question_sound = beep()
 	var before := players(win95_desktop).size()
 	box.show_message("Error", "Cannot find the file.")
 	box.ask("Notepad", "Save changes?")
-	check("a message box's sounds play on the desktop, on the Win95 bus", players(win95_desktop).slice(before).map(func(p: AudioStreamPlayer) -> StringName: return p.bus), [&"Win95", &"Win95"])
+	check("a message box plays the chord on the desktop, on the Win95 bus", played(win95_desktop, before), [["chord.ogg", &"Win95"], ["chord.ogg", &"Win95"]])
 	box.queue_free()
+
+	var shut_down: Node = win95_desktop.open(load(SHUT_DOWN), false)
+	before = players(win95_desktop).size()
+	shut_down.get_node("%Yes").pressed.emit()
+	check("Shut Down plays the tada on the Win95 bus", played(win95_desktop, before), [["tada.ogg", &"Win95"]])
+	check("Empty Recycle Bin plays the ding", loud.empty_bin_sound.resource_path.get_file(), "ding.ogg")
 
 	root.remove_child(loud)
 	loud.free()
@@ -85,7 +90,6 @@ func players(node: Node) -> Array:
 	return node.get_children().filter(func(child: Node) -> bool: return child is AudioStreamPlayer)
 
 
-func beep() -> AudioStream:
-	var stream := AudioStreamWAV.new()
-	stream.data = PackedByteArray([0, 0, 0, 0])
-	return stream
+# [file name, bus] of each player that [param node] got after its first [param from] players.
+func played(node: Node, from: int) -> Array:
+	return players(node).slice(from).map(func(p: AudioStreamPlayer) -> Array: return [p.stream.resource_path.get_file(), p.bus])
