@@ -18,6 +18,7 @@ var _dialogue_for: int = -1
 @onready var _compufun_db: CompufunDB = %CompufunDB
 @onready var _workview: WorkviewPanel = %WorkviewPanel
 @onready var _screen_view: ScreenView = %ScreenView
+@onready var _post_it_label: PostItLabel = %PostItLabel
 @onready var _end_of_day: EndOfDay = %EndOfDay
 @onready var _world: SubViewportContainer = $World
 @onready var _world_buffer: SubViewport = $World/WorldBuffer
@@ -54,10 +55,16 @@ func _exit_tree() -> void:
 
 func _follow_camera() -> void:
 	_dialogue.position.x = _shop.turn_from_main() * _dialogue.size.x
+	var scale := _world.size / Vector2(_world_buffer.size)
+	var post_it := _shop.pinned_post_it()
+	_post_it_label.visible = post_it != null
+	if post_it != null:
+		var paper := _shop.post_it_rect(post_it)
+		_post_it_label.job = post_it.job
+		_post_it_label.follow(Rect2(_world.position + paper.position * scale, paper.size * scale))
 	if not _screen_view.visible:
 		return
 	var pixels := _shop.bench_screen_rect()
-	var scale := _world.size / Vector2(_world_buffer.size)
 	_screen_view.follow(Rect2(_world.position + pixels.position * scale, pixels.size * scale))
 
 

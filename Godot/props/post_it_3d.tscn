@@ -34,6 +34,7 @@ size = Vector3(0.004, 0.024, 0.001)
 script = ExtResource("1_script")
 
 [node name="Paper" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
 material_override = SubResource("ShaderMaterial_paper")
 mesh = SubResource("QuadMesh_paper")
 
@@ -65,6 +66,7 @@ material_override = SubResource("ShaderMaterial_check")
 mesh = SubResource("BoxMesh_long")
 
 [node name="Pickup" type="Label3D" parent="Done"]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0175, 0, 0)
 pixel_size = 0.0004
 texture_filter = 0

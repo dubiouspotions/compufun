@@ -80,6 +80,12 @@ func workview_transform() -> Transform3D:
 	return _open_case.eye_transform()
 
 
+## The post-it that the player reads in the Workview: the one on the side panel while the computer
+## lies with its panel on, else null.
+func pinned_post_it() -> PostIt3D:
+	return _open_case.post_it() if _open_case.visible else null
+
+
 ## The VGA socket that the bench cable plugs into; its +Z points out of the socket.
 func cable_socket() -> Node3D:
 	return _cable_socket

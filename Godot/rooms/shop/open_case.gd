@@ -20,8 +20,12 @@ const SCREW_MATERIAL: Material = preload("res://materials/metal.tres")
 ## The seconds that the screwdriver takes to fade in or out.
 @export var fade_seconds: float = 0.15
 
-## The job whose computer this is. Set once, before the case enters the tree.
-var job: Job
+## The job whose computer this is. Set once, before or after the case enters the tree.
+var job: Job:
+	set(value):
+		job = value
+		if is_node_ready():
+			_post_it.job = value
 ## True while the player works on this computer: in focus, in the Workview. JobComputer sets it.
 ## Only an active case takes clicks.
 var active: bool = false:
@@ -51,6 +55,7 @@ var _driver_materials: Array[StandardMaterial3D] = []
 @onready var _panel: Node3D = %Panel
 @onready var _panel_hotspot: Hotspot = %PanelHotspot
 @onready var _panel_screws: Node3D = %PanelScrews
+@onready var _post_it: PostIt3D = %PostIt
 @onready var _driver: Node3D = %Screwdriver
 @onready var _outside: Array[MeshInstance3D] = [%Panel as MeshInstance3D, $Shell/Bezel as MeshInstance3D]
 @onready var _sticker_faces: Dictionary[Sticker.Face, Node3D] = {Sticker.Face.FRONT: %StickerFront, Sticker.Face.RIGHT: %StickerRight}
@@ -77,6 +82,7 @@ func _ready() -> void:
 	_watch(_mat_surface)
 	_panel_hotspot.clicked.connect(func(_h: Hotspot) -> void: Game.open_case(job, true))
 	_watch(_panel_hotspot)
+	_post_it.job = job
 	if _panel_screws.get_child_count() != Job.PANEL_SCREWS:
 		push_error("OpenCase: %d panel screw markers, but Job.PANEL_SCREWS is %d" % [_panel_screws.get_child_count(), Job.PANEL_SCREWS])
 	for i: int in _panel_screws.get_child_count():
@@ -94,6 +100,11 @@ func dress(computer: Computer) -> void:
 		for part: MeshInstance3D in _outside:
 			part.material_override = case_material
 	Sticker.stick(computer.stickers if computer != null else ([] as Array[Sticker]), _sticker_faces)
+
+
+## The post-it on the side panel, or null while the panel is off (the post-it comes off with it).
+func post_it() -> PostIt3D:
+	return _post_it if _post_it.is_visible_in_tree() else null
 
 
 ## Where the Workview camera looks from at this lying computer, in world space: high enough for the

@@ -55,6 +55,13 @@ func cable_socket(job: Job) -> Node3D:
 	return computer.cable_socket()
 
 
+## The post-it on the lying computer of [param job] (see [method JobComputer.pinned_post_it]), or
+## null when the job has no computer on the counter or the post-it isn't showing.
+func pinned_post_it(job: Job) -> PostIt3D:
+	var computer: JobComputer = _computers.get(job)
+	return computer.pinned_post_it() if computer != null else null
+
+
 ## The job whose computer the mouse ray from [param from] along [param dir] (world space) meets
 ## first, or null when it meets none.
 func job_at(from: Vector3, dir: Vector3) -> Job:

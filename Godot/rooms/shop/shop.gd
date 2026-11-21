@@ -75,7 +75,23 @@ func turn_from_main() -> float:
 
 ## The bench screen as the camera sees it now, in pixels of the world buffer.
 func bench_screen_rect() -> Rect2:
-	var corners := _bench.screen_corners()
+	return _rect_on_screen(_bench.screen_corners())
+
+
+## The post-it of the computer in focus while the player reads it in the Workview, or null.
+func pinned_post_it() -> PostIt3D:
+	if Game.view != WORKVIEW or Game.focus == null:
+		return null
+	return _job_slots.pinned_post_it(Game.focus)
+
+
+## The paper of [param post_it] as the camera sees it now: the rect around its corners, in pixels
+## of the world buffer.
+func post_it_rect(post_it: PostIt3D) -> Rect2:
+	return _rect_on_screen(post_it.paper_corners())
+
+
+func _rect_on_screen(corners: Array[Vector3]) -> Rect2:
 	var rect := Rect2(_camera.unproject_position(corners[0]), Vector2.ZERO)
 	for corner: Vector3 in corners:
 		rect = rect.expand(_camera.unproject_position(corner))
