@@ -203,37 +203,8 @@ _data = {
 &"walk": SubResource("Animation_x7x1t")
 }
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_trouser_leg"]
-top_radius = 0.088
-bottom_radius = 0.058
-height = 0.78
-radial_segments = 12
-rings = 3
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_hem"]
-top_radius = 0.058
-bottom_radius = 0.066
-height = 0.06
-radial_segments = 12
-rings = 1
-
-[sub_resource type="SphereMesh" id="SphereMesh_pelvis"]
-radius = 0.16
-height = 0.26
-radial_segments = 14
-rings = 7
-
-[sub_resource type="SphereMesh" id="SphereMesh_seat"]
-radius = 0.072
-height = 0.12
-radial_segments = 10
-rings = 5
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_shoe"]
-radius = 0.052
-height = 0.25
-radial_segments = 10
-rings = 3
+[sub_resource type="BoxMesh" id="BoxMesh_shoe"]
+size = Vector3(0.1, 0.07, 0.24)
 
 [node name="CustomerBody" type="Node3D" unique_id=885104050]
 script = ExtResource("1_02ont")
@@ -246,20 +217,10 @@ trousers_material = ExtResource("6_vw5jt")
 [node name="HipL" type="Node3D" parent="." unique_id=1686906219]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.085, 0.85, 0)
 
-[node name="LegL" type="MeshInstance3D" parent="HipL" unique_id=2027006383]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.39, 0)
-material_override = ExtResource("6_vw5jt")
-mesh = SubResource("CylinderMesh_trouser_leg")
-
-[node name="HemL" type="MeshInstance3D" parent="HipL"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.75, 0)
-material_override = ExtResource("6_vw5jt")
-mesh = SubResource("CylinderMesh_hem")
-
 [node name="ShoeL" type="MeshInstance3D" parent="HipL" unique_id=958349452]
-transform = Transform3D(1, 0, 0, 0, 0, -0.7, 0, 1, 0, 0, -0.79, -0.04)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.815, -0.035)
 material_override = ExtResource("7_tro7t")
-mesh = SubResource("CapsuleMesh_shoe")
+mesh = SubResource("BoxMesh_shoe")
 
 [node name="ShoulderL" type="Node3D" parent="." unique_id=157388767]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.225, 1.4, 0)
@@ -282,20 +243,10 @@ mesh = SubResource("BoxMesh_5jfhg")
 [node name="HipR" type="Node3D" parent="." unique_id=1364165087]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.085, 0.85, 0)
 
-[node name="LegR" type="MeshInstance3D" parent="HipR" unique_id=1527165324]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.39, 0)
-material_override = ExtResource("6_vw5jt")
-mesh = SubResource("CylinderMesh_trouser_leg")
-
-[node name="HemR" type="MeshInstance3D" parent="HipR"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.75, 0)
-material_override = ExtResource("6_vw5jt")
-mesh = SubResource("CylinderMesh_hem")
-
 [node name="ShoeR" type="MeshInstance3D" parent="HipR" unique_id=1681845511]
-transform = Transform3D(1, 0, 0, 0, 0, -0.7, 0, 1, 0, 0, -0.79, -0.04)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.815, -0.035)
 material_override = ExtResource("7_tro7t")
-mesh = SubResource("CapsuleMesh_shoe")
+mesh = SubResource("BoxMesh_shoe")
 
 [node name="ShoulderR" type="Node3D" parent="." unique_id=580014753]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.225, 1.4, 0)
@@ -315,20 +266,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.018, -0.6, 0)
 material_override = ExtResource("4_ki8ny")
 mesh = SubResource("BoxMesh_8kjyr")
 
-[node name="Hips" type="MeshInstance3D" parent="." unique_id=207644104]
-transform = Transform3D(1.08, 0, 0, 0, 1, 0, 0, 0, 0.72, 0, 0.92, 0)
+[node name="Trousers" type="MeshInstance3D" parent="." unique_id=207644104]
+unique_name_in_owner = true
 material_override = ExtResource("6_vw5jt")
-mesh = SubResource("SphereMesh_pelvis")
-
-[node name="SeatL" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.8, -0.058, 0.88, 0.028)
-material_override = ExtResource("6_vw5jt")
-mesh = SubResource("SphereMesh_seat")
-
-[node name="SeatR" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.8, 0.058, 0.88, 0.028)
-material_override = ExtResource("6_vw5jt")
-mesh = SubResource("SphereMesh_seat")
 
 [node name="Torso" type="MeshInstance3D" parent="." unique_id=2057461454]
 material_override = ExtResource("5_l8b2o")
