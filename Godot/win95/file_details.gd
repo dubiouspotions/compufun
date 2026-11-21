@@ -1,6 +1,6 @@
 class_name FileDetails
 ## The columns of Explorer's Details view, and their texts for one file, by the kind of listing
-## (win95.gd's Listing.kind): My Computer and the Recycle Bin have their own columns.
+## (win95.gd's Listing.kind): My Computer, the Control Panel and the Recycle Bin have their own columns.
 
 const _PROPERTIES := preload("res://win95/properties_window.gd")
 const _DRIVE_TYPES := {"(A:)": "3½ Inch Floppy Disk", "(C:)": "Local Disk", "(D:)": "CD-ROM Disc"}
@@ -12,6 +12,8 @@ static func columns(kind: StringName) -> Array[ReportList.Column]:
 		&"my_computer":
 			return [ReportList.Column.new("Name", 120), ReportList.Column.new("Type", 150), ReportList.Column.new("Total Size", 90, null, true),
 				ReportList.Column.new("Free Space", 90, null, true)]
+		&"control_panel":
+			return [ReportList.Column.new("Name", 120), ReportList.Column.new("Description", 380)]
 		&"recycle_bin":
 			return [ReportList.Column.new("Name", 120), ReportList.Column.new("Original Location", 120), ReportList.Column.new("Date Deleted", 108),
 				ReportList.Column.new("Type", 120), ReportList.Column.new("Size", 48, null, true)]

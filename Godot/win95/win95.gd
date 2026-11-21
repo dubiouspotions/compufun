@@ -214,24 +214,18 @@ func _fill(view: IconView) -> void:
 	for item: Node in old:
 		item.queue_free()
 	var added: Array[FileIcon] = []
-	for file: Win95File in listing.files.call():
-		var item := view.add_item(file.name, file.icon)
-		item.set_meta(_FILE_META, file)
-		item.name_edited.connect(func(_old: String, new_text: String) -> void: _state.rename_file(file, new_text))
-		item.selected = keep.has(file)
-		item.stub = ComputerState.is_program_name(file.name) and file.program == null
-		item.details = FileDetails.cells(listing.kind, file, _state)
-		if file == focused:
 	for entry: Resource in listing.files.call():
 		var item := view.add_item(entry.get(&"name"), entry.get(&"icon"))
 		item.set_meta(_FILE_META, entry)
 		if entry is Applet:
 			item.renamable = false
 			item.stub = (entry as Applet).sheet == null
+			item.details = PackedStringArray([(entry as Applet).description])
 		else:
 			var file: Win95File = entry
 			item.name_edited.connect(func(_old: String, new_text: String) -> void: _state.rename_file(file, new_text))
 			item.stub = ComputerState.is_program_name(file.name) and file.program == null
+			item.details = FileDetails.cells(listing.kind, file, _state)
 		item.selected = keep.has(entry)
 		if entry == focused:
 			view.set_focus_item(item)
@@ -266,20 +260,18 @@ func _wire_view(view: IconView) -> void:
 func _open_item(item: FileIcon) -> void:
 	var file := _file_of(item)
 	var folder_view := (item.get_parent() as IconView).folder_view
-	if item.name == &"MyComputer":
-		_show(Listing.new("My Computer", load(_ICONS + "my_computer_32.png"), &"my_computer", func() -> Array: return _drives, false, &"my_computer"), folder_view)
 	var applet := _entry_of(item) as Applet
 	if applet != null:
 		if applet.sheet != null:
 			_desktop.open(applet.sheet)
 	elif item.name == &"MyComputer":
-		_show(Listing.new("My Computer", load(_ICONS + "my_computer_32.png"), &"my_computer", func() -> Array: return _drives, false, &"my_computer"))
+		_show(Listing.new("My Computer", load(_ICONS + "my_computer_32.png"), &"my_computer", func() -> Array: return _drives, false, &"my_computer"), folder_view)
 	elif item.name == &"RecycleBin":
 		_show(Listing.new("Recycle Bin", _BIN_EMPTY, &"recycle_bin", func() -> Array: return _state.setup.recycle_bin, false, &"recycle_bin"), folder_view)
 	elif file == null or _listing_of_item(item).kind == &"recycle_bin":
 		return
 	elif file == _control_panel:
-		open_control_panel()
+		open_control_panel(folder_view)
 	elif file == _drive_c:
 		_show(Listing.new("(C:)", file.icon, &"folder", func() -> Array: return _state.setup.drive_c, true, &"drive_c"), folder_view)
 	elif file.is_folder:
@@ -288,9 +280,9 @@ func _open_item(item: FileIcon) -> void:
 		open_file(file)
 
 
-## Opens the Control Panel folder, or brings it to the front.
-func open_control_panel() -> void:
-	_show(Listing.new("Control Panel", _control_panel.icon, &"control_panel", func() -> Array: return _state.control_panel(), false, &"control_panel"))
+## Opens the Control Panel folder in [param folder_view], or brings it to the front.
+func open_control_panel(folder_view := IconView.FolderView.LARGE_ICONS) -> void:
+	_show(Listing.new("Control Panel", _control_panel.icon, &"control_panel", func() -> Array: return _state.control_panel(), false, &"control_panel"), folder_view)
 
 
 ## Opens [param file] as Win95 does: a program file runs while its name ends in .EXE or .COM;
