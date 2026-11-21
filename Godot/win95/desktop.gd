@@ -9,6 +9,8 @@ signal windows_changed
 
 ## The group of the desktop, for icons in any window to find it.
 const GROUP: StringName = &"win95_desktop"
+## The audio bus of every Win95 sound; win95.gd sets its volume and mute from the computer on screen.
+const SOUND_BUS: StringName = &"Win95"
 ## Where the first window opens, and the step between windows, as Win95 cascades them.
 @export var cascade_start := Vector2(80, 60)
 @export var cascade_step := Vector2(24, 24)
@@ -170,3 +172,17 @@ func _changed() -> void:
 		if title_bar != null:
 			title_bar.active = window == active
 	windows_changed.emit()
+
+
+## Plays [param stream] on the Win95 bus from a new child of [param at], which frees itself when the
+## sound is over. Null plays nothing: the sound scheme has no sound for that event.
+static func play_sound(stream: AudioStream, at: Node) -> void:
+	if stream == null:
+		return
+	var player := AudioStreamPlayer.new()
+	player.stream = stream
+	player.bus = SOUND_BUS
+	at.add_child(player)
+	player.play()
+	# The length, not the player's finished signal: with no audio device that never fires.
+	player.get_tree().create_timer(stream.get_length() + 0.1).timeout.connect(player.queue_free)
