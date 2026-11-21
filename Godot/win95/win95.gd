@@ -52,6 +52,13 @@ signal pointer_changed
 
 ## Plays when the player empties the Recycle Bin; null plays nothing.
 @export var empty_bin_sound: AudioStream
+## The looped buzz of a hung sound card, from the moment a hanging Windows freezes until it reboots.
+## tools/make_hang_buzz.sh cuts it from the startup sound.
+@export var hang_buzz: AudioStream = preload("res://win95/sounds/hang_buzz.wav")
+## The seconds from the start of a hang until Windows freezes and the buzz starts.
+@export var hang_sag_seconds: float = 0.8
+## How far the sounds' pitch sags before Windows freezes; 1 keeps it.
+@export_range(0.1, 1.0) var hang_pitch: float = 0.8
 
 ## Win95 shows the mouse pointer: false while the computer is off and while it boots, until the
 ## desktop appears.
@@ -63,12 +70,6 @@ var pointer_visible := false:
 
 ## How long a folder takes to open on a fragmented drive C.
 const _FRAGMENTED_OPEN_SECONDS := 2.0
-## The stalls of a hanging Windows, in seconds, longer each time; after the last it stays stuck.
-const _HANG_STALLS: Array[float] = [0.1, 0.2, 0.35, 0.6]
-## The seconds that Windows runs between two stalls.
-const _HANG_RUN_SECONDS := 0.1
-## How far the sounds' pitch sags while Windows hangs; 1 keeps it.
-const _HANG_PITCH := 0.55
 
 static var _stock_palette: Win95Palette
 var _setup_icons: Array[FileIcon] = []
@@ -84,6 +85,7 @@ var _boot: Node
 var _floppy_heard: bool = false
 ## Counts hangs, so that a boot or a power cut stops the one in progress.
 var _hangs: int = 0
+var _buzz: AudioStreamPlayer
 
 @onready var _state: ComputerState = %ComputerState
 @onready var _desktop: Win95Desktop = $Desktop
@@ -100,6 +102,11 @@ func _ready() -> void:
 	_state.booted.connect(_on_booted)
 	_state.powered_off.connect(_on_powered_off)
 	_state.hanging.connect(_on_hanging)
+	_buzz = AudioStreamPlayer.new()
+	_buzz.stream = hang_buzz
+	_buzz.bus = Win95Desktop.SOUND_BUS
+	_buzz.process_mode = Node.PROCESS_MODE_ALWAYS  # it buzzes while the rest is stuck
+	add_child(_buzz)
 	_state.changed.connect(_on_changed)
 	_context = ContextMenu.new()
 	add_child(_context)
@@ -177,31 +184,40 @@ static func wallpaper_stretch(wallpaper: Texture2D, screen_width: float) -> Text
 	return TextureRect.STRETCH_TILE if wallpaper.get_width() * 2 < screen_width else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 
-# Windows chokes: it stalls for longer and longer, until it stops for good, and its sounds stutter
-# and sag. A stalled node doesn't process: clicks and keys do nothing, and its sounds pause. The
-# pointer still moves, as it did on a hung Win95.
+# Windows stops answering at once: nothing here processes, so clicks and keys do nothing; the
+# pointer still moves, as it did on a hung Win95. The sounds play on, sagging, then Windows freezes
+# and the sound card loops its last moment as a buzz until the reboot.
 func _on_hanging(_seconds: float) -> void:
 	_hangs += 1
 	var hang := _hangs
-	# The sag runs only while Windows does, so it fits in the runs between the stalls.
-	var sag_seconds := _HANG_STALLS.size() * _HANG_RUN_SECONDS
-	for player: AudioStreamPlayer in find_children("*", "AudioStreamPlayer", true, false):
-		player.create_tween().tween_property(player, "pitch_scale", player.pitch_scale * _HANG_PITCH, sag_seconds)
-	var tree := get_tree()
-	for stall: float in _HANG_STALLS:
-		process_mode = Node.PROCESS_MODE_DISABLED
-		await tree.create_timer(stall).timeout
-		if hang != _hangs:
-			return
-		process_mode = Node.PROCESS_MODE_INHERIT
-		await tree.create_timer(_HANG_RUN_SECONDS).timeout
-		if hang != _hangs:
-			return
 	process_mode = Node.PROCESS_MODE_DISABLED
+	if is_instance_valid(_boot):
+		_boot.process_mode = Node.PROCESS_MODE_ALWAYS  # it plays the startup sound
+	for player: AudioStreamPlayer in _sounds():
+		player.create_tween().tween_property(player, "pitch_scale", player.pitch_scale * hang_pitch, hang_sag_seconds)
+	await get_tree().create_timer(hang_sag_seconds).timeout
+	if hang != _hangs:
+		return
+	var pitch := hang_pitch
+	for player: AudioStreamPlayer in _sounds():
+		pitch = player.pitch_scale
+		player.stop()
+	_buzz.pitch_scale = pitch
+	_buzz.play()
+
+
+# The sounds playing on this computer, but the buzz.
+func _sounds() -> Array[AudioStreamPlayer]:
+	var playing: Array[AudioStreamPlayer] = []
+	for player: AudioStreamPlayer in find_children("*", "AudioStreamPlayer", true, false):
+		if player != _buzz and player.playing:
+			playing.append(player)
+	return playing
 
 
 func _end_hang() -> void:
 	_hangs += 1
+	_buzz.stop()
 	process_mode = Node.PROCESS_MODE_INHERIT
 
 
