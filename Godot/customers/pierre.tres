@@ -25,6 +25,7 @@
 [ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
 [ext_resource type="PackedScene" path="res://win95/solitaire/solitaire.tscn" id="app_solitaire"]
 [ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="app_ms_dos_prompt"]
+[ext_resource type="PackedScene" path="res://win95/media_player.tscn" id="app_media_player"]
 [ext_resource type="Material" path="res://materials/black_plastic.tres" id="case_black"]
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_turbo.png" id="sticker_turbo"]
 [ext_resource type="Script" path="res://customers/sticker.gd" id="sticker_script"]
@@ -185,6 +186,13 @@ icon = ExtResource("7_xlwt7")
 modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_solitaire")
 
+[sub_resource type="Resource" id="Program_media_player"]
+script = ExtResource("2_nepbl")
+name = "MPLAYER.EXE"
+icon = ExtResource("7_xlwt7")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+program = ExtResource("app_media_player")
+
 [sub_resource type="Resource" id="Program_ms_dos_prompt"]
 script = ExtResource("2_nepbl")
 name = "COMMAND.COM"
@@ -225,7 +233,7 @@ script = ExtResource("2_nepbl")
 name = "Windows"
 icon = ExtResource("5_ko7w1")
 is_folder = true
-children = Array[Resource]([SubResource("Resource_4f8u6"), SubResource("Resource_rx540"), SubResource("Resource_rkt6m"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator"), SubResource("Program_inbox"), SubResource("Program_volume_control"), SubResource("Program_defrag"), SubResource("Program_solitaire"), SubResource("Program_ms_dos_prompt")])
+children = Array[Resource]([SubResource("Resource_4f8u6"), SubResource("Resource_rx540"), SubResource("Resource_rkt6m"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator"), SubResource("Program_inbox"), SubResource("Program_volume_control"), SubResource("Program_defrag"), SubResource("Program_solitaire"), SubResource("Program_ms_dos_prompt"), SubResource("Program_media_player")])
 
 [sub_resource type="Resource" id="Resource_wafo6"]
 script = ExtResource("2_nepbl")

@@ -49,6 +49,7 @@ Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actio
 - `Godot/win95/sounds/boot_post_beep.ogg`: cut from "PC speaker error beep" by CZghost on Freesound (https://freesound.org/people/CZghost/sounds/264823/), CC0.
 - `Godot/win95/sounds/boot_drive.ogg`: cut from "Electronic, Computer, Hard Drive - 1990s Compaq Hard Drive, Spooling Up, Turning Off - Close Perspective Memory Access Noise" by jaegrover on Freesound (https://freesound.org/people/jaegrover/sounds/262872/), CC0.
 - `Godot/win95/sounds/boot_startup.ogg`: cut from "1990s Operating System Start Sound - Optimistic" by Johnmode on Freesound (https://freesound.org/people/Johnmode/sounds/818343/), CC0.
+- `Godot/win95/midi/passport.mp3`: PASSPORT.MID from Windows 95, (C) Microsoft, not licensed to us, played on an ESS AudioDrive ES1868F and recorded by blackstorm88, CC BY-NC-ND 4.0, unedited. From the Internet Archive (https://archive.org/details/passport-mid-played-on-a-es-1868-f).
 - `Godot/sounds/city_ambience.ogg`: cut and muffled from "Westfield.wav" by Islabonita on Freesound (https://freesound.org/people/Islabonita/sounds/178532/), CC0. `tools/make_city_ambience.sh` makes it.
 - `Godot/win95/theme/fonts/`: W95FA Pixel, a pixel-grid version of [W95FA](https://fontsarena.com/w95fa-by-alina-sava/) by Alina Sava (FontsArena), SIL OFL 1.1 (`ofl.txt`).
 - `Godot/voices/live/cmudict.txt.gz`: the CMU Pronouncing Dictionary, (C) Carnegie Mellon University, BSD-style licence (`CMUDICT-LICENSE.txt`).

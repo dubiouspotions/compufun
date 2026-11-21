@@ -14,6 +14,8 @@ extends Resource
 @export_multiline var contents: String = ""
 ## The picture of a .bmp file, which Paint shows and saves. Null for a blank canvas.
 @export var picture: Texture2D
+## The sound of a .mid file, which Media Player plays: a recording, as Godot plays no MIDI.
+@export var sound: AudioStream
 ## The date that Properties shows as Modified, as Win95 writes it: "Tuesday, March 12, 1996 4:05:12 PM".
 ## Empty hides it.
 @export var modified: String = ""
