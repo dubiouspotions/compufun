@@ -60,6 +60,8 @@ var _slot_top: float
 var _slot_bottom: float
 # The characters typed so far of the current line; -1 when the whole line shows.
 var _typed: float = -1.0
+# The pixels of the portrait's texture that are not transparent.
+var _figure: Rect2i
 
 @onready var _name: Label = %NameLabel
 @onready var _text: Label = %LineLabel
@@ -119,6 +121,17 @@ func start(customer: Customer, conversation: Conversation) -> void:
 	_show_line()
 
 
+## The top right corner of the customer in the portrait, in this overlay's coordinates, as it
+## sways; Vector2.INF while no portrait shows or it still rises. Something that hovers over the
+## customer goes there, such as the [x] of the corruption sign customer_x.
+func portrait_corner() -> Vector2:
+	if _portrait.texture == null or not _figure.has_area() or (_rise != null and _rise.is_running()):
+		return Vector2.INF
+	var texel := _portrait.size / _portrait.texture.get_size()
+	var corner := Vector2(_figure.end.x, _figure.position.y) * texel
+	return get_global_transform().affine_inverse() * (_portrait.get_global_transform() * corner)
+
+
 ## Slides the portrait up from under the box's bottom edge, where PortraitClip hides it, to where
 ## it stands in the scene.
 func _rise_portrait() -> void:
@@ -140,6 +153,7 @@ func _rise_portrait() -> void:
 ## Shows the portrait of [param pose]. A pose the person has no portrait for shows "neutral".
 func _show_portrait(pose: StringName) -> void:
 	_portrait.texture = null
+	_figure = Rect2i()
 	var person := _customer.person
 	if person == null:
 		push_error("DialogueOverlay: %s has no person" % _customer.resource_path)
@@ -167,6 +181,7 @@ func _fit_portrait() -> void:
 	if measured.z < 0.0:
 		push_error("DialogueOverlay: %s has no visible pixels" % tex.resource_path)
 		return
+	_figure = image.get_used_rect()
 	var crown := measured.y
 	var hem := measured.z + 1.0
 	var cut := crown + head_above * (hem - crown)
