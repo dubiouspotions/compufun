@@ -35,7 +35,7 @@ offsets = PackedFloat32Array(0, 0.26, 0.35, 0.7, 0.77, 0.85, 1)
 colors = PackedColorArray(0.35, 0.42, 0.65, 1, 0.9, 0.75, 0.7, 1, 0.92, 0.94, 1, 1, 0.95, 0.92, 0.88, 1, 1, 0.78, 0.65, 1, 0.4, 0.45, 0.68, 1, 0.35, 0.42, 0.65, 1)
 
 [sub_resource type="Curve" id="Curve_fuv2w"]
-_data = [Vector2(0, 0.2), 0.0, 0.4, 1, 1, Vector2(0.25, 0.3), 0.4, 2.0, 1, 1, Vector2(0.35, 0.5), 2.0, 0.3333334, 1, 1, Vector2(0.5, 0.55), 0.3333334, -0.2500001, 1, 1, Vector2(0.7, 0.5), -0.2500001, -2.1999996, 1, 1, Vector2(0.8, 0.28), -2.1999996, -0.40000004, 1, 1, Vector2(1, 0.2), -0.40000004, 0.0, 1, 1]
+_data = [Vector2(0, 0.2), 0.0, 0.0, 1, 1, Vector2(0.25, 0.2), 0.0, 0.1, 1, 1, Vector2(0.35, 0.21), 0.1, 0.06666667, 1, 1, Vector2(0.5, 0.22), 0.06666667, -0.05, 1, 1, Vector2(0.7, 0.21), -0.05, -0.1, 1, 1, Vector2(0.8, 0.2), -0.1, 0.0, 1, 1, Vector2(1, 0.2), 0.0, 0.0, 1, 1]
 point_count = 7
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ru73e"]
@@ -179,6 +179,11 @@ environment = SubResource("Environment_dc516")
 
 [node name="Sun" type="DirectionalLight3D" parent="." unique_id=1412290489]
 unique_name_in_owner = true
+
+[node name="Skylight" type="DirectionalLight3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.76604444, 0.64278764, 0, -0.64278764, 0.76604444, 0, 0, 0)
+light_cull_mask = 2
 
 [node name="AlleyFloor" type="MeshInstance3D" parent="." unique_id=952206550]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -9.1)

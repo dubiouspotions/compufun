@@ -20,8 +20,12 @@ extends Node3D
 @export var sky_top: Gradient
 @export var sky_horizon: Gradient
 @export var sun_color: Gradient
+## The ambient light everywhere, the shop's inside too. The outside gets the skylight on top.
 @export var ambient_color: Gradient
 @export var ambient_energy: Curve
+## The energy at full daylight of the skylight: light from the sky that reaches only the outside,
+## so that the outside looks brighter than the shop by day. Its colour is the sky's horizon colour.
+@export var skylight_energy: float = 4.0
 ## How much rain greys and darkens the sky and the light, 0 to 1.
 @export_range(0.0, 1.0) var rain_gloom: float = 0.55
 ## The fog density without rain and with rain. More fog makes the distance softer.
@@ -38,12 +42,15 @@ var _lamp_energy: Array[float] = []
 var _glows: Array[Node3D] = []
 
 @onready var _sun: DirectionalLight3D = %Sun
+@onready var _skylight: DirectionalLight3D = %Skylight
 @onready var _environment: WorldEnvironment = %Environment
 @onready var _rain: CPUParticles3D = %Rain
 
 
 func _ready() -> void:
 	add_to_group(&"outside")
+	for node: Node in find_children("*", "GeometryInstance3D", true, false):
+		(node as GeometryInstance3D).layers |= _skylight.light_cull_mask
 	# The groups reach into instanced props too, such as the lights of each lamp post.
 	for node: Node in get_tree().get_nodes_in_group(&"lamp"):
 		if is_ancestor_of(node) and node is Light3D:
@@ -86,6 +93,8 @@ func _apply() -> void:
 	else:
 		_sun.light_color = moon_color
 		_sun.light_energy = moon_energy * clampf(-daylight * 3.0, 0.0, 1.0) * (1.0 - 0.7 * gloom)
+	_skylight.light_color = horizon
+	_skylight.light_energy = skylight_energy * clampf(daylight * 3.0, 0.0, 1.0) * (1.0 - 0.7 * gloom)
 	# The lamps: off in daylight, on from dusk to dawn, a little on in the rain.
 	var dark := maxf(1.0 - clampf(daylight * 4.0, 0.0, 1.0), 0.5 * gloom)
 	for i: int in _lamps.size():
