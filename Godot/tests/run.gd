@@ -20,7 +20,7 @@ func _initialize() -> void:
 		var output: Array = []
 		var code := OS.execute(OS.get_executable_path(), ["--headless", "--path", ProjectSettings.globalize_path("res://"), "-s", path], output, true)
 		var text: String = "".join(output)
-		if code == 0 and text.strip_edges().ends_with(TEST.PASSED):
+		if code == 0 and TEST.PASSED in text.replace("\r", "").split("\n"):
 			print("ok   %s" % path)
 		else:
 			failed.append(path)

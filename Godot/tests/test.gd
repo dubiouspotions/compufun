@@ -4,7 +4,7 @@ extends SceneTree
 ## It passes when every check holds, at least one check ran, and no script error happened.
 ## Run one: `godot --headless -s res://tests/test_<name>.gd`; run all: `res://tests/run.gd`.
 
-## Printed as the last line of a test that passed; [code]run.gd[/code] looks for it.
+## The line that a test prints when it passed; [code]run.gd[/code] looks for it, because a parse error exits 0.
 const PASSED: String = "TEST PASSED"
 
 ## The Game autoload, in its start state, with its _process off: [method tick] moves time.

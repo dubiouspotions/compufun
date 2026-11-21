@@ -34,7 +34,7 @@ matches what the editor writes. — 2026-10
 autoload don't compile there. Run such a tool as a scene instead. — 2026-10
 
 **A `godot -s` script with a parse error exits 0.** Godot prints the parse error and quits as if
-the script had passed. `tests/run.gd` therefore also requires the last line that a passing test
+the script had passed. `tests/run.gd` therefore also requires the line that a passing test
 prints, not only exit code 0. — 2026-11
 
 **A run logs "ObjectDB instances were leaked" and "resources still in use at exit", naming a
