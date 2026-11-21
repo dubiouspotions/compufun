@@ -51,6 +51,7 @@ Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actio
 - `Godot/win95/sounds/boot_startup.ogg`: cut from "1990s Operating System Start Sound - Optimistic" by Johnmode on Freesound (https://freesound.org/people/Johnmode/sounds/818343/), CC0.
 - `Godot/win95/midi/passport.mp3`: PASSPORT.MID from Windows 95, (C) Microsoft, not licensed to us, played on an ESS AudioDrive ES1868F and recorded by blackstorm88, CC BY-NC-ND 4.0, unedited. From the Internet Archive (https://archive.org/details/passport-mid-played-on-a-es-1868-f).
 - `Godot/sounds/city_ambience.ogg`: cut and muffled from "Westfield.wav" by Islabonita on Freesound (https://freesound.org/people/Islabonita/sounds/178532/), CC0. `tools/make_city_ambience.sh` makes it.
+- `Godot/compufun_db/fonts/Px437_IBM_VGA_8x16.ttf`: from [The Ultimate Oldschool PC Font Pack](https://int10h.org/oldschool-pc-fonts/) by VileR, CC BY-SA 4.0 (`LICENSE.txt`).
 - `Godot/win95/theme/fonts/`: W95FA Pixel, a pixel-grid version of [W95FA](https://fontsarena.com/w95fa-by-alina-sava/) by Alina Sava (FontsArena), SIL OFL 1.1 (`ofl.txt`).
 - `Godot/win95/theme/fonts/px437_ibm_vga_8x16.ttf`: Px437 IBM VGA 8x16 from [The Ultimate Oldschool PC Font Pack](https://int10h.org/oldschool-pc-fonts/) by VileR, CC BY-SA 4.0 (`oldschool_pc_fonts_license.txt`).
 - `Godot/voices/live/cmudict.txt.gz`: the CMU Pronouncing Dictionary, (C) Carnegie Mellon University, BSD-style licence (`CMUDICT-LICENSE.txt`).
