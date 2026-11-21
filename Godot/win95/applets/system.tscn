@@ -260,7 +260,7 @@ offset_right = 375.0
 offset_bottom = 278.0
 mouse_filter = 2
 script = ExtResource("group_box")
-title = "Performance status"
+text = "Performance status"
 
 [node name="MemoryLabel" type="Label" parent="VBox/Body/Column/Tabs/Performance"]
 offset_left = 30.0
@@ -380,7 +380,7 @@ offset_right = 375.0
 offset_bottom = 342.0
 mouse_filter = 2
 script = ExtResource("group_box")
-title = "Advanced settings"
+text = "Advanced settings"
 
 [node name="FileSystemButton" type="Button" parent="VBox/Body/Column/Tabs/Performance"]
 offset_left = 29.0

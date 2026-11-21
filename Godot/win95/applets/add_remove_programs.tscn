@@ -154,7 +154,7 @@ offset_right = 331.0
 offset_bottom = 308.0
 mouse_filter = 2
 script = ExtResource("group_box")
-title = "Description"
+text = "Description"
 
 [node name="DescriptionText" type="Label" parent="VBox/Body/Column/Tabs/Windows Setup"]
 offset_left = 23.0

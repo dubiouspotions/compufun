@@ -23,16 +23,18 @@ offset_left = 8.0
 offset_top = 9.0
 offset_right = 191.0
 offset_bottom = 206.0
+mouse_filter = 2
 script = ExtResource("group_box")
-title = "Date"
+text = "Date"
 
 [node name="TimeGroup" type="Control" parent="VBox/Body/Column/Tabs/Date & Time"]
 offset_left = 200.0
 offset_top = 9.0
 offset_right = 370.0
 offset_bottom = 206.0
+mouse_filter = 2
 script = ExtResource("group_box")
-title = "Time"
+text = "Time"
 
 [node name="Month" type="OptionButton" parent="VBox/Body/Column/Tabs/Date & Time"]
 unique_name_in_owner = true
