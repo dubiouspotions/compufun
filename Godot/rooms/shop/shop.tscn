@@ -23,6 +23,7 @@
 [ext_resource type="Script" path="res://rooms/view_marker.gd" id="21_sg8ra"]
 [ext_resource type="PackedScene" path="res://customers/customer_body.tscn" id="22_rqm4b"]
 [ext_resource type="PackedScene" path="res://props/poster.tscn" id="23_poster"]
+[ext_resource type="PackedScene" path="res://props/trash_can.tscn" id="24_trash"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -362,6 +363,9 @@ transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.85
 
 [node name="PhoneProp" parent="Room" unique_id=803377635 instance=ExtResource("17_djiw7")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.15, 1, -1.05)
+
+[node name="TrashCan" parent="Room" instance=ExtResource("24_trash")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 0, 1.2)
 
 [node name="WorkComputer" parent="Room" unique_id=397139589 instance=ExtResource("13_ojat2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.72, 1, 0.45)
