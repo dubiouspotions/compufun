@@ -27,7 +27,7 @@ Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actio
 
 ## Documentation
 
-- **Architecture:** [wiki/Architecture.md](wiki/Architecture.md), the local copy of the wiki page. Run `bash tools/sync-wiki.sh` to fetch or update it. It is the only architecture file; it is also [online](https://github.com/dubiouspotions/humanerror/wiki/Architecture).
+- **Architecture:** [wiki/Architecture.md](wiki/Architecture.md), the local copy of the wiki page. Run `bash tools/sync-wiki.sh` to fetch or update it. It holds the design; it is also [online](https://github.com/dubiouspotions/humanerror/wiki/Architecture). The code layout (folders, the main scene tree, the load-bearing settings) is in [docs/architecture.md](docs/architecture.md).
 - **Rules and how-tos:** start at [docs/index.md](docs/index.md). Set up a new machine with [docs/working-together.md](docs/working-together.md).
 - Coding agents read [AGENTS.md](AGENTS.md).
 

@@ -26,8 +26,9 @@ start, keep changes small, and push often so that nobody builds on a stale tree.
 - **Honest, critical review over flattery.** Push back with concrete alternatives.
 - **Stuck on a missing tool, credential, or service? Stop and ask early.** One click from your
   human beats a session spent on workarounds. Keep working on the unblocked parts meanwhile.
-- **The wiki is the design, and the code follows it.** Read `wiki/Architecture.md` before you
-  add or change structure, and keep the page and the code in sync. See "The wiki" below.
+- **The wiki is the design, and the code follows it.** Read `wiki/Architecture.md` (the design)
+  and `docs/architecture.md` (the code layout) before you add or change structure, and keep both
+  in sync with the code. See "The wiki" below.
 - **Deep discoveries go in docs/**, with a row in docs/index.md. Cross-project learnings (tool
   quirks, workflow preferences) go in the agent's own memory, not in this repo.
 
@@ -65,7 +66,7 @@ whole spec.
 | If you touch… | Read first |
 |---|---|
 | Any GDScript | [docs/code-standard.md](docs/code-standard.md) |
-| Structure: a scene tree, resource type, folder, autoload or buffer | [wiki/Architecture.md](wiki/Architecture.md) |
+| Structure: a scene tree, resource type, folder, autoload or buffer | [wiki/Architecture.md](wiki/Architecture.md), [docs/architecture.md](docs/architecture.md) |
 | Gameplay or story | [wiki/Game-Concept-&-Loop.md](wiki/Game-Concept-&-Loop.md), [wiki/Storyline.md](wiki/Storyline.md) |
 
 ## The wiki
@@ -79,8 +80,10 @@ this file. Other agents run `bash tools/sync-wiki.sh` and read the page first.
   `git pull`. Before you push, check that the page still matches your change.
 - **The code follows the page.** When the work needs something that `wiki/Architecture.md`
   doesn't say, or says otherwise, stop and ask your human. Change the page first, then the code.
-- **Keep them in sync.** When a change adds, moves or removes something that the page names (a
-  folder, a resource type, a scene, an autoload), update the page in the same piece of work.
+- **Keep them in sync.** A folder, a scene in the main tree, an autoload or a load-bearing
+  setting is in `docs/architecture.md`: update it in the same commit as the code. A resource type,
+  a rule of the loop or another design decision is on the wiki page: update the page in the same
+  piece of work.
 - **The page holds the team's decisions.** Change a decision only with your human's yes.
   Recording what the code now does needs no yes.
 - **The wiki is its own git repo.** Edit and commit in `wiki/`, run `git -C wiki pull --rebase`,
@@ -216,5 +219,8 @@ The documentation index is: @docs/index.md
 
 The architecture is: @wiki/Architecture.md
 
+The code layout is: @docs/architecture.md
+
 Agents that don't expand `@` includes: read [README.md](README.md),
-[docs/index.md](docs/index.md) and [wiki/Architecture.md](wiki/Architecture.md) first.
+[docs/index.md](docs/index.md), [wiki/Architecture.md](wiki/Architecture.md) and
+[docs/architecture.md](docs/architecture.md) first.
