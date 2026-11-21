@@ -9,12 +9,18 @@ enum Kind {
 	PRESSED, # down-state of a button
 	WINDOW, # window frames, menus, scrollbar thumbs
 	FIELD, # 2 px recess: text fields, lists, pressed caption buttons
+	TOGGLED, # a button that stays pushed in, like the active taskbar button
 }
 
-## Which palette colour fills the inside of the edge.
-enum Fill { FACE, WINDOW }
+## What fills the inside of the edge. DITHER is a checkerboard of highlight and face.
+enum Fill { FACE, WINDOW, DITHER }
+
+const _DITHER_SIZE := 64
 
 static var _stock_palette := Win95Palette.new()
+
+var _dither: ImageTexture
+var _dither_colors := PackedColorArray()
 
 @export var kind := Kind.RAISED:
 	set(value):
@@ -36,10 +42,10 @@ static var _stock_palette := Win95Palette.new()
 
 
 func _init() -> void:
-	content_margin_left = 2.0
-	content_margin_top = 2.0
-	content_margin_right = 2.0
-	content_margin_bottom = 2.0
+	# A saved .tres can set the margins before the script attaches; only fill in unset ones.
+	for side: Side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+		if get_content_margin(side) < 0:
+			set_content_margin(side, 2.0)
 
 
 func _draw(to_canvas_item: RID, rect: Rect2) -> void:
@@ -61,9 +67,42 @@ func _draw(to_canvas_item: RID, rect: Rect2) -> void:
 		Kind.FIELD:
 			_edge(to_canvas_item, r, p.shadow_color, p.highlight_color)
 			_edge(to_canvas_item, inner, p.dark_shadow_color, p.light_color)
+		Kind.TOGGLED:
+			_edge(to_canvas_item, r, p.dark_shadow_color, p.highlight_color)
+			_edge(to_canvas_item, inner, p.shadow_color, p.light_color)
 	var face := inner if kind == Kind.SUNKEN else inner.grow(-1)
-	if face.has_area():
-		RenderingServer.canvas_item_add_rect(to_canvas_item, face, p.window_color if fill == Fill.WINDOW else p.face_color)
+	if not face.has_area():
+		return
+	match fill:
+		Fill.FACE:
+			RenderingServer.canvas_item_add_rect(to_canvas_item, face, p.face_color)
+		Fill.WINDOW:
+			RenderingServer.canvas_item_add_rect(to_canvas_item, face, p.window_color)
+		Fill.DITHER:
+			_draw_dither(to_canvas_item, face, p.highlight_color, p.face_color)
+
+
+# Tiles the face with regions of one cached texture; a canvas item's texture repeat is off by default.
+func _draw_dither(ci: RID, face: Rect2, a: Color, b: Color) -> void:
+	var colors := PackedColorArray([a, b])
+	if _dither == null or _dither_colors != colors:
+		var img := Image.create_empty(_DITHER_SIZE, _DITHER_SIZE, false, Image.FORMAT_RGBA8)
+		for y in _DITHER_SIZE:
+			for x in _DITHER_SIZE:
+				img.set_pixel(x, y, a if (x + y) % 2 == 0 else b)
+		if _dither == null:
+			_dither = ImageTexture.create_from_image(img)
+		else:
+			_dither.update(img) # keeps the RID that draw commands already hold
+		_dither_colors = colors
+	var x := 0.0
+	while x < face.size.x:
+		var y := 0.0
+		while y < face.size.y:
+			var chunk := Vector2(minf(_DITHER_SIZE, face.size.x - x), minf(_DITHER_SIZE, face.size.y - y))
+			RenderingServer.canvas_item_add_texture_rect_region(ci, Rect2(face.position + Vector2(x, y), chunk), _dither.get_rid(), Rect2(Vector2.ZERO, chunk))
+			y += _DITHER_SIZE
+		x += _DITHER_SIZE
 
 
 # Bottom and right run the full length and cover the corners, as in Windows.

@@ -9,10 +9,10 @@
 [sub_resource type="StyleBox" id="button"]
 resource_local_to_scene = false
 resource_name = ""
-content_margin_left = 6.0
-content_margin_top = 4.0
-content_margin_right = 6.0
-content_margin_bottom = 4.0
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
 script = ExtResource("bevel")
 palette = ExtResource("palette")
 
@@ -29,10 +29,10 @@ region_rect = Rect2(0, 0, 12, 12)
 [sub_resource type="StyleBox" id="button_pressed"]
 resource_local_to_scene = false
 resource_name = ""
-content_margin_left = 7.0
-content_margin_top = 5.0
-content_margin_right = 5.0
-content_margin_bottom = 3.0
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
 script = ExtResource("bevel")
 kind = 2
 palette = ExtResource("palette")
@@ -60,10 +60,10 @@ content_margin_bottom = 0.0
 [sub_resource type="StyleBox" id="caption_pressed"]
 resource_local_to_scene = false
 resource_name = ""
-content_margin_left = 3.0
-content_margin_top = 3.0
-content_margin_right = 1.0
-content_margin_bottom = 1.0
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
 script = ExtResource("bevel")
 kind = 4
 palette = ExtResource("palette")
@@ -185,10 +185,10 @@ bg_color = Color(0, 0, 0.502, 1)
 [sub_resource type="StyleBox" id="list_field"]
 resource_local_to_scene = false
 resource_name = ""
-content_margin_left = 3.0
-content_margin_top = 3.0
-content_margin_right = 3.0
-content_margin_bottom = 3.0
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
 script = ExtResource("bevel")
 kind = 4
 fill = 1
@@ -197,10 +197,10 @@ palette = ExtResource("palette")
 [sub_resource type="StyleBox" id="field"]
 resource_local_to_scene = false
 resource_name = ""
-content_margin_left = 4.0
-content_margin_top = 3.0
-content_margin_right = 4.0
-content_margin_bottom = 3.0
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
 script = ExtResource("bevel")
 kind = 4
 fill = 1
@@ -209,10 +209,10 @@ palette = ExtResource("palette")
 [sub_resource type="StyleBox" id="field_disabled"]
 resource_local_to_scene = false
 resource_name = ""
-content_margin_left = 4.0
-content_margin_top = 3.0
-content_margin_right = 4.0
-content_margin_bottom = 3.0
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
 script = ExtResource("bevel")
 kind = 4
 palette = ExtResource("palette")
@@ -220,10 +220,10 @@ palette = ExtResource("palette")
 [sub_resource type="StyleBox" id="window"]
 resource_local_to_scene = false
 resource_name = ""
-content_margin_left = 3.0
-content_margin_top = 3.0
-content_margin_right = 3.0
-content_margin_bottom = 3.0
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
 script = ExtResource("bevel")
 kind = 3
 palette = ExtResource("palette")
@@ -264,10 +264,10 @@ region_rect = Rect2(16, 0, 3, 2)
 [sub_resource type="StyleBox" id="progress_bg"]
 resource_local_to_scene = false
 resource_name = ""
-content_margin_left = 1.0
-content_margin_top = 1.0
-content_margin_right = 1.0
-content_margin_bottom = 1.0
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
 script = ExtResource("bevel")
 kind = 1
 palette = ExtResource("palette")
@@ -279,6 +279,50 @@ texture_margin_top = 2.0
 texture_margin_bottom = 2.0
 axis_stretch_horizontal = 1
 region_rect = Rect2(20, 0, 10, 5)
+
+[sub_resource type="StyleBox" id="taskbar_button"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBox" id="start_button_pressed"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+kind = 5
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBox" id="taskbar"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+kind = 3
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBox" id="taskbar_button_toggled"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+kind = 5
+fill = 2
+palette = ExtResource("palette")
 
 [sub_resource type="StyleBoxFlat" id="title_active"]
 content_margin_left = 2.0
@@ -444,6 +488,20 @@ PopupMenu/styles/separator = SubResource("menu_separator")
 ProgressBar/colors/font_color = Color(0, 0, 0, 1)
 ProgressBar/styles/background = SubResource("progress_bg")
 ProgressBar/styles/fill = SubResource("progress_fill")
+StartButton/base_type = &"Button"
+StartButton/fonts/font = ExtResource("font_bold")
+StartButton/styles/hover = SubResource("taskbar_button")
+StartButton/styles/hover_pressed = SubResource("start_button_pressed")
+StartButton/styles/normal = SubResource("taskbar_button")
+StartButton/styles/pressed = SubResource("start_button_pressed")
+Taskbar/base_type = &"PanelContainer"
+Taskbar/styles/panel = SubResource("taskbar")
+TaskbarButton/base_type = &"Button"
+TaskbarButton/styles/disabled = SubResource("taskbar_button")
+TaskbarButton/styles/hover = SubResource("taskbar_button")
+TaskbarButton/styles/hover_pressed = SubResource("taskbar_button_toggled")
+TaskbarButton/styles/normal = SubResource("taskbar_button")
+TaskbarButton/styles/pressed = SubResource("taskbar_button_toggled")
 TextEdit/colors/caret_color = Color(0, 0, 0, 1)
 TextEdit/colors/font_color = Color(0, 0, 0, 1)
 TextEdit/colors/font_placeholder_color = Color(0.502, 0.502, 0.502, 1)
