@@ -51,7 +51,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Outside**: The world outside the shop windows (`rooms/shop/outside.tscn`): the back alley, the sky, the sun and moon, the lamps, the fog and the rain. It shows the daypart.
 *Avoid:* street, environment, weather system.
 
-**Open sign**: The sign that hangs in the shop window (`props/open_sign.tscn`). Its OPEN side faces the street while the shop is open, so the player, inside, reads CLOSED; the player clicks it to close the shop for the night, once every customer of the day has come in.
+**Open sign**: The sign that hangs in the shop window (`props/open_sign.tscn`). Its OPEN side faces the street while the shop is open, so the player, inside, reads CLOSED; the player clicks it to close the shop for the night. It takes clicks only once every customer of the day has come in and the last visitor has walked out; then a yellow outline pulses around it.
 *Avoid:* closed sign, shop sign.
 
 **Poster**: A paper picture on a shop wall (`props/poster.tscn`); each one sets its picture and size in the inspector. The shop has the "It's not a bug" poster on the front wall and the commercial poster on the right wall (`Room/CommercialPoster`).

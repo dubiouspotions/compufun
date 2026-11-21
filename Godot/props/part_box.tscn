@@ -18,5 +18,5 @@ mesh = SubResource("BoxMesh_box")
 [node name="Hotspot" parent="." instance=ExtResource("3_hot")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
-action = 3
+action = 2
 size = Vector3(0.28, 0.2, 0.26)

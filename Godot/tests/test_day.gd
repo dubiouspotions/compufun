@@ -108,6 +108,7 @@ func run() -> void:
 	game.hang_up()
 	check("B walks in for PICKUP", [game.visitor == b, game.visit], [true, GAME.Visit.PICKUP])
 	game.customer_arrived()
+	check("can't close while B walks out with the computer", [game.visitor_state, game.can_close()], [GAME.VisitorState.WALKING_OUT, false])
 	game.customer_left()
 	check("B left with the job, cable cleared", [game.visitor, slots(), game.connected], [null, ["O1@0", "O2@1", "C@2"], null])
 

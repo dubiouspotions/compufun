@@ -352,14 +352,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.71, -5.44)
 [node name="SignLeft" parent="Room" instance=ExtResource("7_mjyfn")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3.99, 1.95, -1.0)
 
-[node name="OpenSignHotspot" parent="Room" instance=ExtResource("13_ojat2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 1.85, -5.38)
-action = 2
-size = Vector3(0.8, 0.36, 0.1)
-
-[node name="OpenSign" parent="Room/OpenSignHotspot" instance=ExtResource("28_open_sign")]
+[node name="OpenSign" parent="Room" instance=ExtResource("28_open_sign")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 2.3, -5.38)
 
 [node name="Door" parent="Room" unique_id=806004170 instance=ExtResource("8_p5y1l")]
 transform = Transform3D(0.17364822, 0, -0.9848077, 0, 1, 0, 0.9848077, 0, 0.17364822, -0.6, 0, -5.48)

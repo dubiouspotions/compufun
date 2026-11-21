@@ -73,6 +73,7 @@ func _ready() -> void:
 	_the_end.crashed.connect(crashed.emit)
 	_bench.degauss_pressed.connect(degauss_requested.emit)
 	_trash_can.trash_requested.connect(Game.trash_part)
+	_open_sign.close_requested.connect(close_requested.emit)
 	_bench.power_pressed.connect(monitor_power_requested.emit)
 	Game.changed.connect(_sync)
 	_sync()
@@ -301,11 +302,6 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 			view_requested.emit(hotspot.view)
 		Hotspot.Action.CALL_CUSTOMER:
 			phone_requested.emit()
-		Hotspot.Action.CLOSE_SHOP:
-			if Game.can_close():
-				close_requested.emit()
-			else:
-				_open_sign.wobble()
 		Hotspot.Action.TAKE_PART:
 			Game.take_new_part(hotspot.part)
 
