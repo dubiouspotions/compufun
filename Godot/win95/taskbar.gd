@@ -50,7 +50,7 @@ func _sync() -> void:
 			_row.add_child(button)
 			_buttons[window] = button
 			var bar := window.get_node_or_null(^"%TitleBar")
-			if bar != null:
+			if bar != null and not bar.appearance_changed.is_connected(_queue_sync):  # a reused window comes back
 				bar.appearance_changed.connect(_queue_sync)
 		var title_bar := window.get_node_or_null(^"%TitleBar")
 		button.text = title_bar.title if title_bar != null else window.name
