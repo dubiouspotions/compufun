@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://props/wall_shelf.tres" id="1_mesh"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="2_metal"]
+[ext_resource type="Material" path="res://materials/pegboard.tres" id="3_pegboard"]
+[ext_resource type="Material" path="res://materials/shop_goods.tres" id="4_goods"]
+
+[node name="WallShelf" type="MeshInstance3D"]
+mesh = ExtResource("1_mesh")
+surface_material_override/0 = ExtResource("2_metal")
+surface_material_override/1 = ExtResource("3_pegboard")
+surface_material_override/2 = ExtResource("4_goods")

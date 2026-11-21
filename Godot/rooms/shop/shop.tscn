@@ -36,6 +36,7 @@
 [ext_resource type="PackedScene" path="res://rooms/shop/the_end.tscn" id="the_end"]
 [ext_resource type="PackedScene" path="res://rooms/shop/hand.tscn" id="hand"]
 [ext_resource type="PackedScene" path="res://rooms/shop/ceiling_mouse.tscn" id="ceiling_mouse"]
+[ext_resource type="PackedScene" path="res://props/wall_shelf.tscn" id="wall_shelf"]
 [ext_resource type="PackedScene" path="res://props/wall_clock.tscn" id="wall_clock"]
 [ext_resource type="Script" path="res://corruption/corruption_signs.gd" id="corruption_signs"]
 
@@ -526,6 +527,9 @@ unique_name_in_owner = true
 
 [node name="BookSpot" type="Marker3D" parent="Room" groups=["book_spot"]]
 transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 3.42, 0.75, 1.1)
+
+[node name="WallShelf" parent="Room" instance=ExtResource("wall_shelf")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4.0, 0, -3.4)
 
 [node name="CorruptionSigns" type="Node" parent="."]
 script = ExtResource("corruption_signs")
