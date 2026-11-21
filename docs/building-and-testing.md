@@ -76,7 +76,17 @@ templates (Editor > Manage Export Templates).
 
 ## Voices
 
-Each customer line plays a WAV in `Godot/voices/`, which [Chimera](https://github.com/jamesondh/chimera-vocal-synth)
+**Live.** `VoicePlayer` speaks each line as it plays: in the web build Chimera runs as wasm in a
+Web Worker (`voices/live/live_voice.js`), on desktop as the `ChimeraVoice` extension
+(`native/chimera_voice/`). Without them, as on a machine that has not built them, it plays the
+line's WAV, rendered as below. Build them once with Rust installed (CI builds them for every
+platform on each push):
+
+```sh
+tools/build-voice.sh
+```
+
+**Rendered.** Each customer line plays a WAV in `Godot/voices/`, which [Chimera](https://github.com/jamesondh/chimera-vocal-synth)
 renders from the text, in the customer's `voice` and the mood of the line's pose
 (`Godot/voices/moods/<pose>.tres`: speed, pitch and pitch swing). A line without its file is
 silent, and a debug run warns about it. Conversations that every customer shares, such as what
@@ -112,6 +122,7 @@ voice that a customer has.
 
 `.github/workflows/godot.yml` runs on every push to `main` and `deploy`:
 
+- **Live Voice** builds `native/chimera_voice` with `tools/build-voice.sh`: macOS on a Mac runner, the wasm, Linux and Windows on Ubuntu. Build downloads them before its import.
 - **Build** imports, runs the tests, exports all four presets and uploads them as run artifacts. A failed build posts to
   Discord, and so do `ERROR` lines in the export log.
 - **Deploy** uploads the builds to itch.io with butler. It runs on the `deploy` branch, or when
