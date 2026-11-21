@@ -60,11 +60,15 @@ func _ready() -> void:
 	_voice_picker.item_selected.connect(_on_voice_selected)
 	voice_row.add_child(_voice_picker)
 	middle.add_child(_button("Person, problem: open in inspector", _open_in_inspector))
-	middle.add_child(_label("Conversations"))
+	middle.add_child(_label("Conversations: the first that matches plays"))
 	_conversation_list = _item_list(middle)
 	_conversation_list.item_selected.connect(_on_conversation_selected)
 	_new_conversation = _input_row(middle, "id, for example arrive", "Add", _add_conversation)
-	middle.add_child(_button("Delete conversation", _delete_conversation))
+	var order := HBoxContainer.new()
+	middle.add_child(order)
+	order.add_child(_button("Up", _move_conversation.bind(-1)))
+	order.add_child(_button("Down", _move_conversation.bind(1)))
+	order.add_child(_button("Delete", _delete_conversation))
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -160,7 +164,8 @@ func _summary(customer: Customer) -> String:
 		var lines: Array = []
 		for line: DialogueLine in c.lines:
 			lines.append([line.text, line.pose] if line != null else null)
-		conversations.append([c.id, lines])
+		var when: Array = [c.when.from_day, c.when.to_day, c.when.need_flags, c.when.not_flags] if c.when != null else []
+		conversations.append([c.id, c.trigger, c.once, when, lines])
 	return var_to_str([customer.display_name, customer.voice, conversations])
 
 
@@ -206,7 +211,7 @@ func _select_customer(index: int) -> void:
 		_select_conversation(-1)
 		return
 	for c: Conversation in _customer.conversations:
-		_conversation_list.add_item(String(c.id) if c != null else "(empty)")
+		_conversation_list.add_item(_conversation_label(c))
 	var keep := _customer.conversations.find(_conversation)
 	if keep < 0 and not _customer.conversations.is_empty():
 		keep = 0
@@ -277,6 +282,19 @@ func _add_conversation(id: String) -> void:
 	_select_customer(_customers.find(_customer))
 
 
+func _move_conversation(step: int) -> void:
+	if _customer == null or _conversation == null:
+		return
+	var index := _customer.conversations.find(_conversation)
+	var to := index + step
+	if to < 0 or to >= _customer.conversations.size():
+		return
+	_customer.conversations[index] = _customer.conversations[to]
+	_customer.conversations[to] = _conversation
+	_touch()
+	_select_customer(_customers.find(_customer))
+
+
 func _delete_conversation() -> void:
 	if _customer == null or _conversation == null:
 		return
@@ -310,11 +328,94 @@ func _render_detail() -> void:
 	id_edit.size_flags_horizontal = SIZE_EXPAND_FILL
 	id_edit.text_changed.connect(_on_id_changed)
 	id_row.add_child(id_edit)
+	_render_when()
 
 	_detail.add_child(_label("Lines (the customer says them in this order)"))
 	for i: int in _conversation.lines.size():
 		_detail.add_child(_line_row(i))
 	_detail.add_child(_button("Add line", _add_line))
+
+
+## The trigger, once, and the condition of the conversation. A condition is made on the first edit.
+func _render_when() -> void:
+	var c := _conversation
+	var when := c.when if c.when != null else Condition.new()
+	var row := HBoxContainer.new()
+	_detail.add_child(row)
+	row.add_child(_label("Plays on"))
+	var trigger := OptionButton.new()
+	for key: String in Conversation.Trigger.keys():
+		trigger.add_item(key)
+	trigger.select(c.trigger)
+	trigger.item_selected.connect(func(index: int) -> void:
+		c.trigger = index as Conversation.Trigger
+		_changed_when())
+	row.add_child(trigger)
+	var once := CheckBox.new()
+	once.text = "Only once"
+	once.button_pressed = c.once
+	once.toggled.connect(func(on: bool) -> void:
+		c.once = on
+		_changed_when())
+	row.add_child(once)
+
+	var days := HBoxContainer.new()
+	_detail.add_child(days)
+	days.add_child(_label("Days"))
+	for field: String in ["from_day", "to_day"]:
+		var box := SpinBox.new()
+		box.min_value = 1
+		box.max_value = 7
+		box.value = when.get(field)
+		box.value_changed.connect(func(value: float) -> void:
+			_condition().set(field, int(value))
+			_changed_when())
+		days.add_child(box)
+
+	for field: String in ["need_flags", "not_flags"]:
+		var flags_row := HBoxContainer.new()
+		_detail.add_child(flags_row)
+		flags_row.add_child(_label("Needs flags" if field == "need_flags" else "Not with flags"))
+		var edit := LineEdit.new()
+		edit.placeholder_text = "flag_a, flag_b"
+		edit.size_flags_horizontal = SIZE_EXPAND_FILL
+		edit.text = ", ".join(PackedStringArray(when.get(field)))
+		edit.text_changed.connect(func(text: String) -> void:
+			var names: Array[StringName] = []
+			for part: String in text.split(",", false):
+				if part.strip_edges() != "":
+					names.append(StringName(part.strip_edges()))
+			_condition().set(field, names)
+			_changed_when())
+		flags_row.add_child(edit)
+
+
+func _condition() -> Condition:
+	if _conversation.when == null:
+		_conversation.when = Condition.new()
+	return _conversation.when
+
+
+func _changed_when() -> void:
+	_conversation_list.set_item_text(_customer.conversations.find(_conversation), _conversation_label(_conversation))
+	_touch()
+
+
+## The id and when it plays, for the conversation list.
+func _conversation_label(c: Conversation) -> String:
+	if c == null:
+		return "(empty)"
+	var parts: PackedStringArray = [Conversation.Trigger.keys()[c.trigger]]
+	if c.when != null:
+		if c.when.from_day != 1 or c.when.to_day != 7:
+			parts.append("day %d-%d" % [c.when.from_day, c.when.to_day])
+		for flag: StringName in c.when.need_flags:
+			parts.append(String(flag))
+		for flag: StringName in c.when.not_flags:
+			parts.append("not " + String(flag))
+	if c.once:
+		parts.append("once")
+	return "%s  (%s)" % [c.id, ", ".join(parts)]
 
 
 func _line_row(index: int) -> Control:
@@ -368,7 +469,7 @@ func _pose_picker(line: DialogueLine) -> OptionButton:
 
 func _on_id_changed(text: String) -> void:
 	_conversation.id = StringName(text)
-	_conversation_list.set_item_text(_customer.conversations.find(_conversation), text)
+	_conversation_list.set_item_text(_customer.conversations.find(_conversation), _conversation_label(_conversation))
 	_touch()
 
 
