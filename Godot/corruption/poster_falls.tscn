@@ -5,6 +5,8 @@
 [node name="PosterFalls" type="Node3D"]
 script = ExtResource("1_script")
 title = "A poster falls off with the Solitaire win effect"
+timing = 2
+hint = "Look at the poster in the Main View. Then stage 2."
 stages = 2
 
 [node name="Trail" type="Node3D" parent="."]

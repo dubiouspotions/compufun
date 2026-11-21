@@ -5,3 +5,5 @@
 [node name="PointerEscape" type="Node"]
 script = ExtResource("1_script")
 title = "The Windows pointer slips off the screen"
+timing = 1
+hint = "Work on the bench screen and wait."

@@ -6,6 +6,8 @@
 [node name="MouseIcon" type="Node"]
 script = ExtResource("1_sign")
 title = "The bench's mouse becomes the Mouse icon"
+timing = 2
+hint = "The mouse on the bench, right of the keyboard."
 applet = ExtResource("2_applet")
 
 [node name="Icon" type="Sprite3D" parent="."]

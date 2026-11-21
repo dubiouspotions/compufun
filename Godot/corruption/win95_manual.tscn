@@ -44,6 +44,7 @@ size = Vector2(0.215, 0.285)
 [node name="Win95Manual" type="Node"]
 script = ExtResource("1_sign")
 title = "A book becomes the Windows 95 manual"
+hint = "The book on the work desk, in the Right View."
 covers = Array[Material]([SubResource("ShaderMaterial_cover_plain"), SubResource("ShaderMaterial_cover_manual")])
 bindings = Array[Material]([SubResource("ShaderMaterial_binding_plain"), SubResource("ShaderMaterial_binding_manual")])
 

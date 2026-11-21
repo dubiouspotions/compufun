@@ -19,6 +19,8 @@ size = Vector2(1.2, 0.7)
 [node name="FolderPopup" type="Node3D"]
 script = ExtResource("1_script")
 title = "A folder window pops up in the shop"
+timing = 1
+hint = "Face the Main View; its [X] closes it (stage 2)."
 stages = 2
 
 [node name="Screen" type="SubViewport" parent="."]

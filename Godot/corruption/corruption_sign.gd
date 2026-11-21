@@ -6,6 +6,10 @@ extends Node
 ## sign_<id> to 1, or to a later stage, and the sign shows while that flag is set and [member enabled]
 ## is on. A sign finds what it changes by group, such as &"logo_signs".
 
+## When in the week the wiki page puts the sign: Early (day 1 to 3), Mid (day 3 to 5), Late (day 5
+## to 7). The F2 Signs tab groups the signs by it; the trigger layer may read it.
+enum Timing { EARLY, MID, LATE }
+
 ## The group of every sign, for the F2 Signs tab.
 const GROUP: StringName = &"corruption_signs"
 
@@ -18,6 +22,11 @@ const GROUP: StringName = &"corruption_signs"
 			_sync()
 ## What the sign does, in a few words, for the F2 Signs tab.
 @export var title: String = ""
+## When in the week the sign belongs, as the wiki page groups it.
+@export var timing: Timing = Timing.EARLY
+## What the player must do to see the sign, for the F2 Signs tab, such as "Go to the Storage View."
+## Empty when the sign shows at once.
+@export var hint: String = ""
 ## The highest stage of the sign. 1: the sign is on or off. More: each stage goes further, or a
 ## one-time event moves itself on to a "done" stage.
 @export var stages: int = 1

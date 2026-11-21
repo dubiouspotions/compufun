@@ -5,3 +5,4 @@
 [node name="LogoCambion" type="Node"]
 script = ExtResource("1_sign")
 title = "The logo reads CambIon"
+timing = 2

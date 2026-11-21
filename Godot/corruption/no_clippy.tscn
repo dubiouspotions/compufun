@@ -5,3 +5,4 @@
 [node name="NoClippy" type="Node"]
 script = ExtResource("1_script")
 title = "Clippy is gone from every computer"
+hint = "Open WordPad on a computer."

@@ -5,4 +5,6 @@
 [node name="Pipedream" type="Node"]
 script = ExtResource("1_sign")
 title = "The Pipedream grows in the corner"
+timing = 1
+hint = "1: grows with the day's warp. 2: spreads."
 stages = 2

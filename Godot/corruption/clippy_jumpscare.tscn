@@ -6,6 +6,8 @@
 [node name="ClippyJumpscare" type="Node3D"]
 script = ExtResource("1_script")
 title = "Clippy in the dark storage room"
+timing = 1
+hint = "Go to the Storage View. Then stage 2 (done)."
 stages = 2
 
 [node name="Clippy" type="Sprite3D" parent="."]

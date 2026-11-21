@@ -5,3 +5,4 @@
 [node name="WinFont" type="Node"]
 script = ExtResource("1_script")
 title = "Text in the shop turns into the Windows font"
+hint = "Post-its, the calendar and the STORAGE sign."

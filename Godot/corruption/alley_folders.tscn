@@ -6,4 +6,6 @@
 [node name="AlleyFolders" type="Node"]
 script = ExtResource("1_sign")
 title = "Houses along the street become folders"
+timing = 2
+hint = "Behind the alley, through the windows."
 folder_scene = ExtResource("2_folder")

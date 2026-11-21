@@ -5,3 +5,4 @@
 [node name="WinCursor" type="Node"]
 script = ExtResource("1_script")
 title = "The mouse cursor becomes a Windows cursor"
+timing = 2

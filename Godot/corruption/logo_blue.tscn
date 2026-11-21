@@ -5,3 +5,4 @@
 [node name="LogoBlue" type="Node"]
 script = ExtResource("1_sign")
 title = "The logo turns Windows blue"
+timing = 1

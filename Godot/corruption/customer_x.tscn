@@ -6,6 +6,8 @@
 [node name="CustomerX" type="Node"]
 script = ExtResource("1_sign")
 title = "An [x] closes a regular customer for good"
+timing = 2
+hint = "Only a customer with the regular box ticked."
 
 [node name="Close" type="Button" parent="."]
 unique_name_in_owner = true

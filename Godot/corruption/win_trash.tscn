@@ -33,6 +33,8 @@ cap_top = false
 [node name="WinTrash" type="Node3D"]
 script = ExtResource("1_script")
 title = "The trash can blinks into the Recycle Bin"
+timing = 1
+hint = "The trash can by the work desk, now and then."
 
 [node name="RecycleBin" type="Node3D" parent="."]
 unique_name_in_owner = true
