@@ -1,3 +1,4 @@
+@tool
 class_name DialogueLine
 extends Resource
 ## One line that a customer says, with the portrait pose to show while they say it.

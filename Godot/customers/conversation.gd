@@ -1,3 +1,4 @@
+@tool
 class_name Conversation
 extends Resource
 ## One conversation of a customer: the lines they say, then the replies the player can pick.
