@@ -1,9 +1,10 @@
 extends "res://tests/test.gd"
-## The desktop's mouse: the left-handed button swap and double-clicks at the setup's speed.
-## Scripts that name ComputerState load at run time.
+## The desktop's mouse: the left-handed button swap, double-clicks at the setup's speed, and the
+## pointer trail. Scripts that name ComputerState load at run time.
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"
 const MOUSE_INPUT_PATH := "res://win95/mouse_input.gd"
+const TRAILS_PATH := "res://win95/pointer_trails.gd"
 
 
 func run() -> void:
@@ -23,6 +24,7 @@ func run() -> void:
 
 	await _check_buttons(state)
 	_check_double_click(state)
+	_check_trails(state)
 
 	state.free()
 	game.jobs = [] as Array[Job]
@@ -87,9 +89,51 @@ func _check_double_click(state: Node) -> void:
 	mouse.free()
 
 
+func _check_trails(state: Node) -> void:
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(640, 480)
+	root.add_child(viewport)
+	var screen_script := GDScript.new()
+	screen_script.source_code = "extends Control\nvar pointer_visible := true\n"
+	check("the screen stand-in compiles", screen_script.reload(), OK)
+	var screen := Control.new()
+	screen.set_script(screen_script)
+	viewport.add_child(screen)
+	var trails: Control = load(TRAILS_PATH).new()
+	trails.computer = state
+	trails.screen = screen
+	viewport.add_child(trails)
+	var step: float = trails.sample_seconds
+
+	state.apply_settings({&"pointer_trails": 0} as Dictionary[StringName, Variant])
+	trails.call(&"_process", step)
+	check("no trail while pointer_trails is 0", trails.trail.size(), 0)
+	state.apply_settings({&"pointer_trails": 3} as Dictionary[StringName, Variant])
+	for x in [10, 20, 30, 40, 50]:
+		_move(viewport, Vector2(x, 100))
+		trails.call(&"_process", step)
+	check("3 ghosts behind the pointer", trails.ghosts(), PackedVector2Array([Vector2(20, 100), Vector2(30, 100), Vector2(40, 100)]))
+	for i in 4:
+		trails.call(&"_process", step)
+	check("they catch up while it rests", trails.ghosts().size(), 0)
+	_move(viewport, Vector2(60, 100))
+	trails.call(&"_process", step)
+	screen.set(&"pointer_visible", false)
+	trails.call(&"_process", step)
+	check("a hidden pointer leaves no trail", trails.trail.size(), 0)
+	state.apply_settings({&"pointer_trails": 0} as Dictionary[StringName, Variant])
+	viewport.free()
+
+
 func _is_double(mouse: Node, ms: int) -> bool:
 	var translated: InputEvent = mouse.translate(_button(MOUSE_BUTTON_LEFT, true, Vector2(10, 10)), ms)
 	return translated != null and (translated as InputEventMouseButton).double_click
+
+
+func _move(viewport: SubViewport, at: Vector2) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.position = at
+	viewport.push_input(motion, true)
 
 
 func _button(index: MouseButton, pressed: bool, at: Vector2) -> InputEventMouseButton:
