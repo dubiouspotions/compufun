@@ -74,6 +74,15 @@ func _follow_camera() -> void:
 			view.follow(Rect2(_world.position + pixels.position * scale, pixels.size * scale))
 
 
+# Cmd+N (Ctrl+N) in debug builds skips to the next event; _input, so a screen that eats keys can't hide it.
+func _input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if key != null and not key.echo and key.is_action_pressed(&"skip_ahead") and OS.is_debug_build():
+		if not _shop.skip_walk():
+			Game.skip_wait()
+		get_viewport().set_input_as_handled()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	var marker := _shop.view_marker(Game.view)
 	if marker == null:

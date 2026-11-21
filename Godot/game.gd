@@ -731,6 +731,13 @@ func _try_arrival() -> bool:
 	return true
 
 
+## Debug: ends the wait that runs now, so the next event comes at once: the next customer (when
+## the counter has room) or the end of the phone call.
+func skip_wait() -> void:
+	_waited = _wait
+	_call_left = 0.0
+
+
 func _end_call() -> void:
 	phase = Phase.OPEN
 	var ticked := jobs.filter(func(j: Job) -> bool: return j.post_it_ticked)

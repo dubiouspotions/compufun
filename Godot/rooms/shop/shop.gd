@@ -241,6 +241,15 @@ func _walk_in() -> void:
 	_walk_tween.finished.connect(Game.customer_arrived)
 
 
+## Debug: ends the customer's walk in or out at once, as if it had run its course. False when
+## nobody is walking.
+func skip_walk() -> bool:
+	if _walk_tween == null or not _walk_tween.is_running():
+		return false
+	_walk_tween.custom_step(1e6)
+	return true
+
+
 # The path runs from the door to the counter, so the visitor turns around and walks it backwards.
 func _walk_out() -> void:
 	_walk_out_arrival = Game.arrival
