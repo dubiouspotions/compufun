@@ -77,6 +77,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.095, 0.21)
 material_override = ExtResource("3_sqjkr")
 mesh = SubResource("BoxMesh_k5r81")
 
+[node name="StickerFront" type="Marker3D" parent="Shell/Bezel"]
+unique_name_in_owner = true
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.011)
+
 [node name="Back" type="MeshInstance3D" parent="Shell" unique_id=957044595]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.095, -0.205)
 material_override = ExtResource("2_k8km5")
@@ -165,6 +169,10 @@ mesh = SubResource("BoxMesh_soiru")
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.004, 0)
 size = Vector3(0.42, 0.02, 0.42)
+
+[node name="StickerRight" type="Marker3D" parent="Panel"]
+unique_name_in_owner = true
+transform = Transform3D(0, -1, 0, 0, 0, 1, -1, 0, 0, 0, 0.0065, 0)
 
 [node name="PanelScrews" type="Marker3D" parent="." unique_id=1479054847]
 unique_name_in_owner = true

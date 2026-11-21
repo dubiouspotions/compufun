@@ -53,6 +53,7 @@ var _driver_materials: Array[StandardMaterial3D] = []
 @onready var _panel_screws: Node3D = %PanelScrews
 @onready var _driver: Node3D = %Screwdriver
 @onready var _outside: Array[MeshInstance3D] = [%Panel as MeshInstance3D, $Shell/Bezel as MeshInstance3D]
+@onready var _sticker_faces: Dictionary[Sticker.Face, Node3D] = {Sticker.Face.FRONT: %StickerFront, Sticker.Face.RIGHT: %StickerRight}
 
 
 func _ready() -> void:
@@ -84,13 +85,15 @@ func _ready() -> void:
 	_sync()
 
 
-## Gives the outside of the case (the side panel and the front) the case material of
-## [param computer], as PcTower.dress does for the upright tower; null keeps beige plastic.
+## Gives the outside of the case (the side panel and the front) the case material and the stickers
+## of [param computer], as PcTower.dress does for the upright tower; null keeps plain beige plastic.
+## The left side lies on the mat, so its stickers don't show.
 func dress(computer: Computer) -> void:
 	var case_material: Material = computer.case_material if computer != null else null
 	if case_material != null:
 		for part: MeshInstance3D in _outside:
 			part.material_override = case_material
+	Sticker.stick(computer.stickers if computer != null else ([] as Array[Sticker]), _sticker_faces)
 
 
 ## Where the Workview camera looks from at this lying computer, in world space: high enough for the
