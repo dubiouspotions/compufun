@@ -1,6 +1,7 @@
 class_name EndOfDay
 extends Control
-## Asks the player, in a Win95 message box, whether to end the day, and plays the night after
+## Asks the player whether to end the day, in the game's own panel or, once Cambion has warped the
+## shop far enough, in a Win95 message box, and plays the night after
 ## Game.close_shop(): a short wait in the evening, the screen and the sound fade out, a black pause,
 ## the sound comes back with the next day's title on the black screen, then that day starts
 ## (Game.start_next_day) and the shop fades in. After the last day the screen stays black with
@@ -8,10 +9,13 @@ extends Control
 
 const _MessageBox := preload("res://win95/message_box.gd")
 
-## The question in the message box.
+## The question, in the panel and the message box.
 @export var question: String = "Do you want to end the day?"
-## The title of the message box.
+## The title of the panel and the message box.
 @export var title: String = "Close the shop"
+## From this [member Game.warp] on, the question comes in a Win95 message box instead of the panel;
+## 0.45 is day 4's warp.
+@export_range(0.0, 1.0, 0.01) var win95_from_warp: float = 0.45
 ## The title on the black screen before a day starts; %d is the day's number.
 @export var day_title: String = "DAY %d"
 ## The text on the black screen after the last day.
@@ -30,6 +34,7 @@ var _sequence: Tween
 
 @onready var _dialog: SubViewportContainer = %Dialog
 @onready var _box: _MessageBox = %MessageBox
+@onready var _panel: PanelContainer = %Panel
 @onready var _black: ColorRect = %Black
 @onready var _title: Label = %Title
 @onready var _master: int = AudioServer.get_bus_index(&"Master")
@@ -38,20 +43,35 @@ var _sequence: Tween
 func _ready() -> void:
 	_dialog.hide()
 	_box.answered.connect(_on_answered)
+	(%Yes as Button).pressed.connect(_on_answered.bind("Yes"))
+	(%No as Button).pressed.connect(_on_answered.bind("No"))
 	Game.changed.connect(_sync)
 	_sync()
 
 
-## Shows the question. Yes closes the shop through [method Game.close_shop]; No, or the X, leaves
-## it open.
+## Shows the question: in the panel, or in the Win95 message box from [member win95_from_warp] on.
+## Yes closes the shop through [method Game.close_shop]; No, Esc on the panel, or the X of the
+## message box leaves it open.
 func ask() -> void:
-	_box.ask(title, question, ["Yes", "No"])
-	_box.show()
-	_dialog.show()
+	if Game.warp >= win95_from_warp:
+		_box.ask(title, question, ["Yes", "No"])
+		_box.show()
+		_dialog.show()
+		return
+	(%AskTitle as Label).text = title
+	(%AskQuestion as Label).text = question
+	_panel.show()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _panel.visible and event.is_action_pressed(&"ui_cancel"):
+		_on_answered("No")
+		get_viewport().set_input_as_handled()
 
 
 func _on_answered(button: String) -> void:
 	_dialog.hide()
+	_panel.hide()
 	if button == "Yes":
 		Game.close_shop()
 
