@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="HumanError"
-run/main_scene="uid://bxpxy4dr04bri"
+run/main_scene="uid://da3hapbt480yc"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [autoload]
