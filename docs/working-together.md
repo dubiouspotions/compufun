@@ -18,6 +18,8 @@ same on every machine and keep merges small.
    ```
 
 4. On Windows, run `export.sh` from Git Bash, or export from the editor (Project > Export).
+5. Install the [GitHub CLI](https://cli.github.com) (`gh`) and run `gh auth login`, then
+   `gh auth refresh -s project`. F9 reports use it to create issues on the board.
 
 ## Line endings
 
