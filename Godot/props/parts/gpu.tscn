@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/pcb.tres" id="1_36h38"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="2_4gg8j"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="3_gemam"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_364jk"]
+size = Vector3(0.17, 0.012, 0.09)
+
+[sub_resource type="BoxMesh" id="BoxMesh_2e5rp"]
+size = Vector3(0.04, 0.006, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jghtv"]
+size = Vector3(0.004, 0.024, 0.09)
+
+[node name="Gpu" type="Node3D" unique_id=367003169]
+
+[node name="Card" type="MeshInstance3D" parent="." unique_id=748047087]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.006, 0)
+material_override = ExtResource("1_36h38")
+mesh = SubResource("BoxMesh_364jk")
+
+[node name="Chip" type="MeshInstance3D" parent="." unique_id=1638703522]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.02, 0.015, 0)
+material_override = ExtResource("2_4gg8j")
+mesh = SubResource("BoxMesh_2e5rp")
+
+[node name="Bracket" type="MeshInstance3D" parent="." unique_id=740539212]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.087, 0.012, 0)
+material_override = ExtResource("3_gemam")
+mesh = SubResource("BoxMesh_jghtv")

@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/metal.tres" id="1_mgy85"]
+[ext_resource type="Material" path="res://materials/paper.tres" id="2_0jlfk"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_krdom"]
+size = Vector3(0.1, 0.026, 0.15)
+
+[sub_resource type="BoxMesh" id="BoxMesh_vxwxk"]
+size = Vector3(0.07, 0.002, 0.08)
+
+[node name="HardDrive" type="Node3D" unique_id=1509659532]
+
+[node name="Body" type="MeshInstance3D" parent="." unique_id=498206509]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.013, 0)
+material_override = ExtResource("1_mgy85")
+mesh = SubResource("BoxMesh_krdom")
+
+[node name="Sticker" type="MeshInstance3D" parent="." unique_id=1803580033]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.027, 0.02)
+material_override = ExtResource("2_0jlfk")
+mesh = SubResource("BoxMesh_vxwxk")

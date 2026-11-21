@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/metal.tres" id="1_o1hdi"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="2_dt1f4"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_gxx5e"]
+size = Vector3(0.05, 0.008, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bt38g"]
+size = Vector3(0.02, 0.003, 0.02)
+
+[node name="Cpu" type="Node3D" unique_id=193103902]
+
+[node name="Chip" type="MeshInstance3D" parent="." unique_id=1517255981]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.004, 0)
+material_override = ExtResource("1_o1hdi")
+mesh = SubResource("BoxMesh_gxx5e")
+
+[node name="Die" type="MeshInstance3D" parent="." unique_id=1858918374]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0095, 0)
+material_override = ExtResource("2_dt1f4")
+mesh = SubResource("BoxMesh_bt38g")

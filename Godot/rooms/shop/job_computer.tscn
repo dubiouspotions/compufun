@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" path="res://props/pc_tower.tscn" id="2_tower"]
 [ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="3_hotspot"]
 [ext_resource type="PackedScene" path="res://props/post_it_3d.tscn" id="4_post_it"]
+[ext_resource type="PackedScene" path="res://rooms/shop/open_case.tscn" id="9_open"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_outline"]
 size = Vector3(0.22, 0.45, 0.45)
@@ -66,3 +67,7 @@ transform = Transform3D(1, 0, 0, 0, 0.88294756, 0.46947157, 0, -0.46947157, 0.88
 [node name="CableSocket" type="Marker3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.095, 0.08, 0.16)
+
+[node name="OpenCase" parent="." instance=ExtResource("9_open")]
+unique_name_in_owner = true
+visible = false

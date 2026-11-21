@@ -1,0 +1,138 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://rooms/shop/open_case.gd" id="1_gnywo"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="2_qrjvx"]
+[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="3_fm6p7"]
+[ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="4_k8km5"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_sqjkr"]
+size = Vector3(0.42, 0.01, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7jy72"]
+size = Vector3(0.42, 0.07, 0.01)
+
+[sub_resource type="BoxMesh" id="BoxMesh_54tg8"]
+size = Vector3(0.42, 0.07, 0.01)
+
+[sub_resource type="BoxMesh" id="BoxMesh_agwkd"]
+size = Vector3(0.01, 0.07, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4ktm6"]
+size = Vector3(0.01, 0.07, 0.42)
+
+[node name="OpenCase" type="Node3D" unique_id=1594140094]
+script = ExtResource("1_gnywo")
+
+[node name="Tray" type="Node3D" parent="." unique_id=1186622990]
+
+[node name="Bottom" type="MeshInstance3D" parent="Tray" unique_id=1183471985]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0)
+material_override = ExtResource("2_qrjvx")
+mesh = SubResource("BoxMesh_sqjkr")
+
+[node name="Front" type="MeshInstance3D" parent="Tray" unique_id=1649048708]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, 0.205)
+material_override = ExtResource("3_fm6p7")
+mesh = SubResource("BoxMesh_7jy72")
+
+[node name="Back" type="MeshInstance3D" parent="Tray" unique_id=126151120]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, -0.205)
+material_override = ExtResource("3_fm6p7")
+mesh = SubResource("BoxMesh_54tg8")
+
+[node name="Left" type="MeshInstance3D" parent="Tray" unique_id=1108113663]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.205, 0.035, 0)
+material_override = ExtResource("3_fm6p7")
+mesh = SubResource("BoxMesh_agwkd")
+
+[node name="Right" type="MeshInstance3D" parent="Tray" unique_id=1979635586]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.205, 0.035, 0)
+material_override = ExtResource("3_fm6p7")
+mesh = SubResource("BoxMesh_4ktm6")
+
+[node name="Places" type="Marker3D" parent="." unique_id=589710417]
+unique_name_in_owner = true
+
+[node name="motherboard" type="Marker3D" parent="Places" unique_id=1779503597]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.02, 0.01, -0.03)
+
+[node name="Hotspot" parent="Places/motherboard" unique_id=484566507 instance=ExtResource("4_k8km5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+size = Vector3(0.27, 0.02, 0.31)
+
+[node name="cpu" type="Marker3D" parent="Places" unique_id=1261680523]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.022, -0.09)
+
+[node name="Hotspot" parent="Places/cpu" unique_id=126646944 instance=ExtResource("4_k8km5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008, 0)
+size = Vector3(0.06, 0.016, 0.06)
+
+[node name="fan" type="Marker3D" parent="Places" unique_id=1027312892]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.03, -0.09)
+
+[node name="Hotspot" parent="Places/fan" unique_id=1375667925 instance=ExtResource("4_k8km5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+size = Vector3(0.07, 0.05, 0.07)
+
+[node name="gpu" type="Marker3D" parent="Places" unique_id=941797043]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03, 0.022, 0.05)
+
+[node name="Hotspot" parent="Places/gpu" unique_id=7912890 instance=ExtResource("4_k8km5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+size = Vector3(0.18, 0.02, 0.1)
+
+[node name="hard_drive" type="Marker3D" parent="Places" unique_id=1044633910]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.155, 0.01, 0.12)
+
+[node name="Hotspot" parent="Places/hard_drive" unique_id=953588675 instance=ExtResource("4_k8km5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.017, 0)
+size = Vector3(0.11, 0.035, 0.16)
+
+[node name="Mat" type="Marker3D" parent="." unique_id=644829423]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.3)
+
+[node name="MatSurface" parent="Mat" unique_id=1809060406 instance=ExtResource("4_k8km5")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.006, 0)
+size = Vector3(0.5, 0.012, 0.13)
+
+[node name="Spots" type="Marker3D" parent="Mat" unique_id=1988380593]
+unique_name_in_owner = true
+
+[node name="Spot0" type="Marker3D" parent="Mat/Spots" unique_id=528951187]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0, 0)
+
+[node name="Hotspot" parent="Mat/Spots/Spot0" unique_id=2119965680 instance=ExtResource("4_k8km5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+size = Vector3(0.09, 0.05, 0.1)
+
+[node name="Spot1" type="Marker3D" parent="Mat/Spots" unique_id=688812675]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0, 0)
+
+[node name="Hotspot" parent="Mat/Spots/Spot1" unique_id=1250852109 instance=ExtResource("4_k8km5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+size = Vector3(0.09, 0.05, 0.1)
+
+[node name="Spot2" type="Marker3D" parent="Mat/Spots" unique_id=2093413128]
+
+[node name="Hotspot" parent="Mat/Spots/Spot2" unique_id=62692867 instance=ExtResource("4_k8km5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+size = Vector3(0.09, 0.05, 0.1)
+
+[node name="Spot3" type="Marker3D" parent="Mat/Spots" unique_id=334915190]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0, 0)
+
+[node name="Hotspot" parent="Mat/Spots/Spot3" unique_id=1159277221 instance=ExtResource("4_k8km5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+size = Vector3(0.09, 0.05, 0.1)
+
+[node name="Spot4" type="Marker3D" parent="Mat/Spots" unique_id=1393181962]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0, 0)
+
+[node name="Hotspot" parent="Mat/Spots/Spot4" unique_id=926176683 instance=ExtResource("4_k8km5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+size = Vector3(0.09, 0.05, 0.1)
+
+[node name="Eye" type="Marker3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.8660254, 0, -0.8660254, 0.5, 0, 0.78, 0.5)

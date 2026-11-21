@@ -27,6 +27,7 @@ const WORKVIEW: StringName = &"Workview"
 
 var _shown_view: StringName = &""
 var _workview_job: Job
+var _workview_open: bool = false
 var _walk_in_arrival: int = -1
 var _walk_out_arrival: int = -1
 var _walk_tween: Tween
@@ -147,9 +148,12 @@ func _move_camera(view_name: StringName) -> void:
 
 ## Moves the Workview marker to the computer in focus. True when it moved.
 func _follow_focus() -> bool:
-	if Game.focus == _workview_job:
+	# An open computer has its own eye, so opening or closing the case moves the Workview too.
+	var open := Game.focus != null and Game.focus.case_open
+	if Game.focus == _workview_job and open == _workview_open:
 		return false
 	_workview_job = Game.focus
+	_workview_open = open
 	if Game.focus == null:
 		return false
 	var marker := view_marker(WORKVIEW)
@@ -210,5 +214,9 @@ func _drop_plug(job: Job) -> void:
 
 
 func _on_job_clicked(job: Job) -> void:
+	# In the Workview, a click on the computer in focus opens its case (wiki: Hardware Repair).
+	if Game.view == WORKVIEW and job == Game.focus:
+		Game.open_case(job, true)
+		return
 	Game.focus_job(job)
 	view_requested.emit(WORKVIEW)

@@ -1,0 +1,39 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/pcb.tres" id="1_l6k64"]
+[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="2_urvy2"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="3_8hvij"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_w1nlv"]
+size = Vector3(0.26, 0.012, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cw1rg"]
+size = Vector3(0.15, 0.01, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wtmi5"]
+size = Vector3(0.06, 0.006, 0.06)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gt5mm"]
+size = Vector3(0.012, 0.01, 0.12)
+
+[node name="Motherboard" type="Node3D" unique_id=348979951]
+
+[node name="Board" type="MeshInstance3D" parent="." unique_id=94767066]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.006, 0)
+material_override = ExtResource("1_l6k64")
+mesh = SubResource("BoxMesh_w1nlv")
+
+[node name="Slot" type="MeshInstance3D" parent="." unique_id=1523957149]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, 0.017, 0.07)
+material_override = ExtResource("2_urvy2")
+mesh = SubResource("BoxMesh_cw1rg")
+
+[node name="Socket" type="MeshInstance3D" parent="." unique_id=1101456967]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 0.015, -0.06)
+material_override = ExtResource("2_urvy2")
+mesh = SubResource("BoxMesh_wtmi5")
+
+[node name="Ram" type="MeshInstance3D" parent="." unique_id=233861147]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.017, -0.07)
+material_override = ExtResource("3_8hvij")
+mesh = SubResource("BoxMesh_gt5mm")

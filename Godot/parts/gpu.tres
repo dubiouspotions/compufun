@@ -2,8 +2,10 @@
 
 [ext_resource type="Script" path="res://parts/part.gd" id="1_part"]
 [ext_resource type="Resource" path="res://parts/motherboard.tres" id="2_under"]
+[ext_resource type="PackedScene" path="res://props/parts/gpu.tscn" id="3_model"]
 
 [resource]
 script = ExtResource("1_part")
 display_name = "Graphics card"
 sits_on = ExtResource("2_under")
+model = ExtResource("3_model")
