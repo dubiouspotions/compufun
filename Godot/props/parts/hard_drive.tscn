@@ -1,22 +1,58 @@
 [gd_scene format=3]
 
-[ext_resource type="Material" path="res://materials/metal.tres" id="1_mgy85"]
-[ext_resource type="Material" path="res://materials/paper.tres" id="2_0jlfk"]
+[ext_resource type="Material" path="res://materials/pcb.tres" id="1_dr0ds"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="2_72s40"]
+[ext_resource type="Material" path="res://materials/paper.tres" id="3_qxa6k"]
+[ext_resource type="Material" path="res://materials/pcb_blue.tres" id="4_2ywup"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="5_v8j03"]
+[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="6_m6yh2"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_krdom"]
-size = Vector3(0.1, 0.026, 0.15)
+[sub_resource type="BoxMesh" id="BoxMesh_u35bo"]
+size = Vector3(0.098, 0.004, 0.148)
 
-[sub_resource type="BoxMesh" id="BoxMesh_vxwxk"]
-size = Vector3(0.07, 0.002, 0.08)
+[sub_resource type="BoxMesh" id="BoxMesh_y2js5"]
+size = Vector3(0.1, 0.022, 0.15)
 
-[node name="HardDrive" type="Node3D" unique_id=1509659532]
+[sub_resource type="BoxMesh" id="BoxMesh_2ody4"]
+size = Vector3(0.08, 0.001, 0.09)
 
-[node name="Body" type="MeshInstance3D" parent="." unique_id=498206509]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.013, 0)
-material_override = ExtResource("1_mgy85")
-mesh = SubResource("BoxMesh_krdom")
+[sub_resource type="BoxMesh" id="BoxMesh_v7ohe"]
+size = Vector3(0.08, 0.0012, 0.012)
 
-[node name="Sticker" type="MeshInstance3D" parent="." unique_id=1803580033]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.027, 0.02)
-material_override = ExtResource("2_0jlfk")
-mesh = SubResource("BoxMesh_vxwxk")
+[sub_resource type="BoxMesh" id="BoxMesh_8pfhi"]
+size = Vector3(0.05, 0.008, 0.006)
+
+[sub_resource type="BoxMesh" id="BoxMesh_t71wl"]
+size = Vector3(0.016, 0.008, 0.006)
+
+[node name="HardDrive" type="Node3D" unique_id=2009630806]
+
+[node name="Board" type="MeshInstance3D" parent="." unique_id=1238068897]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.002, 0)
+material_override = ExtResource("1_dr0ds")
+mesh = SubResource("BoxMesh_u35bo")
+
+[node name="Body" type="MeshInstance3D" parent="." unique_id=504554282]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0)
+material_override = ExtResource("2_72s40")
+mesh = SubResource("BoxMesh_y2js5")
+
+[node name="Sticker" type="MeshInstance3D" parent="." unique_id=2012460379]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0265, 0.015)
+material_override = ExtResource("3_qxa6k")
+mesh = SubResource("BoxMesh_2ody4")
+
+[node name="Stripe" type="MeshInstance3D" parent="." unique_id=701033171]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.027, -0.01)
+material_override = ExtResource("4_2ywup")
+mesh = SubResource("BoxMesh_v7ohe")
+
+[node name="IdePort" type="MeshInstance3D" parent="." unique_id=494651014]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.015, 0.012, -0.077)
+material_override = ExtResource("5_v8j03")
+mesh = SubResource("BoxMesh_8pfhi")
+
+[node name="PowerPort" type="MeshInstance3D" parent="." unique_id=1608824617]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.035, 0.012, -0.077)
+material_override = ExtResource("6_m6yh2")
+mesh = SubResource("BoxMesh_t71wl")

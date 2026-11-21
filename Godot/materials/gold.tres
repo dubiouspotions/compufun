@@ -1,0 +1,17 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="1_23ncm"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_23ncm")
+shader_parameter/albedo_color = Color(0.86, 0.7, 0.3, 1)
+shader_parameter/snap = null
+shader_parameter/affine = null
+shader_parameter/world_uv = null
+shader_parameter/uv_scale = null
+shader_parameter/uv_rect = null
+shader_parameter/tint_rect = null
+shader_parameter/tint_from_texture = null
+shader_parameter/edge_fade = null
+shader_parameter/fill_transparent = null

@@ -1,22 +1,31 @@
 [gd_scene format=3]
 
-[ext_resource type="Material" path="res://materials/metal.tres" id="1_o1hdi"]
-[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="2_dt1f4"]
+[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="1_dt1f4"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="2_gxx5e"]
+[ext_resource type="Material" path="res://materials/gold.tres" id="3_bt38g"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_gxx5e"]
-size = Vector3(0.05, 0.008, 0.05)
+[sub_resource type="BoxMesh" id="BoxMesh_y11m7"]
+size = Vector3(0.05, 0.006, 0.05)
 
-[sub_resource type="BoxMesh" id="BoxMesh_bt38g"]
-size = Vector3(0.02, 0.003, 0.02)
+[sub_resource type="BoxMesh" id="BoxMesh_soo6y"]
+size = Vector3(0.032, 0.003, 0.032)
 
-[node name="Cpu" type="Node3D" unique_id=193103902]
+[sub_resource type="BoxMesh" id="BoxMesh_egh8u"]
+size = Vector3(0.006, 0.001, 0.006)
 
-[node name="Chip" type="MeshInstance3D" parent="." unique_id=1517255981]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.004, 0)
-material_override = ExtResource("1_o1hdi")
-mesh = SubResource("BoxMesh_gxx5e")
+[node name="Cpu" type="Node3D" unique_id=1100518957]
 
-[node name="Die" type="MeshInstance3D" parent="." unique_id=1858918374]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0095, 0)
-material_override = ExtResource("2_dt1f4")
-mesh = SubResource("BoxMesh_bt38g")
+[node name="Ceramic" type="MeshInstance3D" parent="." unique_id=1609466549]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.003, 0)
+material_override = ExtResource("1_dt1f4")
+mesh = SubResource("BoxMesh_y11m7")
+
+[node name="Spreader" type="MeshInstance3D" parent="." unique_id=1490152490]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0075, 0)
+material_override = ExtResource("2_gxx5e")
+mesh = SubResource("BoxMesh_soo6y")
+
+[node name="PinOne" type="MeshInstance3D" parent="." unique_id=980760252]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.02, 0.0065, -0.02)
+material_override = ExtResource("3_bt38g")
+mesh = SubResource("BoxMesh_egh8u")

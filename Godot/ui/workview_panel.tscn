@@ -29,4 +29,4 @@ autowrap_mode = 3
 [node name="FixButton" type="Button" parent="Box" unique_id=2048108638]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Close the case"
+text = "Put the side panel on"
