@@ -72,6 +72,10 @@ var conversation: Conversation
 ## Goes up every time a visitor starts to walk in, also on [method restore]. A scene that
 ## remembers it can tell a new visit from a re-read of the same one.
 var arrival: int = 0
+## The running copy of each computer's Win95 setup, made at its first boot. It lasts for the whole
+## game, also through [method restore], so a customer who comes back brings the computer as the
+## player left it. Use [method setup_for].
+var setups: Dictionary[Computer, Win95Setup] = {}
 
 ## The number of the day, 1 to 7, or 0 before the first day.
 var day_number: int:
@@ -219,6 +223,24 @@ func fix(location: Problem.Location) -> void:
 			push_error("Game.fix: give HARDWARE or SOFTWARE, not %s" % location)
 			return
 	changed.emit()
+
+
+## The running copy of [param job]'s Win95 setup, or null when its computer has none. The first
+## call for a computer copies its Win95Setup; the first call for a job breaks the copy as the job's
+## problem says, on top of what earlier visits left.
+func setup_for(job: Job) -> Win95Setup:
+	var computer := job.customer.computer
+	if computer == null or computer.win95_setup == null:
+		return null
+	var setup: Win95Setup = setups.get(computer)
+	if setup == null:
+		setup = computer.win95_setup.duplicate_deep()  # loaded resources are shared, so mutating them would leak
+		setups[computer] = setup
+	if not job.broken:
+		job.broken = true
+		if job.problem.software_check != null:
+			job.problem.software_check.apply_break(setup)
+	return setup
 
 
 ## Switches [param job] on or off. The screen shows the [member connected] job while it is on.

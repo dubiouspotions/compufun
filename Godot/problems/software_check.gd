@@ -5,7 +5,9 @@ extends Resource
 ## A problem's setup describes the healthy computer; the check applies the break at boot.
 
 
-## Breaks [param setup], a computer's running copy.
+## Breaks [param setup], a computer's running copy, which may hold the player's changes from an
+## earlier visit. Breaking it twice must give the same result as once: Game.restore makes new jobs,
+## which break the copy again.
 @abstract func apply_break(setup: Win95Setup) -> void
 
 

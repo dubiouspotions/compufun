@@ -33,8 +33,11 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Screen buffer**: The 640 x 480 viewport that runs the Win95 desktop. The 3D monitor shows it, and the Screen View shows it at 2x.
 *Avoid:* desktop viewport, screen texture.
 
-**Win95 setup**: The `Win95Setup` resource of one customer's computer: what the Win95 desktop looks like and holds when it boots. `ComputerState` holds the running copy.
+**Win95 setup**: The `Win95Setup` resource of one customer's computer: what the Win95 desktop looks like and holds when it boots. Game copies it into the running copy.
 *Avoid:* computer config, Windows config, desktop data.
+
+**Running copy**: The `Win95Setup` that a computer runs, copied from its Win95 setup at the first boot and kept by `Game` for the whole game. The player's changes and the problems' breaks land here.
+*Avoid:* live setup, save state.
 
 **Report**: One F9 feedback report: a folder in `feedback/` with `shot.png` and `report.json`.
 *Avoid:* ticket, bug report, feedback file.

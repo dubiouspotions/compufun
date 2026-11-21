@@ -206,7 +206,7 @@ func _open_file(file: Win95File) -> void:
 			_launch(program.program, file)
 			return
 	if not programs.is_empty():
-		var location := _location_of(programs[0]).trim_suffix("\\")
+		var location := _state.location_of(programs[0]).trim_suffix("\\")
 		var expected := "%s\\%s.EXE" % [location, programs[0].name.get_basename().to_upper()]
 		_message(file.name, "Cannot find the file '%s' (or one of its components). Make sure the path and filename are correct and that all required libraries are available." % expected)
 	else:
@@ -346,7 +346,7 @@ func _on_action(id: StringName) -> void:
 			var file := _file_of(item) if item != null else null
 			if file != null:
 				var window: Node = _desktop.open(_PROPERTIES)
-				window.show_file(file, _location_of(file))
+				window.show_file(file, _state.location_of(file))
 		_:
 			push_error("Win95: no action for the menu id %s" % id)
 
@@ -375,29 +375,6 @@ func _files(items: Array[FileIcon]) -> Array[Win95File]:
 		if file != null:
 			files.append(file)
 	return files
-
-
-## Where [param file] is, as Win95's Properties shows it: "Desktop", "C:\", "C:\Windows" or
-## "Recycle Bin".
-func _location_of(file: Win95File) -> String:
-	var setup := _state.setup
-	if setup.desktop.has(file):
-		return "Desktop"
-	if setup.recycle_bin.has(file):
-		return "Recycle Bin"
-	var path: Variant = _path_in(setup.drive_c, file, "C:")
-	return path if path != null else "C:\\"
-
-
-func _path_in(container: Array, file: Win95File, path: String) -> Variant:
-	if container.has(file):
-		return path + "\\" if path == "C:" else path
-	for other: Win95File in container:
-		if other.is_folder:
-			var found: Variant = _path_in(other.children, file, path + "\\" + other.name)
-			if found != null:
-				return found
-	return null
 
 
 # Kalle's icon set pairs every name_32.png with a name_16.png.

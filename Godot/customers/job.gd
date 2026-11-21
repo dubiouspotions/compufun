@@ -13,6 +13,8 @@ var hardware_fixed: bool = false
 var software_fixed: bool = false
 ## The computer is switched on.
 var powered: bool = false
+## Game.setup_for has broken the computer's running copy as the problem says.
+var broken: bool = false
 ## The player ticked Done on the post-it. Only true when [member fixed] is.
 var post_it_ticked: bool = false
 

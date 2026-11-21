@@ -1,9 +1,9 @@
 class_name ComputerState
 extends Node
 ## The live Win95 state of one job's computer. ScreenView makes one desktop per job, at the job's
-## first connection, and keeps it while the cable is on another computer, so the state survives a
-## reconnection. It copies the computer's Win95Setup, applies the problem's break, and follows the
-## job's power.
+## first connection, and keeps it while the cable is on another computer. Its setup is the
+## computer's running copy from Game.setup_for, which outlives this node: a power cycle or a return
+## visit keeps the player's changes. It follows the job's power.
 
 ## The power came on. [member setup] is ready: rebuild everything from it.
 signal booted
@@ -14,33 +14,20 @@ signal changed
 
 const _NEW_FOLDER_ICON := preload("res://win95/theme/icons/folder_closed_32.png")
 
-## The running copy; null when the computer has no Win95 setup. A power cycle keeps it, so the
-## player's changes survive a reboot.
+## The running copy; null when the computer has no Win95 setup. Change it only through the setters
+## here, so that Game hears whether the problem is fixed.
 var setup: Win95Setup
 var is_on: bool = false
 ## The job whose computer this is. Set once, before the node enters the tree.
 var job: Job
 
 
-## Where each file in the Recycle Bin was deleted from.
-var _deleted_from: Dictionary[Win95File, Array] = {}
-
-
 func _ready() -> void:
-	var computer := job.customer.computer if job != null else null
-	if computer != null and computer.win95_setup != null:
-		boot(computer.win95_setup, job.problem)
+	if job != null:
+		setup = Game.setup_for(job)
+		_report_fixed()
 	Game.changed.connect(_sync)
 	_sync()
-
-
-## Starts a computer from [param from] and breaks it as [param problem] says. [param from], and
-## the .tres that it came from, stay unchanged. No signal fires; power does that.
-func boot(from: Win95Setup, problem: Problem) -> void:
-	setup = from.duplicate_deep()  # loaded resources are shared, so mutating them would leak
-	if problem != null and problem.software_check != null:
-		problem.software_check.apply_break(setup)
-	_report_fixed()
 
 
 func set_sound(volume: float, muted: bool) -> void:
@@ -58,6 +45,23 @@ func rename_file(file: Win95File, new_name: String) -> void:
 	_changed()
 
 
+## Saves [param text] as the contents of [param file], as Notepad's File > Save does.
+func write_text(file: Win95File, text: String) -> void:
+	if setup == null or file.contents == text:
+		return
+	file.contents = text
+	_changed()
+
+
+## Saves [param image] as the picture of [param file], as Paint's File > Save does. Keeps a copy, so
+## later strokes on [param image] stay unsaved.
+func write_picture(file: Win95File, image: Image) -> void:
+	if setup == null:
+		return
+	file.picture = ImageTexture.create_from_image(image.duplicate())
+	_changed()
+
+
 ## Moves [param files] into the Recycle Bin, and remembers where each came from.
 func delete_files(files: Array[Win95File]) -> void:
 	if setup == null or files.is_empty():
@@ -68,7 +72,7 @@ func delete_files(files: Array[Win95File]) -> void:
 			push_error("ComputerState.delete_files: %s is not on the desktop or drive C" % file.name)
 			continue
 		(from as Array).erase(file)
-		_deleted_from[file] = from
+		setup.deleted_from[file] = from
 		setup.recycle_bin.append(file)
 	_changed()
 
@@ -83,9 +87,9 @@ func restore_files(files: Array[Win95File]) -> void:
 			push_error("ComputerState.restore_files: %s is not in the Recycle Bin" % file.name)
 			continue
 		setup.recycle_bin.erase(file)
-		var to: Array = _deleted_from.get(file, setup.desktop)
+		var to: Array = setup.deleted_from.get(file, setup.desktop)
 		to.append(file)
-		_deleted_from.erase(file)
+		setup.deleted_from.erase(file)
 	_changed()
 
 
@@ -95,7 +99,7 @@ func purge_files(files: Array[Win95File]) -> void:
 		return
 	for file in files:
 		setup.recycle_bin.erase(file)
-		_deleted_from.erase(file)
+		setup.deleted_from.erase(file)
 	_changed()
 
 
@@ -162,6 +166,35 @@ static func opens_of(program: PackedScene) -> Array:
 		return []
 	var opens: Variant = script.get_property_default_value(&"opens")
 	return opens if opens is Array else []
+
+
+## Where [param file] is, as Properties shows it: "Desktop", "C:\", "C:\WINDOWS" or "Recycle Bin".
+func location_of(file: Win95File) -> String:
+	if setup.desktop.has(file):
+		return "Desktop"
+	if setup.recycle_bin.has(file):
+		return "Recycle Bin"
+	var path: Variant = _folder_path(setup.drive_c, file, "C:")
+	return path if path != null else "C:\\"
+
+
+func _folder_path(container: Array, file: Win95File, path: String) -> Variant:
+	if container.has(file):
+		return path + "\\" if path == "C:" else path
+	for other: Win95File in container:
+		if other.is_folder:
+			var found: Variant = _folder_path(other.children, file, path + "\\" + other.name)
+			if found != null:
+				return found
+	return null
+
+
+## The full path of [param file], as Notepad names it: "C:\WINDOWS\Desktop\todo.txt".
+func path_of(file: Win95File) -> String:
+	var location := location_of(file)
+	if location == "Desktop":
+		location = "C:\\WINDOWS\\Desktop"
+	return location.trim_suffix("\\") + "\\" + file.name
 
 
 func _collect_programs(container: Array, wanted: Callable, found: Array[Win95File]) -> void:
