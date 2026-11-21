@@ -17,6 +17,7 @@
 [ext_resource type="Material" path="res://materials/cardboard.tres" id="15_qmk4j"]
 [ext_resource type="PackedScene" path="res://props/lamp_post.tscn" id="16_sv7u7"]
 [ext_resource type="Material" path="res://materials/light_panel.tres" id="17_4ev3q"]
+[ext_resource type="AudioStream" path="res://sounds/city_ambience.ogg" id="18_city"]
 
 [sub_resource type="Gradient" id="Gradient_qlyq4"]
 offsets = PackedFloat32Array(0, 0.24, 0.29, 0.5, 0.71, 0.77, 0.83, 1)
@@ -389,3 +390,8 @@ direction = Vector3(0, -1, 0)
 spread = 4.0
 initial_velocity_min = 12.0
 initial_velocity_max = 14.0
+
+[node name="CityAmbience" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("18_city")
+volume_db = -14.0
+autoplay = true

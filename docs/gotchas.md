@@ -43,3 +43,8 @@ the cache doesn't know. Use path-only `ext_resource` lines in scenes you write b
 threads, so audio plays as WebAudio samples: the first play decodes the whole stream (about
 1 s per music file), and every play copies the decoded buffer. Play every sound once behind a
 loading screen, and loop music instead of restarting it. — 2026-10
+
+**A bus effect (a low-pass, a reverb) works in the editor and does nothing in the web build.** The
+web build plays sounds as samples, and samples skip `AudioEffect`s (Godot 4.7.2 class reference,
+`AudioServer.PLAYBACK_TYPE_SAMPLE`). Bake the effect into the file instead, as
+`tools/make_city_ambience.sh` does. — 2026-11
