@@ -1,8 +1,6 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://ui/screen_view.gd" id="1_rc0eh"]
-[ext_resource type="PackedScene" path="res://win95/win95.tscn" id="2_jr16l"]
-[ext_resource type="PackedScene" path="res://win95/no_signal.tscn" id="3_nosig"]
 [ext_resource type="Script" uid="uid://cpj0skurjoln" path="res://ui/crt_screen.gd" id="4_crt"]
 [ext_resource type="Material" path="res://shaders/crt_looks/subtle_vga.tres" id="5_look"]
 [ext_resource type="Material" path="res://shaders/crt_looks/world_monitor.tres" id="6_far"]
@@ -16,7 +14,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_rc0eh")
-desktop_scene = ExtResource("2_jr16l")
 
 [node name="ScreenBuffer" type="SubViewport" parent="." unique_id=574816976]
 unique_name_in_owner = true
@@ -24,10 +21,7 @@ gui_embed_subwindows = true
 size = Vector2i(640, 480)
 render_target_update_mode = 4
 
-[node name="NoSignal" parent="ScreenBuffer" instance=ExtResource("3_nosig")]
-unique_name_in_owner = true
-
-[node name="Screen" type="TextureRect" parent="." node_paths=PackedStringArray("buffer") unique_id=312858844]
+[node name="Screen" type="TextureRect" parent="." node_paths=PackedStringArray("buffer", "tube") unique_id=312858844]
 unique_name_in_owner = true
 material = ExtResource("5_look")
 texture_filter = 1
@@ -36,6 +30,7 @@ offset_right = 640.0
 offset_bottom = 480.0
 script = ExtResource("4_crt")
 buffer = NodePath("../ScreenBuffer")
+tube = NodePath("../Tube")
 far_look = ExtResource("6_far")
 
 [node name="Tube" type="Node" parent="."]

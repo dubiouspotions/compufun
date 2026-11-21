@@ -26,6 +26,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _job_slots: JobSlots = %JobSlots
 @onready var _bench: Bench = %Bench
 @onready var _pipedream: Pipedream = %Pipedream
+@onready var _work_monitor: CrtMonitor = %WorkMonitor
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
@@ -100,9 +101,11 @@ func turn_from_main() -> float:
 	return yaw / (2.0 * half_width)
 
 
-## The bench screen as the camera sees it now, in pixels of the world buffer.
-func bench_screen_rect() -> Rect2:
-	return _rect_on_screen(_bench.screen_corners())
+## The screen of the monitor that shows [param screen] as the camera sees it now, in pixels of the
+## world buffer. Empty, with an error, when no monitor shows it.
+func screen_rect(screen: ViewMarker.Screen) -> Rect2:
+	var monitor := _monitor(screen)
+	return _rect_on_screen(monitor.screen_corners()) if monitor != null else Rect2()
 
 
 ## The post-it of the computer in focus while the player reads it in the Workview, or null.
@@ -125,9 +128,21 @@ func _rect_on_screen(corners: Array[Vector3]) -> Rect2:
 	return rect
 
 
-## Shows [param texture] (the screen buffer) on the bench screen.
-func set_desktop_texture(texture: Texture2D) -> void:
-	_bench.set_screen_texture(texture)
+## Shows [param texture] (a screen buffer) on the monitor that shows [param screen]. Returns that
+## monitor's look, for its tube to drive; null, with an error, when no monitor shows it.
+func set_screen_texture(screen: ViewMarker.Screen, texture: Texture2D) -> ShaderMaterial:
+	var monitor := _monitor(screen)
+	return monitor.set_screen_texture(texture) if monitor != null else null
+
+
+func _monitor(screen: ViewMarker.Screen) -> CrtMonitor:
+	match screen:
+		ViewMarker.Screen.WIN95:
+			return _bench.monitor
+		ViewMarker.Screen.COMPUFUN_DB:
+			return _work_monitor
+	push_error("Shop: no monitor shows screen %s" % ViewMarker.Screen.find_key(screen))
+	return null
 
 
 # The dragged plug follows the mouse; the release plugs it into the computer under the mouse, or lays it down.

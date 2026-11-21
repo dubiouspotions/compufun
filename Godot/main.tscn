@@ -5,7 +5,8 @@
 [ext_resource type="Material" path="res://shaders/psx_post_world.tres" id="3_w48qg"]
 [ext_resource type="PackedScene" path="res://rooms/shop/shop.tscn" id="4_vivmo"]
 [ext_resource type="PackedScene" path="res://ui/screen_view.tscn" id="5_2cqfq"]
-[ext_resource type="PackedScene" path="res://ui/compufun_db.tscn" id="6_yaehf"]
+[ext_resource type="PackedScene" path="res://compufun_db/compufun_db.tscn" id="6_yaehf"]
+[ext_resource type="PackedScene" path="res://ui/bench_screen.tscn" id="13_bench"]
 [ext_resource type="PackedScene" path="res://ui/workview_panel.tscn" id="7_074og"]
 [ext_resource type="PackedScene" path="res://ui/post_it.tscn" id="8_cegan"]
 [ext_resource type="PackedScene" path="res://ui/dialogue_overlay.tscn" id="9_82xsv"]
@@ -43,13 +44,16 @@ unique_name_in_owner = true
 
 [node name="ScreenView" parent="UI" unique_id=947288806 instance=ExtResource("5_2cqfq")]
 unique_name_in_owner = true
+content = ExtResource("13_bench")
 
 [node name="PostItLabel" parent="UI" instance=ExtResource("post_it_label")]
 unique_name_in_owner = true
 
-[node name="CompufunDB" parent="UI" unique_id=981690516 instance=ExtResource("6_yaehf")]
+[node name="CompufunDBView" parent="UI" unique_id=981690516 instance=ExtResource("5_2cqfq")]
 unique_name_in_owner = true
-anchors_preset = 8
+screen = 1
+content = ExtResource("6_yaehf")
+draw_cursor = false
 
 [node name="WorkviewPanel" parent="UI" unique_id=1779327767 instance=ExtResource("7_074og")]
 unique_name_in_owner = true

@@ -32,7 +32,8 @@ var dragging: bool = false:
 
 var _hovered: bool = false
 
-@onready var _monitor: CrtMonitor = %Monitor
+## The bench screen.
+@onready var monitor: CrtMonitor = %Monitor
 @onready var _screen_hotspot: Hotspot = %ScreenHotspot
 @onready var _degauss_hotspot: Hotspot = %DegaussHotspot
 @onready var _plug_hotspot: Hotspot = %PlugHotspot
@@ -51,16 +52,6 @@ func _ready() -> void:
 	_plug_hotspot.mouse_exited.connect(_set_hovered.bind(false))
 	_sync_outline()
 	lay_cable(null)
-
-
-## The four corners of the bench screen, in world space.
-func screen_corners() -> Array[Vector3]:
-	return _monitor.screen_corners()
-
-
-## Shows [param texture] (the screen buffer) on the bench screen.
-func set_screen_texture(texture: Texture2D) -> void:
-	_monitor.set_screen_texture(texture)
 
 
 ## Lays the cable from the screen to [param socket], the VGA socket of the connected computer,

@@ -1,19 +1,19 @@
-// The tube of the bench screen, shared by the Screen View (crt.gdshader) and the 3D monitor
-// (crt_world.gdshader). ui/crt_tube.gd animates the global uniforms; docs/crt.md.
+// The tube of a monitor, shared by its close-up (crt.gdshader) and its 3D screen
+// (crt_world.gdshader). ui/crt_tube.gd animates these uniforms on both looks; docs/crt.md.
 
 /** 1 shows the picture. Toward 0 it collapses to a line, then a dot that fades. */
-global uniform float crt_power;
+uniform float crt_power = 1.0;
 /** 0 is a cold tube, dark and too big; 1 is warm. */
-global uniform float crt_warmup;
+uniform float crt_warmup = 1.0;
 /** The strength of the degauss wobble. */
-global uniform float crt_degauss;
+uniform float crt_degauss = 0.0;
 /** 1 is locked to the signal. Toward 0 the picture tears, rolls and goes black. */
-global uniform float crt_sync;
+uniform float crt_sync = 1.0;
 /** How strongly the mask is magnetised: blotches of wrong colour. */
-global uniform float crt_magnetization;
+uniform float crt_magnetization = 0.0;
 /** The top-left of the mouse cursor in screen buffer pixels; far outside hides it. */
-global uniform vec2 crt_cursor;
-global uniform sampler2D crt_cursor_texture : filter_nearest;
+uniform vec2 crt_cursor = vec2(-1000.0);
+uniform sampler2D crt_cursor_texture : filter_nearest, hint_default_transparent;
 
 // Glass position (0..1) to picture position (0..1). The twin of CrtScreen.bend().
 vec2 crt_bend(vec2 uv, vec2 curvature, float underscan) {

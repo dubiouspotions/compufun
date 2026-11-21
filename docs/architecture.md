@@ -32,11 +32,12 @@ Godot/               the Godot project: everything the game loads
                      volume and pitch range), exported where the effect happens
   problems/          one .tres per problem
   days/              day_1.tres to day_7.tres
-  ui/                loading screen, dialogue overlay, post-it, post-it label (the Workview post-it's text), end of day (the close-the-shop question, the night between two days), CompufunDB, screen view, CRT screen, debug menu, F9 screen, theme.tres
+  ui/                loading screen, dialogue overlay, post-it, post-it label (the Workview post-it's text), end of day (the close-the-shop question, the night between two days), screen view, bench screen, CRT screen and tube, debug menu, F9 screen, theme.tres
   ui/logos/          the CompuFun logos (the loading screen, the boot splash, the sign in the shop)
   win95/             the Win95 interface (the Win95 developer's folder)
   win95/midi/        recordings that .mid files play in Media Player (Godot plays no MIDI)
   win95/solitaire/   Solitaire: the rules (klondike.gd), the window, the table and the card pictures
+  compufun_db/       CompufunDB, the DOS database on the work computer, and its VGA font
   addons/dialogue_editor/  the Dialogue tab in the editor
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
@@ -56,12 +57,16 @@ Main (Node)                              the main buffer: the window
 │     └─ the room (shop.tscn); its monitor shows the screen buffer
 ├─ UI (CanvasLayer)
 │  ├─ the UI screens
-│  └─ ScreenView (screen_view.tscn: follows the 3D screen, fades in for the Screen View)
-│     ├─ ScreenBuffer (SubViewport, 640 × 480)  the screen buffer: updates always, embeds sub-windows
-│     │  ├─ NoSignal (win95/no_signal.tscn), while the VGA cable hangs free
-│     │  └─ win95/win95.tscn            the connected job's desktop; each job has one, the others wait out of the tree
-│     ├─ Screen (crt_screen.gd)          shows the buffer at 2× through the CRT look, passes it the bent mouse
-│     └─ Tube (crt_tube.gd)              the bench screen's power, signal lock, degauss and sounds
+│  ├─ ScreenView (screen_view.tscn: follows the bench screen, fades in for the Screen View)
+│  │  ├─ ScreenBuffer (SubViewport, 640 × 480)  the screen buffer: updates always, embeds sub-windows
+│  │  │  └─ BenchScreen (ui/bench_screen.tscn)
+│  │  │     ├─ NoSignal (win95/no_signal.tscn), while the VGA cable hangs free
+│  │  │     └─ win95/win95.tscn         the connected job's desktop; each job has one, the others wait out of the tree
+│  │  ├─ Screen (crt_screen.gd)          shows the buffer at 2× through the CRT look, passes it the bent mouse
+│  │  └─ Tube (crt_tube.gd)              this monitor's power, signal lock, degauss and sounds
+│  └─ CompufunDBView (screen_view.tscn again: follows the work monitor, fades in for CompufunDB)
+│     └─ ScreenBuffer (SubViewport, 640 × 480), Screen, Tube
+│        └─ CompufunDB (compufun_db/compufun_db.tscn)
 ├─ DebugMenu (CanvasLayer, F2)
 └─ Feedback (CanvasLayer, on top of everything)
 ```
@@ -73,5 +78,4 @@ Do not change these without the team:
 - **The Godot project is in `Godot/`, not the repo root.** Docs, CI and art sources stay out of Godot's import scan. CI's `working-directory` and artifact paths assume it.
 - **GL Compatibility renderer.** The web export needs it. Forward+ breaks the web build.
 - **`textures/vram_compression/import_etc2_astc=true`.** The macOS export is universal (arm64) and needs ETC2/ASTC textures. Without it, the macOS export fails.
-- **The Shader Globals `crt_*`** in `project.godot`. `CrtTube` animates them, and both CRT shaders read them.
 - **The names of the export presets** (`Web`, `Windows Desktop`, `MacOS`, `Linux`). CI exports them by name.

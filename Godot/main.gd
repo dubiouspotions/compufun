@@ -15,9 +15,8 @@ var _dialogue_for: int = -1
 @onready var _post_it: PostIt = %PostIt
 @onready var _dialogue: DialogueOverlay = %DialogueOverlay
 @onready var _calling: CustomerCalling = %CustomerCalling
-@onready var _compufun_db: CompufunDB = %CompufunDB
 @onready var _workview: WorkviewPanel = %WorkviewPanel
-@onready var _screen_view: ScreenView = %ScreenView
+@onready var _screen_views: Array[ScreenView] = [%ScreenView, %CompufunDBView]
 @onready var _post_it_label: PostItLabel = %PostItLabel
 @onready var _end_of_day: EndOfDay = %EndOfDay
 @onready var _world: SubViewportContainer = $World
@@ -33,15 +32,16 @@ func warm_up() -> void:
 func _ready() -> void:
 	if OS.is_debug_build() and ResourceLoader.exists(DEV_MENU):
 		add_child(load(DEV_MENU).instantiate())
-	_shop.set_desktop_texture(_screen_view.screen_texture())
-	_screen_view.fade_seconds = _shop.turn_seconds
+	for view: ScreenView in _screen_views:
+		view.add_look(_shop.set_screen_texture(view.screen, view.screen_texture()))
+		view.fade_seconds = _shop.turn_seconds
+		view.outside_clicked.connect(_go_back)
 	# Right before drawing, after the camera tween moved: the copy never lags behind the 3D screen.
 	RenderingServer.frame_pre_draw.connect(_follow_camera)
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
 	_shop.close_requested.connect(_end_of_day.ask)
-	_shop.degauss_requested.connect(_screen_view.degauss)
-	_screen_view.outside_clicked.connect(_go_back)
+	_shop.degauss_requested.connect((%ScreenView as ScreenView).degauss)
 	_dialogue.finished.connect(Game.dialogue_finished)
 	_post_it.ticked.connect(Game.tick_post_it)
 	Game.changed.connect(_sync)
@@ -68,10 +68,10 @@ func _follow_camera() -> void:
 		var paper := _shop.post_it_rect(post_it)
 		_post_it_label.job = post_it.job
 		_post_it_label.follow(Rect2(_world.position + paper.position * scale, paper.size * scale))
-	if not _screen_view.visible:
-		return
-	var pixels := _shop.bench_screen_rect()
-	_screen_view.follow(Rect2(_world.position + pixels.position * scale, pixels.size * scale))
+	for view: ScreenView in _screen_views:
+		if view.visible:
+			var pixels := _shop.screen_rect(view.screen)
+			view.follow(Rect2(_world.position + pixels.position * scale, pixels.size * scale))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -99,9 +99,9 @@ func _sync() -> void:
 	var marker := _shop.view_marker(Game.view)
 	_nav.show_marker(marker)
 	var screen := marker.screen if marker != null else ViewMarker.Screen.NONE
-	_compufun_db.visible = screen == ViewMarker.Screen.COMPUFUN_DB
 	_workview.visible = screen == ViewMarker.Screen.WORKVIEW
-	_screen_view.set_open(screen == ViewMarker.Screen.WIN95)
+	for view: ScreenView in _screen_views:
+		view.set_open(screen == view.screen)
 	_post_it.job = Game.focus
 	_post_it.visible = Game.focus != null
 	var talking := Game.visitor_state == Game.VisitorState.TALKING

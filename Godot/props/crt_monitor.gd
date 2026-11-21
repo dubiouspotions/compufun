@@ -17,9 +17,10 @@ func screen_corners() -> Array[Vector3]:
 	return corners
 
 
-## Shows [param texture] on the screen through [member screen_look]: bent, glowing, and powered
-## by the tube state that CrtTube animates.
-func set_screen_texture(texture: Texture2D) -> void:
+## Shows [param texture] on the screen through a copy of [member screen_look], bent and glowing.
+## Returns the copy, for a CrtTube to power.
+func set_screen_texture(texture: Texture2D) -> ShaderMaterial:
 	var look := screen_look.duplicate() as ShaderMaterial
 	look.set_shader_parameter(&"screen_texture", texture)
 	_screen.material_override = look
+	return look
