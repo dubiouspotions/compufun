@@ -461,13 +461,28 @@ func set_software_fixed(job: Job, fixed: bool) -> void:
 	changed.emit()
 
 
-## Adds a record to CompuFunDB with the [param text] that the player typed, and returns it.
-func add_record(text: String) -> DbRecord:
+## Makes the CompuFunDB record of [param job], with the [param text] that the character types up,
+## and returns it. Fails with an error unless the job is on the counter and has no record yet.
+func enter_job(job: Job, text: String) -> DbRecord:
+	if not _on_counter(job, "enter_job"):
+		return null
+	if record_of(job) != null:
+		push_error("Game.enter_job: the job of %s has a record already" % _who(job.customer))
+		return null
 	var record := DbRecord.new()
 	record.text = text
+	record.job_order = job.order
 	records.append(record)
 	changed.emit()
 	return record
+
+
+## The CompuFunDB record of [param job], or null when it has none.
+func record_of(job: Job) -> DbRecord:
+	for record: DbRecord in records:
+		if record.job_order == job.order:
+			return record
+	return null
 
 
 ## Marks [param symptom] on [param record] (true), or clears it (false).

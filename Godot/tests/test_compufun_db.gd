@@ -1,12 +1,17 @@
 extends "res://tests/test.gd"
-## The records that the player makes in CompuFunDB, with their marked symptoms and ticked repairs,
-## survive a snapshot and a restore, and a malformed record is refused.
+## A computer on the counter gets one CompuFunDB record; the record, with its marked symptoms and
+## ticked repairs, survives a snapshot and a restore, and a malformed record is refused.
+
+const CUSTOMER: String = "res://customers/pierre.tres"
 
 
 func run() -> void:
-	check("start day 1", game.restore({}), "")
-	var record: DbRecord = game.add_record("Pierre: turns off")
-	check("the record is added", game.records.size(), 1)
+	check("a job on the counter", game.restore({"day": 1, "arrivals": 1, "jobs": [{"customer": CUSTOMER, "order": 7}]}), "")
+	var job: Job = game.jobs[0]
+	check("no record yet", game.record_of(job), null)
+	var record: DbRecord = game.enter_job(job, "Pierre: turns off")
+	check("the record is the job's", game.record_of(job), record)
+	check("the record keeps the job's order", record.job_order, 7)
 	game.mark_symptom(record, "The fan is full of dust", true)
 	game.mark_symptom(record, "The fan is full of dust", true)
 	check("a symptom is marked once", record.marked_symptoms, ["The fan is full of dust"])
@@ -20,6 +25,7 @@ func run() -> void:
 	check("the text survives", restored.text, "Pierre: turns off")
 	check("the marks survive", restored.marked_symptoms, ["The fan is full of dust"])
 	check("the ticks survive", restored.ticked_repairs, ["Install the fan"])
+	check("the job still has its record", game.record_of(game.jobs[0]), restored)
 
 	var refused: String = game.restore({"records": [{"text": "x", "marked_symptoms": "oops"}]})
 	check("a list that is not a list is refused", refused.contains("marked_symptoms of the record 'x' is not a list"), true)
