@@ -1,7 +1,7 @@
 class_name OpenCase
 extends Node3D
-## A job's computer lying on its side in the Workview (wiki: Hardware Repair): the side panel and its
-## two screws, or the open case with its pieces and the mat. It draws the job from Game on every
+## A job's computer lying on its side (wiki: Hardware Repair): the side panel and its two screws, or
+## the open case with its pieces and the mat. It draws the job from Game on every
 ## change and acts through Game. What the player can use now has a thin pulsing outline; where the
 ## piece in the hand can go shows a see-through ghost of it; the screwdriver hovers over a screw.
 

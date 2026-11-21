@@ -69,7 +69,7 @@ func _ready() -> void:
 	_open_case.dress(job.customer.computer)
 	_post_it.job = job
 	_open_case.job = job
-	for node: Node3D in [_power_light, _power_hotspot, _cable_socket]:
+	for node: Node3D in [_power_light, _power_hotspot, _cable_socket, _hotspot, _outline]:
 		_upright[node] = node.transform
 	_upright_post_it = _post_it_anchor.position
 	Game.changed.connect(_sync_case)
@@ -79,9 +79,9 @@ func _ready() -> void:
 
 
 ## Where the Workview camera looks at this computer from, in world space: at the front of the
-## standing computer, or down into the lying one (see [method Game.lies]).
+## standing computer, or down into the lying one.
 func workview_transform() -> Transform3D:
-	return _open_case.eye_transform() if Game.lies(job) else _workview_eye.global_transform
+	return _open_case.eye_transform() if job.lying else _workview_eye.global_transform
 
 
 ## The post-it that the player reads in the Workview: the one on the front while the computer is in
@@ -116,28 +116,26 @@ func _working() -> bool:
 	return Game.focus == job and Game.view == &"Workview"
 
 
-# The computer lies on its side while Game.lies says so; otherwise it stands, open or not, so that
-# two computers never lie over each other. Its power button, power light, VGA socket and post-it
-# turn with it.
+# Its hotspots, outline, power light, VGA socket and post-it turn with the case (Job.lying).
 func _sync_case() -> void:
 	var working := _working()
-	var lying := Game.lies(job)
+	var lying := job.lying
 	_tower.visible = not lying
 	_open_case.visible = lying
-	_open_case.active = lying
+	_open_case.active = lying and working
 	_post_it.text_3d = not working
 	var pose := LYING if lying else Transform3D.IDENTITY
 	for node: Node3D in _upright:
 		node.transform = pose * _upright[node]
 	# Only the position turns: the square paper covers the same spot either way, and its check stays where PostItLabel expects it.
 	_post_it_anchor.position = pose * _upright_post_it
-	_hotspot.set_enabled(not lying)
+	_hotspot.set_enabled(not (lying and working))
 	_front.input_ray_pickable = working and not lying  # swallows clicks on the front, so they don't lay it down
 	_sync_outline()
 
 
 func _sync_outline() -> void:
-	_outline.visible = (focused or _hovered or targeted) and not _open_case.visible
+	_outline.visible = (focused or _hovered or targeted) and not _open_case.active
 	(_outline.material_override as StandardMaterial3D).albedo_color = focus_color if focused and not targeted else hover_color
 
 

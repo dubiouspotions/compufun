@@ -221,7 +221,7 @@ func _move_camera(view_name: StringName) -> void:
 ## Moves the Workview marker to the eye of the computer in focus, standing or lying. True when it
 ## moved.
 func _follow_focus() -> bool:
-	var lying := Game.lies(Game.focus)
+	var lying := Game.focus != null and Game.focus.lying
 	if Game.focus == _workview_job and lying == _workview_lying:
 		return false
 	_workview_job = Game.focus

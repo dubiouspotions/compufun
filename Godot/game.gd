@@ -56,13 +56,8 @@ var arrivals: int = 0
 var daypart: Daypart = Daypart.NONE
 ## The computers on the counter, oldest drop-off first. Jobs left overnight stay.
 var jobs: Array[Job] = []
-## The computer that the player works on in the Workview, or null for none. A new focus stands the
-## computer up again (see [member laid_down]).
-var focus: Job:
-	set(value):
-		if value != focus:
-			laid_down = false
-		focus = value
+## The computer that the player works on in the Workview, or null for none.
+var focus: Job
 ## The computer that the VGA cable is connected to, or null when the cable hangs free.
 var connected: Job
 ## The part in the player's hand, or null. The hand holds one piece at a time.
@@ -71,15 +66,8 @@ var hand: Piece
 var visitor: Customer
 var visit: Visit = Visit.NONE
 var visitor_state: VisitorState = VisitorState.NONE
-## The name of the current view marker in the room, for example &"Main". A new view stands the
-## computer in focus up again (see [member laid_down]).
-var view: StringName = &"Main":
-	set(value):
-		if value != view:
-			laid_down = false
-		view = value
-## True after [method lay_down], until the view or the focus changes. See [method lies].
-var laid_down: bool = false
+## The name of the current view marker in the room, for example &"Main".
+var view: StringName = &"Main"
 ## The facts of the story: a name and a number. A flag that is 0 or missing is not set.
 var flags: Dictionary[StringName, int] = {}
 ## The conversations that have played, as "<customer file name>/<conversation id>".
@@ -237,20 +225,25 @@ func matching_conversation(who: Customer, trigger: Conversation.Trigger) -> Conv
 	return null
 
 
-## Lays the computer in focus on its side in the Workview, so the player can reach its side panel.
-## False, and nothing changes, when [param job] is not in focus in the Workview or already lies.
+## Lays the computer in focus on its side in the Workview, so the player can reach its side panel
+## ([member Job.lying]). False, and nothing changes, when [param job] is not in focus in the Workview
+## or already lies.
 func lay_down(job: Job) -> bool:
-	if job == null or job != focus or view != &"Workview" or lies(job):
+	if not _on_counter(job, "lay_down") or job != focus or view != &"Workview" or job.lying:
 		return false
-	laid_down = true
+	job.lying = true
 	changed.emit()
 	return true
 
 
-## True while [param job] lies on its side: in focus in the Workview, and laid down or open. An open
-## computer lies there from the start; elsewhere every computer stands.
-func lies(job: Job) -> bool:
-	return job != null and job == focus and view == &"Workview" and (laid_down or job.case_open)
+## Stands the lying computer of [param job] up again. False, and nothing changes, when it stands
+## already or its side panel is off.
+func stand_up(job: Job) -> bool:
+	if not _on_counter(job, "stand_up") or not job.lying or job.case_open:
+		return false
+	job.lying = false
+	changed.emit()
+	return true
 
 
 ## Puts [param job] in focus for the Workview. null takes the focus away. The job must be on the
@@ -334,11 +327,11 @@ func can_power_on(job: Job) -> bool:
 # --- rules forbid it: that is a normal moment of play, not an error. A job must be on the counter.
 
 ## Lifts the side panel off [param job] (true) or puts it back on (false). The panel comes off only
-## when the computer is off and the panel's screws are out; it goes back on with its screws out.
+## when the computer lies, is off and the panel's screws are out; it goes back on with its screws out.
 func open_case(job: Job, open: bool) -> bool:
 	if not _on_counter(job, "open_case") or open == job.case_open:
 		return false
-	if open and (job.powered or job.panel_screws.has(true)):
+	if open and (not job.lying or job.powered or job.panel_screws.has(true)):
 		return false
 	job.case_open = open
 	changed.emit()
@@ -579,7 +572,6 @@ func snapshot() -> Dictionary:
 		"connected_slot": connected.slot if connected != null else -1,
 		"hand": Job.pieces_data([hand] if hand != null else []),
 		"view": String(view),
-		"laid_down": laid_down,
 		"conversation": String(conversation.id) if conversation != null else "",
 		"flags": flags.duplicate(),
 		"seen": seen.keys(),
@@ -651,6 +643,7 @@ func restore(state: Dictionary) -> String:
 			return _refuse("job %d: the mat: %s" % [i, mat_pieces])
 		job.mat.assign(mat_pieces)
 		job.case_open = bool(data.get("case_open", false))
+		job.lying = job.case_open or bool(data.get("lying", false))
 		if data.has("panel_screws"):
 			var panel: Array = data["panel_screws"]
 			if panel.size() != Job.PANEL_SCREWS:
@@ -731,7 +724,6 @@ func restore(state: Dictionary) -> String:
 	_restart_wait()
 	_call_left = CALL_SECONDS
 	view = StringName(str(state.get("view", view)))
-	laid_down = bool(state.get("laid_down", false))
 	flags = new_flags
 	seen = new_seen
 	records = new_records

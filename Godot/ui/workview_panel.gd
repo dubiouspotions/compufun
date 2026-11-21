@@ -8,7 +8,7 @@ extends PanelContainer
 
 
 func _ready() -> void:
-	_fix.pressed.connect(func() -> void: Game.open_case(Game.focus, false))
+	_fix.pressed.connect(_on_fix_pressed)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -23,7 +23,7 @@ func _sync() -> void:
 		_state.text = "Hardware: done."
 	elif job.powered:
 		_state.text = "Switch it off with the red button."
-	elif not Game.lies(job):
+	elif not job.lying:
 		_state.text = "Click the top of the case to lay it down."
 	elif _inside_done(job):
 		_state.text = "Screw the side panel back on."
@@ -31,7 +31,15 @@ func _sync() -> void:
 		_state.text = "Unscrew the side panel."
 	else:
 		_state.text = "Click the side panel to lift it off."
-	_fix.disabled = job == null or not job.case_open
+	_fix.text = "Put the side panel on" if job != null and job.case_open else "Stand it up"
+	_fix.disabled = job == null or not job.lying
+
+
+func _on_fix_pressed() -> void:
+	if Game.focus.case_open:
+		Game.open_case(Game.focus, false)
+	else:
+		Game.stand_up(Game.focus)
 
 
 
