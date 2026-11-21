@@ -11,6 +11,12 @@ const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color",
 
 ## The face when the person has no face texture yet.
 @export var default_face: Texture2D
+## The size of the face photo, as a share of the face area: the front of the head from the chin to
+## the brow. 1 fills the area; the rest of the area takes the skin colour.
+@export_range(0.3, 1.0) var face_scale: float = 0.85
+## The gap below the face photo, as a share of the face area's height. Raise it to lift the eyeline;
+## above 1 - face_scale, the top of the photo is cut off.
+@export_range(0.0, 0.7) var face_lift: float = 0.15
 ## The portrait pose whose clothes the shirt shows.
 @export var clothes_pose: StringName = &"neutral"
 ## The speed, in metres per second, at which the walk plays at its own pace.
@@ -50,6 +56,7 @@ var carrying: bool = false:
 
 func _ready() -> void:
 	_face = _own_copy(face_material)
+	_face.set_shader_parameter("uv_rect", _face_rect())
 	_skin = _own_copy(skin_material)
 	_shirt = _own_copy(shirt_material)
 	_trousers = _own_copy(trousers_material)
@@ -128,6 +135,12 @@ func show_customer(customer: Customer) -> void:
 			_shirt.set_shader_parameter(parameter, shirt_material.get_shader_parameter(parameter))
 	var trousers: Color = trousers_material.get_shader_parameter("albedo_color")
 	_trousers.set_shader_parameter("albedo_color", customer.trousers_color if customer != null else trousers)
+
+
+# The uv_rect that shows the whole face photo at face_scale, centred, face_lift above the chin.
+func _face_rect() -> Vector4:
+	var corner := Vector2((1.0 - face_scale) * 0.5, 1.0 - face_lift - face_scale)
+	return Vector4(-corner.x / face_scale, -corner.y / face_scale, 1.0 / face_scale, 1.0 / face_scale)
 
 
 func _own_copy(shared: ShaderMaterial) -> ShaderMaterial:

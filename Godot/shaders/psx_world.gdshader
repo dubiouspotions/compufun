@@ -20,12 +20,12 @@ uniform sampler2D tint_texture : source_color, filter_linear, hint_default_white
 uniform vec4 tint_rect = vec4(0.15, 0.2, 0.7, 0.7);
 /** On: the picked colour tints the texture instead of albedo_color. */
 uniform bool tint_from_texture = false;
-/** Fades the sides and the top of the UV square into the picked colour, as a share of the square. */
+/** Fades the sides and the top of the texture into the picked colour, as a share of the texture.
+ * Where uv_rect reaches past the texture, the picked colour shows. */
 uniform float edge_fade : hint_range(0.0, 0.5) = 0.0;
 /** On: the transparent parts of the texture show the picked colour. */
 uniform bool fill_transparent = false;
 
-varying vec2 square_uv;
 varying vec2 plain_uv;
 varying vec3 affine_uv;
 
@@ -42,7 +42,6 @@ void vertex() {
 			uv = vec2(p.x, -p.y);
 		}
 	}
-	square_uv = uv;
 	uv = uv_rect.xy + uv * uv_scale * uv_rect.zw;
 	plain_uv = uv;
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
@@ -76,8 +75,8 @@ void fragment() {
 		color = mix(picked, color, step(0.5, texel.a));
 	}
 	if (edge_fade > 0.0) {
-		float edge = min(min(square_uv.x, 1.0 - square_uv.x), square_uv.y);
-		color = mix(picked, color, smoothstep(0.0, edge_fade, edge));
+		float edge = min(min(uv.x, 1.0 - uv.x), uv.y);
+		color = mix(picked, color, smoothstep(0.0, edge_fade, edge) * step(uv.y, 1.0));
 	}
 	ALBEDO = color;
 	ROUGHNESS = 1.0;
