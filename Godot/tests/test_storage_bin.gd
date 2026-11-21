@@ -10,11 +10,11 @@ func run() -> void:
 	check("a part by its id", [Part.named(&"mouse"), Part.named(&"toaster")], [mouse, null])
 	check("every() keeps the computer's five parts", Part.every().size(), 5)
 
-	# Pierre leaves a computer on the counter, so a snapshot has a day to restore.
-	var pierre: Customer = load("res://customers/pierre.tres")
+	# A customer leaves a computer on the counter, so a snapshot has a day to restore.
+	var customer: Customer = load("res://customers/skater_bro.tres")
 	var day := Day.new()
 	day.number = 1
-	day.customers = [pierre] as Array[Customer]
+	day.customers = [customer] as Array[Customer]
 	day.first_wait_seconds = Vector2.ZERO
 	day.gap_seconds = Vector2(60.0, 60.0)
 	game.start_day(day)
