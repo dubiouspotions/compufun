@@ -4,6 +4,7 @@
 [ext_resource type="Material" path="res://materials/wood_dark.tres" id="2_aqd8b"]
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="3_ix6rg"]
 [ext_resource type="Material" path="res://materials/glass.tres" id="4_glass"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="5_metal"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_c7sxr"]
 size = Vector3(7, 0.95, 0.55)
@@ -22,6 +23,15 @@ size = Vector3(1.84, 0.02, 0.02)
 
 [sub_resource type="BoxMesh" id="BoxMesh_divider_post"]
 size = Vector3(0.02, 0.42, 0.02)
+
+[sub_resource type="BoxMesh" id="BoxMesh_flap"]
+size = Vector3(0.925, 0.05, 0.66)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hinge"]
+size = Vector3(0.1, 0.01, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_flap_rest"]
+size = Vector3(0.03, 0.04, 0.5)
 
 [node name="Counter" type="Node3D" unique_id=714382428]
 
@@ -62,3 +72,26 @@ mesh = SubResource("BoxMesh_divider_post")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.91, 0.21, 0)
 material_override = ExtResource("3_ix6rg")
 mesh = SubResource("BoxMesh_divider_post")
+
+[node name="Flap" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.555, 1, 0)
+
+[node name="Board" type="MeshInstance3D" parent="Flap"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4825, -0.025, 0)
+material_override = ExtResource("2_aqd8b")
+mesh = SubResource("BoxMesh_flap")
+
+[node name="HingeA" type="MeshInstance3D" parent="Flap"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -0.2)
+material_override = ExtResource("5_metal")
+mesh = SubResource("BoxMesh_hinge")
+
+[node name="HingeB" type="MeshInstance3D" parent="Flap"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0.2)
+material_override = ExtResource("5_metal")
+mesh = SubResource("BoxMesh_hinge")
+
+[node name="Rest" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.485, 0.93, 0)
+material_override = ExtResource("2_aqd8b")
+mesh = SubResource("BoxMesh_flap_rest")
