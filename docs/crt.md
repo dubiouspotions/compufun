@@ -71,6 +71,8 @@ the 3D screen show one tube. `ScreenView` calls `reconcile()` on every `Game.cha
   desktop's cursor into the picture, so it bends, glows, and stays on the screen where the player
   left it. A cursor node in the buffer would sit under Win95's popup menus, which Godot draws on
   a canvas layer above every CanvasLayer.
+- **The shader keeps the node's modulate.** The Screen View fades by `modulate`; a shader that
+  writes its own alpha would pop the overlay off at the end of the zoom.
 - **Functions don't take `TEXTURE`.** A headless compile, as in CI's export, rejects it; the
   shaders read the buffer through their `screen_texture` uniform.
 - **Cost:** one pass at the Screen View's size, 4 texel fetches per sample (12 with convergence)
