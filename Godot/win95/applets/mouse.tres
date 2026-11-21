@@ -2,9 +2,11 @@
 
 [ext_resource type="Script" path="res://win95/applets/applet.gd" id="script"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/mouse_32.png" id="icon"]
+[ext_resource type="PackedScene" path="res://win95/applets/mouse.tscn" id="sheet"]
 
 [resource]
 script = ExtResource("script")
 name = "Mouse"
 description = "Changes settings for your mouse."
 icon = ExtResource("icon")
+sheet = ExtResource("sheet")
