@@ -40,7 +40,9 @@ templates (Editor > Manage Export Templates).
   started by hand (Actions > godot-ci export > Run workflow). It needs the `ITCHIO_*` secrets.
 
 Every push to `main` also posts its commits to Discord (`.discord-main.yml`), and issue changes
-post there too (`.discord-issues.yml`).
+post there too (`.discord-issues.yml`). Both post into the thread whose ID is in the repository
+variable `DISCORD_THREAD_ID`, so they don't flood the channel; with the variable empty they post
+in the channel. Build failures always post in the channel.
 
 ## Ways the build lies
 

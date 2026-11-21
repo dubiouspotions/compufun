@@ -13,6 +13,7 @@ jobs:
       - name: Send commit to Discord
         env:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          THREAD_ID: ${{ vars.DISCORD_THREAD_ID }}
           REPO: ${{ github.repository }}
           COMPARE: ${{ github.event.compare }}
         # The commit payload lives on disk at $GITHUB_EVENT_PATH. Reading it
@@ -26,6 +27,6 @@ jobs:
           ${COMMITS}
           <${COMPARE}>"
           PAYLOAD=$(jq -n --arg content "$CONTENT" '{content: $content}')
-          curl -H "Content-Type: application/json" \
+          curl --fail-with-body -H "Content-Type: application/json" \
             -d "$PAYLOAD" \
-            "$WEBHOOK"
+            "${WEBHOOK}${THREAD_ID:+?thread_id=$THREAD_ID}"

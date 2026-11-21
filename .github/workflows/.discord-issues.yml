@@ -79,8 +79,9 @@ jobs:
       - name: Send to Discord
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          THREAD_ID: ${{ vars.DISCORD_THREAD_ID }}
           JSON_PAYLOAD: ${{ steps.payload.outputs.json }}
         run: |
-          curl -H "Content-Type: application/json" \
+          curl --fail-with-body -H "Content-Type: application/json" \
                -d "$JSON_PAYLOAD" \
-               "$DISCORD_WEBHOOK_URL"
+               "${DISCORD_WEBHOOK_URL}${THREAD_ID:+?thread_id=$THREAD_ID}"
