@@ -610,6 +610,60 @@ region_rect = Rect2(122, 31, 4, 4)
 atlas = ExtResource("atlas")
 region = Rect2(127, 65, 1, 1)
 
+[sub_resource type="AtlasTexture" id="spin_up"]
+atlas = ExtResource("atlas")
+region = Rect2(102, 31, 3, 2)
+
+[sub_resource type="AtlasTexture" id="spin_up_pressed"]
+atlas = ExtResource("atlas")
+region = Rect2(110, 31, 5, 4)
+
+[sub_resource type="AtlasTexture" id="spin_up_disabled"]
+atlas = ExtResource("atlas")
+region = Rect2(102, 36, 4, 4)
+
+[sub_resource type="AtlasTexture" id="spin_down"]
+atlas = ExtResource("atlas")
+region = Rect2(106, 31, 3, 2)
+
+[sub_resource type="AtlasTexture" id="spin_down_pressed"]
+atlas = ExtResource("atlas")
+region = Rect2(116, 31, 5, 4)
+
+[sub_resource type="AtlasTexture" id="spin_down_disabled"]
+atlas = ExtResource("atlas")
+region = Rect2(107, 36, 4, 4)
+
+[sub_resource type="StyleBox" id="spin_button"]
+resource_local_to_scene = false
+resource_name = ""
+script = ExtResource("bevel")
+kind = 3
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBox" id="spin_button_pushed"]
+resource_local_to_scene = false
+resource_name = ""
+script = ExtResource("bevel")
+kind = 8
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBox" id="spin_down_button"]
+resource_local_to_scene = false
+resource_name = ""
+script = ExtResource("bevel")
+kind = 3
+palette = ExtResource("palette")
+expand_margin_bottom = -1.0
+
+[sub_resource type="StyleBox" id="spin_down_button_pushed"]
+resource_local_to_scene = false
+resource_name = ""
+script = ExtResource("bevel")
+kind = 8
+palette = ExtResource("palette")
+expand_margin_bottom = -1.0
+
 [resource]
 default_font = ExtResource("font_regular")
 default_font_size = 12
@@ -794,6 +848,33 @@ PopupPanel/styles/panel = SubResource("window")
 ProgressBar/colors/font_color = Color(0, 0, 0, 1)
 ProgressBar/styles/background = SubResource("progress_bg")
 ProgressBar/styles/fill = SubResource("progress_fill")
+SpinBox/colors/down_disabled_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/down_hover_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/down_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/down_pressed_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/up_disabled_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/up_hover_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/up_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/colors/up_pressed_icon_modulate = Color(1, 1, 1, 1)
+SpinBox/constants/buttons_vertical_separation = 0
+SpinBox/constants/buttons_width = 16
+SpinBox/constants/field_and_buttons_separation = 0
+SpinBox/icons/down = SubResource("spin_down")
+SpinBox/icons/down_disabled = SubResource("spin_down_disabled")
+SpinBox/icons/down_hover = SubResource("spin_down")
+SpinBox/icons/down_pressed = SubResource("spin_down_pressed")
+SpinBox/icons/up = SubResource("spin_up")
+SpinBox/icons/up_disabled = SubResource("spin_up_disabled")
+SpinBox/icons/up_hover = SubResource("spin_up")
+SpinBox/icons/up_pressed = SubResource("spin_up_pressed")
+SpinBox/styles/down_background = SubResource("spin_down_button")
+SpinBox/styles/down_background_disabled = SubResource("spin_down_button")
+SpinBox/styles/down_background_hovered = SubResource("spin_down_button")
+SpinBox/styles/down_background_pressed = SubResource("spin_down_button_pushed")
+SpinBox/styles/up_background = SubResource("spin_button")
+SpinBox/styles/up_background_disabled = SubResource("spin_button")
+SpinBox/styles/up_background_hovered = SubResource("spin_button")
+SpinBox/styles/up_background_pressed = SubResource("spin_button_pushed")
 StartButton/base_type = &"Button"
 StartButton/constants/icon_max_width = 16
 StartButton/fonts/font = ExtResource("font_bold")

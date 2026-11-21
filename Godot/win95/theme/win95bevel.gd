@@ -12,6 +12,7 @@ enum Kind {
 	TOGGLED, # a button that stays pushed in, like the active taskbar button
 	DEFAULT, # the default button of a dialog: a black frame around a raised button
 	TAB, # a property sheet tab: raised, with cut top corners and no bottom edge
+	FLAT, # 1 px shadow outline: a pushed spin box button
 }
 
 ## What fills the inside of the edge. DITHER is a checkerboard of highlight and face.
@@ -111,10 +112,12 @@ func _draw(to_canvas_item: RID, rect: Rect2) -> void:
 		Kind.TAB:
 			_draw_tab(to_canvas_item, r, p)
 			return
+		Kind.FLAT:
+			_edge(to_canvas_item, r, p.shadow_color, p.shadow_color)
 	var face := inner
 	if kind == Kind.DEFAULT:
 		face = inner.grow(-2)
-	elif kind != Kind.SUNKEN:
+	elif kind != Kind.SUNKEN and kind != Kind.FLAT:
 		face = inner.grow(-1)
 	_fill(to_canvas_item, face, p)
 	if drop_down != DropDown.NONE:
