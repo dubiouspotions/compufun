@@ -111,7 +111,7 @@ func _sync() -> void:
 		_buffer.add_child(shown)
 	_no_signal.visible = shown == null
 	var running := Game.connected != null and Game.connected.powered
-	_screen.cursor_visible = running
+	_screen.cursor_visible = running and shown != null and shown.get(&"pointer_visible") != false
 	_tube.reconcile(Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING, running, Game.day.warp if Game.day != null else 0.0)
 
 
@@ -131,6 +131,8 @@ func _desktop(job: Job) -> Control:
 	if desktop.custom_minimum_size != Vector2(_buffer.size):
 		push_error("ScreenView: %s is %s, but the screen buffer is %s" % [desktop_scene.resource_path, desktop.custom_minimum_size, _buffer.size])
 	state.job = job
+	if desktop.has_signal(&"pointer_changed"):
+		desktop.pointer_changed.connect(_sync, CONNECT_DEFERRED)
 	_desktops[job] = desktop  # before it enters the tree, whose boot can emit Game.changed again
 	return desktop
 

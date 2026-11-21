@@ -43,6 +43,17 @@ class Listing:
 		key = listing_key
 
 
+## pointer_visible changed.
+signal pointer_changed
+
+## Win95 shows the mouse pointer: false while the computer is off and while it boots, until the
+## desktop appears.
+var pointer_visible := false:
+	set(value):
+		if value != pointer_visible:
+			pointer_visible = value
+			pointer_changed.emit()
+
 static var _stock_palette: Win95Palette
 var _setup_icons: Array[FileIcon] = []
 var _listings: Dictionary[IconView, Listing] = {}
@@ -112,11 +123,14 @@ func _on_booted() -> void:
 	_boot = _BOOT.instantiate()
 	_boot.floppy_in_a = setup.floppy_in_a
 	_floppy_heard = setup.floppy_in_a
+	pointer_visible = false
+	_boot.finished.connect(func() -> void: pointer_visible = true)
 	add_child(_boot)
 	move_child(_boot, _no_signal.get_index())
 
 
 func _on_powered_off() -> void:
+	pointer_visible = false
 	if is_instance_valid(_boot):
 		_boot.queue_free()
 	_no_signal.show()
