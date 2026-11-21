@@ -1,0 +1,40 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://win95/desktop_stub.gd" id="1_y7c6l"]
+
+[node name="DesktopStub" type="Control" unique_id=1731798402]
+layout_mode = 3
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_y7c6l")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1435603681]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="Box" type="VBoxContainer" parent="." unique_id=1637760525]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+alignment = 1
+
+[node name="Title" type="Label" parent="Box" unique_id=1966084325]
+layout_mode = 2
+text = "WIN95 DESKTOP (placeholder)
+The Win95 interface replaces this scene."
+horizontal_alignment = 1
+
+[node name="InfoLabel" type="Label" parent="Box" unique_id=1497247272]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="FixButton" type="Button" parent="Box" unique_id=1647645161]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Fix the software"
