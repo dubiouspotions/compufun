@@ -507,12 +507,12 @@ material_override = ExtResource("19_a76lc")
 mesh = SubResource("QuadMesh_max4p")
 
 [node name="Note1" type="MeshInstance3D" parent="Room" unique_id=759308835]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.945, 1.6, 0.62)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.945, 1.82, 0.6)
 material_override = ExtResource("19_a76lc")
 mesh = SubResource("QuadMesh_tgmyf")
 
 [node name="WeekCalendar" parent="Room" instance=ExtResource("week_calendar")]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.944, 1.63, 0.96)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.944, 1.49, 0.7)
 
 [node name="Outside" parent="." unique_id=724951497 instance=ExtResource("20_788ts")]
 unique_name_in_owner = true
