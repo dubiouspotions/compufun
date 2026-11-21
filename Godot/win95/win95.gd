@@ -154,6 +154,7 @@ func _fill(view: IconView) -> void:
 		item.set_meta(_FILE_META, file)
 		item.name_edited.connect(func(_old: String, new_text: String) -> void: _state.rename_file(file, new_text))
 		item.selected = keep.has(file)
+		item.stub = ComputerState.is_program_name(file.name) and file.program == null
 		if file == focused:
 			view.set_focus_item(item)
 		added.append(item)

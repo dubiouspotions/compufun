@@ -15,6 +15,10 @@ func _ready() -> void:
 		if id == FileMenu.CLOSE:
 			close())
 	%Edit.id_pressed.connect(func(_id: int) -> void: items.select_all())
+	for menu: PopupMenu in [%View, %Help]:
+		for i in menu.item_count:
+			if not menu.is_item_checked(i):
+				menu.set_item_icon(i, Stub.dot())
 	items.items_changed.connect(_sync_status)
 	_sync_status()
 

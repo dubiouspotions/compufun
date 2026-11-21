@@ -150,7 +150,12 @@ func programs_for(extension: String) -> Array[Win95File]:
 ## True when [param file] is a program file that Win95 would run: it has a program, and its name
 ## ends in .EXE or .COM.
 static func is_runnable(file: Win95File) -> bool:
-	return file.program != null and file.name.get_extension().to_lower() in ["exe", "com"]
+	return file.program != null and is_program_name(file.name)
+
+
+## True when Win95 would run a file named [param file_name]: it ends in .EXE or .COM.
+static func is_program_name(file_name: String) -> bool:
+	return file_name.get_extension().to_lower() in ["exe", "com"]
 
 
 ## The extensions that the app in [param program] opens: its root's `opens`, from the scene or

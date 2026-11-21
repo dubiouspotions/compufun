@@ -28,6 +28,10 @@ class Entry:
 	var is_separator: bool = false
 	var children: Array[Entry] = []
 
+	## An enabled item with no id does nothing yet; Stub marks it.
+	func is_stub() -> bool:
+		return id == &"" and not (disabled or checked or is_separator) and children.is_empty()
+
 
 const _ROW_HEIGHT := 17.0
 const _SEPARATOR_HEIGHT := 9.0
@@ -181,6 +185,8 @@ func _draw_rows() -> void:
 			_draw_icon_centered(get_theme_icon("radio_checked", &"PopupMenu"), Rect2(rect.position, Vector2(_COLUMN, rect.size.y)), mark_color)
 		if not entry.children.is_empty():
 			_draw_icon_centered(get_theme_icon("submenu", &"PopupMenu"), Rect2(rect.end.x - _COLUMN, rect.position.y, _COLUMN, rect.size.y), mark_color)
+		if entry.is_stub():
+			Stub.draw(_rows, (Vector2(rect.end.x - _COLUMN, rect.position.y) + (Vector2(_COLUMN, rect.size.y) - Vector2.ONE * Stub.SIZE) / 2.0).floor())
 
 
 func _draw_icon_centered(icon: Texture2D, cell: Rect2, tint: Color) -> void:

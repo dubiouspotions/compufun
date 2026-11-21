@@ -30,6 +30,7 @@ icon = ExtResource("my_computer")
 layout_mode = 2
 text = "Network Neighborhood"
 icon = ExtResource("network")
+stub = true
 
 [node name="RecycleBin" parent="." instance=ExtResource("file_icon")]
 layout_mode = 2

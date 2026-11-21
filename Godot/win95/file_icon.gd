@@ -54,6 +54,11 @@ static var _selected_material: ShaderMaterial
 	set(value):
 		active = value
 		_sync()
+## The icon opens something that isn't built yet: Stub marks it.
+@export var stub := false:
+	set(value):
+		stub = value
+		_sync()
 
 
 func _ready() -> void:
@@ -87,7 +92,7 @@ func _sync() -> void:
 	if not is_node_ready():
 		return
 	var icon_rect: TextureRect = %Icon
-	icon_rect.texture = icon
+	icon_rect.texture = Stub.mark(icon) if stub else icon
 	icon_rect.material = _selection_material() if selected and active else null
 	var label: Label = %Name
 	label.text = text
