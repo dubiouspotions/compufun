@@ -1,0 +1,53 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://props/open_sign.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://materials/textures/open_sign_open.png" id="2_open"]
+[ext_resource type="Texture2D" path="res://materials/textures/open_sign_closed.png" id="3_closed"]
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="4_shader"]
+[ext_resource type="Material" path="res://materials/wood_dark.tres" id="5_wood"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="6_string"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_face"]
+render_priority = 0
+shader = ExtResource("4_shader")
+shader_parameter/albedo_texture = ExtResource("2_open")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)
+shader_parameter/snap = 1.0
+shader_parameter/affine = 0.5
+shader_parameter/world_uv = false
+shader_parameter/uv_scale = 1.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_face"]
+size = Vector2(0.75, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_back"]
+size = Vector3(0.79, 0.34, 0.02)
+
+[sub_resource type="BoxMesh" id="BoxMesh_string"]
+size = Vector3(0.008, 0.41, 0.008)
+
+[node name="OpenSign" type="Node3D"]
+script = ExtResource("1_script")
+open_texture = ExtResource("2_open")
+closed_texture = ExtResource("3_closed")
+
+[node name="Board" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.45, 0.011)
+material_override = SubResource("ShaderMaterial_face")
+mesh = SubResource("QuadMesh_face")
+
+[node name="Back" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.45, 0)
+material_override = ExtResource("5_wood")
+mesh = SubResource("BoxMesh_back")
+
+[node name="StringL" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.682, -0.731, 0, 0.731, 0.682, 0, 0, 0, 1, -0.15, -0.14, 0)
+material_override = ExtResource("6_string")
+mesh = SubResource("BoxMesh_string")
+
+[node name="StringR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.682, 0.731, 0, -0.731, 0.682, 0, 0, 0, 1, 0.15, -0.14, 0)
+material_override = ExtResource("6_string")
+mesh = SubResource("BoxMesh_string")

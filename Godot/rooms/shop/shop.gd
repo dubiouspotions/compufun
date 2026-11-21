@@ -16,6 +16,7 @@ signal view_requested(view: StringName)
 @onready var _body: CustomerBody = %CustomerBody
 @onready var _counter_computer: Hotspot = %CounterComputer
 @onready var _bench_monitor: CrtMonitor = %BenchMonitor
+@onready var _open_sign: OpenSign = %OpenSign
 
 var _shown_view: StringName = &""
 var _walking: bool = false
@@ -108,3 +109,8 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 			view_requested.emit(hotspot.view)
 		Hotspot.Action.CALL_CUSTOMER:
 			Game.call_customer()
+		Hotspot.Action.CLOSE_SHOP:
+			if Game.can_close():
+				Game.close_shop()
+			else:
+				_open_sign.wobble()

@@ -45,7 +45,10 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Outside**: The world outside the shop windows (`rooms/shop/outside.tscn`): the back alley, the sky, the sun and moon, the lamps, the fog and the rain. It shows the daypart.
 *Avoid:* street, environment, weather system.
 
-**Debug menu**: The F2 panel in debug builds that sets the time of day, the day cycle and the rain, and closes the shop.
+**Open sign**: The sign that hangs in the shop window (`props/open_sign.tscn`). It reads OPEN while the shop is open; the player clicks it to close the shop for the night, once every customer of the day has come in.
+*Avoid:* closed sign, shop sign.
+
+**Debug menu**: The F2 panel in debug builds that sets the time of day, the day cycle and the rain.
 *Avoid:* dev menu, cheat menu.
 
 **Job**: One customer's computer on the counter, with its slot, its repair state and its post-it (`Job`, in `Game.jobs`). It stays from the drop-off to the pickup, overnight too.

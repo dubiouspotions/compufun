@@ -6,7 +6,7 @@ extends Area3D
 ## The player clicked the hotspot with the left mouse button.
 signal clicked(hotspot: Hotspot)
 
-enum Action { GO_TO_VIEW, CALL_CUSTOMER }
+enum Action { GO_TO_VIEW, CALL_CUSTOMER, CLOSE_SHOP }
 
 @export var action: Action = Action.GO_TO_VIEW
 ## For GO_TO_VIEW: the name of the view marker to go to.

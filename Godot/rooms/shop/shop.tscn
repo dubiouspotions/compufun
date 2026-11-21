@@ -26,6 +26,7 @@
 [ext_resource type="PackedScene" path="res://props/modem.tscn" id="25_modem"]
 [ext_resource type="PackedScene" path="res://props/work_mat.tscn" id="26_workmat"]
 [ext_resource type="PackedScene" path="res://rooms/shop/storage.tscn" id="27_storage"]
+[ext_resource type="PackedScene" path="res://props/open_sign.tscn" id="28_open_sign"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -338,6 +339,15 @@ mesh = SubResource("QuadMesh_7gxtd")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.71, -5.44)
 material_override = ExtResource("7_mjyfn")
 mesh = SubResource("QuadMesh_v7qvw")
+
+[node name="OpenSignHotspot" parent="Room" instance=ExtResource("13_ojat2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 1.85, -5.38)
+action = 2
+size = Vector3(0.8, 0.36, 0.1)
+
+[node name="OpenSign" parent="Room/OpenSignHotspot" instance=ExtResource("28_open_sign")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
 
 [node name="Door" parent="Room" unique_id=806004170 instance=ExtResource("8_p5y1l")]
 transform = Transform3D(0.17364822, 0, -0.9848077, 0, 1, 0, 0.9848077, 0, 0.17364822, -0.6, 0, -5.48)

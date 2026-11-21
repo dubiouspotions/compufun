@@ -89,9 +89,3 @@ text = "Rain"
 [node name="FpsLabel" type="Label" parent="Panel/Box" unique_id=1778125651]
 unique_name_in_owner = true
 layout_mode = 2
-
-[node name="CloseShopButton" type="Button" parent="Panel/Box"]
-unique_name_in_owner = true
-layout_mode = 2
-tooltip_text = "Game.close_shop(): works once every customer of the day has come in and nobody is in the shop."
-text = "Close shop"
