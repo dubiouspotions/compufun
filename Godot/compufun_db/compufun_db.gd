@@ -35,7 +35,7 @@ const HEADERS: Array[String] = ["CUSTOMER", "CHECK", "FIX"]
 ## The sound of each key that the character types.
 @export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
 ## The seconds between two keys, picked between x and y for each key.
-@export var key_seconds: Vector2 = Vector2(0.05, 0.16)
+@export var key_seconds: Vector2 = Vector2(0.03, 0.09)
 
 ## The first and last x of each column's text, inside the frame.
 var _spans: Array[Vector2i] = [Vector2i(1, 24), Vector2i(26, 51), Vector2i(53, 78)]
@@ -246,7 +246,10 @@ func _on_click(button: InputEventMouseButton) -> void:
 		_scroll[column] = clampi(_scroll[column] + step, 0, maxi(count - (LIST_BOTTOM - LIST_TOP + 1), 0))
 		queue_redraw()
 		return
-	if button.button_index != MOUSE_BUTTON_LEFT or cell.y < LIST_TOP or cell.y > LIST_BOTTOM or _typing != null:
+	if button.button_index != MOUSE_BUTTON_LEFT:
+		return
+	_finish_typing()
+	if cell.y < LIST_TOP or cell.y > LIST_BOTTOM:
 		return
 	var lines := _lines(column, _entries(column))
 	var line := _scroll[column] + cell.y - LIST_TOP
@@ -254,14 +257,17 @@ func _on_click(button: InputEventMouseButton) -> void:
 		return
 	_column = column
 	_select(lines[line][0])
-	_act()
+	if column != Column.RECORDS or _record() == null:  # a click on a record only selects it
+		_act()
+	queue_redraw()
 
 
 func _on_key(key: InputEventKey) -> bool:
 	if _offline():
 		return false
-	if _typing != null:
-		return key.keycode != KEY_ESCAPE  # the character is typing; Esc still leaves
+	if key.keycode == KEY_ESCAPE:
+		return false  # leaves the screen; the typing goes on
+	_finish_typing()
 	match key.keycode:
 		KEY_UP:
 			_move(-1)
@@ -300,13 +306,30 @@ func _act() -> void:
 
 
 func _type_up(job: Job) -> void:
-	_typing = Game.enter_job(job, "%s: %s" % [job.customer.display_name, job.problem.perceived_issue])
+	_typing = Game.enter_job(job, _record_text(job))
 	if _typing == null:
 		return
 	_shown = 0
 	_next_key = 0.0
 	_selected[Column.RECORDS] = Game.records.size() - 1
 	set_process(true)
+
+
+# Shows the rest of the typing at once, and types up the other waiting computers without the keys:
+# the player wants the screen now.
+func _finish_typing() -> void:
+	if _typing == null:
+		return
+	_typing = null
+	set_process(false)
+	var job := _waiting_job()
+	while job != null and Game.enter_job(job, _record_text(job)) != null:
+		job = _waiting_job()
+	_selected[Column.RECORDS] = Game.records.size() - 1
+
+
+func _record_text(job: Job) -> String:
+	return "%s: %s" % [job.customer.display_name, job.problem.perceived_issue]
 
 
 # Moves the cursor [param step] entries, past the headings; 0 settles it on an entry.

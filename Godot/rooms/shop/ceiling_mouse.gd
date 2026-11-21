@@ -13,11 +13,13 @@ enum Stage { HIDING, SQUEAKING, DROPPED }
 ## The flag that holds the [enum Stage].
 const FLAG: StringName = &"ceiling_mouse"
 
+## The feature switch. Off: no hole, no mouse, no squeak; the playtest liked the egg less than we
+## hoped (2026-11-21). Tick it in the inspector of the CeilingMouse node in the shop to try it.
+@export var enabled: bool = false
 ## The seconds after the game starts before the mouse chews its hole and squeaks: a random time from x
 ## to y.
 @export var wait_seconds: Vector2 = Vector2(30.0, 120.0)
-## The seconds between two squeaks, each with bits of ceiling, while the mouse waits for the player to
-## look up: from x to y.
+## The seconds between two squeaks while the mouse waits for the player to look up: from x to y.
 @export var squeak_seconds: Vector2 = Vector2(4.0, 8.0)
 ## The view that looks up at the hole. The mouse peeks out when the player is in it.
 @export var up_view: StringName = &"Up"
@@ -61,6 +63,9 @@ static func stage() -> int:
 
 
 func _ready() -> void:
+	visible = enabled
+	if not enabled:
+		return
 	if part == null or part.model == null:
 		push_error("CeilingMouse: %s has no part with a model to drop" % get_path())
 	else:

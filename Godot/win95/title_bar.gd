@@ -5,6 +5,8 @@ extends PanelContainer
 signal close_pressed
 signal minimize_pressed
 signal maximize_pressed
+## The player double-clicked the title bar, which maximizes or restores a resizable window.
+signal double_clicked
 ## The player dragged the title bar with the left button by `relative` pixels.
 signal drag_moved(relative: Vector2)
 ## The player released the left button after pressing it on the title bar.
@@ -41,6 +43,15 @@ signal appearance_changed
 		_sync()
 
 
+const _RESTORE_GLYPH := preload("res://win95/theme/caption_restore.png")
+
+## The window is maximized: the Maximize button shows the Restore glyph.
+var maximized := false:
+	set(value):
+		maximized = value
+		_sync()
+
+
 func _ready() -> void:
 	%Close.pressed.connect(close_pressed.emit)
 	%Minimize.pressed.connect(minimize_pressed.emit)
@@ -53,6 +64,8 @@ func _gui_input(event: InputEvent) -> void:
 	if motion and motion.button_mask & MOUSE_BUTTON_MASK_LEFT:
 		drag_moved.emit(motion.relative)
 	var button := event as InputEventMouseButton
+	if button and button.button_index == MOUSE_BUTTON_LEFT and button.pressed and button.double_click:
+		double_clicked.emit()
 	if button and button.button_index == MOUSE_BUTTON_LEFT and not button.pressed:
 		drag_ended.emit()
 
@@ -69,6 +82,10 @@ func _sync() -> void:
 	icon_rect.visible = icon != null
 	%Minimize.visible = show_minimize
 	%Maximize.visible = show_maximize
+	if maximized:
+		%Maximize.add_theme_icon_override(&"icon", _RESTORE_GLYPH)
+	else:
+		%Maximize.remove_theme_icon_override(&"icon")
 	%Help.visible = show_help
 	%CloseGap.visible = show_minimize or show_maximize or show_help
 	appearance_changed.emit()

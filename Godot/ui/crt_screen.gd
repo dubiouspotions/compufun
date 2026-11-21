@@ -23,6 +23,13 @@ const _BENT: Array[StringName] = [&"curvature_x", &"curvature_y", &"underscan", 
 ## The cursor over text, and the pixel of it that points.
 @export var ibeam_cursor: Texture2D = preload("res://win95/theme/ibeam_cursor.png")
 @export var ibeam_hotspot: Vector2 = Vector2(4, 9)
+## The cursors over a window's resizable frame, by shape; each points from its centre.
+@export var sizing_cursors: Dictionary[Control.CursorShape, Texture2D] = {
+	Control.CURSOR_VSIZE: preload("res://win95/theme/size_ns_cursor.png"),
+	Control.CURSOR_HSIZE: preload("res://win95/theme/size_we_cursor.png"),
+	Control.CURSOR_FDIAGSIZE: preload("res://win95/theme/size_nwse_cursor.png"),
+	Control.CURSOR_BDIAGSIZE: preload("res://win95/theme/size_nesw_cursor.png"),
+}
 
 ## False hides the cursor, as when the screen shows no computer.
 var cursor_visible: bool = true:
@@ -95,7 +102,7 @@ func _gui_input(event: InputEvent) -> void:
 	_cursor_at = bent.position.clamp(Vector2.ZERO, pixels - Vector2.ONE)
 	var over := buffer.gui_get_hovered_control()
 	var shape := over.get_cursor_shape(over.get_global_transform_with_canvas().affine_inverse() * bent.position) if over != null else Control.CURSOR_ARROW
-	_set_cursor(ibeam_cursor if shape == Control.CURSOR_IBEAM else arrow_cursor)
+	_set_cursor(ibeam_cursor if shape == Control.CURSOR_IBEAM else sizing_cursors.get(shape, arrow_cursor))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -123,6 +130,8 @@ func _set_cursor(cursor: Texture2D) -> void:
 
 func _sync_cursor() -> void:
 	var hotspot := ibeam_hotspot if _cursor == ibeam_cursor else arrow_hotspot
+	if _cursor in sizing_cursors.values():
+		hotspot = (_cursor.get_size() / 2.0).floor()
 	if tube != null:
 		tube.set_param(&"crt_cursor", (_cursor_at - hotspot).floor() if cursor_visible else Vector2(-1000, -1000))
 

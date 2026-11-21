@@ -1,45 +1,134 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://ui/view_nav.gd" id="1_itobc"]
+[ext_resource type="Texture2D" path="res://ui/nav_buttons/button_normal.png" id="button_normal"]
+[ext_resource type="Texture2D" path="res://ui/nav_buttons/button_hover.png" id="button_hover"]
+[ext_resource type="Texture2D" path="res://ui/nav_buttons/button_pressed.png" id="button_pressed"]
+[ext_resource type="Texture2D" path="res://ui/nav_buttons/arrow_left.png" id="arrow_left"]
+[ext_resource type="Texture2D" path="res://ui/nav_buttons/arrow_right.png" id="arrow_right"]
+[ext_resource type="Texture2D" path="res://ui/nav_buttons/arrow_up.png" id="arrow_up"]
+[ext_resource type="Texture2D" path="res://ui/nav_buttons/arrow_down.png" id="arrow_down"]
+
+[sub_resource type="StyleBoxTexture" id="normal"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+texture = ExtResource("button_normal")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="hover"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+texture = ExtResource("button_hover")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="pressed"]
+content_margin_left = 12.0
+content_margin_top = 15.0
+content_margin_right = 12.0
+content_margin_bottom = 9.0
+texture = ExtResource("button_pressed")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxEmpty" id="focus"]
+
+[sub_resource type="Theme" id="ps1_buttons"]
+Button/styles/normal = SubResource("normal")
+Button/styles/hover = SubResource("hover")
+Button/styles/pressed = SubResource("pressed")
+Button/styles/hover_pressed = SubResource("pressed")
+Button/styles/focus = SubResource("focus")
+Button/styles/disabled = SubResource("normal")
 
 [node name="ViewNav" type="Control" unique_id=1301884336]
 layout_mode = 3
 anchors_preset = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
+texture_filter = 1
 mouse_filter = 2
+theme = SubResource("ps1_buttons")
 script = ExtResource("1_itobc")
+
+[node name="LeftButton" type="Button" parent="." unique_id=1062322293]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 132)
+layout_mode = 0
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 24.0
+offset_top = -66.0
+offset_right = 108.0
+offset_bottom = 66.0
+grow_vertical = 2
+icon = ExtResource("arrow_left")
+icon_alignment = 1
+
+[node name="RightButton" type="Button" parent="." unique_id=1432660702]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 132)
+layout_mode = 0
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -108.0
+offset_top = -66.0
+offset_right = -24.0
+offset_bottom = 66.0
+grow_horizontal = 0
+grow_vertical = 2
+icon = ExtResource("arrow_right")
+icon_alignment = 1
 
 [node name="BackButton" type="Button" parent="." unique_id=870760482]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 52)
+custom_minimum_size = Vector2(132, 66)
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -90.0
-offset_top = -56.0
-offset_right = 90.0
-offset_bottom = -4.0
+offset_left = -66.0
+offset_top = -78.0
+offset_right = 66.0
+offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 0
-tooltip_text = "Back (Esc)"
-text = "v"
+icon = ExtResource("arrow_down")
+icon_alignment = 1
 
-[node name="ViewLabel" type="Label" parent="." unique_id=898107131]
+[node name="UpButton" type="Button" parent="."]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 40)
+custom_minimum_size = Vector2(132, 66)
 layout_mode = 0
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -200.0
-offset_top = 24.0
-offset_right = 200.0
-offset_bottom = 64.0
+offset_left = -66.0
+offset_top = 12.0
+offset_right = 66.0
+offset_bottom = 78.0
 grow_horizontal = 2
-text = "Main"
-horizontal_alignment = 1
+icon = ExtResource("arrow_up")
+icon_alignment = 1
 
 [node name="StatusLabel" type="Label" parent="." unique_id=36469149]
 unique_name_in_owner = true

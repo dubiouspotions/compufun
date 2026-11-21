@@ -6,18 +6,26 @@ extends Control
 ## The shown desktop's [code]pointer_visible[/code] changed.
 signal pointer_changed
 
-## The desktop of one job's computer, with a %ComputerState node. Each job gets its own at its
-## first connection; it waits out of the tree while the cable is elsewhere, and is freed when the
-## job leaves the counter. It reports software fixes to Game itself.
+## The desktop of one job's computer, with a %ComputerState node. Each job gets its own when it is
+## first switched on or connected. While the cable is elsewhere it keeps running in a viewport that
+## draws nothing, so a computer boots without the screen. It is freed when the job leaves the
+## counter, and reports software fixes to Game itself.
 @export var desktop_scene: PackedScene
 
 
 var _desktops: Dictionary[Job, Control] = {}
+## Holds the desktops that the screen doesn't show; it draws nothing, but they run.
+var _parked: SubViewport
 
 @onready var _no_signal: Control = %NoSignal
 
 
 func _ready() -> void:
+	_parked = SubViewport.new()
+	_parked.size = Vector2i(custom_minimum_size)
+	_parked.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	_parked.gui_embed_subwindows = true
+	add_child(_parked, false, Node.INTERNAL_MODE_BACK)
 	if desktop_scene == null:
 		push_error("BenchScreen: desktop_scene is empty")
 	Game.changed.connect(_sync)
@@ -35,24 +43,23 @@ func pointer_visible() -> bool:
 	return shown != null and shown.get(&"pointer_visible") != false
 
 
-func _exit_tree() -> void:
-	for desktop: Control in _desktops.values():
-		if desktop.get_parent() == null:
-			desktop.free()  # out of the tree, nothing else frees it
-
-
-# Frees the desktops of jobs that left the counter, and shows the connected job's desktop.
+# Frees the desktops of jobs that left the counter, runs a desktop for every computer that is on,
+# and shows the connected job's.
 func _sync() -> void:
 	for job: Job in _desktops.keys():
 		if job not in Game.jobs:
 			_desktops[job].queue_free()
 			_desktops.erase(job)
+	for job in Game.jobs:
+		if job.powered:
+			_desktop(job)
 	var shown := _desktop(Game.connected) if Game.connected != null else null
-	for child in get_children():
-		if child != shown and child != _no_signal:
-			remove_child(child)
-	if shown != null and shown.get_parent() == null:
-		add_child(shown)
+	for desktop: Control in _desktops.values():
+		var home: Node = self if desktop == shown else _parked
+		if desktop.get_parent() != home:
+			if desktop.get_parent() != null:
+				desktop.get_parent().remove_child(desktop)
+			home.add_child(desktop)
 	_no_signal.visible = shown == null
 
 

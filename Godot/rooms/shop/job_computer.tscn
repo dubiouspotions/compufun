@@ -25,7 +25,7 @@ albedo_color = Color(0.08, 0.16, 0.08, 1)
 resource_local_to_scene = true
 cull_mode = 1
 shading_mode = 0
-albedo_color = Color(1, 0.82, 0.2, 1)
+albedo_color = Color(0.75, 0.9, 1, 1)
 
 [node name="JobComputer" type="Node3D"]
 script = ExtResource("1_script")

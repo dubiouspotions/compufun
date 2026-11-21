@@ -8,6 +8,7 @@
 [node name="Paint" type="PanelContainer"]
 theme = ExtResource("theme")
 script = ExtResource("script")
+resizable = true
 
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 2

@@ -22,8 +22,15 @@ signal _any_key
 ## What the BIOS says as it hands over to Windows.
 @export var starting_text: String = "Starting Windows 95..."
 @export var memory_test_seconds: float = 1.5
-## The black screen before the POST, while the monitor warms up, in seconds.
+## How long the video card's BIOS banner shows before the POST, while the monitor warms up, in
+## seconds.
 @export var warm_up_seconds: float = 4.2
+## The video card's BIOS banner, the first picture after power-on.
+@export_multiline var video_bios_lines: PackedStringArray = [
+	"CompuFun Graphics 64 VGA BIOS  Version 2.10.06",
+	"Copyright (C) 1995 CompuFun Ltd.  All Rights Reserved.",
+	"1024K DRAM",
+]
 ## The pause after each POST line, in seconds.
 @export var line_seconds: float = 0.25
 ## The pause after each "Detecting" line, as the BIOS waits for the drive.
@@ -117,11 +124,14 @@ func play() -> void:
 
 
 func _run_post() -> void:
-	_show_stage(null)
+	_show_stage(_post)
+	_energy_star.hide()
+	_footer.hide()
+	_post.text = "\n".join(video_bios_lines)
 	_sound(power_on_sound)
 	if not await _wait(warm_up_seconds):
 		return
-	_show_stage(_post)
+	_footer.show()
 	_energy_star.show()
 	_post.text = ""
 	_footer.text = "\n".join(hardware.footer_lines())

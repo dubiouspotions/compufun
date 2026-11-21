@@ -13,7 +13,7 @@ shading_mode = 0
 albedo_color = Color(0.75, 0.9, 1, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_plug"]
-size = Vector3(0.034, 0.016, 0.045)
+size = Vector3(0.044, 0.02, 0.055)
 
 [node name="Bench" type="Node3D"]
 script = ExtResource("1_script")
@@ -46,7 +46,7 @@ transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.1, 0.12, -0.25)
 
 [node name="PlugRest" type="Marker3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.3, 0.008, 0.02)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.26, 0.01, 0.18)
 
 [node name="Cable" type="Path3D" parent="."]
 unique_name_in_owner = true
@@ -85,11 +85,11 @@ material = SubResource("StandardMaterial3D_outline")
 unique_name_in_owner = true
 
 [node name="Body" type="MeshInstance3D" parent="Plug"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.022)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.0275)
 material_override = ExtResource("6_vga_blue")
 mesh = SubResource("BoxMesh_plug")
 
 [node name="PlugHotspot" parent="Plug" instance=ExtResource("4_hotspot")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.05)
-size = Vector3(0.08, 0.08, 0.08)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0.02)
+size = Vector3(0.09, 0.08, 0.1)

@@ -182,7 +182,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _sync() -> void:
-	_job_slots.show_jobs(Game.jobs, null if Game.view == WORKVIEW else Game.focus)  # the Workview centres it already
+	_job_slots.show_jobs(Game.jobs)
 	_play_changes()
 	_pipedream.warp = Game.warp
 	_the_end.ended = Game.phase == Game.Phase.ENDED

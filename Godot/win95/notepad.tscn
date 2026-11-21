@@ -8,6 +8,7 @@
 [node name="Notepad" type="PanelContainer"]
 theme = ExtResource("theme")
 script = ExtResource("script")
+resizable = true
 custom_minimum_size = Vector2(360, 260)
 
 [node name="VBox" type="VBoxContainer" parent="."]

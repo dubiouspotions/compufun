@@ -9,7 +9,7 @@ func run() -> void:
 	check("a job on the counter", game.restore({"day": 1, "arrivals": 1, "jobs": [{"customer": CUSTOMER, "order": 7}]}), "")
 	var job: Job = game.jobs[0]
 	check("no record yet", game.record_of(job), null)
-	var record: DbRecord = game.enter_job(job, "Pierre: turns off")
+	var record: DbRecord = game.enter_job(job, "Skater bro: turns off")
 	check("the record is the job's", game.record_of(job), record)
 	check("the record keeps the job's order", record.job_order, 7)
 	game.mark_symptom(record, "Fan clogged with dust", true)
@@ -22,7 +22,7 @@ func run() -> void:
 
 	check("restore the snapshot", game.restore(game.snapshot()), "")
 	var restored: DbRecord = game.records[0]
-	check("the text survives", restored.text, "Pierre: turns off")
+	check("the text survives", restored.text, "Skater bro: turns off")
 	check("the marks survive", restored.marked_symptoms, ["Fan clogged with dust"])
 	check("the ticks survive", restored.ticked_repairs, ["Install the fan"])
 	check("the job still has its record", game.record_of(game.jobs[0]), restored)
