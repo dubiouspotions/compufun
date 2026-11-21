@@ -518,7 +518,7 @@ transform = Transform3D(0, 0, -0.18, 0, 0.18, 0, 0.18, 0, 0, 3.945, 1.925, 0.3)
 unique_name_in_owner = true
 
 [node name="CeilingMouse" parent="Room" instance=ExtResource("ceiling_mouse")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0.45)
 
 [node name="Views" type="Node3D" parent="." unique_id=1753390285]
 unique_name_in_owner = true
