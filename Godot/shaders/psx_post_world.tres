@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/psx_post.gdshader" id="1_io64u"]
+
+[resource]
+shader = ExtResource("1_io64u")
+shader_parameter/color_levels = null
+shader_parameter/palette_size = null
+shader_parameter/dither = null
