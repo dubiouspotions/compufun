@@ -64,6 +64,7 @@ var carrying: bool = false:
 
 
 func _ready() -> void:
+	add_to_group(ShopDoor.WALKERS)
 	_face = _own_copy(face_material)
 	_face.set_shader_parameter("uv_rect", _face_rect())
 	_skin = _own_copy(skin_material)

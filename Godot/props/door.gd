@@ -1,50 +1,37 @@
+class_name ShopDoor
 extends Node3D
-## The shop's front door. It stands open while the shop is open (Game.Phase OPEN or CALLING) and is
-## shut otherwise: in the morning before the Open sign, at night and at the end. It swings open
-## when the shop opens and slams shut when it closes, and takes its place at once when it first
-## shows. Its origin is the hinge; place the instance in the shop shut.
+## The shop's front door. It stands closed, swings open while a customer is near the doorway, coming
+## in or going out, and swings shut once they are through. It follows where the customers are on
+## every frame, so a restore or a skipped walk leaves it right.
 
-## How far the door stands open, in degrees around the hinge; positive swings out to the street.
-@export_range(-180.0, 180.0, 1.0, "suffix:deg") var open_degrees: float = 80.0
-## How long the swing open takes, in seconds.
-@export_range(0.0, 5.0, 0.05, "suffix:s") var swing_seconds: float = 0.8
-## How long the slam shut takes, in seconds; [member slam] plays as it hits the frame.
-@export_range(0.0, 5.0, 0.05, "suffix:s") var shut_seconds: float = 0.3
-@export var slam: SoundSet = preload("res://sounds/door_slam.tres")
+## The group of every customer body that walks through the door.
+const WALKERS: StringName = &"customer_bodies"
 
-var _open: bool = false
-var _placed: bool = false
-var _swing: Tween
+## How far the door swings open, in degrees about its hinge (negative: into the shop).
+@export var open_degrees: float = -80.0
+## How near a customer must be to the middle of the doorway for the door to stand open, in metres.
+@export var open_distance: float = 1.5
+## How fast the door swings, in degrees per second.
+@export var swing_speed: float = 260.0
+## The middle of the doorway, from the hinge, while the door is closed.
+@export var doorway_offset: Vector3 = Vector3(0.58, 0.0, 0.0)
 
-@onready var _hinge: Node3D = %Hinge
+var _closed_yaw: float
 
 
 func _ready() -> void:
-	Game.changed.connect(_sync)
-	_sync()
+	_closed_yaw = rotation.y
 
 
-## True while the shop is open, so the door stands open or swings open.
-func is_open() -> bool:
-	return _open
+func _process(delta: float) -> void:
+	var target := _closed_yaw + (deg_to_rad(open_degrees) if _someone_near() else 0.0)
+	rotation.y = move_toward(rotation.y, target, deg_to_rad(swing_speed) * delta)
 
 
-func _sync() -> void:
-	var open: bool = Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING
-	if _placed and open == _open:
-		return
-	_open = open
-	if _swing != null:
-		_swing.kill()
-	var angle := deg_to_rad(open_degrees) if open else 0.0
-	if not _placed:
-		_placed = true
-		_hinge.rotation.y = angle
-		return
-	if open:
-		_swing = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		_swing.tween_property(_hinge, "rotation:y", angle, swing_seconds)
-		return
-	_swing = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	_swing.tween_property(_hinge, "rotation:y", angle, shut_seconds)
-	_swing.tween_callback(slam.play_at.bind(self))
+func _someone_near() -> bool:
+	var doorway := get_parent_node_3d().global_transform * (position + Basis(Vector3.UP, _closed_yaw) * doorway_offset)
+	for node: Node in get_tree().get_nodes_in_group(WALKERS):
+		var body := node as Node3D
+		if body.is_visible_in_tree() and Vector2(body.global_position.x - doorway.x, body.global_position.z - doorway.z).length() < open_distance:
+			return true
+	return false
