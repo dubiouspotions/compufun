@@ -8,6 +8,16 @@
 [ext_resource type="PackedScene" path="res://win95/systray.tscn" id="systray"]
 [ext_resource type="PackedScene" uid="uid://nu7hal0154hv" path="res://win95/welcome_window.tscn" id="welcome_window"]
 [ext_resource type="Script" path="res://win95/desktop.gd" id="desktop"]
+[ext_resource type="Script" path="res://win95/start_menu.gd" id="start_menu"]
+[ext_resource type="PackedScene" path="res://win95/shut_down.tscn" id="shut_down"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/start_shutdown_16.png" id="shut_down_icon"]
+[ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="app_calculator"]
+[ext_resource type="PackedScene" path="res://win95/notepad.tscn" id="app_notepad"]
+[ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="app_wordpad"]
+[ext_resource type="PackedScene" path="res://win95/paint.tscn" id="app_paint"]
+[ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="app_email"]
+[ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
+[ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
 
 [node name="Win95" type="Control" unique_id=1752664516]
 texture_filter = 1
@@ -74,6 +84,12 @@ toggle_mode = true
 text = "Start"
 icon = ExtResource("4_d5dma")
 alignment = 0
+
+[node name="StartMenu" type="PopupMenu" parent="TaskBar/HBoxContainer/StartButton"]
+script = ExtResource("start_menu")
+programs = Array[PackedScene]([ExtResource("app_calculator"), ExtResource("app_notepad"), ExtResource("app_wordpad"), ExtResource("app_paint"), ExtResource("app_email"), ExtResource("app_volume_control"), ExtResource("app_defrag")])
+shut_down = ExtResource("shut_down")
+shut_down_icon = ExtResource("shut_down_icon")
 
 [node name="TaskButton" parent="TaskBar/HBoxContainer" unique_id=480996942 instance=ExtResource("5_d5dma")]
 layout_mode = 2

@@ -1,0 +1,96 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/shut_down.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/computer_shutdown_32.png" id="computer"]
+[ext_resource type="PackedScene" path="res://win95/safe_off.tscn" id="safe_off"]
+
+[sub_resource type="ButtonGroup" id="choice"]
+
+[node name="ShutDown" type="PanelContainer"]
+theme = ExtResource("theme")
+script = ExtResource("script")
+safe_off = ExtResource("safe_off")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Shut Down Windows"
+
+[node name="Body" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Rows" type="VBoxContainer" parent="VBox/Body"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Ask" type="HBoxContainer" parent="VBox/Body/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Computer" type="TextureRect" parent="VBox/Body/Rows/Ask"]
+layout_mode = 2
+size_flags_vertical = 0
+texture = ExtResource("computer")
+
+[node name="Choices" type="VBoxContainer" parent="VBox/Body/Rows/Ask"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Question" type="Label" parent="VBox/Body/Rows/Ask/Choices"]
+layout_mode = 2
+text = "Are you sure you want to:"
+
+[node name="ShutDown" type="CheckBox" parent="VBox/Body/Rows/Ask/Choices"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+button_group = SubResource("choice")
+text = "Shut down the computer?"
+
+[node name="Restart" type="CheckBox" parent="VBox/Body/Rows/Ask/Choices"]
+unique_name_in_owner = true
+layout_mode = 2
+button_group = SubResource("choice")
+text = "Restart the computer?"
+
+[node name="LogOn" type="CheckBox" parent="VBox/Body/Rows/Ask/Choices"]
+unique_name_in_owner = true
+layout_mode = 2
+button_group = SubResource("choice")
+text = "Close all programs and log on as a different user?"
+
+[node name="Buttons" type="HBoxContainer" parent="VBox/Body/Rows"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 6
+
+[node name="Yes" type="Button" parent="VBox/Body/Rows/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+theme_type_variation = &"DefaultButton"
+text = "Yes"
+
+[node name="No" type="Button" parent="VBox/Body/Rows/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+text = "No"
+
+[node name="Help" type="Button" parent="VBox/Body/Rows/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+disabled = true
+text = "Help"

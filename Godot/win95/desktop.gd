@@ -38,5 +38,43 @@ func open(scene: PackedScene) -> Control:
 	return window
 
 
+## Closes every open window, as a restart does.
+func close_all() -> void:
+	for child in get_children():
+		if child.has_signal(&"activated") and child.visible:
+			child.close()
+
+
+## Covers the whole Win95 screen, taskbar too, with [param scene] (a shut-down or crash screen)
+## and returns it.
+func cover(scene: PackedScene) -> Control:
+	var screen := scene.instantiate() as Control
+	assert(screen != null, "Win95Desktop: %s is not a Control" % scene.resource_path)
+	get_parent().add_child(screen)
+	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	return screen
+
+
+## The title on the title bar of the window [param scene], without making the window.
+static func window_title(scene: PackedScene) -> String:
+	return String(_title_bar_property(scene, &"title", scene.resource_path.get_file().get_basename()))
+
+
+## The icon on the title bar of the window [param scene], or null.
+static func window_icon(scene: PackedScene) -> Texture2D:
+	return _title_bar_property(scene, &"icon", null) as Texture2D
+
+
+static func _title_bar_property(scene: PackedScene, property: StringName, fallback: Variant) -> Variant:
+	var state := scene.get_state()
+	for node in state.get_node_count():
+		if state.get_node_name(node) != &"TitleBar":
+			continue
+		for i in state.get_node_property_count(node):
+			if state.get_node_property_name(node, i) == property:
+				return state.get_node_property_value(node, i)
+	return fallback
+
+
 func _wire(window: Control) -> void:
 	window.activated.connect(func() -> void: move_child(window, -1))
