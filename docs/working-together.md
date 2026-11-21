@@ -40,7 +40,7 @@ Inside `Godot/`, name files and folders in lowercase `snake_case`, with ASCII le
 - Binary files go through LFS. A new binary type gets its line in `.gitattributes` before its
   first commit; a file committed before the rule stays in plain git history for good.
 - Phone photos are HEIC. Godot can't import HEIC: export a PNG or JPG before you put a photo in
-  `Godot/`. The originals go in `original files/`, outside Godot's import.
+  `Godot/`. Keep the originals (HEIC, PSD) outside the repo.
 
 ## Keep merges simple
 

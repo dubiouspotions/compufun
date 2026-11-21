@@ -178,8 +178,9 @@ the README's credits. Prefer Godot's built-in features; an addon you don't add c
   non-.NET `barichello/godot-ci` image, so C# doesn't build.
 - The Godot project lives in `Godot/`. CI (`.github/workflows/godot.yml`) runs there, and the
   export preset names (`Web`, `Windows Desktop`, `MacOS`, `Linux`) must stay as they are.
-- The Web export is a release target, and it has no threads. Check web-sensitive changes
-  (audio, loading, shaders) in the web build, not just the editor.
+- **Web-first.** The Web export (itch.io) is the main target, and it has no threads. Check
+  web-sensitive changes (audio, loading, shaders) in the web build, not just the editor. For now
+  we design for a 1080p window.
 - 3D assets come from Meshy as `.glb` and go through LFS.
 - The `godot-master` skill (`.claude/skills/`) is reference material. Where it disagrees with
   this brief or docs/code-standard.md, the brief wins.
