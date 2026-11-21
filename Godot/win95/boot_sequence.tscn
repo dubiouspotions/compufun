@@ -7,12 +7,8 @@
 [ext_resource type="AudioStream" path="res://win95/sounds/boot_startup.ogg" id="startup"]
 [ext_resource type="Texture2D" path="res://win95/theme/boot_logo.png" id="logo"]
 [ext_resource type="Script" path="res://win95/energy_star.gd" id="energy_star"]
+[ext_resource type="FontVariation" path="res://win95/theme/dos_font.tres" id="vga_font"]
 
-[sub_resource type="SystemFont" id="bios_font"]
-font_names = PackedStringArray("Courier New", "Courier", "Monospace")
-font_weight = 700
-antialiasing = 0
-hinting = 2
 
 [sub_resource type="Gradient" id="bar"]
 offsets = PackedFloat32Array(0, 0.5, 1)
@@ -40,7 +36,7 @@ offset_top = 16.0
 mouse_filter = 2
 theme_override_colors/default_color = Color(0.667, 0.667, 0.667, 1)
 theme_override_constants/line_separation = 3
-theme_override_fonts/normal_font = SubResource("bios_font")
+theme_override_fonts/normal_font = ExtResource("vga_font")
 theme_override_font_sizes/normal_font_size = 16
 bbcode_enabled = true
 scroll_active = false
@@ -57,7 +53,7 @@ offset_bottom = -16.0
 mouse_filter = 2
 theme_override_colors/default_color = Color(0.667, 0.667, 0.667, 1)
 theme_override_constants/line_separation = 3
-theme_override_fonts/normal_font = SubResource("bios_font")
+theme_override_fonts/normal_font = ExtResource("vga_font")
 theme_override_font_sizes/normal_font_size = 16
 bbcode_enabled = true
 scroll_active = false
@@ -82,7 +78,7 @@ anchor_bottom = 1.0
 offset_left = 8.0
 offset_top = 8.0
 theme_override_colors/font_color = Color(0.667, 0.667, 0.667, 1)
-theme_override_fonts/font = SubResource("bios_font")
+theme_override_fonts/font = ExtResource("vga_font")
 theme_override_font_sizes/font_size = 16
 text = "Starting Windows 95..."
 

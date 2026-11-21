@@ -1,4 +1,6 @@
-[gd_resource type="SystemFont" format=3]
+[gd_resource type="FontVariation" format=3]
+
+[ext_resource type="FontFile" path="res://win95/theme/fonts/px437_ibm_vga_8x16.ttf" id="vga"]
 
 [resource]
-font_names = PackedStringArray("Courier New", "Courier", "Monospace")
+base_font = ExtResource("vga")

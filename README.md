@@ -52,6 +52,7 @@ Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actio
 - `Godot/win95/midi/passport.mp3`: PASSPORT.MID from Windows 95, (C) Microsoft, not licensed to us, played on an ESS AudioDrive ES1868F and recorded by blackstorm88, CC BY-NC-ND 4.0, unedited. From the Internet Archive (https://archive.org/details/passport-mid-played-on-a-es-1868-f).
 - `Godot/sounds/city_ambience.ogg`: cut and muffled from "Westfield.wav" by Islabonita on Freesound (https://freesound.org/people/Islabonita/sounds/178532/), CC0. `tools/make_city_ambience.sh` makes it.
 - `Godot/win95/theme/fonts/`: W95FA Pixel, a pixel-grid version of [W95FA](https://fontsarena.com/w95fa-by-alina-sava/) by Alina Sava (FontsArena), SIL OFL 1.1 (`ofl.txt`).
+- `Godot/win95/theme/fonts/px437_ibm_vga_8x16.ttf`: Px437 IBM VGA 8x16 from [The Ultimate Oldschool PC Font Pack](https://int10h.org/oldschool-pc-fonts/) by VileR, CC BY-SA 4.0 (`oldschool_pc_fonts_license.txt`).
 - `Godot/voices/live/cmudict.txt.gz`: the CMU Pronouncing Dictionary, (C) Carnegie Mellon University, BSD-style licence (`CMUDICT-LICENSE.txt`).
 - `native/chimera_voice/`: speaks the voices live with [Chimera](https://github.com/jamesondh/chimera-vocal-synth) (MIT) and [godot-rust](https://github.com/godot-rust/gdext) (MPL-2.0).
 - `Godot/voices/`: the customers' voices, rendered with [Chimera](https://github.com/jamesondh/chimera-vocal-synth) by Jameson Hodge, MIT. The game ships only the rendered WAV files.
