@@ -64,6 +64,7 @@ func _exit_tree() -> void:
 
 func _follow_camera() -> void:
 	_dialogue.position.x = _shop.turn_from_main() * _dialogue.size.x
+	_calling.point_to(_shop.customer_direction())
 	var scale := _world.size / Vector2(_world_buffer.size)
 	var post_it := _shop.pinned_post_it()
 	var paper := _shop.post_it_rect(post_it) if post_it != null else Rect2()

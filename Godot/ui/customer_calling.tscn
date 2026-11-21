@@ -18,11 +18,6 @@ border_width_bottom = 4
 border_color = Color(0.3, 0.3, 0.34, 1)
 
 [node name="CustomerCalling" type="PanelContainer"]
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_top = 96.0
-grow_horizontal = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("box")
 script = ExtResource("script")

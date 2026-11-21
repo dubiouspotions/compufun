@@ -34,6 +34,9 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _camera: Camera3D = %Camera
 @onready var _views: Node3D = %Views
 @onready var _follow: PathFollow3D = %CustomerFollow
+## How high the customer's head is above their feet, in metres, for the call-out's arrow.
+@export var head_height: float = 1.6
+
 @onready var _body: CustomerBody = %CustomerBody
 @onready var _job_slots: JobSlots = %JobSlots
 @onready var _bench: Bench = %Bench
@@ -129,6 +132,15 @@ func turn_from_main() -> float:
 	var size := _camera.get_viewport().get_visible_rect().size
 	var half_width := atan(tan(deg_to_rad(_camera.fov) * 0.5) * size.x / size.y)
 	return yaw / (2.0 * half_width)
+
+
+## How far the camera must turn to face the customer's head, in quarter turns: x to the right,
+## y up, so (1, 0) is a quarter turn right and x reaches 2 behind. Zero while nobody is in the shop.
+func customer_direction() -> Vector2:
+	if not _body.visible:
+		return Vector2.ZERO
+	var head := _camera.global_transform.affine_inverse() * (_body.global_position + Vector3.UP * head_height)
+	return Vector2(atan2(head.x, -head.z), atan2(head.y, Vector2(head.x, head.z).length())) / (PI * 0.5)
 
 
 ## The screen of the monitor that shows [param screen] as the camera sees it now, in pixels of the

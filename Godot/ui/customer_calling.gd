@@ -21,6 +21,10 @@ const CONVERSATION: StringName = &"waiting"
 @export var gap: float = 3.0
 ## The shortest time a line stays on screen, in seconds; a longer voice keeps it up longer.
 @export var show_seconds: float = 2.5
+## The gap between the box and the edge of the screen, in pixels.
+@export var margin: float = 48.0
+## The size of the arrow that points at the customer, in pixels.
+@export var arrow_size: float = 20.0
 
 var _customer: Customer
 var _conversation: Conversation
@@ -29,6 +33,8 @@ var _moods: Array[Array] = []
 var _step: int = 0
 var _last: DialogueLine
 var _calling: bool = false
+## The side of the box that the arrow sticks out of: a unit vector, or zero for no arrow.
+var _side: Vector2 = Vector2.ZERO
 
 @onready var _name: Label = %Name
 @onready var _label: Label = %Line
@@ -69,6 +75,42 @@ func stop() -> void:
 	_timer.stop()
 	_voice.hush()
 	hide()
+
+
+## Moves the box to the edge of the screen toward the customer, with its arrow pointing at them.
+## [param direction] is Shop.customer_direction(); zero puts the box at the top, without an arrow.
+func point_to(direction: Vector2) -> void:
+	var screen := get_viewport_rect().size
+	var side := Vector2.ZERO
+	if direction != Vector2.ZERO:
+		side = Vector2(signf(direction.x), 0.0) if absf(direction.x) >= absf(direction.y) else Vector2(0.0, -signf(direction.y))
+	var free := screen - size - Vector2.ONE * (margin + arrow_size) * 2.0
+	var at := (screen - size) * 0.5
+	if side.x != 0.0:
+		at.x = margin if side.x < 0.0 else screen.x - size.x - margin
+		at.y = (screen.y - size.y) * 0.5 + clampf(-direction.y, -1.0, 1.0) * free.y * 0.5
+	else:
+		at.y = margin + 48.0 if side.y <= 0.0 else screen.y - size.y - margin
+		at.x = (screen.x - size.x) * 0.5 + clampf(direction.x, -1.0, 1.0) * free.x * 0.5
+	position = at.round()
+	if side != _side:
+		_side = side
+		queue_redraw()
+
+
+func _draw() -> void:
+	if _side == Vector2.ZERO:
+		return
+	var box := get_theme_stylebox(&"panel") as StyleBoxFlat
+	var across := Vector2(-_side.y, _side.x)
+	var center := size * 0.5 + _side * size * 0.5
+	var border := box.border_width_left
+	_triangle(center, across, arrow_size + border * 1.5, box.border_color)
+	_triangle(center - _side * border, across, arrow_size, box.bg_color)
+
+
+func _triangle(base: Vector2, across: Vector2, length: float, color: Color) -> void:
+	draw_colored_polygon(PackedVector2Array([base + across * length, base + _side * length, base - across * length]), color)
 
 
 func _on_timer() -> void:
