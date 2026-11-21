@@ -2,9 +2,11 @@
 
 [ext_resource type="Script" path="res://win95/applets/applet.gd" id="script"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/add_remove_programs_32.png" id="icon"]
+[ext_resource type="PackedScene" path="res://win95/applets/add_remove_programs.tscn" id="sheet"]
 
 [resource]
 script = ExtResource("script")
 name = "Add/Remove Programs"
 description = "Sets up programs and creates shortcuts."
 icon = ExtResource("icon")
+sheet = ExtResource("sheet")

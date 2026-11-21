@@ -20,6 +20,7 @@ func run() -> void:
 	test_systray()
 	test_date_time()
 	test_system()
+	test_add_remove()
 
 	state.free()
 	game.jobs = [] as Array[Job]
@@ -96,6 +97,37 @@ func test_system() -> void:
 	check("System shows the setup", shown, ["4.00.950 B", "Pierre", "Castle Ltd", "24261-OEM-0000000-86468", "Pentium(r)", "64.0MB RAM", "64.0 MB of RAM"])
 	check("System has no Apply", (sheet.get_node("%Apply") as Button).visible, false)
 	desktop.free()
+
+
+func test_add_remove() -> void:
+	var desktop: Control = load("res://win95/desktop.gd").new()
+	desktop.computer = state
+	root.add_child(desktop)
+	var sheet: Node = desktop.call(&"open", load("res://win95/applets/add_remove_programs.tscn"))
+	var list: ItemList = sheet.get_node("%Programs")
+	var add_remove: Button = sheet.get_node("%AddRemove")
+	check("Add/Remove lists the folders in Program Files", items(list), ["Accessories", "Raytrace 2"])
+	check("with Add/Remove... greyed until one is selected", add_remove.disabled, true)
+	list.select(1)
+	list.item_selected.emit(1)
+	add_remove.pressed.emit()
+	var box: Node = desktop.call(&"active_window")
+	check("Add/Remove... asks first", box != sheet and box.get_node("%Text").text.contains("'Raytrace 2'"), true)
+	check("and removes nothing yet", setup.file_at("C:\\Program Files\\Raytrace 2") != null, true)
+	for button: Button in box.get_node("%Buttons").get_children():
+		if button.text == "Yes":
+			button.pressed.emit()
+	check("Yes uninstalls the program at once", setup.file_at("C:\\Program Files\\Raytrace 2"), null)
+	check("with its Start Menu shortcuts", setup.file_at("C:\\WINDOWS\\Start Menu\\Programs").children.map(func(f: Win95File) -> String: return f.name), ["Notepad"])
+	check("and the list follows", [items(list), add_remove.disabled], [["Accessories"], true])
+	desktop.free()
+
+
+func items(list: ItemList) -> Array[String]:
+	var names: Array[String] = []
+	for i in list.item_count:
+		names.append(list.get_item_text(i))
+	return names
 
 
 func customer() -> Customer:
