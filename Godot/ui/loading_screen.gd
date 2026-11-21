@@ -70,6 +70,9 @@ func _reveal(scene: PackedScene) -> void:
 		return
 	get_tree().root.add_child(game)
 	get_tree().current_scene = game
+	# While the logo still covers it, the game shows each view once to compile its shaders.
+	if game.has_method(&"warm_up"):
+		await game.warm_up()
 	var logo := (%Logo as Control).get_global_rect()
 	var paper := _paper.material as ShaderMaterial
 	paper.set_shader_parameter("logo_rect", Vector4(logo.position.x, logo.position.y, logo.size.x, logo.size.y))

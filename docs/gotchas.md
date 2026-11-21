@@ -14,6 +14,12 @@ Format — symptom first, because that's what a future reader is searching for:
 
 ## Godot 4.7.2
 
+**The first turn to a view stalls for 100 to 200 ms.** The GL Compatibility renderer compiles a
+shader the first time something that uses it is on screen, and each view has things no other view
+shows. Measured 2026-11-21: the first turn right 100 to 193 ms, the second 5 ms. `Shop.warm_up()`
+shows every view for one frame behind the loading screen; with it, the first turn takes 5 ms. A new
+view, or a thing that first appears later (a ghost, an outline), can stall again: warm it up too.
+
 **The editor saves scenes and resources with data missing, or one scene's content under another
 scene's path.** We saw this after other Godot processes (headless `--import` runs and test runs)
 used the same `Godot/.godot/` caches as the open editor; its UID cache then held two UIDs for

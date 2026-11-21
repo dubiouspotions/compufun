@@ -54,6 +54,23 @@ func _ready() -> void:
 
 
 ## The view marker with this name, or null (with an error) when the room has none.
+## Shows every view to the camera for one frame, so that the renderer compiles each shader now and
+## not on the player's first turn (a first turn stalled for 100 to 200 ms). The camera ends where it
+## began. The loading screen awaits it while it still covers the game.
+func warm_up() -> void:
+	var home := _camera.global_transform
+	var home_fov := _camera.fov
+	for node: Node in _views.get_children():
+		var marker := node as ViewMarker
+		if marker == null:
+			continue
+		_camera.global_transform = marker.global_transform
+		_camera.fov = marker.fov
+		await RenderingServer.frame_post_draw
+	_camera.global_transform = home
+	_camera.fov = home_fov
+
+
 func view_marker(view_name: StringName) -> ViewMarker:
 	var marker := _views.get_node_or_null(NodePath(String(view_name))) as ViewMarker
 	if marker == null:
@@ -122,7 +139,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func _sync() -> void:
 	_job_slots.show_jobs(Game.jobs, null if Game.view == WORKVIEW else Game.focus)  # the Workview centres it already
 	_pipedream.warp = Game.warp
-	_bench.lay_cable(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
+	# Deferred: a computer turns to lie or stand on the same change, and the cable must reach its new socket.
+	_bench.lay_cable.call_deferred(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
 	var workview_moved := _follow_focus()
 	if Game.view != _shown_view or (workview_moved and Game.view == WORKVIEW):
 		_move_camera(Game.view)

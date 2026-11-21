@@ -24,6 +24,12 @@ var _dialogue_for: int = -1
 @onready var _world_buffer: SubViewport = $World/WorldBuffer
 
 
+
+## Renders every view once, behind the loading screen, so that no shader compiles while the player
+## plays (see Shop.warm_up).
+func warm_up() -> void:
+	await _shop.warm_up()
+
 func _ready() -> void:
 	if OS.is_debug_build() and ResourceLoader.exists(DEV_MENU):
 		add_child(load(DEV_MENU).instantiate())
