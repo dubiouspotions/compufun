@@ -136,6 +136,28 @@ axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 region_rect = Rect2(4, 4, 4, 4)
 
+[sub_resource type="StyleBox" id="default_button"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 7.0
+content_margin_top = 5.0
+content_margin_right = 7.0
+content_margin_bottom = 5.0
+script = ExtResource("bevel")
+kind = 6
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBox" id="default_button_pressed"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+script = ExtResource("bevel")
+kind = 2
+palette = ExtResource("palette")
+
 [sub_resource type="AtlasTexture" id="scroll_left"]
 atlas = ExtResource("atlas")
 region = Rect2(112, 14, 16, 16)
@@ -168,6 +190,12 @@ texture = ExtResource("atlas")
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 region_rect = Rect2(13, 0, 2, 2)
+
+[sub_resource type="StyleBoxTexture" id="menu_separator"]
+texture = ExtResource("atlas")
+texture_margin_top = 1.0
+texture_margin_bottom = 1.0
+region_rect = Rect2(16, 0, 3, 2)
 
 [sub_resource type="StyleBoxEmpty" id="no_focus"]
 content_margin_left = 0.0
@@ -255,12 +283,6 @@ content_margin_right = 0.0
 content_margin_bottom = 0.0
 bg_color = Color(0, 0, 0.502, 1)
 
-[sub_resource type="StyleBoxTexture" id="menu_separator"]
-texture = ExtResource("atlas")
-texture_margin_top = 1.0
-texture_margin_bottom = 1.0
-region_rect = Rect2(16, 0, 3, 2)
-
 [sub_resource type="StyleBox" id="progress_bg"]
 resource_local_to_scene = false
 resource_name = ""
@@ -323,6 +345,16 @@ script = ExtResource("bevel")
 kind = 5
 fill = 2
 palette = ExtResource("palette")
+
+[sub_resource type="StyleBoxTexture" id="tip_panel"]
+texture = ExtResource("atlas")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+region_rect = Rect2(0, 48, 6, 6)
 
 [sub_resource type="StyleBoxFlat" id="title_active"]
 content_margin_left = 2.0
@@ -426,6 +458,12 @@ CheckBox/styles/hover = SubResource("checkbox_plain")
 CheckBox/styles/hover_pressed = SubResource("checkbox_plain")
 CheckBox/styles/normal = SubResource("checkbox_plain")
 CheckBox/styles/pressed = SubResource("checkbox_plain")
+DefaultButton/base_type = &"Button"
+DefaultButton/styles/disabled = SubResource("default_button")
+DefaultButton/styles/hover = SubResource("default_button")
+DefaultButton/styles/hover_pressed = SubResource("default_button_pressed")
+DefaultButton/styles/normal = SubResource("default_button")
+DefaultButton/styles/pressed = SubResource("default_button_pressed")
 HScrollBar/icons/decrement = SubResource("scroll_left")
 HScrollBar/icons/decrement_highlight = SubResource("scroll_left")
 HScrollBar/icons/decrement_pressed = SubResource("scroll_left_pressed")
@@ -437,6 +475,8 @@ HScrollBar/styles/grabber_highlight = SubResource("scroll_thumb")
 HScrollBar/styles/grabber_pressed = SubResource("scroll_thumb")
 HScrollBar/styles/scroll = SubResource("scroll_track")
 HScrollBar/styles/scroll_focus = SubResource("scroll_track")
+HSeparator/constants/separation = 2
+HSeparator/styles/separator = SubResource("menu_separator")
 ItemList/colors/font_color = Color(0, 0, 0, 1)
 ItemList/colors/font_hovered_color = Color(0, 0, 0, 1)
 ItemList/colors/font_hovered_selected_color = Color(1, 1, 1, 1)
@@ -453,6 +493,7 @@ ItemList/styles/panel = SubResource("list_field")
 ItemList/styles/selected = SubResource("list_selected")
 ItemList/styles/selected_focus = SubResource("list_selected")
 Label/colors/font_color = Color(0, 0, 0, 1)
+Label/constants/line_spacing = 0
 LineEdit/colors/caret_color = Color(0, 0, 0, 1)
 LineEdit/colors/font_color = Color(0, 0, 0, 1)
 LineEdit/colors/font_placeholder_color = Color(0.502, 0.502, 0.502, 1)
@@ -514,6 +555,8 @@ TextEdit/constants/line_spacing = 0
 TextEdit/styles/focus = SubResource("no_focus")
 TextEdit/styles/normal = SubResource("field")
 TextEdit/styles/read_only = SubResource("field_disabled")
+TipPanel/base_type = &"Panel"
+TipPanel/styles/panel = SubResource("tip_panel")
 TitleBar/base_type = &"PanelContainer"
 TitleBar/styles/panel = SubResource("title_active")
 TitleBarInactive/base_type = &"PanelContainer"

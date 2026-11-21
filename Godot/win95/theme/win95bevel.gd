@@ -10,6 +10,7 @@ enum Kind {
 	WINDOW, # window frames, menus, scrollbar thumbs
 	FIELD, # 2 px recess: text fields, lists, pressed caption buttons
 	TOGGLED, # a button that stays pushed in, like the active taskbar button
+	DEFAULT, # the default button of a dialog: a black frame around a raised button
 }
 
 ## What fills the inside of the edge. DITHER is a checkerboard of highlight and face.
@@ -70,7 +71,15 @@ func _draw(to_canvas_item: RID, rect: Rect2) -> void:
 		Kind.TOGGLED:
 			_edge(to_canvas_item, r, p.dark_shadow_color, p.highlight_color)
 			_edge(to_canvas_item, inner, p.shadow_color, p.light_color)
-	var face := inner if kind == Kind.SUNKEN else inner.grow(-1)
+		Kind.DEFAULT:
+			_edge(to_canvas_item, r, p.dark_shadow_color, p.dark_shadow_color)
+			_edge(to_canvas_item, inner, p.highlight_color, p.dark_shadow_color)
+			_edge(to_canvas_item, inner.grow(-1), p.light_color, p.shadow_color)
+	var face := inner
+	if kind == Kind.DEFAULT:
+		face = inner.grow(-2)
+	elif kind != Kind.SUNKEN:
+		face = inner.grow(-1)
 	if not face.has_area():
 		return
 	match fill:
