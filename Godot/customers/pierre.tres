@@ -18,7 +18,6 @@ text = "It gets warm, I think."
 script = ExtResource("cv")
 id = &"arrive"
 lines = Array[ExtResource("dl")]([SubResource("DialogueLine_1"), SubResource("DialogueLine_2")])
-replies = PackedStringArray("I\'ll take a look.", "Leave it on the counter.")
 
 [resource]
 script = ExtResource("3_tc2lv")

@@ -1,8 +1,8 @@
 class_name DialogueOverlay
 extends Control
-## A customer talks: their portrait, one line of a conversation at a time, then the replies.
+## A customer talks: their portrait, one line of a conversation at a time.
 
-## The player chose a reply after the last line.
+## The player clicked OK on the last line.
 signal finished
 
 const _NEUTRAL := &"neutral"
@@ -19,7 +19,6 @@ const _MATCH_NEUTRAL_HEIGHT := "jonny/portrait_irritated03.png"
 
 var _customer: Customer
 var _lines: Array[DialogueLine] = []
-var _replies_text: PackedStringArray = []
 var _line: int = 0
 
 @onready var _name: Label = %NameLabel
@@ -27,7 +26,6 @@ var _line: int = 0
 @onready var _portrait_slot: Panel = %Portrait
 @onready var _portrait: TextureRect = %PortraitTexture
 @onready var _next: Button = %NextButton
-@onready var _replies: HBoxContainer = %Replies
 
 
 func _ready() -> void:
@@ -51,10 +49,8 @@ func start(customer: Customer, id: StringName) -> void:
 		var error_line := DialogueLine.new()
 		error_line.text = "ERROR: " + message
 		_lines = [error_line]
-		_replies_text = []
 	else:
 		_lines = conversation.lines
-		_replies_text = conversation.replies
 	_show_line()
 
 
@@ -200,20 +196,10 @@ func _center_run(image: Image, y: int, axis: int) -> int:
 
 
 func _show_line() -> void:
-	for child: Node in _replies.get_children():
-		child.queue_free()
 	var line := _lines[_line]
 	_text.text = line.text if line != null else ""
 	_show_portrait(line.pose if line != null else _NEUTRAL)
-	var last := _line >= _lines.size() - 1
-	_next.visible = not last or _replies_text.is_empty()
-	_next.text = "Next" if not last else "OK"
-	if last:
-		for reply: String in _replies_text:
-			var button := Button.new()
-			button.text = reply
-			button.pressed.connect(finished.emit)
-			_replies.add_child(button)
+	_next.text = "Next" if _line < _lines.size() - 1 else "OK"
 
 
 func _on_next() -> void:

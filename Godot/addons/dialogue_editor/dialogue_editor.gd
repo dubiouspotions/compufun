@@ -145,7 +145,7 @@ func _summary(customer: Customer) -> String:
 		var lines: Array = []
 		for line: DialogueLine in c.lines:
 			lines.append([line.text, line.pose] if line != null else null)
-		conversations.append([c.id, lines, c.replies])
+		conversations.append([c.id, lines])
 	return var_to_str([customer.display_name, conversations])
 
 
@@ -265,16 +265,6 @@ func _render_detail() -> void:
 	for i: int in _conversation.lines.size():
 		_detail.add_child(_line_row(i))
 	_detail.add_child(_button("Add line", _add_line))
-
-	_detail.add_child(_label("Replies of the player, one per row (none: a plain OK)"))
-	var replies := TextEdit.new()
-	replies.text = "\n".join(_conversation.replies)
-	replies.custom_minimum_size.y = 80
-	replies.text_changed.connect(func() -> void:
-		_conversation.replies = PackedStringArray(Array(replies.text.split("\n")).filter(
-				func(r: String) -> bool: return r.strip_edges() != ""))
-		_touch())
-	_detail.add_child(replies)
 
 
 func _line_row(index: int) -> Control:

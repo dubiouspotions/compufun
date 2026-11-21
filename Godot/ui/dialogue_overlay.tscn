@@ -45,10 +45,6 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Next"
 
-[node name="Replies" type="HBoxContainer" parent="Panel/Row/Text/Buttons" unique_id=574002705]
-unique_name_in_owner = true
-layout_mode = 2
-
 [node name="Portrait" type="Panel" parent="Panel/Row" unique_id=1813881329]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(240, 240)
