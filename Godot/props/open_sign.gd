@@ -1,7 +1,8 @@
 class_name OpenSign
 extends Node3D
-## The sign that hangs in the shop window: OPEN while the shop is open, CLOSED otherwise. Its
-## origin is where the strings hang from; the board swings about it.
+## The sign that hangs in the shop window. Its OPEN side faces the street while the shop is open,
+## so the player, inside, reads CLOSED; after closing, the player reads OPEN. Its origin is where
+## the strings hang from; the board swings about it.
 
 @export var open_texture: Texture2D
 @export var closed_texture: Texture2D
@@ -33,4 +34,4 @@ func wobble() -> void:
 
 func _sync() -> void:
 	var open := Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING
-	(_board.material_override as ShaderMaterial).set_shader_parameter("albedo_texture", open_texture if open else closed_texture)
+	(_board.material_override as ShaderMaterial).set_shader_parameter("albedo_texture", closed_texture if open else open_texture)
