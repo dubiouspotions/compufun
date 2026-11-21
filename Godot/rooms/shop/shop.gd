@@ -34,6 +34,10 @@ const WORKVIEW: StringName = &"Workview"
 ## its release, for the release to drop the plug there. A shorter move is a click: the plug stays in
 ## the hand and follows the mouse until the next click drops it. A turn to another view lays it down.
 @export var plug_drag_threshold: float = 3.0
+## How far in front of the Workview camera the post-it comes when the player clicks it, in metres.
+@export var post_it_read_distance: float = 0.2
+## The seconds that the post-it takes to come up close, and to go back onto the computer.
+@export var post_it_read_seconds: float = 0.3
 
 @onready var _camera: Camera3D = %Camera
 @onready var _views: Node3D = %Views
@@ -75,6 +79,12 @@ var _mouse := Vector2(-1.0, -1.0)  # in pixels of the world buffer
 var _press_at := Vector2(-1.0, -1.0)  # where the left button last went down, in pixels of the world buffer
 var _grab_held: bool = false  # from the press that grabbed the plug until its release
 var _on_back_strip: bool = false
+var _over_post_it: bool = false
+var _read_post_it: PostIt3D  # the post-it up close or on its way there or back, or null
+var _read_rest: Transform3D  # its transform on the computer
+var _read_weight: float = 0.0  # 0 on the computer, 1 up close
+var _read_open: bool = false
+var _read_tween: Tween
 
 
 func _ready() -> void:
@@ -163,6 +173,17 @@ func pinned_post_it() -> PostIt3D:
 	return _job_slots.pinned_post_it(Game.focus)
 
 
+## True from the click that brings the pinned post-it up close until [method close_post_it].
+func reading_post_it() -> bool:
+	return _read_open
+
+
+## Sends the post-it that the player reads up close back onto its computer.
+func close_post_it() -> void:
+	if _read_open:
+		_read(false)
+
+
 ## The paper of [param post_it] as the camera sees it now: the rect around its corners, in pixels
 ## of the world buffer. Empty while a corner is behind the camera, as during a turn.
 func post_it_rect(post_it: PostIt3D) -> Rect2:
@@ -217,6 +238,10 @@ func _input(event: InputEvent) -> void:
 
 
 func _process(_delta: float) -> void:
+	var over := _post_it_at(_mouse)
+	if over != _over_post_it:
+		_over_post_it = over
+		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND if over else Input.CURSOR_ARROW)
 	var on := _back_strip_at(_mouse)
 	if on:
 		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)  # every frame: a hotspot that the mouse left resets it
@@ -232,6 +257,10 @@ func _process(_delta: float) -> void:
 # a drag, or the next click, plugs it into the computer under the mouse, or lays it down.
 func _unhandled_input(event: InputEvent) -> void:
 	var press := event as InputEventMouseButton
+	if press != null and press.pressed and press.button_index == MOUSE_BUTTON_LEFT and _post_it_at(press.position):
+		get_viewport().set_input_as_handled()
+		_read(true)
+		return
 	if press != null and press.pressed and press.button_index == MOUSE_BUTTON_LEFT and _back_strip_at(press.position):
 		get_viewport().set_input_as_handled()
 		view_requested.emit(view_marker(Game.view).back)
@@ -259,9 +288,46 @@ func _back_strip_at(at: Vector2) -> bool:
 	var marker := view_marker(Game.view)
 	if marker == null or marker.back == &"" or marker.screen not in [ViewMarker.Screen.NONE, ViewMarker.Screen.WORKVIEW]:
 		return false
-	if _bench.dragging or _hand.is_dragging() or _hand.covers(at):
+	if _read_open or _bench.dragging or _hand.is_dragging() or _hand.covers(at):
 		return false
-	return _clickable_at(at) == null
+	return _clickable_at(at) == null and not _post_it_at(at)
+
+
+# True when [param at], in pixels of the world buffer, is on the pinned post-it, which a click brings
+# up close.
+func _post_it_at(at: Vector2) -> bool:
+	var post_it := pinned_post_it()
+	if post_it == null or _read_open or _bench.dragging or _hand.is_dragging() or _hand.covers(at):
+		return false
+	return post_it_rect(post_it).has_point(at)
+
+
+# Moves the pinned post-it up close ([param open]) or back onto its computer.
+func _read(open: bool) -> void:
+	var post_it := pinned_post_it() if open else _read_post_it
+	if post_it != _read_post_it and _read_post_it != null:
+		_place_read_post_it(0.0)  # another post-it still on its way back lands at once
+	if post_it != _read_post_it:
+		_read_post_it = post_it
+		_read_rest = post_it.transform
+	_read_open = open
+	if _read_tween != null:
+		_read_tween.kill()
+	var target := 1.0 if open else 0.0
+	_read_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_read_tween.tween_method(_place_read_post_it, _read_weight, target, post_it_read_seconds * absf(target - _read_weight))
+	if not open:
+		_read_tween.tween_callback(func() -> void: _read_post_it = null)
+
+
+# Puts the post-it [param t] of the way from its computer (0) to the Workview camera (1).
+func _place_read_post_it(t: float) -> void:
+	_read_weight = t
+	if not is_instance_valid(_read_post_it):
+		return
+	var rest := _read_post_it.get_parent_node_3d().global_transform * _read_rest
+	var up_close := view_marker(WORKVIEW).global_transform.translated_local(Vector3(0.0, 0.0, -post_it_read_distance))
+	_read_post_it.global_transform = rest.interpolate_with(up_close, t)
 
 
 # What physics picking would click at [param at], in pixels of the world buffer: the nearest
@@ -286,6 +352,8 @@ func _clickable_at(at: Vector2) -> CollisionObject3D:
 
 func _sync() -> void:
 	_job_slots.show_jobs(Game.jobs)
+	if _read_open and pinned_post_it() != _read_post_it:
+		_read(false)  # the player turned away or the computer left focus
 	_play_changes()
 	_pipedream.warp = Game.warp
 	_the_end.ended = Game.phase == Game.Phase.ENDED

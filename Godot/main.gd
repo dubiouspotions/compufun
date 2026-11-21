@@ -87,6 +87,14 @@ func _follow_camera() -> void:
 
 # Cmd+N (Ctrl+N) in debug builds skips to the next event; _input, so a screen that eats keys can't hide it.
 func _input(event: InputEvent) -> void:
+	# _input, before the buttons, the back strip and the hotspots: while the post-it is up close, a click
+	# or Esc only puts it back.
+	var button := event as InputEventMouseButton
+	var closes := button != null and button.pressed and button.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]
+	if _shop.reading_post_it() and (closes or event.is_action_pressed(&"go_back")):
+		_shop.close_post_it()
+		get_viewport().set_input_as_handled()
+		return
 	var key := event as InputEventKey
 	if key != null and not key.echo and key.is_action_pressed(&"skip_ahead") and OS.is_debug_build():
 		if not _shop.skip_walk():
