@@ -106,9 +106,14 @@ func _sync() -> void:
 	_post_it.visible = Game.focus != null
 	var talking := Game.visitor_state == Game.VisitorState.TALKING
 	var facing := talking and marker != null and marker.faces_customer
+	# Looking away hushes the line, and looking back says it again from its start.
 	if facing and _dialogue_for != Game.arrival:
 		_dialogue_for = Game.arrival
 		_dialogue.start(Game.visitor, Game.conversation)
+	elif facing and not _dialogue.visible:
+		_dialogue.replay()
+	elif not facing and _dialogue.visible:
+		_dialogue.hush()
 	_dialogue.visible = facing
 	if talking and not facing:
 		_calling.call_out(Game.visitor)

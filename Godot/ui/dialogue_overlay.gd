@@ -244,6 +244,17 @@ func _show_line() -> void:
 	_speak(line)
 
 
+## Stops the shown line's voice; the line and its text stay.
+func hush() -> void:
+	_voice.hush()
+
+
+## Says the shown line again from its start, as when the player looks back at the customer.
+func replay() -> void:
+	if _line < _lines.size():
+		_speak(_lines[_line])
+
+
 ## Plays the voice file of [param line]. A line without one stays silent: its voice is not rendered yet.
 func _speak(line: DialogueLine) -> void:
 	_voice.hush()
