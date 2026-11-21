@@ -9,6 +9,7 @@
 		// About 90 ms of audio: small enough to start at once, big enough to stay ahead.
 		const CHUNK = 2048;
 		let w = null;
+		let loaded = null;
 		let current = 0;
 		const put = (bytes) => {
 			const p = w.say_alloc(bytes.length);
@@ -20,14 +21,19 @@
 			const m = e.data;
 			try {
 				if (m.kind === "init") {
-					w = (await WebAssembly.instantiate(m.wasm, {})).instance.exports;
-					const dict = new Uint8Array(await new Response(new Blob([m.dict]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
-					w.say_load_dict(put(dict), dict.length);
+					loaded = (async () => {
+						w = (await WebAssembly.instantiate(m.wasm, {})).instance.exports;
+						const dict = new Uint8Array(await new Response(new Blob([m.dict]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
+						w.say_load_dict(put(dict), dict.length);
+					})();
+					await loaded;
 					postMessage({ kind: "ready" });
 				} else if (m.kind === "stop") {
 					current = m.id;
 				} else if (m.kind === "say") {
 					current = m.id;
+					await loaded; // the first say arrives right behind init
+					if (current !== m.id) return;
 					const text = new TextEncoder().encode(m.text);
 					const total = w.say_start(put(text), text.length, m.body, m.rate, m.speed, m.pitch, m.accent);
 					if (total === 0) throw new Error("say_start rendered nothing for: " + m.text);
