@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="VoiceType" format=3]
+
+[ext_resource type="Script" path="res://voices/voice_type.gd" id="1_41y2n"]
+
+[sub_resource type="Curve" id="Curve_b7mfy"]
+_data = [Vector2(0, 0), 0.0, 0.0, 1, 1, Vector2(0.18, 0), 0.0, 25.000004, 1, 1, Vector2(0.22, 1), 25.000004, 0.0, 1, 1, Vector2(0.34, 1), 0.0, -25.000004, 1, 1, Vector2(0.38, 0), -25.000004, 0.0, 1, 1, Vector2(0.6, 0), 0.0, 25.000023, 1, 1, Vector2(0.64, 1), 25.000023, 0.0, 1, 1, Vector2(0.76, 1), 0.0, -24.999987, 1, 1, Vector2(0.8, 0), -24.999987, 0.0, 1, 1, Vector2(1, 0), 0.0, 0.0, 1, 1]
+point_count = 10
+
+[resource]
+script = ExtResource("1_41y2n")
+alternate = Dictionary[String, float]({
+"accent": 0.0,
+"bits": 6.0,
+"drift": 0.0,
+"fry": 0.6,
+"hold": 4.0,
+"metal_fb": 0.7,
+"metal_ms": 4.0,
+"ring_hz": 95.0,
+"ring_mix": 0.55,
+"roughness": 0.7,
+"static": 0.25,
+"stutter": 0.35,
+"tension": 0.85
+})
+curve = SubResource("Curve_b7mfy")

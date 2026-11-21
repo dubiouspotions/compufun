@@ -18,6 +18,7 @@ const CONVERSATION: StringName = &"waiting"
 @export var show_seconds: float = 2.5
 
 var _customer: Customer
+var _conversation: Conversation
 ## The lines grouped by pose, calmest first.
 var _moods: Array[Array] = []
 var _step: int = 0
@@ -44,6 +45,7 @@ func call_out(customer: Customer) -> void:
 		return
 	var own := customer.conversation(CONVERSATION)
 	var conversation := own if own != null else lines
+	_conversation = conversation
 	if conversation == null or conversation.lines.is_empty():
 		push_error("CustomerCalling: %s has no \"%s\" lines and no default is set" % [customer.resource_path, CONVERSATION])
 		return
@@ -78,7 +80,7 @@ func _on_timer() -> void:
 	_last = line
 	_label.text = "%s: %s" % [_customer.display_name, line.text]
 	show()
-	_timer.start(maxf(show_seconds, _voice.say(line, _customer.voice)))
+	_timer.start(maxf(show_seconds, _voice.say(line, _customer.voice, VoiceType.of(line, _conversation))))
 
 
 static func _by_pose(lines: Array[DialogueLine]) -> Array[Array]:

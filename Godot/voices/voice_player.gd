@@ -43,9 +43,10 @@ func _ready() -> void:
 	bus = BUS
 
 
-## Starts saying [param line] in [param voice] (male, female or child) and returns its length
-## in seconds, or 0 when the length is not known yet (a live line in a browser).
-func say(line: DialogueLine, voice: String) -> float:
+## Starts saying [param line] in [param voice] (male, female or child), shaped by
+## [param voice_type] (null says it plainly), and returns its length in seconds, or 0 when the
+## length is not known yet (a live line in a browser). A pre-rendered WAV has no voice type.
+func say(line: DialogueLine, voice: String, voice_type: VoiceType = null) -> float:
 	hush()
 	if line == null or line.text.strip_edges().is_empty():
 		return 0.0
@@ -57,13 +58,15 @@ func say(line: DialogueLine, voice: String) -> float:
 	var pitch := mood.pitch * (1.0 + randf_range(-pitch_jitter, pitch_jitter))
 	var swing := mood.swing * (1.0 + randf_range(-swing_jitter, swing_jitter))
 	pitch_scale = 1.0
+	var type_text := voice_type.encode() if voice_type != null else ""
 	var web := _web_voice()
 	if web != null:
-		web.say(line.text, BODIES[voice], rate, pitch, swing, db_to_linear(volume_db))
+		web.say(line.text, BODIES[voice], rate, pitch, swing, db_to_linear(volume_db), type_text)
 		_owner = self
 		return 0.0
 	var engine := _desktop_engine()
 	if engine != null:
+		engine.set_voice_type(type_text)
 		_left = engine.start(line.text, BODIES[voice], MIX_RATE, rate, pitch, swing)
 		if _left > 0:
 			var generator := AudioStreamGenerator.new()

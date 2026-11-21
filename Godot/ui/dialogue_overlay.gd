@@ -36,6 +36,7 @@ const _MATCH_NEUTRAL_HEIGHT := "jonny/portrait_irritated03.png"
 @export_range(1.0, 60.0) var talk_follow: float = 25.0
 
 var _customer: Customer
+var _conversation: Conversation
 var _lines: Array[DialogueLine] = []
 var _line: int = 0
 # False while the box shows its own error line, which has no voice.
@@ -76,6 +77,7 @@ func start(customer: Customer, conversation: Conversation) -> void:
 		push_error("DialogueOverlay.start: no customer")
 		return
 	_customer = customer
+	_conversation = conversation
 	_line = 0
 	_name.text = customer.display_name
 	if conversation == null or conversation.lines.is_empty():
@@ -259,7 +261,7 @@ func replay() -> void:
 func _speak(line: DialogueLine) -> void:
 	_voice.hush()
 	if _voiced:
-		_voice.say(line, _customer.voice)
+		_voice.say(line, _customer.voice, VoiceType.of(line, _conversation))
 
 
 func _on_next() -> void:
