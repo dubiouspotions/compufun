@@ -3,12 +3,23 @@
 [ext_resource type="Resource" path="res://people/jonny/person.tres" id="1_yvxm1"]
 [ext_resource type="Resource" path="res://problems/no_sound.tres" id="2_qmaft"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="3_10hmr"]
+[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="dl"]
+[ext_resource type="Script" path="res://customers/conversation.gd" id="cv"]
+
+[sub_resource type="Resource" id="DialogueLine_1"]
+script = ExtResource("dl")
+text = "Hello. I can\'t hear any sounds on my computer."
+
+[sub_resource type="Resource" id="Conversation_arrive"]
+script = ExtResource("cv")
+id = &"arrive"
+lines = Array[ExtResource("dl")]([SubResource("DialogueLine_1")])
+replies = PackedStringArray("I\'ll check it.", "Leave it here.")
 
 [resource]
 script = ExtResource("3_10hmr")
 display_name = "Sample customer 2"
 person = ExtResource("1_yvxm1")
-lines = PackedStringArray("Hello. I can\'t hear any sounds on my computer.")
-replies = PackedStringArray("I\'ll check it.", "Leave it here.")
+conversations = Array[ExtResource("cv")]([SubResource("Conversation_arrive")])
 problem = ExtResource("2_qmaft")
 trousers_color = Color(0.22, 0.22, 0.25, 1)

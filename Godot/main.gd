@@ -83,5 +83,5 @@ func _sync() -> void:
 	var talking := Game.phase == Game.Phase.TALKING
 	if talking and _dialogue_for != Game.customer_index:
 		_dialogue_for = Game.customer_index
-		_dialogue.start(Game.customer)
+		_dialogue.start(Game.customer, &"arrive")
 	_dialogue.visible = talking

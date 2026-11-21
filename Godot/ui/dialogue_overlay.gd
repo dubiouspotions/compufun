@@ -1,6 +1,6 @@
 class_name DialogueOverlay
 extends Control
-## The customer talks at the counter: their portrait, one line at a time, then the replies.
+## A customer talks: their portrait, one line of a conversation at a time, then the replies.
 
 ## The player chose a reply after the last line.
 signal finished
@@ -18,6 +18,8 @@ const _HEAD_ABOVE := 0.18
 const _MATCH_NEUTRAL_HEIGHT := "jonny/portrait_irritated03.png"
 
 var _customer: Customer
+var _lines: Array[DialogueLine] = []
+var _replies_text: PackedStringArray = []
 var _line: int = 0
 
 @onready var _name: Label = %NameLabel
@@ -33,28 +35,43 @@ func _ready() -> void:
 	_portrait_slot.resized.connect(_fit_portrait)
 
 
-## Starts the dialogue of [param customer] at the first line.
-func start(customer: Customer) -> void:
+## Starts the conversation [param id] of [param customer] at the first line. A missing
+## conversation shows the error in the box, so the player can still go on.
+func start(customer: Customer, id: StringName) -> void:
 	if customer == null:
 		push_error("DialogueOverlay.start: no customer")
 		return
 	_customer = customer
 	_line = 0
 	_name.text = customer.display_name
-	_show_portrait()
+	var conversation := customer.conversation(id)
+	if conversation == null or conversation.lines.is_empty():
+		var message := "%s has no conversation '%s' with lines" % [customer.resource_path, id]
+		push_error("DialogueOverlay.start: " + message)
+		var error_line := DialogueLine.new()
+		error_line.text = "ERROR: " + message
+		_lines = [error_line]
+		_replies_text = []
+	else:
+		_lines = conversation.lines
+		_replies_text = conversation.replies
 	_show_line()
 
 
-func _show_portrait() -> void:
+## Shows the portrait of [param pose]. A pose the person has no portrait for shows "neutral".
+func _show_portrait(pose: StringName) -> void:
 	_portrait.texture = null
 	var person := _customer.person
 	if person == null:
-		push_error("DialogueOverlay.start: %s has no person" % _customer.display_name)
+		push_error("DialogueOverlay: %s has no person" % _customer.resource_path)
 		return
-	if not person.portraits.has(_NEUTRAL):
-		push_error("DialogueOverlay.start: %s has no \"%s\" portrait" % [person.display_name, _NEUTRAL])
+	var shown := pose if pose != &"" else _NEUTRAL
+	if not person.portraits.has(shown):
+		push_error("DialogueOverlay: %s has no \"%s\" portrait" % [person.resource_path, shown])
+		shown = _NEUTRAL
+	if not person.portraits.has(shown):
 		return
-	_portrait.texture = person.portraits[_NEUTRAL]
+	_portrait.texture = person.portraits[shown]
 	_fit_portrait()
 
 
@@ -185,13 +202,14 @@ func _center_run(image: Image, y: int, axis: int) -> int:
 func _show_line() -> void:
 	for child: Node in _replies.get_children():
 		child.queue_free()
-	var lines := _customer.lines
-	_text.text = lines[_line] if _line < lines.size() else ""
-	var last := _line >= lines.size() - 1
-	_next.visible = not last or _customer.replies.is_empty()
+	var line := _lines[_line]
+	_text.text = line.text if line != null else ""
+	_show_portrait(line.pose if line != null else _NEUTRAL)
+	var last := _line >= _lines.size() - 1
+	_next.visible = not last or _replies_text.is_empty()
 	_next.text = "Next" if not last else "OK"
 	if last:
-		for reply: String in _customer.replies:
+		for reply: String in _replies_text:
 			var button := Button.new()
 			button.text = reply
 			button.pressed.connect(finished.emit)
@@ -199,7 +217,7 @@ func _show_line() -> void:
 
 
 func _on_next() -> void:
-	if _line >= _customer.lines.size() - 1:
+	if _line >= _lines.size() - 1:
 		finished.emit()
 		return
 	_line += 1
