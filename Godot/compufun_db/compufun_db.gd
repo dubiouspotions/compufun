@@ -4,9 +4,9 @@ extends Control
 ## the customers (Game.records; New record makes the character type up the next computer on the
 ## counter, key by key), what to check (every symptom of every Problem; the player marks what is
 ## wrong on the selected record), and what to fix (the repair steps of each problem whose symptoms
-## are all marked, ending in [member test_step]; the player ticks them off). Marking the wrong
-## symptoms leads to the wrong fix. This screen keeps only its cursor and the typing. It reads
-## every Problem file, so its text is never a second copy of the problems.
+## are all marked, numbered and ending in [member test_step]; the player ticks them off). Marking
+## the wrong symptoms leads to the wrong fix. This screen keeps only its cursor and the typing. It
+## reads every Problem file, so its text is never a second copy of the problems.
 ## The first time the player opens it on a day, the work computer boots, the character starts the
 ## program at the DOS prompt and the modem dials up; until then the computer is off. Any key or
 ## click skips to the database.
@@ -143,18 +143,21 @@ func _entries(column: Column) -> Array[Dictionary]:
 			var record := _record()
 			if record != null:
 				for problem: Problem in _matches(record):
-					_add_steps(entries, record, "Hardware", problem.hardware_steps)
-					_add_steps(entries, record, "Software", problem.software_steps)
-					_add_steps(entries, record, "Test", PackedStringArray([test_step]))
+					var number := _add_steps(entries, record, "Hardware", problem.hardware_steps, 1)
+					number = _add_steps(entries, record, "Software", problem.software_steps, number)
+					_add_steps(entries, record, "Test", PackedStringArray([test_step]), number)
 	return entries
 
 
-func _add_steps(entries: Array[Dictionary], record: DbRecord, title: String, steps: PackedStringArray) -> void:
+# Adds a section of numbered steps, the first numbered [param number]; returns the next number.
+func _add_steps(entries: Array[Dictionary], record: DbRecord, title: String, steps: PackedStringArray, number: int) -> int:
 	if steps.is_empty():
-		return
+		return number
 	entries.append({text = "-- %s --" % title, check = null, pick = false})
 	for step: String in steps:
-		entries.append({text = step, check = step in record.ticked_repairs, pick = true})
+		entries.append({text = step, check = step in record.ticked_repairs, pick = true, number = number})
+		number += 1
+	return number
 
 
 # The record under the first column's cursor, or null on <New record> or while it is typed up.
@@ -208,15 +211,22 @@ func _matches(record: DbRecord) -> Array[Problem]:
 
 
 # The screen lines of a column: [entry index, text], with the entries wrapped to the column's width.
+# A numbered step has its check box at the right of its last line; other entries in front.
 func _lines(column: Column, entries: Array[Dictionary]) -> Array[Array]:
 	var width := _spans[column].y - _spans[column].x + 1
 	var lines: Array[Array] = []
 	for i: int in entries.size():
 		var entry := entries[i]
-		var prefix := "" if entry.check == null else ("[X] " if entry.check else "[ ] ")
-		var wrapped := _wrap(entry.text, width - prefix.length())
+		var box := "" if entry.check == null else ("[X]" if entry.check else "[ ]")
+		var numbered := entry.has("number")
+		var prefix := "%d. " % entry.number if numbered else ("" if box.is_empty() else box + " ")
+		var suffix := " " + box if numbered else ""
+		var wrapped := _wrap(entry.text, width - prefix.length() - suffix.length())
 		for j: int in wrapped.size():
-			lines.append([i, (prefix if j == 0 else " ".repeat(prefix.length())) + wrapped[j]])
+			var line := (prefix if j == 0 else " ".repeat(prefix.length())) + wrapped[j]
+			if j == wrapped.size() - 1 and numbered:
+				line = line.rpad(width - suffix.length()) + suffix
+			lines.append([i, line])
 	return lines
 
 
