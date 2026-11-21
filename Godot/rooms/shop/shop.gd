@@ -30,6 +30,10 @@ const WORKVIEW: StringName = &"Workview"
 ## view with Back and no screen (Workview, Storage, Up). A click there that hits nothing clickable
 ## (a hotspot, the part in the hand) goes back, like the Back button.
 @export_range(0.0, 0.5) var back_strip_height: float = 0.18
+## How far the mouse moves, in pixels of the world buffer, between the press that grabs the plug and
+## its release, for the release to drop the plug there. A shorter move is a click: the plug stays in
+## the hand and follows the mouse until the next click drops it. A turn to another view lays it down.
+@export var plug_drag_threshold: float = 3.0
 
 @onready var _camera: Camera3D = %Camera
 @onready var _views: Node3D = %Views
@@ -68,6 +72,8 @@ var _walk_tween: Tween
 var _calling: bool = false
 var _camera_tween: Tween
 var _mouse := Vector2(-1.0, -1.0)  # in pixels of the world buffer
+var _press_at := Vector2(-1.0, -1.0)  # where the left button last went down, in pixels of the world buffer
+var _grab_held: bool = false  # from the press that grabbed the plug until its release
 var _on_back_strip: bool = false
 
 
@@ -205,6 +211,9 @@ func _input(event: InputEvent) -> void:
 	var mouse := event as InputEventMouse
 	if mouse != null:
 		_mouse = mouse.position
+	var button := event as InputEventMouseButton
+	if button != null and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
+		_press_at = button.position
 
 
 func _process(_delta: float) -> void:
@@ -219,8 +228,8 @@ func _process(_delta: float) -> void:
 	back_strip_hovered.emit(on)
 
 
-# A click on the back strip goes back. The dragged plug follows the mouse; the release plugs it into
-# the computer under the mouse, or lays it down.
+# A click on the back strip goes back. The plug in the hand follows the mouse. The release that ends
+# a drag, or the next click, plugs it into the computer under the mouse, or lays it down.
 func _unhandled_input(event: InputEvent) -> void:
 	var press := event as InputEventMouseButton
 	if press != null and press.pressed and press.button_index == MOUSE_BUTTON_LEFT and _back_strip_at(press.position):
@@ -230,15 +239,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	var mouse := event as InputEventMouse
 	if not _bench.dragging or mouse == null:
 		return
-	var from := _camera.project_ray_origin(mouse.position)
-	var dir := _camera.project_ray_normal(mouse.position)
-	var job := _job_slots.job_at(from, dir)
 	var button := mouse as InputEventMouseButton
-	if button != null and button.button_index == MOUSE_BUTTON_LEFT and not button.pressed:
-		_drop_plug(job)
+	if button != null and button.button_index == MOUSE_BUTTON_LEFT:
+		get_viewport().set_input_as_handled()  # physics picking skips handled events: the click that drops the plug clicks nothing else
+		if button.pressed:
+			_drop_plug(_job_at(button.position))
+		elif _grab_held:
+			_end_grab(button.position)
 		return
-	_bench.drag_plug(from, dir)
-	_job_slots.target(job)
+	_carry_plug(mouse.position)
 
 
 # True when [param at], in pixels of the world buffer, is on the back strip with nothing clickable
@@ -280,6 +289,8 @@ func _sync() -> void:
 	_play_changes()
 	_pipedream.warp = Game.warp
 	_the_end.ended = Game.phase == Game.Phase.ENDED
+	if _bench.dragging and Game.view != _shown_view:
+		_let_go_of_plug()  # before lay_cable below, which leaves a held plug where it is
 	# Deferred: a computer turns to lie or stand on the same change, and the cable must reach its new socket.
 	_bench.lay_cable.call_deferred(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
 	var workview_moved := _follow_focus()
@@ -418,15 +429,43 @@ func _play_changes() -> void:
 
 func _on_plug_grabbed() -> void:
 	_bench.dragging = true
+	_grab_held = true
 	Game.connect_cable(null)
 	if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):  # a quick tap is released before physics picking reports the press
-		_drop_plug(null)
+		_end_grab(_mouse)
+
+
+# The release of the press that grabbed the plug, at [param at] in pixels of the world buffer: it
+# ends a drag there, or keeps the plug in the hand after a click.
+func _end_grab(at: Vector2) -> void:
+	_grab_held = false
+	if at.distance_to(_press_at) > plug_drag_threshold:
+		_drop_plug(_job_at(at))
+	else:
+		_carry_plug(at)
+
+
+func _carry_plug(at: Vector2) -> void:
+	var from := _camera.project_ray_origin(at)
+	var dir := _camera.project_ray_normal(at)
+	_bench.drag_plug(from, dir)
+	_job_slots.target(_job_slots.job_at(from, dir))
+
+
+# The job whose computer is under [param at], in pixels of the world buffer, or null.
+func _job_at(at: Vector2) -> Job:
+	return _job_slots.job_at(_camera.project_ray_origin(at), _camera.project_ray_normal(at))
 
 
 func _drop_plug(job: Job) -> void:
-	_bench.dragging = false
-	_job_slots.target(null)
+	_let_go_of_plug()
 	Game.connect_cable(job)
+
+
+func _let_go_of_plug() -> void:
+	_bench.dragging = false
+	_grab_held = false
+	_job_slots.target(null)
 
 
 func _on_job_clicked(job: Job) -> void:

@@ -123,7 +123,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Magnetised screen**: Blotches of wrong colour on the bench screen, which Cambion builds up faster as the day's warp rises. A degauss clears them.
 *Avoid:* colour corruption, purity error.
 
-**VGA cable**: The cable from the bench screen to one computer on the counter (`Game.connected`). The player drags its plug onto a computer to connect it, or off a computer to disconnect it.
+**VGA cable**: The cable from the bench screen to one computer on the counter (`Game.connected`). The player drags its plug onto a computer to connect it, or off a computer to disconnect it; or clicks the plug to take it, and clicks again to put it there.
 *Avoid:* keyboard cable, screen cable.
 
 **Slot**: One of the `Game.MAX_JOBS` places on the work mat where a job's computer stands (`Job.slot`). In the scene it is a `Slot<n>` marker in `rooms/shop/job_slots.tscn`.

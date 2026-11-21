@@ -1,8 +1,8 @@
 class_name Bench
 extends Node3D
-## The left end of the counter: the bench screen, its keyboard and the VGA cable. The player drags
-## the plug of the cable: a press on the plug or the cord emits [signal plug_grabbed], the room
-## moves the plug with [method drag_plug] while [member dragging], and lays the cable with
+## The left end of the counter: the bench screen, its keyboard and the VGA cable. The player takes
+## the plug of the cable in the hand: a press on the plug or the cord emits [signal plug_grabbed],
+## the room moves the plug with [method drag_plug] while [member dragging], and lays the cable with
 ## [method lay_cable].
 
 ## The player clicked the screen: go to [param view].
@@ -16,7 +16,7 @@ signal power_pressed
 
 ## The outline colour of the cable while the mouse is over the plug.
 @export var hover_color: Color = Color(0.75, 0.9, 1.0)
-## The outline colour of the cable while the player drags the plug.
+## The outline colour of the cable while the plug is in the player's hand.
 @export var held_color: Color = Color(1.0, 0.82, 0.2)
 ## How far the cable runs straight out of a socket before it bends to the counter, in metres.
 @export var socket_reach: float = 0.06
@@ -30,7 +30,8 @@ signal power_pressed
 ## computer, so the cord is where the player grabs the cable.
 @export var hit_width: float = 0.06
 
-## True while the player drags the plug. [method lay_cable] leaves the plug where it is meanwhile.
+## True while the plug is in the player's hand: dragged with the button held, or carried after a
+## click. [method lay_cable] leaves the plug where it is meanwhile.
 var dragging: bool = false:
 	set(value):
 		dragging = value
