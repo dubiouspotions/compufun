@@ -32,7 +32,7 @@ Godot/               the Godot project: everything the game loads
                      volume and pitch range), exported where the effect happens
   problems/          one .tres per problem
   days/              day_1.tres to day_7.tres
-  ui/                loading screen, dialogue overlay, post-it, post-it label (the Workview post-it's text), end of day (the close-the-shop question, the night between two days), screen view, bench screen, CRT screen and tube, debug menu, F9 screen, theme.tres
+  ui/                loading screen, dialogue overlay, phone call (whom to call for a pickup), post-it label (the Workview post-it's text), end of day (the close-the-shop question, the night between two days), screen view, bench screen, CRT screen and tube, debug menu, F9 screen, theme.tres
   ui/logos/          the CompuFun logos (the loading screen, the boot splash, the sign in the shop)
   win95/             the Win95 interface (the Win95 developer's folder)
   win95/theme/icons_extracted/  every icon in a Windows 95 install, named, with manifest.json (docs/win95-icons.md)

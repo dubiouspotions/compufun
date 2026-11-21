@@ -18,6 +18,7 @@ var _dialogue_for: int = -1
 @onready var _screen_views: Array[ScreenView] = [%ScreenView, %CompuFunDBView]
 @onready var _post_it_label: PostItLabel = %PostItLabel
 @onready var _end_of_day: EndOfDay = %EndOfDay
+@onready var _phone: PhoneCall = %PhoneCall
 @onready var _world: SubViewportContainer = $World
 @onready var _world_buffer: SubViewport = $World/WorldBuffer
 
@@ -40,6 +41,7 @@ func _ready() -> void:
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
 	_shop.close_requested.connect(_end_of_day.ask)
+	_shop.phone_requested.connect(_phone.open)
 	_shop.degauss_requested.connect((%ScreenView as ScreenView).degauss)
 	_dialogue.finished.connect(Game.dialogue_finished)
 	Game.changed.connect(_sync)

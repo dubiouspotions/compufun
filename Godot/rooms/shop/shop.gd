@@ -6,6 +6,8 @@ extends Node3D
 signal view_requested(view: StringName)
 ## The player clicked the Open sign while [method Game.can_close] is true.
 signal close_requested
+## The player picked up the phone, to call a customer.
+signal phone_requested
 ## The player pressed the Degauss button of the bench screen.
 signal degauss_requested
 
@@ -284,7 +286,7 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 		Hotspot.Action.GO_TO_VIEW:
 			view_requested.emit(hotspot.view)
 		Hotspot.Action.CALL_CUSTOMER:
-			Game.call_customer()
+			phone_requested.emit()
 		Hotspot.Action.CLOSE_SHOP:
 			if Game.can_close():
 				close_requested.emit()

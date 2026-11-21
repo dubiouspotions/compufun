@@ -41,8 +41,6 @@ enum VisitorState {
 const MAX_JOBS: int = 4
 ## The most customers that a Day may have.
 const MAX_CUSTOMERS: int = 3
-## How long a phone call takes, in seconds.
-const CALL_SECONDS: float = 2.0
 ## The date of day 1, so that day 7 is 6/6/96.
 const FIRST_DATE: String = "1996-05-31"
 ## Where [method restore] finds day N.
@@ -60,6 +58,8 @@ var jobs: Array[Job] = []
 var focus: Job
 ## The computer that the VGA cable is connected to, or null when the cable hangs free.
 var connected: Job
+## The computer whose customer the phone is calling, while the phase is CALLING; null otherwise.
+var calling: Job
 ## The part in the player's hand, or null. The hand holds one piece at a time.
 var hand: Piece
 ## The pieces that the player put away in the storage bin, the last one last.
@@ -105,7 +105,6 @@ var date: Dictionary:
 var _next_order: int = 0
 var _waited: float = 0.0
 var _wait: float = 0.0
-var _call_left: float = 0.0
 var _pickup: Job
 
 
@@ -533,14 +532,28 @@ func can_call() -> bool:
 	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.fixed)
 
 
-## Calls for [constant CALL_SECONDS] (phase CALLING; CompuFunDB is offline, as the land-line cuts
-## the modem). Then the customer of the oldest fixed computer walks in for a PICKUP. Does nothing when
-## [method can_call] is false.
-func call_customer() -> void:
-	if not can_call():
+## Calls the customer of [param job], a fixed computer on the counter, to say it is ready (phase
+## CALLING; CompuFunDB is offline, as the land-line cuts the modem). The call lasts until
+## [method hang_up]. Fails with an error unless [method can_call] and [param job] is fixed.
+func call_customer(job: Job) -> void:
+	if not can_call() or job not in jobs or not job.fixed:
+		push_error("Game.call_customer: can't call about %s now (phase %s, visitor %s, fixed %s)" % [_who(job.customer) if job != null else "no job", Phase.find_key(phase), _who(visitor) if visitor != null else "none", job.fixed if job != null else false])
 		return
 	phase = Phase.CALLING
-	_call_left = CALL_SECONDS
+	calling = job
+	changed.emit()
+
+
+## Ends the call: the called customer comes at once for a PICKUP. Fails with an error unless the
+## phone is calling.
+func hang_up() -> void:
+	if phase != Phase.CALLING or calling == null:
+		push_error("Game.hang_up: the phone isn't calling (phase %s)" % Phase.find_key(phase))
+		return
+	phase = Phase.OPEN
+	_pickup = calling
+	calling = null
+	_set_visitor(_pickup.customer, Visit.PICKUP)
 	changed.emit()
 
 
@@ -591,6 +604,7 @@ func snapshot() -> Dictionary:
 		"jobs": jobs.map(func(j: Job) -> Dictionary: return j.snapshot()),
 		"focus_slot": focus.slot if focus != null else -1,
 		"connected_slot": connected.slot if connected != null else -1,
+		"calling_slot": calling.slot if calling != null else -1,
 		"hand": Job.pieces_data([hand] if hand != null else []),
 		"stored": Job.pieces_data(stored),
 		"view": String(view),
@@ -679,7 +693,8 @@ func restore(state: Dictionary) -> String:
 		new_jobs.append(job)
 	var new_focus: Variant = _job_in(new_jobs, int(state.get("focus_slot", -1)), "focus_slot")
 	var new_connected: Variant = _job_in(new_jobs, int(state.get("connected_slot", -1)), "connected_slot")
-	for picked: Variant in [new_focus, new_connected]:
+	var new_calling: Variant = _job_in(new_jobs, int(state.get("calling_slot", -1)), "calling_slot")
+	for picked: Variant in [new_focus, new_connected, new_calling]:
 		if picked is String:
 			return _refuse(picked)
 
@@ -707,8 +722,10 @@ func restore(state: Dictionary) -> String:
 		new_pickup = ready[0]
 	if new_visit == Visit.DROP_OFF and not handed_over and new_jobs.size() >= MAX_JOBS:
 		return _refuse("%s drops off, but the counter is full" % _who(new_visitor))
-	if new_phase == Phase.CALLING and not new_jobs.any(func(j: Job) -> bool: return j.fixed):
-		return _refuse("CALLING needs a fixed computer")
+	if (new_phase == Phase.CALLING) != (new_calling != null):
+		return _refuse("calling_slot is set exactly while the phase is CALLING")
+	if new_calling != null and not new_calling.fixed:
+		return _refuse("CALLING about a computer that isn't fixed")
 
 	var new_flags: Dictionary[StringName, int] = {}
 	var given_flags: Dictionary = state.get("flags", {})
@@ -743,6 +760,7 @@ func restore(state: Dictionary) -> String:
 	jobs = new_jobs
 	focus = new_focus
 	connected = new_connected
+	calling = new_calling
 	hand = hand_pieces[0] if not hand_pieces.is_empty() else null
 	stored.assign(stored_pieces)
 	visitor = new_visitor
@@ -751,7 +769,6 @@ func restore(state: Dictionary) -> String:
 	_pickup = new_pickup
 	_next_order = jobs.reduce(func(top: int, j: Job) -> int: return maxi(top, j.order + 1), 0)
 	_restart_wait()
-	_call_left = CALL_SECONDS
 	view = StringName(str(state.get("view", view)))
 	flags = new_flags
 	seen = new_seen
@@ -766,9 +783,6 @@ func restore(state: Dictionary) -> String:
 
 func _process(delta: float) -> void:
 	if phase == Phase.CALLING:
-		_call_left -= delta
-		if _call_left <= 0.0:
-			_end_call()
 		return
 	if phase == Phase.OPEN and visitor == null and jobs.size() < MAX_JOBS:
 		_waited += delta
@@ -804,22 +818,11 @@ func _try_arrival() -> bool:
 
 
 ## Debug: ends the wait that runs now, so the next event comes at once: the next customer (when
-## the counter has room) or the end of the phone call.
+## the counter has room), or the end of the phone call.
 func skip_wait() -> void:
 	_waited = _wait
-	_call_left = 0.0
-
-
-func _end_call() -> void:
-	phase = Phase.OPEN
-	var ready := jobs.filter(func(j: Job) -> bool: return j.fixed)
-	if ready.is_empty():
-		push_error("Game: the call ended, but no computer is fixed")
-	else:
-		ready.sort_custom(func(a: Job, b: Job) -> bool: return a.order < b.order)
-		_pickup = ready[0]
-		_set_visitor(_pickup.customer, Visit.PICKUP)
-	changed.emit()
+	if phase == Phase.CALLING:
+		hang_up()
 
 
 # The visitor hands the computer over and turns to the door; they stay the visitor until they leave.
