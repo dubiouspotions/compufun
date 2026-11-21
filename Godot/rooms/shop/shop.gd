@@ -26,6 +26,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
 
 var _shown_view: StringName = &""
+var _workview_job: Job
 var _walking: bool = false
 var _calling: bool = false
 var _leaving: bool = false
@@ -78,7 +79,8 @@ func set_desktop_texture(texture: Texture2D) -> void:
 
 func _sync() -> void:
 	_job_slots.show_jobs(Game.jobs, null if Game.view == WORKVIEW else Game.focus)  # the Workview centres it already
-	if Game.view != _shown_view:
+	var workview_moved := _follow_focus()
+	if Game.view != _shown_view or (workview_moved and Game.view == WORKVIEW):
 		_move_camera(Game.view)
 	_body.visible = Game.visitor != null
 	_body.show_customer(Game.visitor)
@@ -114,6 +116,20 @@ func _move_camera(view_name: StringName) -> void:
 	_camera_tween.tween_property(_camera, "global_position", marker.global_position, turn_seconds)
 	_camera_tween.tween_property(_camera, "quaternion", marker.global_basis.get_rotation_quaternion(), turn_seconds)
 	_camera_tween.tween_property(_camera, "fov", marker.fov, turn_seconds)
+
+
+## Moves the Workview marker to the computer in focus. True when it moved.
+func _follow_focus() -> bool:
+	if Game.focus == _workview_job:
+		return false
+	_workview_job = Game.focus
+	if Game.focus == null:
+		return false
+	var marker := view_marker(WORKVIEW)
+	if marker == null:
+		return false
+	marker.global_transform = _job_slots.workview_transform(Game.focus, marker.global_transform)
+	return true
 
 
 func _walk_in() -> void:

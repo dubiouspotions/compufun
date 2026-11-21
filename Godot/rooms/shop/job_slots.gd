@@ -31,6 +31,16 @@ func show_jobs(jobs: Array[Job], outlined: Job) -> void:
 		_computers[job].focused = job == outlined
 
 
+## Where the Workview camera looks at the computer of [param job] from, in world space. Fails with
+## an error and returns [param fallback] when the job has no computer on the counter.
+func workview_transform(job: Job, fallback: Transform3D) -> Transform3D:
+	var computer: JobComputer = _computers.get(job)
+	if computer == null:
+		push_error("JobSlots.workview_transform: the job in slot %d has no computer on the counter" % job.slot)
+		return fallback
+	return computer.workview_transform()
+
+
 func _add_computer(job: Job) -> JobComputer:
 	var slot := _slots.get_node_or_null("Slot%d" % job.slot) as Marker3D
 	if slot == null:

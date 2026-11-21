@@ -24,6 +24,7 @@ var _hovered: bool = false
 
 @onready var _hotspot: Hotspot = %Hotspot
 @onready var _outline: MeshInstance3D = %Outline
+@onready var _workview_eye: Marker3D = %WorkviewEye
 
 
 func _ready() -> void:
@@ -31,6 +32,11 @@ func _ready() -> void:
 	_hotspot.mouse_entered.connect(_set_hovered.bind(true))
 	_hotspot.mouse_exited.connect(_set_hovered.bind(false))
 	_sync_outline()
+
+
+## Where the Workview camera looks at this computer from, in world space.
+func workview_transform() -> Transform3D:
+	return _workview_eye.global_transform
 
 
 ## Stops taking clicks, before the computer leaves the counter.
