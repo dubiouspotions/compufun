@@ -41,7 +41,7 @@ func _entries_now() -> Array[ContextMenu.Entry]:
 		for file in setup.recent_documents:
 			documents.append(_file_item(file.name, file, Win95File.small_icon(file.icon)))
 	var settings: Array[ContextMenu.Entry] = [
-		_stub("&Control Panel", "control_panel_16"), _stub("&Printers", "folder_printers_16"), _stub("&Taskbar...", "application_settings_16")]
+		ContextMenu.item("&Control Panel", &"control_panel", false, false, false, _icon("control_panel_16")), _stub("&Printers", "folder_printers_16"), _stub("&Taskbar...", "application_settings_16")]
 	var find: Array[ContextMenu.Entry] = [_stub("&Files or Folders...", "find_files_16"), _stub("&Computer...", "find_computer_16")]
 	return [
 		ContextMenu.submenu("&Programs", _folder_entries(programs), _icon("start_programs_32")),
@@ -110,6 +110,12 @@ func _on_chosen(id: StringName) -> void:
 			push_error("Start menu: no Win95Desktop in the tree for Shut Down")
 			return
 		desktop.open(shut_down)
+		return
+	if id == &"control_panel":
+		if not owner.has_method(&"open_control_panel"):
+			push_error("Start menu: its scene, %s, has no Control Panel" % owner.name)
+			return
+		owner.open_control_panel()
 		return
 	var file: Win95File = _files.get(id)
 	if file == null:

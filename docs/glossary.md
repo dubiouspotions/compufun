@@ -161,7 +161,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 ## Win95
 
-**Control Panel**: The Win95 folder that lists the applets of every `.CPL` file in `C:\WINDOWS\SYSTEM` of the running copy, plus the Fonts and Printers folders. It opens from My Computer and from Start > Settings.
+**Control Panel**: The Win95 folder that lists the applets of every `.CPL` file in `C:\WINDOWS\SYSTEM` of the running copy; Fonts and Printers are applets of MAIN.CPL too. It opens from My Computer and from Start > Settings.
 *Avoid:* settings, control center.
 
 **Applet**: One icon in the Control Panel, such as Display or Mouse (`Applet` resource): its name, description, icon and property sheet. A `.CPL` file holds one or more applets in `Win95File.applets`; renaming or moving the file hides them.
