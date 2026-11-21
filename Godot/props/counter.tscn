@@ -8,24 +8,34 @@
 
 [sub_resource type="BoxMesh" id="BoxMesh_c7sxr"]
 size = Vector3(7, 0.95, 0.55)
+subdivide_width = 13
+subdivide_height = 1
+subdivide_depth = 1
 
 [sub_resource type="BoxMesh" id="BoxMesh_7j4v4"]
 size = Vector3(7.1, 0.05, 0.66)
+subdivide_width = 13
+subdivide_depth = 1
 
 [sub_resource type="BoxMesh" id="BoxMesh_fvkdp"]
 size = Vector3(6.96, 0.1, 0.5)
+subdivide_width = 13
 
 [sub_resource type="QuadMesh" id="QuadMesh_divider"]
 size = Vector2(1.8, 0.4)
+subdivide_width = 3
 
 [sub_resource type="BoxMesh" id="BoxMesh_divider_rail"]
 size = Vector3(1.84, 0.02, 0.02)
+subdivide_width = 3
 
 [sub_resource type="BoxMesh" id="BoxMesh_divider_post"]
 size = Vector3(0.02, 0.42, 0.02)
 
 [sub_resource type="BoxMesh" id="BoxMesh_flap"]
 size = Vector3(0.925, 0.05, 0.66)
+subdivide_width = 1
+subdivide_depth = 1
 
 [sub_resource type="BoxMesh" id="BoxMesh_hinge"]
 size = Vector3(0.1, 0.01, 0.12)

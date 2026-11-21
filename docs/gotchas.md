@@ -74,3 +74,15 @@ loading screen, and loop music instead of restarting it. — 2026-10
 web build plays sounds as samples, and samples skip `AudioEffect`s (Godot 4.7.2 class reference,
 `AudioServer.PLAYBACK_TYPE_SAMPLE`). Bake the effect into the file instead, as
 `tools/make_city_ambience.sh` does. — 2026-11
+
+## PSX look
+
+**A big surface's texture swims or bends as the camera turns.** `psx_world` maps textures affinely,
+so a texture bends across each triangle, and the bend grows with the triangle's size on screen.
+Subdivide boxes and planes into quads of about 0.5 m (`subdivide_width`, `_height`, `_depth`), as
+the shop's walls, floor and counter are. — 2026-11
+
+**A thin layer on a surface tears as the camera turns, and the surface shows through.** The vertex
+snap moves every vertex by up to half a pixel of the world buffer; on a counter top seen at a
+grazing angle that is about 1 cm of depth. Make a layer at least 1 cm thick, as the work mat is.
+— 2026-11
