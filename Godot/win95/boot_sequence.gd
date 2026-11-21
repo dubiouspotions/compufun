@@ -45,8 +45,12 @@ signal finished
 @export var startup_sound: AudioStream
 @export_group("")
 
-## The colours that scroll along the bottom of the splash screen.
-@export var bar_colors: PackedColorArray = [Color8(0, 0, 128), Color8(0, 128, 255), Color8(255, 255, 255), Color8(0, 128, 255)]
+## The colours of the bar that scrolls along the bottom of the splash screen, as Win95 cycled
+## its palette there; the gradient repeats every bar_period pixels.
+@export var bar_gradient: Gradient
+@export var bar_period: float = 160.0
+## How fast the bar scrolls, in pixels per second.
+@export var bar_speed: float = 120.0
 
 var _skipped: bool = false
 var _playing: bool = false
@@ -68,7 +72,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	_bar_offset += delta * 200.0
+	_bar_offset += delta * bar_speed
 	_bar.queue_redraw()
 
 
@@ -156,14 +160,14 @@ func _show_stage(stage: Control) -> void:
 
 
 func _draw_bar() -> void:
-	var width := 64.0
-	var count := bar_colors.size()
-	var x := -fmod(_bar_offset, width * count)
-	var i := 0
+	if bar_gradient == null:
+		return
+	var step := 2.0
+	var x := 0.0
 	while x < _bar.size.x:
-		_bar.draw_rect(Rect2(x, 0, width, _bar.size.y), bar_colors[i % count])
-		x += width
-		i += 1
+		var at := fposmod((x + _bar_offset) / bar_period, 1.0)
+		_bar.draw_rect(Rect2(x, 0, step, _bar.size.y), bar_gradient.sample(at))
+		x += step
 
 
 ## Plays [param stream] on a new player and returns it; null plays nothing.
