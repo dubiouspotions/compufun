@@ -26,6 +26,8 @@ static var _selected_material: ShaderMaterial
 	set(value):
 		on_desktop = value
 		_sync()
+## The window that a double-click opens on the desktop (Win95Desktop.open); null opens nothing.
+@export var opens: PackedScene
 ## Draws the icon and its name in the selection colour.
 @export var selected := false:
 	set(value):

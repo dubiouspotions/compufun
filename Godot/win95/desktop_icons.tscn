@@ -5,6 +5,8 @@
 [ext_resource type="Texture2D" path="res://win95/theme/icons/my_computer_32.png" id="my_computer"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/network_neighborhood_32.png" id="network"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/recycle_bin_empty_32.png" id="recycle_bin"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/application_32.png" id="application"]
+[ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="calculator"]
 
 [node name="DesktopIcons" type="VFlowContainer"]
 anchors_preset = 15
@@ -33,3 +35,9 @@ icon = ExtResource("network")
 layout_mode = 2
 text = "Recycle Bin"
 icon = ExtResource("recycle_bin")
+
+[node name="Calculator" parent="." instance=ExtResource("file_icon")]
+layout_mode = 2
+text = "Calculator"
+icon = ExtResource("application")
+opens = ExtResource("calculator")

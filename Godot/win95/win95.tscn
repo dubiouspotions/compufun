@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://win95/desktop_icons.tscn" id="desktop_icons"]
 [ext_resource type="PackedScene" path="res://win95/systray.tscn" id="systray"]
 [ext_resource type="PackedScene" uid="uid://nu7hal0154hv" path="res://win95/welcome_window.tscn" id="welcome_window"]
+[ext_resource type="Script" path="res://win95/desktop.gd" id="desktop"]
 
 [node name="Win95" type="Control" unique_id=1752664516]
 texture_filter = 1
@@ -23,6 +24,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("desktop")
 
 [node name="DesktopBackground" type="TextureRect" parent="Desktop" unique_id=1777346285]
 layout_mode = 1

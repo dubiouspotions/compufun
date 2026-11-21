@@ -57,6 +57,8 @@ func _wire(child: Node) -> void:
 	item.clicked.connect(_select.bind(item))
 	item.opened.connect(func() -> void:
 		_select(item)
+		if item.opens:
+			_open_window(item)
 		item_opened.emit(item))
 
 
@@ -65,3 +67,11 @@ func _select(item: FileIcon) -> void:
 		var other := child as FileIcon
 		if other:
 			other.selected = other == item
+
+
+func _open_window(item: FileIcon) -> void:
+	var desktop := get_tree().get_first_node_in_group(Win95Desktop.GROUP) as Win95Desktop
+	if desktop == null:
+		push_error("IconView: no Win95Desktop in the tree to open %s from %s" % [item.opens.resource_path, item.text])
+		return
+	desktop.open(item.opens)
