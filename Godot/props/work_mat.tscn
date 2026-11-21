@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="1_psx"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mat"]
+render_priority = 0
+shader = ExtResource("1_psx")
+shader_parameter/albedo_color = Color(0.16, 0.3, 0.28, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mat"]
+size = Vector3(0.6, 0.004, 0.55)
+
+[node name="WorkMat" type="Node3D"]
+
+[node name="Mat" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.002, 0)
+material_override = SubResource("ShaderMaterial_mat")
+mesh = SubResource("BoxMesh_mat")

@@ -25,6 +25,7 @@
 [ext_resource type="PackedScene" path="res://props/poster.tscn" id="23_poster"]
 [ext_resource type="PackedScene" path="res://props/trash_can.tscn" id="24_trash"]
 [ext_resource type="PackedScene" path="res://props/modem.tscn" id="25_modem"]
+[ext_resource type="PackedScene" path="res://props/work_mat.tscn" id="26_workmat"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -336,9 +337,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 1.25, -1.25)
 view = &"Screen"
 size = Vector3(0.46, 0.42, 0.42)
 
+[node name="WorkMat" parent="Room" instance=ExtResource("26_workmat")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 1, -1.2)
+
 [node name="CounterComputer" parent="Room" unique_id=1844475975 instance=ExtResource("13_ojat2")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 1.21, -1.2)
+transform = Transform3D(0.95105654, 0, -0.30901697, 0, 1, 0, 0.30901697, 0, 0.95105654, -0.55, 1.214, -1.2)
 view = &"Workview"
 size = Vector3(0.24, 0.46, 0.46)
 
