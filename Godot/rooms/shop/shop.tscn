@@ -22,6 +22,7 @@
 [ext_resource type="PackedScene" path="res://rooms/shop/outside.tscn" id="20_788ts"]
 [ext_resource type="Script" path="res://rooms/view_marker.gd" id="21_sg8ra"]
 [ext_resource type="PackedScene" path="res://customers/customer_body.tscn" id="22_rqm4b"]
+[ext_resource type="PackedScene" path="res://props/poster.tscn" id="23_poster"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -366,6 +367,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.15, 1, -1.05)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.72, 1, 0.45)
 view = &"CompufunDB"
 size = Vector3(0.32, 0.42, 0.46)
+
+[node name="Poster" parent="Room" instance=ExtResource("23_poster")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 1.5, -5.445)
 
 [node name="Phone" parent="Room" unique_id=902915224 instance=ExtResource("13_ojat2")]
 unique_name_in_owner = true

@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/poster_not_a_bug.tres" id="1_material"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_sheet"]
+size = Vector2(0.32, 0.457)
+
+[node name="Poster" type="Node3D"]
+
+[node name="Sheet" type="MeshInstance3D" parent="."]
+material_override = ExtResource("1_material")
+mesh = SubResource("QuadMesh_sheet")
