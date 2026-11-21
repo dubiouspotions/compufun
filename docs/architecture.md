@@ -34,7 +34,7 @@ Godot/               the Godot project: everything the game loads
   problems/          one .tres per problem
   days/              day_1.tres to day_7.tres
   ui/                loading screen, dialogue overlay, phone call (whom to call for a pickup), post-it label (the Workview post-it's text), end of day (the close-the-shop question, the night between two days), crash (the bluescreen over the window at the end), screen view, bench screen, CRT screen and tube, debug menu, F9 screen, theme.tres
-  ui/logos/          the CompuFun logos (the loading screen, the boot splash, the sign in the shop)
+  ui/logos/          the CompuFun logos (the game icon, the loading screen, the boot splash, the sign in the shop)
   win95/             the Win95 interface (the Win95 developer's folder)
   win95/applets/     the Control Panel's applets: applet.gd, one Applet .tres per icon, and each one's property sheet
   win95/theme/schemes/  Win95's 27 colour schemes, one Win95Palette each, read from the VM's registry
