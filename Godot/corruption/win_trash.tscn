@@ -1,0 +1,49 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/win_trash.gd" id="1_script"]
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="2_psx_world"]
+[ext_resource type="Texture2D" path="res://corruption/win_trash/recycle_bin.png" id="3_texture"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="4_dark"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bin"]
+render_priority = 0
+shader = ExtResource("2_psx_world")
+shader_parameter/albedo_texture = ExtResource("3_texture")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)
+shader_parameter/snap = 1.0
+shader_parameter/affine = 0.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_outer"]
+top_radius = 0.2
+bottom_radius = 0.15
+height = 0.36
+radial_segments = 4
+rings = 1
+cap_top = false
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_inner"]
+flip_faces = true
+top_radius = 0.19
+bottom_radius = 0.14
+height = 0.35
+radial_segments = 4
+rings = 1
+cap_top = false
+
+[node name="WinTrash" type="Node3D"]
+script = ExtResource("1_script")
+title = "The trash can blinks into the Recycle Bin"
+
+[node name="RecycleBin" type="Node3D" parent="."]
+unique_name_in_owner = true
+visible = false
+
+[node name="Outer" type="MeshInstance3D" parent="RecycleBin"]
+transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, 0, 0.18, 0)
+material_override = SubResource("ShaderMaterial_bin")
+mesh = SubResource("CylinderMesh_outer")
+
+[node name="Inner" type="MeshInstance3D" parent="RecycleBin"]
+transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, 0, 0.185, 0)
+material_override = ExtResource("4_dark")
+mesh = SubResource("CylinderMesh_inner")
