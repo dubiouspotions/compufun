@@ -588,7 +588,6 @@ func _set_in(items: Array[String], item: String, present: bool) -> void:
 	changed.emit()
 
 
-## True when the phone can call: the shop is open, nobody is in it, and a computer is fixed.
 ## Picks up the phone's receiver. False, and nothing changes, while someone is in the shop or the
 ## shop is not open.
 func pick_up_phone() -> bool:
@@ -609,8 +608,19 @@ func put_down_phone() -> void:
 	changed.emit()
 
 
+## True when the phone can call: the shop is open, nobody is in it, and a computer is fixed.
 func can_call() -> bool:
 	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.fixed)
+
+
+## The fixed job on the counter that came in first (lowest [member Job.order]), whose customer the
+## phone calls; null when no computer is fixed.
+func next_to_call() -> Job:
+	var next: Job = null
+	for job: Job in jobs:
+		if job.fixed and (next == null or job.order < next.order):
+			next = job
+	return next
 
 
 ## Calls the customer of [param job], a fixed computer on the counter, to say it is ready (phase

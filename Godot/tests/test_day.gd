@@ -78,6 +78,7 @@ func run() -> void:
 
 	# The player calls A, whose computer is fixed.
 	check("can call", game.can_call(), true)
+	check("O1 is older but not fixed, A came in before B: the phone calls A", [job_of("O1").order < job_a.order, job_a.order < job_b.order, game.next_to_call() == job_a], [true, true, true])
 	var changes: Array[int] = [0]
 	game.changed.connect(func() -> void: changes[0] += 1)
 	game.call_customer(job_of("O1"))
@@ -93,6 +94,7 @@ func run() -> void:
 	check("A has a pickup conversation: TALKING", game.visitor_state, TALKING)
 	game.dialogue_finished()
 	game.customer_left()
+	check("A is gone: the phone calls B", game.next_to_call() == job_b, true)
 	check("A's job left, focus cleared, cable stays on B", [slots(), game.focus, game.connected == job_b], [["O1@0", "O2@1", "B@3"], null, true])
 
 	# The freed place lets C in after the gap.

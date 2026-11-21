@@ -1,10 +1,11 @@
 class_name PhoneCall
 extends Control
-## The phone: the dialogue box with a red rotary phone in it. Pick the customer of a fixed
-## computer; the phone rings, the customer answers (their PHONE conversation, or [member greeting]),
-## the player says [member you_say], and hangs up; then the customer comes for it. Shows while
-## Game.phone_off_hook: the player picks it up (Shop.phone_requested), which Game refuses while
-## someone is in the shop, and Esc puts it down before a call.
+## The phone: the dialogue box with a red rotary phone in it. A click on the phone
+## (Shop.phone_requested) calls the customer of the oldest fixed computer: the phone rings, the
+## customer answers (their PHONE conversation, or [member greeting]), the player says
+## [member you_say], and hangs up; then the customer comes for it. With no computer fixed, the click
+## picks up the phone instead, which lists the computers and says why nobody can be called; Esc or
+## "Put down" puts it down. Game refuses both while the shop is closed or someone is in it.
 
 ## The heading over the customers to call.
 @export var pick_title: String = "Call a customer"
@@ -43,9 +44,14 @@ func _ready() -> void:
 	_next.pressed.connect(_on_next)
 
 
-## Picks up the phone, unless someone is in the shop: then nothing happens.
+## Calls the customer of [method Game.next_to_call] at once when [method Game.can_call]. Otherwise
+## picks up the phone to show the computers and why nobody can be called, unless someone is in the
+## shop: then nothing happens.
 func open() -> void:
-	Game.pick_up_phone()
+	if Game.can_call():
+		Game.call_customer(Game.next_to_call())
+	else:
+		Game.pick_up_phone()
 
 
 ## A made-up phone number for [param customer], the same on every call.
