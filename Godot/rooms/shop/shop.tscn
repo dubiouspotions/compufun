@@ -31,6 +31,7 @@
 [ext_resource type="AudioStream" path="res://sounds/door_bell.wav" id="29_door_bell"]
 [ext_resource type="AudioStream" path="res://sounds/phone_receiver.wav" id="30_phone_receiver"]
 [ext_resource type="Texture2D" path="res://materials/textures/poster_commercial_placeholder.png" id="31_commercial"]
+[ext_resource type="PackedScene" path="res://props/week_calendar.tscn" id="week_calendar"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -145,12 +146,6 @@ size = Vector3(0.04, 0.7, 1.1)
 size = Vector2(0.16, 0.19)
 
 [sub_resource type="QuadMesh" id="QuadMesh_tgmyf"]
-size = Vector2(0.16, 0.19)
-
-[sub_resource type="QuadMesh" id="QuadMesh_b840f"]
-size = Vector2(0.16, 0.19)
-
-[sub_resource type="QuadMesh" id="QuadMesh_18mp0"]
 size = Vector2(0.16, 0.19)
 
 [sub_resource type="Curve3D" id="Curve3D_ptv2d"]
@@ -469,15 +464,8 @@ transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.94
 material_override = ExtResource("19_a76lc")
 mesh = SubResource("QuadMesh_tgmyf")
 
-[node name="Note2" type="MeshInstance3D" parent="Room" unique_id=1523731677]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.945, 1.78, 0.9)
-material_override = ExtResource("19_a76lc")
-mesh = SubResource("QuadMesh_b840f")
-
-[node name="Note3" type="MeshInstance3D" parent="Room" unique_id=569635876]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.945, 1.52, 1.05)
-material_override = ExtResource("19_a76lc")
-mesh = SubResource("QuadMesh_18mp0")
+[node name="WeekCalendar" parent="Room" instance=ExtResource("week_calendar")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.944, 1.63, 0.96)
 
 [node name="Outside" parent="." unique_id=724951497 instance=ExtResource("20_788ts")]
 unique_name_in_owner = true

@@ -88,13 +88,19 @@ var day_number: int:
 ## dictionary: year, month, day, weekday.
 var date: Dictionary:
 	get:
-		var unix := Time.get_unix_time_from_datetime_string(FIRST_DATE) + maxi(day_number - 1, 0) * 86400
-		return Time.get_datetime_dict_from_unix_time(unix)
+		return date_of(day_number)
 
 var _next_order: int = 0
 var _gap_elapsed: float = 0.0
 var _call_left: float = 0.0
 var _pickup: Job
+
+
+## The calendar date of day [param number] (day 1 for 0 or less), as a Time datetime dictionary:
+## year, month, day, weekday (0 is Sunday).
+func date_of(number: int) -> Dictionary:
+	var unix := Time.get_unix_time_from_datetime_string(FIRST_DATE) + maxi(number - 1, 0) * 86400
+	return Time.get_datetime_dict_from_unix_time(unix)
 
 
 ## Starts [param new_day]: the shop opens and its first customer comes in at once, unless the

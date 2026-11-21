@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://props/week_calendar.gd" id="1_script"]
+[ext_resource type="Material" path="res://materials/paper.tres" id="2_paper"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_paper"]
+size = Vector2(0.5, 0.34)
+
+[node name="WeekCalendar" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Paper" type="MeshInstance3D" parent="."]
+material_override = ExtResource("2_paper")
+mesh = SubResource("QuadMesh_paper")
+
+[node name="Header" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.129, 0.003)
+pixel_size = 0.0006
+shaded = true
+texture_filter = 0
+text = "MONTH"
+font_size = 44
+outline_size = 0
