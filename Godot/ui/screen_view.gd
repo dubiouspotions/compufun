@@ -1,0 +1,85 @@
+class_name ScreenView
+extends Control
+## The Screen View: a sharp copy of the screen buffer, laid exactly over the screen of the 3D
+## monitor. It fades in while the camera zooms into the monitor and lands at 800 x 600 (1:1 in
+## 1080p), where it takes the mouse and the keys. The 3D monitor shows the same buffer as its
+## texture, so there is one desktop in one place.
+
+const SCREEN_SIZE: Vector2 = Vector2(800, 600)
+
+## The desktop that runs in the screen buffer. Its root should have the signal
+## problem_fixed(problem: Problem); without it, a placeholder Fix button appears under the screen.
+@export var desktop_scene: PackedScene
+## The seconds of the fade in and out. The main scene sets it to the camera's turn time.
+@export var fade_seconds: float = 0.35
+
+var _open: bool = false
+var _has_fix_signal: bool = false
+var _fade: Tween
+
+@onready var _container: SubViewportContainer = %ScreenContainer
+@onready var _buffer: SubViewport = %ScreenBuffer
+@onready var _fix: Button = %FixButton
+
+
+func _ready() -> void:
+	visible = false
+	modulate.a = 0.0
+	_fix.pressed.connect(func() -> void: Game.fix(Problem.Location.SOFTWARE))
+	if desktop_scene == null:
+		push_error("ScreenView: desktop_scene is empty")
+		return
+	var desktop := desktop_scene.instantiate()
+	_buffer.add_child(desktop)
+	_has_fix_signal = desktop.has_signal(&"problem_fixed")
+	if _has_fix_signal:
+		desktop.connect(&"problem_fixed", _on_problem_fixed)
+	else:
+		push_warning("ScreenView: %s has no signal problem_fixed(problem); the placeholder Fix button stands in" % desktop_scene.resource_path)
+	_fix.visible = not _has_fix_signal
+
+
+func _notification(what: int) -> void:
+	# The container turns the buffer's updates off when it is hidden; the 3D monitor needs them on.
+	if what == NOTIFICATION_VISIBILITY_CHANGED and is_node_ready():
+		_keep_live.call_deferred()
+
+
+func _keep_live() -> void:
+	_buffer.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+
+
+## The live picture of the screen buffer, for the 3D monitor.
+func screen_texture() -> ViewportTexture:
+	return _buffer.get_texture()
+
+
+## Fades the view in (true) or out (false). It stays visible until the fade out ends.
+func set_open(open: bool) -> void:
+	if open == _open:
+		return
+	_open = open
+	if _fade != null:
+		_fade.kill()
+	if open:
+		visible = true
+	_fade = create_tween()
+	_fade.tween_property(self, "modulate:a", 1.0 if open else 0.0, fade_seconds)
+	if not open:
+		_fade.tween_callback(hide)
+
+
+## Lays the screen over [param rect]: the screen of the 3D monitor, in canvas coordinates. A rect
+## within 1 % of 800 x 600 snaps to it, so the open screen is sharp.
+func follow(rect: Rect2) -> void:
+	var sharp := absf(rect.size.x - SCREEN_SIZE.x) <= SCREEN_SIZE.x * 0.01
+	if sharp:
+		rect = Rect2((rect.get_center() - SCREEN_SIZE * 0.5).round(), SCREEN_SIZE)
+	_container.position = rect.position
+	_container.scale = rect.size / SCREEN_SIZE
+	_container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST if sharp else CanvasItem.TEXTURE_FILTER_LINEAR
+	_fix.position = Vector2(rect.get_center().x - _fix.size.x * 0.5, rect.end.y + 24.0)
+
+
+func _on_problem_fixed(_problem: Problem) -> void:
+	Game.fix(Problem.Location.SOFTWARE)

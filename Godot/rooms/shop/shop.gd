@@ -39,6 +39,15 @@ func view_marker(view_name: StringName) -> ViewMarker:
 	return marker
 
 
+## The screen of the CRT on the counter as the camera sees it now, in pixels of the world buffer.
+func bench_screen_rect() -> Rect2:
+	var corners := _bench_monitor.screen_corners()
+	var rect := Rect2(_camera.unproject_position(corners[0]), Vector2.ZERO)
+	for corner: Vector3 in corners:
+		rect = rect.expand(_camera.unproject_position(corner))
+	return rect
+
+
 ## Shows [param texture] (the screen buffer) on the CRT on the counter.
 func set_desktop_texture(texture: Texture2D) -> void:
 	_bench_monitor.set_screen_texture(texture)

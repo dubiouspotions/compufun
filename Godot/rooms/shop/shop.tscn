@@ -432,7 +432,7 @@ back = &"Main"
 screen = 3
 
 [node name="Screen" type="Marker3D" parent="Views" unique_id=2031473996]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 1.255, -0.62)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 1.255, -0.4948)
 script = ExtResource("20_a76lc")
 back = &"Main"
 screen = 2

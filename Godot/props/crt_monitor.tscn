@@ -21,7 +21,7 @@ size = Vector3(0.32, 0.28, 0.24)
 size = Vector3(0.36, 0.28, 0.01)
 
 [sub_resource type="QuadMesh" id="QuadMesh_wurup"]
-size = Vector2(0.33, 0.25)
+size = Vector2(0.33333, 0.25)
 
 [node name="CrtMonitor" type="Node3D" unique_id=2092350324]
 script = ExtResource("1_45gi1")
