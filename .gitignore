@@ -8,3 +8,5 @@ desktop.ini
 
 # The GitHub wiki, cloned by tools/sync-wiki.sh (its own git repo)
 /wiki/
+
+.vscode/settings.json
