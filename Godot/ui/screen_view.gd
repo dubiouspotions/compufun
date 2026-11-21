@@ -32,11 +32,15 @@ signal outside_clicked
 @export var game_cursor_hotspot: Vector2 = Vector2(6, 6)
 ## The monitor's keyboard: each key that the player presses while the view is open; null is silent.
 @export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
+## The monitor's mouse: a button pressed and released over the open screen; null is silent.
+@export var mouse_down: SoundSet = preload("res://sounds/mouse_down.tres")
+@export var mouse_up: SoundSet = preload("res://sounds/mouse_up.tres")
 
 var _open: bool = false
 var _fade: Tween
 var _content: Control
 var _keys: AudioStreamPlayer
+var _buttons: AudioStreamPlayer
 
 @onready var _screen: CrtScreen = %Screen
 @onready var _tube: CrtTube = %Tube
@@ -49,6 +53,8 @@ func _ready() -> void:
 	_show_cursor(game_cursor, game_cursor_hotspot)
 	_keys = AudioStreamPlayer.new()
 	add_child(_keys)
+	_buttons = AudioStreamPlayer.new()
+	add_child(_buttons)
 	var node := content.instantiate() if content != null else null
 	_content = node as Control
 	if _content == null:
@@ -69,11 +75,19 @@ func _exit_tree() -> void:
 	_show_cursor(null, Vector2.ZERO)  # Otherwise the display server outlives the texture and logs a leak at exit.
 
 
-# _input, before the screen takes the key: a key that Win95 handles must click too.
+# _input, before the screen takes the event: a key or a click that the screen handles sounds too.
 func _input(event: InputEvent) -> void:
+	if not _open:
+		return
 	var key := event as InputEventKey
-	if _open and keystroke != null and key != null and key.pressed and not key.echo:
+	if keystroke != null and key != null and key.pressed and not key.echo:
 		keystroke.play_on(_keys)
+	var button := event as InputEventMouseButton
+	if button != null and button.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE] \
+			and _screen.get_global_rect().has_point(button.position):
+		var sound := mouse_down if button.pressed else mouse_up
+		if sound != null:
+			sound.play_on(_buttons)
 
 
 func _gui_input(event: InputEvent) -> void:
