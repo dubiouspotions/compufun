@@ -6,6 +6,8 @@ extends Control
 ## computer, ScreenView takes it out of the tree, and puts it back as it was.
 
 const _BOOT := preload("res://win95/boot_sequence.tscn")
+const _FLOPPY_IN := preload("res://sounds/floppy_insert.tres")
+const _FLOPPY_OUT := preload("res://sounds/floppy_eject.tres")
 const _FOLDER := preload("res://win95/folder_window.tscn")
 const _PROPERTIES := preload("res://win95/properties_window.tscn")
 const _MESSAGE := preload("res://win95/message_box.tscn")
@@ -50,6 +52,8 @@ var _context: ContextMenu
 var _context_view: IconView
 var _context_item: FileIcon
 var _boot: Node
+## Whether a floppy was in A: at the last change, to hear it go in or out.
+var _floppy_heard: bool = false
 
 @onready var _state: ComputerState = %ComputerState
 @onready var _desktop: Win95Desktop = $Desktop
@@ -107,6 +111,7 @@ func _on_booted() -> void:
 		_boot.queue_free()
 	_boot = _BOOT.instantiate()
 	_boot.floppy_in_a = setup.floppy_in_a
+	_floppy_heard = setup.floppy_in_a
 	add_child(_boot)
 	move_child(_boot, _no_signal.get_index())
 
@@ -133,8 +138,12 @@ func _apply_sound() -> void:
 
 func _on_changed() -> void:
 	_apply_sound()
-	if is_instance_valid(_boot) and _state.setup != null:
-		_boot.floppy_in_a = _state.setup.floppy_in_a
+	if _state.setup != null:
+		if is_instance_valid(_boot):
+			_boot.floppy_in_a = _state.setup.floppy_in_a
+		if _state.setup.floppy_in_a != _floppy_heard:
+			_floppy_heard = _state.setup.floppy_in_a
+			(_FLOPPY_IN if _floppy_heard else _FLOPPY_OUT).play_at(self)
 	for view: IconView in _listings.keys():
 		_fill(view)
 

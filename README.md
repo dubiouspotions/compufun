@@ -33,6 +33,15 @@ Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actio
 
 ## Credits
 
+- `Godot/sounds/footstep_tile_1.ogg` to `footstep_tile_4.ogg`: four steps cut from "Footsteps_Boots_Tile_Mono" by Nox_Sound on Freesound (https://freesound.org/people/Nox_Sound/sounds/530588/), CC0.
+- `Godot/sounds/computer_set_down.ogg`: cut from "Book dropped on table" by Valerie-Vivegnis on Freesound (https://freesound.org/people/Valerie-Vivegnis/sounds/836521/), CC0.
+- `Godot/sounds/computer_pick_up_1.ogg` and `computer_pick_up_2.ogg`: two lifts cut from "Foley_Object_Toolbox_Metal_PickUp_Mono" by Nox_Sound on Freesound (https://freesound.org/people/Nox_Sound/sounds/556647/), CC0.
+- `Godot/sounds/part_take.ogg`: trimmed from "Picking Something Up From A Table" by RutgerMuller on Freesound (https://freesound.org/people/RutgerMuller/sounds/51160/), CC0.
+- `Godot/sounds/part_put.ogg`: trimmed from "Clip In" by slappy13 on Freesound (https://freesound.org/people/slappy13/sounds/151778/), CC0.
+- `Godot/sounds/cable_plug_in.ogg`: trimmed from "Power Cord Plug 1_2" by Joao_Janz on Freesound (https://freesound.org/people/Joao_Janz/sounds/477621/), CC0.
+- `Godot/sounds/cable_plug_out.ogg`: trimmed from "Power Cord Plug 1_1" by Joao_Janz on Freesound (https://freesound.org/people/Joao_Janz/sounds/477628/), CC0.
+- `Godot/sounds/floppy_insert.ogg`: cut from "Inserting 3.5 inch floppy-disk into floppy disk drive" by micropolis on Freesound (https://freesound.org/people/micropolis/sounds/637057/), CC0.
+- `Godot/sounds/floppy_eject.ogg`: cut from "Taking 3.5-inch floppy-disk from floppy disk drive" by micropolis on Freesound (https://freesound.org/people/micropolis/sounds/637058/), CC0.
 - `Godot/win95/theme/boot_logo.png`: the Windows 95 startup screen, (C) Microsoft, not licensed to us. Taken from the Windows Wallpaper Wiki (https://windowswallpaper.miraheze.org/wiki/Windows_95).
 - `Godot/win95/wallpapers/` (all but `win95-default.png`): the wallpapers that shipped with Windows 95, (C) Microsoft, not licensed to us. Taken from the Windows Wallpaper Wiki (https://windowswallpaper.miraheze.org/wiki/Windows_95).
 - `Godot/win95/sounds/boot_power_on.ogg`: cut from "PC startup" by bratij on Freesound (https://freesound.org/people/bratij/sounds/841351/), CC0.

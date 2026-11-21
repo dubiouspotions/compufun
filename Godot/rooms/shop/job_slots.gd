@@ -10,6 +10,9 @@ signal power_clicked(job: Job)
 
 ## The scene of one job's computer.
 @export var computer_scene: PackedScene
+## Plays at a slot when a customer's computer is put down on it, and when it is picked up again.
+@export var set_down_sound: SoundSet = preload("res://sounds/computer_set_down.tres")
+@export var pick_up_sound: SoundSet = preload("res://sounds/computer_pick_up.tres")
 
 var _computers: Dictionary[Job, JobComputer] = {}
 
@@ -22,6 +25,7 @@ var _computers: Dictionary[Job, JobComputer] = {}
 func show_jobs(jobs: Array[Job], outlined: Job) -> void:
 	for job: Job in _computers.keys():
 		if job not in jobs:
+			pick_up_sound.play_at(_computers[job].get_parent())
 			_computers[job].disable()
 			_computers[job].queue_free()
 			_computers.erase(job)
@@ -30,6 +34,7 @@ func show_jobs(jobs: Array[Job], outlined: Job) -> void:
 			var computer := _add_computer(job)
 			if computer == null:
 				continue
+			set_down_sound.play_at(computer.get_parent())
 			_computers[job] = computer
 		_computers[job].focused = job == outlined
 		_computers[job].powered = job.powered

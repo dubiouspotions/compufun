@@ -27,7 +27,8 @@ Godot/               the Godot project: everything the game loads
   voices/            one .wav per customer line, rendered by Chimera; voices.gd names and renders them
   voices/moods/      the mood of each pose (VoiceMood): the speed, pitch and pitch swing of the voice
   voices/live/       the live voice: live_voice.js (web), the dictionary; tools/build-voice.sh adds the wasm, the libraries and the .gdextension
-  sounds/            sound effects, such as footstep.wav
+  sounds/            sound effects: the audio files, and one SoundSet .tres per effect (its takes,
+                     volume and pitch range), exported where the effect happens
   problems/          one .tres per problem
   days/              day_1.tres to day_7.tres
   ui/                loading screen, dialogue overlay, post-it, post-it label (the Workview post-it's text), end of day (the close-the-shop question, the night between two days), CompufunDB, screen view, CRT screen, debug menu, F9 screen, theme.tres

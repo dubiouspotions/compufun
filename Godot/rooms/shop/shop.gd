@@ -30,7 +30,17 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
 
+## Plays when a part comes into the player's hand, and when it leaves it (put in, on the mat, away).
+@export var part_take_sound: SoundSet = preload("res://sounds/part_take.tres")
+@export var part_put_sound: SoundSet = preload("res://sounds/part_put.tres")
+## Plays at a computer's socket when the keyboard cable goes in, and when it comes out.
+@export var plug_in_sound: SoundSet = preload("res://sounds/cable_plug_in.tres")
+@export var plug_out_sound: SoundSet = preload("res://sounds/cable_plug_out.tres")
+
 var _shown_view: StringName = &""
+## What the hand held and where the cable was at the last sync, to hear what changed since.
+var _heard_hand: Variant = null
+var _heard_cable: Job
 var _workview_job: Job
 var _walk_in_arrival: int = -1
 var _walk_out_arrival: int = -1
@@ -138,6 +148,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _sync() -> void:
 	_job_slots.show_jobs(Game.jobs, null if Game.view == WORKVIEW else Game.focus)  # the Workview centres it already
+	_play_changes()
 	_pipedream.warp = Game.warp
 	# Deferred: a computer turns to lie or stand on the same change, and the cable must reach its new socket.
 	_bench.lay_cable.call_deferred(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
@@ -239,6 +250,23 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 			Game.take_new_part(hotspot.part)
 		Hotspot.Action.TRASH_PART:
 			Game.trash_part()
+
+
+# Plays the sound of each hand and cable change since the last sync, whatever made it.
+func _play_changes() -> void:
+	if Game.hand != _heard_hand:
+		if _heard_hand == null:
+			part_take_sound.play_at(self)
+		elif Game.hand == null:
+			part_put_sound.play_at(self)
+		_heard_hand = Game.hand
+	if Game.connected != _heard_cable:
+		var old_socket := _job_slots.cable_socket(_heard_cable) if _heard_cable != null and _heard_cable in Game.jobs else null
+		if old_socket != null:
+			plug_out_sound.play_at(old_socket)
+		if Game.connected != null:
+			plug_in_sound.play_at(_job_slots.cable_socket(Game.connected))
+		_heard_cable = Game.connected
 
 
 func _on_plug_grabbed() -> void:
