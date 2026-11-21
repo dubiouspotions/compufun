@@ -50,7 +50,7 @@ size = Vector3(0.11, 0.07, 0.26)
 size = Vector3(0.08, 1, 0.09)
 
 [sub_resource type="BoxMesh" id="hand"]
-size = Vector3(0.05, 0.09, 0.1)
+size = Vector3(0.05, 0.09, 0.07)
 
 [sub_resource type="CylinderMesh" id="pipe"]
 top_radius = 0.035
@@ -77,6 +77,9 @@ radius = 0.012
 height = 0.03
 radial_segments = 4
 rings = 2
+
+[sub_resource type="BoxMesh" id="speck"]
+size = Vector3(1, 1, 1)
 
 [sub_resource type="BoxMesh" id="drip_a"]
 size = Vector3(0.025, 0.2, 0.012)
@@ -144,26 +147,27 @@ material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
 [node name="ForearmL" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(0.45632, 0.195, 0.56478, -0.88982, 0.1, 0.28963, 0, -0.18, 0.77275, -0.1725, 1.09, 0.59)
+transform = Transform3D(0.43747, 0.185, 0.21237, -0.89924, 0.09, 0.10331, 0, -0.05, 0.97171, -0.1775, 1.085, 0.655)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
 [node name="HandL" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.052, 1.15, 0.47)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.055, 1.14, 0.6)
 material_override = SubResource("skin_mat")
 mesh = SubResource("hand")
 
 [node name="ForearmR" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(0.49132, -0.195, -0.62411, 0.87098, 0.11, 0.35206, -0, -0.23, 0.69752, 0.1725, 1.095, 0.545)
+transform = Transform3D(0.54419, -0.185, -0.18552, 0.83896, 0.12, 0.12034, -0, -0.05, 0.97524, 0.1775, 1.1, 0.635)
 material_override = SubResource("shirt_mat")
 mesh = SubResource("arm")
 
 [node name="HandR" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.052, 1.15, 0.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.055, 1.16, 0.58)
 material_override = SubResource("skin_mat")
 mesh = SubResource("hand")
 
 [node name="Pipe" type="MeshInstance3D" parent="Body"]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 1.15, 1.15)
 material_override = SubResource("pipe_mat")
 mesh = SubResource("pipe")
@@ -178,27 +182,53 @@ transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 1.15, 0.62)
 material_override = SubResource("blood_mat")
 mesh = SubResource("sleeve")
 
-[node name="DripA" type="MeshInstance3D" parent="Body"]
+[node name="Bleeding" type="Node3D" parent="Body"]
+unique_name_in_owner = true
+
+[node name="DripA" type="MeshInstance3D" parent="Body/Bleeding"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.035, 1.03, 0.655)
 material_override = SubResource("blood_mat")
 mesh = SubResource("drip_a")
 
-[node name="DripB" type="MeshInstance3D" parent="Body"]
+[node name="DripB" type="MeshInstance3D" parent="Body/Bleeding"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, 1.0, 0.655)
 material_override = SubResource("blood_mat")
 mesh = SubResource("drip_b")
 
-[node name="Drop" type="MeshInstance3D" parent="Body"]
+[node name="Drop" type="MeshInstance3D" parent="Body/Bleeding"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0.33)
 material_override = SubResource("blood_mat")
 mesh = SubResource("drop")
 
-[node name="Puddle" type="MeshInstance3D" parent="Body"]
+[node name="Puddle" type="MeshInstance3D" parent="Body/Bleeding"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.02, 0.008, 0.12)
 material_override = SubResource("blood_mat")
 mesh = SubResource("puddle")
 
-[node name="PuddleSmall" type="MeshInstance3D" parent="Body"]
+[node name="PuddleSmall" type="MeshInstance3D" parent="Body/Bleeding"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.17, 0.008, 0.3)
 material_override = SubResource("blood_mat")
 mesh = SubResource("puddle_small")
+
+[node name="Splatter" type="CPUParticles3D" parent="Body"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0.62)
+material_override = SubResource("blood_mat")
+emitting = false
+amount = 240
+lifetime = 1.4
+one_shot = true
+explosiveness = 0.9
+randomness = 0.5
+mesh = SubResource("speck")
+emission_shape = 1
+emission_sphere_radius = 0.04
+direction = Vector3(0, 0.4, -1)
+spread = 70.0
+initial_velocity_min = 0.6
+initial_velocity_max = 2.4
+gravity = Vector3(0, -5, 0)
+damping_min = 1.0
+damping_max = 2.5
+scale_amount_min = 0.005
+scale_amount_max = 0.016

@@ -531,6 +531,11 @@ back = &"Main"
 screen = 2
 fov = 40.0
 
+[node name="EndUp" type="Marker3D" parent="Views"]
+transform = Transform3D(1, 0, 0, 0, 0.9396926, -0.34202015, 0, 0.34202015, 0.9396926, 0, 1.55, 0.7)
+script = ExtResource("21_sg8ra")
+turn_seconds = 1.0
+
 [node name="End" type="Marker3D" parent="Views"]
 transform = Transform3D(1, 0, 0, 0, 0.17364818, 0.98480775, 0, -0.98480775, 0.17364818, 0, 1.62, 0.6)
 script = ExtResource("21_sg8ra")
