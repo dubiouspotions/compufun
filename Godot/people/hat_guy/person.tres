@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="Person" format=3]
+
+[ext_resource type="Texture2D" path="res://people/hat_guy/face.png" id="1_3sn63"]
+[ext_resource type="Texture2D" path="res://people/hat_guy/portrait_angry.png" id="2_ebrk7"]
+[ext_resource type="Texture2D" path="res://people/hat_guy/portrait_happy.png" id="3_kv0m1"]
+[ext_resource type="Texture2D" path="res://people/hat_guy/portrait_irritated01.png" id="4_ucfnj"]
+[ext_resource type="Texture2D" path="res://people/hat_guy/portrait_irritated02.png" id="5_hbybp"]
+[ext_resource type="Texture2D" path="res://people/hat_guy/portrait_irritated03.png" id="6_p6avj"]
+[ext_resource type="Texture2D" path="res://people/hat_guy/portrait_neutral.png" id="7_ua61i"]
+[ext_resource type="Texture2D" path="res://people/hat_guy/portrait_problem.png" id="8_hqjl3"]
+[ext_resource type="Texture2D" path="res://people/hat_guy/portrait_thinking.png" id="9_sqa7d"]
+[ext_resource type="Script" path="res://people/person.gd" id="10_hh4a0"]
+
+[resource]
+script = ExtResource("10_hh4a0")
+name = "Jose Hernandez"
+nickname = "Hat guy"
+email = "big_fish@yahoo.com"
+portraits = Dictionary[StringName, Texture2D]({
+&"angry": ExtResource("2_ebrk7"),
+&"happy": ExtResource("3_kv0m1"),
+&"irritated01": ExtResource("4_ucfnj"),
+&"irritated02": ExtResource("5_hbybp"),
+&"irritated03": ExtResource("6_p6avj"),
+&"neutral": ExtResource("7_ua61i"),
+&"problem": ExtResource("8_hqjl3"),
+&"thinking": ExtResource("9_sqa7d")
+})
+face = ExtResource("1_3sn63")
+shirt_rect = Rect2(0.34, 0.4, 0.36, 0.6)

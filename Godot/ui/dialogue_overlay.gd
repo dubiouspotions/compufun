@@ -15,7 +15,7 @@ const _HEAD_RUN := 6
 ## Fraction of the crown-to-hem distance that sits above the column. About half a head on these busts.
 const _HEAD_ABOVE := 0.18
 ## Hands cover the head, so the usual crown scale blows the pose up. Match the neutral portrait's height instead.
-const _MATCH_NEUTRAL_HEIGHT := "jonny/portrait_irritated03.png"
+const _MATCH_NEUTRAL_HEIGHT := "young_entrepreneur/portrait_irritated03.png"
 
 var _customer: Customer
 var _lines: Array[DialogueLine] = []
@@ -77,7 +77,7 @@ func _show_portrait(pose: StringName) -> void:
 	_fit_portrait()
 
 
-## Each pose is scaled so its hem meets the bottom of the column and the head crosses the top edge at the same height. Jonny's hands-up pose is scaled to the same height as his neutral portrait.
+## Each pose is scaled so its hem meets the bottom of the column and the head crosses the top edge at the same height. The young entrepreneur's hands-up pose is scaled to the same height as his neutral portrait.
 func _fit_portrait() -> void:
 	var tex := _portrait.texture
 	if tex == null or _portrait_slot.size.y <= 0.0:

@@ -1,0 +1,241 @@
+[gd_resource type="Resource" script_class="Customer" format=3]
+
+[ext_resource type="Resource" path="res://people/skater_bro/person.tres" id="1_teewq"]
+[ext_resource type="Resource" path="res://problems/dust_overheat.tres" id="2_7x3xp"]
+[ext_resource type="Script" path="res://customers/customer.gd" id="3_tc2lv"]
+[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="dl"]
+[ext_resource type="Script" path="res://customers/conversation.gd" id="cv"]
+[ext_resource type="Script" path="res://customers/computer.gd" id="1_43eac"]
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="2_nepbl"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/document_text_32.png" id="3_tejm6"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/document_32.png" id="4_gjf3x"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/folder_closed_32.png" id="5_ko7w1"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/document_config_32.png" id="6_k5xlp"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/application_32.png" id="7_xlwt7"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/file_unknown_32.png" id="8_5wmul"]
+[ext_resource type="Script" path="res://win95/email.gd" id="9_5i8g7"]
+[ext_resource type="Script" path="res://win95/win95_setup.gd" id="11_movdk"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/clouds.png" id="wallpaper"]
+[ext_resource type="PackedScene" path="res://win95/notepad.tscn" id="app_notepad"]
+[ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="app_wordpad"]
+[ext_resource type="PackedScene" path="res://win95/paint.tscn" id="app_paint"]
+[ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="app_calculator"]
+[ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="app_inbox"]
+[ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
+[ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
+[ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="app_ms_dos_prompt"]
+[ext_resource type="Material" path="res://materials/black_plastic.tres" id="case_black"]
+[ext_resource type="Texture2D" path="res://materials/textures/sticker_turbo.png" id="sticker_turbo"]
+
+[sub_resource type="Resource" id="DialogueLine_1"]
+script = ExtResource("dl")
+text = "Hi. My computer starts Windows, and then it just turns off."
+
+[sub_resource type="Resource" id="DialogueLine_2"]
+script = ExtResource("dl")
+text = "It gets warm, I think."
+
+[sub_resource type="Resource" id="Conversation_arrive"]
+script = ExtResource("cv")
+id = &"arrive"
+lines = Array[ExtResource("dl")]([SubResource("DialogueLine_1"), SubResource("DialogueLine_2")])
+
+[sub_resource type="Resource" id="Resource_xghb6"]
+script = ExtResource("2_nepbl")
+name = "todo.txt"
+icon = ExtResource("3_tejm6")
+
+[sub_resource type="Resource" id="Resource_3rdml"]
+script = ExtResource("2_nepbl")
+name = "castle_01.bmp"
+icon = ExtResource("4_gjf3x")
+
+[sub_resource type="Resource" id="Resource_7iqh2"]
+script = ExtResource("2_nepbl")
+name = "castle_02.bmp"
+icon = ExtResource("4_gjf3x")
+
+[sub_resource type="Resource" id="Resource_ndhw4"]
+script = ExtResource("2_nepbl")
+name = "castle_03.bmp"
+icon = ExtResource("4_gjf3x")
+
+[sub_resource type="Resource" id="Resource_mtqkb"]
+script = ExtResource("2_nepbl")
+name = "Renders"
+icon = ExtResource("5_ko7w1")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_3rdml"), SubResource("Resource_7iqh2"), SubResource("Resource_ndhw4")])
+
+[sub_resource type="Resource" id="Resource_4f8u6"]
+script = ExtResource("2_nepbl")
+name = "System"
+icon = ExtResource("5_ko7w1")
+is_folder = true
+
+[sub_resource type="Resource" id="Resource_rx540"]
+script = ExtResource("2_nepbl")
+name = "WIN.INI"
+icon = ExtResource("6_k5xlp")
+
+[sub_resource type="Resource" id="Resource_rkt6m"]
+script = ExtResource("2_nepbl")
+name = "SYSTEM.INI"
+icon = ExtResource("6_k5xlp")
+
+[sub_resource type="Resource" id="Program_inbox"]
+script = ExtResource("2_nepbl")
+name = "EXCHNG32.EXE"
+icon = ExtResource("7_xlwt7")
+program = ExtResource("app_inbox")
+
+[sub_resource type="Resource" id="Program_volume_control"]
+script = ExtResource("2_nepbl")
+name = "SNDVOL32.EXE"
+icon = ExtResource("7_xlwt7")
+program = ExtResource("app_volume_control")
+
+[sub_resource type="Resource" id="Program_defrag"]
+script = ExtResource("2_nepbl")
+name = "DEFRAG.EXE"
+icon = ExtResource("7_xlwt7")
+program = ExtResource("app_defrag")
+
+[sub_resource type="Resource" id="Program_ms_dos_prompt"]
+script = ExtResource("2_nepbl")
+name = "COMMAND.COM"
+icon = ExtResource("7_xlwt7")
+program = ExtResource("app_ms_dos_prompt")
+
+[sub_resource type="Resource" id="Program_notepad"]
+script = ExtResource("2_nepbl")
+name = "NOTEPAD.EXE"
+icon = ExtResource("7_xlwt7")
+program = ExtResource("app_notepad")
+
+[sub_resource type="Resource" id="Program_wordpad"]
+script = ExtResource("2_nepbl")
+name = "WORDPAD.EXE"
+icon = ExtResource("7_xlwt7")
+program = ExtResource("app_wordpad")
+
+[sub_resource type="Resource" id="Program_paint"]
+script = ExtResource("2_nepbl")
+name = "PBRUSH.EXE"
+icon = ExtResource("7_xlwt7")
+program = ExtResource("app_paint")
+
+[sub_resource type="Resource" id="Program_calculator"]
+script = ExtResource("2_nepbl")
+name = "CALC.EXE"
+icon = ExtResource("7_xlwt7")
+program = ExtResource("app_calculator")
+
+[sub_resource type="Resource" id="Resource_pbx1f"]
+script = ExtResource("2_nepbl")
+name = "Windows"
+icon = ExtResource("5_ko7w1")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_4f8u6"), SubResource("Resource_rx540"), SubResource("Resource_rkt6m"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator"), SubResource("Program_inbox"), SubResource("Program_volume_control"), SubResource("Program_defrag"), SubResource("Program_ms_dos_prompt")])
+
+[sub_resource type="Resource" id="Resource_wafo6"]
+script = ExtResource("2_nepbl")
+name = "RAYTRACE.EXE"
+icon = ExtResource("7_xlwt7")
+
+[sub_resource type="Resource" id="Resource_sh8oe"]
+script = ExtResource("2_nepbl")
+name = "README.TXT"
+icon = ExtResource("3_tejm6")
+
+[sub_resource type="Resource" id="Resource_x6btj"]
+script = ExtResource("2_nepbl")
+name = "Raytrace 2"
+icon = ExtResource("5_ko7w1")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_wafo6"), SubResource("Resource_sh8oe")])
+
+[sub_resource type="Resource" id="Resource_4rcf8"]
+script = ExtResource("2_nepbl")
+name = "Program Files"
+icon = ExtResource("5_ko7w1")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_x6btj")])
+
+[sub_resource type="Resource" id="Resource_2hn17"]
+script = ExtResource("2_nepbl")
+name = "castle.ray"
+icon = ExtResource("8_5wmul")
+
+[sub_resource type="Resource" id="Resource_oja5x"]
+script = ExtResource("2_nepbl")
+name = "taxes 1995.txt"
+icon = ExtResource("3_tejm6")
+
+[sub_resource type="Resource" id="Resource_ssvdj"]
+script = ExtResource("2_nepbl")
+name = "My Documents"
+icon = ExtResource("5_ko7w1")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_2hn17"), SubResource("Resource_oja5x")])
+
+[sub_resource type="Resource" id="Resource_ovstq"]
+script = ExtResource("9_5i8g7")
+from = "Kent <kent@modemlandia.se>"
+to = "prohawk@hotmail.com"
+subject = "Re: the castle"
+body = "Did the render finish overnight? Mine took 14 hours.
+
+Tip: take the side panel off. It runs cooler.
+
+/Kent"
+
+[sub_resource type="Resource" id="Resource_t3ecn"]
+script = ExtResource("9_5i8g7")
+from = "Modemlandia <support@modemlandia.se>"
+to = "prohawk@hotmail.com"
+subject = "Welcome to Modemlandia!"
+body = "Welcome! Your account is ready. Dial 08-555 123 45 to connect.
+
+You can call our support line on weekdays, 9 to 17."
+read = true
+
+[sub_resource type="Resource" id="Resource_ri5pa"]
+script = ExtResource("9_5i8g7")
+folder = 1
+from = "prohawk@hotmail.com"
+to = "Kent <kent@modemlandia.se>"
+subject = "the castle"
+body = "Starting the big render tonight. If the house burns down, you know why."
+read = true
+
+[sub_resource type="Resource" id="Resource_ch6ki"]
+script = ExtResource("9_5i8g7")
+folder = 2
+from = "Modemlandia <offers@modemlandia.se>"
+to = "prohawk@hotmail.com"
+subject = "Double your speed: 28.8k is here"
+body = "Upgrade to our new 28.8k lines for only 49 kr more a month!"
+read = true
+
+[sub_resource type="Resource" id="Resource_x8y54"]
+script = ExtResource("11_movdk")
+wallpaper = ExtResource("wallpaper")
+desktop = Array[ExtResource("2_nepbl")]([SubResource("Resource_xghb6"), SubResource("Resource_mtqkb")])
+drive_c = Array[ExtResource("2_nepbl")]([SubResource("Resource_pbx1f"), SubResource("Resource_4rcf8"), SubResource("Resource_ssvdj")])
+emails = Array[ExtResource("9_5i8g7")]([SubResource("Resource_ovstq"), SubResource("Resource_t3ecn"), SubResource("Resource_ri5pa"), SubResource("Resource_ch6ki")])
+installed_apps = PackedStringArray("Calculator", "Notepad", "Paint", "Raytrace 2")
+
+[sub_resource type="Resource" id="Resource_aan2m"]
+script = ExtResource("1_43eac")
+win95_setup = SubResource("Resource_x8y54")
+case_material = ExtResource("case_black")
+sticker = ExtResource("sticker_turbo")
+
+[resource]
+script = ExtResource("3_tc2lv")
+display_name = "Skater bro"
+person = ExtResource("1_teewq")
+conversations = Array[ExtResource("cv")]([SubResource("Conversation_arrive")])
+problem = ExtResource("2_7x3xp")
+computer = SubResource("Resource_aan2m")
