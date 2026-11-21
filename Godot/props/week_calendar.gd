@@ -25,9 +25,23 @@ const MONTHS: PackedStringArray = [
 ## The height of the weekday row, as a fraction of the paper's height.
 @export_range(0.05, 0.3) var weekday_row: float = 0.12
 
+## The font of the text, or null for the default font. Every node in the group shop_text has one.
+var font: Font:
+	set(value):
+		font = value
+		for label: Label3D in _fits:
+			_fit(label)
+
 var _crosses: Array[Node3D] = []
+# Each label, and the cap height and the width that it fits.
+var _fits: Dictionary[Label3D, Vector2] = {}
 
 @onready var _paper: MeshInstance3D = $Paper
+
+
+# In the group before it enters the tree, so SceneTree.node_added sees it there.
+func _init() -> void:
+	add_to_group(&"shop_text")
 
 
 func _ready() -> void:
@@ -96,8 +110,8 @@ func _label(text: String, cap_height: float, max_width: float, color: Color, at:
 	label.text = text
 	label.font_size = 32
 	label.outline_size = 3 # thickens the strokes so the glyphs survive the low-resolution buffer
-	var width := ThemeDB.fallback_font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, label.font_size).x + label.outline_size * 2
-	label.pixel_size = minf(cap_height / (label.font_size * 0.72), max_width / width) # 0.72: cap height per em of the default font
+	_fits[label] = Vector2(cap_height, max_width)
+	_fit(label)
 	label.outline_modulate = color
 	label.modulate = color
 	label.shaded = true
@@ -105,6 +119,15 @@ func _label(text: String, cap_height: float, max_width: float, color: Color, at:
 	label.position = at
 	add_child(label)
 	return label
+
+
+# Sizes [param label] to its cap height and width in the current font.
+func _fit(label: Label3D) -> void:
+	label.font = font
+	var fit := _fits[label]
+	var measured := font if font != null else ThemeDB.fallback_font
+	var width := measured.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, label.font_size).x + label.outline_size * 2
+	label.pixel_size = minf(fit.x / (label.font_size * 0.72), fit.y / width) # 0.72: cap height per em of the default font
 
 
 ## A pen cross from corner to corner of a box [param half_size] from its centre [param at].

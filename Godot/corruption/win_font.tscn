@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/win_font.gd" id="1_script"]
+
+[node name="WinFont" type="Node"]
+script = ExtResource("1_script")
+title = "Text in the shop turns into the Windows font"

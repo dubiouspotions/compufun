@@ -17,10 +17,22 @@ var job: Job:
 		if is_node_ready():
 			_sync()
 
+## The font of the text, or null for the default font. Every node in the group shop_text has one.
+var font: Font:
+	set(value):
+		font = value
+		if is_node_ready():
+			_sync()
+
 @onready var _issue: Label3D = %Issue
 @onready var _done: Node3D = %Done
 @onready var _pickup: Label3D = %Pickup
 @onready var _paper: MeshInstance3D = %Paper
+
+
+# In the group before it enters the tree, so SceneTree.node_added sees it there.
+func _init() -> void:
+	add_to_group(&"shop_text")
 
 
 func _ready() -> void:
@@ -33,6 +45,8 @@ func _sync() -> void:
 	_done.visible = job != null and job.fixed
 	_issue.visible = text_3d
 	_pickup.visible = text_3d
+	_issue.font = font
+	_pickup.font = font
 
 
 ## The four corners of the paper, in world space.
