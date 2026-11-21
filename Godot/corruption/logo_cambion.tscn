@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/logo_cambion.gd" id="1_sign"]
+
+[node name="LogoCambion" type="Node"]
+script = ExtResource("1_sign")
+title = "The logo reads CambIon"
