@@ -13,8 +13,12 @@ signal power_clicked(computer: JobComputer)
 @export var focus_color: Color = Color(1.0, 0.82, 0.2)
 ## The outline colour while the mouse or the dragged plug is over the computer.
 @export var hover_color: Color = Color(0.75, 0.9, 1.0)
+## How far the outline stands out from the case and everything on it, in metres.
+@export var outline_width: float = 0.006
 # Upright to lying on its left side: the tower turns about Z, its top to -X and its open side up.
 const LYING := Transform3D(Basis(Vector3.BACK, PI / 2.0), Vector3(0, 0.095, 0)) * Transform3D(Basis(), Vector3(0, -0.21, 0))
+# How far above the counter the outline's bottom rests, in metres; clear of z-fighting.
+const RESTING_LIFT: float = 0.002
 
 ## The power light's colour while the computer is on, and while it is off.
 @export var power_on_color: Color = Color(0.3, 1.0, 0.3)
@@ -58,6 +62,9 @@ var _upright_post_it: Vector3
 @onready var _post_it_anchor: Node3D = $PostItAnchor
 @onready var _open_case: OpenCase = %OpenCase
 @onready var _front: Area3D = %Front
+# Off the lying case: the panel once it leans against the back, and the mat with its pieces.
+@onready var _case_panel: Node3D = $OpenCase/Panel
+@onready var _case_mat: Node3D = $OpenCase/Mat
 
 
 func _ready() -> void:
@@ -69,7 +76,7 @@ func _ready() -> void:
 	_open_case.dress(job.customer.computer)
 	_post_it.job = job
 	_open_case.job = job
-	for node: Node3D in [_power_light, _power_hotspot, _cable_socket, _hotspot, _outline]:
+	for node: Node3D in [_power_light, _power_hotspot, _cable_socket, _hotspot]:
 		_upright[node] = node.transform
 	_upright_post_it = _post_it_anchor.position
 	Game.changed.connect(_sync_case)
@@ -129,9 +136,40 @@ func _sync_case() -> void:
 		node.transform = pose * _upright[node]
 	# Only the position turns: the square paper covers the same spot either way, and its check stays where PostItLabel expects it.
 	_post_it_anchor.position = pose * _upright_post_it
+	_fit_outline.call_deferred()  # after the open case has drawn this change
 	_hotspot.set_enabled(not (lying and working))
 	_front.input_ray_pickable = working and not lying  # swallows clicks on the front, so they don't lay it down
 	_sync_outline()
+
+
+# A box around the case and everything on it, standing or lying. Its bottom rests just above the
+# counter, which would otherwise hide the outline along the foot.
+func _fit_outline() -> void:
+	if not is_inside_tree():
+		return
+	var bounds := _visible_bounds()
+	var box := bounds.grow(outline_width)
+	var bottom := bounds.position.y + RESTING_LIFT
+	box.size.y = box.end.y - bottom
+	box.position.y = bottom
+	(_outline.mesh as BoxMesh).size = box.size
+	_outline.transform = Transform3D(Basis(), box.get_center())
+
+
+func _visible_bounds() -> AABB:
+	var loose: Array[Node3D] = [_outline, _case_mat]
+	if job.case_open:
+		loose.append(_case_panel)
+	var bounds := AABB()
+	var first := true
+	for node: Node in find_children("*", "VisualInstance3D", true, false):
+		var visual := node as VisualInstance3D
+		if not visual.is_visible_in_tree() or loose.any(func(n: Node3D) -> bool: return n == visual or n.is_ancestor_of(visual)):
+			continue
+		var box := (global_transform.affine_inverse() * visual.global_transform) * visual.get_aabb()
+		bounds = box if first else bounds.merge(box)
+		first = false
+	return bounds
 
 
 func _sync_outline() -> void:

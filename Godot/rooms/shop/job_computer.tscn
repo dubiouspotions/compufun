@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://rooms/shop/open_case.tscn" id="9_open"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_outline"]
+resource_local_to_scene = true
 size = Vector3(0.22, 0.45, 0.45)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_front"]
