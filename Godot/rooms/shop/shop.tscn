@@ -461,14 +461,16 @@ left = &"Left"
 right = &"Right"
 
 [node name="Left" type="Marker3D" parent="Views" unique_id=291976972]
-transform = Transform3D(-4.371139e-08, -0.12186935, 0.99254614, 0, 0.99254614, 0.12186935, -1, 5.3270783e-09, -4.338557e-08, 0, 1.55, 0.7)
+transform = Transform3D(0.121869326, -0.12096094, 0.98514783, 0, 0.99254614, 0.12186934, -0.99254614, -0.0148521345, 0.12096093, 0, 1.55, 0.7)
 script = ExtResource("21_sg8ra")
 right = &"Main"
+fov = 38.0
 
 [node name="Right" type="Marker3D" parent="Views" unique_id=744569983]
-transform = Transform3D(-4.371139e-08, 0.12186935, -0.99254614, 0, 0.99254614, 0.12186935, 1, 5.3270783e-09, -4.338557e-08, 0, 1.55, 0.7)
+transform = Transform3D(0.06975651, 0.19034418, -0.979236, 0, 0.98162717, 0.19080898, 0.9975641, -0.013310168, 0.06847488, 0, 1.55, 0.7)
 script = ExtResource("21_sg8ra")
 left = &"Main"
+fov = 40.0
 
 [node name="Workview" type="Marker3D" parent="Views" unique_id=901056409]
 transform = Transform3D(1, 0, 0, 0, 0.88294756, 0.46947157, 0, -0.46947157, 0.88294756, -0.55, 1.5, -0.48)
