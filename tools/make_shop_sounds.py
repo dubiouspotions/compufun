@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes the shop's door bell, phone, keystroke, mouse button and modem sounds as 22050 Hz mono WAVs.
+"""Synthesizes the shop's door bell, door slam, phone, keystroke, mouse button and modem sounds as 22050 Hz mono WAVs.
 Usage: make_shop_sounds.py Godot/sounds"""
 import math
 import random
@@ -146,6 +146,22 @@ def modem_dialup():
     return highpass(lowpass(out, 3400), 300)
 
 
+def door_slam():
+    """A wooden shop door swung shut: the latch clacks, the heavy panel thumps into the frame, and
+    the glass and frame rattle briefly."""
+    random.seed(7)
+    out = silence(0.6)
+    mix(out, highpass(noise(0.015, 0.003), 2000), 0.0, 0.5)  # the latch
+    body = [math.exp(-i / RATE / 0.07) * (math.sin(2 * math.pi * 85 * i / RATE) + 0.5 * math.sin(2 * math.pi * 140 * i / RATE))
+            for i in range(int(0.4 * RATE))]
+    mix(out, body, 0.008, 1.0)
+    mix(out, lowpass(noise(0.25, 0.04), 900), 0.008, 0.9)  # the panel's wooden thud
+    rattle = [random.uniform(-1, 1) * math.exp(-i / RATE / 0.05) * (0.6 + 0.4 * math.sin(2 * math.pi * 31 * i / RATE))
+              for i in range(int(0.3 * RATE))]
+    mix(out, highpass(lowpass(rattle, 4000), 1200), 0.02, 0.25)
+    return out
+
+
 def write(path, samples):
     peak = max(abs(s) for s in samples)
     gain = 0.7 / peak
@@ -170,3 +186,4 @@ for take in range(1, 4):
     write(sys.argv[1] + "/mouse_down_%d.wav" % take, mouse_button(10 + take, False))
     write(sys.argv[1] + "/mouse_up_%d.wav" % take, mouse_button(20 + take, True))
 write(sys.argv[1] + "/modem_dialup.wav", modem_dialup())
+write(sys.argv[1] + "/door_slam.wav", door_slam())
