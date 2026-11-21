@@ -57,7 +57,22 @@ func _check_rest_in_main_view() -> void:
 	check("the Main view clicks the bench screen", _hit_from(shop, eye, screen.global_position), screen)
 	var computer: Node = shop.find_child("Slot0", true, false).find_child("Hotspot", true, false)
 	check("the Main view clicks the computer in slot 0", _hit_from(shop, eye, computer.global_position), computer)
+	await _check_drop_target_in_workview(shop)
 	shop.queue_free()
+
+
+# In the Workview, the computer in focus takes the dragged plug, standing or lying, though its
+# hotspot takes no clicks there.
+func _check_drop_target_in_workview(shop: Node3D) -> void:
+	var camera: Camera3D = shop.get_node("%Camera")
+	var job_slots: Node3D = shop.find_child("JobSlots", true, false)
+	for lying: bool in [false, true]:
+		check("restore a job in slot 0 in the Workview, lying %s" % lying, game.restore({"jobs": [{"customer": "res://customers/skater_bro.tres",
+			"problem": "dust_overheat", "slot": 0, "lying": lying}], "connected_slot": -1, "focus_slot": 0, "view": "Workview"}), "")
+		await create_timer(1.0).timeout  # the camera's turn, and the case tipping over
+		var computer: Area3D = shop.find_child("Slot0", true, false).find_child("Hotspot", true, false)
+		var dir := (computer.global_position - camera.global_position).normalized()
+		check("the Workview's computer in focus, lying %s, is where the plug drops" % lying, job_slots.job_at(camera.global_position, dir), game.jobs[0])
 
 
 func _hit_from_above(bench: Node3D, point: Vector3) -> Object:

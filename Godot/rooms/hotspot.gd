@@ -47,8 +47,11 @@ func set_enabled(on: bool) -> void:
 ## The distance in metres along the ray from [param from] along the unit vector [param dir] (world
 ## space) to where it enters the clickable box, or -1.0 when it misses or the hotspot is disabled.
 func ray_distance(from: Vector3, dir: Vector3) -> float:
-	if not input_ray_pickable:
-		return -1.0
+	return box_ray_distance(from, dir) if input_ray_pickable else -1.0
+
+
+## Like [method ray_distance], but it also measures a disabled hotspot's box.
+func box_ray_distance(from: Vector3, dir: Vector3) -> float:
 	var to_box := global_transform.affine_inverse()
 	var hit: Variant = AABB(-size * 0.5, size).intersects_ray(to_box * from, to_box.basis * dir)
 	return from.distance_to(global_transform * (hit as Vector3)) if hit != null else -1.0

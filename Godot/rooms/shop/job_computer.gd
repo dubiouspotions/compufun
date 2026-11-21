@@ -107,9 +107,10 @@ func cable_socket() -> Node3D:
 
 
 ## How far along the mouse ray from [param from] along [param dir] (world space) the computer is, in
-## metres, or -1.0 when the ray misses it (see [method Hotspot.ray_distance]).
+## metres, or -1.0 when the ray misses it (see [method Hotspot.ray_distance]). It measures the
+## computer in focus in the Workview too, where its hotspot takes no clicks.
 func ray_distance(from: Vector3, dir: Vector3) -> float:
-	return _hotspot.ray_distance(from, dir)
+	return _hotspot.box_ray_distance(from, dir)
 
 
 ## Stops taking clicks, before the computer leaves the counter.
