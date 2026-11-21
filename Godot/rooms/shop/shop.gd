@@ -40,6 +40,7 @@ func _ready() -> void:
 		if hotspot != null:
 			hotspot.clicked.connect(_on_hotspot_clicked)
 	_job_slots.job_clicked.connect(_on_job_clicked)
+	_job_slots.power_clicked.connect(func(job: Job) -> void: Game.set_powered(job, not job.powered))
 	_bench.view_requested.connect(view_requested.emit)
 	_bench.plug_grabbed.connect(_on_plug_grabbed)
 	Game.changed.connect(_sync)

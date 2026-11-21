@@ -5,6 +5,8 @@ extends Node3D
 
 ## The player clicked the computer of [param job].
 signal job_clicked(job: Job)
+## The player clicked the power button on the computer of [param job].
+signal power_clicked(job: Job)
 
 ## The scene of one job's computer.
 @export var computer_scene: PackedScene
@@ -15,7 +17,8 @@ var _computers: Dictionary[Job, JobComputer] = {}
 
 
 ## Converges on [param jobs]: a computer appears for each new job and leaves with each job that
-## left. The computer of [param outlined] (null for none) shows the focus outline.
+## left. The computer of [param outlined] (null for none) shows the focus outline, and each power
+## light shows its job's power.
 func show_jobs(jobs: Array[Job], outlined: Job) -> void:
 	for job: Job in _computers.keys():
 		if job not in jobs:
@@ -29,6 +32,7 @@ func show_jobs(jobs: Array[Job], outlined: Job) -> void:
 				continue
 			_computers[job] = computer
 		_computers[job].focused = job == outlined
+		_computers[job].powered = job.powered
 
 
 ## Where the Workview camera looks at the computer of [param job] from, in world space. Fails with
@@ -81,5 +85,6 @@ func _add_computer(job: Job) -> JobComputer:
 	var computer := computer_scene.instantiate() as JobComputer
 	computer.job = job
 	computer.clicked.connect(func(c: JobComputer) -> void: job_clicked.emit(c.job))
+	computer.power_clicked.connect(func(c: JobComputer) -> void: power_clicked.emit(c.job))
 	slot.add_child(computer)
 	return computer

@@ -2,6 +2,7 @@
 
 [ext_resource type="Material" path="res://materials/beige_plastic.tres" id="1_gdnc6"]
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="2_7echm"]
+[ext_resource type="Material" path="res://materials/power_button.tres" id="3_power"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_ub7ej"]
 size = Vector3(0.19, 0.42, 0.42)
@@ -16,7 +17,7 @@ size = Vector3(0.15, 0.035, 0.006)
 size = Vector3(0.1, 0.01, 0.006)
 
 [sub_resource type="BoxMesh" id="BoxMesh_87loy"]
-size = Vector3(0.03, 0.03, 0.008)
+size = Vector3(0.045, 0.045, 0.016)
 
 [node name="PcTower" type="Node3D" unique_id=1682646323]
 
@@ -41,6 +42,6 @@ material_override = ExtResource("2_7echm")
 mesh = SubResource("BoxMesh_uux2d")
 
 [node name="Power" type="MeshInstance3D" parent="." unique_id=1464632202]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0.212)
-material_override = ExtResource("2_7echm")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, 0.214)
+material_override = ExtResource("3_power")
 mesh = SubResource("BoxMesh_87loy")
