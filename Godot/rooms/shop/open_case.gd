@@ -248,7 +248,7 @@ func _sync_highlights() -> void:
 		var spot_hotspot := _spot(i).get_node("Hotspot") as Hotspot
 		if spot_hotspot.input_ray_pickable:
 			_highlight(_mat_shown[i], spot_hotspot)
-	if _mat_surface.input_ray_pickable and Game.hand != null:
+	if _mat_surface == _hovered and Game.hand != null:  # the mat is wide: a ghost only where the player points
 		_add_ghost(Game.hand.part.model, _spot(job.mat.size()), _mat_surface)
 	if _panel_hotspot.input_ray_pickable:
 		_highlight(_panel, _panel_hotspot)

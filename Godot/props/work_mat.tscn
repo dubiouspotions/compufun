@@ -8,12 +8,12 @@ shader = ExtResource("1_psx")
 shader_parameter/albedo_color = Color(0.16, 0.3, 0.28, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_mat"]
-size = Vector3(1.8, 0.012, 0.55)
+size = Vector3(1.8, 0.012, 0.6)
 subdivide_width = 2
 
 [node name="WorkMat" type="Node3D"]
 
 [node name="Mat" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.006, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.006, 0.025)
 material_override = SubResource("ShaderMaterial_mat")
 mesh = SubResource("BoxMesh_mat")

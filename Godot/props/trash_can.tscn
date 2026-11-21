@@ -60,3 +60,4 @@ mesh = SubResource("CylinderMesh_outline")
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 0)
 size = Vector3(0.3, 0.36, 0.3)
+takes_drop = true
