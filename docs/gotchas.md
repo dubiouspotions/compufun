@@ -63,6 +63,13 @@ imported. Set the cursor in code with `Input.set_custom_mouse_cursor` once the g
 the cache doesn't know. Use path-only `ext_resource` lines in scenes you write by hand.
 — 2026-10
 
+**"Can't change orientation of VBoxContainer", or a container keeps a stale layout after
+switching orientation.** HBox/VBoxContainer and HFlow/VFlowContainer reject any set of
+`vertical`, even to the value they have; use a BoxContainer or FlowContainer to switch at run
+time. Setting `vertical` sorts at once, with the children's old sizes. If a child's size changes
+later in the same frame and ends where it began the frame, no `minimum_size_changed` fires and
+nothing sorts again: call `queue_sort()` after the change (`IconView`, `FileIcon`). — 2026-11
+
 ## Web export
 
 **Sound stutters or the first play of a track hangs for a second.** The web build has no

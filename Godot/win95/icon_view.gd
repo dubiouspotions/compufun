@@ -2,10 +2,11 @@ class_name IconView
 extends FlowContainer
 ## A grid of FileIcons that the player selects as in Win95: click one, Ctrl-click (Cmd on a Mac)
 ## to toggle one, Shift-click for a range, or drag a rectangle from empty space; Ctrl-drag toggles.
-## Use a VFlowContainer for the desktop (column by column) and an HFlowContainer for folder windows
-## (row by row). Right-click asks for a context menu, also after a rectangle dragged with the right
+## Use a VFlowContainer for the desktop (column by column) and a FlowContainer for folder windows
+## (row by row, or column by column in List). Right-click asks for a context menu, also after a rectangle dragged with the right
 ## button; Delete, F2, Enter and Shift+F10 work as in Win95. As in Win95, the selection and the
 ## focus rectangle show only while the view's window, or for the desktop's view the desktop, is active.
+## [member folder_view] switches a folder window between Large Icons, Small Icons, List and Details.
 
 ## The player double-clicked an icon.
 signal item_opened(item: FileIcon)
@@ -16,12 +17,35 @@ signal items_changed
 signal context_requested(item: FileIcon, at: Vector2)
 ## The player pressed Delete with [param items] selected.
 signal delete_requested(items: Array[FileIcon])
+## [member folder_view] changed.
+signal folder_view_changed
+
+## The views of Win95's View menu, in its order.
+enum FolderView { LARGE_ICONS, SMALL_ICONS, LIST, DETAILS }
 
 const _FILE_ICON := preload("res://win95/file_icon.tscn")
 const _BAND_SHADER := preload("res://win95/drag_outline.gdshader")
 
+## Small Icons and List give every icon a cell this wide, as Win95 does at its stock font size.
+const _CELL_WIDTH := 112.0
+
 ## Draws the names white, for icons on the desktop wallpaper.
 @export var on_desktop := false
+## In a FlowContainer, Large Icons and Small Icons fill rows from left to right; List fills
+## columns from top to bottom; Details puts one icon per row, with [member columns]. A
+## VFlowContainer fills columns in every view and an HFlowContainer rows.
+@export var folder_view := FolderView.LARGE_ICONS:
+	set(value):
+		if value == folder_view:
+			return
+		folder_view = value
+		_sync_layout()
+		folder_view_changed.emit()
+## The Details columns, Name first; each FileIcon's details fill the others.
+var columns: Array[ReportList.Column] = []:
+	set(value):
+		columns = value
+		_sync_layout()
 
 ## The icon that Shift-click ranges from and that has the focus rectangle: the last one clicked
 ## without Shift.
@@ -34,11 +58,13 @@ var _band: ColorRect
 var _band_start := Vector2.ZERO
 var _banding := false
 var _band_button := MOUSE_BUTTON_NONE
+var _flows_down := false
 ## The selection when a Ctrl-drag started; the rectangle toggles icons against it.
 var _before_band: Array[FileIcon] = []
 
 
 func _ready() -> void:
+	_flows_down = vertical
 	for child in get_children():
 		_wire(child)
 	child_entered_tree.connect(func(child: Node) -> void:
@@ -48,6 +74,7 @@ func _ready() -> void:
 		items_changed.emit())
 	child_exiting_tree.connect(func(_child: Node) -> void: items_changed.emit.call_deferred())
 	items_changed.connect(_sync_focus)
+	_sync_layout()
 	var material := ShaderMaterial.new()
 	material.shader = _BAND_SHADER
 	material.set_shader_parameter("thickness", 1.0)
@@ -163,11 +190,32 @@ func _gui_input(event: InputEvent) -> void:
 			item.selected = _before_band.has(item) != rect.intersects(item.hit_rect())
 
 
+func _sync_layout() -> void:
+	if not is_node_ready():
+		return
+	for item in _items():
+		_lay_out(item)
+	var flows_down := _flows_down or folder_view == FolderView.LIST
+	if vertical != flows_down:
+		vertical = flows_down  # HFlowContainer and VFlowContainer error on any set, even to their own value
+	queue_sort()  # an icon's size can end the frame where it began, which sorts nothing
+
+
+func _lay_out(item: FileIcon) -> void:
+	item.compact = folder_view != FolderView.LARGE_ICONS
+	item.row_width = _CELL_WIDTH
+	var shown: Array[ReportList.Column] = []
+	if folder_view == FolderView.DETAILS:
+		shown = columns  # a row is wider than half the screen, so each wraps
+	item.columns = shown
+
+
 func _wire(child: Node) -> void:
 	var item := child as FileIcon
 	if item == null:
 		return
 	item.on_desktop = on_desktop
+	_lay_out(item)
 	item.clicked.connect(_on_clicked.bind(item))
 	item.opened.connect(func() -> void:
 		_select(item)
@@ -268,8 +316,10 @@ func _items() -> Array[FileIcon]:
 
 # In a folder window the scroll area clips the view, so the rectangle stops at its edge.
 func _visible_rect() -> Rect2:
-	var scroll := get_parent() as ScrollContainer
-	return scroll.get_global_rect() if scroll else get_global_rect()
+	var node := get_parent()
+	while node is Container and not node is ScrollContainer:
+		node = node.get_parent()
+	return (node as Control).get_global_rect() if node is ScrollContainer else get_global_rect()
 
 
 func _open_window(item: FileIcon) -> void:

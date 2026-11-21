@@ -222,6 +222,28 @@ func location_of(file: Win95File) -> String:
 	return path if path != null else "C:\\"
 
 
+## Where [param file] in the Recycle Bin was deleted from, as its Original Location column shows
+## it: "C:\WINDOWS\Desktop", "C:\" or "C:\WINDOWS". The setup's own bin files came from the desktop.
+func original_location(file: Win95File) -> String:
+	var from: Array = setup.deleted_from.get(file, setup.desktop)
+	if is_same(from, setup.desktop):
+		return "C:\\WINDOWS\\Desktop"
+	var folder := _folder_holding(setup.drive_c, from)
+	return path_of(folder) if folder != null else "C:\\"
+
+
+# The folder whose children are [param children], by identity: two empty folders are equal Arrays.
+func _folder_holding(container: Array, children: Array) -> Win95File:
+	for other: Win95File in container:
+		if other.is_folder:
+			if is_same(other.children, children):
+				return other
+			var found := _folder_holding(other.children, children)
+			if found != null:
+				return found
+	return null
+
+
 func _folder_path(container: Array, file: Win95File, path: String) -> Variant:
 	if container.has(file):
 		return path + "\\" if path == "C:" else path

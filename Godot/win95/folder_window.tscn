@@ -74,11 +74,30 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_type_variation = &"FieldPanel"
 
-[node name="Scroll" type="ScrollContainer" parent="VBox/Field"]
+[node name="Body" type="Control" parent="VBox/Field"]
 layout_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="VBox/Field/Body"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 horizontal_scroll_mode = 0
 
-[node name="Items" type="HFlowContainer" parent="VBox/Field/Scroll"]
+[node name="ItemsMargin" type="MarginContainer" parent="VBox/Field/Body/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="Items" type="FlowContainer" parent="VBox/Field/Body/Scroll/ItemsMargin"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -87,30 +106,52 @@ theme_override_constants/h_separation = 0
 theme_override_constants/v_separation = 0
 script = ExtResource("icon_view")
 
-[node name="Floppy" parent="VBox/Field/Scroll/Items" instance=ExtResource("file_icon")]
+[node name="Floppy" parent="VBox/Field/Body/Scroll/ItemsMargin/Items" instance=ExtResource("file_icon")]
 layout_mode = 2
 text = "3½ Floppy (A:)"
 icon = ExtResource("floppy")
 
-[node name="HardDisk" parent="VBox/Field/Scroll/Items" instance=ExtResource("file_icon")]
+[node name="HardDisk" parent="VBox/Field/Body/Scroll/ItemsMargin/Items" instance=ExtResource("file_icon")]
 layout_mode = 2
 text = "(C:)"
 icon = ExtResource("hard")
 
-[node name="CdRom" parent="VBox/Field/Scroll/Items" instance=ExtResource("file_icon")]
+[node name="CdRom" parent="VBox/Field/Body/Scroll/ItemsMargin/Items" instance=ExtResource("file_icon")]
 layout_mode = 2
 text = "(D:)"
 icon = ExtResource("cdrom")
 
-[node name="ControlPanel" parent="VBox/Field/Scroll/Items" instance=ExtResource("file_icon")]
+[node name="ControlPanel" parent="VBox/Field/Body/Scroll/ItemsMargin/Items" instance=ExtResource("file_icon")]
 layout_mode = 2
 text = "Control Panel"
 icon = ExtResource("control_panel")
 
-[node name="Printers" parent="VBox/Field/Scroll/Items" instance=ExtResource("file_icon")]
+[node name="Printers" parent="VBox/Field/Body/Scroll/ItemsMargin/Items" instance=ExtResource("file_icon")]
 layout_mode = 2
 text = "Printers"
 icon = ExtResource("printers")
+
+[node name="Header" type="Control" parent="VBox/Field/Body"]
+unique_name_in_owner = true
+visible = false
+clip_contents = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 17.0
+grow_horizontal = 2
+
+[node name="Corner" type="Control" parent="VBox/Field/Body"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 0
 
 [node name="StatusGap" type="Control" parent="VBox"]
 custom_minimum_size = Vector2(0, 2)
