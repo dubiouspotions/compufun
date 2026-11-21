@@ -16,8 +16,19 @@ Set up a new machine with [working-together.md](working-together.md).
 "$GODOT" --headless --import
 ```
 
-Imports new assets and parses every script. Any `ERROR` or `SCRIPT ERROR` line that your change
-introduced must be gone before you commit. Then run the scene you changed in the editor.
+Imports new assets. Any `ERROR` or `SCRIPT ERROR` line that your change introduced must be gone
+before you commit. It does **not** report every parse error: a script with a `match` inside a
+lambda, or a signal that shadows a built-in one, imported clean and only failed when a scene loaded
+it. Parse-check the scripts you changed:
+
+```sh
+"$GODOT" --headless --check-only --script res://path/to/changed.gd
+```
+
+Then run the scene you changed in the editor.
+
+A headless `--script` that extends `SceneTree` can drive a scene for a quick test. Add the scene in
+`_initialize()` and `await process_frame` before you touch it: until then its `_ready()` has not run.
 
 There is no test framework yet.
 
