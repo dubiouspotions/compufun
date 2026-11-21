@@ -43,11 +43,11 @@ material_override = ExtResource("5_wood")
 mesh = SubResource("BoxMesh_back")
 
 [node name="StringL" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.682, -0.731, 0, 0.731, 0.682, 0, 0, 0, 1, -0.15, -0.14, 0)
+transform = Transform3D(0.682, 0.731, 0, -0.731, 0.682, 0, 0, 0, 1, -0.15, -0.14, 0)
 material_override = ExtResource("6_string")
 mesh = SubResource("BoxMesh_string")
 
 [node name="StringR" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.682, 0.731, 0, -0.731, 0.682, 0, 0, 0, 1, 0.15, -0.14, 0)
+transform = Transform3D(0.682, -0.731, 0, 0.731, 0.682, 0, 0, 0, 1, 0.15, -0.14, 0)
 material_override = ExtResource("6_string")
 mesh = SubResource("BoxMesh_string")
