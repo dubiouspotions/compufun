@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="5_54tg8"]
 [ext_resource type="Material" path="res://materials/vga_blue_plastic.tres" id="6_agwkd"]
 [ext_resource type="PackedScene" path="res://props/post_it_3d.tscn" id="post_it"]
+[ext_resource type="Material" path="res://materials/power_button.tres" id="20_power"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_4ktm6"]
 size = Vector3(0.42, 0.01, 0.42)
@@ -63,6 +64,20 @@ albedo_color = Color(0.72, 0.73, 0.76, 1)
 transparency = 1
 albedo_color = Color(0.2, 0.36, 0.82, 1)
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_power"]
+top_radius = 0.016
+bottom_radius = 0.016
+height = 0.01
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ring"]
+top_radius = 0.021
+bottom_radius = 0.021
+height = 0.004
+radial_segments = 10
+rings = 1
+
 [node name="OpenCase" type="Node3D" unique_id=1055260190]
 script = ExtResource("1_fm6p7")
 
@@ -74,7 +89,7 @@ material_override = ExtResource("2_k8km5")
 mesh = SubResource("BoxMesh_4ktm6")
 
 [node name="Bezel" type="MeshInstance3D" parent="Shell" unique_id=1373349843]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.095, 0.21)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.095, 0.2)
 material_override = ExtResource("3_sqjkr")
 mesh = SubResource("BoxMesh_k5r81")
 
@@ -98,19 +113,29 @@ material_override = ExtResource("2_k8km5")
 mesh = SubResource("BoxMesh_tndnr")
 
 [node name="Bay1" type="MeshInstance3D" parent="Shell" unique_id=1763547697]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.095, 0.222)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.095, 0.211)
 material_override = ExtResource("4_7jy72")
 mesh = SubResource("BoxMesh_h1xm2")
 
 [node name="Bay2" type="MeshInstance3D" parent="Shell" unique_id=1080913750]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.095, 0.222)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.095, 0.211)
 material_override = ExtResource("4_7jy72")
 mesh = SubResource("BoxMesh_0mlqe")
 
 [node name="Floppy" type="MeshInstance3D" parent="Shell" unique_id=1395854244]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.04, 0.095, 0.222)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.04, 0.095, 0.211)
 material_override = ExtResource("4_7jy72")
 mesh = SubResource("BoxMesh_kkh4s")
+
+[node name="PowerButton" type="MeshInstance3D" parent="Shell"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.08, 0.095, 0.215)
+material_override = ExtResource("20_power")
+mesh = SubResource("CylinderMesh_power")
+
+[node name="PowerRing" type="MeshInstance3D" parent="Shell"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.08, 0.095, 0.2115)
+material_override = ExtResource("4_7jy72")
+mesh = SubResource("CylinderMesh_ring")
 
 [node name="PowerSupply" type="MeshInstance3D" parent="Shell" unique_id=1614584840]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 0.075, -0.12)
