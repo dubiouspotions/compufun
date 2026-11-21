@@ -1,0 +1,689 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://win95/property_sheet.tscn" id="r1"]
+[ext_resource type="PackedScene" path="res://win95/applets/display_monitor.tscn" id="r2"]
+[ext_resource type="Script" path="res://win95/group_box.gd" id="r3"]
+[ext_resource type="Script" path="res://win95/applets/display_background.gd" id="r4"]
+[ext_resource type="Script" path="res://win95/applets/display_appearance.gd" id="r5"]
+[ext_resource type="Script" path="res://win95/applets/display_scheme_preview.gd" id="r6"]
+[ext_resource type="Script" path="res://win95/theme/win95palette.gd" id="r7"]
+[ext_resource type="Texture2D" path="res://win95/theme/atlas.png" id="r8"]
+[ext_resource type="Texture2D" path="res://win95/applets/display_energy_star.png" id="r9"]
+[ext_resource type="Texture2D" path="res://win95/applets/display_settings_screen.png" id="r10"]
+[ext_resource type="Texture2D" path="res://win95/applets/display_color_strip.png" id="r11"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/win95-default.png" id="r12"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/black_thatch.png" id="r13"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/blue_rivets.png" id="r14"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/bubbles.png" id="r15"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/carved_stone.png" id="r16"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/circles.png" id="r17"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/houndstooth.png" id="r18"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/pinstripe.png" id="r19"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/setup.png" id="r20"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/straw_mat.png" id="r21"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/tiles.png" id="r22"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/triangles.png" id="r23"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/waves.png" id="r24"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/brick.tres" id="r25"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/desert.tres" id="r26"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/eggplant.tres" id="r27"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/high_contrast_black.tres" id="r28"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/high_contrast_black_extra_large.tres" id="r29"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/high_contrast_black_large.tres" id="r30"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/high_contrast_white.tres" id="r31"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/high_contrast_white_extra_large.tres" id="r32"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/high_contrast_white_large.tres" id="r33"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/lilac.tres" id="r34"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/lilac_large.tres" id="r35"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/maple.tres" id="r36"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/marine_high_color.tres" id="r37"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/plum_high_color.tres" id="r38"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/pumpkin_large.tres" id="r39"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/rainy_day.tres" id="r40"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/red_white_and_blue_vga.tres" id="r41"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/rose.tres" id="r42"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/rose_large.tres" id="r43"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/slate.tres" id="r44"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/spruce.tres" id="r45"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/storm_vga.tres" id="r46"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/teal_vga.tres" id="r47"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/wheat.tres" id="r48"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/windows_standard.tres" id="r49"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/windows_standard_extra_large.tres" id="r50"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/windows_standard_large.tres" id="r51"]
+
+[sub_resource type="AtlasTexture" id="arrow"]
+atlas = ExtResource("r8")
+region = Rect2(82, 20, 7, 4)
+
+[sub_resource type="ButtonGroup" id="display_mode"]
+
+[sub_resource type="Theme" id="disabled_caption"]
+Label/colors/font_color = Color(0.502, 0.502, 0.502, 1)
+
+[sub_resource type="Theme" id="blank_field"]
+LineEdit/colors/font_uneditable_color = Color(0, 0, 0, 0)
+
+[node name="DisplayProperties" instance=ExtResource("r1")]
+
+[node name="TitleBar" parent="VBox"]
+title = "Display Properties"
+
+[node name="Background" type="Control" parent="VBox/Body/Column/Tabs"]
+custom_minimum_size = Vector2(382, 356)
+layout_mode = 2
+script = ExtResource("r4")
+stock_wallpapers = Dictionary[String, Texture2D]({
+"Black Thatch": ExtResource("r13"),
+"Blue Rivets": ExtResource("r14"),
+"Bubbles": ExtResource("r15"),
+"Carved Stone": ExtResource("r16"),
+"Circles": ExtResource("r17"),
+"Houndstooth": ExtResource("r18"),
+"Pinstripe": ExtResource("r19"),
+"Setup": ExtResource("r20"),
+"Straw Mat": ExtResource("r21"),
+"Tiles": ExtResource("r22"),
+"Triangles": ExtResource("r23"),
+"Waves": ExtResource("r24")
+})
+plain_desktop = ExtResource("r12")
+patterns = PackedStringArray("(None)", "Bricks", "Buttons", "Cargo Net", "Circuits", "Cobblestones", "Colosseum", "Daisies", "Dizzy", "Field Effect", "Key", "Live Wire", "Plaid", "Rounder", "Scales", "Stone", "Thatches", "Tile", "Triangles", "Waffle's Revenge")
+
+[node name="Monitor" parent="VBox/Body/Column/Tabs/Background" instance=ExtResource("r2")]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 97.0
+offset_top = 7.0
+offset_right = 287.0
+offset_bottom = 180.0
+
+[node name="Pattern" type="Control" parent="VBox/Body/Column/Tabs/Background"]
+layout_mode = 1
+offset_left = 13.0
+offset_top = 198.0
+offset_right = 186.0
+offset_bottom = 342.0
+script = ExtResource("r3")
+text = "Pattern"
+
+[node name="Patterns" type="ItemList" parent="VBox/Body/Column/Tabs/Background"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 22.0
+offset_top = 211.0
+offset_right = 178.0
+offset_bottom = 280.0
+mouse_filter = 2
+focus_mode = 0
+
+[node name="EditPattern" type="Button" parent="VBox/Body/Column/Tabs/Background"]
+layout_mode = 1
+offset_left = 85.0
+offset_top = 284.0
+offset_right = 177.0
+offset_bottom = 307.0
+text = "Edit Pattern..."
+disabled = true
+
+[node name="Wallpaper" type="Control" parent="VBox/Body/Column/Tabs/Background"]
+layout_mode = 1
+offset_left = 196.0
+offset_top = 198.0
+offset_right = 369.0
+offset_bottom = 342.0
+script = ExtResource("r3")
+text = "Wallpaper"
+
+[node name="Wallpapers" type="ItemList" parent="VBox/Body/Column/Tabs/Background"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 205.0
+offset_top = 211.0
+offset_right = 361.0
+offset_bottom = 280.0
+
+[node name="Browse" type="Button" parent="VBox/Body/Column/Tabs/Background"]
+layout_mode = 1
+offset_left = 268.0
+offset_top = 284.0
+offset_right = 360.0
+offset_bottom = 307.0
+text = "Browse..."
+disabled = true
+
+[node name="DisplayLabel" type="Label" parent="VBox/Body/Column/Tabs/Background"]
+layout_mode = 1
+offset_left = 205.0
+offset_top = 319.0
+offset_right = 205.0
+offset_bottom = 332.0
+text = "Display:"
+theme_type_variation = &"DisabledLabel"
+
+[node name="Tile" type="CheckBox" parent="VBox/Body/Column/Tabs/Background"]
+layout_mode = 1
+offset_left = 258.0
+offset_top = 318.0
+offset_right = 298.0
+offset_bottom = 333.0
+text = "Tile"
+disabled = true
+unique_name_in_owner = true
+button_group = SubResource("display_mode")
+
+[node name="Center" type="CheckBox" parent="VBox/Body/Column/Tabs/Background"]
+layout_mode = 1
+offset_left = 311.0
+offset_top = 318.0
+offset_right = 365.0
+offset_bottom = 333.0
+text = "Center"
+disabled = true
+unique_name_in_owner = true
+button_group = SubResource("display_mode")
+button_pressed = true
+
+[node name="Screen Saver" type="Control" parent="VBox/Body/Column/Tabs"]
+custom_minimum_size = Vector2(382, 356)
+layout_mode = 2
+
+[node name="Monitor" parent="VBox/Body/Column/Tabs/Screen Saver" instance=ExtResource("r2")]
+layout_mode = 1
+offset_left = 97.0
+offset_top = 7.0
+offset_right = 287.0
+offset_bottom = 180.0
+
+[node name="ScreenSaverGroup" type="Control" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 13.0
+offset_top = 198.0
+offset_right = 370.0
+offset_bottom = 270.0
+script = ExtResource("r3")
+text = "Screen Saver"
+
+[node name="Saver" type="OptionButton" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 22.0
+offset_top = 211.0
+offset_right = 194.0
+offset_bottom = 231.0
+disabled = true
+item_count = 1
+popup/item_0/text = "(None)"
+popup/item_0/id = 0
+selected = 0
+
+[node name="Settings" type="Button" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 200.0
+offset_top = 208.0
+offset_right = 275.0
+offset_bottom = 231.0
+text = "Settings..."
+disabled = true
+
+[node name="Preview" type="Button" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 281.0
+offset_top = 208.0
+offset_right = 356.0
+offset_bottom = 231.0
+text = "Preview"
+disabled = true
+
+[node name="Password" type="CheckBox" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 22.0
+offset_top = 241.0
+offset_right = 142.0
+offset_bottom = 256.0
+text = "Password protected"
+disabled = true
+
+[node name="Change" type="Button" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 146.0
+offset_top = 237.0
+offset_right = 221.0
+offset_bottom = 260.0
+text = "Change..."
+disabled = true
+
+[node name="WaitLabel" type="Label" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 233.0
+offset_top = 242.0
+offset_right = 233.0
+offset_bottom = 255.0
+text = "Wait:"
+theme_type_variation = &"DisabledLabel"
+
+[node name="Wait" type="SpinBox" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 263.0
+offset_top = 239.0
+offset_right = 307.0
+offset_bottom = 259.0
+min_value = 1.0
+value = 1.0
+editable = false
+
+[node name="WaitMinutes" type="Label" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 313.0
+offset_top = 242.0
+offset_right = 313.0
+offset_bottom = 255.0
+text = "minutes"
+theme_type_variation = &"DisabledLabel"
+
+[node name="EnergyGroup" type="Control" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 13.0
+offset_top = 279.0
+offset_right = 370.0
+offset_bottom = 343.0
+script = ExtResource("r3")
+text = "Energy saving features of monitor"
+theme = SubResource("disabled_caption")
+
+[node name="EnergyStar" type="TextureRect" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 40.0
+offset_top = 290.0
+offset_right = 116.0
+offset_bottom = 337.0
+texture = ExtResource("r9")
+stretch_mode = 2
+
+[node name="Standby" type="CheckBox" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 142.0
+offset_top = 291.0
+offset_right = 260.0
+offset_bottom = 306.0
+text = "Low-power standby"
+disabled = true
+
+[node name="StandbyMinutes" type="SpinBox" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 263.0
+offset_top = 289.0
+offset_right = 307.0
+offset_bottom = 309.0
+min_value = 1.0
+value = 1.0
+editable = false
+
+[node name="StandbyLabel" type="Label" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 314.0
+offset_top = 293.0
+offset_right = 314.0
+offset_bottom = 306.0
+text = "minutes"
+
+[node name="ShutOff" type="CheckBox" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 142.0
+offset_top = 317.0
+offset_right = 260.0
+offset_bottom = 332.0
+text = "Shut off monitor"
+disabled = true
+
+[node name="ShutOffMinutes" type="SpinBox" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 263.0
+offset_top = 315.0
+offset_right = 307.0
+offset_bottom = 335.0
+min_value = 1.0
+value = 1.0
+editable = false
+
+[node name="ShutOffLabel" type="Label" parent="VBox/Body/Column/Tabs/Screen Saver"]
+layout_mode = 1
+offset_left = 314.0
+offset_top = 319.0
+offset_right = 314.0
+offset_bottom = 332.0
+text = "minutes"
+
+[node name="Appearance" type="Control" parent="VBox/Body/Column/Tabs"]
+custom_minimum_size = Vector2(382, 356)
+layout_mode = 2
+script = ExtResource("r5")
+schemes = Array[ExtResource("r7")]([ExtResource("r25"), ExtResource("r26"), ExtResource("r27"), ExtResource("r28"), ExtResource("r29"), ExtResource("r30"), ExtResource("r31"), ExtResource("r32"), ExtResource("r33"), ExtResource("r34"), ExtResource("r35"), ExtResource("r36"), ExtResource("r37"), ExtResource("r38"), ExtResource("r39"), ExtResource("r40"), ExtResource("r41"), ExtResource("r42"), ExtResource("r43"), ExtResource("r44"), ExtResource("r45"), ExtResource("r46"), ExtResource("r47"), ExtResource("r48"), ExtResource("r49"), ExtResource("r50"), ExtResource("r51")])
+
+[node name="Preview" type="Control" parent="VBox/Body/Column/Tabs/Appearance"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 14.0
+offset_top = 9.0
+offset_right = 369.0
+offset_bottom = 202.0
+script = ExtResource("r6")
+
+[node name="SchemeLabel" type="Label" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 14.0
+offset_top = 213.0
+offset_right = 14.0
+offset_bottom = 226.0
+text = "Scheme:"
+
+[node name="Scheme" type="OptionButton" parent="VBox/Body/Column/Tabs/Appearance"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 14.0
+offset_top = 228.0
+offset_right = 209.0
+offset_bottom = 248.0
+
+[node name="SaveAs" type="Button" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 215.0
+offset_top = 228.0
+offset_right = 290.0
+offset_bottom = 251.0
+text = "Save As..."
+disabled = true
+
+[node name="Delete" type="Button" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 295.0
+offset_top = 228.0
+offset_right = 370.0
+offset_bottom = 251.0
+text = "Delete"
+disabled = true
+
+[node name="ItemLabel" type="Label" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 14.0
+offset_top = 261.0
+offset_right = 14.0
+offset_bottom = 274.0
+text = "Item:"
+theme_type_variation = &"DisabledLabel"
+
+[node name="Item" type="OptionButton" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 14.0
+offset_top = 275.0
+offset_right = 209.0
+offset_bottom = 296.0
+disabled = true
+item_count = 1
+popup/item_0/text = "Desktop"
+popup/item_0/id = 0
+selected = 0
+
+[node name="ItemSizeLabel" type="Label" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 216.0
+offset_top = 261.0
+offset_right = 216.0
+offset_bottom = 274.0
+text = "Size:"
+theme_type_variation = &"DisabledLabel"
+
+[node name="ItemSize" type="SpinBox" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 215.0
+offset_top = 275.0
+offset_right = 272.0
+offset_bottom = 296.0
+min_value = 1.0
+value = 1.0
+editable = false
+theme = SubResource("blank_field")
+
+[node name="ItemColorLabel" type="Label" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 279.0
+offset_top = 261.0
+offset_right = 279.0
+offset_bottom = 274.0
+text = "Color:"
+theme_type_variation = &"DisabledLabel"
+
+[node name="ItemColor" type="Button" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 278.0
+offset_top = 274.0
+offset_right = 320.0
+offset_bottom = 296.0
+disabled = true
+
+[node name="Swatch" type="ColorRect" parent="VBox/Body/Column/Tabs/Appearance/ItemColor"]
+layout_mode = 1
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 27.0
+offset_bottom = 17.0
+color = Color(0, 0, 0, 1)
+
+[node name="Fill" type="ColorRect" parent="VBox/Body/Column/Tabs/Appearance/ItemColor/Swatch"]
+layout_mode = 1
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 21.0
+offset_bottom = 11.0
+color = Color(0, 0.5019608, 0.5019608, 1)
+
+[node name="Arrow" type="TextureRect" parent="VBox/Body/Column/Tabs/Appearance/ItemColor"]
+layout_mode = 1
+offset_left = 31.0
+offset_top = 9.0
+offset_right = 38.0
+offset_bottom = 13.0
+texture = SubResource("arrow")
+
+[node name="FontLabel" type="Label" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 14.0
+offset_top = 309.0
+offset_right = 14.0
+offset_bottom = 322.0
+text = "Font:"
+theme_type_variation = &"DisabledLabel"
+
+[node name="Font" type="OptionButton" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 14.0
+offset_top = 322.0
+offset_right = 209.0
+offset_bottom = 343.0
+disabled = true
+
+[node name="FontSizeLabel" type="Label" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 216.0
+offset_top = 309.0
+offset_right = 216.0
+offset_bottom = 322.0
+text = "Size:"
+theme_type_variation = &"DisabledLabel"
+
+[node name="FontSize" type="OptionButton" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 215.0
+offset_top = 322.0
+offset_right = 272.0
+offset_bottom = 343.0
+disabled = true
+
+[node name="FontColorLabel" type="Label" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 279.0
+offset_top = 309.0
+offset_right = 279.0
+offset_bottom = 322.0
+text = "Color:"
+theme_type_variation = &"DisabledLabel"
+
+[node name="FontColor" type="Button" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 278.0
+offset_top = 322.0
+offset_right = 320.0
+offset_bottom = 344.0
+disabled = true
+
+[node name="Arrow" type="TextureRect" parent="VBox/Body/Column/Tabs/Appearance/FontColor"]
+layout_mode = 1
+offset_left = 31.0
+offset_top = 9.0
+offset_right = 38.0
+offset_bottom = 13.0
+texture = SubResource("arrow")
+
+[node name="Bold" type="Button" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 326.0
+offset_top = 322.0
+offset_right = 347.0
+offset_bottom = 343.0
+text = "B"
+disabled = true
+
+[node name="Italic" type="Button" parent="VBox/Body/Column/Tabs/Appearance"]
+layout_mode = 1
+offset_left = 347.0
+offset_top = 322.0
+offset_right = 368.0
+offset_bottom = 343.0
+text = "/"
+disabled = true
+
+[node name="Settings" type="Control" parent="VBox/Body/Column/Tabs"]
+custom_minimum_size = Vector2(382, 356)
+layout_mode = 2
+
+[node name="Monitor" parent="VBox/Body/Column/Tabs/Settings" instance=ExtResource("r2")]
+layout_mode = 1
+offset_left = 97.0
+offset_top = 7.0
+offset_right = 287.0
+offset_bottom = 180.0
+picture = ExtResource("r10")
+
+[node name="PaletteGroup" type="Control" parent="VBox/Body/Column/Tabs/Settings"]
+layout_mode = 1
+offset_left = 13.0
+offset_top = 198.0
+offset_right = 186.0
+offset_bottom = 260.0
+script = ExtResource("r3")
+text = "Color palette"
+
+[node name="Palette" type="OptionButton" parent="VBox/Body/Column/Tabs/Settings"]
+layout_mode = 1
+offset_left = 22.0
+offset_top = 211.0
+offset_right = 176.0
+offset_bottom = 231.0
+disabled = true
+item_count = 1
+popup/item_0/text = "16 Color"
+popup/item_0/id = 0
+selected = 0
+
+[node name="Strip" type="TextureRect" parent="VBox/Body/Column/Tabs/Settings"]
+layout_mode = 1
+offset_left = 22.0
+offset_top = 237.0
+offset_right = 177.0
+offset_bottom = 252.0
+texture = ExtResource("r11")
+stretch_mode = 2
+
+[node name="AreaGroup" type="Control" parent="VBox/Body/Column/Tabs/Settings"]
+layout_mode = 1
+offset_left = 196.0
+offset_top = 198.0
+offset_right = 369.0
+offset_bottom = 260.0
+script = ExtResource("r3")
+text = "Desktop area"
+
+[node name="Less" type="Label" parent="VBox/Body/Column/Tabs/Settings"]
+layout_mode = 1
+offset_left = 205.0
+offset_top = 213.0
+offset_right = 205.0
+offset_bottom = 226.0
+text = "Less"
+theme_type_variation = &"DisabledLabel"
+
+[node name="Area" type="HSlider" parent="VBox/Body/Column/Tabs/Settings"]
+layout_mode = 1
+offset_left = 241.0
+offset_top = 211.0
+offset_right = 317.0
+offset_bottom = 234.0
+max_value = 3.0
+editable = false
+
+[node name="More" type="Label" parent="VBox/Body/Column/Tabs/Settings"]
+layout_mode = 1
+offset_left = 332.0
+offset_top = 213.0
+offset_right = 332.0
+offset_bottom = 226.0
+text = "More"
+theme_type_variation = &"DisabledLabel"
+
+[node name="Resolution" type="Label" parent="VBox/Body/Column/Tabs/Settings"]
+layout_mode = 1
+offset_left = 196.0
+offset_top = 239.0
+offset_right = 369.0
+offset_bottom = 252.0
+text = "640 by 480 pixels"
+horizontal_alignment = 1
+
+[node name="FontGroup" type="Control" parent="VBox/Body/Column/Tabs/Settings"]
+layout_mode = 1
+offset_left = 13.0
+offset_top = 268.0
+offset_right = 369.0
+offset_bottom = 311.0
+script = ExtResource("r3")
+text = "Font size"
+theme = SubResource("disabled_caption")
+
+[node name="FontSize" type="OptionButton" parent="VBox/Body/Column/Tabs/Settings"]
+layout_mode = 1
+offset_left = 22.0
+offset_top = 281.0
+offset_right = 261.0
+offset_bottom = 301.0
+disabled = true
+item_count = 1
+popup/item_0/text = "Small Fonts"
+popup/item_0/id = 0
+selected = 0
+
+[node name="Custom" type="Button" parent="VBox/Body/Column/Tabs/Settings"]
+layout_mode = 1
+offset_left = 268.0
+offset_top = 280.0
+offset_right = 360.0
+offset_bottom = 303.0
+text = "Custom..."
+disabled = true
+
+[node name="ChangeType" type="Button" parent="VBox/Body/Column/Tabs/Settings"]
+layout_mode = 1
+offset_left = 196.0
+offset_top = 319.0
+offset_right = 369.0
+offset_bottom = 342.0
+text = "Change Display Type..."
+disabled = true

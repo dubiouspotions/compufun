@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Win95Palette" format=3]
+
+[ext_resource type="Script" path="res://win95/theme/win95palette.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+resource_name = "Rose"
+face_color = Color(0.8117647, 0.6862745, 0.7176471, 1)
+highlight_color = Color(0.9058824, 0.8470588, 0.8627451, 1)
+light_color = Color(0.8117647, 0.6862745, 0.7176471, 1)
+shadow_color = Color(0.6235294, 0.3764706, 0.4392157, 1)
