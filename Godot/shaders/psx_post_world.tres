@@ -7,3 +7,4 @@ shader = ExtResource("1_io64u")
 shader_parameter/color_levels = null
 shader_parameter/palette_size = null
 shader_parameter/dither = null
+shader_parameter/vignette = 0.35

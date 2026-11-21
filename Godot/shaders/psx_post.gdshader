@@ -1,5 +1,6 @@
-// The PSX look on a whole picture: a 4 x 4 ordered dither, then fewer colours. Put it in the
-// material of the SubViewportContainer that shows the 3D world, or of a TextureRect (a portrait).
+// The PSX look on a whole picture: an optional vignette, a 4 x 4 ordered dither, then fewer
+// colours. Put it in the material of the SubViewportContainer that shows the 3D world, or of a
+// TextureRect (a portrait).
 // Set the node's texture_filter to Nearest. With a palette, each pixel takes the nearest palette
 // colour instead of the colour cut.
 shader_type canvas_item;
@@ -12,6 +13,10 @@ uniform sampler2D palette : filter_nearest;
 uniform int palette_size : hint_range(0, 64) = 0;
 /** How far the dither moves a colour, in steps. 0 turns the dither off. */
 uniform float dither : hint_range(0.0, 2.0) = 1.0;
+/** How much the corners darken: 0 turns the vignette off, 1 turns the corners black. */
+uniform float vignette : hint_range(0.0, 1.0) = 0.0;
+/** Where the darkening starts, as a share of the distance from the centre to a corner. */
+uniform float vignette_start : hint_range(0.0, 1.0) = 0.4;
 
 const float BAYER[16] = float[16](
 	0.0, 8.0, 2.0, 10.0,
@@ -35,6 +40,8 @@ vec3 nearest_palette_color(vec3 c) {
 
 void fragment() {
 	vec4 source = texture(TEXTURE, UV);
+	float from_centre = length(UV - 0.5) / length(vec2(0.5));
+	source.rgb *= 1.0 - vignette * smoothstep(vignette_start, 1.0, from_centre);
 	// The pattern follows the pixels of the source picture, so it scales up with the picture.
 	ivec2 cell = ivec2(floor(UV / TEXTURE_PIXEL_SIZE)) % 4;
 	float offset = (BAYER[cell.y * 4 + cell.x] + 0.5) / 16.0 - 0.5;
