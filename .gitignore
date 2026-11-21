@@ -25,3 +25,9 @@ desktop.ini
 
 # API keys for local tools; never commit them
 /api-keys.txt
+
+# The live voice, built by tools/build-voice.sh (and in CI)
+/Godot/voices/live/bin/
+/Godot/voices/live/chimera_voice.wasm
+/Godot/voices/live/chimera_voice.gdextension
+/native/chimera_voice/target/

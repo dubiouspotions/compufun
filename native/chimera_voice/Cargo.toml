@@ -1,0 +1,25 @@
+[package]
+name = "chimera_voice"
+description = "Speaks a line with Chimera as it plays: a Godot extension on desktop, wasm on the web"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# The Godot class, for desktop builds. The wasm build leaves it out.
+godot = ["dep:godot"]
+
+[dependencies]
+# The same commit as tools/chimera-moods.patch, so live and rendered lines sound the same.
+chimera = { git = "https://github.com/jamesondh/chimera-vocal-synth.git", rev = "caf270a" }
+godot = { version = "0.5.5", features = ["api-4-7"], optional = true }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
