@@ -4,7 +4,7 @@
 [ext_resource type="Material" path="res://materials/ceiling.tres" id="2_ceiling"]
 [ext_resource type="Material" path="res://materials/wall.tres" id="3_wall"]
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="4_dark"]
-[ext_resource type="PackedScene" path="res://props/ceiling_light.tscn" id="5_light"]
+[ext_resource type="PackedScene" path="res://props/hanging_bulb.tscn" id="5_light"]
 [ext_resource type="PackedScene" path="res://props/shelf.tscn" id="6_shelf"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
@@ -53,7 +53,8 @@ material_override = ExtResource("3_wall")
 mesh = SubResource("BoxMesh_side_wall")
 
 [node name="Light" parent="." instance=ExtResource("5_light")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 3, 0.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 3, 0.9)
+off_flag = &"storage_light_off"
 
 [node name="ShelfBack" parent="." instance=ExtResource("6_shelf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0, 0)

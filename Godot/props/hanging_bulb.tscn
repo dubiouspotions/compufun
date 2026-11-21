@@ -1,0 +1,51 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://props/hanging_bulb.gd" id="1_script"]
+[ext_resource type="Material" path="res://materials/rubber.tres" id="2_rubber"]
+[ext_resource type="Material" path="res://materials/lamp_glow.tres" id="3_glow"]
+[ext_resource type="Material" path="res://materials/lamp_glass.tres" id="4_glass"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_cord"]
+size = Vector3(0.012, 0.95, 0.012)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_socket"]
+top_radius = 0.022
+bottom_radius = 0.026
+height = 0.07
+radial_segments = 8
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_bulb"]
+radius = 0.045
+height = 0.1
+radial_segments = 8
+rings = 4
+
+[node name="HangingBulb" type="Node3D"]
+script = ExtResource("1_script")
+lit_material = ExtResource("3_glow")
+off_material = ExtResource("4_glass")
+
+[node name="Cord" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.475, 0)
+material_override = ExtResource("2_rubber")
+mesh = SubResource("BoxMesh_cord")
+
+[node name="Socket" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.985, 0)
+material_override = ExtResource("2_rubber")
+mesh = SubResource("CylinderMesh_socket")
+
+[node name="Bulb" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.05, 0)
+cast_shadow = 0
+material_override = ExtResource("3_glow")
+mesh = SubResource("SphereMesh_bulb")
+
+[node name="Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.07, 0)
+light_color = Color(1, 0.84, 0.62, 1)
+light_energy = 0.9
+shadow_enabled = true
+omni_range = 4.5
+omni_attenuation = 1.5
