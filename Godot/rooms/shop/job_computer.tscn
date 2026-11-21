@@ -9,6 +9,9 @@
 [sub_resource type="BoxMesh" id="BoxMesh_outline"]
 size = Vector3(0.22, 0.45, 0.45)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_front"]
+size = Vector3(0.24, 0.46, 0.01)
+
 [sub_resource type="BoxMesh" id="BoxMesh_power_light"]
 size = Vector3(0.014, 0.014, 0.004)
 
@@ -52,6 +55,14 @@ mesh = SubResource("BoxMesh_power_light")
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, 0.235)
 size = Vector3(0.05, 0.05, 0.04)
+
+[node name="Front" type="Area3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0.235)
+input_ray_pickable = false
+
+[node name="Shape" type="CollisionShape3D" parent="Front"]
+shape = SubResource("BoxShape3D_front")
 
 [node name="PostItAnchor" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, 0.054, 0.216)

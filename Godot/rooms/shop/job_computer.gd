@@ -49,6 +49,7 @@ var _upright_post_it: Vector3
 
 @onready var _tower: PcTower = $Tower
 @onready var _hotspot: Hotspot = %Hotspot
+@onready var _workview_eye: Marker3D = %WorkviewEye
 @onready var _outline: MeshInstance3D = %Outline
 @onready var _cable_socket: Marker3D = %CableSocket
 @onready var _post_it: PostIt3D = %PostIt
@@ -56,6 +57,7 @@ var _upright_post_it: Vector3
 @onready var _power_light: MeshInstance3D = %PowerLight
 @onready var _post_it_anchor: Node3D = $PostItAnchor
 @onready var _open_case: OpenCase = %OpenCase
+@onready var _front: Area3D = %Front
 
 
 func _ready() -> void:
@@ -76,16 +78,16 @@ func _ready() -> void:
 	_sync_power_light()
 
 
-## Where the Workview camera looks at this computer from, in world space. In the Workview the
-## computer lies on its side, so the eye looks down into it.
+## Where the Workview camera looks at this computer from, in world space: at the front of the
+## standing computer, or down into the lying one (see [method Game.lies]).
 func workview_transform() -> Transform3D:
-	return _open_case.eye_transform()
+	return _open_case.eye_transform() if Game.lies(job) else _workview_eye.global_transform
 
 
-## The post-it that the player reads in the Workview: the one on the front while the computer lies,
-## else null.
+## The post-it that the player reads in the Workview: the one on the front while the computer is in
+## focus in the Workview, else null.
 func pinned_post_it() -> PostIt3D:
-	return _post_it if _open_case.visible else null
+	return _post_it if _working() else null
 
 
 ## The VGA socket that the bench cable plugs into; its +Z points out of the socket.
@@ -110,22 +112,27 @@ func _set_hovered(on: bool) -> void:
 	_sync_outline()
 
 
-# The computer lies on its side while the player works on it (in focus, in the Workview); otherwise it
-# stands, open or not, so that two computers never lie over each other. Its power button, power
-# light, VGA socket and post-it turn with it.
+func _working() -> bool:
+	return Game.focus == job and Game.view == &"Workview"
+
+
+# The computer lies on its side while Game.lies says so; otherwise it stands, open or not, so that
+# two computers never lie over each other. Its power button, power light, VGA socket and post-it
+# turn with it.
 func _sync_case() -> void:
-	var working := Game.focus == job and Game.view == &"Workview"
-	var lying := working
+	var working := _working()
+	var lying := Game.lies(job)
 	_tower.visible = not lying
 	_open_case.visible = lying
-	_open_case.active = working
-	_post_it.text_3d = not lying
+	_open_case.active = lying
+	_post_it.text_3d = not working
 	var pose := LYING if lying else Transform3D.IDENTITY
 	for node: Node3D in _upright:
 		node.transform = pose * _upright[node]
 	# Only the position turns: the square paper covers the same spot either way, and its check stays where PostItLabel expects it.
 	_post_it_anchor.position = pose * _upright_post_it
-	_hotspot.set_enabled(not working)
+	_hotspot.set_enabled(not lying)
+	_front.input_ray_pickable = working and not lying  # swallows clicks on the front, so they don't lay it down
 	_sync_outline()
 
 

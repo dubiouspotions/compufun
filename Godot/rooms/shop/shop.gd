@@ -44,6 +44,7 @@ var _shown_view: StringName = &""
 var _heard_hand: Variant = null
 var _heard_cable: Job
 var _workview_job: Job
+var _workview_lying: bool = false
 var _walk_in_arrival: int = -1
 var _walk_out_arrival: int = -1
 var _walk_tween: Tween
@@ -215,11 +216,14 @@ func _move_camera(view_name: StringName) -> void:
 	_camera_tween.tween_property(_camera, "fov", marker.fov, turn_seconds)
 
 
-## Moves the Workview marker to the computer in focus. True when it moved.
+## Moves the Workview marker to the eye of the computer in focus, standing or lying. True when it
+## moved.
 func _follow_focus() -> bool:
-	if Game.focus == _workview_job:
+	var lying := Game.lies(Game.focus)
+	if Game.focus == _workview_job and lying == _workview_lying:
 		return false
 	_workview_job = Game.focus
+	_workview_lying = lying
 	if Game.focus == null:
 		return false
 	var marker := view_marker(WORKVIEW)
@@ -310,5 +314,8 @@ func _drop_plug(job: Job) -> void:
 
 
 func _on_job_clicked(job: Job) -> void:
+	if Game.view == WORKVIEW and job == Game.focus:
+		Game.lay_down(job)
+		return
 	Game.focus_job(job)
 	view_requested.emit(WORKVIEW)

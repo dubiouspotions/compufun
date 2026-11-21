@@ -23,6 +23,8 @@ func _sync() -> void:
 		_state.text = "Hardware: done."
 	elif job.powered:
 		_state.text = "Switch it off with the red button."
+	elif not Game.lies(job):
+		_state.text = "Click the top of the case to lay it down."
 	elif _inside_done(job):
 		_state.text = "Screw the side panel back on."
 	elif job.panel_screws.has(true):
