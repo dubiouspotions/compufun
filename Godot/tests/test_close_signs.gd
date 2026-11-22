@@ -14,7 +14,8 @@ func run() -> void:
 
 
 func _close_on(number: int) -> int:
-	var refused: String = game.restore({"day": number, "arrivals": 2})
+	var errands: int = (load(GAME.DAY_PATH % number) as Day).errands.size()
+	var refused: String = game.restore({"day": number, "arrivals": errands})
 	if refused != "":
 		return -1
 	game.close_shop()

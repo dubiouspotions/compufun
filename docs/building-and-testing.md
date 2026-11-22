@@ -41,8 +41,8 @@ A headless `--script` that extends `SceneTree` can drive a scene for a quick tes
 `_initialize()` and `await process_frame` before you touch it: until then its `_ready()` has not run.
 
 To show a visual change, film it. Such a script, run with Movie Maker, sets up the moment (for
-example `Game.restore({"day": 5, "arrivals": 2, "phase": "OPEN"})`, then `close_shop()`), waits on
-`create_timer` and quits. It needs a real window, so park it off-screen:
+example `Game.restore({"day": 5, "arrivals": 0, "phase": "OPEN"})`, with no more arrivals than the
+day has errands, then `close_shop()`), waits on `create_timer` and quits. It needs a real window, so park it off-screen:
 
 ```sh
 "$GODOT" --path . --position 10000,10000 --resolution 1920x1080 \
