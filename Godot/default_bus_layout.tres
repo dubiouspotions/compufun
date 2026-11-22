@@ -1,4 +1,4 @@
-[gd_resource type="AudioBusLayout" format=3]
+[gd_resource type="AudioBusLayout" format=3 uid="uid://dhfhreseaj8m7"]
 
 [sub_resource type="AudioEffectPanner" id="AudioEffectPanner_shop"]
 resource_name = "Panner"
@@ -27,7 +27,6 @@ damping = 0.0
 spread = 0.3
 hipass = 0.08
 dry = 0.0
-wet = 0.5
 
 [resource]
 bus/1/name = &"Shop"
