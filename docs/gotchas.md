@@ -101,7 +101,11 @@ in it.** A Godot 4.7.2 bug in the game embedded in the editor on macOS, and harm
 sets a cursor shape back to the system cursor (`Input.set_custom_mouse_cursor(null, ...)`, as a
 restart or the `win_cursor` sign does), the editor stores an empty image for that shape
 (`platform/macos/editor/embedded_game_view_plugin.mm`) and fails to apply it each time the mouse
-enters the game view. An exported build and `tools/run.sh` never log it. — 2026-11-22
+enters the game view, and it keeps that image until the editor quits. Change every cursor with
+`ScreenView.set_cursor`, which skips a reset in the embedded game; the price is a stale cursor there
+(the `win_cursor` sign's Win95 hand stays after the sign turns off). No game-side call can clear the
+editor's stored image, so an empty one from an older run stays until the editor restarts. An exported build and `tools/run.sh` never log it.
+— 2026-11-22
 
 **A Node export (`@export var doorway: Node3D`) is null at run time, though the scene sets it.** In a
 scene file, a Node export needs its name in the node's header, `node_paths=PackedStringArray("doorway")`;

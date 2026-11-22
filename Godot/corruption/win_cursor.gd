@@ -24,8 +24,8 @@ func _apply(shown_stage: int) -> void:
 # The display server outlives the images and logs a leak at exit unless they are cleared.
 func _exit_tree() -> void:
 	if _shown:
-		Input.set_custom_mouse_cursor(null, Input.CURSOR_ARROW)
-		Input.set_custom_mouse_cursor(null, Input.CURSOR_POINTING_HAND)
+		ScreenView.set_cursor(null, Input.CURSOR_ARROW)
+		ScreenView.set_cursor(null, Input.CURSOR_POINTING_HAND)
 		_shown = false
 
 
@@ -38,15 +38,15 @@ func _show(on: bool) -> void:
 		if _arrow_image == null:
 			_arrow_image = _scaled(arrow)
 			_hand_image = _scaled(hand)
-		Input.set_custom_mouse_cursor(_arrow_image, Input.CURSOR_ARROW, arrow_hotspot * pixel_scale)
-		Input.set_custom_mouse_cursor(_hand_image, Input.CURSOR_POINTING_HAND, hand_hotspot * pixel_scale)
+		ScreenView.set_cursor(_arrow_image, Input.CURSOR_ARROW, arrow_hotspot * pixel_scale)
+		ScreenView.set_cursor(_hand_image, Input.CURSOR_POINTING_HAND, hand_hotspot * pixel_scale)
 		return
 	var view := _screen_view()
 	if view != null:
-		Input.set_custom_mouse_cursor(view.game_cursor, Input.CURSOR_ARROW, view.game_cursor_hotspot)
+		ScreenView.set_cursor(view.game_cursor, Input.CURSOR_ARROW, view.game_cursor_hotspot)
 	else:
-		Input.set_custom_mouse_cursor(null, Input.CURSOR_ARROW)
-	Input.set_custom_mouse_cursor(null, Input.CURSOR_POINTING_HAND)
+		ScreenView.set_cursor(null, Input.CURSOR_ARROW)
+	ScreenView.set_cursor(null, Input.CURSOR_POINTING_HAND)
 
 
 # The ScreenView that owns the game's arrow, or null in a scene without one.

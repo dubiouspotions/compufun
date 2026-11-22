@@ -58,7 +58,7 @@ var _had_picture: bool = false
 func _ready() -> void:
 	visible = false
 	modulate.a = 0.0
-	_show_cursor(game_cursor, game_cursor_hotspot)
+	set_cursor(game_cursor, Input.CURSOR_ARROW, game_cursor_hotspot)
 	_keys = AudioStreamPlayer.new()
 	add_child(_keys)
 	_buttons = AudioStreamPlayer.new()
@@ -81,7 +81,21 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
-	_show_cursor(null, Vector2.ZERO)  # Otherwise the display server outlives the texture and logs a leak at exit.
+	set_cursor(null, Input.CURSOR_ARROW)  # Otherwise the display server outlives the texture and logs a leak at exit.
+
+
+## Shows [param cursor] (a Texture2D or an Image) for the cursor [param shape], pointing with its pixel
+## [param hotspot]; null gives the shape back to the system cursor. Every cursor change goes through
+## here. A game embedded in the editor on macOS skips a reset and keeps its last custom cursor: Godot
+## 4.7.2's editor stores a reset as an empty image and logs "imgrep is null" each time the mouse
+## enters the game view (docs/gotchas.md). So there, the Win95 hand of the win_cursor sign stays after
+## the sign turns off, until the editor restarts. The embedded game keeps no cursor texture alive, so
+## nothing leaks.
+static func set_cursor(cursor: Resource, shape: Input.CursorShape, hotspot: Vector2 = Vector2.ZERO) -> void:
+	if cursor != null:
+		Input.set_custom_mouse_cursor(cursor, shape, hotspot)
+	elif DisplayServer.get_name() != "embedded":
+		Input.set_custom_mouse_cursor(null, shape)
 
 
 # _input, before the screen takes the event: a key or a click that the screen handles sounds too.
@@ -186,8 +200,3 @@ func _sync() -> void:
 	if picture != _had_picture:
 		_had_picture = picture
 		picture_changed.emit()
-
-
-# Replaces the image of the arrow shape, which Controls and the 3D world show; the hotspot hand stays.
-func _show_cursor(cursor: Texture2D, hotspot: Vector2) -> void:
-	Input.set_custom_mouse_cursor(cursor, Input.CURSOR_ARROW, hotspot)
