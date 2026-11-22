@@ -114,6 +114,8 @@ brief: He arrives cheerful; the problem comes out only when asked.
 - `(mood) text` is a customer line. Without a mood it is neutral. `[effect name]` at the end
   gives it its own voice effect (`voices/effects/<name>.tres`). `[leaving]` makes it a call-out:
   the customer says it while walking out, outside the dialogue box, as at the end of a visit.
+  Leaving lines come last: the box closes before them. A leaving line that the conversation can go
+  on after plays in the box, and the story check lists it.
 - `- text` and `+ text` are the player's choices. Choices in a row make one list; an empty
   line between two choices starts a new list.
   - After a `-` choice's lines, the conversation goes on **below the list**: two branches meet
@@ -145,8 +147,8 @@ a day or a conversation sets it, and clearing it uninstalls Cambion.
 
 The files are the outline. The story check lists the missing links: a flag that nothing sets or
 checks, a `+` choice without a line, an errand without a `drop-off`, an errand code whose alternatives can
-all fail, a mood that the person has no portrait for or no voice for, a problem without repair
-mechanics:
+all fail, a mood that the person has no portrait for or no voice for, a `[leaving]` line that the
+conversation can go on after, a problem without repair mechanics:
 
 ```sh
 "$GODOT" --headless -s res://dev/story.gd
