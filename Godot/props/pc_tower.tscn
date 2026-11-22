@@ -6,6 +6,8 @@
 [ext_resource type="Script" path="res://props/pc_tower.gd" id="4_script"]
 [ext_resource type="Material" path="res://materials/vga_blue_plastic.tres" id="6_vga"]
 [ext_resource type="PackedScene" path="res://props/case_fronts/classic.tscn" id="7_front"]
+[ext_resource type="Script" path="res://sounds/hum.gd" id="hum"]
+[ext_resource type="AudioStream" path="res://sounds/pc_fan.wav" id="pc_fan"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_ub7ej"]
 size = Vector3(0.19, 0.42, 0.42)
@@ -65,3 +67,11 @@ transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.096, 0.21, 0)
 
 [node name="Right" type="Marker3D" parent="StickerFaces"]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.096, 0.21, 0)
+
+[node name="Fan" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, -0.2)
+script = ExtResource("hum")
+stream = ExtResource("pc_fan")
+volume_db = -24.0
+unit_size = 1.0
+attenuation_filter_cutoff_hz = 20500.0

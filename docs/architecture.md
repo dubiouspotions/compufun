@@ -31,7 +31,8 @@ Godot/               the Godot project: everything the game loads
   voices/effects/    voice effects (VoiceEffect): a base, an alternate and a curve; the top layer
   voices/live/       the live voice: live_voice.js (web), the dictionary; tools/build-voice.sh adds the wasm, the libraries and the .gdextension
   sounds/            sound effects: the audio files, and one SoundSet .tres per effect (its takes,
-                     volume and pitch range), exported where the effect happens
+                     volume and pitch range), exported where the effect happens; hum.gd, a quiet loop
+                     that plays while a thing runs (the storage bulb, a PC's fans, a CRT's whine)
   problems/          one .tres per problem
   corruption/        one scene per corruption sign (<id>.tscn); corruption_sign.gd is their base, corruption_signs.gd loads them all into the shop
   days/              day_1.tres to day_7.tres, each a list of errands (errand.gd: a customer and a problem)

@@ -36,12 +36,12 @@ var targeted: bool = false:
 		if is_node_ready():
 			_sync_outline()
 
-## True while the job is on (Job.powered); the power light shows it. JobSlots sets it.
+## True while the job is on (Job.powered); the power light and the fans show it. JobSlots sets it.
 var powered: bool = false:
 	set(value):
 		powered = value
 		if is_node_ready():
-			_sync_power_light()
+			_sync_power()
 
 var _hovered: bool = false
 ## 0 standing, 1 lying; between the two while the case tips.
@@ -84,7 +84,7 @@ func _ready() -> void:
 	Game.changed.connect(_sync_case)
 	(_outline.material_override as StandardMaterial3D).albedo_color = hover_color
 	_sync_case()
-	_sync_power_light()
+	_sync_power()
 
 
 ## Where the Workview camera looks at this computer from, in world space: at the front of the
@@ -194,5 +194,6 @@ func _sync_outline() -> void:
 	_outline.visible = (_hovered or targeted) and not _open_case.active
 
 
-func _sync_power_light() -> void:
+func _sync_power() -> void:
 	(_power_light.material_override as StandardMaterial3D).albedo_color = power_on_color if powered else power_off_color
+	_tower.running = powered

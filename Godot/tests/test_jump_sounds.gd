@@ -1,8 +1,9 @@
 extends "res://tests/test.gd"
 ## No change sound plays when the state jumps (Game.jump): not when the game starts, not on a
-## restore and not when a new day starts. The street ambience and the rain are loops, not changes.
+## restore and not when a new day starts. The street ambience, the rain and the hums are loops, not changes.
 
-const LOOPS: Array[String] = ["res://sounds/city_ambience.ogg", "res://sounds/rain_open.wav", "res://sounds/rain_shut.wav"]
+const LOOPS: Array[String] = ["res://sounds/city_ambience.ogg", "res://sounds/rain_open.wav", "res://sounds/rain_shut.wav",
+	"res://sounds/light_hum.wav", "res://sounds/pc_fan.wav", "res://sounds/crt_whine.wav"]
 
 var _players := {}  # every audio player, and whether it played on the last frame
 var _started: Array[String] = []
@@ -14,7 +15,8 @@ func run() -> void:
 	var main: Node = load("res://main.tscn").instantiate()
 	root.add_child(main)
 	await _frames(10)
-	check("the game starts with the street ambience only", _started, ["res://sounds/city_ambience.ogg"])
+	check("the game starts with the street ambience and hums only", _changes(), [])
+	check("the street ambience plays", "res://sounds/city_ambience.ogg" in _started, true)
 
 	_hush()
 	check("restore day 1 at night, CompuFunDB on, a computer plugged in", game.restore({"day": 1, "phase": "DAY_OVER", "db_day": 1,

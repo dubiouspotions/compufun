@@ -8,6 +8,8 @@ extends Control
 
 ## The player clicked the open view outside the screen.
 signal outside_clicked
+## [method has_picture] changed.
+signal picture_changed
 
 ## The view marker's screen that opens this view; the room's monitor for it shows the buffer.
 @export var screen: ViewMarker.Screen = ViewMarker.Screen.WIN95
@@ -44,6 +46,7 @@ var _content: Control
 var _keys: AudioStreamPlayer
 var _buttons: AudioStreamPlayer
 var _jump: int = -1  # the Game.jump at the last sync; the first sync is a jump too
+var _had_picture: bool = false
 
 @onready var _screen: CrtScreen = %Screen
 @onready var _tube: CrtTube = %Tube
@@ -165,12 +168,20 @@ func degauss() -> void:
 	_tube.degauss()
 
 
+## Whether the content shows a picture (see [member content]). For CompuFunDB: whether the work computer is on.
+func has_picture() -> bool:
+	return _content != null and (not _content.has_method(&"has_picture") or _content.call(&"has_picture"))
+
+
 func _sync() -> void:
-	var has_picture: bool = _content != null and (not _content.has_method(&"has_picture") or _content.call(&"has_picture"))
+	var picture := has_picture()
 	var pointer: bool = _content == null or not _content.has_method(&"pointer_visible") or _content.call(&"pointer_visible")
-	_screen.cursor_visible = draw_cursor and has_picture and pointer
-	_tube.reconcile(switched_on, has_picture, Game.day.warp if Game.day != null else 0.0, Game.jump != _jump)
+	_screen.cursor_visible = draw_cursor and picture and pointer
+	_tube.reconcile(switched_on, picture, Game.day.warp if Game.day != null else 0.0, Game.jump != _jump)
 	_jump = Game.jump
+	if picture != _had_picture:
+		_had_picture = picture
+		picture_changed.emit()
 
 
 # Replaces the image of the arrow shape, which Controls and the 3D world show; the hotspot hand stays.

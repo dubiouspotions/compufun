@@ -2,6 +2,12 @@ class_name PcTower
 extends Node3D
 ## A PC tower. Without [method dress] it is a plain beige tower.
 
+## Whether the computer runs: its fans hum while it does.
+var running: bool = false:
+	set(value):
+		running = value
+		($Fan as Hum).on = value
+
 @onready var _case: MeshInstance3D = $Case
 @onready var _plain_case: Material = _case.material_override
 @onready var _front: Node3D = $Front

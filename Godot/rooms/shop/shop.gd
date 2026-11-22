@@ -51,6 +51,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _bench: Bench = %Bench
 @onready var _pipedream: Pipedream = %Pipedream
 @onready var _work_monitor: CrtMonitor = %WorkMonitor
+@onready var _work_tower: PcTower = $Room/WorkTower
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
@@ -63,6 +64,12 @@ const WORKVIEW: StringName = &"Workview"
 ## Plays at a computer's socket when the keyboard cable goes in, and when it comes out.
 @export var plug_in_sound: SoundSet = preload("res://sounds/cable_plug_in.tres")
 @export var plug_out_sound: SoundSet = preload("res://sounds/cable_plug_out.tres")
+
+## Whether the work computer runs; its fans hum while it does.
+var work_computer_running: bool = false:
+	set(value):
+		work_computer_running = value
+		_work_tower.running = value
 
 var _shown_view: StringName = &""
 ## What the hand held and where the cable was at the last sync, to hear what changed since.

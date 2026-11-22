@@ -185,6 +185,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Dialogue tab**: The editor tab (`addons/dialogue_editor/`) that lists every customer and edits their conversations.
 *Avoid:* admin UI, dialogue tool, dialogue editor.
 
+**Hum**: A quiet loop from a thing in the shop that runs, which plays while it runs (`sounds/hum.gd`): the storage bulb's mains buzz while it is lit, a PC's fans while it is on, a CRT's whine while its tube is on.
+*Avoid:* ambience, drone, room tone.
+
 ## Win95
 
 **Control Panel**: The Win95 folder that lists the applets of every `.CPL` file in `C:\WINDOWS\SYSTEM` of the running copy; Fonts and Printers are applets of MAIN.CPL too. It opens from My Computer and from Start > Settings.

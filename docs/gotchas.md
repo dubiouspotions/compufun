@@ -44,8 +44,8 @@ the script had passed. `tests/run.gd` therefore also requires the line that a pa
 prints, not only exit code 0. — 2026-11
 
 **A run logs "ObjectDB instances were leaked" and "resources still in use at exit", naming a
-sound.** That sound was playing when the game quit: the city ambience always is, a customer voice
-sometimes. It happens only at exit and only on some runs, and it needs no fix. In a headless
+sound.** That sound was playing when the game quit: the city ambience and the hums always are, a
+customer voice sometimes. It happens only at exit and only on some runs, and it needs no fix. In a headless
 test, every playback that a player stopped during the run is listed too (`AudioStreamPlayback...`),
 with a bare `AudioStreamPlayer` as well. Any other object in the `--verbose` list of leaks is a real
 leak. — 2026-11
@@ -54,6 +54,11 @@ leak. — 2026-11
 `area_mask` is 0 by default in Godot 4.7, so it finds no area at all. Set it to the sound zones'
 layer (`SoundSet.SOUND_ZONES`, 1) on every 3D player that should sound like its room; a player
 that `SoundSet.play_at` makes gets it. — 2026-11-22
+
+**A quiet 3D sound in the shop is loud on the Room bus, whatever its `volume_db`.** The Room zone's
+reverb send does not follow the player's `volume_db`. Measured 2026-11-22: a CRT whine at -39 dB and
+at -80 dB both peaked at -18 dBFS on the Room bus, 2 m from the camera. Keep a quiet loop out of
+the sound zones (`area_mask = 0`, as `Hum` does). — 2026-11-22
 
 **Every `--import` logs "resources still in use at exit", naming data scripts such as
 `customer.gd` and `win95_setup.gd`.** A script with a `static var` that other scripts reach was

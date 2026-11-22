@@ -1,6 +1,7 @@
 class_name CrtMonitor
 extends Node3D
-## A 90s CRT monitor. Its screen stays dark, or shows a live texture such as the screen buffer.
+## A 90s CRT monitor. Its screen stays dark, or shows a live texture such as the screen buffer; while
+## its tube is on, it whines faintly.
 
 ## The tube's look when the screen shows a texture. Each monitor gets its own copy.
 @export var screen_look: ShaderMaterial = preload("res://shaders/crt_looks/world_monitor.tres")
@@ -13,6 +14,7 @@ var _look: ShaderMaterial
 
 @onready var _screen: MeshInstance3D = %Screen
 @onready var _glow: Light3D = %Glow
+@onready var _whine: Hum = %Whine
 
 
 func _ready() -> void:
@@ -20,11 +22,12 @@ func _ready() -> void:
 	set_process(false)
 
 
-# The light follows the tube's uniforms on the 3D screen, which a CrtTube animates.
+# The light and the whine follow the tube's uniforms on the 3D screen, which a CrtTube animates.
 func _process(_delta: float) -> void:
 	var lit := _tube(&"crt_warmup") ** 2 * smoothstep(0.0, 0.3, _tube(&"crt_sync")) * smoothstep(0.5, 1.0, _tube(&"crt_power"))
 	_glow.light_energy = lit * lerpf(no_signal_glow_energy, picture_glow_energy, _tube(&"crt_picture"))
 	_glow.visible = _glow.light_energy > 0.001
+	_whine.on = _tube(&"crt_power") > 0.5
 
 
 func _tube(uniform: StringName) -> float:
