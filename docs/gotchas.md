@@ -96,6 +96,13 @@ the original.** `Viewport.push_input` clears the "handled" flag that the origina
 has no effect. Call `set_input_as_handled()` after the push, as `win95/mouse_input.gd` does.
 — 2026-11
 
+**The editor logs `display_server_macos.mm:3033 - Parameter "imgrep" is null` while the game runs
+in it.** A Godot 4.7.2 bug in the game embedded in the editor on macOS, and harmless. When the game
+sets a cursor shape back to the system cursor (`Input.set_custom_mouse_cursor(null, ...)`, as a
+restart or the `win_cursor` sign does), the editor stores an empty image for that shape
+(`platform/macos/editor/embedded_game_view_plugin.mm`) and fails to apply it each time the mouse
+enters the game view. An exported build and `tools/run.sh` never log it. — 2026-11-22
+
 **A Node export (`@export var doorway: Node3D`) is null at run time, though the scene sets it.** In a
 scene file, a Node export needs its name in the node's header, `node_paths=PackedStringArray("doorway")`;
 without it, Godot reads the `NodePath` value and drops it. The editor writes the header; a scene
