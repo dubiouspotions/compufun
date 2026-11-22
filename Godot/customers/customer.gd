@@ -19,6 +19,10 @@ extends Resource
 ## the head, with -Z the way the face looks, and the hat stays above y = 0 at the front to keep the
 ## face clear.
 @export var hat: PackedScene
+## What the 3D customer wears around the neck, such as props/scarf.tscn; null for none. Match the
+## portrait. The scene's root must be a Node3D: its origin sits in the middle of the neck, with -Z
+## the way the face looks, and it stays below the chin to keep the face clear.
+@export var neckwear: PackedScene
 ## Who speaks this customer's lines: the person's voice, the bottom layer (voices/persons/); null
 ## while the person has none.
 var voice: VoicePerson:

@@ -4,8 +4,8 @@ extends Node3D
 ## photo on the face, the average colour of the face photo on the skin, and the shirt from the
 ## clothes portrait. The back of the shirt repeats a strip at the side of the portrait's clothes, so
 ## that buttons, pockets and prints stay on the front. The trousers take the customer's colour, and the
-## head wears the customer's hat. It walks, with footsteps, while it moves, and carries a computer in
-## when the shop says so (carrying).
+## head and neck wear the customer's hat and neckwear. It walks, with footsteps, while it moves, and
+## carries a computer in when the shop says so (carrying).
 
 # The shirt parameters that a portrait sets; without a portrait they come from shirt_material.
 const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color", &"uv_rect", &"tint_texture",
@@ -13,7 +13,7 @@ const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color",
 
 ## The group of every customer body: the door watches them, and the F2 menu switches their relief.
 const GROUP: StringName = &"customer_bodies"
-## The modelled parts that the photo relief replaces; a hat hangs from the head, so it goes too.
+## The modelled parts that the photo relief replaces; the hat and neckwear hang from them, so they go too.
 const MODELLED_UPPER_BODY: Array[StringName] = [&"Torso", &"Neck", &"Head", &"Face", &"ShoulderL", &"ShoulderR"]
 
 ## The face when the person has no face texture yet.
@@ -77,6 +77,7 @@ var _shirt: ShaderMaterial
 var _trousers: ShaderMaterial
 var _last_position: Vector3
 var _hat: Node3D
+var _neckwear: Node3D
 var _relief: MeshInstance3D
 var _trouser_points: PackedVector3Array
 var _trouser_normals: PackedVector3Array
@@ -98,6 +99,7 @@ var carrying: bool = false:
 @onready var _shoulder_left: Node3D = $ShoulderL
 @onready var _shoulder_right: Node3D = $ShoulderR
 @onready var _hat_mount: Node3D = %HatMount
+@onready var _neck_mount: Node3D = %NeckMount
 @onready var _hip_l: Node3D = $HipL
 @onready var _hip_r: Node3D = $HipR
 @onready var _trousers_mesh: MeshInstance3D = %Trousers
@@ -204,7 +206,8 @@ func show_customer(customer: Customer) -> void:
 			_shirt.set_shader_parameter(parameter, shirt_material.get_shader_parameter(parameter))
 	var trousers: Color = trousers_material.get_shader_parameter("albedo_color")
 	_trousers.set_shader_parameter("albedo_color", customer.trousers_color if customer != null else trousers)
-	_wear_hat(customer)
+	_hat = _put_on(customer.hat if customer != null else null, _hat_mount, _hat, "hat")
+	_neckwear = _put_on(customer.neckwear if customer != null else null, _neck_mount, _neckwear, "neckwear")
 	_show_relief(person)
 
 
@@ -247,24 +250,24 @@ func _plain_head_back() -> StandardMaterial3D:
 	return material
 
 
-func _wear_hat(customer: Customer) -> void:
-	if _hat != null:
-		_hat.queue_free()
-		_hat = null
-	var scene := customer.hat if customer != null else null
+# Swaps [param worn] on [param mount] for an instance of [param scene] (null takes it off); returns
+# what is worn now. [param what] names the slot in errors.
+func _put_on(scene: PackedScene, mount: Node3D, worn: Node3D, what: String) -> Node3D:
+	if worn != null:
+		worn.queue_free()
 	if scene == null:
-		return
-	var hat := scene.instantiate()
-	if hat == null:
-		push_error("CustomerBody: the hat %s of %s doesn't instantiate" % [scene.resource_path, customer.resource_path])
-		return
-	if not hat is Node3D:
-		push_error("CustomerBody: the hat %s of %s has a %s root, not a Node3D" % [scene.resource_path,
-			customer.resource_path, hat.get_class()])
-		hat.free()
-		return
-	_hat = hat
-	_hat_mount.add_child(_hat)
+		return null
+	var prop := scene.instantiate()
+	if prop == null:
+		push_error("CustomerBody: the %s %s of %s doesn't instantiate" % [what, scene.resource_path, _shown.resource_path])
+		return null
+	if not prop is Node3D:
+		push_error("CustomerBody: the %s %s of %s has a %s root, not a Node3D" % [what, scene.resource_path,
+			_shown.resource_path, prop.get_class()])
+		prop.free()
+		return null
+	mount.add_child(prop)
+	return prop
 
 
 # The uv_rect that shows the whole face photo at face_scale, centred, face_lift above the chin.

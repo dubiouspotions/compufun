@@ -35,6 +35,7 @@
 [ext_resource type="Resource" path="res://win95/start_menu_stock.tres" id="start_menu"]
 [ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
 [ext_resource type="Resource" path="res://people/activist_guy/person.tres" id="person"]
+[ext_resource type="PackedScene" path="res://props/scarf.tscn" id="neckwear_scarf"]
 
 [sub_resource type="Resource" id="Resource_4fbej"]
 script = ExtResource("2_egn44")
@@ -255,3 +256,4 @@ person = ExtResource("person")
 conversations = Array[ExtResource("cv")]([SubResource("Conversation_arrive"), SubResource("Conversation_pickup")])
 computer = SubResource("Computer_accountant")
 trousers_color = Color(0.25, 0.22, 0.18, 1)
+neckwear = ExtResource("neckwear_scarf")

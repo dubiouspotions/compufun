@@ -1,0 +1,47 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="1_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wool"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/albedo_color = Color(0.145, 0.17, 0.115, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fleck"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/albedo_color = Color(0.32, 0.23, 0.12, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_wrap"]
+top_radius = 0.09
+bottom_radius = 0.112
+height = 0.085
+radial_segments = 8
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_fold"]
+top_radius = 0.1
+bottom_radius = 0.1
+height = 0.018
+radial_segments = 8
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_tail"]
+size = Vector3(0.06, 0.17, 0.022)
+
+[node name="Scarf" type="Node3D"]
+
+[node name="Wrap" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0)
+material_override = SubResource("ShaderMaterial_wool")
+mesh = SubResource("CylinderMesh_wrap")
+
+[node name="Fold" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9848077, -0.17364818, 0, 0.17364818, 0.9848077, 0, 0, 0, 1, 0, 0.012, 0)
+material_override = SubResource("ShaderMaterial_fleck")
+mesh = SubResource("CylinderMesh_fold")
+
+[node name="Tail" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9848077, 0.17364818, 0, -0.17364818, 0.9848077, 0, 0, 0, 1, 0.035, -0.1, -0.11)
+material_override = SubResource("ShaderMaterial_wool")
+mesh = SubResource("BoxMesh_tail")
