@@ -328,13 +328,13 @@ func day_of(number: int) -> Day:
 	return week.days[number - 1] if week != null and number >= 1 and number <= week.days.size() else null
 
 
-## Sends the visitor, a [member Customer.regular] customer, away for good, as the [x] of the
-## corruption sign customer_x does: they vanish at once, with every computer of theirs on the
-## counter, and never come in again, also not on a later day or for a pickup ([method is_gone]).
-## Fails with an error when nobody is in or the visitor is not regular.
+## Sends the visitor away for good, as the [x] of the corruption sign customer_x does: they vanish
+## at once, with every computer of theirs on the counter, and never come in again, also not on a
+## later day or for a pickup ([method is_gone]); the flag gone_<customer file name> records it.
+## Fails with an error when nobody is in.
 func dismiss_visitor() -> void:
-	if visitor == null or not visitor.regular:
-		push_error("Game.dismiss_visitor: the visitor is not a regular customer: %s" % (_who(visitor) if visitor != null else "nobody is in"))
+	if visitor == null:
+		push_error("Game.dismiss_visitor: nobody is in the shop")
 		return
 	flags[gone_flag(visitor)] = 1
 	for job: Job in jobs.filter(func(j: Job) -> bool: return j.customer == visitor):
