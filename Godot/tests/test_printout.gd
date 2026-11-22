@@ -243,7 +243,7 @@ func _check_print_fix() -> void:
 	key.pressed = true
 	check("no FIX steps, nothing to print", [db.call("_on_key", key), printer.get("_lines")], [true, PackedStringArray()])
 	game.mark_symptom(record, "Hangs and reboots at startup", true)
-	game.mark_symptom(record, "Fan clogged with dust", true)
+	game.mark_symptom(record, "Computer overheating", true)
 	db.call("_on_key", key)
 	var page: PackedStringArray = printer.get("_lines")
 	check("F prints a FIX page", [page[0].begins_with("CompuFunDB 1.0  FIX  "), "FIX" in page, "CHECK" in page], [true, true, false])
