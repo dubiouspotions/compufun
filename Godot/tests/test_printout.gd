@@ -44,6 +44,7 @@ func run() -> void:
 	await _check_printer()
 	await _check_close_up()
 	await _check_trash_can()
+	await _check_trash_raised()
 	await _check_print_fix()
 
 
@@ -169,10 +170,10 @@ func _latest_sound(node: Node) -> AudioStream:
 
 
 # A left press and release at [param at], in the window's coordinates, through the whole input chain.
-func _click_at(at: Vector2) -> void:
+func _click_at(at: Vector2, button: MouseButton = MOUSE_BUTTON_LEFT) -> void:
 	for pressed: bool in [true, false]:
 		var click := InputEventMouseButton.new()
-		click.button_index = MOUSE_BUTTON_LEFT
+		click.button_index = button
 		click.pressed = pressed
 		click.position = at
 		root.push_input(click, true)
@@ -196,6 +197,34 @@ func _check_trash_can() -> void:
 	hotspot.clicked.emit(hotspot)
 	check("then a click throws the page away, with a rustle", [game.printout, game.view != &"Trash", outline.visible, thrown[0]], [PackedStringArray(), true, false, 1])
 	can.queue_free()
+
+
+# While the page is raised, a left click on the trash can throws the page in at once and keeps the part
+# in the hand; a right click there only lowers the page.
+func _check_trash_raised() -> void:
+	var can: Node3D = load("res://props/trash_can.tscn").instantiate()  # untyped: TrashCan names Game
+	can.add_to_group(&"trash_can")
+	var thrown := _count_plays(can)
+	root.add_child(can)
+	var carried: Control = load("res://ui/carried_printout.tscn").instantiate()  # untyped: CarriedPrintout names Game
+	root.add_child(carried)
+	game.carry_printout(PAGE)
+	game.take_new_part(load("res://parts/fan.tres"))
+	await process_frame
+	can.call("_set_hovered", true)
+	carried.call("raise")
+	_click_at(Vector2(4.0, 4.0), MOUSE_BUTTON_RIGHT)
+	check("a right click on the can only lowers the page", [carried.call("is_raised"), game.printout, thrown[0]], [false, PAGE, 0])
+	carried.call("raise")
+	_click_at(Vector2(4.0, 4.0))
+	check("a left click on the can throws the raised page in, with a rustle", [game.printout, carried.call("is_raised"), thrown[0]], [PackedStringArray(), false, 1])
+	check("the part stays in the hand", game.hand != null and game.hand.part == load("res://parts/fan.tres"), true)
+	check("and the next page can be carried", game.carry_printout(FIX_PAGE), true)
+	game.trash_printout()
+	game.trash_part()
+	carried.queue_free()
+	can.queue_free()
+	await process_frame
 
 
 # CompuFunDB's F prints the FIX steps alone; with no FIX steps it prints nothing.

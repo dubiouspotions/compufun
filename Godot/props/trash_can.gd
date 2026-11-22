@@ -3,7 +3,11 @@ extends Node3D
 ## The trash can by the work desk (wiki: Hardware Repair). A click with a part in the hand throws it
 ## in, on top of what lies there; with an empty hand, a click throws away the printout that the player
 ## carries (Game.printout). With neither, a click goes to [member look_view], and there takes the part
-## on top back. The can is outlined while the player holds a part or carries a printout.
+## on top back. The can is outlined while the player holds a part or carries a printout. While the
+## printout is raised, a click on the can throws it away (CarriedPrintout), even with a part in the hand.
+
+## The group of the shop's trash can.
+const GROUP: StringName = &"trash_can"
 
 ## The sound of the printout thrown in.
 @export var page_sound: SoundSet = preload("res://sounds/paper_handle.tres")
@@ -37,11 +41,25 @@ func _ready() -> void:
 	_sync()
 
 
+## True while the mouse is over the can and a click on it would do something.
+func is_hovered() -> bool:
+	return _hovered
+
+
+## Throws the carried printout in, with its sound. Returns false, and does nothing, when the player
+## carries none.
+func throw_printout() -> bool:
+	if not Game.trash_printout():
+		return false
+	page_sound.play_at(self)
+	return true
+
+
 func _on_clicked(_clicked: Hotspot) -> void:
 	if Game.hand != null:
 		Game.trash_part()
-	elif Game.trash_printout():
-		page_sound.play_at(self)
+	elif throw_printout():
+		return
 	elif Game.view != look_view:
 		Game.go_to_view(look_view)
 	else:
