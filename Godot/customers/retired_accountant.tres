@@ -1,42 +1,62 @@
 [gd_resource type="Resource" script_class="Customer" format=3]
 
-[ext_resource type="Texture2D" path="res://win95/theme/icons/inbox_32.png" id="icon_inbox"]
+[ext_resource type="Script" path="res://customers/computer.gd" id="1_2x16c"]
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="2_egn44"]
+[ext_resource type="Script" path="res://customers/customer.gd" id="3_10hmr"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/document_text_32.png" id="4_qsrht"]
+[ext_resource type="Script" path="res://customers/sticker.gd" id="5_gs1ce"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/folder_closed_32.png" id="5_lymrw"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/document_config_32.png" id="6_m26x5"]
+[ext_resource type="Script" path="res://win95/applets/applet.gd" id="7_5e6l0"]
+[ext_resource type="Script" path="res://win95/win95_setup.gd" id="9_86j8n"]
+[ext_resource type="Script" path="res://win95/email.gd" id="33_5blj2"]
+[ext_resource type="Resource" path="res://win95/theme/palette.tres" id="34_633m2"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/win95-default.png" id="36_0w4qd"]
+[ext_resource type="Script" path="res://customers/choice.gd" id="38_21cv8"]
+[ext_resource type="Script" path="res://customers/reply.gd" id="39_748tm"]
+[ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="app_calculator"]
+[ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
+[ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="app_inbox"]
+[ext_resource type="PackedScene" path="res://win95/media_player.tscn" id="app_media_player"]
+[ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="app_ms_dos_prompt"]
+[ext_resource type="PackedScene" path="res://win95/notepad.tscn" id="app_notepad"]
+[ext_resource type="PackedScene" path="res://win95/paint.tscn" id="app_paint"]
+[ext_resource type="PackedScene" path="res://win95/solitaire/solitaire.tscn" id="app_solitaire"]
+[ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
+[ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="app_wordpad"]
 [ext_resource type="Material" path="res://materials/yellowed_plastic.tres" id="case_yellowed"]
+[ext_resource type="Script" path="res://customers/condition.gd" id="condition"]
+[ext_resource type="Script" path="res://customers/conversation.gd" id="cv"]
+[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="dl"]
 [ext_resource type="PackedScene" path="res://props/case_fronts/drive_door.tscn" id="front_drive_door"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/speaker_loud_32.png" id="icon_speaker_loud"]
+[ext_resource type="Script" path="res://customers/hardware.gd" id="hardware_script"]
+[ext_resource type="PackedScene" path="res://props/fedora.tscn" id="hat_fedora"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/calculator_spreadsheet_32.png" id="icon_calculator_spreadsheet"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/crayon_scribble_32.png" id="icon_crayon_scribble"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/disk_drive_box_32.png" id="icon_disk_drive_box"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/playing_cards_hand_32.png" id="icon_playing_cards_hand"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/document_pencil_32.png" id="icon_document_pencil"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/inbox_32.png" id="icon_inbox"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/media_devices_32.png" id="icon_media_devices"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/ms_dos_window_32.png" id="icon_ms_dos_window"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/notepad_32.png" id="icon_notepad"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/document_pencil_32.png" id="icon_document_pencil"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/crayon_scribble_32.png" id="icon_crayon_scribble"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/calculator_spreadsheet_32.png" id="icon_calculator_spreadsheet"]
-[ext_resource type="Script" path="res://customers/hardware.gd" id="hardware_script"]
-[ext_resource type="Script" path="res://customers/customer.gd" id="3_10hmr"]
-[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="dl"]
-[ext_resource type="Script" path="res://customers/conversation.gd" id="cv"]
-[ext_resource type="Script" path="res://customers/computer.gd" id="1_2x16c"]
-[ext_resource type="Script" path="res://win95/win95_file.gd" id="2_egn44"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons/document_text_32.png" id="4_qsrht"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons/folder_closed_32.png" id="5_lymrw"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons/document_config_32.png" id="6_m26x5"]
-[ext_resource type="Script" path="res://win95/win95_setup.gd" id="9_86j8n"]
-[ext_resource type="PackedScene" path="res://win95/notepad.tscn" id="app_notepad"]
-[ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="app_wordpad"]
-[ext_resource type="PackedScene" path="res://win95/paint.tscn" id="app_paint"]
-[ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="app_calculator"]
-[ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="app_inbox"]
-[ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
-[ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
-[ext_resource type="PackedScene" path="res://win95/solitaire/solitaire.tscn" id="app_solitaire"]
-[ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="app_ms_dos_prompt"]
-[ext_resource type="PackedScene" path="res://win95/media_player.tscn" id="app_media_player"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/playing_cards_hand_32.png" id="icon_playing_cards_hand"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/speaker_loud_32.png" id="icon_speaker_loud"]
+[ext_resource type="Resource" path="res://people/old_dude/person.tres" id="person"]
 [ext_resource type="Resource" path="res://win95/start_menu_stock.tres" id="start_menu"]
 [ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
-[ext_resource type="Resource" path="res://people/old_dude/person.tres" id="person"]
-[ext_resource type="Script" path="res://customers/condition.gd" id="condition"]
-[ext_resource type="PackedScene" path="res://props/fedora.tscn" id="hat_fedora"]
+
+[sub_resource type="Resource" id="Hardware_486"]
+script = ExtResource("hardware_script")
+bios_version = "v4.50G"
+bios_id = "07/12/94-UMC-881/886-2C4X6U01-00"
+cpu = "486DX2"
+cpu_mhz = 66
+cache_kb = 128
+edo = false
+hard_drive = "WDC AC2540H"
+hard_drive_mb = 515
+cd_rom = ""
+pci_devices = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_4fbej"]
 script = ExtResource("2_egn44")
@@ -99,75 +119,75 @@ midimapper=midimap.drv
 "
 modified = "Saturday, October 21, 1995 3:47:19 PM"
 
-[sub_resource type="Resource" id="Program_inbox"]
-script = ExtResource("2_egn44")
-name = "EXCHNG32.EXE"
-icon = ExtResource("icon_inbox")
-modified = "Tuesday, July 11, 1995 9:50:00 AM"
-program = ExtResource("app_inbox")
-
-[sub_resource type="Resource" id="Program_volume_control"]
-script = ExtResource("2_egn44")
-name = "SNDVOL32.EXE"
-icon = ExtResource("icon_speaker_loud")
-modified = "Tuesday, July 11, 1995 9:50:00 AM"
-program = ExtResource("app_volume_control")
-
-[sub_resource type="Resource" id="Program_defrag"]
-script = ExtResource("2_egn44")
-name = "DEFRAG.EXE"
-icon = ExtResource("icon_disk_drive_box")
-modified = "Tuesday, July 11, 1995 9:50:00 AM"
-program = ExtResource("app_defrag")
-
-[sub_resource type="Resource" id="Program_solitaire"]
-script = ExtResource("2_egn44")
-name = "SOL.EXE"
-icon = ExtResource("icon_playing_cards_hand")
-modified = "Tuesday, July 11, 1995 9:50:00 AM"
-program = ExtResource("app_solitaire")
-
-[sub_resource type="Resource" id="Program_media_player"]
-script = ExtResource("2_egn44")
-name = "MPLAYER.EXE"
-icon = ExtResource("icon_media_devices")
-modified = "Tuesday, July 11, 1995 9:50:00 AM"
-program = ExtResource("app_media_player")
-
-[sub_resource type="Resource" id="Program_ms_dos_prompt"]
-script = ExtResource("2_egn44")
-name = "COMMAND.COM"
-icon = ExtResource("icon_ms_dos_window")
-modified = "Tuesday, July 11, 1995 9:50:00 AM"
-program = ExtResource("app_ms_dos_prompt")
-
 [sub_resource type="Resource" id="Program_notepad"]
 script = ExtResource("2_egn44")
 name = "NOTEPAD.EXE"
 icon = ExtResource("icon_notepad")
-modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_notepad")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 
 [sub_resource type="Resource" id="Program_wordpad"]
 script = ExtResource("2_egn44")
 name = "WORDPAD.EXE"
 icon = ExtResource("icon_document_pencil")
-modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_wordpad")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 
 [sub_resource type="Resource" id="Program_paint"]
 script = ExtResource("2_egn44")
 name = "PBRUSH.EXE"
 icon = ExtResource("icon_crayon_scribble")
-modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_paint")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 
 [sub_resource type="Resource" id="Program_calculator"]
 script = ExtResource("2_egn44")
 name = "CALC.EXE"
 icon = ExtResource("icon_calculator_spreadsheet")
-modified = "Tuesday, July 11, 1995 9:50:00 AM"
 program = ExtResource("app_calculator")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Program_inbox"]
+script = ExtResource("2_egn44")
+name = "EXCHNG32.EXE"
+icon = ExtResource("icon_inbox")
+program = ExtResource("app_inbox")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Program_volume_control"]
+script = ExtResource("2_egn44")
+name = "SNDVOL32.EXE"
+icon = ExtResource("icon_speaker_loud")
+program = ExtResource("app_volume_control")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Program_defrag"]
+script = ExtResource("2_egn44")
+name = "DEFRAG.EXE"
+icon = ExtResource("icon_disk_drive_box")
+program = ExtResource("app_defrag")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Program_solitaire"]
+script = ExtResource("2_egn44")
+name = "SOL.EXE"
+icon = ExtResource("icon_playing_cards_hand")
+program = ExtResource("app_solitaire")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Program_ms_dos_prompt"]
+script = ExtResource("2_egn44")
+name = "COMMAND.COM"
+icon = ExtResource("icon_ms_dos_window")
+program = ExtResource("app_ms_dos_prompt")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Program_media_player"]
+script = ExtResource("2_egn44")
+name = "MPLAYER.EXE"
+icon = ExtResource("icon_media_devices")
+program = ExtResource("app_media_player")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
 
 [sub_resource type="Resource" id="Resource_46tg0"]
 script = ExtResource("2_egn44")
@@ -201,19 +221,6 @@ drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResou
 installed_apps = PackedStringArray("Calculator", "Notepad")
 registered_owner = "Bob"
 
-[sub_resource type="Resource" id="Hardware_486"]
-script = ExtResource("hardware_script")
-bios_version = "v4.50G"
-bios_id = "07/12/94-UMC-881/886-2C4X6U01-00"
-cpu = "486DX2"
-cpu_mhz = 66
-cache_kb = 128
-edo = false
-hard_drive = "WDC AC2540H"
-hard_drive_mb = 515
-cd_rom = ""
-pci_devices = PackedStringArray()
-
 [sub_resource type="Resource" id="Computer_accountant"]
 script = ExtResource("1_2x16c")
 win95_setup = SubResource("Setup_accountant")
@@ -221,39 +228,145 @@ hardware = SubResource("Hardware_486")
 case_material = ExtResource("case_yellowed")
 case_front = ExtResource("front_drive_door")
 
-[sub_resource type="Resource" id="Line_arrive_1"]
+[sub_resource type="Resource" id="Resource_ep33l"]
 script = ExtResource("dl")
-text = "Good day. My computer has gone quiet. Not a sound, not even the little tune when it starts."
-pose = &"problem"
+text = "Believe me, I'd rather not be."
+pose = &"irritated02"
 
-[sub_resource type="Resource" id="Line_arrive_2"]
+[sub_resource type="Resource" id="Resource_bmhnm"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Resource_ep33l")])
+
+[sub_resource type="Resource" id="Resource_b6qpg"]
+script = ExtResource("38_21cv8")
+text = "Back so soon?"
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_bmhnm")])
+
+[sub_resource type="Resource" id="Resource_863hf"]
 script = ExtResource("dl")
-text = "My nephew says it is something in the settings, but I don't dare touch them."
+text = "Well... maybe I clicked the little speaker. Once. Or twice."
+pose = &"thinking"
 
-[sub_resource type="Resource" id="Line_arrive_3"]
+[sub_resource type="Resource" id="Resource_ks1hr"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Resource_863hf")])
+
+[sub_resource type="Resource" id="Resource_cqlim"]
+script = ExtResource("38_21cv8")
+text = "Really nothing? Not even the volume?"
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_ks1hr")])
+
+[sub_resource type="Resource" id="Resource_ne3wx"]
 script = ExtResource("dl")
-text = "I need it for the tax returns, so please be quick."
+text = "Please hurry. The tax office won't wait."
+pose = &"irritated01"
 
-[sub_resource type="Resource" id="When_day_2"]
-script = ExtResource("condition")
-from_day = 2
-to_day = 2
+[sub_resource type="Resource" id="Resource_xsvqa"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Resource_ne3wx")])
+
+[sub_resource type="Resource" id="Resource_51wgf"]
+script = ExtResource("38_21cv8")
+text = "OK, leave it with me."
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_xsvqa")])
+ends = true
 
 [sub_resource type="Resource" id="Line_again_1"]
 script = ExtResource("dl")
 text = "It's silent again! Since last night. I didn't touch a thing, I promise."
 pose = &"irritated01"
 
+[sub_resource type="Resource" id="Resource_wpb5g"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Line_again_1")])
+choices = Array[ExtResource("38_21cv8")]([SubResource("Resource_cqlim"), SubResource("Resource_51wgf")])
+
+[sub_resource type="Resource" id="Resource_vvebn"]
+script = ExtResource("38_21cv8")
+text = "So, what's your problem?"
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_wpb5g")])
+
+[sub_resource type="Resource" id="Resource_bpmi6"]
+script = ExtResource("dl")
+text = "Hello again."
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="When_day_2"]
+script = ExtResource("condition")
+from_day = 2
+to_day = 2
+
 [sub_resource type="Resource" id="Conversation_again"]
 script = ExtResource("cv")
 id = &"silent_again"
 when = SubResource("When_day_2")
-lines = Array[ExtResource("dl")]([SubResource("Line_again_1")])
+lines = Array[ExtResource("dl")]([SubResource("Resource_bpmi6")])
+choices = Array[ExtResource("38_21cv8")]([SubResource("Resource_b6qpg"), SubResource("Resource_vvebn")])
+
+[sub_resource type="Resource" id="Resource_tytfh"]
+script = ExtResource("dl")
+text = "Is it? I hadn't noticed. I've been inside with the tax returns all week."
+
+[sub_resource type="Resource" id="Resource_cmddj"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Resource_tytfh")])
+
+[sub_resource type="Resource" id="Resource_h1eqg"]
+script = ExtResource("38_21cv8")
+text = "Lovely weather today."
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_cmddj")])
+
+[sub_resource type="Resource" id="Line_arrive_2"]
+script = ExtResource("dl")
+text = "My nephew says it is something in the settings, but I don't dare touch them."
+
+[sub_resource type="Resource" id="Resource_ekp0o"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Line_arrive_2")])
+
+[sub_resource type="Resource" id="Resource_uapy0"]
+script = ExtResource("38_21cv8")
+text = "Has anyone looked at it?"
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_ekp0o")])
+
+[sub_resource type="Resource" id="Line_arrive_3"]
+script = ExtResource("dl")
+text = "I need it for the tax returns, so please be quick."
+
+[sub_resource type="Resource" id="Resource_8beia"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Line_arrive_3")])
+
+[sub_resource type="Resource" id="Resource_qhjbq"]
+script = ExtResource("38_21cv8")
+text = "OK, leave it with me."
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_8beia")])
+ends = true
+
+[sub_resource type="Resource" id="Line_arrive_1"]
+script = ExtResource("dl")
+text = "My computer has gone quiet. Not a sound, not even the little tune when it starts."
+pose = &"problem"
+
+[sub_resource type="Resource" id="Resource_1xe35"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Line_arrive_1")])
+choices = Array[ExtResource("38_21cv8")]([SubResource("Resource_uapy0"), SubResource("Resource_qhjbq")])
+
+[sub_resource type="Resource" id="Resource_bw53v"]
+script = ExtResource("38_21cv8")
+text = "So, what's your problem?"
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_1xe35")])
+
+[sub_resource type="Resource" id="Resource_cxtt3"]
+script = ExtResource("dl")
+text = "Good day."
 
 [sub_resource type="Resource" id="Conversation_arrive"]
 script = ExtResource("cv")
 id = &"arrive"
-lines = Array[ExtResource("dl")]([SubResource("Line_arrive_1"), SubResource("Line_arrive_2"), SubResource("Line_arrive_3")])
+lines = Array[ExtResource("dl")]([SubResource("Resource_cxtt3")])
+choices = Array[ExtResource("38_21cv8")]([SubResource("Resource_h1eqg"), SubResource("Resource_bw53v")])
 
 [sub_resource type="Resource" id="Line_pickup_1"]
 script = ExtResource("dl")
