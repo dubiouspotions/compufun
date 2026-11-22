@@ -420,10 +420,15 @@ func set_flag(flag_name: StringName, value: int = 1) -> void:
 
 
 func _put_flag(flag_name: StringName, value: int) -> void:
+	put_flag(flags, flag_name, value)
+
+
+## Sets [param flag_name] to [param value] in [param into], as the story sets a flag: 0 clears it.
+static func put_flag(into: Dictionary[StringName, int], flag_name: StringName, value: int) -> void:
 	if value == 0:
-		flags.erase(flag_name)
+		into.erase(flag_name)
 	else:
-		flags[flag_name] = value
+		into[flag_name] = value
 
 
 ## The choices of [param reply] that the player can say now: their condition matches, and one of
