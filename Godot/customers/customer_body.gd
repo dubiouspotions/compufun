@@ -11,6 +11,9 @@ extends Node3D
 const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color", &"uv_rect", &"tint_texture",
 	&"tint_rect", &"fill_transparent"]
 
+## The modelled parts that the photo relief replaces; a hat hangs from the head, so it goes too.
+const MODELLED_UPPER_BODY: Array[StringName] = [&"Torso", &"Neck", &"Head", &"Face", &"ShoulderL", &"ShoulderR"]
+
 ## The face when the person has no face texture yet.
 @export var default_face: Texture2D
 ## The footsteps where no Ground is under the body; each step plays one take of them.
@@ -28,6 +31,15 @@ const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color",
 @export_range(0.05, 0.5) var back_strip: float = 0.15
 ## The speed, in metres per second, at which the walk plays at its own pace.
 @export var walk_speed: float = 1.4
+## Shows the upper body as a relief of the person's neutral portrait (PhotoRelief) in place of the
+## modelled head, torso, arms and hat; the arms are the photo's, so they hang stiff. Off, or for a
+## person with no neutral portrait: the modelled upper body.
+@export var photo_relief: bool = true
+## The relief's scale: how wide a head is and how high its top is, in metres, and how far the
+## middle of the relief bulges each way.
+@export var relief_head_width: float = 0.18
+@export var relief_top: float = 1.8
+@export var relief_depth: float = 0.12
 ## How far the arms swing while the body walks without a computer, in degrees.
 @export var arm_swing: float = 17.0
 ## How far forward the arms reach to hold the computer, in degrees.
@@ -59,6 +71,7 @@ var _shirt: ShaderMaterial
 var _trousers: ShaderMaterial
 var _last_position: Vector3
 var _hat: Node3D
+var _relief: MeshInstance3D
 var _trouser_points: PackedVector3Array
 var _trouser_normals: PackedVector3Array
 var _trouser_arrays: Array
@@ -97,6 +110,11 @@ func _ready() -> void:
 	_trousers = _own_copy(trousers_material)
 	_trousers_mesh.mesh = ArrayMesh.new()
 	_build_trousers()
+	_relief = MeshInstance3D.new()
+	_relief.name = &"Relief"
+	_relief.rotation.y = PI  # the relief's front faces +Z, the body's -Z
+	_relief.visible = false
+	add_child(_relief)
 	_last_position = global_position
 	_computer.visible = carrying
 	_animation.play(&"idle")
@@ -181,6 +199,45 @@ func show_customer(customer: Customer) -> void:
 	var trousers: Color = trousers_material.get_shader_parameter("albedo_color")
 	_trousers.set_shader_parameter("albedo_color", customer.trousers_color if customer != null else trousers)
 	_wear_hat(customer)
+	_show_relief(person)
+
+
+# Shows the person's photo relief in place of the modelled upper body, or the modelled body when
+# there is no relief to show.
+func _show_relief(person: Person) -> void:
+	var portrait: Texture2D = person.portraits.get(&"neutral") if person != null else null
+	var shown := photo_relief and portrait != null
+	_relief.visible = shown
+	var torso_too := true
+	if shown:
+		var image := portrait.get_image()
+		var scale := relief_head_width / PhotoRelief.head_width(image)
+		var bottom := relief_top - image.get_height() * scale
+		_relief.mesh = PhotoRelief.build(image, scale, relief_depth)
+		_relief.position = Vector3(0.0, bottom, 0.0)
+		_relief.set_surface_override_material(PhotoRelief.Surface.FRONT, _relief_material(portrait, Color.WHITE))
+		var back := _relief_material(person.back, Color.WHITE) if person.back != null else _relief_material(portrait, Color(0.78, 0.78, 0.78))
+		_relief.set_surface_override_material(PhotoRelief.Surface.BACK, back)
+		_relief.set_surface_override_material(PhotoRelief.Surface.HEAD_BACK, back if person.back != null else _plain_head_back())
+		# A portrait cut at the chest leaves the modelled torso to fill the gap down to the trousers.
+		torso_too = bottom >= waist_height - 0.02
+	for part: StringName in MODELLED_UPPER_BODY:
+		(get_node(NodePath(part)) as Node3D).visible = not shown or (part == &"Torso" and torso_too)
+
+
+func _relief_material(texture: Texture2D, tint: Color) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = skin_material.shader
+	material.set_shader_parameter(&"albedo_texture", texture)
+	material.set_shader_parameter(&"albedo_color", tint)
+	return material
+
+
+# Without a back picture, the back of the head takes the hat or hair colour from the vertex colours.
+func _plain_head_back() -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.vertex_color_use_as_albedo = true
+	return material
 
 
 func _wear_hat(customer: Customer) -> void:
