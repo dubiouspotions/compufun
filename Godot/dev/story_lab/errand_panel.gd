@@ -436,7 +436,8 @@ func _fill_fields() -> void:
 	for i: int in _problem.item_count:
 		if _errand.problem != null and _problem.get_item_text(i) == _errand.problem.resource_path.get_file().get_basename():
 			_problem.select(i)
-	(_computer.get_buttons()[_errand.brings] as BaseButton).set_pressed_no_signal(true)
+	for button: BaseButton in _computer.get_buttons():
+		button.set_pressed_no_signal(button.get_index() == _errand.brings)  # no_signal bypasses the group
 	_computer_hint.text = COMPUTER_HINTS[_errand.brings]
 	_when.text = StoryFormat.write_condition(_errand.when) if _errand.when != null else ""
 	_when_error.text = ""
