@@ -495,9 +495,9 @@ size = Vector3(0.32, 0.42, 0.46)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 1.5, -5.445)
 
 [node name="CommercialPoster" parent="Room" instance=ExtResource("23_poster") groups=["solitaire_posters"]]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.97, 1.65, -4.95)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.97, 1.55, -4.55)
 texture = ExtResource("31_commercial")
-size = Vector2(0.56, 0.8)
+size = Vector2(0.9, 1.28)
 
 [node name="Phone" parent="Room" unique_id=902915224 instance=ExtResource("13_ojat2")]
 unique_name_in_owner = true
