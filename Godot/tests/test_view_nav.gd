@@ -56,7 +56,7 @@ func _check_db_start_up() -> void:
 	for i: int in 60:
 		await process_frame
 	var screen: Control = view.get_node("%Screen")
-	for key: Key in [KEY_A, KEY_SPACE, KEY_ENTER, KEY_F4]:
+	for key: Key in [KEY_A, KEY_SPACE, KEY_ENTER, KEY_F6]:
 		_press_key(key)
 	_click(screen.get_global_rect().get_center())
 	for i: int in 5:
