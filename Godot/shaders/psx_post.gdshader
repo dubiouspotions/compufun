@@ -56,8 +56,15 @@ vec3 nearest_windows_color(vec3 c) {
 	return best;
 }
 
+// The node's modulate, which fragment() would lose by writing COLOR.
+varying vec4 modulate;
+
+void vertex() {
+	modulate = COLOR;
+}
+
 void fragment() {
-	vec4 source = texture(TEXTURE, UV);
+	vec4 source = texture(TEXTURE, UV) * modulate;
 	float from_centre = length(UV - 0.5) / length(vec2(0.5));
 	source.rgb *= 1.0 - vignette * smoothstep(vignette_start, 1.0, from_centre);
 	// The pattern follows the pixels of the source picture, so it scales up with the picture.
