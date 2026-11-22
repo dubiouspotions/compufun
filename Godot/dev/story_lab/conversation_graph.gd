@@ -19,7 +19,11 @@ signal edited
 @export var error_color: Color = Color("c0392b")
 @export var selected_color: Color = Color("e89f2b")
 @export var arrow_color: Color = Color("3c8f86")
-@export var thumb_size: Vector2 = Vector2(40, 40)
+@export var thumb_size: Vector2 = Vector2(48, 48)
+## The share of a portrait's width that its thumbnail shows, from the top: the face and upper body.
+@export_range(0.2, 1.0, 0.01) var thumb_crop: float = 0.62
+## The lines that the text editor shows at least.
+@export var editor_lines: int = 5
 ## The least zoom that a new conversation shows at, to fit it in the view.
 @export var min_fit_zoom: float = 0.7
 ## The text of a new line or choice, selected in its editor at once.
@@ -101,10 +105,11 @@ func return_arrows() -> Array[Array]:
 	return found
 
 
-## Sets the text of [param part]: a DialogueLine, a Choice, or the Conversation's brief. Returns ""
-## or why the text was refused (empty, or it reads as something else in the story file).
+## Sets the text of [param part]: a DialogueLine, a Choice, or the Conversation's brief. A story
+## file holds each on one line, so line breaks become spaces. Returns "" or why the text was
+## refused (empty, or it reads as something else in the story file).
 func edit_text(part: Resource, text: String) -> String:
-	var said := text.strip_edges()
+	var said := text.replace("\r", "").replace("\n", " ").strip_edges()
 	if part is Conversation:
 		(part as Conversation).brief = said
 		_changed(part)
@@ -498,10 +503,11 @@ func _reply_box(reply: Reply) -> GraphNode:
 	head.custom_minimum_size.y = 6
 	box.add_child(head)
 	box.set_slot(0, reply != _conversation, 0, arrow_color, true, 0, arrow_color)
-	if reply == _conversation and (not _read_only or _conversation.brief != ""):
-		var brief := _label(_conversation.brief if _conversation.brief != "" else "(no brief)", 12, faint_ink)
+	if reply == _conversation:
+		var brief := _label(_conversation.brief, 12, faint_ink) if _conversation.brief != "" else null
+		if brief != null:
+			brief.custom_minimum_size.x = box_width - 24
 		_spot(head, brief, _conversation, &"brief", _conversation.brief, func(text: String) -> String: return edit_text(_conversation, text))
-		brief.custom_minimum_size.x = box_width - 24
 	if parent is Choice:
 		var only := "only if: " + StoryFormat.write_condition(reply.when) if reply.when != null else "else"
 		if reply.when != null or (parent as Choice).replies.size() > 1:
@@ -516,13 +522,13 @@ func _reply_box(reply: Reply) -> GraphNode:
 	if reply.lines.is_empty() and not junction and reply.choices.is_empty():
 		box.add_child(_label("(says nothing)", 12, faint_ink))
 	if not _read_only:
-		var more := Button.new()
-		more.text = "+ line"
-		more.flat = true
-		more.add_theme_color_override(&"font_color", faint_ink)
-		more.add_theme_font_size_override(&"font_size", 12)
-		more.pressed.connect(func() -> void: _open_spot(add_line(reply), &"text"))
-		box.add_child(more)
+		var actions := HFlowContainer.new()
+		actions.add_child(_action("+ line", "Add a line that the customer says", func() -> void: _open_spot_later(add_line(reply), &"text")))
+		var list_tip := "Add a player choice to this box's list" if not reply.choices.is_empty() else "Start a list of player choices after these lines"
+		actions.add_child(_action("+ choice", list_tip, func() -> void: _open_spot_later(add_choice(reply), &"text")))
+		if not reply.choices.is_empty() and reply.then == null:
+			actions.add_child(_action("+ go on below", "Add what comes after this list, where its - choices meet", func() -> void: _open_spot_later(go_on_below(reply).lines[0], &"text")))
+		box.add_child(actions)
 		_menu(box, _reply_menu(reply))
 	return box
 
@@ -550,6 +556,7 @@ func _choice_box(choice: Choice, reply: Reply, index: int) -> GraphNode:
 	mark.pressed.connect(func() -> void: cycle_mark(choice))
 	box.get_titlebar_hbox().add_child(mark)
 	if not _read_only:
+		box.add_child(_action("+ answer", "Add an answer that plays only if a condition holds (if)", func() -> void: _open_spot_later(add_answer(choice), &"when")))
 		_menu(box, _choice_menu(choice))
 	return box
 
@@ -560,45 +567,45 @@ func _line_row(reply: Reply, index: int) -> Control:
 	if not _read_only:
 		row.add_child(_grip(line.text, {"kind": &"line", "list": reply, "index": index}))
 		row.set_drag_forwarding(Callable(), _can_drop.bind(&"line", reply), func(_at: Vector2, data: Variant) -> void: move_line(reply, data["index"], index))
+	var face := VBoxContainer.new()
+	face.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	face.add_theme_constant_override(&"separation", 0)
 	var mood := Button.new()
 	mood.custom_minimum_size = thumb_size
+	mood.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	mood.expand_icon = true
-	mood.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var portrait := _portrait(line.mood)
-	mood.icon = portrait
-	if portrait == null:
+	mood.icon = _thumb(line.mood)
+	if mood.icon == null:
 		mood.text = "?"
-		mood.add_theme_color_override(&"font_color", error_color)
 	mood.tooltip_text = _mood_tip(line.mood)
+	for state: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
+		var frame := StyleBoxFlat.new()
+		frame.bg_color = Color("e4e4e4") if state != &"hover" else Color("d2d2d2")
+		frame.set_corner_radius_all(4)
+		frame.set_content_margin_all(0)
+		mood.add_theme_stylebox_override(state, frame)
+	mood.add_theme_stylebox_override(&"focus", StyleBoxEmpty.new())
+	mood.add_theme_color_override(&"font_color", error_color)
 	if not _read_only:
 		mood.pressed.connect(_pick_mood.bind(line, mood))
-	row.add_child(mood)
+	face.add_child(mood)
+	var caption := _label(String(line.mood), 10, faint_ink if _portrait(line.mood) != null else error_color)
+	caption.autowrap_mode = TextServer.AUTOWRAP_OFF
+	caption.custom_minimum_size.x = thumb_size.x
+	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	face.add_child(caption)
+	row.add_child(face)
 	var words := VBoxContainer.new()
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	words.add_theme_constant_override(&"separation", 0)
-	var caption := String(line.mood)
-	if line.effect != null:
-		caption += "  [effect %s]" % line.effect.resource_path.get_file().get_basename()
-	words.add_child(_label(caption, 11, faint_ink))
 	var text := _label(line.text, 14, ink)
 	_spot(words, text, line, &"text", line.text, func(said: String) -> String: return edit_text(line, said))
+	if line.effect != null:
+		words.add_child(_label("effect: " + line.effect.resource_path.get_file().get_basename(), 10, faint_ink))
 	row.add_child(words)
-	var play := Button.new()
-	play.text = ">"
-	play.flat = true
-	play.tooltip_text = "Play this line in its mood"
-	play.add_theme_font_size_override(&"font_size", 12)
-	play.pressed.connect(_play.bind(line))
-	row.add_child(play)
+	row.add_child(_icon_button(_play_icon(), "Play this line", _play.bind(line)))
 	if not _read_only:
-		var cut := Button.new()
-		cut.text = "x"
-		cut.flat = true
-		cut.tooltip_text = "Delete this line"
-		cut.add_theme_color_override(&"font_color", faint_ink)
-		cut.add_theme_font_size_override(&"font_size", 12)
-		cut.pressed.connect(func() -> void: delete_line(reply, index))
-		row.add_child(cut)
+		row.add_child(_icon_button(_trash_icon(), "Delete line", func() -> void: delete_line(reply, index)))
 	return row
 
 
@@ -610,6 +617,57 @@ func _label(text: String, font_size: int, color: Color) -> Label:
 	label.add_theme_font_size_override(&"font_size", font_size)
 	label.add_theme_color_override(&"font_color", color)
 	return label
+
+
+# A small flat button at the bottom of a box that adds something.
+func _action(text: String, tip: String, pressed: Callable) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.flat = true
+	button.tooltip_text = tip
+	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_font_size_override(&"font_size", 12)
+	button.add_theme_color_override(&"font_color", faint_ink)
+	button.add_theme_color_override(&"font_hover_color", ink)
+	button.add_theme_color_override(&"font_pressed_color", ink)
+	button.pressed.connect(pressed)
+	return button
+
+
+func _icon_button(icon: Texture2D, tip: String, pressed: Callable) -> Button:
+	var button := Button.new()
+	button.icon = icon
+	button.flat = true
+	button.tooltip_text = tip
+	button.focus_mode = Control.FOCUS_NONE
+	button.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	button.add_theme_constant_override(&"icon_max_width", 16)
+	button.add_theme_color_override(&"icon_normal_color", faint_ink)
+	button.add_theme_color_override(&"icon_hover_color", ink)
+	button.add_theme_color_override(&"icon_pressed_color", ink)
+	button.pressed.connect(pressed)
+	return button
+
+
+# A 32 px white triangle pointing right; buttons tint it.
+static func _play_icon() -> ImageTexture:
+	var image := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	for y: int in 32:
+		for x: int in 32:
+			if x >= 8 and x <= 26 and absf(y - 15.5) <= (26 - x) * 0.62:
+				image.set_pixel(x, y, Color.WHITE)
+	return ImageTexture.create_from_image(image)
+
+
+# A 32 px white trash can, lid and handle on a ribbed body; buttons tint it.
+static func _trash_icon() -> ImageTexture:
+	var image := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	image.fill_rect(Rect2i(12, 3, 8, 3), Color.WHITE)
+	image.fill_rect(Rect2i(5, 6, 22, 3), Color.WHITE)
+	image.fill_rect(Rect2i(8, 11, 16, 18), Color.WHITE)
+	for x: int in [12, 16, 20]:
+		image.fill_rect(Rect2i(x - 1, 14, 2, 12), Color.TRANSPARENT)
+	return ImageTexture.create_from_image(image)
 
 
 func _chip(text: String, on_player: bool) -> Button:
@@ -687,42 +745,100 @@ func _open_spot(part: Resource, field: StringName) -> void:
 		return
 	var anchor: Control = spot[0]
 	var apply: Callable = spot[2]
+	var said: String = spot[1]
 	var holder := VBoxContainer.new()
 	holder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var field_edit := LineEdit.new()
-	field_edit.text = spot[1]
-	field_edit.custom_minimum_size.x = 160
-	field_edit.select_all_on_focus = true
-	field_edit.placeholder_text = {&"when": "flag, not flag, days 2-4", &"set_flags": "flag, flag=2, flag=0"}.get(field, "")
 	var error := _label("", 12, error_color)
 	var paper := StyleBoxFlat.new()
 	paper.bg_color = Color.WHITE
 	paper.set_content_margin_all(3)
 	error.add_theme_stylebox_override(&"normal", paper)
 	error.hide()
-	holder.add_child(field_edit)
-	holder.add_child(error)
-	anchor.get_parent().add_child(holder)
-	anchor.get_parent().move_child(holder, anchor.get_index())
-	anchor.hide()
 	var commit := func(text: String) -> void:
-		if _rebuilding or not field_edit.is_inside_tree():
+		if _rebuilding or not holder.is_inside_tree():
 			return
 		var problem: String = apply.call(text)
 		if problem != "":
 			error.text = problem
 			error.show()
-	field_edit.text_submitted.connect(commit)
-	field_edit.focus_exited.connect(func() -> void:
-		if field_edit.text != spot[1]:
-			commit.call(field_edit.text))
-	field_edit.gui_input.connect(func(event: InputEvent) -> void:
+	var editor: Control
+	if field == &"text" or field == &"brief":
+		editor = _text_editor(said, commit)
+		# A text gets the whole width of its box, under the row that shows it.
+		var row: Control = anchor
+		while not (row.get_parent() is GraphNode):
+			row = row.get_parent()
+		row.get_parent().add_child(holder)
+		row.get_parent().move_child(holder, row.get_index() + 1)
+	else:
+		var line := LineEdit.new()
+		line.text = said
+		line.custom_minimum_size.x = 160
+		line.select_all_on_focus = true
+		line.placeholder_text = {&"when": "flag, not flag, days 2-4", &"set_flags": "flag, flag=2, flag=0"}.get(field, "")
+		line.text_submitted.connect(commit)
+		line.focus_exited.connect(func() -> void:
+			if line.text != said:
+				commit.call(line.text))
+		editor = line
+		anchor.get_parent().add_child(holder)
+		anchor.get_parent().move_child(holder, anchor.get_index())
+	_paper(editor)
+	editor.gui_input.connect(func(event: InputEvent) -> void:
 		var key := event as InputEventKey
 		if key != null and key.pressed and key.keycode == KEY_ESCAPE:
-			field_edit.accept_event()
+			editor.accept_event()
 			_rebuild.call_deferred())
-	field_edit.grab_focus.call_deferred()
+	holder.add_child(editor)
+	holder.add_child(error)
+	anchor.hide()
+	editor.grab_focus.call_deferred()
 	_selected = part if part is Choice or part is Reply else _owner_of(part)
+
+
+# A word-wrapping editor of [param said], at least [member editor_lines] tall, that grows with its
+# text. Enter (with or without Ctrl or Cmd) and leaving it call [param commit] with the text.
+func _text_editor(said: String, commit: Callable) -> TextEdit:
+	var edit := TextEdit.new()
+	edit.text = said
+	edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+	edit.scroll_fit_content_height = true
+	edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	edit.add_theme_font_size_override(&"font_size", 14)
+	edit.tooltip_text = "Enter saves, Esc cancels"
+	edit.ready.connect(func() -> void:
+		edit.custom_minimum_size = Vector2(box_width - 24, edit.get_line_height() * editor_lines + 12)
+		if said == new_text:
+			edit.select_all()
+		else:
+			edit.set_caret_line(edit.get_line_count() - 1)
+			edit.set_caret_column(edit.get_line(edit.get_line_count() - 1).length()))
+	edit.gui_input.connect(func(event: InputEvent) -> void:
+		var key := event as InputEventKey
+		if key != null and key.pressed and key.keycode in [KEY_ENTER, KEY_KP_ENTER]:
+			edit.accept_event()
+			commit.call(edit.text))
+	edit.focus_exited.connect(func() -> void:
+		if edit.text != said:
+			commit.call(edit.text))
+	return edit
+
+
+# Gives a field the box's light look, whatever the theme around the graph.
+func _paper(field: Control) -> void:
+	for state: StringName in [&"normal", &"focus", &"read_only"]:
+		var paper := StyleBoxFlat.new()
+		paper.bg_color = Color.WHITE
+		paper.border_color = selected_color if state == &"focus" else Color("b5b5b5")
+		paper.set_border_width_all(2 if state == &"focus" else 1)
+		paper.set_corner_radius_all(3)
+		paper.set_content_margin_all(6)
+		field.add_theme_stylebox_override(state, paper)
+	field.add_theme_color_override(&"font_color", ink)
+	field.add_theme_color_override(&"caret_color", ink)
+	field.add_theme_color_override(&"font_placeholder_color", faint_ink)
+	field.add_theme_color_override(&"selection_color", player_color.lightened(0.4))
+	field.add_theme_color_override(&"font_selected_color", ink)
 
 
 # Opens the editor of [param field] of [param part] once the rebuild that its edit queued is done.
@@ -752,7 +868,9 @@ func _reply_menu(reply: Reply) -> Array[Array]:
 		items.append(["Only if...", func() -> void: _open_spot(reply, &"when")])
 	if not reply.choices.is_empty() and reply.then == null:
 		items.append(["Go on below the list", func() -> void: _open_spot_later(go_on_below(reply).lines[0], &"text")])
-	if reply != _conversation:
+	if reply == _conversation:
+		items.append(["Brief...", func() -> void: _open_spot(reply, &"brief")])
+	else:
 		items.append(["Delete", func() -> void: _ask_delete(reply)])
 	return items
 
@@ -894,6 +1012,19 @@ func _portrait(mood: StringName) -> Texture2D:
 	if _customer == null or _customer.person == null:
 		return null
 	return _customer.person.portraits.get(mood)
+
+
+# The face and upper body from the top of [param mood]'s portrait, square; the person's face
+# without one; null without either.
+func _thumb(mood: StringName) -> Texture2D:
+	var portrait := _portrait(mood)
+	if portrait == null:
+		return _customer.person.face if _customer != null and _customer.person != null else null
+	var side := minf(portrait.get_width() * thumb_crop, portrait.get_height())
+	var crop := AtlasTexture.new()
+	crop.atlas = portrait
+	crop.region = Rect2((portrait.get_width() - side) * 0.5, 0.0, side, side)
+	return crop
 
 
 func _has_voice_mood(mood: StringName) -> bool:
