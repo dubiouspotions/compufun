@@ -2,8 +2,8 @@
 extends VBoxContainer
 ## The Dialogue tab: every customer in customers/, its conversations and their lines, in one
 ## place. Edits change the loaded Customer resources, the same ones the inspector shows, and
-## Save (or Ctrl+S) writes them back. Play says a line in the customer's voice and the mood of its
-## pose, and renders the voice file first if it is missing.
+## Save (or Ctrl+S) writes them back. Play says a line in the customer's voice and its
+## mood, and renders the voice file first if it is missing.
 
 const CUSTOMERS_DIR := "res://customers/"
 const ERROR_COLOR := Color(1.0, 0.45, 0.45)
@@ -340,7 +340,7 @@ func _play_line(line: DialogueLine) -> void:
 			return
 		_preview.stream = live
 		_preview.play()
-		_show_status("Playing live (%s, %s, %s)" % [person, line.pose, effect.resource_path.get_file().get_basename() if effect != null else "no effect"])
+		_show_status("Playing live (%s, %s, %s)" % [person, line.mood, effect.resource_path.get_file().get_basename() if effect != null else "no effect"])
 		return
 	var voice := _customer.voice.body
 	var path := Voices.path_of(line, voice)
@@ -359,7 +359,7 @@ func _play_line(line: DialogueLine) -> void:
 		return
 	_preview.stream = stream
 	_preview.play()
-	_show_status("Playing %s (%s, %s)" % [path.get_file(), voice, line.pose])
+	_show_status("Playing %s (%s, %s)" % [path.get_file(), voice, line.mood])
 
 
 func _open_in_inspector() -> void:
@@ -733,7 +733,7 @@ func _line_row(lines: Array[DialogueLine], index: int) -> Control:
 	var side := VBoxContainer.new()
 	side.custom_minimum_size.x = 160
 	row.add_child(side)
-	side.add_child(_pose_picker(line))
+	side.add_child(_mood_picker(line))
 	side.add_child(_effect_picker(line.effect, "Conversation's", func(picked: VoiceEffect) -> void:
 		line.effect = picked
 		_touch()))
@@ -788,23 +788,23 @@ static func _saved(dir: String) -> Array[Resource]:
 	return found
 
 
-## A dropdown of [constant Person.POSES], marking those the customer's person has no portrait
-## for. A pose outside the list stays selected and is marked unknown, never dropped silently.
-func _pose_picker(line: DialogueLine) -> OptionButton:
-	var poses := Person.POSES.duplicate()
-	if not poses.has(line.pose):
-		poses.append(line.pose)
+## A dropdown of [constant Person.MOODS], marking those the customer's person has no portrait
+## for. A mood outside the list stays selected and is marked unknown, never dropped silently.
+func _mood_picker(line: DialogueLine) -> OptionButton:
+	var moods := Person.MOODS.duplicate()
+	if not moods.has(line.mood):
+		moods.append(line.mood)
 	var picker := OptionButton.new()
-	for pose: StringName in poses:
-		var text := String(pose)
-		if not Person.POSES.has(pose):
+	for mood: StringName in moods:
+		var text := String(mood)
+		if not Person.MOODS.has(mood):
 			text += " (unknown)"
-		elif _customer.person == null or not _customer.person.portraits.has(pose):
+		elif _customer.person == null or not _customer.person.portraits.has(mood):
 			text += " (no photo)"
 		picker.add_item(text)
-	picker.select(poses.find(line.pose))
+	picker.select(moods.find(line.mood))
 	picker.item_selected.connect(func(index: int) -> void:
-		line.pose = poses[index]
+		line.mood = moods[index]
 		_touch())
 	return picker
 

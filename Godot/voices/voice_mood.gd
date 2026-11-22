@@ -1,8 +1,8 @@
 @tool
 class_name VoiceMood
 extends Resource
-## The middle layer of a voice: how a line in one pose is said, over the person and under an
-## effect (Voices.layer). voices/moods/<pose>.tres holds the mood of each pose; the Voice Lab (F3)
+## The middle layer of a voice: how a line in one mood is said, over the person and under an
+## effect (Voices.layer). voices/moods/<mood>.tres holds each mood; the Voice Lab (F3)
 ## edits them.
 
 ## The speaking speed: 1 is normal, more is faster.

@@ -43,7 +43,7 @@ func _ready() -> void:
 	bus = BUS
 
 
-## Starts saying [param line] as [param person], in the mood of its pose, under [param effect]
+## Starts saying [param line] as [param person], in its mood, under [param effect]
 ## (null for none), and returns its length in seconds, or 0 when the length is not known yet (a
 ## live line in a browser). A pre-rendered WAV has only the person's body and the mood's rate,
 ## pitch and swing.
@@ -55,7 +55,7 @@ func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) ->
 		push_error("VoicePlayer: no voice person, or one with an unknown body, for \"%s\"" % line.text)
 		return 0.0
 	var voice := person.body
-	var mood := Voices.mood(line.pose)
+	var mood := Voices.mood(line.mood)
 	var rate := mood.rate * (1.0 + randf_range(-rate_jitter, rate_jitter))
 	var pitch := mood.pitch * (1.0 + randf_range(-pitch_jitter, pitch_jitter))
 	var swing := mood.swing * (1.0 + randf_range(-swing_jitter, swing_jitter))

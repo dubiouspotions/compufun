@@ -146,7 +146,7 @@ conversation; fix a missing link in the data, then run it again until it lists n
 ## Voices
 
 **Layers.** A line's voice is three layers, each over the one below (`Voices.layer`): the
-`VoicePerson` of the customer's person (`voices/persons/`, one per person), the `VoiceMood` of the line's pose (`voices/moods/`)
+`VoicePerson` of the customer's person (`voices/persons/`, one per person), the `VoiceMood` of the line's mood (`voices/moods/`)
 and a `VoiceEffect` (`voices/effects/`) of the line or its conversation. Make all three in the
 Voice Lab (Dev menu, F3 or Cmd+3); pick persons and effects in the Dialogue tab. An effect has a
 base, an alternate and a curve over the line that says how much of the alternate plays at each
@@ -169,8 +169,8 @@ tools/build-voice.sh
 ```
 
 **Rendered.** Each customer line plays a WAV in `Godot/voices/`, which [Chimera](https://github.com/jamesondh/chimera-vocal-synth)
-renders from the text, in the body of the customer's `voice` person and the mood of the line's pose
-(`Godot/voices/moods/<pose>.tres`: speed, pitch and pitch swing). A line without its file is
+renders from the text, in the body of the customer's `voice` person and the line's mood
+(`Godot/voices/moods/<mood>.tres`: speed, pitch and pitch swing). A line without its file is
 silent, and a debug run warns about it. Conversations that every customer shares, such as what
 they say while they wait, live in `Godot/customers/conversations/`; they are rendered in each
 body that a customer's person has.

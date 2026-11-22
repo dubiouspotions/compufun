@@ -2,8 +2,8 @@ class_name Person
 extends Resource
 ## One photographed person. One person can play many customers.
 
-## Poses a line of dialogue can show. A person may have no photo for some of them.
-const POSES: Array[StringName] = [
+## The moods that a line of dialogue can pick. A person may have no portrait for some of them.
+const MOODS: Array[StringName] = [
 	&"neutral", &"happy", &"angry", &"despair", &"problem", &"thinking",
 	&"irritated01", &"irritated02", &"irritated03",
 	&"trust", &"bye", &"explanation",
@@ -15,7 +15,7 @@ const POSES: Array[StringName] = [
 @export var nickname: String = ""
 ## The address on this person's own computer. Dialogue never shows it.
 @export var email: String = ""
-## The cut-out portraits, keyed by pose. Empty in the wireframe.
+## The cut-out portraits, keyed by mood. Empty in the wireframe.
 @export var portraits: Dictionary[StringName, Texture2D] = {}
 ## The square face texture on the 3D customer. null shows a grey placeholder.
 @export var face: Texture2D

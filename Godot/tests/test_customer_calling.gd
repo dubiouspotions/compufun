@@ -7,8 +7,8 @@ func run() -> void:
 	root.add_child(calling)
 	await process_frame
 	var lines: Conversation = load("res://customers/conversations/waiting.tres")
-	calling._moods = calling._by_pose(lines.lines)
-	check("five moods, calmest first", calling._moods.map(func(m: Array) -> StringName: return m[0].pose), [&"neutral", &"thinking", &"irritated01", &"irritated02", &"irritated03"])
+	calling._moods = calling._by_mood(lines.lines)
+	check("five moods, calmest first", calling._moods.map(func(m: Array) -> StringName: return m[0].mood), [&"neutral", &"thinking", &"irritated01", &"irritated02", &"irritated03"])
 	var moods := []
 	for step in 16:
 		moods.append(calling._mood_of(step))

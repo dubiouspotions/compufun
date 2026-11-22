@@ -200,15 +200,15 @@ func _rise_portrait() -> void:
 	_rise.tween_property(_portrait_slot, "offset_bottom", _slot_bottom, rise_seconds)
 
 
-## Shows the portrait of [param pose]. A pose the person has no portrait for shows "neutral".
-func _show_portrait(pose: StringName) -> void:
+## Shows the portrait of [param mood]. A mood that the person has no portrait for shows "neutral".
+func _show_portrait(mood: StringName) -> void:
 	_portrait.texture = null
 	_figure = Rect2i()
 	var person := _customer.person
 	if person == null:
 		push_error("DialogueOverlay: %s has no person" % _customer.resource_path)
 		return
-	var shown := pose if pose != &"" else _NEUTRAL
+	var shown := mood if mood != &"" else _NEUTRAL
 	if not person.portraits.has(shown):
 		push_error("DialogueOverlay: %s has no \"%s\" portrait" % [person.resource_path, shown])
 		shown = _NEUTRAL
@@ -218,7 +218,7 @@ func _show_portrait(pose: StringName) -> void:
 	_fit_portrait()
 
 
-## Each pose is scaled so its hem meets the bottom of the column and the head crosses the top edge at the same height. The young entrepreneur's hands-up pose is scaled to the same height as his neutral portrait.
+## Each portrait is scaled so its hem meets the bottom of the column and the head crosses the top edge at the same height. The young entrepreneur's hands-up pose is scaled to the same height as his neutral portrait.
 func _fit_portrait() -> void:
 	var tex := _portrait.texture
 	if tex == null or _portrait_slot.size.y <= 0.0:
@@ -349,7 +349,7 @@ func _center_run(image: Image, y: int, axis: int) -> int:
 func _show_line() -> void:
 	var line := _lines[_line]
 	_text.type_out(line.text if line != null else "")
-	_show_portrait(line.pose if line != null else _NEUTRAL)
+	_show_portrait(line.mood if line != null else _NEUTRAL)
 	_quiet = 0.0
 	_show_choices([])
 	_pending = []

@@ -57,7 +57,7 @@ func _initialize() -> void:
 			errors += 1
 			continue
 		rendered += 1
-		print("rendered %s  %s \"%s\"" % [voice_path.get_file(), line.pose, line.text])
+		print("rendered %s  %s \"%s\"" % [voice_path.get_file(), line.mood, line.text])
 	var unused := 0
 	for file_name: String in DirAccess.get_files_at(Voices.DIR):
 		if file_name.ends_with(".wav") and not wanted.has(Voices.DIR + file_name):

@@ -27,7 +27,7 @@ static func outline(customer: Customer) -> String:
 static func _outline_reply(reply: Reply, speaker: String, indent: String, out: PackedStringArray) -> void:
 	for line: DialogueLine in reply.lines:
 		if line != null:
-			out.append("%s%s (%s): %s" % [indent, speaker, line.pose, line.text.replace("\n", " ")])
+			out.append("%s%s (%s): %s" % [indent, speaker, line.mood, line.text.replace("\n", " ")])
 	for choice: Choice in reply.choices:
 		if choice == null:
 			out.append(indent + "> (empty choice slot)")
