@@ -415,7 +415,7 @@ def rain(seconds):
         add(drip, int(at * RATE), random.uniform(0.3, 0.45))
         at += random.uniform(0.45, 1.1)
     heard = looped(out, [lambda x: biquad(x, "high", 180), lambda x: biquad(x, "low", 7000)])
-    muffled = looped(heard, [lambda x: biquad(x, "low", 450), lambda x: biquad(x, "low", 450)])
+    muffled = looped(heard, [lambda x: biquad(x, "low", 800)])  # through the glass: dull, but the patter still shows
     return heard, muffled
 
 

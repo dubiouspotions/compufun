@@ -415,10 +415,10 @@ autoplay = true
 [node name="RainOpen" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
 stream = ExtResource("rain_open")
-volume_db = -14.0
+volume_db = -11.0
 bus = &"Street"
 
 [node name="RainShut" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
 stream = ExtResource("rain_shut")
-volume_db = -17.0
+volume_db = -7.0
