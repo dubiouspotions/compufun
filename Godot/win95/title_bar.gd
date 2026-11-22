@@ -5,8 +5,10 @@ extends PanelContainer
 signal close_pressed
 signal minimize_pressed
 signal maximize_pressed
-## The player double-clicked the title bar, which maximizes or restores a resizable window.
+## The player double-clicked the title bar outside the icon, which maximizes or restores a resizable window.
 signal double_clicked
+## The player pressed the left button on the icon, which opens the window's control menu.
+signal icon_pressed
 ## The player dragged the title bar with the left button by `relative` pixels.
 signal drag_moved(relative: Vector2)
 ## The player released the left button after pressing it on the title bar.
@@ -64,10 +66,19 @@ func _gui_input(event: InputEvent) -> void:
 	if motion and motion.button_mask & MOUSE_BUTTON_MASK_LEFT:
 		drag_moved.emit(motion.relative)
 	var button := event as InputEventMouseButton
-	if button and button.button_index == MOUSE_BUTTON_LEFT and button.pressed and button.double_click:
-		double_clicked.emit()
+	if button and button.button_index == MOUSE_BUTTON_LEFT and button.pressed:
+		if is_on_icon(get_global_transform() * button.position):
+			icon_pressed.emit()
+		elif button.double_click:
+			double_clicked.emit()
 	if button and button.button_index == MOUSE_BUTTON_LEFT and not button.pressed:
 		drag_ended.emit()
+
+
+## True when [param point], in canvas coordinates, is on the shown icon.
+func is_on_icon(point: Vector2) -> bool:
+	var icon_rect: TextureRect = %Icon
+	return icon_rect.is_visible_in_tree() and icon_rect.get_global_rect().has_point(point)
 
 
 func _sync() -> void:
