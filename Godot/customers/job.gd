@@ -14,6 +14,9 @@ var order: int = 0
 ## The pieces in the computer, keyed by their place (see [constant Part.IDS]); an empty place has no
 ## key.
 var places: Dictionary[Part, Piece] = {}
+## What lies in the computer and doesn't belong there (Problem.blocker), on the part that it sits on;
+## null once the player took it out, or for a problem without one.
+var blocker: Piece
 ## The computer lies on its side, the side panel up, in every view: the player laid it down in the
 ## Workview and hasn't stood it up again. Always true while [member case_open].
 var lying: bool = false
@@ -25,12 +28,13 @@ const RAM: StringName = &"ram"
 const PANEL_SCREWS: int = 2
 ## The screws of the side panel: true while it is in. The panel comes off only when all are out.
 var panel_screws: Array[bool] = []
-## True when every place holds a piece, none is broken, and the side panel is on with its screws in.
+## True when every place holds a piece, none is broken, nothing is in the way ([member blocker]), and
+## the side panel is on with its screws in.
 ## Setting it is for restore, the presets and the debug menu: true repairs the computer, false
 ## breaks the problem's part again, in a random place when several take it.
 var hardware_fixed: bool:
 	get:
-		if case_open or panel_screws.has(false):
+		if case_open or panel_screws.has(false) or blocker != null:
 			return false
 		for part: Part in Part.every():
 			if not places.has(part) or places[part].broken:
@@ -106,6 +110,7 @@ func _fill(break_part: bool) -> void:
 	var bad: Part = takers.pick_random() if break_part and not takers.is_empty() else null
 	for place: Part in Part.every():
 		places[place] = Piece.new(place.piece_part(), place == bad)
+	blocker = Piece.new(problem.blocker, false) if break_part and problem != null and problem.blocker != null else null
 	panel_screws.assign(Job.all_in(PANEL_SCREWS))
 
 
@@ -132,6 +137,7 @@ func snapshot() -> Dictionary:
 		"case_open": case_open,
 		"panel_screws": panel_screws.duplicate(),
 		"parts": places_data(),
+		"blocker": blocker != null,
 	}
 
 

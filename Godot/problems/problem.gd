@@ -16,6 +16,10 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 ## The part that is broken, for a hardware problem: the player must replace it. null for a
 ## software problem.
 @export var broken_part: Part
+## Something in the computer that doesn't belong there, such as a hamster on the fan: a Part that no
+## place takes, lying on the part that it sits on, which doesn't come out until it is out. The
+## hardware is fixed only once it is out. null for none.
+@export var blocker: Part
 @export var hardware_steps: PackedStringArray = []
 @export var software_steps: PackedStringArray = []
 ## For a hardware problem that shows in Windows, as an overheating computer does, until the

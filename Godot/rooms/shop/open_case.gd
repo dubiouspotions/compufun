@@ -6,6 +6,7 @@ extends Node3D
 ## What the player can use now has a thin pulsing outline, and a screw or an empty screw hole that
 ## can turn a beating ring; where the piece in the hand or a screw can go shows a see-through ghost of
 ## it; the screwdriver hovers over a screw. An empty screw hole in the closed panel shows dark.
+## What lies in the way (Job.blocker), such as a hamster, lies on top of the part that it sits on.
 
 const HOTSPOT: PackedScene = preload("res://rooms/hotspot.tscn")
 const SCREW_MATERIAL: Material = preload("res://materials/metal.tres")
@@ -60,6 +61,9 @@ var _turning: Tween
 var _bobbing: Tween
 var _fading: Tween
 var _driver_materials: Array[StandardMaterial3D] = []
+## The model of what lies in the way, and its hotspot; null while nothing does.
+var _blocker_model: Node3D
+var _blocker_hotspot: Hotspot
 
 @onready var _places: Node3D = %Places
 @onready var _eye: Marker3D = %Eye
@@ -153,9 +157,39 @@ func _sync() -> void:
 		if piece != null and shown == null:
 			_shown[part.id()] = _show_model(piece, place)
 		(place.get_node("Hotspot") as Hotspot).set_enabled(active and (Game.can_take(job, part) or Game.can_put(job, part)))
+	_sync_blocker()
 	if _hovered != null and not _hovered.input_ray_pickable:
 		_on_hover(_hovered, -1, false)
 	_sync_highlights()
+
+
+# Shows what lies in the way on top of the part that it sits on, with a hotspot that takes it.
+func _sync_blocker() -> void:
+	var blocker := job.blocker
+	if _blocker_model != null and (blocker == null or _blocker_model.get_meta(&"piece") != blocker):
+		_blocker_model.queue_free()
+		_blocker_model = null
+	if blocker != null and _blocker_model == null:
+		var place := _place(blocker.part.sits_on)
+		if place == null:
+			return
+		var under: Node3D = _shown.get(blocker.part.sits_on.id())
+		_blocker_model = _show_model(blocker, place)
+		if _blocker_model == null:
+			push_error("OpenCase: %s has no model to lie in the way" % blocker.part.resource_path)
+			return
+		_blocker_model.position.y = Part.bounds(under).end.y if under != null else 0.0
+		var box := Part.bounds(_blocker_model)
+		if _blocker_hotspot != null:
+			_blocker_hotspot.queue_free()
+		_blocker_hotspot = HOTSPOT.instantiate() as Hotspot
+		_blocker_hotspot.size = box.size + Vector3.ONE * 0.01
+		_blocker_hotspot.position = _blocker_model.position + box.get_center()
+		place.add_child(_blocker_hotspot)
+		_blocker_hotspot.clicked.connect(func(_h: Hotspot) -> void: Game.take_blocker(job))
+		_watch(_blocker_hotspot)
+	if _blocker_hotspot != null:
+		_blocker_hotspot.set_enabled(active and _blocker_model != null and Game.can_take_blocker(job))
 
 
 func _show_model(piece: Piece, where: Node3D) -> Node3D:
@@ -248,6 +282,8 @@ func _sync_highlights() -> void:
 			_highlight(_shown.get(part.id()), hotspot)
 		elif Game.hand != null:
 			_add_ghost(Game.hand.part.model, place, hotspot)
+	if _blocker_hotspot != null and _blocker_hotspot.input_ray_pickable:
+		_highlight(_blocker_model, _blocker_hotspot)
 	if _panel_hotspot.input_ray_pickable:
 		_highlight(_panel, _panel_hotspot)
 	for i: int in _screws.size():
