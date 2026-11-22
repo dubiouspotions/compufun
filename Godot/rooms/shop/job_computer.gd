@@ -205,7 +205,7 @@ func _sync_floppy(working: bool, lying: bool) -> void:
 		drive.floppy_in = floppy_in
 	if _floppy_hotspot == null:
 		return
-	var can_eject := floppy_in and not lying
+	var can_eject := Game.can_eject(job) and not lying
 	_floppy_hotspot.set_enabled(can_eject)
 	var upright := _tower.floppy_drive()
 	upright.usable = can_eject and working

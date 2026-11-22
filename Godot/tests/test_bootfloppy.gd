@@ -16,6 +16,7 @@ func run() -> void:
 	check("the problem puts a floppy in A:", [game.has_floppy(job), job.software_fixed], [true, false])
 	game.eject_floppy(job)
 	check("ejected: out and fixed", [game.has_floppy(job), job.software_fixed], [false, true])
+	check("the floppy is in the hand", game.hand != null and game.hand.part.id() == &"floppy", true)
 	check("the .tres keeps no floppy", entrepreneur.computer.win95_setup.floppy_in_a, false)
 
 	var day_3: Day = game.day_of(3)
