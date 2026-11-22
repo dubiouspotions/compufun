@@ -67,17 +67,25 @@ func _check_printer() -> void:
 	printer.queue_free()
 
 
-# The corner shows while the player carries a page; a click raises the page on the right, where a
-# click on a box ticks it and a click elsewhere lowers it. Beside an open screen it is always up.
+# The corner shows at the bottom left while the player carries a page; a click raises the page on the
+# right, where a click on a box ticks it and a click elsewhere on it or outside it lowers it. A click
+# outside reaches nothing else. Beside an open screen the page is always up.
 func _check_close_up() -> void:
 	game.carry_printout(PAGE)
+	var behind := Control.new()  # a stand-in for the buttons and hotspots under the page
+	var behind_clicks: Array[int] = [0]
+	behind.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and (event as InputEventMouseButton).pressed:
+			behind_clicks[0] += 1)
+	root.add_child(behind)
+	behind.size = behind.get_viewport_rect().size
 	var carried: Control = load("res://ui/carried_printout.tscn").instantiate()  # untyped: CarriedPrintout names Game
 	root.add_child(carried)
 	await process_frame
 	var view: Vector2 = carried.get_viewport_rect().size
 	var corner: Control = carried.get_node("%Corner")
 	check("the corner shows the carried page", corner.visible, true)
-	check("the corner is at the bottom right", corner.get_global_rect().get_center().x > view.x * 0.5, true)
+	check("the corner is at the bottom left", [corner.get_global_rect().end.x < view.x * 0.5, corner.get_global_rect().end.y >= view.y], [true, true])
 	var arrow := Rect2(view.x - 108.0, view.y * 0.5 - 66.0, 84.0, 132.0)
 	var buttons: Array[Rect2] = [arrow]
 	var none: Array[Rect2] = []
@@ -102,6 +110,17 @@ func _check_close_up() -> void:
 	paper.gui_input.emit(click)
 	check("a click on a line without a box lowers it", [carried.call("is_raised"), corner.visible, game.printout_ticks], [false, true, []])
 
+	carried.call("raise")
+	await create_timer(float(carried.get("raise_seconds")) + 0.1).timeout
+	page = paper.get_global_rect()
+	_click_at(page.position + paper.call("box_rect", 5).get_center())
+	check("a real click on the box ticks it and keeps it up", [game.printout_ticks, carried.call("is_raised"), behind_clicks[0]], [[5], true, 0])
+	_click_at(Vector2(page.position.x - 40.0, page.get_center().y))
+	check("a click outside lowers it and reaches nothing else", [carried.call("is_raised"), corner.visible, behind_clicks[0]], [false, true, 0])
+	_click_at(Vector2(page.position.x - 40.0, page.get_center().y))
+	check("lowered, a click there reaches what is under it", behind_clicks[0], 1)
+	game.tick_printout(5, false)
+
 	var screen := Rect2(320, 60, 1280, 960)
 	carried.call("lay_out_around", screen, none)
 	check("beside an open screen the page is up", [carried.call("is_raised"), corner.visible], [true, false])
@@ -112,6 +131,8 @@ func _check_close_up() -> void:
 	click.position = paper.call("box_rect", 5).get_center()
 	paper.gui_input.emit(click)
 	check("a click on its box ticks it", game.printout_ticks, [5])
+	_click_at(screen.get_center())
+	check("a click on the screen keeps it up and reaches the screen", [carried.call("is_raised"), behind_clicks[0]], [true, 2])
 	carried.call("lower")
 	check("beside the screen it stays up", carried.call("is_raised"), true)
 	carried.call("lay_out_around", Rect2(), none)
@@ -122,6 +143,17 @@ func _check_close_up() -> void:
 	carried.call("raise")
 	check("nothing carried, nothing to raise", carried.call("is_raised"), false)
 	carried.queue_free()
+	behind.queue_free()
+
+
+# A left press and release at [param at], in the window's coordinates, through the whole input chain.
+func _click_at(at: Vector2) -> void:
+	for pressed: bool in [true, false]:
+		var click := InputEventMouseButton.new()
+		click.button_index = MOUSE_BUTTON_LEFT
+		click.pressed = pressed
+		click.position = at
+		root.push_input(click, true)
 
 
 # The trash can is outlined while the player carries a page, and a click throws the page away; a part
