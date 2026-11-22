@@ -10,7 +10,8 @@ extends Control
 ## The first time the player opens it on a day, the work computer boots, the character starts the
 ## program at the DOS prompt and the modem dials up; until then the computer is off. Any key or
 ## click skips to the database.
-## Keys: arrows and Tab move, Space or Enter acts. The mouse clicks and scrolls.
+## Keys: arrows and Tab move, Space or Enter acts, P prints the selected record's checklist on
+## the shop's Printer. The mouse clicks and scrolls.
 
 const PROBLEMS_DIR: String = "res://problems/"
 const COLUMNS: int = 80
@@ -22,6 +23,8 @@ const FRAME_ROWS: Array[int] = [1, 3, 27]
 const LIST_TOP: int = 4
 const LIST_BOTTOM: int = 26
 const NEW_RECORD: String = "<New record>"
+## The button in the bottom frame, under the CHECK column, that does what P does.
+const PRINT_BUTTON: String = "[ PRINT CHECKLIST ]"
 
 enum Column { RECORDS, CHECKS, FIXES }
 
@@ -81,6 +84,8 @@ var _skip: bool = false
 var _dos: PackedStringArray = []
 var _modem: AudioStreamPlayer
 var _shown_day: int = -1
+## What the bottom bar says instead of the column's name until the next key or click; empty: nothing.
+var _status: String = ""
 # The grid that _draw paints: one character, foreground and background per cell.
 var _chars: PackedStringArray = []
 var _fg: PackedColorArray = []
@@ -372,6 +377,12 @@ func _on_click(button: InputEventMouseButton) -> void:
 	if button.button_index != MOUSE_BUTTON_LEFT:
 		return
 	_finish_typing()
+	_status = ""
+	var button_x := _print_button_x()
+	if cell.y == FRAME_ROWS[-1] and cell.x >= button_x and cell.x < button_x + PRINT_BUTTON.length():
+		_print()
+		queue_redraw()
+		return
 	if cell.y < LIST_TOP or cell.y > LIST_BOTTOM:
 		return
 	var lines := _lines(column, _entries(column))
@@ -391,6 +402,7 @@ func _on_key(key: InputEventKey) -> bool:
 	if key.keycode == KEY_ESCAPE:
 		return false  # leaves the screen; the typing goes on
 	_finish_typing()
+	_status = ""
 	match key.keycode:
 		KEY_UP:
 			_move(-1)
@@ -402,9 +414,51 @@ func _on_key(key: InputEventKey) -> bool:
 			_change_column(1)
 		KEY_SPACE, KEY_ENTER, KEY_KP_ENTER:
 			_act()
+		KEY_P:
+			_print()
 		_:
 			return false
+	queue_redraw()
 	return true
+
+
+# Prints the selected record's checklist on the shop's Printer.
+func _print() -> void:
+	var record := _record()
+	if record == null:
+		return
+	var printer := get_tree().get_first_node_in_group(Printer.GROUP) as Printer
+	if printer == null:
+		push_error("CompuFunDB: no Printer in group '%s' to print '%s' on" % [Printer.GROUP, record.text])
+		_status = "Printer not ready"
+		return
+	printer.print_page(_page(record))
+	_status = "Printing on LPT1"
+
+
+# The printout of [param record]: a heading, the record, and its CHECK and FIX columns as on screen.
+func _page(record: DbRecord) -> PackedStringArray:
+	var page := PackedStringArray(["CompuFunDB 1.0  CHECKLIST  " + _date_text(), ""])
+	page.append_array(_wrap(record.text, _spans[Column.CHECKS].y - _spans[Column.CHECKS].x + 1))
+	for column: Column in [Column.CHECKS, Column.FIXES]:
+		var lines := _lines(column, _entries(column))
+		if lines.is_empty():
+			continue
+		page.append_array(PackedStringArray(["", HEADERS[column]]))
+		for line: Array in lines:
+			page.append((line[1] as String).strip_edges(false, true))
+	return page
+
+
+func _date_text() -> String:
+	var date: Dictionary = Game.date
+	return "%02d/%02d/%02d" % [date.month, date.day, date.year % 100]
+
+
+# The first x of [constant PRINT_BUTTON], centred under the CHECK column.
+func _print_button_x() -> int:
+	var span := _spans[Column.CHECKS]
+	return span.x + (span.y - span.x + 1 - PRINT_BUTTON.length()) / 2
 
 
 # Acts on the entry under the cursor: <New record> types up the next computer, a record opens its
@@ -555,8 +609,7 @@ func _paint() -> void:
 	if not has_picture():
 		return
 	_reconcile()
-	var date: Dictionary = Game.date
-	_bar(0, " CompuFunDB 1.0", "%02d/%02d/%02d " % [date.month, date.day, date.year % 100], bar_color)
+	_bar(0, " CompuFunDB 1.0", _date_text() + " ", bar_color)
 	_frame()
 	for column: int in Column.size():
 		_put(_spans[column].x, FRAME_ROWS[0] + 1, HEADERS[column], bright_color)
@@ -568,8 +621,10 @@ func _paint() -> void:
 	for column: int in Column.size():
 		_paint_column(column as Column)
 	var count := "Rec %d/%d " % [_selected[Column.RECORDS] + 1, Game.records.size()] if record != null else "Rec None "
-	_bar(28, " %s" % HEADERS[_column], count, bar_color)
-	_put(1, 29, "\u2191\u2193 Move  \u2190\u2192 Column  Space Mark  Esc Leave", text_color)
+	if record != null:
+		_put(_print_button_x(), FRAME_ROWS[-1], PRINT_BUTTON, bright_color, bar_color)
+	_bar(28, " %s" % (_status if not _status.is_empty() else HEADERS[_column]), count, bar_color)
+	_put(1, 29, "\u2191\u2193 Move  \u2190\u2192 Column  Space Mark  P Print  Esc Leave", text_color)
 
 
 func _paint_column(column: Column) -> void:

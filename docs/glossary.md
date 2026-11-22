@@ -39,6 +39,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **CompuFunDB**: The database on the work computer. The player adds a record per customer and types what they like into it, marks what is wrong among every symptom, and gets what to fix. It reads every `Problem` file; `Game` holds the records.
 *Avoid:* Company Database, BBS, database.
 
+**Printout**: The page that the dot-matrix printer under the work desk (`Printer`) printed last: the checklist of a CompuFunDB record, its CHECK and FIX columns as on screen. It stays sticking out of the printer until the next print replaces it.
+*Avoid:* print, checklist sheet.
+
 **Screen buffer**: The 640 x 480 viewport that runs the Win95 desktop. The 3D monitor shows it, and the Screen View shows it at 2x.
 *Avoid:* desktop viewport, screen texture.
 
