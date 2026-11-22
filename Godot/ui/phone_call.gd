@@ -15,8 +15,10 @@ extends Control
 @export var greeting: String = "Hello? %s here."
 ## What the player says once the customer has spoken.
 @export var you_say: String = "Your computer is ready now!"
-## How long the phone rings before the customer answers, in seconds.
-@export_range(0.0, 10.0) var ring_seconds: float = 1.8
+## How long the call takes before the customer answers, in seconds: the dialling, one ring and the
+## far end's click in sounds/phone_receiver.wav, which ends 0.395 s after that click. The sound
+## starts a few frames after this timer, so the customer answers about 0.15 s after the click.
+@export_range(0.0, 10.0) var ring_seconds: float = 3.13
 ## How far the phone rattles to each side while it rings, in degrees.
 @export_range(0.0, 20.0) var ring_degrees: float = 5.0
 ## How many times a second it rattles.

@@ -66,7 +66,7 @@ def dtmf(row, col, seconds):
 
 
 def phone_receiver():
-    """The receiver lifts off the cradle (a plastic knock and the hook switch), then the number dials."""
+    """The receiver lifts off the cradle (a plastic knock and the hook switch), the number dials, the far phone rings once, and someone picks up."""
     random.seed(95)
     for _ in range(880):  # the state that phone_receiver.wav was rendered from
         random.random()
@@ -80,7 +80,24 @@ def phone_receiver():
     for digit in "5550196":
         mix(out, dtmf(*keys[digit], 0.085), at, 0.35)
         at += 0.14
-    mix(out, silence(0.1), at)
+    line = []
+    mix(line, ringback(1.0), 0.15, 0.25)
+    mix(line, far_pickup(random.Random(131)), 1.4, 0.4)
+    mix(out, phone_band(line), at)
+    return out
+
+
+def ringback(seconds):
+    """The European ringback tone that the caller hears while the far phone rings: 425 Hz, with 5 ms edges."""
+    n, edge = int(seconds * RATE), int(0.005 * RATE)
+    return [math.sin(2 * math.pi * 425 * i / RATE) * min(1.0, i / edge, (n - i) / edge) for i in range(n)]
+
+
+def far_pickup(rng):
+    """The far end lifts the receiver: the hook switch clicks, then the open line hisses faintly."""
+    out = [rng.uniform(-1, 1) * math.exp(-i / RATE / 0.0015) for i in range(int(0.01 * RATE))]
+    mix(out, [math.sin(2 * math.pi * 520 * i / RATE) * math.exp(-i / RATE / 0.012) for i in range(int(0.06 * RATE))], 0.0, 0.6)
+    mix(out, [rng.uniform(-1, 1) * 0.05 for _ in range(int(0.38 * RATE))], 0.015)
     return out
 
 
