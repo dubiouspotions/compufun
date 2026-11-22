@@ -591,7 +591,9 @@ func _right() -> Control:
 			if on:
 				show_view((button as Button).text))
 	bar.add_child(views)
-	var play := LabUI.button("Play", func() -> void: play_requested.emit(_errand, trigger()), &"AccentButton")
+	var play := LabUI.button("Play", func() -> void:
+		_settle_now()
+		play_requested.emit(_errand, trigger()), &"AccentButton")
 	play.custom_minimum_size.x = 80
 	play.tooltip_text = "Play this conversation in the game; Esc or F4 comes back"
 	bar.add_child(play)

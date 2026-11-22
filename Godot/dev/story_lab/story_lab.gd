@@ -33,6 +33,8 @@ var _week: StoryFiles.Week
 var _cards: Dictionary = {}
 var _selected: String = ""
 var _holding: bool = false
+## True while the Lab is hidden for Play: Esc brings it back.
+var _playing: bool = false
 var _was_paused: bool = false
 
 var _board: StoryLabBoard
@@ -69,9 +71,18 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_VISIBILITY_CHANGED and is_inside_tree():
+		if visible:
+			_playing = false
 		_hold(is_visible_in_tree())
 	elif what == NOTIFICATION_EXIT_TREE:
 		_hold(false)
+
+
+func _input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if _playing and not visible and key != null and key.pressed and not key.echo and key.keycode == KEY_ESCAPE:
+		show()
+		get_viewport().set_input_as_handled()
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -147,6 +158,18 @@ func move_errand(path: String, day: int, index: int, alternative: bool) -> Strin
 		_selected = renames[_selected]
 	_after_store()
 	_say("Moved %s to %s." % [path.get_file(), renames.get(path, path).get_file()])
+	return ""
+
+
+## Plays [param errand]'s conversation for [param trigger] in the game (Game.play_errand) and hides
+## the Lab; Esc or F4 brings it back on the same errand. Returns why it can't play, or "".
+func play(errand: Errand, trigger: Conversation.Trigger) -> String:
+	var reason: String = Game.play_errand(errand, trigger)
+	if reason != "":
+		_say("Can't play it: " + reason, true)
+		return reason
+	hide()
+	_playing = true
 	return ""
 
 
@@ -335,6 +358,7 @@ func _build() -> void:
 	_errand_panel = StoryErrandPanel.new()
 	_errand_panel.saved.connect(_store_edit)
 	_errand_panel.remove_requested.connect(_remove_errand)
+	_errand_panel.play_requested.connect(play)
 	_day_panel = StoryDayPanel.new()
 	_day_panel.saved.connect(_store_edit)
 	for shown: Control in [_hint, _errand_panel, _day_panel]:

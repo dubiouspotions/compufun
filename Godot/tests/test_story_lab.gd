@@ -43,6 +43,9 @@ func run() -> void:
 	_board_lists_the_week(lab)
 	_moving_a_card_renames_through_drafts(lab, drafts)
 	_a_text_edit_with_an_error_keeps_the_last_good_draft(lab, drafts)
+	var reason: String = lab.call("play", (lab.call("errand_panel") as StoryErrandPanel).errand(), Conversation.Trigger.ARRIVE)
+	check("Play hides the Lab only when the game plays it", lab.visible, reason != "")
+	lab.show()
 	lab.queue_free()
 	await process_frame
 	_a_draft_equal_to_the_file_disappears()
