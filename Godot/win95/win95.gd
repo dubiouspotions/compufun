@@ -15,6 +15,10 @@ const _MESSAGE := preload("res://win95/message_box.tscn")
 const _BIN_EMPTY := preload("res://win95/theme/icons/recycle_bin_empty_32.png")
 const _BIN_FULL := preload("res://win95/theme/icons/recycle_bin_full_32.png")
 const _COVER := preload("res://win95/cover_screen.gd")
+const _DESKTOP_ICONS := preload("res://win95/desktop_icons.tscn")
+const _CRUSH := preload("res://shaders/psx_post.gdshader")
+## The applet that the desktop's Properties opens. Loaded when used: a preload here cycles.
+const _DISPLAY := "res://win95/applets/display.tres"
 const _SHARED_PALETTE := preload("res://win95/theme/palette.tres")
 const _ICONS := "res://win95/theme/icons/"
 ## The meta key on a FileIcon that holds its Win95File, or its Applet in the Control Panel.
@@ -76,14 +80,19 @@ var pointer_visible := false:
 const _FRAGMENTED_OPEN_SECONDS := 2.0
 
 static var _stock_palette: Win95Palette
-var _setup_icons: Array[FileIcon] = []
+## What each of Win95's own icons opens, by its node name in desktop_icons.tscn: [opens, stub].
+var _system_icons: Dictionary[StringName, Array] = {}
 var _listings: Dictionary[IconView, Listing] = {}
+var _drive_a: Win95File
 var _drive_c: Win95File
+var _drive_d: Win95File
 var _control_panel: Win95File
 var _drives: Array[Win95File] = []
 var _context: ContextMenu
 var _context_view: IconView
 var _context_item: FileIcon
+## The files that Cut picked, for the next Paste.
+var _cut: Array[Win95File] = []
 var _boot: Node
 ## Whether a floppy was in A: at the last change, to hear it go in or out.
 var _floppy_heard: bool = false
@@ -116,7 +125,13 @@ func _ready() -> void:
 	_context = ContextMenu.new()
 	add_child(_context)
 	_context.chosen.connect(_on_action)
+	# desktop_icons.tscn's icons are the template; the setup's files show them (Win95File.system).
+	for template: FileIcon in _icons.get_children():
+		_system_icons[template.name] = [template.opens, template.stub]
+		_icons.remove_child(template)
+		template.free()
 	_wire_view(_icons)
+	_icons.laid_out.connect(_pin_desktop)
 	_systray.computer = _state
 	_systray.mute_toggled.connect(func(_muted: bool) -> void: _state.set_sound(_systray.volume, _systray.muted))
 	_systray.volume_changed.connect(func(_volume: float) -> void: _state.set_sound(_systray.volume, _systray.muted))
@@ -174,9 +189,11 @@ func _on_booted() -> void:
 	_desktop.close_all()
 	_uncover()
 	_apply_look()
+	_drive_a = _folder("3\u00bd Floppy (A:)", "drive_floppy_35_32.png")
 	_drive_c = _folder("(C:)", "drive_hard_32.png")
+	_drive_d = _folder("(D:)", "drive_cdrom_32.png")
 	_control_panel = _folder("Control Panel", "folder_control_panel_32.png")
-	_drives.assign([_folder("3\u00bd Floppy (A:)", "drive_floppy_35_32.png"), _drive_c, _folder("(D:)", "drive_cdrom_32.png"),
+	_drives.assign([_drive_a, _drive_c, _drive_d,
 		_control_panel, _folder("Printers", "folder_printers_32.png")])
 	_listings.clear()
 	_listings[_icons] = Listing.new("Desktop", null, &"desktop", func() -> Array: return _state.setup.desktop, true, &"desktop")
@@ -234,8 +251,69 @@ func _apply_look() -> void:
 	if _on_cable():
 		_apply_palette(setup.palette)
 	_background.texture = setup.wallpaper
+	var shot := setup.wallpaper as DesktopScreenshot
+	if shot != null and not shot.taken:
+		_take_screenshot(shot)
 	if setup.wallpaper != null:
 		_background.stretch_mode = wallpaper_stretch(setup.wallpaper, _background.size.x)
+
+
+# Draws the prank's screenshot offscreen: the desktop as it showed shot's icons on its wallpaper,
+# through psx_post for the colours that it loses. The taskbar is left out: the real one covers it.
+func _take_screenshot(shot: DesktopScreenshot) -> void:
+	shot.taken = true
+	var viewport := _offscreen()
+	var crush := ShaderMaterial.new()
+	crush.shader = _CRUSH
+	crush.set_shader_parameter(&"color_levels", shot.color_levels)
+	crush.set_shader_parameter(&"dither", shot.dither)
+	var container := SubViewportContainer.new()
+	container.material = crush
+	container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	container.size = DesktopScreenshot.SIZE
+	viewport.add_child(container)
+	var inner := _offscreen()
+	container.add_child(inner)
+	var desk := Control.new()
+	desk.theme = theme
+	desk.size = DesktopScreenshot.SIZE
+	inner.add_child(desk)
+	desk.add_child(_desktop.get_node(^"DesktopColour").duplicate())
+	var background := _background.duplicate() as TextureRect
+	background.texture = shot.wallpaper
+	if shot.wallpaper != null:
+		background.stretch_mode = wallpaper_stretch(shot.wallpaper, DesktopScreenshot.SIZE.x)
+	desk.add_child(background)
+	var icons := _DESKTOP_ICONS.instantiate() as IconView
+	for template in icons.get_children():
+		template.free()
+	desk.add_child(icons)
+	for file in shot.icons:
+		_add_icon(icons, file, true)
+	add_child(viewport)
+	for i in 3:  # the icons lay out over the first frames
+		await RenderingServer.frame_post_draw
+	var image := viewport.get_texture().get_image()
+	viewport.queue_free()
+	if image == null or image.is_empty():
+		push_error("Win95: the desktop screenshot of the prank drew nothing, so the wallpaper stays black")
+		return
+	shot.set_image(image)
+
+
+# A Win95 desktop icon stays where it first stood: others leaving its column don't move it.
+func _pin_desktop() -> void:
+	for item in _icons.get_children():
+		var file := _file_of(item)
+		if file != null and file.desktop_position == Vector2.ZERO:
+			file.desktop_position = item.position
+
+
+static func _offscreen() -> SubViewport:
+	var viewport := SubViewport.new()
+	viewport.size = DesktopScreenshot.SIZE
+	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS  # its texture shows nowhere
+	return viewport
 
 
 ## How a desktop [param screen_width] pixels wide shows [param wallpaper], as Win95 showed them:
@@ -317,8 +395,7 @@ func _on_changed() -> void:
 		_fill(view)
 
 
-## Lists the view's Win95Files or Applets again, keeping the selection. On the desktop, the system icons from
-## desktop_icons.tscn stay and the Recycle Bin shows whether it is empty.
+## Lists the view's Win95Files or Applets again, keeping the selection.
 func _fill(view: IconView) -> void:
 	var listing: Listing = _listings[view]
 	var keep: Array[Resource] = []
@@ -327,13 +404,11 @@ func _fill(view: IconView) -> void:
 		if entry != null:
 			keep.append(entry)
 	var focused := _entry_of(view.focus_item()) if view.focus_item() != null else null
-	var old: Array = _setup_icons if view == _icons else view.get_children()
-	for item: Node in old:
+	for item: Node in view.get_children():
+		view.remove_child(item)  # now, so that a new system icon gets its name
 		item.queue_free()
-	var added: Array[FileIcon] = []
 	for entry: Resource in listing.files.call():
-		var item := view.add_item(entry.get(&"name"), entry.get(&"icon"))
-		item.set_meta(_FILE_META, entry)
+		var item := _add_icon(view, entry, view == _icons)
 		if entry is Applet:
 			item.renamable = false
 			item.stub = (entry as Applet).sheet == null
@@ -341,15 +416,32 @@ func _fill(view: IconView) -> void:
 		else:
 			var file: Win95File = entry
 			item.name_edited.connect(func(_old: String, new_text: String) -> void: _state.rename_file(file, new_text))
-			item.stub = ComputerState.is_program_name(file.name) and file.program == null
+			if file.system == &"":
+				item.stub = ComputerState.is_program_name(file.name) and file.program == null
 			item.details = FileDetails.cells(listing.kind, file, _state)
 		item.selected = keep.has(entry)
 		if entry == focused:
 			view.set_focus_item(item)
-		added.append(item)
-	if view == _icons:
-		_setup_icons = added
-		(_icons.get_node("RecycleBin") as FileIcon).icon = _BIN_EMPTY if _state.setup.recycle_bin.is_empty() else _BIN_FULL
+
+
+# The icon of a Win95File or an Applet. One of Win95's own icons is named after its node in
+# desktop_icons.tscn and opens what that opens; on the desktop, a file stands at its desktop_position.
+func _add_icon(view: IconView, entry: Resource, on_desktop: bool) -> FileIcon:
+	var item := view.add_item(entry.get(&"name"), entry.get(&"icon"))
+	item.set_meta(_FILE_META, entry)
+	var file := entry as Win95File
+	if file == null:
+		return item
+	if file.system != &"":
+		item.name = file.system
+		var template: Array = _system_icons.get(file.system, [null, true])
+		item.opens = template[0]
+		item.stub = template[1]
+		if file.system == &"RecycleBin":
+			item.icon = _BIN_EMPTY if _state.setup.recycle_bin.is_empty() else _BIN_FULL
+	if on_desktop and file.desktop_position != Vector2.ZERO:
+		view.place(item, file.desktop_position)
+	return item
 
 
 func _folder(folder_name: String, icon_file: String) -> Win95File:
@@ -372,6 +464,11 @@ func _wire_view(view: IconView) -> void:
 	view.item_opened.connect(_open_item)
 	view.context_requested.connect(func(item: FileIcon, at: Vector2) -> void: _open_context(view, item, at))
 	view.delete_requested.connect(func(items: Array[FileIcon]) -> void: _delete(view, items))
+	view.items_dropped.connect(_on_dropped.bind(view))
+	view.clipboard_requested.connect(func(action: StringName) -> void:
+		_context_view = view
+		_context_item = null
+		_on_action(action))
 
 
 func _open_item(item: FileIcon) -> void:
@@ -385,16 +482,33 @@ func _open_item(item: FileIcon) -> void:
 		_show(Listing.new("My Computer", load(_ICONS + "my_computer_32.png"), &"my_computer", func() -> Array: return _drives, false, &"my_computer"), folder_view)
 	elif item.name == &"RecycleBin":
 		_show(Listing.new("Recycle Bin", _BIN_EMPTY, &"recycle_bin", func() -> Array: return _state.setup.recycle_bin, false, &"recycle_bin"), folder_view)
-	elif file == null or _listing_of_item(item).kind == &"recycle_bin":
-		return
+	elif file == null or file.system != &"" or _listing_of_item(item).kind == &"recycle_bin":
+		return  # IconView opens a system icon's window
 	elif file == _control_panel:
 		open_control_panel(folder_view)
 	elif file == _drive_c:
 		_show(Listing.new("(C:)", file.icon, &"folder", func() -> Array: return _state.setup.drive_c, true, &"drive_c"), folder_view)
+	elif file == _drive_a or file == _drive_d:
+		_open_removable(file, folder_view)
 	elif file.is_folder:
 		_show(Listing.new(file.name, file.icon, &"folder", func() -> Array: return file.children, not _drives.has(file), file), folder_view)
 	else:
 		open_file(file)
+
+
+# A: opens while a floppy is in it; D: never holds a disc. An empty drive says so, and Retry looks again.
+func _open_removable(drive: Win95File, folder_view: IconView.FolderView) -> void:
+	if drive == _drive_a and _state.setup.floppy_in_a:
+		_show(Listing.new(drive.name, drive.icon, &"folder", func() -> Array: return drive.children, false, drive), folder_view)
+		return
+	var drive_path := "A:\\" if drive == _drive_a else "D:\\"
+	var buttons: Array[String] = ["Retry", "Cancel"]
+	var box: Node = _desktop.open(_MESSAGE, false)
+	box.closed.connect(box.queue_free)
+	box.answered.connect(func(button: String) -> void:
+		if button == "Retry":
+			_open_removable(drive, folder_view))
+	box.show_message(drive_path, "%s is not accessible.\n\nThe device is not ready." % drive_path, buttons)
 
 
 ## Opens the Control Panel folder in [param folder_view], or brings it to the front.
@@ -505,7 +619,7 @@ func _entries_for(view: IconView, item: FileIcon) -> Array[ContextMenu.Entry]:
 	if file != null and file.is_folder:
 		entries.append_array(_entries([["Explore"], ["Find..."]]))
 	entries.append_array(_entries([[], ContextMenu.submenu("Send To", _entries([["3\u00bd Floppy (A)"], ["Mail Recipient"], ["My Briefcase"]])),
-		[], ["Cut"], ["Copy"], [], ["Create Shortcut"], ["Delete", &"delete"]]))
+		[], ["Cut", &"cut"], ["Copy"], [], ["Create Shortcut"], ["Delete", &"delete"]]))
 	if not multi:
 		entries.append(ContextMenu.item("Rename", &"rename"))
 	entries.append_array(_entries([[], properties]))
@@ -519,11 +633,11 @@ func _background_entries(listing: Listing, view: IconView) -> Array[ContextMenu.
 		views.append(ContextMenu.item(_VIEW_IDS[id][1], id, false, false, view.folder_view == _VIEW_IDS[id][0]))
 	var view_menu := ContextMenu.submenu("View", views)
 	var new_menu := ContextMenu.submenu("New", _entries([["Folder", &"new_folder"], ["Shortcut"], [], ["Text Document"], ["WordPad Document"], ["Bitmap Image"], ["Wave Sound"]]))
-	var paste := ContextMenu.item("Paste", &"", false, true)
+	var paste := ContextMenu.item("Paste", &"paste", false, _cut.is_empty())
 	var paste_shortcut := ContextMenu.item("Paste Shortcut", &"", false, true)
 	match listing.kind:
 		&"desktop":
-			return _entries([arrange, ["Line up Icons"], [], paste, paste_shortcut, [], new_menu, [], ["Properties"]])
+			return _entries([arrange, ["Line up Icons"], [], paste, paste_shortcut, [], new_menu, [], ["Properties", &"display"]])
 		&"recycle_bin":
 			return _entries([view_menu, [], arrange, ["Line up Icons"], [], ContextMenu.item("Empty Recycle Bin", &"empty_bin", false, _state.setup.recycle_bin.is_empty()), [], ["Properties"]])
 		&"my_computer":
@@ -570,12 +684,21 @@ func _on_action(id: StringName) -> void:
 			_state.purge_files(files)
 		&"restore":
 			_state.restore_files(files)
+		&"cut":
+			if listing.creatable:
+				_cut = files
+		&"paste":
+			if listing.creatable and not _cut.is_empty():
+				_report_move(_state.move_files(_cut, listing.files.call()))
+				_cut.clear()
 		&"empty_bin":
 			_state.empty_recycle_bin()
 			Win95Desktop.play_sound(empty_bin_sound, self)
 		&"new_folder":
 			var folder := _state.new_folder(listing.files.call())
 			_rename_new.call_deferred(view, folder)
+		&"display":
+			_desktop.open((load(_DISPLAY) as Applet).sheet)
 		&"properties":
 			var file := _file_of(item) if item != null else null
 			if file != null:
@@ -585,8 +708,51 @@ func _on_action(id: StringName) -> void:
 			push_error("Win95: no action for the menu id %s" % id)
 
 
+# Drag and drop, as in Win95: onto a folder moves the files into it, onto the Recycle Bin deletes
+# them, and onto empty space or a file moves them into the view's folder; on the desktop they stand
+# where they were let go. The system icons stay where they are.
+func _on_dropped(items: Array[FileIcon], onto: FileIcon, places: Array[Vector2], view: IconView) -> void:
+	var files: Array[Win95File] = []
+	var at: Array[Vector2] = []
+	for i in items.size():
+		var file := _file_of(items[i])
+		var from := _listing_of_item(items[i])
+		if file != null and from != null and from.creatable:
+			files.append(file)
+			at.append(places[i].clamp(Vector2.ONE, view.size - Vector2(16, 16)))
+	if files.is_empty():
+		return
+	if onto != null and onto not in items:
+		var target := _file_of(onto)
+		if onto.name == &"RecycleBin":
+			_state.delete_files(_deletable(files))
+			return
+		if target != null and target.is_folder and not _drives.has(target):
+			_report_move(_state.move_files(files, target.children))
+			return
+	var listing: Listing = _listings[view]
+	if listing.creatable:
+		if view != _icons:
+			at.clear()  # only the desktop places icons
+		elif items[0].get_parent() != view:
+			at.resize(1)  # a folder's spacing piles icons up: the rest take free cells
+		_report_move(_state.move_files(files, listing.files.call(), at))
+
+
+# Win95's own icons can't be deleted.
+static func _deletable(files: Array[Win95File]) -> Array[Win95File]:
+	var kept: Array[Win95File] = []
+	kept.assign(files.filter(func(file: Win95File) -> bool: return file.system == &""))
+	return kept
+
+
+func _report_move(refused: String) -> void:
+	if refused != "":
+		_message("Error Moving File", refused)
+
+
 func _delete(view: IconView, items: Array[FileIcon]) -> void:
-	var files := _files(items)
+	var files := _deletable(_files(items))
 	if _listings[view].kind == &"recycle_bin":
 		_state.purge_files(files)
 	else:

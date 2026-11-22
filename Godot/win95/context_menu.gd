@@ -25,6 +25,8 @@ class Entry:
 	## has no check column.
 	var icon: Texture2D
 	var id: StringName = &""
+	## The key named right-aligned after the label, as "Alt+F4". The menu doesn't bind the key.
+	var shortcut: String = ""
 	## Drawn bold: the action that a double-click does.
 	var is_default: bool = false
 	var disabled: bool = false
@@ -51,6 +53,8 @@ const _BANNER_WIDTH := 21.0
 const _SEPARATOR_HEIGHT := 9.0
 ## The left column holds the check mark; the right one the submenu arrow.
 const _COLUMN := 18.0
+## The least space between a label and its shortcut.
+const _SHORTCUT_GAP := 16.0
 const _SUBMENU_DELAY := 0.3
 const _BOLD := preload("res://win95/theme/fonts/w95fa_pixel_bold.ttf")
 const _PALETTE := preload("res://win95/theme/palette.tres")
@@ -152,6 +156,7 @@ func _menu_size() -> Vector2:
 	var font := get_theme_font("font", &"PopupMenu")
 	var font_size := get_theme_font_size("font_size", &"PopupMenu")
 	var width := 0.0
+	var shortcut_width := 0.0
 	var height := 0.0
 	for entry in _entries:
 		if entry.is_separator:
@@ -159,7 +164,11 @@ func _menu_size() -> Vector2:
 			continue
 		var label_font: Font = _BOLD if entry.is_default else font
 		width = maxf(width, label_font.get_string_size(entry.text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x)
+		if entry.shortcut != "":
+			shortcut_width = maxf(shortcut_width, label_font.get_string_size(entry.shortcut, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x)
 		height += _row_height()
+	if shortcut_width > 0.0:
+		width += _SHORTCUT_GAP + shortcut_width
 	return Vector2(ceilf(width) + _text_x() + _COLUMN + 8.0, height)
 
 
@@ -252,6 +261,10 @@ func _draw_label(entry: Entry, font: Font, font_size: int, at: Vector2, color: C
 		var x := font.get_string_size(text.left(letter), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 		var width := font.get_string_size(text[letter], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 		_rows.draw_rect(Rect2(at.x + x, at.y + 1.0, width, 1.0), color)
+	if entry.shortcut != "":
+		var nudge := at.x - _text_x()  # 1 px for the embossed copy of a disabled item
+		var right := _rows.size.x - _COLUMN + nudge
+		_rows.draw_string(font, Vector2(right - font.get_string_size(entry.shortcut, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, at.y), entry.shortcut, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 
 
 # Win95's banner: "Windows" in light gray and "95" in white, bold, reading upwards on dark gray.

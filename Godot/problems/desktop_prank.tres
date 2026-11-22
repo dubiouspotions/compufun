@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Problem" format=3]
+
+[ext_resource type="Script" path="res://problems/problem.gd" id="problem"]
+[ext_resource type="Script" path="res://problems/desktop_prank_check.gd" id="desktop_prank_check"]
+
+[sub_resource type="Resource" id="DesktopPrankCheck_corner"]
+script = ExtResource("desktop_prank_check")
+
+[resource]
+script = ExtResource("problem")
+short_name = &"desktop_prank"
+perceived_issue = "Icons don't open"
+location = 1
+symptoms = PackedStringArray("Desktop icons don't respond", "Wallpaper is a picture of the desktop", "Icons are in a folder hidden in a corner")
+software_steps = PackedStringArray("Open the folder hidden in the corner", "Drag every icon in it onto the desktop", "Change the wallpaper in Display Properties")
+software_check = SubResource("DesktopPrankCheck_corner")

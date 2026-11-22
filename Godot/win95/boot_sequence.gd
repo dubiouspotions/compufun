@@ -34,6 +34,9 @@ signal _any_key
 ## screen never tells which one is broken.
 @export_range(0.0, 1.0) var memory_fail_share: float = 0.4
 @export_multiline var memory_fail_text: String = "Memory test fail\n\nSystem halted"
+## What shows after [member starting_text] when the memory is less than the hardware's
+## windows_needs_kb; the computer then halts until it is switched off.
+@export_multiline var windows_memory_text: String = "Not enough memory to start Windows 95."
 ## How long the video card's BIOS banner shows before the POST, while the monitor warms up, in
 ## seconds.
 @export var warm_up_seconds: float = 4.2
@@ -126,6 +129,11 @@ func play() -> void:
 		await _run_summary()
 	if floppy_in_a:
 		await _disk_error()
+	if boots_windows and hardware.memory_kb < hardware.windows_needs_kb:
+		_halted = true  # a skip doesn't get past it
+		_post.show()
+		_print(starting_text + "\n\n" + windows_memory_text)
+		return
 	if not _skipped and boots_windows:
 		await _run_windows()
 	for player in _players:

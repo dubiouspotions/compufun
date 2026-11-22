@@ -1,7 +1,9 @@
 extends "res://tests/test.gd"
-## The Open sign takes clicks and pulses an outline only while the shop can open or close, makes its
-## flip sound when it turns over, and the close question comes in the game's panel before day 4's warp
-## and in a Win95 message box from it on; a change of view answers No.
+## The Open sign takes clicks and pulses an outline only while the shop can open or close, turns
+## over on its strings with its flip sound, and the close question comes in the game's panel before
+## day 4's warp and in a Win95 message box from it on; a change of view answers No.
+
+var _seen_flips: Dictionary = {}
 
 
 func run() -> void:
@@ -25,6 +27,17 @@ func run() -> void:
 	check("no flip before it turns", _flips(sign), 0)
 	game.open_shop()
 	check("opening turns it over with a flip", _flips(sign), 1)
+	var board: MeshInstance3D = sign.get_node("%Board")
+	var shown := func() -> Texture2D: return (board.material_override as ShaderMaterial).get_shader_parameter("albedo_texture")
+	var turn: float = sign.get("flip_seconds")
+	check("it still shows CLOSED as it starts to turn", shown.call() == sign.get("closed_texture"), true)
+	var widest := 0.0
+	var until := Time.get_ticks_msec() + int((turn + 0.2) * 1000.0)
+	while Time.get_ticks_msec() < until:
+		await process_frame
+		widest = maxf(widest, absf(sign.rotation.y))
+	check("it turns on its strings, near edge-on", widest > 0.8, true)
+	check("it ends turned back, showing OPEN", [is_zero_approx(sign.rotation.y), shown.call() == sign.get("open_texture")], [true, true])
 	check("restore day 1, open", game.restore({"day": 1, "phase": "OPEN"}), "")
 	check("no flip while it stays open", _flips(sign), 1)
 
@@ -60,7 +73,10 @@ func run() -> void:
 	await process_frame
 
 
-# The flips that play now: SoundSet.play_at adds a player under the sign for each.
+# Each flip leaves a player of the flip sound on the sign while it plays; the count keeps every one seen.
 func _flips(sign: Node3D) -> int:
 	var flip: SoundSet = sign.get("flip_sound")
-	return sign.get_children().filter(func(n: Node) -> bool: return n is AudioStreamPlayer3D and n.stream in flip.sounds).size()
+	for n: Node in sign.get_children():
+		if n is AudioStreamPlayer3D and n.stream in flip.sounds:
+			_seen_flips[n.get_instance_id()] = true
+	return _seen_flips.size()

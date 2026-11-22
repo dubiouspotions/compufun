@@ -60,7 +60,8 @@ var _driver_materials: Array[StandardMaterial3D] = []
 
 @onready var _places: Node3D = %Places
 @onready var _spots: Node3D = %Spots
-@onready var _mat_surface: Hotspot = %MatSurface
+# Left and right of the screwdriver's outline, so that no part lies on it.
+@onready var _mat_surfaces: Array[Node] = %MatSurfaces.get_children()
 @onready var _eye: Marker3D = %Eye
 @onready var _panel: MeshInstance3D = %Panel
 @onready var _panel_hotspot: Hotspot = %PanelHotspot
@@ -98,8 +99,9 @@ func _ready() -> void:
 		var spot := _spots.get_child(i).get_node("Hotspot") as Hotspot
 		spot.clicked.connect(_on_spot_clicked.bind(i).unbind(1))
 		_watch(spot)
-	_mat_surface.clicked.connect(func(_h: Hotspot) -> void: Game.put_on_mat(job))
-	_watch(_mat_surface)
+	for surface: Hotspot in _mat_surfaces:
+		surface.clicked.connect(func(_h: Hotspot) -> void: Game.put_on_mat(job))
+		_watch(surface)
 	_panel_hotspot.clicked.connect(func(_h: Hotspot) -> void: Game.open_case(job, not job.case_open))
 	_watch(_panel_hotspot)
 	if _panel_screws.get_child_count() != Job.PANEL_SCREWS:
@@ -165,7 +167,8 @@ func _sync() -> void:
 		_mat_shown.append(_show_model(job.mat[i], _spot(i)))
 	for i: int in _spots.get_child_count():
 		(_spots.get_child(i).get_node("Hotspot") as Hotspot).set_enabled(active and Game.hand == null and i < job.mat.size())
-	_mat_surface.set_enabled(active and Game.hand != null)
+	for surface: Hotspot in _mat_surfaces:
+		surface.set_enabled(active and Game.hand != null)
 	if _hovered != null and not _hovered.input_ray_pickable:
 		_on_hover(_hovered, -1, false)
 	_sync_highlights()
@@ -274,8 +277,8 @@ func _sync_highlights() -> void:
 		var spot_hotspot := _spot(i).get_node("Hotspot") as Hotspot
 		if spot_hotspot.input_ray_pickable:
 			_highlight(_mat_shown[i], spot_hotspot)
-	if _mat_surface == _hovered and Game.hand != null:  # the mat is wide: a ghost only where the player points
-		_add_ghost(Game.hand.part.model, _spot(job.mat.size()), _mat_surface)
+	if _hovered in _mat_surfaces and Game.hand != null:  # the mat is wide: a ghost only where the player points
+		_add_ghost(Game.hand.part.model, _spot(job.mat.size()), _hovered)
 	if _panel_hotspot.input_ray_pickable:
 		_highlight(_panel, _panel_hotspot)
 	for i: int in _screws.size():

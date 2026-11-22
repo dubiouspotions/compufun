@@ -57,7 +57,7 @@ mesh = SubResource("QuadMesh_second")
 
 [node name="Ticking" type="AudioStreamPlayer3D" parent="."]
 position = Vector3(0, 0, 0.1)
-volume_db = -32.0
+volume_db = -28.0
 unit_size = 1.0
 bus = &"Shop"
 attenuation_filter_cutoff_hz = 20500.0

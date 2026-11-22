@@ -124,3 +124,4 @@ theme_override_styles/focus = SubResource("none")
 caret_blink = true
 caret_blink_interval = 0.5
 context_menu_enabled = false
+keep_editing_on_text_submit = true

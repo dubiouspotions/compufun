@@ -8,9 +8,12 @@ signal view_requested(view: StringName)
 
 ## The seconds that the back strip takes to darken, and to clear again.
 @export var back_strip_fade_seconds: float = 0.12
+## The seconds that a button stays pressed down after a turn, so a quick click or a key shows it.
+@export var press_seconds: float = 0.15
 
 var _marker: ViewMarker
 var _back_strip_fade: Tween
+var _lifts: Dictionary[Button, Tween] = {}
 
 @onready var _left: Button = %LeftButton
 @onready var _right: Button = %RightButton
@@ -35,6 +38,30 @@ func show_marker(marker: ViewMarker) -> void:
 	_status_label.text = _status_text()
 
 
+## Shows the button for [param direction] (&"left", &"right" or &"back") pressed down for
+## [member press_seconds]: the player turned that way, with the button or with a key.
+func press(direction: StringName) -> void:
+	var button: Button = {&"left": _left, &"right": _right, &"back": _back}.get(direction)
+	if button == null or not button.visible:
+		return
+	var down := button.get_theme_stylebox(&"pressed")
+	button.add_theme_stylebox_override(&"normal", down)
+	button.add_theme_stylebox_override(&"hover", down)
+	if _lifts.has(button):
+		_lifts[button].kill()
+	_lifts[button] = create_tween()
+	_lifts[button].tween_interval(press_seconds)
+	_lifts[button].tween_callback(func() -> void:
+		button.remove_theme_stylebox_override(&"normal")
+		button.remove_theme_stylebox_override(&"hover"))
+
+
+## True while [method press] holds the button for [param direction] down.
+func is_pressed_down(direction: StringName) -> bool:
+	var button: Button = {&"left": _left, &"right": _right, &"back": _back}.get(direction)
+	return button != null and button.has_theme_stylebox_override(&"normal")
+
+
 ## Darkens the bottom [param height] of the screen (a share of its height) while [param on], to show
 ## that a click there goes back (see [member Shop.back_strip_height]).
 func show_back_strip(on: bool, height: float) -> void:
@@ -55,6 +82,7 @@ func button_rects() -> Array[Rect2]:
 
 
 func _request(direction: StringName) -> void:
+	press(direction)
 	if _marker != null:
 		view_requested.emit(_marker.get(direction))
 

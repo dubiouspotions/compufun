@@ -2,6 +2,7 @@ extends "res://tests/test.gd"
 ## The keys between views: Up or W in the Left View enters the storage room, as a click on the
 ## storage door does, and Back returns to the Left View. No key or click skips the work computer's
 ## start-up. In CompuFunDB, during the start-up and after it, S and Esc go back as the Back button does.
+## A turn, with a key or a button, shows its button pressed down for a moment.
 
 var _main: Node
 
@@ -24,8 +25,23 @@ func run() -> void:
 	game.go_to_view(&"Main")
 	_press(&"look_up")
 	check("Up in the Main View still looks up at the ceiling", game.view, &"Up")
+	await _check_press()
 	await _check_db_start_up()
 	_main.queue_free()
+
+
+func _check_press() -> void:
+	var nav: Control = _main.get_node("%ViewNav")
+	var hold: float = nav.get("press_seconds") + 0.1
+	game.go_to_view(&"Left")
+	await create_timer(hold).timeout
+	check("Right is up before a turn", nav.call("is_pressed_down", &"right"), false)
+	_press(&"turn_right")
+	check("the right arrow key turns and presses Right down", [game.view, nav.call("is_pressed_down", &"right")], [&"Main", true])
+	await create_timer(hold).timeout
+	check("Right comes back up", nav.call("is_pressed_down", &"right"), false)
+	(nav.get_node("%LeftButton") as Button).pressed.emit()
+	check("a click on Left turns and presses it down", [game.view, nav.call("is_pressed_down", &"left")], [&"Left", true])
 
 
 func _check_db_start_up() -> void:

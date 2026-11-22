@@ -1,10 +1,11 @@
 class_name OpenSign
 extends Node3D
-## The sign that hangs in the shop window. Its OPEN side faces the street while the shop is open,
-## so the player, inside, reads CLOSED; while the shop is closed, the player reads OPEN. Its origin
+## The sign that hangs in the shop window. The player, inside, reads OPEN while the shop is open,
+## and CLOSED while the shop is closed. Its origin
 ## is where the strings hang from. It takes clicks only while [method Game.can_open] or
 ## [method Game.can_close] is true, and then a yellow outline pulses around it. [method shake]
-## swings it on its strings to draw the eye. It makes [member flip_sound] when it turns over.
+## swings it on its strings to draw the eye. When the shop opens or closes, it turns over on its
+## strings with [member flip_sound]; a restore or a new day shows the side at once.
 
 ## The player clicked the sign while [method Game.can_open] is true.
 signal open_requested
@@ -21,6 +22,8 @@ signal close_requested
 @export var flip_sound: SoundSet = preload("res://sounds/sign_flip.tres")
 ## Plays with each [method shake]; tools/make_shop_sounds.py times its ticks to the default shake.
 @export var rattle_sound: SoundSet = preload("res://sounds/sign_rattle.tres")
+## How long the sign takes to turn over, in seconds.
+@export_range(0.05, 3.0, 0.05) var flip_seconds: float = 0.5
 ## How long one [method shake] lasts, in seconds.
 @export_range(0.05, 3.0, 0.05) var shake_seconds: float = 0.6
 ## How far a [method shake] first swings the sign to each side, in degrees; the swings die out.
@@ -30,6 +33,8 @@ signal close_requested
 
 var _pulse: Tween
 var _shake: Tween
+var _flip: Tween
+var _rest_y: float
 var _rest_z: float
 # Whether the shop was open on the last sync: a change turns the sign over.
 var _was_open: bool
@@ -41,6 +46,7 @@ var _jump: int
 
 
 func _ready() -> void:
+	_rest_y = rotation.y
 	_rest_z = rotation.z
 	_was_open = _open()
 	_jump = Game.jump
@@ -83,9 +89,13 @@ func _open() -> bool:
 
 func _sync() -> void:
 	var open := _open()
-	(_board.material_override as ShaderMaterial).set_shader_parameter("albedo_texture", closed_texture if open else open_texture)
+	var side := open_texture if open else closed_texture
 	if open != _was_open and Game.jump == _jump:
 		flip_sound.play_at(self)
+		_turn_over(side)
+	elif Game.jump != _jump or _flip == null or not _flip.is_running():
+		_stop_turning()
+		_show_side(side)
 	_was_open = open
 	_jump = Game.jump
 	var clickable := Game.can_open() or Game.can_close()
@@ -101,6 +111,26 @@ func _sync() -> void:
 		_pulse = create_tween().set_loops().set_trans(Tween.TRANS_SINE)
 		_pulse.tween_property(material, "albedo_color:a", pulse_low, pulse_seconds / 2.0).from(1.0)
 		_pulse.tween_property(material, "albedo_color:a", 1.0, pulse_seconds / 2.0)
+
+
+# Turns the sign edge-on, shows [param side], and turns it back, in [member flip_seconds].
+func _turn_over(side: Texture2D) -> void:
+	_stop_turning()
+	_flip = create_tween().set_trans(Tween.TRANS_SINE)
+	_flip.tween_property(self, "rotation:y", _rest_y + PI / 2.0, flip_seconds / 2.0).set_ease(Tween.EASE_IN)
+	_flip.tween_callback(_show_side.bind(side))
+	_flip.tween_property(self, "rotation:y", _rest_y, flip_seconds / 2.0).from(_rest_y - PI / 2.0).set_ease(Tween.EASE_OUT)
+
+
+func _stop_turning() -> void:
+	if _flip != null:
+		_flip.kill()
+		_flip = null
+	rotation.y = _rest_y
+
+
+func _show_side(side: Texture2D) -> void:
+	(_board.material_override as ShaderMaterial).set_shader_parameter("albedo_texture", side)
 
 
 func _on_clicked(_h: Hotspot) -> void:

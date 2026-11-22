@@ -6,7 +6,8 @@ extends Resource
 ## "Windows theme": the system colours. The default is the stock Win95 palette.
 @export var palette: Win95Palette = preload("res://win95/theme/palette.tres")
 @export var wallpaper: Texture2D = preload("res://win95/wallpapers/win95-default.png")
-## The icons on the desktop, in the order that they appear, after the system icons.
+## The icons on the desktop, in the order that they appear. The running copy puts Win95's own
+## icons first (Win95File.system), so they move and hide like files.
 @export var desktop: Array[Win95File] = []
 ## The top folder of drive C.
 @export var drive_c: Array[Win95File] = []
@@ -24,6 +25,9 @@ var deleted_from: Dictionary[Win95File, Array] = {}
 ## The documents that the player opened, newest first, as the Start menu's Documents lists them.
 ## Only while the game runs.
 var recent_documents: Array[Win95File] = []
+## The screenshot that the desktop prank (DesktopPrankCheck) set as the wallpaper, or null. Only
+## while the game runs.
+var desktop_screenshot: DesktopScreenshot
 ## Every email in every folder; each Email says which folder it is in.
 @export var emails: Array[Email] = []
 ## The programs that the Start menu lists, by their name in the menu.
@@ -73,7 +77,35 @@ func copy() -> Win95Setup:
 	var running := duplicate_deep() as Win95Setup
 	for files: Array in [running.desktop, running.drive_c, running.recycle_bin]:
 		_own(files)
+	running._add_system_icons()
 	return running
+
+
+# Each icon of desktop_icons.tscn that the setup doesn't hold yet, in the scene's order. Loaded,
+# not preloaded: the scene's windows use this script.
+func _add_system_icons() -> void:
+	var state := (load("res://win95/desktop_icons.tscn") as PackedScene).get_state()
+	var added: Array[Win95File] = []
+	for node in range(1, state.get_node_count()):
+		var icon := Win95File.new()
+		icon.system = state.get_node_name(node)
+		for i in state.get_node_property_count(node):
+			match state.get_node_property_name(node, i):
+				&"text":
+					icon.name = state.get_node_property_value(node, i)
+				&"icon":
+					icon.icon = state.get_node_property_value(node, i)
+		if not _holds_system(desktop, icon.system) and not _holds_system(recycle_bin, icon.system):
+			added.append(icon)
+	for i in added.size():
+		desktop.insert(i, added[i])
+
+
+static func _holds_system(files: Array, system: StringName) -> bool:
+	for file: Win95File in files:
+		if file.system == system or _holds_system(file.children, system):
+			return true
+	return false
 
 
 static func _own(files: Array) -> void:

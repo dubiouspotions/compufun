@@ -3,11 +3,11 @@ extends Control
 ## The printout that the player carries (Game.printout), in every view: its top peeks in at the
 ## bottom left, clear of the part in the hand on the right. A click on it raises the page: the player
 ## holds it up on the right side of the view, readable, and keeps playing beside it. A click on a
-## line with a check box ticks or unticks it; a click elsewhere on the page, a click outside it, or
-## Esc lowers it, and a click outside does nothing else. Beside an open screen (see
-## [method lay_out_around]) the page is always up, right of the screen and leaving it uncovered. Only
-## the trash can takes the page (TrashCan); while the player carries one, a try to take another hops
-## the corner.
+## line with a check box ticks or unticks it, and a click on the trash can throws the page away. Any
+## other click on the page or outside it, or Esc, lowers it; a click outside does nothing else. Beside
+## an open screen (see [method lay_out_around]) the page is always up, right of the screen and leaving
+## it uncovered. Only the trash can takes the page (TrashCan); while the player carries one, a try to
+## take another hops the corner.
 
 ## How far the corner rises, in pixels, while the mouse is over it.
 @export var hover_rise: float = 24.0
@@ -85,7 +85,8 @@ func lay_out_around(screen: Rect2, buttons: Array[Rect2]) -> void:
 	_sync()
 
 
-# _input, before the buttons, the screens and the hotspots: a click outside the raised page only lowers it.
+# _input, before the buttons, the screens and the hotspots: a click outside the raised page only lowers it,
+# or throws it in the trash can under the mouse.
 func _input(event: InputEvent) -> void:
 	var click := event as InputEventMouseButton
 	if click == null or not click.pressed or click.button_index not in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
@@ -94,7 +95,11 @@ func _input(event: InputEvent) -> void:
 		return
 	if Rect2(Vector2.ZERO, _paper.size).has_point((_paper.make_input_local(click) as InputEventMouseButton).position):
 		return
-	lower()
+	var can := get_tree().get_first_node_in_group(TrashCan.GROUP) as TrashCan
+	if click.button_index == MOUSE_BUTTON_LEFT and can != null and can.is_hovered():
+		can.throw_printout()
+	else:
+		lower()
 	get_viewport().set_input_as_handled()
 
 

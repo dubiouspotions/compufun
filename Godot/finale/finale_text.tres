@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="FinaleText" format=3]
+
+[ext_resource type="Script" path="res://finale/finale_text.gd" id="1_text"]
+
+[resource]
+script = ExtResource("1_text")
+popup_title = "Cambion"
+popup_messages = PackedStringArray("CAMBION caused an invalid page fault in module REALITY.DLL at 0137:BFF9A5D0.", "C:\\WORLD\\TIME.SYS is corrupt or missing.", "The shop cannot be found. Make sure that the path and file name are correct.", "There is not enough memory to run the world. Quit one or more programs, and then try again.", "A required file, PHYSICS.VXD, is missing. Cambion will replace it.", "The device SPACE is not responding.", "Cambion has upgraded your surroundings. Restart now?", "This program has performed an illegal operation and will be shut down.", "Drive C: is full. Cambion needs the space.", "Your eyes are not supported by this version of Windows.")
+windows_repair = "Preparing Automatic Repair"
+windows_title = "Recovery"
+windows_error = "Your PC/Device needs to be repaired
+
+The drive where Windows is installed is corrupted.
+
+File: \\Windows\\System32\\drivers\\cambion.sys
+Error code: 0xc0000225
+
+You'll need to use recovery tools. If you don't have any installation media (like a disc or USB device), contact your PC administrator or PC/Device manufacturer."
+macos_error = "Your startup disk is corrupted.
+
+macOS can't repair the disk \"Macintosh HD\".
+Cambion has taken its place."
+linux_boot = "[    0.000000] Linux version 6.8.0-cambion (root@cambion) #1 SMP PREEMPT_DYNAMIC
+[    0.000000] Command line: BOOT_IMAGE=/vmlinuz-6.8.0-cambion root=/dev/nvme0n1p2 ro quiet
+[    0.004211] DMI: CompuFun 486DX2/66, BIOS 1.0 05/31/1996
+[    0.112048] ACPI: Core revision 20230628
+[    0.239154] PCI: Using configuration type 1 for base access
+[    0.418774] nvme nvme0: 8/0/0 default/read/poll queues
+[    0.421301]  nvme0n1: p1 p2
+[    1.902211] EXT4-fs (nvme0n1p2): mounting ext4 file system
+[    2.718281] cambion: module verification failed: signature and/or required key missing
+[    2.718302] cambion: loading out-of-tree module taints kernel."
+linux_error = "[    3.141592] EXT4-fs error (device nvme0n1p2): ext4_lookup:1855: the drive is corrupted
+[    3.141600] Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(259,2)
+[    3.141601] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G           OE      6.8.0-cambion #1
+[    3.141602] ---[ end Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(259,2) ]---"
+thanks = "Thank you for playing"
+cast_heading = "Starring"
+credits = "HumanError
+by Dubious Potions, for GAME JAM 95
+
+Piérre Reimertz
+Nevyn Bengtsson
+Jonny Strömberg
+Patrik Sjöberg
+Milestone
+ocwal
+
+(placeholder credits)"
+restart_hint = "Press any key to start again"

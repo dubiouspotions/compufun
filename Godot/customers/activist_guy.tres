@@ -57,6 +57,7 @@ bios_version = "v4.50G"
 bios_id = "07/12/94-UMC-881/886-2C4X6U01-00"
 cpu = "486DX2"
 cpu_mhz = 66
+windows_needs_kb = 12288
 cache_kb = 128
 edo = false
 hard_drive = "WDC AC2540H"

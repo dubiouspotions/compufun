@@ -19,6 +19,8 @@ const PRESETS: Dictionary[String, Dictionary] = {
 				{"customer": "res://customers/retired_accountant.tres", "slot": 1, "order": 1, "powered": true}]},
 	"Activist guy's computer, bad RAM, connected": {"day": 1, "arrivals": 3, "focus_slot": 0, "connected_slot": 0,
 			"jobs": [{"customer": "res://customers/activist_guy.tres", "slot": 0}]},
+	"Young entrepreneur's computer, desktop prank, connected": {"day": 1, "arrivals": 1, "focus_slot": 0, "connected_slot": 0,
+			"jobs": [{"customer": "res://customers/young_entrepreneur.tres", "problem": "desktop_prank", "slot": 0, "powered": true}]},
 	"Day 1 over, two computers overnight": {"day": 1, "phase": "DAY_OVER", "arrivals": 3,
 			"jobs": [{"customer": "res://customers/skater_bro.tres", "slot": 0},
 				{"customer": "res://customers/retired_accountant.tres", "slot": 1, "order": 1}]},

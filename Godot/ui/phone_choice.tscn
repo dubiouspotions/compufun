@@ -5,6 +5,10 @@
 
 [sub_resource type="StyleBoxEmpty" id="nothing"]
 
+[sub_resource type="FontVariation" id="italic"]
+base_font = ExtResource("pixel")
+variation_transform = Transform2D(1, 0.2, 0, 1, 0, 0)
+
 [sub_resource type="StyleBoxFlat" id="row_normal"]
 content_margin_left = 12.0
 content_margin_top = 6.0
@@ -44,7 +48,6 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.82, 0.45, 1)
 theme_override_fonts/font = ExtResource("pixel_bold")
 theme_override_font_sizes/font_size = 28
-custom_minimum_size = Vector2(200, 0)
 vertical_alignment = 1
 
 [node name="Number" type="Label" parent="Row"]
@@ -53,7 +56,6 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.62, 0.62, 0.66, 1)
 theme_override_fonts/font = ExtResource("pixel")
 theme_override_font_sizes/font_size = 26
-custom_minimum_size = Vector2(160, 0)
 vertical_alignment = 1
 
 [node name="Issue" type="Label" parent="Row"]
@@ -62,5 +64,12 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.95, 0.92, 1)
 theme_override_fonts/font = ExtResource("pixel")
 theme_override_font_sizes/font_size = 26
-size_flags_horizontal = 3
+vertical_alignment = 1
+
+[node name="Status" type="Label" parent="Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.95, 0.92, 1)
+theme_override_fonts/font = SubResource("italic")
+theme_override_font_sizes/font_size = 26
 vertical_alignment = 1

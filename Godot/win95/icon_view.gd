@@ -19,6 +19,14 @@ signal context_requested(item: FileIcon, at: Vector2)
 signal delete_requested(items: Array[FileIcon])
 ## [member folder_view] changed.
 signal folder_view_changed
+## The player dragged [param items] here and let go: onto [param onto], or onto empty space when it
+## is null. [param places] says where each item would stand, from the view's top left, keeping
+## their layout around the pointer.
+signal items_dropped(items: Array[FileIcon], onto: FileIcon, places: Array[Vector2])
+## Every icon has its position, after each layout.
+signal laid_out
+## The player pressed Ctrl+X (&"cut") or Ctrl+V (&"paste").
+signal clipboard_requested(action: StringName)
 
 ## The views of Win95's View menu, in its order.
 enum FolderView { LARGE_ICONS, SMALL_ICONS, LIST, DETAILS }
@@ -61,10 +69,14 @@ var _band_button := MOUSE_BUTTON_NONE
 var _flows_down := false
 ## The selection when a Ctrl-drag started; the rectangle toggles icons against it.
 var _before_band: Array[FileIcon] = []
+## A plain press on an icon that was already selected: the selection stays for a drag, and the
+## release without one selects that icon alone, as in Win95.
+var _press_on_selected: FileIcon
 
 
 func _ready() -> void:
 	_flows_down = vertical
+	sort_children.connect(_move_placed)
 	for child in get_children():
 		_wire(child)
 	child_entered_tree.connect(func(child: Node) -> void:
@@ -125,6 +137,90 @@ func add_item(text: String, icon: Texture2D) -> FileIcon:
 	item.icon = icon
 	add_child(item)
 	return item
+
+
+# Dragging an icon drags the whole selection, shown as faded icons under the pointer.
+func _drag_from(at: Vector2, item: FileIcon) -> Variant:
+	_press_on_selected = null
+	if not item.selected:
+		_select(item)
+	var items := selected_items()
+	var grab := item.position + at
+	var offsets: Array[Vector2] = []
+	var preview := Control.new()
+	preview.modulate.a = 0.5
+	for dragged in items:
+		offsets.append(dragged.position - grab)
+		var picture := TextureRect.new()
+		picture.texture = dragged.icon
+		picture.position = dragged.position - grab + (dragged.get_node(^"%Icon") as Control).position
+		preview.add_child(picture)
+	set_drag_preview(preview)
+	return {&"win95_icons": items, &"offsets": offsets}
+
+
+func _can_drop_data(_at: Vector2, data: Variant) -> bool:
+	return data is Dictionary and (data as Dictionary).has(&"win95_icons")
+
+
+func _drop_data(at: Vector2, data: Variant) -> void:
+	_dropped(at, data, null)
+
+
+func _can_drop_on(_at: Vector2, data: Variant, _item: FileIcon) -> bool:
+	return _can_drop_data(_at, data)
+
+
+func _drop_on(at: Vector2, data: Variant, item: FileIcon) -> void:
+	_dropped(item.position + at, data, item)
+
+
+func _dropped(at: Vector2, data: Dictionary, onto: FileIcon) -> void:
+	var items: Array[FileIcon] = []
+	var places: Array[Vector2] = []
+	var offsets: Array = data[&"offsets"]
+	var dragged: Array = data[&"win95_icons"]
+	for i in dragged.size():
+		if is_instance_valid(dragged[i]) and not dragged[i].is_queued_for_deletion():
+			items.append(dragged[i])
+			places.append(at + offsets[i])
+	if not items.is_empty():
+		items_dropped.emit(items, onto, places)
+
+
+## Stands [param item] at [param at], from the view's top left, out of the flow, as a Win95
+## desktop icon can stand anywhere. It goes last, so the gap that it leaves in the flow is at the end.
+func place(item: FileIcon, at: Vector2) -> void:
+	item.placed_at = at
+	move_child(item, -1)
+	queue_sort()
+
+
+# The flow has just laid out every icon. With any icon placed, as on a Win95 desktop, the placed
+# ones move to their place and the others take the free cells of the grid, column by column.
+func _move_placed() -> void:
+	var items := _items()
+	var placed: Array[Rect2] = []
+	var cell := Vector2.ZERO
+	for item in items:
+		cell = cell.max(item.size)
+		if item.placed_at != Vector2.ZERO:
+			item.position = item.placed_at
+			placed.append(Rect2(item.placed_at, item.size))
+	if not placed.is_empty() and cell.x > 0.0 and cell.y > 0.0:
+		var rows := maxi(1, floori(size.y / cell.y))
+		var next := 0
+		for item in items:
+			if item.placed_at != Vector2.ZERO:
+				continue
+			while true:
+				var at := Vector2(next / rows * cell.x, next % rows * cell.y)
+				next += 1
+				var free := placed.all(func(rect: Rect2) -> bool: return not rect.intersects(Rect2(at, cell).grow(-1.0)))
+				if free or at.x > size.x:
+					item.position = at
+					break
+	laid_out.emit()
 
 
 ## Removes every icon.
@@ -217,9 +313,14 @@ func _wire(child: Node) -> void:
 	item.on_desktop = on_desktop
 	_lay_out(item)
 	item.clicked.connect(_on_clicked.bind(item))
+	item.released.connect(func() -> void:
+		if _press_on_selected == item:
+			_press_on_selected = null
+			_select(item))
 	item.opened.connect(func() -> void:
 		_select(item)
 		open_item(item))
+	item.set_drag_forwarding(_drag_from.bind(item), _can_drop_on.bind(item), _drop_on.bind(item))
 	item.context_clicked.connect(func(at: Vector2) -> void:
 		grab_focus()
 		if not item.selected:
@@ -237,6 +338,10 @@ func _key(key: InputEventKey) -> void:
 			if not (key.ctrl_pressed or key.meta_pressed):
 				return
 			select_all()
+		KEY_X, KEY_V:
+			if not (key.ctrl_pressed or key.meta_pressed):
+				return
+			clipboard_requested.emit(&"cut" if key.keycode == KEY_X else &"paste")
 		KEY_F2:
 			if selected.size() == 1 and selected[0].renamable:
 				selected[0].start_rename()
@@ -268,6 +373,9 @@ func _on_clicked(additive: bool, extend: bool, on_name: bool, item: FileIcon) ->
 			items[i].selected = i >= mini(from, to) and i <= maxi(from, to)
 	elif on_name and item.selected and item.renamable and selected_items().size() == 1:
 		item.start_rename()
+	elif item.selected:
+		_press_on_selected = item
+		set_focus_item(item)
 	else:
 		_select(item)
 

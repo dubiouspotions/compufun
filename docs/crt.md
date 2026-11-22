@@ -5,7 +5,7 @@ bench screen (the Screen View) and the work computer (CompuFunDB).
 
 | Part | What it does |
 | --- | --- |
-| `shaders/crt.gdshader` | The CRT look of a close-up: curve, scanlines, mask, glow, convergence, colour. |
+| `shaders/crt.gdshader` | The CRT look of a close-up: curve, scanlines, mask, glow, convergence, focus, ghosting, noise, glass reflection, colour. |
 | `shaders/crt_world.gdshader` | A 3D monitor's screen: the same curve and light, without the mask and scanlines. |
 | `shaders/crt.gdshaderinc` | What both share: the curve (`crt_bend`), the tube's face, the tube's state and the software cursor. |
 | `shaders/crt_looks/` | The looks, as ShaderMaterials. `subtle_vga` is the Screen View's; `world_monitor` is the 3D screen's. |
@@ -61,6 +61,12 @@ running computer is connected; CompuFunDB: always):
 - **Convergence** error grows toward the corners (0.3-0.4 mm in period specs).
 - **Short persistence.** P22 phosphors decay well within a frame at 60 Hz, so there is no
   ghosting effect.
+- **Focus softens toward the corners.** One focus voltage can't keep the spot small across a
+  flat-ish face, so the edges blur a little (`edge_focus`); the centre stays pixel-sharp.
+- **Ghosting.** A long or cheap VGA cable reflects the signal, so a faint copy of each edge lands a
+  few pixels to its right (`ghosting`, `ghost_offset`). `noise` is faint analog snow.
+- **Glass reflection.** The room's light sits on the glass as a soft sheen high on the left
+  (`reflection`); it shows on black and with the tube off.
 - **Degauss.** A coil around the tube demagnetises the mask at power-on and at the press of the
   button, with a loud hum; the picture shakes and its colours swim for a moment.
 
@@ -88,4 +94,4 @@ running computer is connected; CompuFunDB: always):
 - **Functions don't take `TEXTURE`.** A headless compile, as in CI's export, rejects it; the
   shaders read the buffer through their `screen_texture` uniform.
 - **Cost:** one pass at the Screen View's size, 4 texel fetches per sample (12 with convergence)
-  plus 12 for the glow.
+  plus 12 for the glow and 1 for the ghost.

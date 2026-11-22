@@ -23,3 +23,7 @@ shader_parameter/black_level = Color(0.015, 0.018, 0.018, 1)
 shader_parameter/brightness = 1.08
 shader_parameter/flicker = 0.0
 shader_parameter/hum_bar = 0.0
+shader_parameter/edge_focus = 0.3
+shader_parameter/reflection = 0.03
+shader_parameter/ghosting = 0.0
+shader_parameter/noise = 0.0

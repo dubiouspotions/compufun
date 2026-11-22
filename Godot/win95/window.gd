@@ -2,7 +2,9 @@ extends PanelContainer
 ## A Win95 window frame. Dragging the title bar draws Win95's inverted outline, and the window jumps
 ## to the outline when the player releases the mouse button. A resizable window resizes the same
 ## way by its frame's edges and corners or a SizeGrip, and its Maximize button or a double-click on
-## its title bar fills the desktop above the taskbar.
+## its title bar fills the desktop above the taskbar. A click on the title bar's icon opens the
+## control menu (Restore, Move, Size, Minimize, Maximize, Close), and a double-click on it closes
+## the window. Move and Size are greyed out: the frame has no keyboard move or resize.
 ## Expects a title_bar.tscn instance with the unique name TitleBar.
 
 ## The window hid itself because the player closed it.
@@ -34,6 +36,7 @@ var _resizing := 0  # the edges that the drag moves
 var _resize_from := Rect2()
 var _resize_mouse := Vector2.ZERO
 var _restored := Rect2()
+var _menu: ContextMenu
 
 
 func _ready() -> void:
@@ -44,6 +47,7 @@ func _ready() -> void:
 	title_bar.minimize_pressed.connect(minimize)
 	title_bar.maximize_pressed.connect(toggle_maximized)
 	title_bar.double_clicked.connect(toggle_maximized)
+	title_bar.icon_pressed.connect(_open_menu)
 	var material := ShaderMaterial.new()
 	material.shader = _OUTLINE_SHADER
 	_outline = ColorRect.new()
@@ -59,6 +63,12 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	var button := event as InputEventMouseButton
 	if button == null or not button.pressed or not is_visible_in_tree():
+		return
+	# The menu's click catcher covers the icon, so the icon's second click arrives here.
+	if _menu != null and _menu.visible and button.double_click and button.button_index == MOUSE_BUTTON_LEFT and %TitleBar.is_on_icon(button.position):
+		get_viewport().set_input_as_handled()
+		_menu.hide()
+		request_close()
 		return
 	if get_global_rect().has_point(button.position) and not _covered_at(button.position):
 		activated.emit()
@@ -119,6 +129,43 @@ func toggle_maximized() -> void:
 	%TitleBar.set(&"maximized", is_maximized)
 	for grip in find_children("*", "SizeGrip", true, false):
 		(grip as Control).visible = not is_maximized
+
+
+func _open_menu() -> void:
+	if _menu == null:
+		_menu = ContextMenu.new()
+		add_child(_menu, false, Node.INTERNAL_MODE_BACK)
+		_menu.chosen.connect(_on_menu_chosen)
+		var top: Control = self
+		while top.get_parent() is Control:
+			top = top.get_parent()
+		_menu.outside = top  # a click anywhere on the screen, the taskbar too, closes the menu
+	var bar: Control = %TitleBar
+	var can_minimize: bool = bar.get(&"show_minimize")
+	var can_maximize: bool = resizable and bar.get(&"show_maximize")
+	var close_item := ContextMenu.item("&Close", &"close", true)
+	close_item.shortcut = "Alt+F4"
+	_menu.open(bar.get_global_rect().position + Vector2(0.0, bar.size.y), [
+		ContextMenu.item("&Restore", &"restore", false, not is_maximized),
+		ContextMenu.item("&Move", &"", false, true),
+		ContextMenu.item("&Size", &"", false, true),
+		ContextMenu.item("Mi&nimize", &"minimize", false, not can_minimize),
+		ContextMenu.item("Ma&ximize", &"maximize", false, not can_maximize or is_maximized),
+		ContextMenu.separator(),
+		close_item,
+	])
+
+
+func _on_menu_chosen(id: StringName) -> void:
+	match id:
+		&"restore", &"maximize":
+			toggle_maximized()
+		&"minimize":
+			minimize()
+		&"close":
+			request_close()
+		_:
+			push_error("%s: the control menu has no item %s" % [name, id])
 
 
 ## Starts resizing at [param edges] (a mask of the left, top, right and bottom edges) from the
