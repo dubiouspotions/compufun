@@ -13,3 +13,8 @@ extends Resource
 
 ## True when [param setup] no longer has the problem.
 @abstract func is_fixed(setup: Win95Setup) -> bool
+
+
+## Repairs [param setup] as the player would, so that [method is_fixed] holds after it: the inverse
+## of [method apply_break]. For tests and the week bot; the game itself never calls it.
+@abstract func apply_fix(setup: Win95Setup) -> void

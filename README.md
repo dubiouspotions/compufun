@@ -61,6 +61,7 @@ Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actio
 - `Godot/win95/midi/passport.mp3`: PASSPORT.MID from Windows 95, (C) Microsoft, not licensed to us, played on an ESS AudioDrive ES1868F and recorded by blackstorm88, CC BY-NC-ND 4.0, unedited. From the Internet Archive (https://archive.org/details/passport-mid-played-on-a-es-1868-f).
 - `Godot/finale/apple_logo.svg`: the Apple logo from [Simple Icons](https://simpleicons.org) 13.21.0, CC0; `Godot/finale/host_boot.gd` draws the Windows logo as four squares. Both are for the finale's fake restart, and both are their owners' trademarks (Apple, Microsoft), not licensed to us.
 - `Godot/people/*/back.png`: drawn by an image model (OpenAI's, through the codex CLI) from our own neutral portraits, with `tools/make_portrait_backs.py`. AI-generated.
+- `Godot/sounds/compufun_jingle.ogg`: the CompuFun jingle, made for the game by Piérre Reimertz; `tools/make_compufun_jingle.sh` makes it from his recording.
 - `Godot/sounds/city_ambience.ogg`: cut and muffled from "Westfield.wav" by Islabonita on Freesound (https://freesound.org/people/Islabonita/sounds/178532/), CC0. `tools/make_city_ambience.sh` makes it.
 - `Godot/compufun_db/fonts/Px437_IBM_VGA_8x16.ttf`: from [The Ultimate Oldschool PC Font Pack](https://int10h.org/oldschool-pc-fonts/) by VileR, CC BY-SA 4.0 (`LICENSE.txt`).
 - `Godot/win95/theme/fonts/`: W95FA Pixel, a pixel-grid version of [W95FA](https://fontsarena.com/w95fa-by-alina-sava/) by Alina Sava (FontsArena), SIL OFL 1.1 (`ofl.txt`).

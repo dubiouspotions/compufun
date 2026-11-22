@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
 ## The software problems: Noimages breaks and fixes every program's file name, a defrag finishes overnight
-## only while the computer stays on, and an overheating computer hangs and reboots.
+## only while the computer stays on, an overheating computer hangs and reboots, and apply_fix undoes the
+## break of every software problem in the week, on the computer that brings it.
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run time: it names the Game autoload
 
@@ -70,6 +71,20 @@ func run() -> void:
 	check("switched off, a screw out and back in needs a new test", [hot.fixed, hot.tested], [true, false])
 	state.free()
 	game.jobs = [] as Array[Job]
+	_fix_every_break()
+
+
+func _fix_every_break() -> void:
+	for d: Day in game.week.days:
+		for errand: Errand in d.errands:
+			var software := errand.problem.software_check if errand.problem != null else null
+			if software == null or errand.customer.computer == null or errand.customer.computer.win95_setup == null:
+				continue
+			var setup := errand.customer.computer.win95_setup.copy()
+			software.apply_break(setup)
+			var broke := software.is_fixed(setup)
+			software.apply_fix(setup)
+			check("%s: %s breaks, and apply_fix fixes it" % [errand.file_name(), errand.problem.short_name], [broke, software.is_fixed(setup)], [false, true])
 
 
 func job_with(problem: Problem, slot: int) -> Job:

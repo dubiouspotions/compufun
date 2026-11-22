@@ -14,5 +14,13 @@ func apply_break(setup: Win95Setup) -> void:
 		check.apply_break(setup)
 
 
+func apply_fix(setup: Win95Setup) -> void:
+	for check: SoftwareCheck in checks:
+		if check == null:
+			push_error("MultiCheck: %s has an empty check" % resource_path)
+			continue
+		check.apply_fix(setup)
+
+
 func is_fixed(setup: Win95Setup) -> bool:
 	return checks.all(func(check: SoftwareCheck) -> bool: return check != null and check.is_fixed(setup))

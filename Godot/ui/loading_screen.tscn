@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" path="res://ui/logos/compufun_logo.png" id="2_e66os"]
 [ext_resource type="Shader" path="res://ui/loading_screen.gdshader" id="3_r7mwq"]
 [ext_resource type="Shader" path="res://ui/loading_paper.gdshader" id="4_paper"]
+[ext_resource type="AudioStream" path="res://sounds/compufun_jingle.ogg" id="5_jingle"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_k2v8d"]
 shader = ExtResource("3_r7mwq")
@@ -60,3 +61,7 @@ grow_vertical = 2
 theme_override_font_sizes/font_size = 22
 theme_override_colors/font_color = Color(0.25, 0.25, 0.25, 1)
 horizontal_alignment = 1
+
+[node name="Jingle" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("5_jingle")
