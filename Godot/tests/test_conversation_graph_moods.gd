@@ -17,6 +17,8 @@ func run() -> void:
 	graph = (load(GRAPH) as PackedScene).instantiate()
 	graph.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	graph.size = Vector2(1400, 800)
+	graph.motion_seconds = 0.0
+	graph.flash_seconds = 0.0
 	root.add_child(graph)
 	graph.show_conversation(talk, manager)
 	await process_frame

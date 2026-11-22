@@ -19,6 +19,8 @@ func run() -> void:
 	graph = (load(GRAPH) as PackedScene).instantiate()
 	graph.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	graph.size = Vector2(1400, 800)
+	graph.motion_seconds = 0.0
+	graph.flash_seconds = 0.0
 	root.add_child(graph)
 	graph.show_conversation(talk, errand.customer)
 	graph.edited.connect(func() -> void: edits += 1)
@@ -145,23 +147,41 @@ func _check_in_place(questions: Reply) -> void:
 	await _check_file("in-place edits")
 
 	var answer := questions.choices[0].replies[0]
-	_button(graph.box_of(answer), "+ choice").pressed.emit()
+	_tip(graph.box_of(answer), "Add a choice the player can say after these lines").pressed.emit()
 	await process_frame
-	check("+ choice starts a list under an answer", answer.choices.size(), 1)
+	check("the + at a box's right edge starts a list under an answer", answer.choices.size(), 1)
 	check("and opens the new choice's text", (_find(graph.box_of(answer.choices[0]), func(node: Node) -> bool: return node is TextEdit) as TextEdit).text, graph.new_text)
-	_button(graph.box_of(answer.choices[0]), "+ answer").pressed.emit()
+	_tip(graph.box_of(answer.choices[0]), "Add an answer that plays only if a condition holds (if)").pressed.emit()
 	await process_frame
-	check("+ answer adds an if branch", answer.choices[0].replies[0].when.need_flags, [graph.new_flag])
-	_button(graph.box_of(answer), "+ go on below").pressed.emit()
+	check("the + at a choice's right edge adds an if branch", answer.choices[0].replies[0].when.need_flags, [graph.new_flag])
+	_then_under(answer.choices[0]).pressed.emit()
 	await process_frame
-	check("+ go on below gives the list a then", answer.then != null, true)
-	check("a list that goes on below has no + go on below", _button(graph.box_of(answer), "+ go on below"), null)
+	check("+ then... gives the list a then", answer.then != null, true)
+	check("a list that goes on below has no + then...", _then_under(answer.choices[0]), null)
 	await _check_file("the add buttons")
 
 	check("no brief, no note", _find(graph.box_of(talk), func(node: Node) -> bool: return node is Label and node.get(&"text") == "He wants help.") != null, true)
 	graph.edit_text(talk, "")
 	await process_frame
 	check("an empty brief shows nothing", _find(graph.box_of(talk), func(node: Node) -> bool: return node is Label and String(node.get(&"text")).contains("brief")), null)
+
+
+# The "+ then..." button right under the list whose last choice is [param last], or null.
+func _then_under(last: Choice) -> Button:
+	var box := graph.box_of(last)
+	for node: Node in graph.get_children():
+		var holder := node as GraphElement
+		if holder == null or holder is GraphNode or holder.is_queued_for_deletion():
+			continue
+		var button := _button(holder, "+ then...")
+		var below := holder.position_offset.y - (box.position_offset.y + box.size.y)
+		if button != null and is_equal_approx(holder.position_offset.x, box.position_offset.x) and below >= 0.0 and below <= graph.row_gap:
+			return button
+	return null
+
+
+func _tip(under: Node, tooltip: String) -> Button:
+	return _find(under, func(node: Node) -> bool: return node is Button and node.get(&"tooltip_text") == tooltip) as Button
 
 
 func _button(under: Node, text: String) -> Button:

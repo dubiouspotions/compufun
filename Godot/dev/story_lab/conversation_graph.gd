@@ -24,6 +24,10 @@ signal edited
 @export_range(0.2, 1.0, 0.01) var thumb_crop: float = 0.62
 ## The lines that the text editor shows at least.
 @export var editor_lines: int = 5
+## How long boxes take to move to their new places after an edit, in seconds; 0 moves them at once.
+@export var motion_seconds: float = 0.2
+## How long a new box's outline flashes, in seconds; 0 for no flash.
+@export var flash_seconds: float = 0.6
 ## The least zoom that a new conversation shows at, to fit it in the view.
 @export var min_fit_zoom: float = 0.7
 ## The text of a new line or choice, selected in its editor at once.
@@ -46,6 +50,20 @@ var _place_queued: bool = false
 var _fit_pending: bool = false
 var _pending_delete: Resource
 var _status: Label
+# The "+ then..." button under each list that has no then yet.
+var _then_buttons: Dictionary[Reply, GraphElement] = {}
+# The next rebuild replaces the whole view: no motion, and the view fits it.
+var _fresh: bool = true
+# Boxes of removed parts, fading out.
+var _leaving: Array[GraphElement] = []
+# What the view holds still through a relayout: parts, best first, and where their boxes were.
+var _anchors: Array[Resource] = []
+var _anchor_spots: Array[Vector2] = []
+# The scroll that this script set last, to tell it apart from the writer's scrolling.
+var _own_scroll: Vector2 = Vector2.INF
+var _moves: Tween
+# Outline flashes of new boxes: part to strength, 1 to 0.
+var _flashes: Dictionary[Resource, float] = {}
 
 @onready var _overlay: Control = %Returns
 @onready var _voice: VoicePlayer = %Voice
@@ -61,12 +79,15 @@ func _ready() -> void:
 	_status.add_theme_font_size_override(&"font_size", 13)
 	_status.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	get_menu_hbox().add_child(_status)
-	_overlay.draw.connect(_draw_returns)
+	_overlay.draw.connect(_draw_overlay)
 	draw.connect(_overlay.queue_redraw)
 	resized.connect(func() -> void:
 		if _fit_pending:
 			_queue_place())
-	scroll_offset_changed.connect(func(_offset: Vector2) -> void: _overlay.queue_redraw())
+	scroll_offset_changed.connect(func(offset: Vector2) -> void:
+		if not offset.is_equal_approx(_own_scroll):
+			_anchors.clear()
+		_overlay.queue_redraw())
 	node_selected.connect(_on_node_selected)
 	delete_nodes_request.connect(func(names: Array[StringName]) -> void:
 		for part: Resource in _boxes:
@@ -88,7 +109,14 @@ func show_conversation(conversation: Conversation, customer: Customer, read_only
 	_read_only = read_only
 	_selected = null
 	_fit_pending = true
+	_fresh = true
+	_anchors.clear()
 	_rebuild()
+
+
+## How strongly the outline of [param part]'s box flashes now, from 1 (just added) to 0 (not).
+func flash_of(part: Resource) -> float:
+	return _flashes.get(part, 0.0)
 
 
 ## The box that draws [param part] (a Reply, the Conversation included, or a Choice), or null.
@@ -288,26 +316,64 @@ func delete_box(part: Resource) -> void:
 func _rebuild() -> void:
 	if not is_node_ready():
 		return
+	var old := _boxes.duplicate()
+	var old_thens := _then_buttons.duplicate()
 	_rebuilding = true
 	clear_connections()
-	for box: GraphNode in _boxes.values():
-		remove_child(box)
-		box.queue_free()
-	_rebuilding = false
+	var focused := get_viewport().gui_get_focus_owner()
+	for box: GraphElement in old.values() + old_thens.values():
+		if focused != null and box.is_ancestor_of(focused):
+			focused.release_focus()
+		box.name = "Old%d" % box.get_instance_id()
 	_boxes.clear()
+	_then_buttons.clear()
 	_columns.clear()
 	_returns.clear()
 	_spots.clear()
 	_status.text = "Read only" if _read_only else "Double-click a text to edit it. Drag the dots to reorder."
-	if _conversation == null:
-		return
-	var meets: Array[Array] = []
-	_walk(_conversation, 0, null, false, meets)
-	for pair: Array in meets:
-		connect_node(_boxes[pair[0]].name, 0, _boxes[pair[1]].name, 0)
-	if _boxes.has(_selected):
-		_boxes[_selected].selected = true
+	if _conversation != null:
+		var meets: Array[Array] = []
+		_walk(_conversation, 0, null, false, meets)
+		for pair: Array in meets:
+			connect_node(_boxes[pair[0]].name, 0, _boxes[pair[1]].name, 0)
+		if _boxes.has(_selected):
+			_boxes[_selected].selected = true
+	_replace(old, _boxes)
+	_replace(old_thens, _then_buttons)
+	_rebuilding = false
+	_fresh = false
 	_queue_place()
+
+
+# Swaps the boxes in [param old] for those in [param new], by part: a box that stays starts where its
+# old one was, a new one waits to fade in, and a removed one fades out.
+func _replace(old: Dictionary, new: Dictionary) -> void:
+	for part: Resource in old:
+		var box: GraphElement = old[part]
+		if new.has(part):
+			(new[part] as GraphElement).position_offset = box.position_offset
+		if new.has(part) or _fresh or motion_seconds <= 0.0:
+			remove_child(box)
+			box.queue_free()
+		else:
+			_leave(box)
+	if _fresh:
+		return
+	for part: Resource in new:
+		if not old.has(part):
+			(new[part] as GraphElement).modulate.a = 0.0
+			(new[part] as GraphElement).set_meta(&"arriving", true)
+
+
+func _leave(box: GraphElement) -> void:
+	box.selectable = false
+	box.propagate_call(&"set_mouse_filter", [Control.MOUSE_FILTER_IGNORE])
+	_leaving.append(box)
+	var fade := create_tween()
+	fade.tween_property(box, ^"modulate:a", 0.0, motion_seconds)
+	fade.tween_callback(func() -> void:
+		_leaving.erase(box)
+		box.queue_free())
 
 
 # Draws [param reply] in [param column] and everything under it. [param exit] is where the walk goes
@@ -370,52 +436,124 @@ func _place() -> void:
 		widths[_columns[part]] = maxf(widest, box.size.x)
 	var xs: Array[float] = []
 	var x := 0.0
-	for column: int in range(widths.keys().max() + 1):
+	for column: int in range(widths.keys().max() + 2):
 		xs.append(x)
 		var width: float = widths.get(column, junction_width)
 		x += width + column_gap
-	var bottom := _place_reply(_conversation, 0.0, xs)
-	if _fit_pending and size.x > 0.0:
+	var targets: Dictionary[GraphElement, Vector2] = {}
+	var bottom := _place_reply(_conversation, 0.0, xs, targets)
+	var opening := _fit_pending and size.x > 0.0
+	if opening:
 		_fit_pending = false
-		var content := Vector2(x - column_gap, bottom) + Vector2(80, 80)
+		var content := Vector2(xs[xs.size() - 1] - column_gap, bottom) + Vector2(80, 80)
 		zoom = clampf(minf(size.x / content.x, size.y / content.y), min_fit_zoom, 1.0)
-		scroll_offset = Vector2(-40, -70) * zoom
-	_keep_in_view(_selected)
+		_scroll_to(Vector2(-40, -70) * zoom)
+	if opening:
+		for box: GraphElement in targets:
+			box.position_offset = targets[box]
+	else:
+		_move(targets, _hold_anchor(targets))
 	_overlay.queue_redraw()
 
 
-# Places [param reply] and everything under it, with its top at [param top]; returns the bottom.
-func _place_reply(reply: Reply, top: float, xs: Array[float]) -> float:
+# Scrolls so that the first anchor that still has a box stays where it was on screen, and returns
+# how far that moved the view, in graph units.
+func _hold_anchor(targets: Dictionary[GraphElement, Vector2]) -> Vector2:
+	for i: int in _anchors.size():
+		var box: GraphElement = _boxes.get(_anchors[i])
+		if box == null:
+			continue
+		var before := scroll_offset
+		_scroll_to(targets[box] * zoom - _anchor_spots[i])
+		return (scroll_offset - before) / zoom
+	return Vector2.ZERO
+
+
+func _scroll_to(offset: Vector2) -> void:
+	scroll_offset = offset
+	_own_scroll = scroll_offset
+
+
+# Moves every box to its target, keeping each still on screen through a scroll of [param shift]
+# first; new boxes fade and grow in where they belong.
+func _move(targets: Dictionary[GraphElement, Vector2], shift: Vector2) -> void:
+	if _moves != null:
+		_moves.kill()
+	for box: GraphElement in _leaving:
+		box.position_offset += shift
+	var animate := motion_seconds > 0.0
+	_moves = null
+	for box: GraphElement in targets:
+		if box.has_meta(&"arriving"):
+			box.remove_meta(&"arriving")
+			box.position_offset = targets[box]
+			_arrive(box)
+		elif animate:
+			box.position_offset += shift
+			if _moves == null:
+				_moves = create_tween().set_parallel().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+			_moves.tween_property(box, ^"position_offset", targets[box], motion_seconds)
+		else:
+			box.position_offset = targets[box]
+
+
+# Fades [param box] in, sliding out of the box that it branches from; GraphEdit owns its scale.
+func _arrive(box: GraphElement) -> void:
+	if motion_seconds <= 0.0:
+		box.modulate.a = 1.0
+	else:
+		var target := box.position_offset
+		box.position_offset -= Vector2(column_gap * 0.5, 0)
+		var grow := create_tween().set_parallel().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+		grow.tween_property(box, ^"modulate:a", 1.0, motion_seconds)
+		grow.tween_property(box, ^"position_offset", target, motion_seconds)
+	var part: Resource = _boxes.find_key(box) if box is GraphNode else null
+	if flash_seconds > 0.0 and part != null:
+		_flashes[part] = 1.0
+		create_tween().tween_method(func(strength: float) -> void:
+			if strength <= 0.0:
+				_flashes.erase(part)
+			else:
+				_flashes[part] = strength
+			_overlay.queue_redraw(), 1.0, 0.0, flash_seconds)
+
+
+# Finds where [param reply] and everything under it go, with its top at [param top], into
+# [param targets]; returns the bottom.
+func _place_reply(reply: Reply, top: float, xs: Array[float], targets: Dictionary[GraphElement, Vector2]) -> float:
 	var box := _boxes[reply]
-	box.position_offset = Vector2(xs[_columns[reply]], top)
+	targets[box] = Vector2(xs[_columns[reply]], top)
 	var bottom := top + box.size.y
 	var y := top
+	var list_end := top
 	for choice: Choice in reply.choices:
 		var choice_box := _boxes[choice]
-		choice_box.position_offset = Vector2(xs[_columns[choice]], y)
+		targets[choice_box] = Vector2(xs[_columns[choice]], y)
+		list_end = y + choice_box.size.y
 		var choice_bottom := y + choice_box.size.y
 		var answer_top := y
 		for answer: Reply in choice.replies:
-			var answer_bottom := _place_reply(answer, answer_top, xs)
+			var answer_bottom := _place_reply(answer, answer_top, xs, targets)
 			answer_top = answer_bottom + row_gap
 			choice_bottom = maxf(choice_bottom, answer_bottom)
 		y = choice_bottom + row_gap
 		bottom = maxf(bottom, choice_bottom)
+	if _then_buttons.has(reply):
+		var then_button := _then_buttons[reply]
+		then_button.reset_size()
+		targets[then_button] = Vector2(xs[_columns[reply] + 1], list_end + row_gap * 0.25)
+		bottom = maxf(bottom, list_end + row_gap * 0.25 + then_button.size.y)
 	if reply.then != null:
-		bottom = maxf(bottom, _place_reply(reply.then, top, xs))
+		bottom = maxf(bottom, _place_reply(reply.then, top, xs, targets))
 	return bottom
 
 
-func _keep_in_view(part: Resource) -> void:
-	if not _boxes.has(part):
-		return
-	var box := _boxes[part]
-	var rect := Rect2(box.position_offset * zoom, box.size * zoom)
-	if not Rect2(scroll_offset, size).encloses(rect):
-		scroll_offset = rect.position - Vector2(40, 40) * zoom
-
-
-func _draw_returns() -> void:
+func _draw_overlay() -> void:
+	for part: Resource in _flashes:
+		var lit: GraphNode = _boxes.get(part)
+		if lit != null:
+			var outline := Rect2(lit.position, lit.size * zoom).grow(5.0 * zoom)
+			_overlay.draw_rect(outline, Color(selected_color, _flashes[part]), false, 3.0 * zoom)
 	for pair: Array in _returns:
 		var from := _boxes[pair[0]]
 		var to := _boxes[pair[1]]
@@ -488,6 +626,7 @@ func _new_box(fill: Color, title: String) -> GraphNode:
 	box.add_theme_color_override(&"resizer_color", Color.TRANSPARENT)
 	add_child(box)
 	box.minimum_size_changed.connect(_queue_place)
+	box.position_offset_changed.connect(_overlay.queue_redraw)
 	return box
 
 
@@ -499,9 +638,14 @@ func _reply_box(reply: Reply) -> GraphNode:
 	var box := _new_box(customer_color, "then" if junction else speaker)
 	if junction:
 		box.custom_minimum_size.x = junction_width
+	var head_row := HBoxContainer.new()
 	var head := HFlowContainer.new()
 	head.custom_minimum_size.y = 6
-	box.add_child(head)
+	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head_row.add_child(head)
+	if not _read_only:
+		head_row.add_child(_branch("Add a choice the player can say after these lines", func() -> void: _open_spot_later(add_choice(reply), &"text")))
+	box.add_child(head_row)
 	box.set_slot(0, reply != _conversation, 0, arrow_color, true, 0, arrow_color)
 	if reply == _conversation:
 		var brief := _label(_conversation.brief, 12, faint_ink) if _conversation.brief != "" else null
@@ -522,15 +666,24 @@ func _reply_box(reply: Reply) -> GraphNode:
 	if reply.lines.is_empty() and not junction and reply.choices.is_empty():
 		box.add_child(_label("(says nothing)", 12, faint_ink))
 	if not _read_only:
-		var actions := HFlowContainer.new()
-		actions.add_child(_action("+ line", "Add a line that the customer says", func() -> void: _open_spot_later(add_line(reply), &"text")))
-		var list_tip := "Add a player choice to this box's list" if not reply.choices.is_empty() else "Start a list of player choices after these lines"
-		actions.add_child(_action("+ choice", list_tip, func() -> void: _open_spot_later(add_choice(reply), &"text")))
+		box.add_child(_action("+ line", "Add a line that the customer says, at the end of this box", func() -> void: _open_spot_later(add_line(reply), &"text")))
 		if not reply.choices.is_empty() and reply.then == null:
-			actions.add_child(_action("+ go on below", "Add what comes after this list, where its - choices meet", func() -> void: _open_spot_later(go_on_below(reply).lines[0], &"text")))
-		box.add_child(actions)
+			_then_buttons[reply] = _then_button(reply)
 		_menu(box, _reply_menu(reply))
 	return box
+
+
+# The "+ then..." button that sits under [param reply]'s list.
+func _then_button(reply: Reply) -> GraphElement:
+	var holder := GraphElement.new()
+	holder.name = "Then%d" % _then_buttons.size()
+	holder.selectable = false
+	holder.draggable = false
+	var button := _action("+ then...", "What is said after this list, whichever choice was picked", func() -> void: _open_spot_later(go_on_below(reply).lines[0], &"text"))
+	holder.add_child(button)
+	holder.custom_minimum_size = button.get_combined_minimum_size()
+	add_child(holder)
+	return holder
 
 
 func _choice_box(choice: Choice, reply: Reply, index: int) -> GraphNode:
@@ -544,6 +697,8 @@ func _choice_box(choice: Choice, reply: Reply, index: int) -> GraphNode:
 	var text := _label(choice.text, 15, ink)
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_spot(head, text, choice, &"text", choice.text, func(said: String) -> String: return edit_text(choice, said))
+	if not _read_only:
+		head.add_child(_branch("Add an answer that plays only if a condition holds (if)", func() -> void: _open_spot_later(add_answer(choice), &"when")))
 	var chips := HFlowContainer.new()
 	box.add_child(chips)
 	var only := _chip("only if: " + StoryFormat.write_condition(choice.when), true) if choice.when != null else null
@@ -556,7 +711,6 @@ func _choice_box(choice: Choice, reply: Reply, index: int) -> GraphNode:
 	mark.pressed.connect(func() -> void: cycle_mark(choice))
 	box.get_titlebar_hbox().add_child(mark)
 	if not _read_only:
-		box.add_child(_action("+ answer", "Add an answer that plays only if a condition holds (if)", func() -> void: _open_spot_later(add_answer(choice), &"when")))
 		_menu(box, _choice_menu(choice))
 	return box
 
@@ -630,6 +784,27 @@ func _action(text: String, tip: String, pressed: Callable) -> Button:
 	button.add_theme_color_override(&"font_color", faint_ink)
 	button.add_theme_color_override(&"font_hover_color", ink)
 	button.add_theme_color_override(&"font_pressed_color", ink)
+	button.pressed.connect(pressed)
+	return button
+
+
+# The small round "+" at a box's right edge, by its output port: it adds what the box branches out to.
+func _branch(tip: String, pressed: Callable) -> Button:
+	var button := Button.new()
+	button.text = "+"
+	button.tooltip_text = tip
+	button.focus_mode = Control.FOCUS_NONE
+	button.custom_minimum_size = Vector2(22, 22)
+	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	button.add_theme_font_size_override(&"font_size", 14)
+	for state: StringName in [&"normal", &"hover", &"pressed"]:
+		var round := StyleBoxFlat.new()
+		round.bg_color = arrow_color if state == &"normal" else arrow_color.darkened(0.25)
+		round.set_corner_radius_all(11)
+		round.set_content_margin_all(0)
+		button.add_theme_stylebox_override(state, round)
+	for state: StringName in [&"font_color", &"font_hover_color", &"font_pressed_color"]:
+		button.add_theme_color_override(state, Color.WHITE)
 	button.pressed.connect(pressed)
 	return button
 
@@ -908,8 +1083,29 @@ func _count_under(part: Resource) -> int:
 
 func _changed(focus: Resource) -> void:
 	_selected = focus
+	_hold_still(focus)
 	edited.emit()
 	_rebuild.call_deferred()
+
+
+# Remembers where the box under the mouse is on screen, and the nearest box around [param focus]
+# (the part that the edit changed or added), so the relayout after the edit keeps them still.
+func _hold_still(focus: Resource) -> void:
+	_anchors.clear()
+	_anchor_spots.clear()
+	var mouse := get_local_mouse_position()
+	if Rect2(Vector2.ZERO, size).has_point(mouse):
+		for part: Resource in _boxes:
+			var box := _boxes[part]
+			if Rect2(box.position, box.size * zoom).has_point(mouse):
+				_anchors.append(part)
+				_anchor_spots.append(box.position)
+	var near: Resource = _owner_of(focus)
+	while near != null and not _boxes.has(near):
+		near = _parent_of(near)
+	if near != null:
+		_anchors.append(near)
+		_anchor_spots.append(_boxes[near].position)
 
 
 # The box that holds [param part]: the Reply of a line, else [param part].

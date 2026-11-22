@@ -45,6 +45,8 @@ func run() -> void:
 	graph = (load(GRAPH) as PackedScene).instantiate()
 	graph.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	graph.size = Vector2(1400, 800)
+	graph.motion_seconds = 0.0
+	graph.flash_seconds = 0.0
 	root.add_child(graph)
 	graph.show_conversation(talk, errand.customer)
 	await process_frame
@@ -89,7 +91,7 @@ func run() -> void:
 	check("depth is the column: a choice is right of its box", graph.box_of(greeting[0]).position_offset.x > top.x, true)
 	check("siblings are rows", graph.box_of(greeting[1]).position_offset.y > graph.box_of(greeting[0]).position_offset.y, true)
 	check("the meeting point is right of both branches", graph.box_of(issue).position_offset.x > graph.box_of(greeting[1].replies[0]).position_offset.x, true)
-	check("boxes don't overlap", _overlaps(), [])
+	check("boxes and + then... buttons don't overlap", _overlaps(), [])
 
 	graph.show_conversation(talk, errand.customer, true)
 	var menus := graph.find_children("*", "MenuButton", true, false)
@@ -123,7 +125,7 @@ func _texts(node: Node) -> PackedStringArray:
 
 func _overlaps() -> Array:
 	var found: Array = []
-	var boxes := graph.get_children().filter(func(node: Node) -> bool: return node is GraphNode)
+	var boxes := graph.get_children().filter(func(node: Node) -> bool: return node is GraphElement)
 	for i: int in boxes.size():
 		for j: int in range(i + 1, boxes.size()):
 			var a := Rect2(boxes[i].position_offset, boxes[i].size)
