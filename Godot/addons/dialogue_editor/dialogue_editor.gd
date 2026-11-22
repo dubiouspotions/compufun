@@ -470,11 +470,8 @@ func _render_when() -> void:
 		var flags_row := HBoxContainer.new()
 		_detail.add_child(flags_row)
 		flags_row.add_child(_label("Needs flags" if field == "need_flags" else "Not with flags"))
-		var edit := LineEdit.new()
-		edit.placeholder_text = "flag_a, flag_b"
-		edit.size_flags_horizontal = SIZE_EXPAND_FILL
-		edit.text = ", ".join(PackedStringArray(when.get(field)))
-		edit.text_changed.connect(func(text: String) -> void:
+		var edit := FlagField.new(", ".join(PackedStringArray(when.get(field))), "flag_a, flag_b", _offers)
+		edit.edited.connect(func(text: String) -> void:
 			var names: Array[StringName] = []
 			for part: String in text.split(",", false):
 				if part.strip_edges() != "":
@@ -486,11 +483,8 @@ func _render_when() -> void:
 	var sets_row := HBoxContainer.new()
 	_detail.add_child(sets_row)
 	sets_row.add_child(_label("Sets flags"))
-	var sets := LineEdit.new()
-	sets.placeholder_text = "flag_a, sign_bell=2, flag_b=0 (0 clears)"
-	sets.size_flags_horizontal = SIZE_EXPAND_FILL
-	sets.text = flags_text(c.set_flags)
-	sets.text_changed.connect(func(text: String) -> void:
+	var sets := FlagField.new(flags_text(c.set_flags), "flag_a, sign_bell=2, flag_b=0 (0 clears)", _offers)
+	sets.edited.connect(func(text: String) -> void:
 		var parsed: Variant = parse_flags(text)
 		if parsed is String:
 			_show_status("Sets flags not changed: " + parsed)
@@ -499,6 +493,15 @@ func _render_when() -> void:
 		_show_status("")
 		_changed_when())
 	sets_row.add_child(sets)
+
+
+## The flags that a FlagField offers: every flag that a customer, a day or a sign uses.
+func _offers() -> Dictionary:
+	var errors: Array[String] = []
+	var known := FlagField.offers(FlagField.index(_customers, FlagField.load_days(errors), errors))
+	for error: String in errors:
+		_fail(error)
+	return known
 
 
 ## [param flags] as "name, name=2": the text of a Sets flags field.

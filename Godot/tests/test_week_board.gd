@@ -23,6 +23,14 @@ func run() -> void:
 			setter = row.get_text(1)
 	check("a day that sets a flag is listed as its setter", setter.contains("day 1"), true)
 
+	var field := FlagField.new("flag_a", "", board._offers)
+	root.add_child(field)
+	field._fill_menu()
+	var picked := field._offered.find(&"sign_pipedream")
+	check("the picker offers the Pipedream's flag", picked >= 0, true)
+	field._pick(picked)
+	check("a pick adds it to the field", field.edit.text, "flag_a, sign_pipedream")
+
 	var day_1: Day = board._days[0]
 	var day_2: Day = board._days[1]
 	var moved: Customer = day_1.customers[0]

@@ -1,19 +1,19 @@
 @tool
 extends VBoxContainer
-## The Week tab: a column per Day with its warp and its customers in order, and below, every flag
+## The Week tab: a column per Day with its warp, the flags it sets and its drop-offs in order, and below, every flag
 ## with the conversations that set it and the conversations and corruption signs that check it.
 ## Edits change the loaded Day resources; Save (or Ctrl+S) writes them back. It stores nothing of
 ## its own: the days, customers and signs are the data.
 
 const DialogueEditor := preload("res://addons/dialogue_editor/dialogue_editor.gd")
-const GAME := preload("res://game.gd")
-const SIGNS_DIR := "res://corruption/"
+const PROBLEMS_DIR := "res://problems/"
 const ERROR_COLOR := Color(1.0, 0.45, 0.45)
 const WARN_COLOR := Color(1.0, 0.8, 0.4)
 const DIM_COLOR := Color(0.6, 0.6, 0.65)
 
 var _days: Array[Day] = []
 var _customers: Array[Customer] = []
+var _problems: Array[Problem] = []
 ## The paths of the days with unsaved edits.
 var _dirty: Dictionary[String, bool] = {}
 
@@ -66,16 +66,8 @@ func refresh() -> void:
 	_show_status("Unsaved: " + ", ".join(PackedStringArray(_dirty.keys())) if not _dirty.is_empty() else "")
 	var errors: Array[String] = []
 	_customers = DialogueEditor.load_customers(errors)
-	_days.clear()
-	for number: int in range(1, 8):
-		var path := GAME.DAY_PATH % number
-		if not ResourceLoader.exists(path):
-			continue
-		var d := load(path) as Day
-		if d == null:
-			errors.append("%s is not a Day, or doesn't load" % path)
-			continue
-		_days.append(d)
+	_problems = _load_problems(errors)
+	_days = FlagField.load_days(errors)
 	for error: String in errors:
 		_fail(error)
 	for child: Node in _columns.get_children():
@@ -128,35 +120,66 @@ func _day_column(d: Day) -> Control:
 		_touch(d, false))
 	warp_row.add_child(warp)
 
+	var sets := FlagField.new(DialogueEditor.flags_text(d.set_flags), "Sets flags at start: sign_x, flag=2", _offers)
+	sets.tooltip_text = "The flags that the day sets as it starts: name, or name=number; 0 clears it."
+	sets.edited.connect(func(text: String) -> void:
+		var parsed: Variant = DialogueEditor.parse_flags(text)
+		if parsed is String:
+			_show_status("Day %d flags not changed: %s" % [d.number, parsed])
+			return
+		d.set_flags = parsed
+		_touch(d, false))
+	# The flag table follows when the field is left, so typing keeps its focus.
+	sets.edit.focus_exited.connect(_fill_flags)
+	column.add_child(sets)
+
 	var list := ItemList.new()
 	list.custom_minimum_size.y = 150
 	list.size_flags_vertical = SIZE_EXPAND_FILL
 	list.max_text_lines = 2
 	list.auto_height = false
-	for c: Customer in d.customers:
-		_add_customer_item(list, c)
-	list.item_activated.connect(func(index: int) -> void: _open_in_dialogue(d.customers[index]))
+	for each: DropOff in d.drop_offs:
+		_add_drop_off_item(list, each)
+	list.item_activated.connect(func(index: int) -> void: _open_in_dialogue(d.drop_offs[index].customer if d.drop_offs[index] != null else null))
 	list.set_drag_forwarding(
 		func(at: Vector2) -> Variant: return _drag_data(list, d, at),
 		func(_at: Vector2, data: Variant) -> bool: return _can_drop(d, data),
 		func(at: Vector2, data: Variant) -> void: _drop(list, d, at, data))
 	column.add_child(list)
 
+	var problem := OptionButton.new()
+	problem.add_item("Problem of the selected...")
+	for each: Problem in _problems:
+		problem.add_item(String(each.short_name))
+	problem.disabled = true
+	list.item_selected.connect(func(index: int) -> void:
+		var picked := d.drop_offs[index]
+		problem.disabled = picked == null
+		problem.select(_problems.find(picked.problem) + 1 if picked != null else 0))
+	problem.item_selected.connect(func(index: int) -> void:
+		var picked := list.get_selected_items()
+		if index > 0 and not picked.is_empty() and d.drop_offs[picked[0]] != null:
+			d.drop_offs[picked[0]].problem = _problems[index - 1]
+			_touch(d, true))
+	column.add_child(problem)
+
 	var add := OptionButton.new()
 	add.add_item("Add customer...")
 	for c: Customer in _customers:
 		add.add_item(_customer_name(c))
-	add.disabled = d.customers.size() >= Day.MAX_CUSTOMERS
+	add.disabled = d.drop_offs.size() >= Day.MAX_CUSTOMERS
 	add.item_selected.connect(func(index: int) -> void:
 		if index > 0:
-			d.customers.append(_customers[index - 1])
+			var each := DropOff.new()
+			each.customer = _customers[index - 1]
+			d.drop_offs.append(each)
 			_touch(d, true))
 	column.add_child(add)
 	column.add_child(_button("Remove selected", func() -> void:
 		var picked := list.get_selected_items()
 		if picked.is_empty():
 			return
-		d.customers.remove_at(picked[0])
+		d.drop_offs.remove_at(picked[0])
 		_touch(d, true)))
 
 	var invalid := Day.why_unplayable(d)
@@ -168,21 +191,22 @@ func _day_column(d: Day) -> Control:
 	return column
 
 
-func _add_customer_item(list: ItemList, c: Customer) -> void:
-	if c == null:
-		var index := list.add_item("(empty slot)")
-		list.set_item_custom_fg_color(index, ERROR_COLOR)
+func _add_drop_off_item(list: ItemList, each: DropOff) -> void:
+	if each == null or each.customer == null:
+		var empty := list.add_item("(no customer)")
+		list.set_item_custom_fg_color(empty, ERROR_COLOR)
 		return
-	var problem := String(c.problem.short_name) if c.problem != null else "NO PROBLEM"
+	var c := each.customer
+	var problem := String(each.problem.short_name) if each.problem != null else "pick a problem"
 	var index := list.add_item("%s\n  %s" % [_customer_name(c), problem])
 	var tip: PackedStringArray = [c.resource_path]
-	if c.problem != null:
-		tip.append("Post-it: " + c.problem.perceived_issue)
+	if each.problem != null:
+		tip.append("Post-it: " + each.problem.perceived_issue)
 	for conversation: Conversation in c.conversations:
 		if conversation != null:
 			tip.append(DialogueEditor.conversation_label(conversation))
 	list.set_item_tooltip(index, "\n".join(tip))
-	if c.problem == null:
+	if each.problem == null:
 		list.set_item_custom_fg_color(index, ERROR_COLOR)
 
 
@@ -197,20 +221,23 @@ func _drag_data(list: ItemList, d: Day, at: Vector2) -> Variant:
 func _can_drop(d: Day, data: Variant) -> bool:
 	if not data is Dictionary or not data.has("week_day"):
 		return false
-	return data["week_day"] == d or d.customers.size() < Day.MAX_CUSTOMERS
+	return data["week_day"] == d or d.drop_offs.size() < Day.MAX_CUSTOMERS
 
 
 func _drop(list: ItemList, d: Day, at: Vector2, data: Variant) -> void:
 	var from: Day = data["week_day"]
 	var index: int = data["index"]
-	var c: Customer = from.customers[index]
-	from.customers.remove_at(index)
+	var moved: DropOff = from.drop_offs[index]
+	from.drop_offs.remove_at(index)
+	if from != d:
+		# A copy: the original belongs to the other day's file.
+		moved = moved.duplicate()
 	var to := list.get_item_at_position(at, true)
 	if from == d and to > index:
 		to -= 1
-	if to < 0 or to > d.customers.size():
-		to = d.customers.size()
-	d.customers.insert(to, c)
+	if to < 0 or to > d.drop_offs.size():
+		to = d.drop_offs.size()
+	d.drop_offs.insert(to, moved)
 	_dirty[from.resource_path] = true
 	_touch(d, true)
 
@@ -238,26 +265,13 @@ func _open_in_dialogue(c: Customer) -> void:
 ## Lists every flag that a conversation sets or checks, and the flag of every corruption sign.
 func _fill_flags() -> void:
 	_flags.clear()
-	var setters: Dictionary[StringName, PackedStringArray] = {}
-	var checkers: Dictionary[StringName, PackedStringArray] = {}
-	for c: Customer in _customers:
-		var who := c.resource_path.get_file().get_basename()
-		for conversation: Conversation in c.conversations:
-			if conversation == null:
-				continue
-			var where := "%s/%s" % [who, conversation.id]
-			for flag: StringName in conversation.set_flags:
-				var value: int = conversation.set_flags[flag]
-				_note(setters, flag, where if value == 1 else "%s =%d" % [where, value])
-			if conversation.when == null:
-				continue
-			for flag: StringName in conversation.when.need_flags:
-				_note(checkers, flag, where)
-			for flag: StringName in conversation.when.not_flags:
-				_note(checkers, flag, where + " (not)")
-	var signs := _sign_titles()
-	for flag: StringName in signs:
-		_note(checkers, flag, "sign: " + signs[flag])
+	var errors: Array[String] = []
+	var flag_index := FlagField.index(_customers, _days, errors)
+	for error: String in errors:
+		_fail(error)
+	var setters: Dictionary = flag_index["setters"]
+	var checkers: Dictionary = flag_index["checkers"]
+	var signs: Dictionary = flag_index["signs"]
 
 	var names: Array[StringName] = []
 	for flag: StringName in setters.keys() + checkers.keys():
@@ -271,44 +285,44 @@ func _fill_flags() -> void:
 		row.set_text(1, ", ".join(setters.get(flag, PackedStringArray())))
 		row.set_text(2, ", ".join(checkers.get(flag, PackedStringArray())))
 		if not setters.has(flag):
-			row.set_text(1, "F2 Signs tab only" if signs.has(flag) else "no conversation sets it")
+			row.set_text(1, "F2 Signs tab only" if signs.has(flag) else "nothing sets it")
 			row.set_custom_color(1, DIM_COLOR if signs.has(flag) else WARN_COLOR)
 		if not checkers.has(flag):
 			row.set_text(2, "nothing checks it")
 			row.set_custom_color(2, WARN_COLOR)
 
 
-func _note(notes: Dictionary[StringName, PackedStringArray], flag: StringName, where: String) -> void:
-	if not notes.has(flag):
-		notes[flag] = PackedStringArray()
-	notes[flag].append(where)
-
-
-## The flag of every corruption sign scene, sign_<id>, to its title, read without instancing it.
-func _sign_titles() -> Dictionary[StringName, String]:
-	var titles: Dictionary[StringName, String] = {}
-	var dir := DirAccess.open(SIGNS_DIR)
+## Every Problem in [constant PROBLEMS_DIR], by short name. Adds a message to [param errors] for each
+## file that doesn't load as one.
+func _load_problems(errors: Array[String]) -> Array[Problem]:
+	var problems: Array[Problem] = []
+	var dir := DirAccess.open(PROBLEMS_DIR)
 	if dir == null:
-		_fail("Couldn't open %s: %s" % [SIGNS_DIR, error_string(DirAccess.get_open_error())])
-		return titles
+		errors.append("Couldn't open %s: %s" % [PROBLEMS_DIR, error_string(DirAccess.get_open_error())])
+		return problems
 	for file: String in dir.get_files():
-		if not file.ends_with(".tscn"):
-			continue
-		var scene := load(SIGNS_DIR + file) as PackedScene
-		if scene == null:
-			_fail("%s doesn't load" % (SIGNS_DIR + file))
-			continue
-		var state := scene.get_state()
-		var title := file.get_basename()
-		for i: int in state.get_node_property_count(0):
-			if state.get_node_property_name(0, i) == &"title":
-				title = state.get_node_property_value(0, i)
-		titles[StringName("sign_" + file.get_basename())] = title
-	return titles
+		if file.ends_with(".tres"):
+			var problem := load(PROBLEMS_DIR + file) as Problem
+			if problem == null:
+				errors.append("%s is not a Problem, or doesn't load" % (PROBLEMS_DIR + file))
+				continue
+			problems.append(problem)
+	problems.sort_custom(func(a: Problem, b: Problem) -> bool: return String(a.short_name) < String(b.short_name))
+	return problems
+
+
+## The flags that a FlagField offers, from the loaded days and customers.
+func _offers() -> Dictionary:
+	var errors: Array[String] = []
+	var known := FlagField.offers(FlagField.index(_customers, _days, errors))
+	for error: String in errors:
+		_fail(error)
+	return known
 
 
 func _summary(d: Day) -> String:
-	return var_to_str([d.number, d.warp, d.customers.map(func(c: Customer) -> String: return c.resource_path if c != null else "")])
+	return var_to_str([d.number, d.warp, d.set_flags, d.drop_offs.map(func(each: DropOff) -> Array:
+		return [each.customer.resource_path if each.customer != null else "", each.problem.resource_path if each.problem != null else ""] if each != null else [])])
 
 
 func _customer_name(c: Customer) -> String:
