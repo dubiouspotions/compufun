@@ -2,29 +2,3 @@ customer: skater_bro
 problem: organ_failure
 brief:
 	Noticeably corrupted. His voice is strange, and he walks in very slowly with the computer. As he sets it down, a little blood seeps out under it. "I upgraded the computer, I just want to check the function." Inside, his organs have replaced the parts: kidneys (RAM), heart (motherboard), lungs (fan), liver (GPU), brain (hard drive), spleen (CPU); CompuFunDB doesn't list that symptom. It works: plain Cambion, nothing odd in Windows. He leaves it. Throwing the organs away and putting in new parts works too, but when the player calls, nobody answers. Blood stays on the counter for the rest of the game.
-
-== drop-off
-(neutral) Hey. Is this the computer place?
-+ Nice board.
-	(happy) Thanks, dude! Got it last week. Skated here, actually.
-+ Cool shirt.
-	(happy) Thanks! It's from a band nobody's heard of yet.
-+ So, what's your problem?
-	(neutral) Well, my computer starts Windows, and then it just turns off.
-	(neutral) It gets warm, I think.
-	+ When did it start?
-		set skater_new_windows
-		(thinking) Like, a few days ago. Right after I got the new Windows.
-	+ Did you install anything?
-		if skater_new_windows
-			set skater_cambion
-			(happy) Oh yeah. My buddy gave me this Windows 95 on floppies. 'Cambion', it said.
-		else
-			(neutral) Nah, nothing, man.
-			+ Not even Windows?
-				set skater_cambion
-				(problem) Oh... right. A buddy gave me a Windows. Cambion, it said.
-	+ Cambion? Never heard of it. [if skater_cambion]
-		(happy) It's the rad one. Way faster. You should get it.
-	- OK, leave it with me. [end]
-		(happy) Thanks, man! Call me when it's done.

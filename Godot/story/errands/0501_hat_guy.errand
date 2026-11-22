@@ -2,16 +2,3 @@ customer: hat_guy
 problem: hardware_puzzle
 brief:
 	He took one part out and put the others in the wrong places. "I'm fixing it, it'll be super good."
-
-== drop-off
-(neutral) Howdy.
-+ Nice hat.
-	(happy) Why, thank you. It was my granddad's. Never leave home without it.
-+ So, what's your problem?
-	(neutral) I click on my pictures, and nothing opens. Not a single one.
-	+ Did you change anything?
-		(thinking) Well... I did tidy up a bit. Shortened some of those long program names.
-	+ Do you get an error?
-		(irritated01) Some box pops up saying it can't find something. I just click it away.
-	- OK, leave it with me. [end]
-		(happy) Much obliged.

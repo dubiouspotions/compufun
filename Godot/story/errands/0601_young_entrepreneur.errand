@@ -2,14 +2,3 @@ customer: young_entrepreneur
 problem: gpu_overheating
 brief:
 	The deletion event. A Win95 [x] floats over him all of day 6, also when he picks up, and only that day: the one exception to the [x] being for regular customers only. A click deletes him: he and his computer vanish (also from the counter) and are never mentioned again, except at the end. His voice glitches with Cambion.
-
-== drop-off
-(neutral) Hello. Do you do business computers?
-+ What's your business?
-	(happy) Import and export. Mostly import. Okay, mostly ideas, so far.
-+ So, what's your problem?
-	(problem) My computer won't start. It just shows a bunch of text, something about a disk.
-	+ Did you put a floppy in?
-		(thinking) Just some software a guy gave me. Business stuff. Very cutting edge.
-	- OK, leave it with me. [end]
-		(neutral) Great. Time is money, you know.
