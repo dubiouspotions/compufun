@@ -45,6 +45,8 @@ func run() -> void:
 	_a_text_edit_with_an_error_keeps_the_last_good_draft(lab, drafts)
 	lab.queue_free()
 	await process_frame
+	_a_draft_equal_to_the_file_disappears()
+	_a_draft_that_main_changed_shows_it()
 
 
 ## Drafts in [param dir] that never ask git.
@@ -95,6 +97,53 @@ func _a_text_edit_with_an_error_keeps_the_last_good_draft(lab: Control, drafts: 
 	check("the fixed text has no errors", errors, PackedStringArray())
 	check("the fixed text is the draft, the other conversation as it was", drafts.text(SKATER), SKATER_TEXT.replace("(neutral) Yo! Is this the computer repair shop?\n- Welcome to CompuFun!", "(neutral) Yo!\n- Welcome!"))
 	check("the panel holds the errand as the draft parses", panel.errand().problem.short_name, &"dust_overheat")
+
+
+func _a_draft_equal_to_the_file_disappears() -> void:
+	var drafts := test_drafts(DIR + "equal/drafts/")
+	drafts.checkout = DIR + "equal/checkout/"
+	DirAccess.make_dir_recursive_absolute(drafts.checkout + "story/errands")
+	var file := FileAccess.open(drafts.checkout + "story/errands/0101_skater_bro.errand", FileAccess.WRITE)
+	file.store_string(SKATER_TEXT)
+	file.close()
+	check("a changed text is a draft", [drafts.put(SKATER, "customer: skater_bro\n"), drafts.has(SKATER)], ["", true])
+	check("the draft is on disk", FileAccess.file_exists(DIR + "equal/drafts/story/errands/0101_skater_bro.errand"), true)
+	check("the file's own text drops the draft", [drafts.put(SKATER, SKATER_TEXT), drafts.has(SKATER)], ["", false])
+	check("and its file", FileAccess.file_exists(DIR + "equal/drafts/story/errands/0101_skater_bro.errand"), false)
+	drafts.put(SKATER, "customer: skater_bro\n")
+	file = FileAccess.open(drafts.checkout + "story/errands/0101_skater_bro.errand", FileAccess.WRITE)
+	file.store_string("customer: skater_bro\n")
+	file.close()
+	var reloaded := test_drafts(DIR + "equal/drafts/")
+	reloaded.checkout = drafts.checkout
+	check("drafts load without errors", reloaded.load_drafts(), PackedStringArray())
+	check("a draft that main has now disappears on load", reloaded.has(SKATER), false)
+
+
+func _a_draft_that_main_changed_shows_it() -> void:
+	var drafts := StoryDrafts.new(DIR + "main/drafts/")
+	drafts.checkout = DIR + "main/checkout/"
+	drafts.git = func(arguments: PackedStringArray) -> Dictionary:
+		match arguments[0]:
+			"rev-parse":
+				return {"code": 0, "out": "c0ffee\n"}
+			"cat-file":
+				return {"code": 0, "out": ""}
+			"show":
+				return {"code": 0, "out": SKATER_TEXT if arguments[1] == "c0ffee:Godot/story/errands/0101_skater_bro.errand" else ""}
+		return {"code": 1, "out": ""}
+	DirAccess.make_dir_recursive_absolute(drafts.checkout + "story/errands")
+	var file := FileAccess.open(drafts.checkout + "story/errands/0101_skater_bro.errand", FileAccess.WRITE)
+	file.store_string(SKATER_TEXT)
+	file.close()
+	drafts.put(SKATER, "customer: skater_bro\n")
+	check("a draft remembers the commit it started from", drafts.start_commit(SKATER), "c0ffee")
+	check("main hasn't changed it yet", drafts.main_changed(SKATER), false)
+	file = FileAccess.open(drafts.checkout + "story/errands/0101_skater_bro.errand", FileAccess.WRITE)
+	file.store_string(SKATER_TEXT + "\n== phone\n")
+	file.close()
+	check("main changed it since", StoryDraftsPanel.main_changed(drafts), PackedStringArray([SKATER]))
+	check("the draft is still the writer's", drafts.text(SKATER), "customer: skater_bro\n")
 
 
 ## Removes the files under [param dir], a test folder in user://.

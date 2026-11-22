@@ -18,7 +18,7 @@ var _warp: HSlider
 var _warp_label: Label
 var _on_start: LineEdit
 var _on_close: LineEdit
-var _signs: Dictionary[StringName, CheckBox] = {}
+var _signs: Dictionary[StringName, Button] = {}
 var _waits: Array[SpinBox] = []
 var _notes: TextEdit
 var _errors: Label
@@ -174,12 +174,16 @@ func _build() -> void:
 	columns.add_child(right)
 	right.add_child(LabUI.label("Close signs: corruption signs that start at closing and stop the next morning", 14, LabUI.DIM))
 	var flow := HFlowContainer.new()
+	flow.add_theme_constant_override("h_separation", 6)
+	flow.add_theme_constant_override("v_separation", 6)
 	right.add_child(flow)
 	var titles := signs()
 	var ids := titles.keys()
 	ids.sort()
 	for id: StringName in ids:
-		var box := CheckBox.new()
+		var box := Button.new()
+		box.toggle_mode = true
+		box.theme_type_variation = &"ChipButton"
 		box.text = id
 		box.tooltip_text = titles[id]
 		box.toggled.connect(func(_on: bool) -> void: _apply())

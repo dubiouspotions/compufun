@@ -25,6 +25,8 @@ var _lower: Control
 var _errand_panel: StoryErrandPanel
 var _day_panel: StoryDayPanel
 var _hint: Label
+var _drafts_button: Button
+var _drafts_panel: StoryDraftsPanel
 var _customers: PopupMenu
 var _add_day: int = 0
 
@@ -35,8 +37,11 @@ func _ready() -> void:
 	_build()
 	var errors := drafts.load_drafts()
 	refresh()
+	var changed_on_main := StoryDraftsPanel.main_changed(drafts)
 	if not errors.is_empty():
 		_say("Some drafts don't read: " + "; ".join(errors), true)
+	elif not changed_on_main.is_empty():
+		_say("Main changed %d files since you edited them: open Drafts to compare." % changed_on_main.size(), true)
 	else:
 		_say("Click an errand to open it. Drag a card to move it.")
 	_hold(is_visible_in_tree())
@@ -52,7 +57,10 @@ func _notification(what: int) -> void:
 func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if key != null and key.pressed and not key.echo and key.keycode == KEY_ESCAPE and visible:
-		hide()
+		if _drafts_panel.visible:
+			_drafts_panel.hide()
+		else:
+			hide()
 		get_viewport().set_input_as_handled()
 
 
@@ -79,6 +87,7 @@ func refresh() -> void:
 	_problems.text = "" if _week.errors.is_empty() else "%d problems in the story files (hover)" % _week.errors.size()
 	_problems.tooltip_text = "\n".join(_week.errors)
 	_errand_panel.flags = flag_names()
+	_drafts_button.text = "Drafts (%d)" % drafts.paths().size()
 	if _selected == "" and _errand_panel.visible:
 		_show_lower(_hint)
 
@@ -202,6 +211,12 @@ func _remove_errand(path: String) -> void:
 		_say("Removed %s. Discard its draft to bring it back." % path.get_file())
 
 
+func _drafts_changed() -> void:
+	_after_store()
+	if _selected != "":
+		open_errand(_selected)
+
+
 func _store_edit(path: String, text: String) -> void:
 	store(path, text)
 
@@ -302,6 +317,9 @@ func _build() -> void:
 		shown.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		_lower.add_child(shown)
 	_show_lower(_hint)
+	_drafts_panel = StoryDraftsPanel.new()
+	_drafts_panel.changed.connect(_drafts_changed)
+	add_child(_drafts_panel)
 	_customers = PopupMenu.new()
 	_customers.id_pressed.connect(_add_errand_for)
 	add_child(_customers)
@@ -320,5 +338,8 @@ func _top_bar() -> Control:
 	_problems = LabUI.label("", 13, LabUI.CHANGED)
 	_problems.mouse_filter = Control.MOUSE_FILTER_PASS
 	row.add_child(_problems)
+	_drafts_button = LabUI.button("Drafts", func() -> void: _drafts_panel.show_drafts(drafts))
+	_drafts_button.tooltip_text = "Your edits that main doesn't have yet"
+	row.add_child(_drafts_button)
 	row.add_child(LabUI.button("Close  Esc", hide))
 	return row
