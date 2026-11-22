@@ -19,8 +19,11 @@ const MOODS: Array[StringName] = [
 @export var portraits: Dictionary[StringName, Texture2D] = {}
 ## The square face texture on the 3D customer. null shows a grey placeholder.
 @export var face: Texture2D
-## The person seen from behind, cut to the neutral portrait's outline mirrored: the back of the 3D
-## customer's photo relief (PhotoRelief). tools/make_portrait_backs.py makes it. null shows the
+## The mood whose portrait the 3D customer's photo relief (PhotoRelief) shows. [member back] must be
+## drawn from the same portrait: after a change, run tools/make_portrait_backs.py with --force.
+@export var relief_pose: StringName = &"neutral"
+## The person seen from behind, cut to the outline of the [member relief_pose] portrait mirrored: the
+## back of the 3D customer's photo relief. tools/make_portrait_backs.py makes it. null shows the
 ## portrait mirrored and darkened there.
 @export var back: Texture2D
 ## The part of the neutral portrait that the 3D customer's shirt shows, in shares of the picture (0 to 1):

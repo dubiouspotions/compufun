@@ -1,8 +1,9 @@
 class_name PhotoRelief
 extends RefCounted
-## A person's upper body as a low-poly relief of their neutral portrait (wiki: Architecture, People
-## and customers). The front carries the photo and bulges towards the middle of its outline; the
-## back carries the person seen from behind (Person.back), or the photo mirrored when there is none.
+## A person's upper body as a low-poly relief of a portrait, by default the neutral one
+## (Person.relief_pose; wiki: Architecture, People and customers). The front carries the photo and
+## bulges towards the middle of its outline; the back carries the person seen from behind
+## (Person.back), or the photo mirrored when there is none.
 ## The mesh's origin is the bottom centre of the outline, and its front faces +Z. Where the front
 ## and the back meet at the outline, both show one colour, the average of the two pictures there, and
 ## each fades into its own picture further in; the material does the fade (psx_world's

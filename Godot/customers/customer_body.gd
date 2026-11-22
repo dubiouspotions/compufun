@@ -33,9 +33,9 @@ const MODELLED_UPPER_BODY: Array[StringName] = [&"Torso", &"Neck", &"Head", &"Fa
 @export_range(0.05, 0.5) var back_strip: float = 0.15
 ## The speed, in metres per second, at which the walk plays at its own pace.
 @export var walk_speed: float = 1.4
-## Shows the upper body as a relief of the person's neutral portrait (PhotoRelief) in place of the
-## modelled head, torso, arms and hat; the arms are the photo's, so they hang stiff. Off, or for a
-## person with no neutral portrait: the modelled upper body.
+## Shows the upper body as a relief of the person's portrait (PhotoRelief, Person.relief_pose) in
+## place of the modelled head, torso, arms and hat; the arms are the photo's, so they hang stiff. Off,
+## or for a person with no portrait for it: the modelled upper body.
 @export var photo_relief: bool = true:
 	set(value):
 		photo_relief = value
@@ -214,7 +214,7 @@ func show_customer(customer: Customer) -> void:
 # Shows the person's photo relief in place of the modelled upper body, or the modelled body when
 # there is no relief to show.
 func _show_relief(person: Person) -> void:
-	var portrait: Texture2D = person.portraits.get(&"neutral") if person != null else null
+	var portrait := _relief_portrait(person)
 	var shown := photo_relief and portrait != null
 	_relief.visible = shown
 	var torso_too := true
@@ -232,6 +232,22 @@ func _show_relief(person: Person) -> void:
 		torso_too = bottom >= waist_height - 0.02
 	for part: StringName in MODELLED_UPPER_BODY:
 		(get_node(NodePath(part)) as Node3D).visible = not shown or (part == &"Torso" and torso_too)
+
+
+# The portrait of the person's relief_pose; the neutral one, with an error, when that pose has none.
+func _relief_portrait(person: Person) -> Texture2D:
+	if person == null:
+		return null
+	var portrait: Texture2D = person.portraits.get(person.relief_pose)
+	if portrait == null and person.relief_pose != &"neutral":
+		push_error("CustomerBody: %s has no portrait for its relief_pose %s; the relief shows the neutral one" % [
+			person.resource_path, person.relief_pose])
+		portrait = person.portraits.get(&"neutral")
+	# make_portrait_backs.py draws the back at its portrait's size, so another size is another pose's back.
+	if portrait != null and person.back != null and person.back.get_size() != portrait.get_size():
+		push_error("CustomerBody: the back %s of %s is %s, its relief portrait %s is %s; run tools/make_portrait_backs.py" % [
+			person.back.resource_path, person.resource_path, person.back.get_size(), portrait.resource_path, portrait.get_size()])
+	return portrait
 
 
 func _relief_material(texture: Texture2D, tint: Color) -> ShaderMaterial:
