@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes the shop's door bell, door slam, phone, keystroke, mouse button and modem sounds as 22050 Hz mono WAVs.
+"""Synthesizes the shop's door chime, door slam, phone, keystroke, mouse button and modem sounds as 22050 Hz mono WAVs.
 Usage: make_shop_sounds.py Godot/sounds"""
 import math
 import random
@@ -8,7 +8,6 @@ import sys
 import wave
 
 RATE = 22050
-random.seed(95)
 
 
 def silence(seconds):
@@ -41,26 +40,25 @@ def noise(seconds, decay):
     return [random.uniform(-1, 1) * math.exp(-i / RATE / decay) for i in range(int(seconds * RATE))]
 
 
-def bell_strike(seconds):
-    """A small brass bell: inharmonic partials, each a slightly detuned pair that beats."""
-    partials = [(2093.0, 1.0, 1.1), (4980.0, 0.45, 0.5), (8150.0, 0.2, 0.25)]
+def chime_tone(freq, seconds, decay):
+    """One tone of a door sensor's chime: a sine with a little of its octave and twelfth, struck with a 4 ms attack."""
     out = []
     for i in range(int(seconds * RATE)):
         t = i / RATE
-        s = 0.0
-        for freq, amp, decay in partials:
-            env = amp * math.exp(-t / decay)
-            s += env * (math.sin(2 * math.pi * freq * t) + 0.6 * math.sin(2 * math.pi * freq * 1.004 * t))
-        out.append(s)
-    mix(out, highpass(noise(0.01, 0.002), 3000), 0, 0.6)  # the clapper's tick
+        env = min(1.0, t / 0.004) * math.exp(-t / decay)
+        phase = 2 * math.pi * freq * t
+        out.append(env * (math.sin(phase) + 0.2 * math.sin(2 * phase) + 0.1 * math.sin(3 * phase)))
     return out
 
 
 def door_bell():
-    out = silence(1.6)
-    for at, gain in [(0.0, 1.0), (0.13, 0.7), (0.29, 0.45), (0.5, 0.25)]:
-        mix(out, bell_strike(1.6 - at), at, gain)
-    return out
+    """The two-tone "bing bong" of a 90s shop's door sensor, E5 then C5, through its small speaker."""
+    out = silence(1.0)
+    mix(out, chime_tone(659.25, 0.6, 0.16), 0.0)
+    mix(out, chime_tone(523.25, 0.68, 0.22), 0.32)
+    out = lowpass(highpass(out, 350), 3500)
+    peak = max(abs(s) for s in out)
+    return [round(s / peak * 127) / 127 for s in out]  # 8-bit samples, for the cheap speaker's grit
 
 
 def dtmf(row, col, seconds):
@@ -69,6 +67,9 @@ def dtmf(row, col, seconds):
 
 def phone_receiver():
     """The receiver lifts off the cradle (a plastic knock and the hook switch), then the number dials."""
+    random.seed(95)
+    for _ in range(880):  # the state that phone_receiver.wav was rendered from
+        random.random()
     out = silence(0.2)
     knock = [math.sin(2 * math.pi * 140 * i / RATE) * math.exp(-i / RATE / 0.025) for i in range(int(0.12 * RATE))]
     mix(out, knock, 0.0, 0.8)
