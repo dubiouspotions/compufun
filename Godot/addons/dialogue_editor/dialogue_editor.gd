@@ -68,7 +68,7 @@ func _ready() -> void:
 	_voice_picker.size_flags_horizontal = SIZE_EXPAND_FILL
 	_voice_picker.item_selected.connect(_on_voice_selected)
 	voice_row.add_child(_voice_picker)
-	middle.add_child(_button("Person, problem: open in inspector", _open_in_inspector))
+	middle.add_child(_button("Person, computer: open in inspector", _open_in_inspector))
 	middle.add_child(_label("Conversations: the first that matches plays"))
 	_conversation_list = _item_list(middle)
 	_conversation_list.item_selected.connect(_on_conversation_selected)
