@@ -4,8 +4,8 @@ extends Control
 ## (Shop.phone_requested) calls the customer of the oldest done (fixed and tested) computer: the
 ## phone rings, the customer answers (their PHONE conversation, or [member greeting]), the player
 ## says [member you_say], and hangs up; then the customer comes for it. With no computer done, the
-## click picks up the phone instead, which lists the computers and says why nobody can be called;
-## Esc or "Put down" puts it down. Game refuses both while the shop is closed or someone is in it.
+## click picks up the phone instead, which lists the computers; Esc or "Put down" puts it down.
+## Game refuses both while the shop is closed or someone is in it.
 
 ## The heading over the customers to call.
 @export var pick_title: String = "Call a customer"
@@ -24,7 +24,7 @@ extends Control
 @export_range(0.0, 20.0) var ring_degrees: float = 5.0
 ## How many times a second it rattles.
 @export_range(1.0, 40.0) var ring_shakes: float = 18.0
-## One customer to call: a Button with Name, Number and Issue labels (unique names).
+## One customer to call: a Button with Name, Number, Issue and Status labels (unique names).
 @export var choice_scene: PackedScene
 
 var _was_calling := false
@@ -129,32 +129,30 @@ func _show_line() -> void:
 func _show_customers() -> void:
 	_clear_choices()
 	_name.text = pick_title
+	_text.hide()
 	_next.get_parent().show()
 	_next.text = "Put down"
 	var jobs := Game.jobs.duplicate()
 	jobs.sort_custom(func(a: Job, b: Job) -> bool: return a.order < b.order)
+	var rows: Array[Button] = []
 	for job: Job in jobs:
 		var button := choice_scene.instantiate() as Button
 		if button == null:
 			push_error("PhoneCall: choice_scene %s is not a Button" % choice_scene)
 			return
-		var issue := job.problem.perceived_issue + ("" if job.done else " (not tested yet)" if job.fixed else " (not fixed yet)")
-		for part: Array in [["%Name", job.customer.display_name], ["%Number", number_of(job.customer)], ["%Issue", issue]]:
+		var status := "" if job.done else "untested" if job.fixed else "unfixed"
+		for part: Array in [["%Name", job.customer.display_name], ["%Number", number_of(job.customer)], ["%Issue", job.problem.perceived_issue], ["%Status", status]]:
 			(button.get_node(part[0]) as Label).text = part[1]
 		button.disabled = not (job.done and Game.can_call())
 		button.pressed.connect(Game.call_customer.bind(job))
 		_choices.add_child(button)
-	var note := ""
-	if Game.visitor != null:
-		note = "Someone is in the shop. Call when they have left."
-	elif Game.phase != Game.Phase.OPEN:
-		note = "The shop is closed."
-	elif jobs.is_empty():
-		note = "No computers on the counter."
-	elif not jobs.any(func(j: Job) -> bool: return j.done):
-		note = "No computer is fixed and tested yet."
-	_text.visible = note != ""
-	_text.type_out(note)
+		rows.append(button)
+	for column: String in ["%Name", "%Number", "%Issue"]:
+		var width := 0.0
+		for row in rows:
+			width = maxf(width, (row.get_node(column) as Label).get_minimum_size().x)
+		for row in rows:
+			(row.get_node(column) as Label).custom_minimum_size.x = width
 
 
 func _clear_choices() -> void:
