@@ -4,8 +4,8 @@ extends CanvasLayer
 ## the game and shows a screenshot. The player draws on it, types a note and picks Bug or Idea.
 ## The report goes to <repo>/feedback/<time>_<name>/: shot.png (with the marks) and report.json
 ## (the note, the marks and what is under them, the Game state, the room and the build). With
-## "Send to GitHub" ticked, it also makes a GitHub issue with the token from TOKEN_ENV or TOKEN_FILE:
-## the screenshot goes to the branch "feedback", and the issue joins the project board.
+## "Send to GitHub" ticked, it also makes a GitHub issue (GitHubIssues): the screenshot goes to the
+## branch "feedback", and the issue joins the project board.
 
 const HINT: String = "Draw on the picture: circle or underline what you mean."
 const NO_SHOT_HINT: String = "No screenshot (a headless run?). The report saves without one."
@@ -23,9 +23,6 @@ const TOAST_SECONDS: float = 3.0
 const FEEDBACK_BRANCH: String = "feedback"
 ## The width of the screenshot in the issue, in pixels.
 const ISSUE_SHOT_WIDTH: int = 1280
-## The fine-grained GitHub token, from this environment variable or else from this file in the repo root.
-const TOKEN_ENV: String = "HUMANERROR_ISSUES_TOKEN"
-const TOKEN_FILE: String = "issues-token.txt"
 const ACCENTS: Dictionary = {
 	"á": "a", "à": "a", "â": "a", "ä": "a", "å": "a", "é": "e", "è": "e", "ê": "e", "ë": "e",
 	"í": "i", "ï": "i", "ó": "o", "ô": "o", "ö": "o", "ø": "o", "ú": "u", "ü": "u", "ñ": "n", "ç": "c",
@@ -220,8 +217,8 @@ func _save(kind: String) -> void:
 		"camera": _camera_info(),
 		"open_screens": _open_screens(),
 		"build": {
-			"commit": _git(["rev-parse", "--short", "HEAD"]),
-			"branch": _git(["rev-parse", "--abbrev-ref", "HEAD"]),
+			"commit": GitHubIssues.git(["rev-parse", "--short", "HEAD"]),
+			"branch": GitHubIssues.git(["rev-parse", "--abbrev-ref", "HEAD"]),
 			"godot": Engine.get_version_info().string,
 			"os": OS.get_name(),
 		},
@@ -283,7 +280,7 @@ func _start_send(report: Dictionary, folder: String) -> void:
 	if _sending:
 		_show_toast("Still sending the last report; this one is saved in feedback/%s." % folder.get_file(), 6.0)
 		return
-	var token := _token()
+	var token := GitHubIssues.read_token()
 	if token.has("error"):
 		_on_sent(token)
 		return
@@ -301,10 +298,10 @@ func _start_send(report: Dictionary, folder: String) -> void:
 			if err != OK:
 				shot_error = "cannot write %s: %s" % [shot, error_string(err)]
 				shot = ""
-	var repo := github_repo if github_repo != "" else _repo_slug()
+	var github := GitHubIssues.new(self, token["token"], github_repo, github_project, "HumanError-F9")
 	_sending = true
 	_show_toast("Sending the report to GitHub...", 0.0)
-	var result := await _send_to_github(token["token"], repo, folder, shot, shot_error, _issue_title(report), _issue_body(report))
+	var result := await _send_to_github(github, folder, shot, shot_error, _issue_title(report), _issue_body(report))
 	_sending = false
 	_on_sent(result)
 
@@ -326,30 +323,13 @@ func _on_sent(result: Dictionary) -> void:
 	_show_toast(text, 6.0)
 
 
-## {"token"} from TOKEN_ENV or the file TOKEN_FILE in the repo, or {"error"}.
-func _token() -> Dictionary:
-	var token := OS.get_environment(TOKEN_ENV).strip_edges()
-	if token != "":
-		return {"token": token}
-	var path := _repo_dir().path_join(TOKEN_FILE)
-	if not FileAccess.file_exists(path):
-		return {"error": "no token: put one in %s (see docs/working-together.md)" % path}
-	var file := FileAccess.open(path, FileAccess.READ)
-	if file == null:
-		return {"error": "cannot read %s: %s" % [path, error_string(FileAccess.get_open_error())]}
-	token = file.get_line().replace("\uFEFF", "").strip_edges()
-	if token == "":
-		return {"error": "%s is empty" % path}
-	return {"token": token}
-
-
-func _send_to_github(token: String, repo: String, folder: String, shot: String, shot_error: String, title: String, body: String) -> Dictionary:
-	if repo == "":
+func _send_to_github(github: GitHubIssues, folder: String, shot: String, shot_error: String, title: String, body: String) -> Dictionary:
+	if github.repo() == "":
 		return {"error": "cannot find the GitHub repo: set github_repo, or check git's remote origin"}
 	var image := ""
 	var image_error := shot_error
 	if shot != "":
-		var uploaded := await _upload_shot(token, repo, folder, shot)
+		var uploaded := await _upload_shot(github, folder, shot)
 		image = uploaded.get("url", "")
 		image_error = uploaded.get("error", "")
 	var picture := "_No screenshot._"
@@ -357,33 +337,26 @@ func _send_to_github(token: String, repo: String, folder: String, shot: String, 
 		picture = "![screenshot](%s)" % image
 	elif image_error != "":
 		picture = "_No screenshot: %s_" % image_error.get_slice("\n", 0)
-	var label := await _api(token, HTTPClient.METHOD_POST, "/repos/%s/labels" % repo, {"name": "feedback", "color": "FBCA04", "description": "F9 report from the game"})
-	if label["code"] != 422 and label.has("error"):  # 422: the label exists.
-		return {"error": "cannot make the label feedback: %s" % label["error"]}
-	var created := await _api(token, HTTPClient.METHOD_POST, "/repos/%s/issues" % repo, {"title": title, "body": body.replace("%IMAGE%", picture), "labels": ["feedback"]})
-	if created.has("error"):
-		return {"error": "cannot create the issue: %s" % created["error"]}
-	var result := {"url": String(created["data"]["html_url"]), "image_error": image_error}
-	if github_project > 0:
-		var added := await _add_to_board(token, repo.get_slice("/", 0), String(created["data"]["node_id"]))
-		if added.has("error"):
-			result["board_error"] = added["error"]
+	var result := await github.create_issue(title, body.replace("%IMAGE%", picture), {"name": "feedback", "color": "FBCA04", "description": "F9 report from the game"})
+	if not result.has("error"):
+		result["image_error"] = image_error
 	return result
 
 
 ## Puts the screenshot on the branch FEEDBACK_BRANCH (made from the default branch when it is
 ## missing) and returns {"url"} of the raw file, or {"error"}.
-func _upload_shot(token: String, repo: String, folder: String, shot: String) -> Dictionary:
-	var ref := await _api(token, HTTPClient.METHOD_GET, "/repos/%s/git/ref/heads/%s" % [repo, FEEDBACK_BRANCH])
+func _upload_shot(github: GitHubIssues, folder: String, shot: String) -> Dictionary:
+	var repo := github.repo()
+	var ref := await github.api(HTTPClient.METHOD_GET, "/repos/%s/git/ref/heads/%s" % [repo, FEEDBACK_BRANCH])
 	if ref["code"] == 404:
-		var info := await _api(token, HTTPClient.METHOD_GET, "/repos/%s" % repo)
+		var info := await github.api(HTTPClient.METHOD_GET, "/repos/%s" % repo)
 		if info.has("error"):
 			return {"error": "cannot read the default branch: %s" % info["error"]}
 		var base := String(info["data"]["default_branch"])
-		var head := await _api(token, HTTPClient.METHOD_GET, "/repos/%s/git/ref/heads/%s" % [repo, base])
+		var head := await github.api(HTTPClient.METHOD_GET, "/repos/%s/git/ref/heads/%s" % [repo, base])
 		if head.has("error"):
 			return {"error": "cannot read the head of %s: %s" % [base, head["error"]]}
-		var made := await _api(token, HTTPClient.METHOD_POST, "/repos/%s/git/refs" % repo, {"ref": "refs/heads/" + FEEDBACK_BRANCH, "sha": head["data"]["object"]["sha"]})
+		var made := await github.api(HTTPClient.METHOD_POST, "/repos/%s/git/refs" % repo, {"ref": "refs/heads/" + FEEDBACK_BRANCH, "sha": head["data"]["object"]["sha"]})
 		if made.has("error"):
 			return {"error": "cannot make the branch %s: %s" % [FEEDBACK_BRANCH, made["error"]]}
 	elif ref.has("error"):
@@ -391,7 +364,7 @@ func _upload_shot(token: String, repo: String, folder: String, shot: String) -> 
 	var bytes := FileAccess.get_file_as_bytes(shot)
 	if bytes.is_empty():
 		return {"error": "cannot read %s: %s" % [shot, error_string(FileAccess.get_open_error())]}
-	var put := await _api(token, HTTPClient.METHOD_PUT, "/repos/%s/contents/feedback/%s/shot.jpg" % [repo, folder.get_file()], {
+	var put := await github.api(HTTPClient.METHOD_PUT, "/repos/%s/contents/feedback/%s/shot.jpg" % [repo, folder.get_file()], {
 		"message": "F9 report %s" % folder.get_file(),
 		"content": Marshalls.raw_to_base64(bytes),
 		"branch": FEEDBACK_BRANCH,
@@ -399,63 +372,6 @@ func _upload_shot(token: String, repo: String, folder: String, shot: String) -> 
 	if put.has("error"):
 		return {"error": "cannot upload the screenshot: %s" % put["error"]}
 	return {"url": String(put["data"]["content"]["download_url"])}
-
-
-## Adds the issue [param item] (a GraphQL node id) to the board github_project of [param owner].
-## Returns {} or {"error"}.
-func _add_to_board(token: String, owner: String, item: String) -> Dictionary:
-	var found := await _graphql(token, "query($o: String!, $n: Int!) { organization(login: $o) { projectV2(number: $n) { id } } }", {"o": owner, "n": github_project})
-	if found.has("error"):
-		return found
-	var project: Variant = found["data"]["organization"]["projectV2"] if found["data"].get("organization") != null else null
-	if project == null:
-		return {"error": "cannot see project %d of %s" % [github_project, owner]}
-	return await _graphql(token, "mutation($p: ID!, $i: ID!) { addProjectV2ItemById(input: {projectId: $p, contentId: $i}) { item { id } } }", {"p": project["id"], "i": item})
-
-
-## {"data"} of a GitHub GraphQL query, or {"error"}.
-func _graphql(token: String, query: String, variables: Dictionary) -> Dictionary:
-	var reply := await _api(token, HTTPClient.METHOD_POST, "/graphql", {"query": query, "variables": variables})
-	if reply.has("error"):
-		return reply
-	if not reply["data"] is Dictionary:
-		return {"error": "GraphQL: the reply is not JSON"}
-	var data: Dictionary = reply["data"]
-	if data.has("errors"):
-		return {"error": "GraphQL: %s" % data["errors"][0].get("message", JSON.stringify(data["errors"]))}
-	return {"data": data["data"]}
-
-
-## One request to the GitHub REST API. Returns {"code", "data"} (the parsed JSON reply), with
-## "error" too when there is no reply or the status is not 2xx. [param body] null: no body.
-func _api(token: String, method: HTTPClient.Method, path: String, body: Variant = null) -> Dictionary:
-	var url := "https://api.github.com" + path
-	var http := HTTPRequest.new()
-	http.process_mode = Node.PROCESS_MODE_ALWAYS
-	add_child(http)
-	var headers := PackedStringArray([
-		"Authorization: Bearer " + token,
-		"Accept: application/vnd.github+json",
-		"X-GitHub-Api-Version: 2022-11-28",
-		"Content-Type: application/json",
-		"User-Agent: HumanError-F9",
-	])
-	var err := http.request(url, headers, method, JSON.stringify(body) if body != null else "")
-	if err != OK:
-		http.queue_free()
-		return {"code": 0, "error": "cannot send the request to %s: %s" % [url, error_string(err)]}
-	var reply: Array = await http.request_completed
-	http.queue_free()
-	if reply[0] != HTTPRequest.RESULT_SUCCESS:
-		return {"code": 0, "error": "no reply from %s (HTTPRequest result %d)" % [url, reply[0]]}
-	var code: int = reply[1]
-	var text := (reply[3] as PackedByteArray).get_string_from_utf8()
-	var data: Variant = JSON.parse_string(text) if text != "" else null
-	var result := {"code": code, "data": data}
-	if code < 200 or code >= 300:
-		var message := String(data.get("message", "")) if data is Dictionary else text.left(200)
-		result["error"] = "HTTP %d from %s: %s" % [code, path, message]
-	return result
 
 
 func _issue_title(report: Dictionary) -> String:
@@ -493,13 +409,6 @@ func _issue_body(report: Dictionary) -> String:
 		"", "<details><summary>report.json</summary>", "", "```json", JSON.stringify(report, "  "), "```", "", "</details>",
 	]
 	return "\n".join(lines)
-
-
-## owner/name from git's remote "origin", or "" when it is not a GitHub URL.
-func _repo_slug() -> String:
-	var regex := RegEx.create_from_string("github\\.com[:/]([^/]+)/([^/]+?)(?:\\.git)?$")
-	var found := regex.search(_git(["remote", "get-url", "origin"]))
-	return "%s/%s" % [found.get_string(1), found.get_string(2)] if found != null else ""
 
 
 ## Paints the marks into the screenshot, at the scale of the picture, with a dark edge.
@@ -634,28 +543,13 @@ func _open_screens() -> Array[String]:
 	return names
 
 
-func _repo_dir() -> String:
-	return ProjectSettings.globalize_path("res://").path_join("..").simplify_path()
-
-
 func _output_dir() -> String:
-	return output_dir if output_dir != "" else _repo_dir().path_join("feedback")
-
-
-## The output of git in the repo, or "unknown" when git is missing or fails.
-func _git(arguments: PackedStringArray) -> String:
-	var output: Array = []
-	var args := PackedStringArray(["-C", _repo_dir()])
-	args.append_array(arguments)
-	var code := OS.execute("git", args, output, true)
-	if code != 0 or output.is_empty():
-		return "unknown"
-	return String(output[0]).strip_edges()
+	return output_dir if output_dir != "" else GitHubIssues.repo_dir().path_join("feedback")
 
 
 ## The first name from git config user.name, in lowercase ASCII, for the folder name.
 func _author() -> String:
-	var full := _git(["config", "user.name"])
+	var full := GitHubIssues.git(["config", "user.name"])
 	if full == "unknown" or full == "":
 		full = OS.get_environment("USER") if OS.has_environment("USER") else OS.get_environment("USERNAME")
 	full = full.to_lower()
