@@ -84,7 +84,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Week calendar**: The paper wall calendar on the pin board in the Right view (`props/week_calendar.tscn`): the month and year, then one column per day of the game with its weekday and date, Saturday and Sunday in red. Each day that has passed is crossed out; a day has passed when the shop closes for its night.
 *Avoid:* calendar prop, day counter.
 
-**Wall clock**: The round clock on the shop wall (`props/wall_clock.tscn`), above the right shop window. Its hour and minute hands show the hour of the Outside, so they follow the daypart and the debug menu's time slider, and run forward to a later hour. Its red second hand ticks on real seconds. Move the instance to hang it on another wall.
+**Wall clock**: The round clock on the shop wall (`props/wall_clock.tscn`), above the right shop window. Its hour and minute hands show the hour of the Outside, so they follow the daypart and the debug menu's time slider, and run forward to a later hour. Its red second hand ticks on real time, a little slower than real seconds. Move the instance to hang it on another wall.
 *Avoid:* timer, watch.
 
 **Job**: One customer's computer on the counter, with its slot, its repair state and its post-it (`Job`, in `Game.jobs`). It stays from the drop-off to the pickup, overnight too.

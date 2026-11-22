@@ -1,8 +1,9 @@
 @tool
 extends Node3D
 ## A 1990s office wall clock. The hour and minute hands show the hour of the Outside node, the
-## game's time of day; the second hand ticks on real seconds. The back is at the origin and the face
-## looks along +Z, so it hangs on a wall where the origin touches the wall.
+## game's time of day; the second hand ticks on real time, one step per [member second_step_seconds].
+## The back is at the origin and the face looks along +Z, so it hangs on a wall where the origin
+## touches the wall.
 
 const PSX_WORLD: Shader = preload("res://shaders/psx_world.gdshader")
 
@@ -28,12 +29,15 @@ const PSX_WORLD: Shader = preload("res://shaders/psx_world.gdshader")
 	set(value):
 		second_hand_color = value
 		_apply_look()
-## Shows the second hand. It ticks on real seconds, so the clock looks alive while the game's time
+## Shows the second hand. It ticks on real time, so the clock looks alive while the game's time
 ## stands still.
 @export var second_hand: bool = true:
 	set(value):
 		second_hand = value
 		_apply_look()
+## How long each step of the second hand lasts, in real seconds; each step plays a tick or a tock.
+## A little over 1 makes the ticking unhurried.
+@export_range(0.5, 2.0, 0.05) var second_step_seconds: float = 1.25
 ## Steps the hour and minute hands in whole game minutes instead of moving them smoothly.
 @export var tick: bool = false
 ## How fast the hands run forward to a time up to 12 hours later, such as the next daypart, in game
@@ -99,7 +103,7 @@ func _process(delta: float) -> void:
 	var hour := floorf(_shown * 60.0) / 60.0 if tick else _shown
 	_hour_hand.rotation.z = -TAU * fposmod(hour, 12.0) / 12.0
 	_minute_hand.rotation.z = -TAU * fposmod(hour, 1.0)
-	var second := Time.get_ticks_msec() / 1000
+	var second := int(Time.get_ticks_msec() / (second_step_seconds * 1000.0))
 	_second_hand.rotation.z = -TAU * (second % 60) / 60.0
 	if second != _second:
 		_second = second
