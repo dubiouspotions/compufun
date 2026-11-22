@@ -1,7 +1,11 @@
+class_name CeilingLight
 extends Node3D
 ## A ceiling light panel: a cold tube that is on only in [member lit_dayparts], blinks on when it
 ## switches on, and stutters now and then, more often on later days. The panel glows in the colour
-## of the light.
+## of the light. [method cover] blacks the lights out to hide a change in the shop.
+
+## Every ceiling light, for [method cover].
+const GROUP: StringName = &"ceiling_lights"
 
 ## The names of the Game.Daypart values in which the light is on. In the others it is off, so the
 ## daylight comes through the windows.
@@ -17,6 +21,8 @@ extends Node3D
 ## first, so that the lights in a room don't blink in step.
 @export_range(0.0, 3.0, 0.01, "suffix:s") var blink_seconds: float = 0.9
 @export_range(0.0, 2.0, 0.01, "suffix:s") var blink_delay: float = 0.6
+## How long the light stays dark in [method cover] before it stutters back on.
+@export_range(0.05, 2.0, 0.01, "suffix:s") var cover_seconds: float = 0.3
 
 var _energy: float
 var _panel_material: StandardMaterial3D
@@ -27,7 +33,25 @@ var _lit: bool = false
 @onready var _panel: MeshInstance3D = $Panel
 
 
+## Blacks out every ceiling light in [param tree] that is lit, or switches on now, for its
+## [member cover_seconds], then stutters it back on, and calls [param in_the_dark] halfway through the
+## dark. With no light lit it calls it at once.
+static func cover(tree: SceneTree, in_the_dark: Callable) -> void:
+	var lit: Array[CeilingLight] = []
+	for node: Node in tree.get_nodes_in_group(GROUP):
+		var light := node as CeilingLight
+		if light != null and light._lit_now():
+			lit.append(light)
+	if lit.is_empty():
+		in_the_dark.call()
+		return
+	for light: CeilingLight in lit:
+		light._black_out()
+	tree.create_timer(lit[0].cover_seconds * 0.5).timeout.connect(in_the_dark)
+
+
 func _ready() -> void:
+	add_to_group(GROUP)
 	_energy = _light.light_energy
 	var material := _panel.material_override as StandardMaterial3D
 	if material == null:
@@ -71,6 +95,15 @@ func _flickers_today() -> float:
 	if flickers_per_minute.is_empty():
 		return 0.0
 	return flickers_per_minute[clampi(Game.day_number - 1, 0, flickers_per_minute.size() - 1)]
+
+
+func _black_out() -> void:
+	if _flicker != null:
+		_flicker.kill()
+	_set_level(0.0)
+	_flicker = create_tween()
+	_flicker.tween_interval(cover_seconds)
+	_flicker.tween_callback(_stutter.bind(blink_seconds, 0.0))
 
 
 # Alternates dark and bright steps for [param seconds], after [param delay], and ends at full.

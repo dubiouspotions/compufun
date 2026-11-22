@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://corruption/logo_blue.gd" id="1_sign"]
+[ext_resource type="Script" path="res://corruption/logo_change.gd" id="1_sign"]
 
 [node name="LogoBlue" type="Node"]
 script = ExtResource("1_sign")
