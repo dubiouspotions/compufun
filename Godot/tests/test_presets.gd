@@ -1,11 +1,17 @@
 extends "res://tests/test.gd"
-## Every preset of the debug menu restores in the week from the story files, and a snapshot of it
-## restores to the same state.
+## The debug menu's presets: one per problem file, and every preset restores without a refusal.
+
+const PRESETS := "res://ui/debug_presets.gd"  # loaded at run time: it names the Game autoload
 
 
 func run() -> void:
-	var presets: Dictionary = (load("res://ui/debug_presets.gd") as GDScript).get_script_constant_map()["PRESETS"]
-	for preset_name: String in presets:
-		check("the preset '%s' restores" % preset_name, game.restore(presets[preset_name]), "")
+	var presets: GDScript = load(PRESETS)
+	var problems: Dictionary = presets.call("problem_presets")
+	var files := Array(ResourceLoader.list_directory("res://problems/")).filter(func(file: String) -> bool: return file.get_extension() == "tres")
+	check("one preset per problem file", problems.size(), files.size())
+	var every: Dictionary = problems.duplicate()
+	every.merge(presets.get("MOMENTS"))
+	for preset_name: String in every:
+		check("%s restores" % preset_name, game.restore(every[preset_name]), "")
 		var state: Dictionary = game.snapshot()
-		check("its snapshot restores the same", [game.restore(state), game.snapshot() == state], ["", true])
+		check("%s: its snapshot restores the same" % preset_name, [game.restore(state), game.snapshot() == state], ["", true])

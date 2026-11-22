@@ -1,6 +1,6 @@
-# HumanError
+# CompuFun
 
-Dubious Potions' entry for [GAME JAM 95](https://itch.io/jam/game-jam-95).
+Dubious Potions' entry for [GAME JAM 95](https://itch.io/jam/game-jam-95). The repo and the code use its working title, HumanError.
 
 ## The game
 

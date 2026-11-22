@@ -8,7 +8,7 @@ on:
 
 env:
   GODOT_VERSION: 4.7.2
-  EXPORT_NAME: HumanError
+  EXPORT_NAME: CompuFun
   # Set up these as Github Secrets:
   ITCHIO_API_KEY: ${{ secrets.ITCHIO_API_KEY }}
   ITCHIO_USERNAME: ${{ secrets.ITCHIO_USERNAME }}

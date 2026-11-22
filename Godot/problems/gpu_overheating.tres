@@ -1,14 +1,14 @@
 [gd_resource type="Resource" script_class="Problem" format=3]
 
-[ext_resource type="Script" path="res://problems/problem.gd" id="1_problem"]
-[ext_resource type="Resource" path="res://parts/gpu.tres" id="2_gpu"]
+[ext_resource type="Resource" path="res://parts/gpu.tres" id="1_1gukq"]
+[ext_resource type="Script" path="res://problems/problem.gd" id="2_t3qkj"]
 
 [resource]
-script = ExtResource("1_problem")
+script = ExtResource("2_t3qkj")
 short_name = &"gpu_overheating"
 perceived_issue = "Visual artifacting"
-location = 2
 symptoms = PackedStringArray("Visual artifacting on screen", "GPU overheating")
-broken_part = ExtResource("2_gpu")
+broken_part = ExtResource("1_1gukq")
 hardware_steps = PackedStringArray("Remove the computer shell", "Remove the GPU, throw it in the trash", "Get a new GPU from storage", "Install the GPU", "Remount the shell")
 software_steps = PackedStringArray()
+screen_artifacts = 0.6

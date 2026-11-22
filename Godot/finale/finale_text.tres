@@ -36,7 +36,7 @@ linux_error = "[    3.141592] EXT4-fs error (device nvme0n1p2): ext4_lookup:1855
 [    3.141602] ---[ end Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(259,2) ]---"
 thanks = "Thank you for playing"
 cast_heading = "Starring"
-credits = "HumanError
+credits = "CompuFun
 by Dubious Potions, for GAME JAM 95
 
 Piérre Reimertz
