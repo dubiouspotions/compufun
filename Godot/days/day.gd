@@ -11,6 +11,9 @@ extends Resource
 @export_range(0.0, 1.0) var warp: float = 0.0
 ## It rains outside the shop all day, from the closed morning to the evening (see Outside).
 @export var rain: bool = false
+## The flags that the day sets as it starts: name to number, where 0 clears the flag. A day starts a
+## corruption sign with sign_<id>.
+@export var set_flags: Dictionary[StringName, int] = {}
 ## The seconds from the player opening the shop until the first customer comes in: a random time from x
 ## to y, picked each day.
 @export var first_wait_seconds: Vector2 = Vector2(5.0, 8.0)

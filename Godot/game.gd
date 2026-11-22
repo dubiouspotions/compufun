@@ -174,7 +174,7 @@ func _finish_overnight_work() -> void:
 ## Starts [param new_day] in the morning with the shop CLOSED: nobody comes in until
 ## [method open_shop]. Jobs left overnight stay, and those computers that stayed on finish their
 ## Disk Defragmenter run. The player no longer carries a printout. The last day's
-## [member Day.close_signs] stop. Refuses a day that is null, has more than [constant MAX_CUSTOMERS]
+## [member Day.close_signs] stop, and the new day sets its [member Day.set_flags]. Refuses a day that is null, has more than [constant MAX_CUSTOMERS]
 ## errands, or has an errand without a customer or a problem, and keeps the current state.
 func start_day(new_day: Day) -> void:
 	var invalid := _check_day(new_day)
@@ -192,6 +192,7 @@ func start_day(new_day: Day) -> void:
 	arrivals = 0
 	daypart = Daypart.MORNING
 	phase = Phase.CLOSED
+	_set_flags(new_day.set_flags, "day %d" % new_day.number)
 	_set_visitor(null, Visit.NONE)
 	jump += 1
 	changed.emit()
@@ -1212,11 +1213,16 @@ func _play(who: Customer, trigger: Conversation.Trigger) -> void:
 	if conversation == null:
 		return
 	seen[_seen_key(who, conversation)] = true
-	for flag_name: StringName in conversation.set_flags:
+	_set_flags(conversation.set_flags, "conversation " + _seen_key(who, conversation))
+
+
+# Sets each flag of [param sets] (name to number; 0 clears it). [param by] names the setter in an error.
+func _set_flags(sets: Dictionary[StringName, int], by: String) -> void:
+	for flag_name: StringName in sets:
 		if flag_name == &"":
-			push_error("Game: conversation %s sets a flag with no name" % _seen_key(who, conversation))
+			push_error("Game: %s sets a flag with no name" % by)
 			continue
-		_put_flag(flag_name, conversation.set_flags[flag_name])
+		_put_flag(flag_name, sets[flag_name])
 
 
 func _seen_key(who: Customer, c: Conversation) -> String:

@@ -15,6 +15,13 @@ func run() -> void:
 	for row: TreeItem in board._flags.get_root().get_children():
 		flags.append(row.get_text(0))
 	check("the Pipedream sign's flag is listed", flags.has("sign_pipedream"), true)
+	board._days[0].set_flags = {&"sign_pipedream": 1}
+	board._fill_flags()
+	var setter := ""
+	for row: TreeItem in board._flags.get_root().get_children():
+		if row.get_text(0) == "sign_pipedream":
+			setter = row.get_text(1)
+	check("a day that sets a flag is listed as its setter", setter.contains("day 1"), true)
 
 	var day_1: Day = board._days[0]
 	var day_2: Day = board._days[1]

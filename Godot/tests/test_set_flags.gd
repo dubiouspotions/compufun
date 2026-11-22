@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## A conversation sets its flags as it starts to play, and a later conversation can check and clear
-## them.
+## A day sets its flags as it starts, and a conversation as it starts to play; a later conversation
+## can check and clear them.
 
 
 func run() -> void:
@@ -10,7 +10,10 @@ func run() -> void:
 	var d := Day.new()
 	d.customers = [a, b]
 	d.first_wait_seconds = Vector2.ZERO
+	d.set_flags = {&"sign_day": 1, &"cleared_by_day": 0}
+	game.set_flag(&"cleared_by_day")
 	game.start_day(d)
+	check("the day set its flags as it started", [game.flag(&"sign_day"), game.flags.has(&"cleared_by_day")], [1, false])
 
 	game.customer_arrived()
 	check("A's conversation set its flags", [game.flag(&"met_a"), game.flag(&"sign_test")], [1, 2])
