@@ -23,10 +23,10 @@ script = ExtResource("1_script")
 unique_name_in_owner = true
 
 [node name="Keyboard" parent="." instance=ExtResource("3_keyboard")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.23)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0, 0.23)
 
 [node name="Mouse" parent="." instance=ExtResource("desk_mouse") groups=["desk_mouse"]]
-transform = Transform3D(0.9902681, 0, 0.1391731, 0, 1, 0, -0.1391731, 0, 0.9902681, 0.42, 0.012, 0.22)
+transform = Transform3D(0.9902681, 0, 0.1391731, 0, 1, 0, -0.1391731, 0, 0.9902681, 0.22, 0.012, 0.234)
 
 [node name="ScreenHotspot" parent="." instance=ExtResource("4_hotspot")]
 unique_name_in_owner = true
@@ -50,7 +50,7 @@ transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.1, 0.12, -0.25)
 
 [node name="PlugRest" type="Marker3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.26, 0.01, 0.18)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.253, 0.01, 0.15)
 
 [node name="Cable" type="Path3D" parent="."]
 unique_name_in_owner = true
