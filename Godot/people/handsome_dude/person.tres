@@ -7,8 +7,10 @@
 [ext_resource type="Script" path="res://people/person.gd" id="5_script"]
 [ext_resource type="Resource" path="res://voices/persons/handsome_dude.tres" id="voice"]
 
+[ext_resource type="Texture2D" path="res://people/handsome_dude/back.png" id="back_png"]
 [resource]
 script = ExtResource("5_script")
+back = ExtResource("back_png")
 voice = ExtResource("voice")
 name = "Ken Carter"
 nickname = "Handsome dude"

@@ -12,8 +12,10 @@
 [ext_resource type="Script" path="res://people/person.gd" id="10_agiua"]
 [ext_resource type="Resource" path="res://voices/persons/activist_guy.tres" id="voice"]
 
+[ext_resource type="Texture2D" path="res://people/activist_guy/back.png" id="back_png"]
 [resource]
 script = ExtResource("10_agiua")
+back = ExtResource("back_png")
 voice = ExtResource("voice")
 name = "Craig Johnson"
 nickname = "Activist guy"

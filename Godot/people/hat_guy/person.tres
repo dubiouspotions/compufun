@@ -12,8 +12,10 @@
 [ext_resource type="Script" path="res://people/person.gd" id="10_hh4a0"]
 [ext_resource type="Resource" path="res://voices/persons/hat_guy.tres" id="voice"]
 
+[ext_resource type="Texture2D" path="res://people/hat_guy/back.png" id="back_png"]
 [resource]
 script = ExtResource("10_hh4a0")
+back = ExtResource("back_png")
 voice = ExtResource("voice")
 name = "Jose Hernandez"
 nickname = "Hat guy"
