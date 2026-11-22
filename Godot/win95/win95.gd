@@ -134,7 +134,6 @@ func _ready() -> void:
 		_icons.remove_child(template)
 		template.free()
 	_wire_view(_icons)
-	_icons.laid_out.connect(_pin_desktop)
 	_systray.computer = _state
 	_systray.mute_toggled.connect(func(_muted: bool) -> void: _state.set_sound(_systray.volume, _systray.muted))
 	_systray.volume_changed.connect(func(_volume: float) -> void: _state.set_sound(_systray.volume, _systray.muted))
@@ -321,11 +320,12 @@ func _take_screenshot(shot: DesktopScreenshot) -> void:
 	shot.set_image(image)
 
 
-# A Win95 desktop icon stays where it first stood: others leaving its column don't move it.
-func _pin_desktop() -> void:
+# Before the desktop's icons are remade, each one still there keeps the place where the player saw it,
+# so others leaving its column don't move it. The first layout can't pin: its labels aren't sized yet.
+func _pin_desktop(still_there: Array) -> void:
 	for item in _icons.get_children():
 		var file := _file_of(item)
-		if file != null and file.desktop_position == Vector2.ZERO:
+		if file != null and file.desktop_position == Vector2.ZERO and still_there.has(file):
 			file.desktop_position = item.position
 
 
@@ -424,10 +424,13 @@ func _fill(view: IconView) -> void:
 		if entry != null:
 			keep.append(entry)
 	var focused := _entry_of(view.focus_item()) if view.focus_item() != null else null
+	var entries: Array = listing.files.call()
+	if view == _icons:
+		_pin_desktop(entries)
 	for item: Node in view.get_children():
 		view.remove_child(item)  # now, so that a new system icon gets its name
 		item.queue_free()
-	for entry: Resource in listing.files.call():
+	for entry: Resource in entries:
 		var item := _add_icon(view, entry, view == _icons)
 		if entry is Applet:
 			item.renamable = false

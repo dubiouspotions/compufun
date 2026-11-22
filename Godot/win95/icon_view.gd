@@ -23,8 +23,6 @@ signal folder_view_changed
 ## is null. [param places] says where each item would stand, from the view's top left, keeping
 ## their layout around the pointer.
 signal items_dropped(items: Array[FileIcon], onto: FileIcon, places: Array[Vector2])
-## Every icon has its position, after each layout.
-signal laid_out
 ## The player pressed Ctrl+X (&"cut") or Ctrl+V (&"paste").
 signal clipboard_requested(action: StringName)
 
@@ -220,7 +218,6 @@ func _move_placed() -> void:
 				if free or at.x > size.x:
 					item.position = at
 					break
-	laid_out.emit()
 
 
 ## Removes every icon.
