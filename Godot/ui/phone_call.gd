@@ -11,8 +11,9 @@ extends Control
 @export var pick_title: String = "Call a customer"
 ## What shows while the phone rings.
 @export var ringing_text: String = "Ring... ring..."
-## What a customer without a PHONE conversation says when they answer; %s is their name.
-@export var greeting: String = "Hello? %s here."
+## What a customer without a PHONE conversation says when they answer. Customers never say their
+## nickname: the player gave it to them.
+@export var greeting: String = "Hello?"
 ## What the player says once the customer has spoken.
 @export var you_say: String = "Your computer is ready now!"
 ## How long the call takes before the customer answers, in seconds: the dialling, one ring and the
@@ -99,7 +100,7 @@ func _ring() -> void:
 		_lines = Game.conversation.lines
 	else:
 		var hello := DialogueLine.new()
-		hello.text = greeting % customer.display_name if greeting.contains("%s") else greeting
+		hello.text = greeting
 		_lines = [hello]
 	_call_time = 0.0
 	_line = -1
