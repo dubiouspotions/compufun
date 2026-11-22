@@ -19,6 +19,10 @@ const POSES: Array[StringName] = [
 @export var portraits: Dictionary[StringName, Texture2D] = {}
 ## The square face texture on the 3D customer. null shows a grey placeholder.
 @export var face: Texture2D
+## The person seen from behind, cut to the neutral portrait's outline mirrored: the back of the 3D
+## customer's photo relief (PhotoRelief). tools/make_portrait_backs.py makes it. null shows the
+## portrait mirrored and darkened there.
+@export var back: Texture2D
 ## The part of the neutral portrait that the 3D customer's shirt shows, in shares of the picture (0 to 1):
 ## from sleeve to sleeve, and from the collar down to the bottom edge.
 @export var shirt_rect: Rect2 = Rect2(0.3, 0.33, 0.46, 0.67)
