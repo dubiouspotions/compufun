@@ -133,14 +133,15 @@ templates (Editor > Manage Export Templates).
 
 ## The story
 
-`dev/story.gd` prints the story as text: the missing links of the week (flags that nothing sets
-or checks, choices without a reply, errands whose customer has nothing to say that day), or an
-outline of each customer's conversation tree. Read the outline instead of the `.tres` to follow a
-conversation; fix a missing link in the data, then run it again until it lists none.
+`dev/story.gd` runs the story check (`story/story_check.gd`) on the week from the story files and
+prints the missing links: flags that nothing sets or checks, choices without lines, errands without
+a drop-off, errand codes that can come with nobody, moods without a portrait or a voice, problems
+without repair mechanics. Fix a missing link in the story files, then run it again until it lists
+none. `outline` prints errand files in their written layout.
 
 ```sh
 "$GODOT" --headless -s res://dev/story.gd                          # missing links
-"$GODOT" --headless -s res://dev/story.gd -- outline [customer]    # the trees
+"$GODOT" --headless -s res://dev/story.gd -- outline [code]        # the errand files, such as 0102
 ```
 
 ## Voices
