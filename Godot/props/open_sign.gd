@@ -3,7 +3,8 @@ extends Node3D
 ## The sign that hangs in the shop window. Its OPEN side faces the street while the shop is open,
 ## so the player, inside, reads CLOSED; while the shop is closed, the player reads OPEN. Its origin
 ## is where the strings hang from. It takes clicks only while [method Game.can_open] or
-## [method Game.can_close] is true, and then a yellow outline pulses around it.
+## [method Game.can_close] is true, and then a yellow outline pulses around it. [method shake]
+## swings it on its strings to draw the eye.
 
 ## The player clicked the sign while [method Game.can_open] is true.
 signal open_requested
@@ -16,8 +17,16 @@ signal close_requested
 @export_range(0.0, 1.0, 0.01) var pulse_low: float = 0.2
 ## How long one pulse of the outline takes, in seconds.
 @export var pulse_seconds: float = 1.2
+## How long one [method shake] lasts, in seconds.
+@export_range(0.05, 3.0, 0.05) var shake_seconds: float = 0.6
+## How far a [method shake] first swings the sign to each side, in degrees; the swings die out.
+@export_range(0.0, 45.0) var shake_degrees: float = 9.0
+## How many times a [method shake] swings back and forth.
+@export_range(1.0, 10.0) var shake_swings: float = 4.0
 
 var _pulse: Tween
+var _shake: Tween
+var _rest_z: float
 
 @onready var _board: MeshInstance3D = %Board
 @onready var _outline: MeshInstance3D = %Outline
@@ -25,6 +34,7 @@ var _pulse: Tween
 
 
 func _ready() -> void:
+	_rest_z = rotation.z
 	_hotspot.clicked.connect(_on_clicked)
 	Game.changed.connect(_sync)
 	_sync()
@@ -37,6 +47,24 @@ func board_corners() -> Array[Vector3]:
 	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
 		corners.append(_board.global_transform * Vector3(corner.x * half.x, corner.y * half.y, 0.0))
 	return corners
+
+
+## Swings the sign on its strings for [member shake_seconds], from where it hangs. A shake while
+## one runs starts over.
+func shake() -> void:
+	if _shake != null:
+		_shake.kill()
+	_shake = create_tween()
+	_shake.tween_method(_swing, 0.0, 1.0, shake_seconds)
+
+
+## True while a [method shake] runs.
+func is_shaking() -> bool:
+	return _shake != null and _shake.is_running()
+
+
+func _swing(progress: float) -> void:
+	rotation.z = _rest_z + deg_to_rad(shake_degrees) * sin(TAU * shake_swings * progress) * (1.0 - progress)
 
 
 func _sync() -> void:

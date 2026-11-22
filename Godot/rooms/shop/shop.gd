@@ -8,7 +8,8 @@ signal view_requested(view: StringName)
 signal close_requested
 ## The end has played in the room: time for the bluescreen.
 signal crashed
-## The player picked up the phone, to call a customer.
+## The player picked up the phone, to call a customer. While the shop is closed and a computer is
+## done, a click on the phone shakes the Open sign instead.
 signal phone_requested
 ## The player pressed the Degauss button of the bench screen.
 signal degauss_requested
@@ -485,7 +486,10 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 		Hotspot.Action.GO_TO_VIEW:
 			view_requested.emit(hotspot.view)
 		Hotspot.Action.CALL_CUSTOMER:
-			phone_requested.emit()
+			if Game.can_open() and Game.next_to_call() != null:
+				_open_sign.shake()  # the phone can't call before the shop opens: point at the sign
+			else:
+				phone_requested.emit()
 		Hotspot.Action.TAKE_PART:
 			if Game.hand == null:
 				Game.take_new_part(hotspot.part)
