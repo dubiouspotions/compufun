@@ -54,3 +54,10 @@ mesh = SubResource("QuadMesh_minute")
 [node name="SecondHand" type="MeshInstance3D" parent="Body"]
 position = Vector3(0, 0, 0.145)
 mesh = SubResource("QuadMesh_second")
+
+[node name="Ticking" type="AudioStreamPlayer3D" parent="."]
+position = Vector3(0, 0, 0.1)
+volume_db = -30.0
+unit_size = 1.0
+attenuation_filter_cutoff_hz = 20500.0
+area_mask = 1

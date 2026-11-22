@@ -59,12 +59,6 @@ draw_cursor = false
 [node name="Tube" parent="UI/CompuFunDBView" index="2"]
 magnetize_per_second = 0.0
 
-[node name="DialogueOverlay" parent="UI" unique_id=574008241 instance=ExtResource("9_82xsv") groups=["dialogue_overlay"]]
-unique_name_in_owner = true
-anchors_preset = 15
-grow_horizontal = 2
-grow_vertical = 2
-
 [node name="CustomerCalling" parent="UI" instance=ExtResource("customer_calling")]
 unique_name_in_owner = true
 
@@ -76,6 +70,12 @@ grow_vertical = 2
 
 [node name="CarriedPrintout" parent="UI" instance=ExtResource("carried_printout")]
 unique_name_in_owner = true
+
+[node name="DialogueOverlay" parent="UI" unique_id=574008241 instance=ExtResource("9_82xsv") groups=["dialogue_overlay"]]
+unique_name_in_owner = true
+anchors_preset = 15
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="EndOfDay" parent="UI" instance=ExtResource("end_of_day")]
 unique_name_in_owner = true

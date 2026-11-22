@@ -55,10 +55,24 @@ leak. — 2026-11
 layer (`SoundSet.SOUND_ZONES`, 1) on every 3D player that should sound like its room; a player
 that `SoundSet.play_at` makes gets it. — 2026-11-22
 
-**A quiet 3D sound in the shop is loud on the Room bus, whatever its `volume_db`.** The Room zone's
-reverb send does not follow the player's `volume_db`. Measured 2026-11-22: a CRT hum at -39 dB and
-at -80 dB both peaked at -18 dBFS on the Room bus, 2 m from the camera. Keep a quiet loop out of
-the sound zones (`area_mask = 0`, as `Hum` does). — 2026-11-22
+**A 3D sound in a reverb zone plays only as reverb, with no direct sound.** Godot 4.7.2 sends a
+player inside an `Area3D` either to the area's bus override or, with no override, to nothing but
+the reverb bus (`AudioStreamPlayer3D::_update_panning`). Turn on `audio_bus_override` on every
+reverb zone, as `sound_zones.tscn` does. — 2026-11-22
+
+**A quiet 3D sound in a reverb zone is as loud in the reverb as a loud one.** With
+`reverb_bus_uniformity` above 0, part of the send is scaled by the distance from the listener to
+the zone, clamped at the player's `max_db`; inside the zone that is +3 dB for every sound, whatever
+its `volume_db` and distance. Measured 2026-11-22: a click at -30 dB sent only 18 dB less than at
+0 dB. Keep the uniformity at 0: then the send is the direct sound times `reverb_bus_amount`.
+— 2026-11-22
+
+**An `AudioEffectReverb` sounds brighter with more `damping`, and won't decay much faster than
+0.5 s.** Godot's damping sets a low-pass in the reverb's feedback from 2.5 kHz (0) to 10 kHz (1),
+so 0 damps the highs most. Its eight comb filters have fixed lengths (25 to 37 ms); `room_size`
+only sets their feedback, so a "small" room is a short-lived big one. `hipass` 1 is a 6 kHz
+high-pass on the input (0.2 is 1.2 kHz). Measured 2026-11-22, `room_size` 0: T60 about 0.45 s.
+— 2026-11-22
 
 **Every `--import` logs "resources still in use at exit", naming data scripts such as
 `customer.gd` and `win95_setup.gd`.** A script with a `static var` that other scripts reach was

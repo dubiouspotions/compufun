@@ -39,6 +39,10 @@ const PSX_WORLD: Shader = preload("res://shaders/psx_world.gdshader")
 ## How fast the hands run forward to a time up to 12 hours later, such as the next daypart, in game
 ## hours per real second. 0 jumps; a time that is earlier, or further ahead, always jumps.
 @export_range(0.0, 48.0, 0.5) var sweep_hours_per_second: float = 8.0
+## The sounds of the second hand's steps, which alternate; null is silent. The Ticking player sets
+## their volume.
+@export var tick_sound: AudioStream = preload("res://sounds/clock_tick.wav")
+@export var tock_sound: AudioStream = preload("res://sounds/clock_tock.wav")
 
 var _rim_material := _psx_material()
 var _face_material := _psx_material()
@@ -47,11 +51,13 @@ var _second_material := _psx_material()
 var _outside: Outside
 ## The hour that the hands show, 0 to 24, or -1 before the first frame.
 var _shown: float = -1.0
+var _second: int = -1
 
 @onready var _body: Node3D = $Body
 @onready var _hour_hand: MeshInstance3D = $Body/HourHand
 @onready var _minute_hand: MeshInstance3D = $Body/MinuteHand
 @onready var _second_hand: MeshInstance3D = $Body/SecondHand
+@onready var _ticking: AudioStreamPlayer3D = $Ticking
 
 
 func _ready() -> void:
@@ -93,7 +99,13 @@ func _process(delta: float) -> void:
 	var hour := floorf(_shown * 60.0) / 60.0 if tick else _shown
 	_hour_hand.rotation.z = -TAU * fposmod(hour, 12.0) / 12.0
 	_minute_hand.rotation.z = -TAU * fposmod(hour, 1.0)
-	_second_hand.rotation.z = -TAU * (Time.get_ticks_msec() / 1000 % 60) / 60.0
+	var second := Time.get_ticks_msec() / 1000
+	_second_hand.rotation.z = -TAU * (second % 60) / 60.0
+	if second != _second:
+		_second = second
+		_ticking.stream = tock_sound if second % 2 else tick_sound
+		if _ticking.stream != null:
+			_ticking.play()
 
 
 func _apply_look() -> void:

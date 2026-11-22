@@ -1,7 +1,7 @@
 class_name PrintoutPaper
 extends Control
 ## A printout drawn as a sheet of green-bar continuous paper: the printed lines in the printer's
-## font, and a pen tick over each check box that the player ticked. Its size follows the text.
+## font, and a pencil tick over each check box that the player ticked. Its size follows the text.
 
 ## The printer's font; the page is monospaced.
 @export var font: Font = preload("res://compufun_db/fonts/Px437_IBM_VGA_8x16.ttf")
@@ -15,7 +15,7 @@ extends Control
 @export var bar_color: Color = Color(0.82, 0.92, 0.82)
 @export var bar_lines: int = 3
 @export var ink_color: Color = Color(0.22, 0.22, 0.28)
-@export var pen_color: Color = Color(0.1, 0.2, 0.75)
+@export var pencil_color: Color = Color(0.42, 0.42, 0.46)
 ## The blank columns on each side, where the tractor holes are.
 @export var margin_chars: int = 3
 
@@ -85,5 +85,5 @@ func _draw() -> void:
 	for line: int in ticks:
 		var box := box_rect(line)
 		if box.has_area():
-			var pen := PackedVector2Array([box.position + box.size * Vector2(0.15, 0.5), box.position + box.size * Vector2(0.42, 0.85), box.position + box.size * Vector2(0.95, -0.15)])
-			draw_polyline(pen, pen_color, maxf(2.0, c.y / 8.0), true)
+			var tick := PackedVector2Array([box.position + box.size * Vector2(0.15, 0.5), box.position + box.size * Vector2(0.42, 0.85), box.position + box.size * Vector2(0.95, -0.15)])
+			draw_polyline(tick, pencil_color, maxf(2.0, c.y / 8.0), true)

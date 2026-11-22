@@ -134,7 +134,7 @@ func play() -> void:
 	set_process(false)
 	finished.emit()
 	if startup_sound and boots_windows:
-		_sound(startup_sound).bus = Win95Desktop.SOUND_BUS
+		Win95Desktop.play_sound(startup_sound, self)
 		# The stream's length, not the player's finished: with no audio device that never fires.
 		await get_tree().create_timer(startup_sound.get_length()).timeout
 	queue_free()

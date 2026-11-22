@@ -56,11 +56,12 @@ func _check_printer() -> void:
 	printer.call("print_page", PAGE)
 	check("no taking while it prints", printer.call("take_page"), false)
 	await create_timer(PAGE.size() * float(printer.get("line_seconds")) + float(printer.get("feed_seconds")) + 0.3).timeout
-	check("take the printed page", [printer.call("take_page"), game.printout], [true, PAGE])
+	var taken := _count_plays(printer)
+	check("take the printed page, with a rustle", [printer.call("take_page"), game.printout, taken[0]], [true, PAGE, 1])
 	check("the page left the printer", printer.call("take_page"), false)
 	printer.call("print_page", FIX_PAGE)
 	await create_timer(FIX_PAGE.size() * float(printer.get("line_seconds")) + float(printer.get("feed_seconds")) + 0.3).timeout
-	check("carrying a page, the next one stays in the printer", [printer.call("take_page"), game.printout], [false, PAGE])
+	check("carrying a page, the next one stays in the printer, silent", [printer.call("take_page"), game.printout, taken[0]], [false, PAGE, 1])
 	game.trash_printout()
 	check("with the hands free, it comes", [printer.call("take_page"), game.printout], [true, FIX_PAGE])
 	game.trash_printout()
@@ -80,6 +81,7 @@ func _check_close_up() -> void:
 	root.add_child(behind)
 	behind.size = behind.get_viewport_rect().size
 	var carried: Control = load("res://ui/carried_printout.tscn").instantiate()  # untyped: CarriedPrintout names Game
+	var handled := _count_plays(carried)
 	root.add_child(carried)
 	await process_frame
 	var view: Vector2 = carried.get_viewport_rect().size
@@ -92,7 +94,7 @@ func _check_close_up() -> void:
 	carried.call("lay_out_around", Rect2(), buttons)
 	carried.call("raise")
 	var paper: Control = carried.get_node("%Paper")
-	check("raised, the page is up and the corner hides", [carried.call("is_raised"), corner.visible], [true, false])
+	check("raised, the page is up and the corner hides, with a rustle", [carried.call("is_raised"), corner.visible, handled[0]], [true, false, 1])
 	await create_timer(float(carried.get("raise_seconds")) + 0.1).timeout
 	var page: Rect2 = paper.get_global_rect()
 	check("the raised page is on the right, left of the arrow", [page.position.x >= view.x * 0.5, page.end.x <= arrow.position.x], [true, true])
@@ -102,13 +104,15 @@ func _check_close_up() -> void:
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
 	click.position = box.get_center()
+	var pencil: SoundSet = carried.get("tick_sound")
+	var eraser: SoundSet = carried.get("untick_sound")
 	paper.gui_input.emit(click)
-	check("a click on the box ticks it", game.printout_ticks, [5])
+	check("a click on the box ticks it, in pencil", [game.printout_ticks, handled[0], _latest_sound(carried) in pencil.sounds], [[5], 2, true])
 	paper.gui_input.emit(click)
-	check("a second click unticks it", game.printout_ticks, [])
+	check("a second click rubs it out", [game.printout_ticks, handled[0], _latest_sound(carried) in eraser.sounds], [[], 3, true])
 	click.position = paper.call("box_rect", 3).get_center() - Vector2(0.0, paper.call("cell").y)
 	paper.gui_input.emit(click)
-	check("a click on a line without a box lowers it", [carried.call("is_raised"), corner.visible, game.printout_ticks], [false, true, []])
+	check("a click on a line without a box lowers it, with a rustle", [carried.call("is_raised"), corner.visible, game.printout_ticks, handled[0]], [false, true, [], 4])
 
 	carried.call("raise")
 	await create_timer(float(carried.get("raise_seconds")) + 0.1).timeout
@@ -116,7 +120,7 @@ func _check_close_up() -> void:
 	_click_at(page.position + paper.call("box_rect", 5).get_center())
 	check("a real click on the box ticks it and keeps it up", [game.printout_ticks, carried.call("is_raised"), behind_clicks[0]], [[5], true, 0])
 	_click_at(Vector2(page.position.x - 40.0, page.get_center().y))
-	check("a click outside lowers it and reaches nothing else", [carried.call("is_raised"), corner.visible, behind_clicks[0]], [false, true, 0])
+	check("a click outside lowers it, with a rustle, and reaches nothing else", [carried.call("is_raised"), corner.visible, behind_clicks[0], handled[0]], [false, true, 0, 7])
 	_click_at(Vector2(page.position.x - 40.0, page.get_center().y))
 	check("lowered, a click there reaches what is under it", behind_clicks[0], 1)
 	game.tick_printout(5, false)
@@ -146,6 +150,21 @@ func _check_close_up() -> void:
 	behind.queue_free()
 
 
+# The sounds that start under [param node] from now on: SoundSet.play_at adds a player for each.
+func _count_plays(node: Node) -> Array[int]:
+	var plays: Array[int] = [0]
+	node.child_entered_tree.connect(func(child: Node) -> void:
+		if child is AudioStreamPlayer or child is AudioStreamPlayer3D:
+			plays[0] += 1)
+	return plays
+
+
+# The stream of the newest sound player under [param node]; null: none.
+func _latest_sound(node: Node) -> AudioStream:
+	var players := node.get_children().filter(func(n: Node) -> bool: return n is AudioStreamPlayer or n is AudioStreamPlayer3D)
+	return players[-1].get(&"stream") if not players.is_empty() else null
+
+
 # A left press and release at [param at], in the window's coordinates, through the whole input chain.
 func _click_at(at: Vector2) -> void:
 	for pressed: bool in [true, false]:
@@ -160,6 +179,7 @@ func _click_at(at: Vector2) -> void:
 # in the hand goes first.
 func _check_trash_can() -> void:
 	var can: Node3D = load("res://props/trash_can.tscn").instantiate()  # untyped: TrashCan names Game
+	var thrown := _count_plays(can)
 	root.add_child(can)
 	await process_frame
 	var outline: Node3D = can.get_node("%Outline")
@@ -171,7 +191,7 @@ func _check_trash_can() -> void:
 	hotspot.clicked.emit(hotspot)
 	check("a part in the hand goes first", [game.hand, game.trashed.size(), game.printout], [null, 1, PAGE])
 	hotspot.clicked.emit(hotspot)
-	check("then a click throws the page away", [game.printout, game.view != &"Trash", outline.visible], [PackedStringArray(), true, false])
+	check("then a click throws the page away, with a rustle", [game.printout, game.view != &"Trash", outline.visible, thrown[0]], [PackedStringArray(), true, false, 1])
 	can.queue_free()
 
 

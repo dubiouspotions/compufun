@@ -1,9 +1,11 @@
 extends "res://tests/test.gd"
 ## No change sound plays when the state jumps (Game.jump): not when the game starts, not on a
-## restore and not when a new day starts. The street ambience, the rain and the hums are loops, not changes.
+## restore and not when a new day starts. The street ambience, the rain, the hums and the wall clock's
+## ticking always play, so they are not changes.
 
-const LOOPS: Array[String] = ["res://sounds/city_ambience.ogg", "res://sounds/rain_open.wav", "res://sounds/rain_shut.wav",
-	"res://sounds/light_hum.wav", "res://sounds/pc_fan.wav", "res://sounds/crt_hum.wav"]
+const AMBIENT: Array[String] = ["res://sounds/city_ambience.ogg", "res://sounds/rain_open.wav", "res://sounds/rain_shut.wav",
+	"res://sounds/light_hum.wav", "res://sounds/pc_fan.wav", "res://sounds/crt_hum.wav",
+	"res://sounds/clock_tick.wav", "res://sounds/clock_tock.wav"]
 
 var _players := {}  # every audio player, and whether it played on the last frame
 var _started: Array[String] = []
@@ -58,14 +60,14 @@ func _poll() -> void:
 # Stops every change sound and forgets what started: headless, a sound never ends, so its replay would go unseen.
 func _hush() -> void:
 	for player: Variant in _players.keys():
-		if is_instance_valid(player) and player.get(&"stream") != null and player.get(&"stream").resource_path not in LOOPS:
+		if is_instance_valid(player) and player.get(&"stream") != null and player.get(&"stream").resource_path not in AMBIENT:
 			player.call(&"stop")
 			_players[player] = false
 	_started.clear()
 
 
 func _changes() -> Array[String]:
-	return _started.filter(func(path: String) -> bool: return path not in LOOPS)
+	return _started.filter(func(path: String) -> bool: return path not in AMBIENT)
 
 
 func _frames(count: int) -> void:

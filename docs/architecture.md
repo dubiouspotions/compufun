@@ -11,7 +11,7 @@ in the same commit as the code. The design, what the parts are and why, is on th
 Godot/               the Godot project: everything the game loads
   main.tscn          the game: the world viewport, the UI layer, the F9 layer (run/main_scene)
   export_presets.cfg Web, Windows Desktop, MacOS, Linux; CI exports them by name
-  default_bus_layout.tres  the audio buses: Master; Voice for the customers' voices; Win95; Street, muffled until the door opens; Room, the shop's reverb
+  default_bus_layout.tres  the audio buses: Master; Shop, everything heard from the shop (it pans right while the player is in the storage room), fed by Voice for the customers' voices, Win95, Street (muffled until the door opens) and Room (the shop's reverb); Storage, the storage room's reverb
   game.gd            the Game autoload
   shaders/           psx_world.gdshader, psx_post.gdshader, psx_post_world.tres (the world's post material); pulse_ring.gdshader (the beating ring around a panel screw that can turn)
   shaders/crt_looks/ the CRT looks: the Screen View's (crt.gdshader) and the 3D bench screen's (crt_world.gdshader)
@@ -21,7 +21,7 @@ Godot/               the Godot project: everything the game loads
   parts/             part.gd and piece.gd, and one Part per part or place: <id>.tres (ram_1 and ram_2 are the RAM slots)
   materials/         one shared material per surface; textures/ holds the PNGs
   rooms/             hotspot.tscn, view_marker.gd and ground.gd (a floor and its footsteps), shared by all rooms
-  rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain and its sound, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying on its side), bench.tscn (the bench screen, keyboard and VGA cable), work_cables.tscn (the cables from the work computer to its screen, the printer and the modem), pipedream.tscn (the Win95 Pipes that grow with the warp), ceiling_mouse.tscn (the easter egg in the ceiling), hand.tscn (the part in the hand, held in front of the camera), the_end.tscn (the body with the pipe through the chest, at the end), their meshes and textures, sound_zones.tscn (where a 3D sound plays on the Street bus or into the Room reverb)
+  rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain and its sound, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying on its side), bench.tscn (the bench screen, keyboard and VGA cable), work_cables.tscn (the cables from the work computer to its screen, the printer and the modem), pipedream.tscn (the Win95 Pipes that grow with the warp), ceiling_mouse.tscn (the easter egg in the ceiling), hand.tscn (the part in the hand, held in front of the camera), the_end.tscn (the body with the pipe through the chest, at the end), their meshes and textures, sound_zones.tscn (where a 3D sound plays: in the shop with the Room reverb, in the storage room with the Storage reverb, or on the Street bus)
   people/<name>/     person.tres, portrait_<pose>.png, face.png
   customers/         one .tres per customer, customer_body.tscn, photo_relief.gd (the upper body from the portrait), job.gd (one computer on the counter)
   customers/<name>/  the pictures in that customer's files, such as pierre/castle_01.png
@@ -68,7 +68,7 @@ Main (Node)                              the main buffer: the window
 │  │  ├─ ScreenBuffer (SubViewport, 640 × 480)  the screen buffer: updates always, embeds sub-windows
 │  │  │  └─ BenchScreen (ui/bench_screen.tscn)
 │  │  │     ├─ NoSignal (win95/no_signal.tscn), while the VGA cable hangs free
-│  │  │     └─ win95/win95.tscn         the connected job's desktop; each job has one, the others wait out of the tree
+│  │  │     └─ win95/win95.tscn         the connected job's desktop; each job has one, the others run in a viewport that draws nothing, their Win95 sounds silent
 │  │  ├─ Screen (crt_screen.gd)          shows the buffer at 2× through the CRT look, passes it the bent mouse
 │  │  └─ Tube (crt_tube.gd)              this monitor's power, signal lock, degauss and sounds
 │  └─ CompuFunDBView (screen_view.tscn again: follows the work monitor, fades in for CompuFunDB)
