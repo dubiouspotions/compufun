@@ -2,10 +2,13 @@ extends SceneTree
 ## The base of every test. A test is a file tests/test_<name>.gd that starts with
 ## `extends "res://tests/test.gd"`, overrides [method run] and asserts with [method check].
 ## It passes when every check holds, at least one check ran, and no script error happened.
-## Run one: `godot --headless -s res://tests/test_<name>.gd`; run all: `res://tests/run.gd`.
+## Run one: `godot --headless --fixed-fps 60 -s res://tests/test_<name>.gd`; run all: `res://tests/run.gd`.
 
 ## The line that a test prints when it passed; [code]run.gd[/code] looks for it, because a parse error exits 0.
 const PASSED: String = "TEST PASSED"
+## The frames per second that a test runs at (--fixed-fps): each frame moves time by exactly 1/FPS,
+## however fast the machine is, so timers, tweens and [method now] don't depend on it.
+const FPS: int = 60
 
 ## The Game autoload, in its start state, with its _process off: [method tick] moves time.
 var game: Node
@@ -54,12 +57,22 @@ func software_problem(software_check: SoftwareCheck) -> Problem:
 	return problem
 
 
+## The seconds of game time since the test started: the frames so far over [constant FPS].
+func now() -> float:
+	return Engine.get_process_frames() / float(FPS)
+
+
 ## Runs Game's _process for [param seconds] of game time, in one step.
 func tick(seconds: float) -> void:
 	game.call("_process", seconds)
 
 
 func _initialize() -> void:
+	await process_frame
+	if absf(root.get_process_delta_time() - 1.0 / FPS) > 1e-6:  # the engine hides --fixed-fps from get_cmdline_args
+		printerr("FAIL %s: run it with --fixed-fps %d, so that its time doesn't follow the clock (docs/building-and-testing.md)" % [get_script().resource_path, FPS])
+		quit(1)
+		return
 	OS.add_logger(_script_errors)
 	game = root.get_node("Game")  # by path: a script that names the autoload doesn't compile under -s
 	game.set_process(false)

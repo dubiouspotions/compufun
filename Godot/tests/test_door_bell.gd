@@ -37,9 +37,9 @@ func run() -> void:
 ## The floor distance between the visitor and the bell on the frame that the bell starts, or INF
 ## if it doesn't start within the walk.
 func _distance_at_ring(bell: AudioStreamPlayer3D, follow: PathFollow3D) -> float:
-	var deadline := Time.get_ticks_msec() + int(WALK_SECONDS * 2000.0)
+	var deadline := now() + WALK_SECONDS * 2.0
 	while not bell.playing:
-		if Time.get_ticks_msec() > deadline:
+		if now() > deadline:
 			printerr("the door bell didn't ring; visitor at %s" % follow.global_position)
 			return INF
 		await process_frame

@@ -56,16 +56,25 @@ Delete the script afterwards: `run.gd` runs only `test_*.gd`, but it should not 
 ## Tests
 
 `Godot/tests/` holds headless tests that play the game through the `Game` API and check its state.
-Run them all after an import:
+After an import, run the tests that cover your change: those whose file name or source mentions one
+of the words, such as the scripts or scenes you changed. CI runs them all on every push to `main`
+and every pull request (see CI below).
 
 ```sh
-"$GODOT" --headless -s res://tests/run.gd
+"$GODOT" --headless -s res://tests/run.gd -- crt_tube bench   # the tests that mention either
+"$GODOT" --headless -s res://tests/run.gd                     # all of them, about 10 s
+"$GODOT" --headless --fixed-fps 60 -s res://tests/test_day.gd # one
 ```
 
-`run.gd` runs every `tests/test_*.gd` in its own Godot process, so that each test starts from a fresh
-`Game`. It prints each failed check with its file, line, expected and actual value, and exits 1
-when a test fails. Run one test with `"$GODOT" --headless -s res://tests/test_day.gd`. CI runs the
-tests on every push to `main` and every pull request (see CI below).
+`run.gd` runs each `tests/test_*.gd` in its own Godot process, so that each test starts from a fresh
+`Game`, as many at a time as the machine has cores. It prints each failed check with its file, line,
+expected and actual value, and exits 1 when a test fails.
+
+**Tests never depend on the wall clock.** A test runs at `--fixed-fps 60`, so every frame moves time
+by exactly 1/60 s however busy the machine is, and a test without it fails at once. Wait with
+`await create_timer(seconds).timeout` or frames, and measure time with `now()`; never with
+`Time.get_ticks_msec()`, and no checks of how long something took. To test something that waits, in
+game code, inject the wait (a callable or a `tick`) rather than sleeping in the test.
 
 To add one, create `tests/test_<name>.gd`:
 

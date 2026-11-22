@@ -34,8 +34,8 @@ func run() -> void:
 	var turn: float = sign.get("flip_seconds")
 	check("it still shows OPEN as it starts to turn", shown.call() == sign.get("open_texture"), true)
 	var widest := 0.0
-	var until := Time.get_ticks_msec() + int((turn + 0.2) * 1000.0)
-	while Time.get_ticks_msec() < until:
+	var until := now() + turn + 0.2
+	while now() < until:
 		await process_frame
 		widest = maxf(widest, absf(sign.rotation.y))
 	check("it turns on its strings, near edge-on", widest > 0.8, true)

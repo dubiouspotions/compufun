@@ -50,14 +50,14 @@ func run() -> void:
 	var boot: Control = finale.get_node("%Boot")
 	check("as the Mac that was chosen", boot.get("host"), HostBoot.Host.MACOS)
 	var failed := false
-	var end := Time.get_ticks_msec() + 4000
-	while not failed and Time.get_ticks_msec() < end:
+	var end := now() + 4.0
+	while not failed and now() < end:
 		failed = boot.call("stage") == HostBoot.Stage.FAILED
 		await process_frame
 	check("it fails with its error", failed, true)
-	var error_shown := Time.get_ticks_msec()
+	var error_shown := now()
 	check("the credits come after the error", await _until(finale, &"credits", 4.0), true)
-	check("the error stays its error_seconds", (Time.get_ticks_msec() - error_shown) / 1000.0 >= finale.get("error_seconds") * 0.9, true)
+	check("the error stays its error_seconds", now() - error_shown >= finale.get("error_seconds"), true)
 	var people: Array = finale.call("cast")
 	check("the credits show every person with a portrait", [people.size() > 3, finale.get_node("%Cast").get_child_count()], [true, people.size()])
 	check("the credits thank the player", (finale.get_node("%Thanks") as Label).text, (finale.get("text") as FinaleText).thanks)
@@ -93,8 +93,8 @@ func _check_world_is_blue(main: Node, finale: CanvasLayer) -> void:
 
 
 func _until(finale: CanvasLayer, stage: StringName, seconds: float) -> bool:
-	var end := Time.get_ticks_msec() + int(seconds * 1000.0)
-	while Time.get_ticks_msec() < end:
+	var end := now() + seconds
+	while now() < end:
 		if finale.call("stage") == stage:
 			return true
 		await process_frame
