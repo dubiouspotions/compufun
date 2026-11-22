@@ -4,6 +4,8 @@ extends Control
 ## a person (VoicePerson: who speaks, one per character in voices/persons/), in a mood (VoiceMood: how, one per pose,
 ## voices/moods/), under an effect (VoiceEffect: a corruption, voices/effects/). Pick one of each
 ## to hear them together; the layer chosen at the top is the one the levers edit and Save writes.
+## Save (Cmd+S) writes it in place: a character's person is voices/persons/<name>.tres, so the
+## game speaks with it at once. A tab with unsaved edits shows a dot, and Revert drops them.
 ## Each layer has its own levers: a person its build and timbre, a mood its delivery, an effect
 ## its corruption. A lever starts from what the layers below give it, and stays out of its layer
 ## while it sits there.
@@ -145,6 +147,11 @@ var _picked: Array[Array] = [[], [], []]
 var _tabs: ButtonGroup
 var _name: LineEdit
 var _save: Button
+var _revert: Button
+## Per layer: what it was when last picked or saved, to tell unsaved edits; null before the first pick.
+var _clean: Array = [null, null, null]
+## True after Esc warned about unsaved edits; a second Esc closes anyway.
+var _warned_close: bool = false
 var _cards: Array[Control] = []
 var _timeline: Control
 var _text: LineEdit
@@ -190,11 +197,16 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	if key.keycode == KEY_SPACE:
 		speak()
+	elif key.keycode == KEY_S and key.is_command_or_control_pressed():
+		_save_layer()
 	elif key.keycode == KEY_ESCAPE:
 		if _all_levers.visible:
 			_all_levers.hide()
-		else:
+		elif _unsaved_names().is_empty() or _warned_close:
 			queue_free()
+		else:
+			_warned_close = true
+			_status.text = "Unsaved edits to the %s. Press Esc again to close without saving." % " and ".join(_unsaved_names())
 	else:
 		return
 	get_viewport().set_input_as_handled()
@@ -423,13 +435,28 @@ func _fill_picker(layer: int) -> void:
 	var dir := _dir(layer)
 	for file_name in (DirAccess.get_files_at(dir) if DirAccess.dir_exists_absolute(dir) else PackedStringArray()):
 		if file_name.ends_with(".tres"):
-			picker.add_item(file_name.get_basename().capitalize())
+			picker.add_item(_item_label(layer, file_name.get_basename()))
 			_picked[layer].append(dir + file_name)
 
 
+# A saved person shows its character's name, from people/<name>/person.tres when there is one.
+func _item_label(layer: int, base: String) -> String:
+	var path := "res://people/%s/person.tres" % base
+	if layer == 0 and ResourceLoader.exists(path):
+		var who := load(path) as Person
+		if who != null and who.voice != null and who.voice.resource_path == _dir(0) + base + ".tres":
+			var shown := who.nickname if who.nickname != "" else base.capitalize()
+			return shown + (" · " + who.name if who.name != "" else "")
+	return base.capitalize()
+
+
 # Loads the picked item of a layer into its working copy.
-func _pick(layer: int, index: int) -> void:
+func _pick(layer: int, index: int, discard := false) -> void:
 	index = maxi(0, index)
+	if not discard and index != _pickers[layer].selected and _unsaved(layer):
+		_pickers[layer].select(_pickers[layer].selected)
+		_status.text = "The %s has unsaved edits: Save (Cmd+S) or Revert before you pick another." % LAYERS[layer].to_lower()
+		return
 	_pickers[layer].select(index)
 	var item: Variant = _picked[layer][index]
 	if layer == 1:
@@ -453,7 +480,39 @@ func _pick(layer: int, index: int) -> void:
 	if layer == _layer:
 		_show_name()
 	_show_all()
+	_clean[layer] = _fingerprint(layer)
 	_on_changed()
+
+
+# A layer's working copy as text, to compare with what was last picked or saved.
+func _fingerprint(layer: int) -> String:
+	match layer:
+		0:
+			return var_to_str([_person.body, _person.settings])
+		1:
+			return var_to_str([_mood.rate, _mood.pitch, _mood.swing, _mood.settings])
+	return VoiceEffect.encode(_effect.base, _effect.alternate, _effect.curve)
+
+
+func _unsaved(layer: int) -> bool:
+	return _clean[layer] != null and _fingerprint(layer) != _clean[layer]
+
+
+func _unsaved_names() -> PackedStringArray:
+	var names := PackedStringArray()
+	for layer in LAYERS.size():
+		if _unsaved(layer):
+			names.append(LAYERS[layer].to_lower())
+	return names
+
+
+# Marks each tab with unsaved edits, and shows Revert for the one being edited.
+func _show_unsaved() -> void:
+	_warned_close = false
+	var buttons := _tabs.get_buttons()
+	for layer in LAYERS.size():
+		buttons[layer].text = LAYERS[layer] + (" •" if _unsaved(layer) else "")
+	_revert.visible = _unsaved(_layer)
 
 
 func _show_layer(layer: int) -> void:
@@ -462,6 +521,8 @@ func _show_layer(layer: int) -> void:
 	for i in _cards.size():
 		_cards[i].visible = i == layer
 	_save.text = "Save " + LAYERS[layer].to_lower()
+	_save.tooltip_text = "Cmd+S (Ctrl+S)"
+	_show_unsaved()
 	_show_all()  # a lower layer may have changed what this one starts from
 	_show_name()
 	_timeline.queue_redraw()
@@ -503,8 +564,11 @@ func _save_layer() -> void:
 		_status.text = "Saved %s, but it doesn't read back as a %s." % [path, LAYERS[_layer]]
 		return
 	_fill_picker(_layer)
-	_pick(_layer, _picked[_layer].find(StringName(name_text) if _layer == 1 else path))
-	_status.text = "Saved %s.%s" % [path, " Rendered voice files change with it: run render_voices.gd." if _layer == 1 else ""]
+	_pick(_layer, _picked[_layer].find(StringName(name_text) if _layer == 1 else path), true)
+	var note := " Rendered voice files change with it: run render_voices.gd." if _layer == 1 else ""
+	if _layer == 0 and ResourceLoader.exists("res://people/%s/person.tres" % name_text):
+		note = " %s speaks with it now." % _item_label(0, name_text)
+	_status.text = "Saved %s.%s" % [path, note]
 
 
 func _find_lines() -> void:
@@ -546,6 +610,8 @@ func _pick_line(index: int) -> void:
 
 
 func _on_changed(_value_unused: Variant = null) -> void:
+	if _revert != null:
+		_show_unsaved()
 	if _auto != null and _auto.button_pressed:
 		_respeak.start()
 
@@ -620,6 +686,12 @@ func _top_bar() -> Control:
 	_save.theme_type_variation = &"AccentButton"
 	_save.pressed.connect(_save_layer)
 	row.add_child(_save)
+	_revert = Button.new()
+	_revert.text = "Revert"
+	_revert.tooltip_text = "Drop the edits to this layer since it was picked or saved"
+	_revert.visible = false
+	_revert.pressed.connect(func() -> void: _pick(_layer, _pickers[_layer].selected, true))
+	row.add_child(_revert)
 	var copy := Button.new()
 	copy.text = "Copy"
 	copy.tooltip_text = "Copy the text form of all three layers together"
