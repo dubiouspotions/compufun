@@ -1,6 +1,6 @@
 class_name Finale
 extends CanvasLayer
-## The end of the world, as a demo that the F2 World tab starts: Cambion takes everything. The view
+## The end of the world, after the end (TheEnd) and from the F2 World tab: Cambion takes everything. The view
 ## turns to the shop and the world stands still (the tree pauses; the finale runs on its own). The
 ## shop's lights flicker, and every thing in the world turns into a bluescreen, from the farthest to
 ## the nearest, while the view shakes more and more; just before the end, Win95 error boxes pile up
@@ -146,6 +146,20 @@ static func cast() -> Array[Person]:
 		if person.name != "" and person.portraits.get(&"neutral") != null:
 			people.append(person)
 	return people
+
+
+## Plays a finale in [param tree]'s current scene, showing the restart of [param host_choice]. Does
+## nothing while one plays.
+static func start(tree: SceneTree, host_choice: HostChoice = HostChoice.AUTO) -> void:
+	if tree.get_first_node_in_group(GROUP) != null:
+		return
+	if tree.current_scene == null:
+		push_error("Finale.start: the tree has no current scene to play in")
+		return
+	var finale := (load("res://finale/finale.tscn") as PackedScene).instantiate() as Finale
+	finale.host = host_choice
+	tree.current_scene.add_child(finale)
+	finale.play()
 
 
 ## Runs the finale from the flicker to the credits. It finds the world in the group "world_post".

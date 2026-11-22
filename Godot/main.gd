@@ -19,7 +19,6 @@ var _hovered_beside_screen: Hotspot
 @onready var _screen_views: Array[ScreenView] = [%ScreenView, %CompuFunDBView]
 @onready var _post_it_label: PostItLabel = %PostItLabel
 @onready var _end_of_day: EndOfDay = %EndOfDay
-@onready var _crash: Crash = %Crash
 @onready var _phone: PhoneCall = %PhoneCall
 @onready var _printout: CarriedPrintout = %CarriedPrintout
 @onready var _world: SubViewportContainer = $World
@@ -45,7 +44,7 @@ func _ready() -> void:
 	_nav.view_requested.connect(Game.go_to_view)
 	_shop.back_strip_hovered.connect(func(on: bool) -> void: _nav.show_back_strip(on, _shop.back_strip_height))
 	_shop.close_requested.connect(_end_of_day.ask)
-	_shop.crashed.connect(_crash.show_crash)
+	_shop.crashed.connect(func() -> void: Finale.start(get_tree()))  # the pipes end in the finale
 	_shop.phone_requested.connect(_phone.open)
 	_shop.degauss_requested.connect((%ScreenView as ScreenView).degauss)
 	var work_screen: ScreenView = %CompuFunDBView
@@ -171,6 +170,8 @@ func _go_back() -> void:
 
 
 func _sync() -> void:
+	if Game.ending() == &"finale":
+		Finale.start(get_tree())
 	var marker := _shop.view_marker(Game.view)
 	_nav.show_marker(marker)
 	var screen := marker.screen if marker != null else ViewMarker.Screen.NONE

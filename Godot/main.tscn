@@ -14,7 +14,6 @@
 [ext_resource type="PackedScene" path="res://ui/customer_calling.tscn" id="customer_calling"]
 [ext_resource type="PackedScene" path="res://ui/phone_call.tscn" id="phone_call"]
 [ext_resource type="PackedScene" path="res://ui/end_of_day.tscn" id="end_of_day"]
-[ext_resource type="PackedScene" path="res://ui/crash.tscn" id="crash"]
 [ext_resource type="PackedScene" path="res://ui/post_it_label.tscn" id="post_it_label"]
 [ext_resource type="PackedScene" path="res://ui/carried_printout.tscn" id="carried_printout"]
 
@@ -78,9 +77,6 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="EndOfDay" parent="UI" instance=ExtResource("end_of_day")]
-unique_name_in_owner = true
-
-[node name="Crash" parent="UI" instance=ExtResource("crash")]
 unique_name_in_owner = true
 
 [node name="PhoneCall" parent="UI" instance=ExtResource("phone_call")]

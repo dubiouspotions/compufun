@@ -7,7 +7,6 @@ extends CanvasLayer
 const TIME_BUTTONS: Dictionary = {"MorningButton": Game.Daypart.MORNING, "NoonButton": Game.Daypart.MIDDAY,
 	"AfternoonButton": Game.Daypart.AFTERNOON, "EveningButton": Game.Daypart.EVENING, "NightButton": Game.Daypart.NIGHT}
 const DEFAULT_DAY_MINUTES: float = 10.0
-const FINALE: PackedScene = preload("res://finale/finale.tscn")
 const FINALE_BUTTONS: Dictionary = {"FinaleAuto": Finale.HostChoice.AUTO, "FinaleWindows": Finale.HostChoice.WINDOWS,
 	"FinaleMacOS": Finale.HostChoice.MACOS, "FinaleLinux": Finale.HostChoice.LINUX}
 
@@ -86,12 +85,7 @@ func _process(_delta: float) -> void:
 # Closes the menu and plays the finale in the running game, showing the restart of [param host].
 func _play_finale(host: Finale.HostChoice) -> void:
 	toggle()
-	if get_tree().get_first_node_in_group(Finale.GROUP) != null:
-		return  # one plays already
-	var finale := FINALE.instantiate() as Finale
-	finale.host = host
-	get_tree().current_scene.add_child(finale)
-	finale.play()
+	Finale.start(get_tree(), host)
 
 
 func _on_slider(value: float) -> void:

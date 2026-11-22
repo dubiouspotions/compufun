@@ -9,6 +9,7 @@ func run() -> void:
 	check("day 6 closes for the night", _close_on(6), GAME.Phase.DAY_OVER)
 	check("day 7 closes into the end", _close_on(7), GAME.Phase.ENDED)
 	check("the end is in the evening", game.daypart, GAME.Daypart.EVENING)
+	check("the finale is the ending, the pipes are off", game.ending(), &"finale")
 
 	check("ENDED restores on day 7", game.restore({"day": 7, "phase": "ENDED"}), "")
 	check("ENDED is refused on a day with a next day", game.restore({"day": 6, "phase": "ENDED"}) != "", true)

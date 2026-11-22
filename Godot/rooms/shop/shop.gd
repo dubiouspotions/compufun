@@ -383,7 +383,7 @@ func _sync() -> void:
 		_read(false)  # the player turned away or the computer left focus
 	_play_changes(jumped)
 	_pipedream.warp = Game.warp
-	_the_end.ended = Game.phase == Game.Phase.ENDED
+	_the_end.ended = Game.ending() == &"pipes"
 	if _bench.dragging and Game.view != _shown_view:
 		_let_go_of_plug()  # before lay_cable below, which leaves a held plug where it is
 	# Deferred: a computer turns to lie or stand on the same change, and the cable must reach its new socket.

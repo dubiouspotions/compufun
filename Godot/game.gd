@@ -52,6 +52,8 @@ const FIRST_DATE: String = "1996-05-31"
 const DAY_PATH: String = "res://days/day_%d.tres"
 ## Where the problem with a short name lives, as a job in a snapshot names it.
 const PROBLEM_PATH: String = "res://problems/%s.tres"
+## The folder of the endings, one Ending per file.
+const ENDINGS_FOLDER: String = "res://endings/"
 ## Snapshot keys that the game no longer has, which [method restore] skips so that old F9 reports
 ## still restore: "stored" held the parts in the storage bin, which no longer takes parts.
 const RETIRED_KEYS: Array[String] = ["stored"]
@@ -876,6 +878,30 @@ func close_shop() -> void:
 		flags[sign_flag(id)] = 1
 	_set_flags(day.close_flags, "closing day %d" % day.number)
 	changed.emit()
+
+
+## The id of the ending that plays now that the game has ENDED: of the enabled endings in
+## [constant ENDINGS_FOLDER] whose condition holds, the one with the highest priority; &"" before the
+## end, or when none may play.
+func ending() -> StringName:
+	if phase != Phase.ENDED:
+		return &""
+	var best: Ending = null
+	for file: String in ResourceLoader.list_directory(ENDINGS_FOLDER):
+		if file.get_extension() != "tres":
+			continue
+		var each := load(ENDINGS_FOLDER + file) as Ending
+		if each == null:
+			push_error("Game.ending: %s%s is not an Ending" % [ENDINGS_FOLDER, file])
+			continue
+		if not each.enabled or (each.when != null and not each.when.is_met(day_number, flags)):
+			continue
+		if best == null or each.priority > best.priority:
+			best = each
+	if best == null:
+		push_error("Game.ending: no ending in %s may play on day %d" % [ENDINGS_FOLDER, day_number])
+		return &""
+	return best.id()
 
 
 ## Starts the game again, as at boot: day 1, CLOSED, with every computer's Win95 setup forgotten.

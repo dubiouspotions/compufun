@@ -161,7 +161,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Jump**: A change of the `Game` state that no step of play made: the start of a day, or a restore (`Game.jump` counts them). Scenes show the new state at once, without the sounds and animations of a change.
 *Avoid:* cut, reset, reload.
 
-**Finale**: The end of the world as a demo that the F2 World tab plays (`finale/finale.tscn`): everything turns into a bluescreen, the player's own computer seems to restart and fail with a corrupted drive, and the credits show. It is not in the game's week yet.
+**Ending**: One way the week can end, a file in `endings/` (`Ending`): when the game has ENDED, the enabled one whose condition holds, with the highest priority, plays. The finale is the default; the pipes through the chest are ready but off.
+
+**Finale**: The end of the world, the default ending on day 7 and the close of the pipes ending, and from the F2 World tab (`finale/finale.tscn`): everything turns into a bluescreen, the player's own computer seems to restart and fail with a corrupted drive (or boots as Win95 Cambion), and the credits show.
 *Avoid:* ending (that is the pipes on day 7), outro.
 
 **Flag**: A fact of the story in `Game.flags`: a name and a number. 0 or missing means not set.
