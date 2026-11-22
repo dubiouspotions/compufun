@@ -11,7 +11,7 @@ extends Control
 ## program at the DOS prompt and the modem dials up; until then the computer is off. Any key or
 ## click skips to the database.
 ## Keys: arrows and Tab move, Space or Enter acts, P prints the selected record's checklist on
-## the shop's Printer. The mouse clicks and scrolls.
+## the shop's Printer, F only its FIX steps. The mouse clicks and scrolls.
 
 const PROBLEMS_DIR: String = "res://problems/"
 const COLUMNS: int = 80
@@ -23,8 +23,9 @@ const FRAME_ROWS: Array[int] = [1, 3, 27]
 const LIST_TOP: int = 4
 const LIST_BOTTOM: int = 26
 const NEW_RECORD: String = "<New record>"
-## The button in the bottom frame, under the CHECK column, that does what P does.
+## The buttons in the bottom frame, under the CHECK and the FIX column, that do what P and F do.
 const PRINT_BUTTON: String = "[ PRINT CHECKLIST ]"
+const PRINT_FIX_BUTTON: String = "[ PRINT FIX ]"
 
 enum Column { RECORDS, CHECKS, FIXES }
 
@@ -378,11 +379,17 @@ func _on_click(button: InputEventMouseButton) -> void:
 		return
 	_finish_typing()
 	_status = ""
-	var button_x := _print_button_x()
-	if cell.y == FRAME_ROWS[-1] and cell.x >= button_x and cell.x < button_x + PRINT_BUTTON.length():
-		_print()
-		queue_redraw()
-		return
+	if cell.y == FRAME_ROWS[-1]:
+		var buttons := _buttons()
+		for text: String in buttons:
+			var x := _button_x(buttons[text], text)
+			if cell.x >= x and cell.x < x + text.length():
+				if text == PRINT_FIX_BUTTON:
+					_print_fix()
+				else:
+					_print()
+				queue_redraw()
+				return
 	if cell.y < LIST_TOP or cell.y > LIST_BOTTOM:
 		return
 	var lines := _lines(column, _entries(column))
@@ -416,6 +423,8 @@ func _on_key(key: InputEventKey) -> bool:
 			_act()
 		KEY_P:
 			_print()
+		KEY_F:
+			_print_fix()
 		_:
 			return false
 	queue_redraw()
@@ -425,22 +434,33 @@ func _on_key(key: InputEventKey) -> bool:
 # Prints the selected record's checklist on the shop's Printer.
 func _print() -> void:
 	var record := _record()
-	if record == null:
-		return
+	if record != null:
+		_print_page(_page(record))
+
+
+# Prints the selected record's FIX steps alone on the shop's Printer; nothing while it has none.
+func _print_fix() -> void:
+	var record := _record()
+	if record != null and not _entries(Column.FIXES).is_empty():
+		_print_page(_page(record, "FIX", [Column.FIXES]))
+
+
+func _print_page(page: PackedStringArray) -> void:
 	var printer := get_tree().get_first_node_in_group(Printer.GROUP) as Printer
 	if printer == null:
-		push_error("CompuFunDB: no Printer in group '%s' to print '%s' on" % [Printer.GROUP, record.text])
+		push_error("CompuFunDB: no Printer in group '%s' to print '%s' on" % [Printer.GROUP, page[0]])
 		_status = "Printer not ready"
 		return
-	printer.print_page(_page(record))
+	printer.print_page(page)
 	_status = "Printing on LPT1"
 
 
-# The printout of [param record]: a heading, the record, and its CHECK and FIX columns as on screen.
-func _page(record: DbRecord) -> PackedStringArray:
-	var page := PackedStringArray(["CompuFunDB 1.0  CHECKLIST  " + _date_text(), ""])
+# A printout of [param record]: a heading with [param title], the record, and [param columns] as on
+# screen; a column without lines is left out.
+func _page(record: DbRecord, title: String = "CHECKLIST", columns: Array[Column] = [Column.CHECKS, Column.FIXES]) -> PackedStringArray:
+	var page := PackedStringArray(["CompuFunDB 1.0  %s  %s" % [title, _date_text()], ""])
 	page.append_array(_wrap(record.text, _spans[Column.CHECKS].y - _spans[Column.CHECKS].x + 1))
-	for column: Column in [Column.CHECKS, Column.FIXES]:
+	for column: Column in columns:
 		var lines := _lines(column, _entries(column))
 		if lines.is_empty():
 			continue
@@ -455,10 +475,20 @@ func _date_text() -> String:
 	return "%02d/%02d/%02d" % [date.month, date.day, date.year % 100]
 
 
-# The first x of [constant PRINT_BUTTON], centred under the CHECK column.
-func _print_button_x() -> int:
-	var span := _spans[Column.CHECKS]
-	return span.x + (span.y - span.x + 1 - PRINT_BUTTON.length()) / 2
+# The buttons that show in the bottom frame, each with the column that it is centred under.
+func _buttons() -> Dictionary[String, Column]:
+	var buttons: Dictionary[String, Column] = {}
+	if _record() != null:
+		buttons[PRINT_BUTTON] = Column.CHECKS
+		if not _entries(Column.FIXES).is_empty():
+			buttons[PRINT_FIX_BUTTON] = Column.FIXES
+	return buttons
+
+
+# The first x of the button [param text], centred under [param column].
+func _button_x(column: Column, text: String) -> int:
+	var span := _spans[column]
+	return span.x + (span.y - span.x + 1 - text.length()) / 2
 
 
 # Acts on the entry under the cursor: <New record> types up the next computer, a record opens its
@@ -621,10 +651,11 @@ func _paint() -> void:
 	for column: int in Column.size():
 		_paint_column(column as Column)
 	var count := "Rec %d/%d " % [_selected[Column.RECORDS] + 1, Game.records.size()] if record != null else "Rec None "
-	if record != null:
-		_put(_print_button_x(), FRAME_ROWS[-1], PRINT_BUTTON, bright_color, bar_color)
+	var buttons := _buttons()
+	for text: String in buttons:
+		_put(_button_x(buttons[text], text), FRAME_ROWS[-1], text, bright_color, bar_color)
 	_bar(28, " %s" % (_status if not _status.is_empty() else HEADERS[_column]), count, bar_color)
-	_put(1, 29, "\u2191\u2193 Move  \u2190\u2192 Column  Space Mark  P Print  Esc Leave", text_color)
+	_put(1, 29, "\u2191\u2193 Move  \u2190\u2192 Column  Space Mark  P Print  F Print fix  Esc Leave", text_color)
 
 
 func _paint_column(column: Column) -> void:

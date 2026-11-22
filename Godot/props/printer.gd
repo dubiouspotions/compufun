@@ -54,8 +54,8 @@ func print_page(lines: PackedStringArray) -> void:
 	_tween.tween_callback(_hotspot.set_enabled.bind(not _lines.is_empty()))
 
 
-## Gives the finished page to the player to carry (Game.carry_printout); it leaves the printer. False
-## while a page prints or when no page is there.
+## Gives the finished page to the player to carry (Game.carry_printout); it leaves the printer. False,
+## and the page stays, while a page prints, when no page is there, or while the player carries one.
 func take_page() -> bool:
 	if _lines.is_empty() or (_tween != null and _tween.is_running()) or not Game.carry_printout(_lines):
 		return false

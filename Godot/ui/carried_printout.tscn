@@ -68,10 +68,3 @@ layout_mode = 0
 mouse_default_cursor_shape = 2
 script = ExtResource("2_paper")
 font_size = 32
-
-[node name="ThrowAway" type="Button" parent="CloseUp"]
-unique_name_in_owner = true
-layout_mode = 0
-offset_right = 160.0
-offset_bottom = 48.0
-text = "Throw in the trash"

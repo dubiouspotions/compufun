@@ -1,8 +1,9 @@
 class_name TrashCan
 extends Node3D
 ## The trash can by the work desk (wiki: Hardware Repair). A click with a part in the hand throws it
-## in, on top of what lies there. With an empty hand, a click goes to [member look_view], and there
-## takes the part on top back. The can is outlined while a click would do something.
+## in, on top of what lies there; with an empty hand, a click throws away the printout that the player
+## carries (Game.printout). With neither, a click goes to [member look_view], and there takes the part
+## on top back. The can is outlined while the player holds a part or carries a printout.
 
 ## The outline colour while a click would do something, and while the mouse is over the can.
 @export var ready_color: Color = Color(0.75, 0.9, 1.0)
@@ -37,6 +38,8 @@ func _ready() -> void:
 func _on_clicked(_clicked: Hotspot) -> void:
 	if Game.hand != null:
 		Game.trash_part()
+	elif not Game.printout.is_empty():
+		Game.trash_printout()
 	elif Game.view != look_view:
 		Game.go_to_view(look_view)
 	else:
@@ -49,7 +52,7 @@ func _set_hovered(on: bool) -> void:
 
 
 func _sync() -> void:
-	var holding := Game.hand != null
+	var holding := Game.hand != null or not Game.printout.is_empty()
 	_hotspot.set_enabled(holding or Game.view != look_view or not Game.trashed.is_empty())
 	_hovered = _hovered and _hotspot.input_ray_pickable
 	_outline.visible = holding or _hovered

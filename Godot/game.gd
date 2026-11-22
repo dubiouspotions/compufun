@@ -6,6 +6,8 @@ extends Node
 
 ## Emitted after every change of the state. Listeners re-read the whole state.
 signal changed
+## Emitted when the player tries to take a page from the printer while they carry one; nothing changed.
+signal printout_refused
 
 enum Phase {
 	IDLE, ## No day has started.
@@ -78,7 +80,8 @@ var hand: Piece
 ## The pieces that the player threw in the trash can, the last one last. Never emptied.
 var trashed: Array[Piece] = []
 ## The printout that the player carries, line by line as the printer printed it; empty while they
-## carry none. It is apart from the hand, and goes at the start of the next day.
+## carry none. It is apart from the hand, the player can't put it down, and only the trash can or the
+## start of the next day takes it.
 var printout: PackedStringArray = []
 ## The lines of [member printout] whose check box the player ticked, by index. They are the player's
 ## own notes: they change no record and no job.
@@ -541,11 +544,15 @@ func take_from_trash() -> bool:
 	return _take_from(trashed)
 
 
-## The player takes [param lines], a page from the printer, and carries it with no ticks. It replaces
-## the printout that they carried, which is gone. Refuses an empty page and returns false.
+## The player takes [param lines], a page from the printer, and carries it with no ticks. While they
+## carry a page already, they take none: it returns false and emits [signal printout_refused]. Refuses
+## an empty page and returns false.
 func carry_printout(lines: PackedStringArray) -> bool:
 	if lines.is_empty():
 		push_error("Game.carry_printout: the page has no lines")
+		return false
+	if not printout.is_empty():
+		printout_refused.emit()
 		return false
 	printout = lines.duplicate()
 	printout_ticks.clear()

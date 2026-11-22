@@ -2,14 +2,15 @@ class_name CarriedPrintout
 extends Control
 ## The printout that the player carries (Game.printout), in every view: its top peeks in at the
 ## bottom left. A click on it opens the close-up, where a click on a line with a check box ticks or
-## unticks it, and "Throw in the trash" puts the printout in the trash can. Esc, Back or a click
-## beside the paper closes the close-up. While it is open it takes every click and key.
+## unticks it. Esc, Back or a click beside the paper closes the close-up. While it is open it takes
+## every click and key. Only the trash can takes the page (TrashCan); while the player carries one,
+## a try to take another hops the corner.
 ## Beside an open screen (see [method hold_beside]) the player holds the page up instead: it rises
 ## into the space left of the screen, readable and tickable there, and leaves the screen uncovered.
 
 ## How far the corner rises, in pixels, while the mouse is over it.
 @export var hover_rise: float = 24.0
-## The space kept free around the paper in the close-up, in pixels; the button goes below the paper.
+## The space kept free around the paper in the close-up, in pixels.
 @export var close_up_margin: Vector2 = Vector2(80.0, 60.0)
 ## The font sizes that the close-up and the held page try, largest first; each takes the first at
 ## which the paper fits.
@@ -18,12 +19,13 @@ extends Control
 @export var hold_gap: float = 12.0
 ## The seconds that the page takes to rise beside the screen.
 @export var hold_seconds: float = 0.25
+## The seconds of each half of the corner's hop when the player tries to take a second page.
+@export var hop_seconds: float = 0.08
 
 @onready var _corner: Control = %Corner
 @onready var _corner_paper: PrintoutPaper = %CornerPaper
 @onready var _close_up: Control = %CloseUp
 @onready var _paper: PrintoutPaper = %Paper
-@onready var _throw_away: Button = %ThrowAway
 @onready var _held: PrintoutPaper = %Held
 
 var _corner_rest: Vector2
@@ -42,7 +44,7 @@ func _ready() -> void:
 	_close_up.gui_input.connect(_on_close_up_input)
 	_paper.gui_input.connect(_on_paper_input.bind(_paper))
 	_held.gui_input.connect(_on_paper_input.bind(_held))
-	_throw_away.pressed.connect(func() -> void: Game.trash_printout())
+	Game.printout_refused.connect(_hop_corner)
 	get_viewport().size_changed.connect(_layout)
 	Game.changed.connect(_sync)
 	_close_up.hide()
@@ -131,6 +133,14 @@ func _sync() -> void:
 	_layout()
 
 
+# Hops the corner's page up and down twice: the player carries a page already.
+func _hop_corner() -> void:
+	var hop := create_tween()
+	for i: int in 2:
+		hop.tween_property(_corner_paper, "position:y", _corner_rest.y - hover_rise, hop_seconds)
+		hop.tween_property(_corner_paper, "position:y", _corner_rest.y, hop_seconds)
+
+
 func _rise_held() -> void:
 	if _rising != null:
 		_rising.kill()
@@ -148,17 +158,15 @@ func _layout() -> void:
 		_layout_held()
 
 
-# Centres the paper at the largest font size at which it and the button fit the view.
+# Centres the paper at the largest font size at which it fits the view.
 func _layout_close_up() -> void:
 	var view := get_viewport_rect().size
-	var room := view - close_up_margin * 2.0 - Vector2(0.0, _throw_away.size.y)
+	var room := view - close_up_margin * 2.0
 	for font_size: int in font_sizes:
 		_paper.font_size = font_size
 		if _paper.size.x <= room.x and _paper.size.y <= room.y:
 			break
-	var top_left := ((view - Vector2(0.0, _throw_away.size.y) - _paper.size) * 0.5).round()
-	_paper.position = top_left
-	_throw_away.position = top_left + _paper.size + Vector2(-_throw_away.size.x, 8.0)
+	_paper.position = ((view - _paper.size) * 0.5).round()
 
 
 # Lays the held page left of the screen, at the largest font size at which its text fits there; the
