@@ -103,6 +103,20 @@ func _a_text_edit_with_an_error_keeps_the_last_good_draft(lab: Control, drafts: 
 	check("the fixed text has no errors", errors, PackedStringArray())
 	check("the fixed text is the draft, the other conversation as it was", drafts.text(SKATER), SKATER_TEXT.replace("(neutral) Yo! Is this the computer repair shop?\n- Welcome to CompuFun!", "(neutral) Yo!\n- Welcome!"))
 	check("the panel holds the errand as the draft parses", panel.errand().problem.short_name, &"dust_overheat")
+	var code: CodeEdit = panel.find_children("*", "CodeEdit", true, false)[0]
+	code.text = "== drop-off\n("
+	code.set_caret_line(1)
+	code.set_caret_column(1)
+	panel.call("_complete")
+	var offered := code.get_code_completion_options().map(func(o: Dictionary) -> String: return o["display_text"])
+	check("after ( the text view offers the person's moods", "thinking" in offered and "happy" in offered, true)
+	code.text = "== drop-off\n- Hi\n\tset sk"
+	code.set_caret_line(2)
+	code.set_caret_column(7)
+	panel.call("_complete")
+	offered = code.get_code_completion_options().map(func(o: Dictionary) -> String: return o["display_text"])
+	check("after set it offers the week's flags", "skater_bro_runs_cambion" in offered, true)
+	panel.show_errand(SKATER, drafts.text(SKATER))
 
 
 func _a_draft_equal_to_the_file_disappears() -> void:

@@ -396,7 +396,7 @@ func _complete() -> void:
 		options = flags
 	for option: String in options:
 		_code.add_code_completion_option(CodeEdit.KIND_PLAIN_TEXT, option.strip_edges(), option + suffix)
-	_code.update_code_completion_options(false)
+	_code.update_code_completion_options(true)
 
 
 func _moods() -> PackedStringArray:
