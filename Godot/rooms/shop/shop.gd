@@ -102,6 +102,7 @@ func _ready() -> void:
 			if hotspot.action == Hotspot.Action.GO_TO_VIEW:
 				_view_hotspots.append(hotspot)
 	_job_slots.job_clicked.connect(_on_job_clicked)
+	_job_slots.computer_moved.connect(_on_computer_moved)
 	_job_slots.power_clicked.connect(func(job: Job) -> void: Game.set_powered(job, not job.powered))
 	_job_slots.floppy_clicked.connect(Game.eject_floppy)
 	_job_slots.screwdriver_clicked.connect(func(job: Job) -> void:
@@ -567,6 +568,17 @@ func _let_go_of_plug() -> void:
 	_bench.dragging = false
 	_grab_held = false
 	_job_slots.target(null)
+
+
+# The cable and the Workview follow a computer that slides to another slot.
+func _on_computer_moved(job: Job) -> void:
+	if job == Game.connected:
+		_bench.lay_cable(_job_slots.cable_socket(job))
+	if job != Game.focus:
+		return
+	_workview_job = null
+	if _follow_focus() and _shown_view == WORKVIEW and (_camera_tween == null or not _camera_tween.is_running()):
+		_camera.global_transform = view_marker(WORKVIEW).global_transform
 
 
 func _on_job_clicked(job: Job) -> void:

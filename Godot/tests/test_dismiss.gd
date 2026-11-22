@@ -67,7 +67,7 @@ func run() -> void:
 	check("restore a pickup", game.restore({"day": 1, "arrivals": 2, "jobs": [fixed, older, {"customer": ENTREPRENEUR, "problem": "no_sound", "slot": 1}],
 			"focus_slot": 0, "connected_slot": 2, "visitor": SKATER, "visit": "PICKUP", "visitor_state": "TALKING"}), "")
 	game.dismiss_visitor()
-	check("both his computers gone, focus and cable free", [slots(), game.focus, game.connected, game.visitor], [["Young entrepreneur@1"], null, null, null])
+	check("both his computers gone, focus and cable free", [slots(), game.focus, game.connected, game.visitor], [["Young entrepreneur@0"], null, null, null])
 	check("nobody to call for his computer", game.can_call(), false)
 
 

@@ -5,7 +5,9 @@ extends RefCounted
 
 ## The customer who brought the computer. Never null.
 var customer: Customer
-## The place on the counter, 0 to Game.MAX_JOBS - 1. No two jobs on the counter share a slot.
+## The place on the counter, 0 to Game.MAX_JOBS - 1. No two jobs on the counter share a slot. Game
+## changes it when a computer left of this one leaves the counter: the computers fill the slots from
+## 0 up, oldest first.
 var slot: int = 0
 ## Counts up with each drop-off, across days: a lower order is an older job.
 var order: int = 0

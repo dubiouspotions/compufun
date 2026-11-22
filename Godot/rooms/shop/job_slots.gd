@@ -11,26 +11,36 @@ signal power_clicked(job: Job)
 signal floppy_clicked(job: Job)
 ## The player clicked the screwdriver beside the computer of [param job], or its outline.
 signal screwdriver_clicked(job: Job)
+## The computer of [param job] moved toward its job's slot: on every frame of its slide, and once
+## more where it stops. Everything on it (the mat, the post-it, the cable's socket, the Workview's
+## eye) moved with it.
+signal computer_moved(job: Job)
 
 ## The scene of one job's computer.
 @export var computer_scene: PackedScene
 ## Plays at a slot when a customer's computer is put down on it, and when it is picked up again.
 @export var set_down_sound: SoundSet = preload("res://sounds/computer_set_down.tres")
 @export var pick_up_sound: SoundSet = preload("res://sounds/computer_pick_up.tres")
+## How long a computer takes to slide to its new slot when one left of it leaves the counter, in
+## seconds.
+@export var slide_seconds: float = 0.6
 
 var _computers: Dictionary[Job, JobComputer] = {}
+var _slides: Dictionary[Job, Tween] = {}
 
 @onready var _slots: Node3D = %Slots
 
 
 ## Converges on [param jobs]: a computer appears for each new job and leaves with each job that
-## left, with the sound of it put down or picked up unless [param silent]. Each power light shows
+## left, with the sound of it put down or picked up unless [param silent]. A computer whose job
+## changed slot slides there, or stands there at once when [param silent]. Each power light shows
 ## its job's power.
 func show_jobs(jobs: Array[Job], silent: bool = false) -> void:
 	for job: Job in _computers.keys():
 		if job not in jobs:
 			if not silent:
 				pick_up_sound.play_at(_computers[job].get_parent())
+			_stop_slide(job)
 			_computers[job].disable()
 			_computers[job].queue_free()
 			_computers.erase(job)
@@ -42,6 +52,8 @@ func show_jobs(jobs: Array[Job], silent: bool = false) -> void:
 			if not silent:
 				set_down_sound.play_at(computer.get_parent())
 			_computers[job] = computer
+		else:
+			_move_to_slot(job, silent)
 		_computers[job].powered = job.powered
 
 
@@ -93,9 +105,8 @@ func target(job: Job) -> void:
 
 
 func _add_computer(job: Job) -> JobComputer:
-	var slot := _slots.get_node_or_null("Slot%d" % job.slot) as Marker3D
+	var slot := _slot_of(job)
 	if slot == null:
-		push_error("JobSlots: no Marker3D named Slot%d under %s for the job of %s" % [job.slot, _slots.get_path(), job.customer.resource_path])
 		return null
 	if computer_scene == null:
 		push_error("JobSlots: computer_scene is not set on %s" % get_path())
@@ -108,3 +119,42 @@ func _add_computer(job: Job) -> JobComputer:
 	computer.screwdriver_clicked.connect(func(c: JobComputer) -> void: screwdriver_clicked.emit(c.job))
 	slot.add_child(computer)
 	return computer
+
+
+func _slot_of(job: Job) -> Marker3D:
+	var slot := _slots.get_node_or_null("Slot%d" % job.slot) as Marker3D
+	if slot == null:
+		push_error("JobSlots: no Marker3D named Slot%d under %s for the job of %s" % [job.slot, _slots.get_path(), job.customer.resource_path])
+	return slot
+
+
+# Moves the computer of [param job] under its slot's marker, keeping it where it stands, and slides it
+# onto the marker.
+func _move_to_slot(job: Job, at_once: bool) -> void:
+	var computer := _computers[job]
+	var slot := _slot_of(job)
+	if slot == null:
+		return
+	var moved := computer.get_parent() != slot
+	if not moved and not (at_once and _slides.has(job)):
+		return
+	_stop_slide(job)
+	if moved:
+		computer.reparent(slot)
+	if at_once or slide_seconds <= 0.0:
+		computer.position = Vector3.ZERO
+		computer_moved.emit(job)
+		return
+	var from := computer.position
+	var slide := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	slide.tween_method(func(t: float) -> void:
+		computer.position = from.lerp(Vector3.ZERO, t)
+		computer_moved.emit(job), 0.0, 1.0, slide_seconds)
+	slide.finished.connect(func() -> void: _slides.erase(job))
+	_slides[job] = slide
+
+
+func _stop_slide(job: Job) -> void:
+	if _slides.has(job):
+		_slides[job].kill()
+		_slides.erase(job)

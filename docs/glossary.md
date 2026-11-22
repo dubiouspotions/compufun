@@ -141,7 +141,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **VGA cable**: The cable from the bench screen to one computer on the counter (`Game.connected`). The player drags its plug onto a computer to connect it, or off a computer to disconnect it; or clicks the plug to take it, and clicks again to put it there.
 *Avoid:* keyboard cable, screen cable.
 
-**Slot**: One of the `Game.MAX_JOBS` places on the work mat where a job's computer stands (`Job.slot`). In the scene it is a `Slot<n>` marker in `rooms/shop/job_slots.tscn`.
+**Slot**: One of the `Game.MAX_JOBS` places on the work mat where a job's computer stands (`Job.slot`). The computers fill the slots from the left, oldest first: when one leaves, the computers right of it slide left. In the scene it is a `Slot<n>` marker in `rooms/shop/job_slots.tscn`.
 *Avoid:* place, spot, position.
 
 **Errand**: One visit on a day: a customer and what is wrong with their computer this time (`Errand`, in the `Day` file). A customer who comes back on another day brings the same computer with a new errand. Not *visit*, which is why the visitor is in (`Game.Visit`: drop-off or pickup).

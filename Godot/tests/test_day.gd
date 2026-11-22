@@ -117,7 +117,7 @@ func run() -> void:
 	game.dialogue_finished()
 	game.customer_left()
 	check("A is gone: the phone calls B", game.next_to_call() == job_b, true)
-	check("A's job left, focus cleared, cable stays on B", [slots(), game.focus, game.connected == job_b], [["O1@0", "O2@1", "B@3"], null, true])
+	check("A's job left, B shifts left, focus cleared, cable stays on B", [slots(), game.focus, game.connected == job_b], [["O1@0", "O2@1", "B@2"], null, true])
 
 	# The freed place lets C in after the gap.
 	tick(59.0)
@@ -125,7 +125,7 @@ func run() -> void:
 	tick(2.0)
 	check("C comes, afternoon", [game.arrivals, game.daypart], [3, GAME.Daypart.AFTERNOON])
 	drop_off("C")
-	check("C in the free slot 2, focused", [slots(), game.focus == job_of("C")], [["O1@0", "O2@1", "B@3", "C@2"], true])
+	check("C in the free slot 3, focused", [slots(), game.focus == job_of("C")], [["O1@0", "O2@1", "B@2", "C@3"], true])
 
 	# B has no pickup conversation: B says a line of thanks, then takes the computer.
 	game.call_customer(job_of("B"))
@@ -142,7 +142,7 @@ func run() -> void:
 		other.resource_path = "res://customers/test_thanks_%d.tres" % i  # _thanks picks by file name
 		said[GAME._thanks(other).lines[0]] = true
 	check("customers say different thanks", said.size() > 1, true)
-	check("B still has the computer", slots().has("B@3"), true)
+	check("B still has the computer", slots().has("B@2"), true)
 	game.dialogue_finished()
 	check("can't close while B walks out with the computer", [game.visitor_state, game.can_close()], [GAME.VisitorState.WALKING_OUT, false])
 	game.customer_left()

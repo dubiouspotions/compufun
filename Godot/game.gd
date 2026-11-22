@@ -217,8 +217,9 @@ func customer_arrived() -> void:
 
 
 ## The dialogue calls this after its last line. A drop-off puts the computer in the first free slot
-## (in focus if nothing is); a pickup takes its job off the counter and clears [member focus] and
-## [member connected] if they pointed at it. Then the visitor walks out (WALKING_OUT).
+## (in focus if nothing is); a pickup takes its job off the counter, clears [member focus] and
+## [member connected] if they pointed at it, and shifts the computers right of it left, so that the
+## counter holds them oldest first from slot 0. Then the visitor walks out (WALKING_OUT).
 func dialogue_finished() -> void:
 	if visitor_state != VisitorState.TALKING:
 		push_error("Game.dialogue_finished: no visitor is talking (visitor state %s)" % VisitorState.find_key(visitor_state))
@@ -1216,13 +1217,18 @@ func _leave() -> void:
 	visitor_state = VisitorState.WALKING_OUT
 
 
-# The computer of [param job] leaves the counter, the focus and the cable.
+# The computer of [param job] leaves the counter, the focus and the cable, and the computers right
+# of it shift left: slot 0 up, oldest first.
 func _take_off_counter(job: Job) -> void:
 	jobs.erase(job)
 	if focus == job:
 		focus = null
 	if connected == job:
 		connected = null
+	var by_age := jobs.duplicate()
+	by_age.sort_custom(func(a: Job, b: Job) -> bool: return a.order < b.order)
+	for i: int in by_age.size():
+		(by_age[i] as Job).slot = i
 
 
 func _drop_off(errand: Errand) -> void:
