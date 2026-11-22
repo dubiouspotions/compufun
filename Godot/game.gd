@@ -353,6 +353,16 @@ func choose(choice: Choice) -> Reply:
 	return reply
 
 
+## The conversation that plays goes on below a list to [param reply], a [member Reply.then]: sets its
+## flags. Fails with an error when nobody talks.
+func go_on(reply: Reply) -> void:
+	if conversation == null or reply == null:
+		push_error("Game.go_on: no conversation plays, or no reply (%s)" % reply)
+		return
+	_set_flags(reply.set_flags, "the lines below a list in '%s'" % conversation.id)
+	changed.emit()
+
+
 func _met(when: Condition) -> bool:
 	return when == null or when.is_met(day_number, flags)
 
