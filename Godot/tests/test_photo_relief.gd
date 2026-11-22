@@ -9,7 +9,7 @@ func run() -> void:
 	var head := PhotoRelief.head_width(image)
 	check("the head is about 28 px wide", absf(head - 28.0) <= 3.0, true)
 	var scale := 0.18 / head
-	var mesh := PhotoRelief.build(image, scale, 0.12)
+	var mesh := PhotoRelief.build(image, person.back.get_image(), scale, 0.12)
 	check("three surfaces", mesh.get_surface_count(), PhotoRelief.Surface.size())
 	for surface: int in mesh.get_surface_count():
 		check("surface %d has faces" % surface, (mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() > 30, true)

@@ -55,6 +55,10 @@ void vertex() {
 	affine_uv = vec3(uv * clip.w, clip.w);
 }
 
+// Fades the picture into the vertex colour where the vertex alpha is low: the photo relief's shared
+// colour at its outline, where its front and back meet.
+uniform bool vertex_color_fade = false;
+
 void fragment() {
 	vec2 uv = mix(plain_uv, affine_uv.xy / affine_uv.z, affine);
 	vec3 picked = albedo_color.rgb;
@@ -77,6 +81,9 @@ void fragment() {
 	if (edge_fade > 0.0) {
 		float edge = min(min(uv.x, 1.0 - uv.x), uv.y);
 		color = mix(picked, color, smoothstep(0.0, edge_fade, edge) * step(uv.y, 1.0));
+	}
+	if (vertex_color_fade) {
+		color = mix(COLOR.rgb, color, COLOR.a);
 	}
 	ALBEDO = color;
 	ROUGHNESS = 1.0;

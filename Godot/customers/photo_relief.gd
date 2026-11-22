@@ -3,7 +3,10 @@ extends RefCounted
 ## A person's upper body as a low-poly relief of their neutral portrait (wiki: Architecture, People
 ## and customers). The front carries the photo and bulges towards the middle of its outline; the
 ## back carries the person seen from behind (Person.back), or the photo mirrored when there is none.
-## The mesh's origin is the bottom centre of the outline, and its front faces +Z.
+## The mesh's origin is the bottom centre of the outline, and its front faces +Z. Where the front
+## and the back meet at the outline, both show one colour, the average of the two pictures there, and
+## each fades into its own picture further in; the material does the fade (psx_world's
+## vertex_color_fade).
 
 ## The surfaces of [method build]'s mesh.
 enum Surface { FRONT, BACK, HEAD_BACK }
@@ -17,12 +20,16 @@ const FRONT_ORDER: Array[int] = [0, 1, 2, 0, 2, 3]
 const BACK_ORDER: Array[int] = [0, 2, 1, 0, 3, 2]
 
 
-## The relief of the opaque part of [param portrait]: [param metres_per_pixel] scales it, the middle
-## bulges by up to [param depth] metres each way, and one grid cell spans [param step] pixels. The
-## edge rounds off over [param round_off] pixels. Returns an empty mesh, with an error, for a portrait
-## with no opaque pixels.
-static func build(portrait: Image, metres_per_pixel: float, depth: float, step: int = 2, round_off: float = 20.0) -> ArrayMesh:
+## The relief of the opaque part of [param portrait], with [param back] (the person seen from behind,
+## or null for the portrait mirrored) behind: [param metres_per_pixel] scales it, the middle bulges by
+## up to [param depth] metres each way, and one grid cell spans [param step] pixels. The edge rounds
+## off over [param round_off] pixels, and the front and back fade into their shared colour over the
+## outer [param seam] pixels. Returns an empty mesh, with an error, for a portrait with no opaque
+## pixels.
+static func build(portrait: Image, back: Image, metres_per_pixel: float, depth: float, step: int = 2, round_off: float = 20.0, seam: float = 6.0) -> ArrayMesh:
 	var image := _rgba(portrait)
+	var soft_front := _soft(image)
+	var soft_back := _soft(_rgba(back)) if back != null else soft_front
 	var w := image.get_width()
 	var h := image.get_height()
 	var cols := w / step + 1
@@ -38,7 +45,6 @@ static func build(portrait: Image, metres_per_pixel: float, depth: float, step: 
 			var px := mini(c * step, w - 1)
 			var opaque := image.get_pixel(px, mini(r * step, h - 1)).a > 0.5
 			inside[r * cols + c] = 1 if opaque else 0
-			dist[r * cols + c] = 1e6 if opaque else 0.0
 			if opaque:
 				left = mini(left, px)
 				right = maxi(right, px)
@@ -46,9 +52,28 @@ static func build(portrait: Image, metres_per_pixel: float, depth: float, step: 
 	if right < 0:
 		push_error("PhotoRelief: the portrait %s has no opaque pixels" % portrait.resource_path)
 		return mesh
+	# A cell exists when its four corners are inside; a vertex that fewer than four cells share lies on
+	# the mesh's edge. The bulge is measured from that edge, so front and back meet there, gap-free.
+	var cell := PackedByteArray()
+	cell.resize((cols - 1) * (rows - 1))
+	for r: int in rows - 1:
+		for c: int in cols - 1:
+			var corners_in := inside[r * cols + c] + inside[r * cols + c + 1] + inside[(r + 1) * cols + c] + inside[(r + 1) * cols + c + 1]
+			cell[r * (cols - 1) + c] = 1 if corners_in == 4 else 0
+	for r: int in rows:
+		for c: int in cols:
+			var shared := 0
+			for dr: int in [-1, 0]:
+				for dc: int in [-1, 0]:
+					var cr := r + dr
+					var cc := c + dc
+					if cr >= 0 and cc >= 0 and cr < rows - 1 and cc < cols - 1:
+						shared += cell[cr * (cols - 1) + cc]
+			dist[r * cols + c] = 1e6 if shared == 4 else 0.0
 	_chamfer(dist, cols, rows)
 	var centre := (left + right) * 0.5
 	var cells := round_off / step
+	var seam_cells := maxf(seam / step, 0.5)
 	var hat := _average(image, Rect2i(left, 0, right - left + 1, int(h * 0.15)))
 	for surface: int in Surface.size():
 		var side := 1.0 if surface == Surface.FRONT else -1.0
@@ -60,18 +85,21 @@ static func build(portrait: Image, metres_per_pixel: float, depth: float, step: 
 				continue
 			for c: int in cols - 1:
 				var corners: Array[int] = [r * cols + c, r * cols + c + 1, (r + 1) * cols + c + 1, (r + 1) * cols + c]
-				if corners.any(func(i: int) -> bool: return inside[i] == 0):
+				if cell[r * (cols - 1) + c] == 0:
 					continue
 				for k: int in FRONT_ORDER if side > 0.0 else BACK_ORDER:
 					var i := corners[k]
 					var px := float(mini((i % cols) * step, w - 1))
 					var py := float(mini((i / cols) * step, h - 1))
-					var d := dist[i] - 1.0
+					var d := dist[i]
 					var bulge := 0.0 if d <= 0.0 else depth * sqrt(1.0 - pow(1.0 - minf(d / cells, 1.0), 2.0))
 					# Seen from behind, the person's left is on the right: the back samples the mirror image.
 					var u := px if side > 0.0 else 2.0 * centre - px
 					tool.set_uv(Vector2(u / w, py / h))
-					tool.set_color(hat)
+					var shared := _soft_colour(soft_front, Vector2(px / w, py / h)).lerp(_soft_colour(soft_back, Vector2((2.0 * centre - px) / w, py / h)), 0.5)
+					var fade := smoothstep(0.0, 1.0, clampf(d / seam_cells, 0.0, 1.0))
+					var colour := hat if surface == Surface.HEAD_BACK and back == null else shared
+					tool.set_color(Color(colour.srgb_to_linear(), fade))
 					tool.add_vertex(Vector3((px - centre) * metres_per_pixel, (h - py) * metres_per_pixel, bulge * side * (1.0 if side > 0.0 else 0.8)))
 		tool.generate_normals()
 		tool.commit(mesh)
@@ -101,6 +129,21 @@ static func head_width(portrait: Image) -> float:
 				first = x
 			last = x
 	return float(last - first + 1) if first >= 0 else 24.0
+
+
+# A blurred copy that averages only the opaque pixels: premultiplied, then scaled down a quarter.
+static func _soft(image: Image) -> Image:
+	var soft := image.duplicate() as Image
+	soft.premultiply_alpha()
+	soft.resize(maxi(image.get_width() / 4, 1), maxi(image.get_height() / 4, 1), Image.INTERPOLATE_BILINEAR)
+	return soft
+
+
+# The average colour of the opaque pixels near [param uv] in a copy from [method _soft].
+static func _soft_colour(soft: Image, uv: Vector2) -> Color:
+	var at := Vector2i((uv * Vector2(soft.get_size())).floor()).clamp(Vector2i.ZERO, soft.get_size() - Vector2i.ONE)
+	var colour := soft.get_pixelv(at)
+	return Color(colour.r / colour.a, colour.g / colour.a, colour.b / colour.a) if colour.a > 0.02 else Color(0.3, 0.3, 0.3)
 
 
 static func _rgba(portrait: Image) -> Image:
