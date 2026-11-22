@@ -112,12 +112,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	if marker == null:
 		return
 	if event.is_action_pressed(&"turn_left"):
+		_nav.press(&"left")
 		Game.go_to_view(marker.left)
 	elif event.is_action_pressed(&"turn_right"):
+		_nav.press(&"right")
 		Game.go_to_view(marker.right)
 	elif event.is_action_pressed(&"look_up") and marker.up != &"":
 		Game.go_to_view(marker.up)
 	elif event.is_action_pressed(&"go_back"):
+		_nav.press(&"back")
 		_go_back()
 	else:
 		return
