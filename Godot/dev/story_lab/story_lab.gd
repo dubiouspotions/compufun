@@ -48,6 +48,9 @@ var _drafts_button: Button
 var _drafts_panel: StoryDraftsPanel
 var _send_button: Button
 var _checkout_chip: Label
+var _week_view: Control
+var _bible: StoryBiblePanel
+var _sections: ButtonGroup
 var _send_panel: StorySendPanel
 var _customers: PopupMenu
 var _add_day: int = 0
@@ -173,6 +176,16 @@ func play(errand: Errand, trigger: Conversation.Trigger) -> String:
 	return ""
 
 
+## Shows the "Week" (the board and the picked errand or day) or the "Bible".
+func show_section(section: String) -> void:
+	for button: BaseButton in _sections.get_buttons():
+		button.set_pressed_no_signal((button as Button).text == section)
+	_week_view.visible = section == "Week"
+	_bible.visible = section == "Bible"
+	if section == "Bible":
+		_bible.show_pages(drafts)
+
+
 ## Opens the errand file [param path] below the board.
 func open_errand(path: String) -> void:
 	_selected = path
@@ -264,6 +277,15 @@ func _drafts_changed() -> void:
 		open_errand(_selected)
 
 
+func _store_page(path: String, text: String) -> void:
+	var failed := drafts.put(path, text)
+	if failed != "":
+		_say("Not saved: " + failed, true)
+		return
+	refresh()
+	_say("Saved %s." % path.get_file() if text != "" else "Removed %s. Discard its draft to bring it back." % path.get_file())
+
+
 func _store_edit(path: String, text: String) -> void:
 	store(path, text)
 
@@ -342,16 +364,24 @@ func _build() -> void:
 	page.add_theme_constant_override("separation", 12)
 	margin.add_child(page)
 	page.add_child(_top_bar())
+	_week_view = VBoxContainer.new()
+	_week_view.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_week_view.add_theme_constant_override("separation", 12)
+	page.add_child(_week_view)
+	_bible = StoryBiblePanel.new()
+	_bible.saved.connect(_store_page)
+	_bible.hide()
+	page.add_child(_bible)
 	_board = StoryLabBoard.new()
 	_board.custom_minimum_size.y = 390
 	_board.errand_picked.connect(open_errand)
 	_board.errand_dropped.connect(move_errand)
 	_board.add_requested.connect(_add_errand)
 	_board.day_picked.connect(open_day)
-	page.add_child(_board)
+	_week_view.add_child(_board)
 	_lower = Control.new()
 	_lower.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	page.add_child(_lower)
+	_week_view.add_child(_lower)
 	_hint = LabUI.label("Click an errand card to open it, or a day's header for its weather, warp, signs and notes.", 16, LabUI.DIM)
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -383,6 +413,14 @@ func _top_bar() -> Control:
 	row.add_theme_constant_override("separation", 12)
 	row.add_child(LabUI.label("Story Lab", 26))
 	row.add_child(LabUI.chip("Game paused", LabUI.ACCENT, 13))
+	_sections = ButtonGroup.new()
+	var sections := LabUI.segmented(PackedStringArray(["Week", "Bible"]), _sections)
+	for button: BaseButton in _sections.get_buttons():
+		button.custom_minimum_size.x = 90
+		button.toggled.connect(func(on: bool) -> void:
+			if on:
+				show_section((button as Button).text))
+	row.add_child(sections)
 	_checkout_chip = LabUI.chip("Saves to checkout", LabUI.CHANGED, 13)
 	_checkout_chip.tooltip_text = "Edits change res://story/ in this checkout; commit them with git. Dev menu (F3) turns it off."
 	_checkout_chip.mouse_filter = Control.MOUSE_FILTER_PASS

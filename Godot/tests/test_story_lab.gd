@@ -46,6 +46,7 @@ func run() -> void:
 	var reason: String = lab.call("play", (lab.call("errand_panel") as StoryErrandPanel).errand(), Conversation.Trigger.ARRIVE)
 	check("Play hides the Lab only when the game plays it", lab.visible, reason != "")
 	lab.show()
+	_the_bible_edits_its_pages(lab, drafts)
 	lab.queue_free()
 	await process_frame
 	_a_draft_equal_to_the_file_disappears()
@@ -183,6 +184,16 @@ func _save_to_checkout_writes_the_files() -> void:
 	check("removing deletes the file", [drafts.put(SKATER, ""), FileAccess.file_exists(drafts.checkout + "story/errands/0101_skater_bro.errand")], ["", false])
 	drafts.to_checkout = false
 	check("the drafts come back when it is off", drafts.texts().keys(), [NICE])
+
+
+func _the_bible_edits_its_pages(lab: Control, drafts: StoryDrafts) -> void:
+	lab.call("show_section", "Bible")
+	var bible: StoryBiblePanel = lab.find_children("*", "StoryBiblePanel", true, false)[0]
+	bible.saved.emit("res://story/bible/cast.md", "# The cast\n")
+	check("a bible page is a draft", drafts.text("res://story/bible/cast.md"), "# The cast\n")
+	bible.show_pages(drafts)
+	check("the bible opens it", bible.path(), "res://story/bible/cast.md")
+	lab.call("show_section", "Week")
 
 
 ## Removes the files under [param dir], a test folder in user://.
