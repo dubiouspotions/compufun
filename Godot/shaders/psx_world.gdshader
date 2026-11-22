@@ -28,6 +28,7 @@ uniform bool fill_transparent = false;
 
 varying vec2 plain_uv;
 varying vec3 affine_uv;
+varying vec3 model_position;
 
 void vertex() {
 	vec2 uv = UV;
@@ -44,6 +45,7 @@ void vertex() {
 	}
 	uv = uv_rect.xy + uv * uv_scale * uv_rect.zw;
 	plain_uv = uv;
+	model_position = VERTEX;
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
 	if (clip.w > 0.0) {
 		vec2 half_size = VIEWPORT_SIZE * 0.5;
@@ -58,6 +60,42 @@ void vertex() {
 // Fades the picture into the vertex colour where the vertex alpha is low: the photo relief's shared
 // colour at its outline, where its front and back meet.
 uniform bool vertex_color_fade = false;
+
+/** 0 = clean. 1 = a broken part's look: darker, with blotches and specks of dirt. Piece.make_model
+ * gives each mesh of a broken piece a copy of its material with this at 1. Not an instance uniform:
+ * every mesh with this shader would take one of the 4096 instance-variable slots. */
+uniform float grime : hint_range(0.0, 1.0) = 0.0;
+/** The share of its colour that a fully grimy surface keeps. */
+uniform float grime_darken : hint_range(0.0, 1.0) = 0.6;
+uniform vec3 grime_color : source_color = vec3(0.22, 0.18, 0.12);
+/** Dirt cells per metre of the model: the size of a blotch. Specks are four times smaller. */
+uniform float grime_cells = 70.0;
+/** How much of a blotch's and of a speck's colour is dirt. */
+uniform float grime_blotch : hint_range(0.0, 1.0) = 0.55;
+uniform float grime_speck : hint_range(0.0, 1.0) = 0.6;
+
+float grime_hash(vec3 cell) {
+	return fract(sin(dot(cell, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+}
+
+// Smooth value noise, 0 to 1, over cells of size 1.
+float grime_noise(vec3 p) {
+	vec3 i = floor(p);
+	vec3 f = smoothstep(0.0, 1.0, fract(p));
+	float x00 = mix(grime_hash(i), grime_hash(i + vec3(1, 0, 0)), f.x);
+	float x10 = mix(grime_hash(i + vec3(0, 1, 0)), grime_hash(i + vec3(1, 1, 0)), f.x);
+	float x01 = mix(grime_hash(i + vec3(0, 0, 1)), grime_hash(i + vec3(1, 0, 1)), f.x);
+	float x11 = mix(grime_hash(i + vec3(0, 1, 1)), grime_hash(i + vec3(1, 1, 1)), f.x);
+	return mix(mix(x00, x10, f.y), mix(x01, x11, f.y), f.z);
+}
+
+vec3 with_grime(vec3 color) {
+	vec3 p = model_position * grime_cells;
+	float blotch = smoothstep(0.5, 0.75, grime_noise(p)) * grime_blotch;
+	float speck = step(0.88, grime_hash(floor(p * 4.0))) * grime_speck;
+	vec3 dirty = mix(color * grime_darken, grime_color, max(blotch, speck));
+	return mix(color, dirty, grime);
+}
 
 void fragment() {
 	vec2 uv = mix(plain_uv, affine_uv.xy / affine_uv.z, affine);
@@ -84,6 +122,9 @@ void fragment() {
 	}
 	if (vertex_color_fade) {
 		color = mix(COLOR.rgb, color, COLOR.a);
+	}
+	if (grime > 0.0) {
+		color = with_grime(color);
 	}
 	ALBEDO = color;
 	ROUGHNESS = 1.0;

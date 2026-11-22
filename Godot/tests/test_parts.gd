@@ -145,3 +145,21 @@ func run() -> void:
 	check("dust on the broken fan only", [dusty.get_node(^"Broken").visible, clean.get_node(^"Broken").visible], [true, false])
 	dusty.free()
 	clean.free()
+
+	# Every broken part is grimy on each of its PSX meshes; a working one is clean.
+	for each: Part in Part.every():
+		var grimy := _grime_of(Piece.new(each.piece_part(), true).make_model())
+		var plain := _grime_of(Piece.new(each.piece_part()).make_model())
+		check("grime on every mesh of the broken %s only" % each.id(), [grimy.is_empty(), grimy.has(0.0), plain.has(1.0)], [false, false, false])
+
+
+# The grime of each PSX-look mesh in [param model], which this frees.
+func _grime_of(model: Node3D) -> Array:
+	var grime := []
+	for mesh: Node in model.find_children("*", "GeometryInstance3D"):
+		var material := (mesh as GeometryInstance3D).material_override as ShaderMaterial
+		if material != null and material.shader == Piece.PSX_WORLD:
+			var value: Variant = material.get_shader_parameter(&"grime")
+			grime.append(float(value) if value != null else 0.0)
+	model.free()
+	return grime

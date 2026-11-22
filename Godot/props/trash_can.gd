@@ -83,11 +83,9 @@ func _sync() -> void:
 	for child: Node in _pieces.get_children():
 		child.queue_free()
 	for i: int in _shown.size():
-		var part := _shown[i].part
-		if part.model == null:
-			push_error("TrashCan: %s has no model" % part.resource_path)
+		var model := _shown[i].make_model()
+		if model == null:
 			continue
-		var model := part.model.instantiate() as Node3D
 		var box := Part.bounds(model)
 		var fit := minf(1.0, shown_size / maxf(box.size[box.get_longest_axis_index()], 0.001))
 		# The same toss for the same place in the pile, so a re-read doesn't shuffle it.
