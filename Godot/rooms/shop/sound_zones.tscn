@@ -12,10 +12,11 @@ size = Vector3(60, 14, 40)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, -1.75)
 input_ray_pickable = false
 monitoring = false
+audio_bus_override = true
+audio_bus_name = &"Shop"
 reverb_bus_enabled = true
 reverb_bus_name = &"Room"
-reverb_bus_amount = 0.35
-reverb_bus_uniformity = 0.5
+reverb_bus_amount = 0.6
 
 [node name="Shape" type="CollisionShape3D" parent="Room"]
 shape = SubResource("BoxShape3D_room")

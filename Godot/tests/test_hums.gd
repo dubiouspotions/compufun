@@ -15,7 +15,7 @@ func run() -> void:
 	var bench_crt: Hum = shop.find_child("Bench", true, false).get_node(^"Monitor/%Hum")
 	for hum: Hum in [bulb, work_fan, work_crt, bench_crt]:
 		check("%s loops" % hum.stream.resource_path, (hum.stream as AudioStreamWAV).loop_mode, AudioStreamWAV.LOOP_FORWARD)
-		check("%s stays out of the Room reverb" % hum.stream.resource_path, hum.area_mask, 0)
+		check("%s sounds like its room" % hum.stream.resource_path, hum.area_mask, SoundSet.SOUND_ZONES)
 
 	check("the storage bulb hums", bulb.playing, true)
 	game.set_flag(&"storage_light_off")

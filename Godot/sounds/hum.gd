@@ -16,7 +16,7 @@ var on: bool = false:
 
 
 func _enter_tree() -> void:
-	area_mask = 0  # the Room reverb's send ignores volume_db and would drown a quiet hum (docs/gotchas.md)
+	area_mask = SoundSet.SOUND_ZONES
 	_sync()
 
 
