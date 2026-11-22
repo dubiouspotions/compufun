@@ -1,9 +1,10 @@
 class_name DialogueOverlay
 extends Control
-## A customer talks: their portrait, one line of a conversation at a time.
+## A customer talks: their portrait, one line of a conversation at a time, and after a reply's
+## last line the player's choices, each a button that plays the customer's reply.
 ## The portrait sways and breathes, and shakes in time with the voice.
 
-## The player clicked OK on the last line.
+## The conversation is over: the player clicked OK on the last line, or a choice that ends it.
 signal finished
 
 const _NEUTRAL := &"neutral"
@@ -43,10 +44,21 @@ const _MATCH_NEUTRAL_HEIGHT := "young_entrepreneur/portrait_irritated03.png"
 ## The Next button's text on every line but the last, and on the last.
 @export var next_text: String = "Next"
 @export var last_text: String = "OK"
+## The colour of a choice that the player already picked in this conversation.
+@export var asked_color: Color = Color(0.6, 0.6, 0.62)
 
 var _customer: Customer
 var _conversation: Conversation
 var _lines: Array[DialogueLine] = []
+# The reply whose lines show; the conversation itself at the start.
+var _reply: Reply
+# The reply whose choices the player picks from, and the lists above it to go back to.
+var _list: Reply
+var _above: Array[Reply] = []
+# The choices picked in this conversation.
+var _asked: Dictionary[Choice, bool] = {}
+# The picked choice ends the conversation after its reply.
+var _ending: bool = false
 var _line: int = 0
 # False while the box shows its own error line, which has no voice.
 var _voiced: bool = false
@@ -67,6 +79,7 @@ var _reach: float = 0.0
 @onready var _portrait_slot: Panel = %Portrait
 @onready var _portrait: TextureRect = %PortraitTexture
 @onready var _next: Button = %NextButton
+@onready var _choices: VBoxContainer = %Choices
 @onready var _voice: VoicePlayer = %Voice
 
 
@@ -106,6 +119,11 @@ func start(customer: Customer, conversation: Conversation) -> void:
 		return
 	_customer = customer
 	_conversation = conversation
+	_reply = conversation
+	_list = null
+	_above.clear()
+	_asked.clear()
+	_ending = false
 	_line = 0
 	_name.text = customer.spoken_name()
 	if conversation == null or conversation.lines.is_empty():
@@ -300,6 +318,7 @@ func _center_run(image: Image, y: int, axis: int) -> int:
 
 
 func _show_line() -> void:
+	_show_choices([])
 	var line := _lines[_line]
 	_text.type_out(line.text if line != null else "")
 	_show_portrait(line.pose if line != null else _NEUTRAL)
@@ -330,8 +349,81 @@ func _on_next() -> void:
 		_text.finish()
 		return
 	if _line >= _lines.size() - 1:
-		_voice.hush()
-		finished.emit()
+		_after_reply()
 		return
 	_line += 1
 	_show_line()
+
+
+# The reply's last line is read: its choices, the list it came from, or the end.
+func _after_reply() -> void:
+	var own := Game.offered(_reply) if _voiced and not _ending else ([] as Array[Choice])
+	if not own.is_empty():
+		if _list != null and _list != _reply:
+			_above.push_back(_list)
+		_list = _reply
+	elif _list == null or _ending:
+		_voice.hush()
+		finished.emit()
+		return
+	_show_choices(Game.offered(_list))
+
+
+func _show_choices(offered: Array[Choice]) -> void:
+	for child: Node in _choices.get_children():
+		child.queue_free()
+	_choices.visible = not offered.is_empty()
+	_text.visible = offered.is_empty()
+	_next.get_parent().visible = offered.is_empty()
+	if offered.is_empty():
+		return
+	for choice: Choice in offered:
+		var button := _choice_button(choice.text, _pick.bind(choice))
+		if _asked.has(choice):
+			button.add_theme_color_override(&"font_color", asked_color)
+	if not offered.any(func(c: Choice) -> bool: return c.ends):
+		if _above.is_empty():
+			_choice_button(_conversation.leave_text, _leave)
+		else:
+			_choice_button(_conversation.back_text, _go_back)
+
+
+func _choice_button(text: String, action: Callable) -> Button:
+	var button := Button.new()
+	button.text = "> " + text
+	button.flat = true
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	for color: StringName in [&"font_color", &"font_hover_color"]:
+		button.add_theme_color_override(color, _next.get_theme_color(color))
+	button.add_theme_font_override(&"font", _text.get_theme_font(&"font"))
+	button.add_theme_font_size_override(&"font_size", _text.get_theme_font_size(&"font_size"))
+	button.pressed.connect(action)
+	_choices.add_child(button)
+	return button
+
+
+func _pick(choice: Choice) -> void:
+	var reply := Game.choose(choice)
+	if reply == null:
+		return  # Game.choose reported it; the choices stay up
+	_asked[choice] = true
+	_ending = choice.ends
+	_reply = reply
+	_lines = reply.lines
+	_line = 0
+	if _lines.is_empty():
+		_after_reply()
+	else:
+		_show_line()
+
+
+func _go_back() -> void:
+	_list = _above.pop_back()
+	_show_choices(Game.offered(_list))
+
+
+func _leave() -> void:
+	_show_choices([])
+	_voice.hush()
+	finished.emit()

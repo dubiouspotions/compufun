@@ -1,8 +1,8 @@
 @tool
 class_name Conversation
-extends Resource
-## One conversation of a customer: the lines they say, one at a time. Game plays the first
-## conversation whose trigger and condition match.
+extends Reply
+## One conversation of a customer: the lines they say, one at a time, and the player's choices
+## after them (see Reply). Game plays the first conversation whose trigger and condition match.
 
 ## The moment a conversation can play. More triggers come with their moments.
 enum Trigger {
@@ -14,13 +14,13 @@ enum Trigger {
 ## Unique within its customer, for example &"arrive".
 @export var id: StringName = &""
 @export var trigger: Trigger = Trigger.ARRIVE
-## null plays on every day, with any flags.
-@export var when: Condition
 ## Plays only the first time it matches.
 @export var once: bool = false
-## The flags that this conversation sets as it starts to play: name to number, where 0 clears the
-## flag. A conversation starts a corruption sign with sign_<id>.
-@export var set_flags: Dictionary[StringName, int] = {}
-@export var lines: Array[DialogueLine] = []
-## The voice effect of every line, unless the line has its own; null for none.
+## The voice effect of every line, the replies' included, unless the line has its own; null for none.
 @export var effect: VoiceEffect
+## The last button of the player's first list of choices, unless a choice there ends the
+## conversation: it lets the customer go.
+@export var leave_text: String = "That's all, thanks."
+## The last button of each deeper list of choices, unless a choice there ends the conversation: it
+## goes back to the list above.
+@export var back_text: String = "Something else..."

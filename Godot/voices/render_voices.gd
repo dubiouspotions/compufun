@@ -38,12 +38,12 @@ func _initialize() -> void:
 		for conversation: Conversation in customer.conversations:
 			if conversation == null:
 				continue
-			for line: DialogueLine in conversation.lines:
+			for line: DialogueLine in conversation.all_lines():
 				if line != null and not line.text.strip_edges().is_empty():
 					wanted[Voices.path_of(line, customer.voice.body)] = [line, customer.voice.body, path]
 	for conversation in shared:
 		for voice: String in voices:
-			for line: DialogueLine in conversation.lines:
+			for line: DialogueLine in conversation.all_lines():
 				if line != null and not line.text.strip_edges().is_empty():
 					wanted[Voices.path_of(line, voice)] = [line, voice, conversation.resource_path]
 	var rendered := 0

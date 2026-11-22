@@ -578,7 +578,7 @@ func _find_lines() -> void:
 		if customer != null:
 			for conversation: Conversation in customer.conversations:
 				if conversation != null:
-					for line: DialogueLine in conversation.lines:
+					for line: DialogueLine in conversation.all_lines():
 						_lines.append(["%s · %s" % [customer.spoken_name(), line.text.left(50)], line, customer.voice, VoiceEffect.of(line, conversation)])
 		elif resource is Conversation:
 			for line: DialogueLine in resource.lines:

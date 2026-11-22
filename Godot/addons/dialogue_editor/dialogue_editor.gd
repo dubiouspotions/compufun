@@ -29,6 +29,12 @@ var _preview: AudioStreamPlayer
 var _conversation_list: ItemList
 var _new_conversation: LineEdit
 var _detail: VBoxContainer
+## The conversation's tree: the conversation, the player's choices and the customer's replies.
+var _tree: Tree
+## The node of the tree that the editor below it shows: the conversation, a Choice or a Reply.
+var _node: Resource
+## Where the editor of [member _node] draws.
+var _node_box: VBoxContainer
 
 
 func _ready() -> void:
@@ -209,14 +215,7 @@ func _validate(customer: Customer) -> String:
 
 ## The text content of [param customer] as one string, to compare a save with its read-back.
 func _summary(customer: Customer) -> String:
-	var conversations: Array = []
-	for c: Conversation in customer.conversations:
-		var lines: Array = []
-		for line: DialogueLine in c.lines:
-			lines.append([line.text, line.pose] if line != null else null)
-		var when: Array = [c.when.from_day, c.when.to_day, c.when.need_flags, c.when.not_flags] if c.when != null else []
-		conversations.append([c.id, c.trigger, c.once, when, c.set_flags, lines])
-	return var_to_str([customer.display_name, customer.voice.resource_path if customer.voice != null else "", conversations])
+	return var_to_str([customer.display_name, customer.voice.resource_path if customer.voice != null else "", Story.outline(customer)])
 
 
 func _create_customer(file_name: String) -> void:
@@ -400,6 +399,7 @@ func _on_conversation_selected(index: int) -> void:
 
 func _select_conversation(index: int) -> void:
 	_conversation = _customer.conversations[index] if _customer != null and index >= 0 else null
+	_node = _conversation
 	_render_detail()
 
 
@@ -409,29 +409,185 @@ func _render_detail() -> void:
 	if _conversation == null:
 		_detail.add_child(_label("Pick a conversation."))
 		return
+	_detail.add_child(_label("The tree: the conversation, the player's choices (>) and the customer's replies (-). Pick one to edit it."))
+	_tree = Tree.new()
+	_tree.custom_minimum_size.y = 200
+	_tree.hide_root = false
+	_tree.item_selected.connect(func() -> void:
+		_node = _tree.get_selected().get_metadata(0)[0]
+		_render_node())
+	_detail.add_child(_tree)
+	_fill_tree(_tree.create_item(), _conversation, null)
+	_node_box = VBoxContainer.new()
+	_node_box.size_flags_horizontal = SIZE_EXPAND_FILL
+	_detail.add_child(_node_box)
+	# Selecting draws the node's editor (item_selected).
+	_tree_item(_node if _tree_item(_node) != null else _conversation).select(0)
 
-	var id_row := HBoxContainer.new()
-	_detail.add_child(id_row)
-	id_row.add_child(_label("Id"))
-	var id_edit := LineEdit.new()
-	id_edit.text = _conversation.id
-	id_edit.size_flags_horizontal = SIZE_EXPAND_FILL
-	id_edit.text_changed.connect(_on_id_changed)
-	id_row.add_child(id_edit)
-	_render_when()
 
-	_detail.add_child(_label("Lines (the customer says them in this order)"))
-	for i: int in _conversation.lines.size():
-		_detail.add_child(_line_row(i))
-	_detail.add_child(_button("Add line", _add_line))
+# Adds [param node] (the conversation, a Choice or a Reply) and the tree under it to [param item].
+# The item's metadata is [node, the array that holds it]; null for the conversation.
+func _fill_tree(item: TreeItem, node: Resource, holder: Variant) -> void:
+	item.set_metadata(0, [node, holder])
+	item.set_text(0, _node_label(node))
+	if node is Choice:
+		for reply: Reply in node.replies:
+			if reply != null:
+				_fill_tree(item.create_child(), reply, node.replies)
+	elif node is Reply:
+		for choice: Choice in node.choices:
+			if choice != null:
+				_fill_tree(item.create_child(), choice, node.choices)
+
+
+func _tree_item(node: Resource, from: TreeItem = null) -> TreeItem:
+	var item := from if from != null else _tree.get_root()
+	if item == null:
+		return null
+	if item.get_metadata(0)[0] == node:
+		return item
+	for child: TreeItem in item.get_children():
+		var found := _tree_item(node, child)
+		if found != null:
+			return found
+	return null
+
+
+func _node_label(node: Resource) -> String:
+	if node is Conversation:
+		return "Conversation: " + conversation_label(node)
+	if node is Choice:
+		var tags := Story.tags(node.when, {})
+		if node.ends:
+			tags.append("ends")
+		return "> %s%s" % [node.text.left(50) if node.text != "" else "(no text)", "  [%s]" % ", ".join(tags) if not tags.is_empty() else ""]
+	var reply := node as Reply
+	var first := reply.lines[0].text.left(50) if not reply.lines.is_empty() and reply.lines[0] != null else "(no lines)"
+	var reply_tags := Story.tags(reply.when, reply.set_flags)
+	return "- %s%s" % [first, "  [%s]" % ", ".join(reply_tags) if not reply_tags.is_empty() else ""]
+
+
+# Draws the editor of the selected node.
+func _render_node() -> void:
+	for child: Node in _node_box.get_children():
+		child.queue_free()
+	if _node is Conversation:
+		var id_row := HBoxContainer.new()
+		_node_box.add_child(id_row)
+		id_row.add_child(_label("Id"))
+		var id_edit := LineEdit.new()
+		id_edit.text = _conversation.id
+		id_edit.size_flags_horizontal = SIZE_EXPAND_FILL
+		id_edit.text_changed.connect(_on_id_changed)
+		id_row.add_child(id_edit)
+		_render_when()
+		_render_lines(_conversation)
+		_node_box.add_child(_button("Add a choice for the player", _add_choice.bind(_conversation)))
+	elif _node is Choice:
+		var choice := _node as Choice
+		var text_row := HBoxContainer.new()
+		_node_box.add_child(text_row)
+		text_row.add_child(_label("The player says"))
+		var text := LineEdit.new()
+		text.text = choice.text
+		text.size_flags_horizontal = SIZE_EXPAND_FILL
+		text.text_changed.connect(func(changed: String) -> void:
+			choice.text = changed
+			_relabel())
+		text_row.add_child(text)
+		var ends := CheckBox.new()
+		ends.text = "Ends the conversation after the reply"
+		ends.button_pressed = choice.ends
+		ends.toggled.connect(func(on: bool) -> void:
+			choice.ends = on
+			_relabel())
+		_node_box.add_child(ends)
+		_node_box.add_child(_label("Offered when (empty: always)"))
+		_condition_rows(choice)
+		_node_box.add_child(_label("The first reply whose condition matches plays."))
+		_node_box.add_child(_node_buttons([["Add a reply", _add_reply.bind(choice)]]))
+	else:
+		var reply := _node as Reply
+		_node_box.add_child(_label("Plays when (empty: always)"))
+		_condition_rows(reply)
+		_sets_row(reply)
+		_render_lines(reply)
+		_node_box.add_child(_node_buttons([["Add a choice for the player", _add_choice.bind(reply)]]))
+
+
+# The buttons of a choice or a reply: [param extra] ([text, action] pairs), then Up, Down, Delete.
+func _node_buttons(extra: Array) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	for pair: Array in extra:
+		row.add_child(_button(pair[0], pair[1]))
+	row.add_child(_button("Up", _move_node.bind(-1)))
+	row.add_child(_button("Down", _move_node.bind(1)))
+	row.add_child(_button("Delete", _delete_node))
+	return row
+
+
+func _render_lines(reply: Reply) -> void:
+	_node_box.add_child(_label("Lines (the customer says them in this order)"))
+	for i: int in reply.lines.size():
+		_node_box.add_child(_line_row(reply.lines, i))
+	_node_box.add_child(_button("Add line", _add_line.bind(reply.lines)))
+
+
+func _relabel() -> void:
+	var item := _tree.get_selected()
+	if item != null:
+		item.set_text(0, _node_label(_node))
+	_touch()
+
+
+func _add_choice(to: Reply) -> void:
+	var choice := Choice.new()
+	var reply := Reply.new()
+	reply.lines = [DialogueLine.new()]
+	choice.replies = [reply]
+	to.choices.append(choice)
+	_node = choice
+	_touch()
+	_render_detail()
+
+
+func _add_reply(to: Choice) -> void:
+	var reply := Reply.new()
+	reply.lines = [DialogueLine.new()]
+	to.replies.append(reply)
+	_node = reply
+	_touch()
+	_render_detail()
+
+
+func _move_node(step: int) -> void:
+	var holder: Variant = _tree_item(_node).get_metadata(0)[1]
+	if holder == null:
+		return
+	var index: int = holder.find(_node)
+	var to := index + step
+	if to < 0 or to >= holder.size():
+		return
+	holder[index] = holder[to]
+	holder[to] = _node
+	_touch()
+	_render_detail()
+
+
+func _delete_node() -> void:
+	var item := _tree_item(_node)
+	var holder: Array = item.get_metadata(0)[1]
+	holder.erase(_node)
+	_node = item.get_parent().get_metadata(0)[0]
+	_touch()
+	_render_detail()
 
 
 ## The trigger, once, and the condition of the conversation. A condition is made on the first edit.
 func _render_when() -> void:
 	var c := _conversation
-	var when := c.when if c.when != null else Condition.new()
 	var row := HBoxContainer.new()
-	_detail.add_child(row)
+	_node_box.add_child(row)
 	row.add_child(_label("Plays on"))
 	var trigger := OptionButton.new()
 	for key: String in Conversation.Trigger.keys():
@@ -453,8 +609,15 @@ func _render_when() -> void:
 		c.effect = picked
 		_touch()))
 
+	_condition_rows(c)
+	_sets_row(c)
+
+
+# The days and flags of [param holder]'s condition (a Reply or a Choice); made on the first edit.
+func _condition_rows(holder: Resource) -> void:
+	var when: Condition = holder.when if holder.when != null else Condition.new()
 	var days := HBoxContainer.new()
-	_detail.add_child(days)
+	_node_box.add_child(days)
 	days.add_child(_label("Days"))
 	for field: String in ["from_day", "to_day"]:
 		var box := SpinBox.new()
@@ -462,13 +625,12 @@ func _render_when() -> void:
 		box.max_value = 7
 		box.value = when.get(field)
 		box.value_changed.connect(func(value: float) -> void:
-			_condition().set(field, int(value))
+			_condition_of(holder).set(field, int(value))
 			_changed_when())
 		days.add_child(box)
-
 	for field: String in ["need_flags", "not_flags"]:
 		var flags_row := HBoxContainer.new()
-		_detail.add_child(flags_row)
+		_node_box.add_child(flags_row)
 		flags_row.add_child(_label("Needs flags" if field == "need_flags" else "Not with flags"))
 		var edit := FlagField.new(", ".join(PackedStringArray(when.get(field))), "flag_a, flag_b", _offers)
 		edit.edited.connect(func(text: String) -> void:
@@ -476,20 +638,22 @@ func _render_when() -> void:
 			for part: String in text.split(",", false):
 				if part.strip_edges() != "":
 					names.append(StringName(part.strip_edges()))
-			_condition().set(field, names)
+			_condition_of(holder).set(field, names)
 			_changed_when())
 		flags_row.add_child(edit)
 
+
+func _sets_row(reply: Reply) -> void:
 	var sets_row := HBoxContainer.new()
-	_detail.add_child(sets_row)
+	_node_box.add_child(sets_row)
 	sets_row.add_child(_label("Sets flags"))
-	var sets := FlagField.new(flags_text(c.set_flags), "flag_a, sign_bell=2, flag_b=0 (0 clears)", _offers)
+	var sets := FlagField.new(flags_text(reply.set_flags), "flag_a, sign_bell=2, flag_b=0 (0 clears)", _offers)
 	sets.edited.connect(func(text: String) -> void:
 		var parsed: Variant = parse_flags(text)
 		if parsed is String:
 			_show_status("Sets flags not changed: " + parsed)
 			return
-		c.set_flags = parsed
+		reply.set_flags = parsed
 		_show_status("")
 		_changed_when())
 	sets_row.add_child(sets)
@@ -527,15 +691,15 @@ static func parse_flags(text: String) -> Variant:
 	return flags
 
 
-func _condition() -> Condition:
-	if _conversation.when == null:
-		_conversation.when = Condition.new()
-	return _conversation.when
+func _condition_of(holder: Resource) -> Condition:
+	if holder.when == null:
+		holder.when = Condition.new()
+	return holder.when
 
 
 func _changed_when() -> void:
 	_conversation_list.set_item_text(_customer.conversations.find(_conversation), conversation_label(_conversation))
-	_touch()
+	_relabel()
 
 
 ## The id and when it plays, for the conversation list.
@@ -557,11 +721,11 @@ static func conversation_label(c: Conversation) -> String:
 	return "%s  (%s)" % [c.id, ", ".join(parts)]
 
 
-func _line_row(index: int) -> Control:
-	var line := _conversation.lines[index]
+func _line_row(lines: Array[DialogueLine], index: int) -> Control:
+	var line := lines[index]
 	if line == null:
 		line = DialogueLine.new()
-		_conversation.lines[index] = line
+		lines[index] = line
 	var row := HBoxContainer.new()
 	var side := VBoxContainer.new()
 	side.custom_minimum_size.x = 160
@@ -573,9 +737,9 @@ func _line_row(index: int) -> Control:
 	var buttons := HBoxContainer.new()
 	side.add_child(buttons)
 	buttons.add_child(_button("Play", _play_line.bind(line)))
-	buttons.add_child(_button("Up", _move_line.bind(index, -1)))
-	buttons.add_child(_button("Down", _move_line.bind(index, 1)))
-	buttons.add_child(_button("X", _remove_line.bind(index)))
+	buttons.add_child(_button("Up", _move_line.bind(lines, index, -1)))
+	buttons.add_child(_button("Down", _move_line.bind(lines, index, 1)))
+	buttons.add_child(_button("X", _remove_line.bind(lines, index)))
 	var text := TextEdit.new()
 	text.text = line.text
 	text.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
@@ -583,7 +747,7 @@ func _line_row(index: int) -> Control:
 	text.size_flags_horizontal = SIZE_EXPAND_FILL
 	text.text_changed.connect(func() -> void:
 		line.text = text.text
-		_touch())
+		_relabel())
 	row.add_child(text)
 	return row
 
@@ -648,25 +812,25 @@ func _on_id_changed(text: String) -> void:
 	_touch()
 
 
-func _add_line() -> void:
-	_conversation.lines.append(DialogueLine.new())
+func _add_line(lines: Array[DialogueLine]) -> void:
+	lines.append(DialogueLine.new())
 	_touch()
 	_render_detail()
 
 
-func _move_line(index: int, step: int) -> void:
+func _move_line(lines: Array[DialogueLine], index: int, step: int) -> void:
 	var to := index + step
-	if to < 0 or to >= _conversation.lines.size():
+	if to < 0 or to >= lines.size():
 		return
-	var line := _conversation.lines[index]
-	_conversation.lines[index] = _conversation.lines[to]
-	_conversation.lines[to] = line
+	var line := lines[index]
+	lines[index] = lines[to]
+	lines[to] = line
 	_touch()
 	_render_detail()
 
 
-func _remove_line(index: int) -> void:
-	_conversation.lines.remove_at(index)
+func _remove_line(lines: Array[DialogueLine], index: int) -> void:
+	lines.remove_at(index)
 	_touch()
 	_render_detail()
 

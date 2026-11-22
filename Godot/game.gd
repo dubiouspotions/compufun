@@ -299,6 +299,45 @@ func _put_flag(flag_name: StringName, value: int) -> void:
 		flags[flag_name] = value
 
 
+## The choices of [param reply] that the player can say now: their condition matches, and one of
+## their replies can play. In the reply's order.
+func offered(reply: Reply) -> Array[Choice]:
+	var found: Array[Choice] = []
+	if reply == null:
+		return found
+	for choice: Choice in reply.choices:
+		if choice != null and _met(choice.when) and reply_to(choice) != null:
+			found.append(choice)
+	return found
+
+
+## The reply that [param choice] gets now: the first whose condition matches; null when none does.
+func reply_to(choice: Choice) -> Reply:
+	for reply: Reply in choice.replies:
+		if reply != null and _met(reply.when):
+			return reply
+	return null
+
+
+## The player says [param choice] to the customer who talks or answers the phone: their reply plays
+## and sets its flags. Returns the reply; null, with an error, when nobody talks or no reply can play.
+func choose(choice: Choice) -> Reply:
+	if conversation == null or choice == null:
+		push_error("Game.choose: no conversation plays, or no choice (%s)" % choice)
+		return null
+	var reply := reply_to(choice)
+	if reply == null:
+		push_error("Game.choose: '%s' has no reply that can play on day %d with flags %s" % [choice.text, day_number, flags])
+		return null
+	_set_flags(reply.set_flags, "a reply to '%s'" % choice.text)
+	changed.emit()
+	return reply
+
+
+func _met(when: Condition) -> bool:
+	return when == null or when.is_met(day_number, flags)
+
+
 ## The first conversation of [param who] with [param trigger] whose condition matches now, and
 ## that has not played if it plays once. null when none matches.
 func matching_conversation(who: Customer, trigger: Conversation.Trigger) -> Conversation:
@@ -307,7 +346,7 @@ func matching_conversation(who: Customer, trigger: Conversation.Trigger) -> Conv
 			continue
 		if c.once and seen.has(_seen_key(who, c)):
 			continue
-		if c.when != null and not c.when.is_met(day_number, flags):
+		if not _met(c.when):
 			continue
 		return c
 	return null

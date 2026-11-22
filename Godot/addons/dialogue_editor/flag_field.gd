@@ -85,16 +85,8 @@ static func index(customers: Array[Customer], days: Array[Day], errors: Array[St
 	for c: Customer in customers:
 		var who := c.resource_path.get_file().get_basename()
 		for conversation: Conversation in c.conversations:
-			if conversation == null:
-				continue
-			var where := "%s/%s" % [who, conversation.id]
-			_note_sets(setters, conversation.set_flags, where)
-			if conversation.when == null:
-				continue
-			for flag: StringName in conversation.when.need_flags:
-				_note(checkers, flag, where)
-			for flag: StringName in conversation.when.not_flags:
-				_note(checkers, flag, where + " (not)")
+			if conversation != null:
+				_scan(conversation, "%s/%s" % [who, conversation.id], setters, checkers)
 	for d: Day in days:
 		_note_sets(setters, d.set_flags, "day %d" % d.number)
 	var signs := _sign_titles(errors)
@@ -116,6 +108,30 @@ static func offers(flag_index: Dictionary) -> Dictionary:
 			var users: PackedStringArray = setters.get(flag, PackedStringArray()) + checkers.get(flag, PackedStringArray())
 			known[flag] = ", ".join(users.slice(0, 3)) + (", ..." if users.size() > 3 else "")
 	return known
+
+
+# Notes the flags that [param reply] and the tree under it set and check. [param where] names it;
+# a choice under it adds its text.
+static func _scan(reply: Reply, where: String, setters: Dictionary[StringName, PackedStringArray], checkers: Dictionary[StringName, PackedStringArray]) -> void:
+	_note_sets(setters, reply.set_flags, where)
+	_note_when(checkers, reply.when, where)
+	for choice: Choice in reply.choices:
+		if choice == null:
+			continue
+		var asked := "%s > \"%s\"" % [where, choice.text.left(30)]
+		_note_when(checkers, choice.when, asked)
+		for each: Reply in choice.replies:
+			if each != null:
+				_scan(each, asked, setters, checkers)
+
+
+static func _note_when(checkers: Dictionary[StringName, PackedStringArray], when: Condition, where: String) -> void:
+	if when == null:
+		return
+	for flag: StringName in when.need_flags:
+		_note(checkers, flag, where)
+	for flag: StringName in when.not_flags:
+		_note(checkers, flag, where + " (not)")
 
 
 static func _note_sets(setters: Dictionary[StringName, PackedStringArray], sets: Dictionary[StringName, int], where: String) -> void:

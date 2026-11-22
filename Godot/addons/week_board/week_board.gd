@@ -21,6 +21,8 @@ var _dirty: Dictionary[String, bool] = {}
 var _status: Label
 var _columns: HBoxContainer
 var _flags: Tree
+## The missing links of the week (Story.missing_links), one per row.
+var _links: ItemList
 
 
 func _ready() -> void:
@@ -55,7 +57,19 @@ func _ready() -> void:
 	for i: int in 3:
 		_flags.set_column_title(i, ["Flag", "Set by", "Checked by"][i])
 		_flags.set_column_expand(i, true)
-	split.add_child(_flags)
+	var bottom := HSplitContainer.new()
+	bottom.size_flags_vertical = SIZE_EXPAND_FILL
+	split.add_child(bottom)
+	_flags.size_flags_horizontal = SIZE_EXPAND_FILL
+	bottom.add_child(_flags)
+	var links_box := VBoxContainer.new()
+	links_box.custom_minimum_size.x = 420
+	bottom.add_child(links_box)
+	links_box.add_child(_label("Missing links (also: godot --headless -s res://dev/story.gd)"))
+	_links = ItemList.new()
+	_links.size_flags_vertical = SIZE_EXPAND_FILL
+	_links.max_text_lines = 3
+	links_box.add_child(_links)
 	refresh()
 
 
@@ -263,9 +277,18 @@ func _open_in_dialogue(c: Customer) -> void:
 	dialogue.show_customer(c.resource_path)
 
 
-## Lists every flag that a conversation sets or checks, and the flag of every corruption sign.
+## Lists every flag that a conversation sets or checks, and the flag of every corruption sign, and
+## the week's missing links.
 func _fill_flags() -> void:
 	_flags.clear()
+	_links.clear()
+	var link_errors: Array[String] = []
+	for link: String in Story.missing_links(_customers, _days, link_errors):
+		_links.add_item(link)
+	if _links.item_count == 0:
+		_links.add_item("None.")
+	for error: String in link_errors:
+		_fail(error)
 	var errors: Array[String] = []
 	var flag_index := FlagField.index(_customers, _days, errors)
 	for error: String in errors:

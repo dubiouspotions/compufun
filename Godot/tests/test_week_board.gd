@@ -15,6 +15,7 @@ func run() -> void:
 	for row: TreeItem in board._flags.get_root().get_children():
 		flags.append(row.get_text(0))
 	check("the Pipedream sign's flag is listed", flags.has("sign_pipedream"), true)
+	check("the missing links list is filled", board._links.item_count > 0, true)
 	board._days[0].set_flags = {&"sign_pipedream": 1}
 	board._fill_flags()
 	var setter := ""

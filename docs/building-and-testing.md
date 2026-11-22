@@ -122,6 +122,18 @@ templates (Editor > Manage Export Templates).
    `http://127.0.0.1:8060/index.html`. The Web preset is single-threaded, so it needs no
    cross-origin isolation headers. Read the browser's console for errors from `live_voice.js`.
 
+## The story
+
+`dev/story.gd` prints the story as text: the missing links of the week (flags that nothing sets
+or checks, choices without a reply, errands whose customer has nothing to say that day), or an
+outline of each customer's conversation tree. Read the outline instead of the `.tres` to follow a
+conversation; fix a missing link in the data, then run it again until it lists none.
+
+```sh
+"$GODOT" --headless -s res://dev/story.gd                          # missing links
+"$GODOT" --headless -s res://dev/story.gd -- outline [customer]    # the trees
+```
+
 ## Voices
 
 **Layers.** A line's voice is three layers, each over the one below (`Voices.layer`): the
