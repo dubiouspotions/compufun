@@ -91,7 +91,9 @@ running computer is connected; CompuFunDB: always):
 - **The glass around the picture is drawn like the world.** Outside the lit picture, the close-up
   draws the glass at the centre of each world-buffer pixel (`world_pixel`), with `psx_post`'s
   dither and colour cut (`psx.gdshaderinc`), so its rounded corners step like the 3D bezel beside
-  them. Past the tube's face it is transparent, and the 3D monitor shows.
+  them. Past the tube's face it is transparent. The 3D screen cuts its corners out there too, so
+  the monitor's recess shows, as through a bezel's rounded opening; the two looks keep the same
+  `corner_radius` so their faces meet.
 - **The mouse follows the curve.** `CrtScreen.bend()` is the GDScript twin of `crt_bend()`; change
   both together. Both read the same uniforms, so a look can't make them disagree.
 - **The buffer is not in a SubViewportContainer.** Godot works out the hover inside a container's

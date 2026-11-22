@@ -34,5 +34,9 @@ void fragment() {
 	color = crt_tube_light(color, uv, TIME);
 	float aa = fwidth(uv.y);
 	color *= crt_picture_edge(uv, aa);
-	ALBEDO = max(color, black_level) * crt_tube_face(UV, corner_radius, fwidth(UV.y));
+	// Past the tube's rounded face, the monitor's recess shows, as through a bezel's rounded opening.
+	if (crt_tube_face(UV, corner_radius, fwidth(UV.y)) < 0.5) {
+		discard;
+	}
+	ALBEDO = max(color, black_level);
 }
