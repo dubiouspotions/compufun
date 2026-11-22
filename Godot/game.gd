@@ -241,6 +241,22 @@ func customer_left() -> void:
 	changed.emit()
 
 
+## Loads the week from the story files with [param drafts] over them (see [method StoryFiles.load_week])
+## and plays it from now on. Returns the week's errors; with any, the week that plays stays as it
+## was.
+func load_story(drafts: Dictionary[String, String] = {}) -> PackedStringArray:
+	push_error("Game.load_story: not built yet (%d drafts)" % drafts.size())
+	return PackedStringArray(["Game.load_story is not built yet"])
+
+
+## Jumps to [param errand]'s day, with the errands before it come and gone, and its customer at the
+## counter playing the conversation for [param trigger] (a pick-up and a phone call with their
+## computer done). For the Story Lab's Play here. Returns why it can't, or "".
+func play_errand(errand: Errand, trigger: Conversation.Trigger = Conversation.Trigger.ARRIVE) -> String:
+	push_error("Game.play_errand: not built yet (%s, %d)" % [errand.code, trigger])
+	return "Game.play_errand is not built yet"
+
+
 ## The day numbers, 1 to 7, that have a day file at [constant DAY_PATH], in order.
 func day_numbers() -> Array[int]:
 	var found: Array[int] = []
