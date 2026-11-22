@@ -1,12 +1,14 @@
 extends CanvasLayer
-## The loading screen: the CompuFun logo draws itself in while main.tscn loads. Then the game starts
+## The loading screen: the CompuFun logo draws itself in while main.tscn loads, as the CompuFun
+## jingle (the Jingle player) plays from the first frame. Then the game starts
 ## underneath, the logo's letters turn into windows onto it, and the paper zooms in through the
 ## middle of the logo until the game fills the screen.
 
 const GAME_SCENE: String = "res://main.tscn"
 
-## The shortest time the logo takes to draw in, in seconds, so it does not flash by.
-@export var min_seconds: float = 1.5
+## The shortest time the logo takes to draw in, in seconds, so it does not flash by. 2.0 ends the
+## draw-in with the jingle's last note, which then fades out.
+@export var min_seconds: float = 2.0
 ## How long the whole logo stays before the game shows through it, in seconds.
 @export var hold_seconds: float = 0.3
 ## How long the letters take to turn see-through, in seconds.
@@ -46,6 +48,7 @@ func _process(_delta: float) -> void:
 	var status := ResourceLoader.load_threaded_get_status(GAME_SCENE, progress)
 	if _start_ms < 0:
 		_start_ms = Time.get_ticks_msec()
+		%Jingle.play()
 	var seconds := (Time.get_ticks_msec() - _start_ms) / 1000.0
 	var time_share := minf(seconds / maxf(min_seconds, 0.001), 1.0)
 	match status:
