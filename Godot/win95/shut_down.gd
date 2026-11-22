@@ -1,6 +1,6 @@
 extends "res://win95/window.gd"
-## The Shut Down Windows dialog. Shut down covers the screen with safe_off; restart and log on
-## close every window.
+## The Shut Down Windows dialog. Shut down covers the screen with safe_off until the computer's power
+## goes off (ComputerState.shut_down); restart and log on close every window.
 
 @export var safe_off: PackedScene
 ## Plays on Yes, before Windows shuts down, restarts or logs off; null plays nothing.
@@ -22,5 +22,6 @@ func _on_yes() -> void:
 	Win95Desktop.play_sound(exit_sound, desktop)
 	if %ShutDown.button_pressed:
 		desktop.cover(safe_off)
+		desktop.computer.shut_down()
 	else:
 		desktop.close_all()

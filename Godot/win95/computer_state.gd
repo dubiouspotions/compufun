@@ -11,6 +11,8 @@ signal booted
 signal hanging(seconds: float)
 ## The power went off.
 signal powered_off
+## Windows shut down (Start > Shut Down). The power stays on, and only a power cycle boots it again.
+signal shut_down_done
 ## A setter changed [member setup]; re-read what you show.
 signal changed
 
@@ -384,6 +386,16 @@ func _find_container(container: Array, file: Win95File) -> Variant:
 			if found != null:
 				return found
 	return null
+
+
+## Shuts Windows down: the running boot ends, with its hang and its test (see
+## [method reached_desktop]), and [signal shut_down_done] fires. The power stays on, so the computer
+## boots again only after its power button turns it off and on. Does nothing while it is off.
+func shut_down() -> void:
+	if not is_on:
+		return
+	_boots += 1
+	shut_down_done.emit()
 
 
 func _sync() -> void:

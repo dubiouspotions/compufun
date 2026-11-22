@@ -101,6 +101,7 @@ func _ready() -> void:
 		_stock_palette = _SHARED_PALETTE.duplicate() as Win95Palette
 	_state.booted.connect(_on_booted)
 	_state.powered_off.connect(_on_powered_off)
+	_state.shut_down_done.connect(_on_shut_down)
 	_state.hanging.connect(_on_hanging)
 	_buzz = AudioStreamPlayer.new()
 	_buzz.stream = hang_buzz
@@ -130,9 +131,7 @@ func _on_booted() -> void:
 	_end_hang()
 	var setup := _state.setup
 	_desktop.close_all()
-	for child in get_children():
-		if child.get_script() == _COVER:
-			child.queue_free()
+	_uncover()
 	_apply_look()
 	_drive_c = _folder("(C:)", "drive_hard_32.png")
 	_control_panel = _folder("Control Panel", "folder_control_panel_32.png")
@@ -169,7 +168,23 @@ func _on_powered_off() -> void:
 	pointer_visible = false
 	if is_instance_valid(_boot):
 		_boot.queue_free()
+	_uncover()
 	_no_signal.show()
+
+
+# The shut-down screen (win95/shut_down.gd covers the screen with it) stays until the power goes off.
+func _on_shut_down() -> void:
+	_end_hang()
+	pointer_visible = false
+	_desktop.close_all()
+	if is_instance_valid(_boot):
+		_boot.queue_free()
+
+
+func _uncover() -> void:
+	for child in get_children():
+		if child.get_script() == _COVER:
+			child.queue_free()
 
 
 # The setup's colour scheme and wallpaper, as they are now: on boot and after every change.
