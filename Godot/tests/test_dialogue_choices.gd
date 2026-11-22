@@ -1,26 +1,31 @@
 extends "res://tests/test.gd"
-## The dialogue box walks a conversation tree (with the fades off): a click finishes a line, then goes on; under the last
-## line it shows the choices, a pick plays the reply, a reply without choices returns to its list, a deeper list goes back up, and the leave
-## button ends the conversation.
+## The dialogue box plays a conversation from a story file (with the fades off): a click finishes a
+## line, then goes on; under the last line it shows the choices, a pick plays the reply, a + reply
+## returns to its list, a deeper list goes back up, and the leave button goes on below the list.
+
+const ERRAND := """customer: skater_bro
+
+== drop-off
+(neutral) Hi.
++ How long?
+	(neutral) Since Monday.
++ Why?
+	(neutral) Hm.
+	(neutral) Installed something.
+	+ What?
+		(neutral) Cambion.
+(neutral) See you.
+"""
 
 
 func run() -> void:
 	var c := Customer.new()
 	c.display_name = "Pat"
-	var talk := Conversation.new()
-	talk.id = &"arrive"
-	talk.lines = [line("Hi.")]
-	var how := choice("How long?", reply_of("Since Monday."))
-	var deep_reply := reply_of("Installed something.")
-	deep_reply.lines.push_front(line("Hm."))
-	var why := choice("Why?", deep_reply)
-	deep_reply.choices = [choice("What?", reply_of("Cambion."))]
-	talk.choices = [how, why]
-	c.conversations = [talk]
-	game.start_day(make_day(1, [[c, load("res://problems/no_sound.tres")]]))
-	game.open_shop()
-	tick(1.0)
-	game.customer_arrived()
+	var parsed := StoryFormat.parse_errand(ERRAND, "res://story/errands/0101_pat.errand")
+	check("the errand parses", parsed.errors, PackedStringArray())
+	var talk: Conversation = (parsed.value as Errand).conversations[0]
+	game.start_day(make_day(1, []))
+	game.conversation = talk
 
 	var box: Control = (load("res://ui/dialogue_overlay.tscn") as PackedScene).instantiate()
 	root.add_child(box)
@@ -52,9 +57,13 @@ func run() -> void:
 	check("on by itself once the line has been quiet long enough: a deeper list, with a way back", [text(box), buttons(box)], ["Installed something.", ["> What?", "> Something else..."]])
 	press(box, 1)
 	await process_frame
-	check("back up", buttons(box).size(), 3)
+	var how_long: Button = live(box)[0]
+	check("back up, the picks greyed", [buttons(box).size(), how_long.get_theme_color(&"font_color")], [3, box.get(&"asked_color")])
 	press(box, 2)
-	check("leave ends the conversation", ended[0], true)
+	await settle(box)
+	check("leave goes on below the list", [text(box), buttons(box), ended[0]], ["See you.", [], false])
+	click(box)
+	check("then the conversation is over", ended[0], true)
 
 	box.set(&"choice_fade_seconds", 0.18)
 	box.call(&"start", c, talk)
@@ -81,34 +90,16 @@ func click(box: Control) -> void:
 
 
 func press(box: Control, index: int) -> void:
-	var live := box.get_node("%Choices").get_children().filter(func(n: Node) -> bool: return not n.is_queued_for_deletion())
-	(live[index] as Button).pressed.emit()
+	(live(box)[index] as Button).pressed.emit()
+
+
+func live(box: Control) -> Array:
+	return box.get_node("%Choices").get_children().filter(func(n: Node) -> bool: return not n.is_queued_for_deletion())
 
 
 func buttons(box: Control) -> Array:
-	return box.get_node("%Choices").get_children().filter(func(n: Node) -> bool: return not n.is_queued_for_deletion()).map(func(b: Button) -> String: return b.text)
+	return live(box).map(func(b: Button) -> String: return b.text)
 
 
 func text(box: Control) -> String:
 	return (box.get_node("%LineLabel") as Label).text
-
-
-func line(text_: String) -> DialogueLine:
-	var each := DialogueLine.new()
-	each.text = text_
-	return each
-
-
-func choice(text_: String, reply: Reply) -> Choice:
-	var each := Choice.new()
-	each.text = text_
-	each.replies = [reply]
-	return each
-
-
-func reply_of(text_: String) -> Reply:
-	var reply := Reply.new()
-	reply.lines = [line(text_)]
-	return reply
-
-
