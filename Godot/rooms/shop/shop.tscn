@@ -357,7 +357,7 @@ mesh = SubResource("QuadMesh_7gxtd")
 [node name="Sign" parent="Room" unique_id=1907604386 instance=ExtResource("7_mjyfn") groups=["logo_signs"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.71, -5.44)
 
-[node name="SignLeft" parent="Room" instance=ExtResource("7_mjyfn") groups=["logo_signs"]]
+[node name="SignLeft" parent="Room" instance=ExtResource("7_mjyfn") groups=["logo_signs", "solitaire_posters"]]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3.99, 1.95, -1.0)
 
 [node name="OpenSign" parent="Room" instance=ExtResource("28_open_sign")]
@@ -484,7 +484,7 @@ size = Vector3(0.32, 0.42, 0.46)
 [node name="Poster" parent="Room" instance=ExtResource("23_poster") groups=["shop_poster"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 1.5, -5.445)
 
-[node name="CommercialPoster" parent="Room" instance=ExtResource("23_poster")]
+[node name="CommercialPoster" parent="Room" instance=ExtResource("23_poster") groups=["solitaire_posters"]]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.97, 1.65, -4.95)
 texture = ExtResource("31_commercial")
 size = Vector2(0.56, 0.8)

@@ -8,4 +8,5 @@ script = ExtResource("day")
 number = 5
 warp = 0.6
 rain = true
+close_signs = Array[StringName]([&"posters_bounce"])
 errands = Array[ExtResource("errand")]([])
