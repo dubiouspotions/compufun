@@ -20,18 +20,6 @@ border_width_right = 4
 border_width_bottom = 4
 border_color = Color(0.3, 0.3, 0.34, 1)
 
-[sub_resource type="StyleBoxFlat" id="next_box"]
-content_margin_left = 24.0
-content_margin_top = 8.0
-content_margin_right = 24.0
-content_margin_bottom = 8.0
-bg_color = Color(0.05, 0.05, 0.09, 1)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.3, 0.3, 0.34, 1)
-
 [node name="DialogueOverlay" type="Control" unique_id=574008241]
 layout_mode = 3
 anchors_preset = 15
@@ -43,8 +31,6 @@ head_above = 0.18
 sway_degrees = 1.2
 sway_seconds = 5.0
 breath_rise = 0.012
-next_text = "Next >"
-last_text = "Done >"
 
 [node name="Box" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -116,30 +102,6 @@ anchor_bottom = 1.0
 mouse_filter = 2
 texture_filter = 1
 expand_mode = 1
-
-[node name="NextBox" type="PanelContainer" parent="."]
-layout_mode = 1
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -340.0
-offset_top = -112.0
-offset_right = -120.0
-offset_bottom = -52.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_styles/panel = SubResource("next_box")
-
-[node name="NextButton" type="Button" parent="NextBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.95, 0.92, 1)
-theme_override_colors/font_hover_color = Color(1, 0.82, 0.45, 1)
-theme_override_fonts/font = ExtResource("pixel_bold")
-theme_override_font_sizes/font_size = 28
-flat = true
-text = "Next >"
 
 [node name="Voice" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true

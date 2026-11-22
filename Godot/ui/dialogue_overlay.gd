@@ -1,10 +1,11 @@
 class_name DialogueOverlay
 extends Control
-## A customer talks: their portrait, one line of a conversation at a time. Under a reply's last
-## line, the player's choices, each a button that plays the customer's reply.
+## A customer talks: their portrait, one line of a conversation at a time. A click anywhere shows
+## the rest of a line that types, then goes to the next line; so does a pause after the voice ends.
+## Under a reply's last line, the player's choices, each a button that plays the customer's reply.
 ## The portrait sways and breathes, and shakes in time with the voice.
 
-## The conversation is over: the player clicked OK on the last line, or a choice that ends it.
+## The conversation is over: the last line is read, or a choice that ends it.
 signal finished
 
 const _NEUTRAL := &"neutral"
@@ -41,9 +42,12 @@ const _MATCH_NEUTRAL_HEIGHT := "young_entrepreneur/portrait_irritated03.png"
 @export_range(1.0, 60.0) var talk_follow: float = 25.0
 ## The portrait's crown moves in steps of this many screen pixels (at 1080p); 0 moves smoothly.
 @export_range(0.0, 4.0) var motion_step: float = 1.0
-## The Next button's text on every line but the last, and on the last.
-@export var next_text: String = "Next"
-@export var last_text: String = "OK"
+## Seconds of quiet, once a line is typed out and its voice has ended, before the next line comes on
+## its own; 0 waits for a click. Choices always wait for the player.
+@export_range(0.0, 10.0, 0.1) var auto_advance_seconds: float = 1.5
+## The colours of a choice, and of a choice under the mouse.
+@export var choice_color: Color = Color(0.96, 0.95, 0.92)
+@export var choice_hover_color: Color = Color(1.0, 0.82, 0.45)
 ## The colour of a choice that the player already picked in this conversation.
 @export var asked_color: Color = Color(0.6, 0.6, 0.62)
 
@@ -59,6 +63,8 @@ var _above: Array[Reply] = []
 var _asked: Dictionary[Choice, bool] = {}
 # The picked choice ends the conversation after its reply.
 var _ending: bool = false
+# Seconds since the shown line was typed out and its voice went quiet.
+var _quiet: float = 0.0
 var _line: int = 0
 # False while the box shows its own error line, which has no voice.
 var _voiced: bool = false
@@ -78,13 +84,12 @@ var _reach: float = 0.0
 @onready var _text: TypedLabel = %LineLabel
 @onready var _portrait_slot: Panel = %Portrait
 @onready var _portrait: TextureRect = %PortraitTexture
-@onready var _next: Button = %NextButton
 @onready var _choices: VBoxContainer = %Choices
 @onready var _voice: VoicePlayer = %Voice
 
 
 func _ready() -> void:
-	_next.pressed.connect(_on_next)
+	($Box as Control).gui_input.connect(_on_click)
 	_portrait_slot.resized.connect(_fit_portrait)
 	_slot_top = _portrait_slot.offset_top
 	_slot_bottom = _portrait_slot.offset_bottom
@@ -100,6 +105,24 @@ func _process(delta: float) -> void:
 	var breath := breath_rise * (0.5 + 0.5 * sin(TAU * _time / breath_seconds))
 	_portrait.rotation = _snap(deg_to_rad(sway + shake))
 	_portrait.scale = Vector2(1.0, 1.0 + _snap(breath + talk_rise * _talk))
+	var quiet := not _text.is_typing() and not _voice.playing and _voice.level() < 0.05
+	_quiet = _quiet + delta if quiet and not _choices.visible else 0.0
+	if auto_advance_seconds > 0.0 and _quiet >= auto_advance_seconds:
+		_advance()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	_on_click(event)
+
+
+# A click, or the accept key, while the box shows: on with the line.
+func _on_click(event: InputEvent) -> void:
+	if not is_visible_in_tree() or _lines.is_empty():
+		return
+	var click: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	if click or event.is_action_pressed(&"ui_accept"):
+		get_viewport().set_input_as_handled()
+		_advance()
 
 
 # Rounds [param share], a turn in radians or a stretch as a share of the height, so the crown
@@ -321,7 +344,7 @@ func _show_line() -> void:
 	var line := _lines[_line]
 	_text.type_out(line.text if line != null else "")
 	_show_portrait(line.pose if line != null else _NEUTRAL)
-	_next.text = next_text if _line < _lines.size() - 1 else last_text
+	_quiet = 0.0
 	_show_choices(_enter_choices() if _line >= _lines.size() - 1 else ([] as Array[Choice]))
 	_speak(line)
 
@@ -344,9 +367,13 @@ func _speak(line: DialogueLine) -> void:
 		_voice.say(line, _customer.voice, VoiceEffect.of(line, _conversation))
 
 
-func _on_next() -> void:
-	if _text.is_typing():  # a click while the line types shows the rest
+# Shows the rest of a line that types; else the next line, or the end. Choices wait for a pick.
+func _advance() -> void:
+	_quiet = 0.0
+	if _text.is_typing():
 		_text.finish()
+		return
+	if _choices.visible:
 		return
 	if _line >= _lines.size() - 1:
 		_after_reply()
@@ -379,7 +406,6 @@ func _show_choices(offered: Array[Choice]) -> void:
 	for child: Node in _choices.get_children():
 		child.queue_free()
 	_choices.visible = not offered.is_empty()
-	_next.get_parent().visible = offered.is_empty()
 	if offered.is_empty():
 		return
 	for choice: Choice in offered:
@@ -399,8 +425,8 @@ func _choice_button(text: String, action: Callable) -> Button:
 	button.flat = true
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	for color: StringName in [&"font_color", &"font_hover_color"]:
-		button.add_theme_color_override(color, _next.get_theme_color(color))
+	button.add_theme_color_override(&"font_color", choice_color)
+	button.add_theme_color_override(&"font_hover_color", choice_hover_color)
 	button.add_theme_font_override(&"font", _text.get_theme_font(&"font"))
 	button.add_theme_font_size_override(&"font_size", _text.get_theme_font_size(&"font_size"))
 	button.pressed.connect(action)
