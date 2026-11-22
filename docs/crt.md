@@ -7,6 +7,7 @@ bench screen (the Screen View) and the work computer (CompuFunDB).
 | --- | --- |
 | `shaders/crt.gdshader` | The CRT look of a close-up: curve, scanlines, mask, glow, convergence, focus, ghosting, noise, glass reflection, colour. |
 | `shaders/crt_world.gdshader` | A 3D monitor's screen: the same curve and light, without the mask and scanlines. |
+| `shaders/psx.gdshaderinc` | The PSX dither and colour cut, shared by `psx_post` and the close-up's glass border. |
 | `shaders/crt.gdshaderinc` | What both share: the curve (`crt_bend`), the tube's face, the tube's state and the software cursor. |
 | `shaders/crt_looks/` | The looks, as ShaderMaterials. `subtle_vga` is the Screen View's; `world_monitor` is the 3D screen's. |
 | `ui/crt_screen.gd` | A close-up's screen: shows the buffer through the look, bends the mouse, sets the cursor. |
@@ -87,6 +88,10 @@ running computer is connected; CompuFunDB: always):
   they follow the picture's rows with a smooth profile (`picture_lines`). In between they fade out.
 - **Sharp bilinear sampling.** At `softness` 0 and 2x the picture is pixel-exact; where the curve
   stretches it, only the pixel edges blend.
+- **The glass around the picture is drawn like the world.** Outside the lit picture, the close-up
+  draws the glass at the centre of each world-buffer pixel (`world_pixel`), with `psx_post`'s
+  dither and colour cut (`psx.gdshaderinc`), so its rounded corners step like the 3D bezel beside
+  them. Past the tube's face it is transparent, and the 3D monitor shows.
 - **The mouse follows the curve.** `CrtScreen.bend()` is the GDScript twin of `crt_bend()`; change
   both together. Both read the same uniforms, so a look can't make them disagree.
 - **The buffer is not in a SubViewportContainer.** Godot works out the hover inside a container's

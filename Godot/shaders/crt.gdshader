@@ -3,6 +3,7 @@
 shader_type canvas_item;
 
 #include "res://shaders/crt.gdshaderinc"
+#include "res://shaders/psx.gdshaderinc"
 
 /** The screen buffer; CrtScreen sets it. A headless compile, as in CI's export, rejects TEXTURE as a function argument. */
 uniform sampler2D screen_texture : filter_nearest;
@@ -22,6 +23,10 @@ uniform float vignette : hint_range(0.0, 1.0, 0.01) = 0.2;
 uniform float reflection : hint_range(0.0, 0.2, 0.005) = 0.0;
 /** The colour of the room's light on the glass. */
 uniform vec3 reflection_color : source_color = vec3(1.0, 0.95, 0.85);
+/** The size of a world buffer pixel in the UI's pixels: 4 at the design size of 1920 x 1080. The glass around the picture is drawn on that grid with the world's dither, so it meets the 3D bezel without a seam. */
+uniform float world_pixel : hint_range(1.0, 8.0, 1.0) = 4.0;
+/** Steps per colour channel of the glass around the picture; the world's psx_post cuts to 32. */
+uniform float world_levels : hint_range(2.0, 256.0) = 32.0;
 
 group_uniforms beam;
 /** How dark the gap between two lines of the picture is. VGA at 480 lines barely shows one. */
@@ -103,9 +108,18 @@ float hash(vec2 p) {
 }
 
 varying vec4 modulate;
+varying vec2 canvas_position;
 
 void vertex() {
 	modulate = COLOR;  // the node's modulate, which the Screen View fades
+	canvas_position = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy;
+}
+
+// The glass at glass position g over the light c: the black level and the room's reflection.
+vec3 glass(vec3 c, vec2 g) {
+	c = max(c, to_linear(black_level));
+	vec2 sheen = (g - vec2(0.3, 0.18)) * vec2(1.6, 2.4);
+	return c + reflection * to_linear(reflection_color) * (exp(-dot(sheen, sheen) * 2.0) + 0.3 * (1.0 - g.y));
 }
 
 void fragment() {
@@ -181,10 +195,15 @@ void fragment() {
 	color *= brightness * white_point;
 	color = crt_tube_light(color, uv, TIME);
 
-	color *= crt_picture_edge(uv, fwidth(uv.y));
-	color = max(color, to_linear(black_level));
-	vec2 sheen = (UV - vec2(0.3, 0.18)) * vec2(1.6, 2.4);
-	color += reflection * to_linear(reflection_color) * (exp(-dot(sheen, sheen) * 2.0) + 0.3 * (1.0 - UV.y));
-	color *= crt_tube_face(UV, corner_radius, fwidth(UV.y));
-	COLOR = vec4(to_display(color), 1.0) * modulate;
+	float inside = crt_picture_edge(uv, fwidth(uv.y));
+	vec3 picture = to_display(glass(color * inside, UV));
+	// Around the picture, the glass is drawn like the world: at the centre of each world pixel,
+	// then dithered and cut to the world's colours. Past the tube's rounded face, the 3D monitor
+	// under the overlay shows.
+	vec2 world = canvas_position / world_pixel;
+	vec2 glass_per_world = vec2(dFdx(UV.x) / dFdx(world.x), dFdy(UV.y) / dFdy(world.y));
+	vec2 snapped = UV + (floor(world) + 0.5 - world) * glass_per_world;
+	vec3 border = psx_cut(to_display(glass(vec3(0.0), snapped)), world_levels, psx_dither_offset(ivec2(floor(world))), 1.0);
+	float face = max(crt_tube_face(snapped, corner_radius, 1.0e-5), inside);
+	COLOR = vec4(mix(border, picture, inside), face) * modulate;
 }

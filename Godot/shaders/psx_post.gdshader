@@ -5,6 +5,8 @@
 // colour instead of the colour cut.
 shader_type canvas_item;
 
+#include "res://shaders/psx.gdshaderinc"
+
 /** Steps per colour channel. 32 is 15-bit colour, as on the PS1. 256 turns the cut off. */
 uniform float color_levels : hint_range(2.0, 256.0) = 32.0;
 /** Optional: one row of equal-width colour swatches, such as fade-grub-32x.png. */
@@ -19,12 +21,6 @@ uniform float vignette : hint_range(0.0, 1.0) = 0.0;
 uniform float vignette_start : hint_range(0.0, 1.0) = 0.4;
 /** How far the colours drift towards the 16 colours of Windows 95: 0 = no change, 1 = only those. */
 uniform float windows_shades : hint_range(0.0, 1.0) = 0.0;
-
-const float BAYER[16] = float[16](
-	0.0, 8.0, 2.0, 10.0,
-	12.0, 4.0, 14.0, 6.0,
-	3.0, 11.0, 1.0, 9.0,
-	15.0, 7.0, 13.0, 5.0);
 
 // The 16 colours of VGA, the Windows 95 palette.
 const vec3 WINDOWS_COLORS[16] = vec3[16](
@@ -65,16 +61,14 @@ void fragment() {
 	float from_centre = length(UV - 0.5) / length(vec2(0.5));
 	source.rgb *= 1.0 - vignette * smoothstep(vignette_start, 1.0, from_centre);
 	// The pattern follows the pixels of the source picture, so it scales up with the picture.
-	ivec2 cell = ivec2(floor(UV / TEXTURE_PIXEL_SIZE)) % 4;
-	float offset = (BAYER[cell.y * 4 + cell.x] + 0.5) / 16.0 - 0.5;
+	float offset = psx_dither_offset(ivec2(floor(UV / TEXTURE_PIXEL_SIZE)));
 	// The drift dithers between the Windows colours, as a 16-colour picture does.
 	source.rgb = mix(source.rgb, nearest_windows_color(source.rgb + offset * 0.25), windows_shades);
 	vec3 c;
 	if (palette_size > 0) {
 		c = nearest_palette_color(source.rgb + offset * dither / float(palette_size));
 	} else {
-		float steps = color_levels - 1.0;
-		c = floor(source.rgb * steps + 0.5 + offset * dither) / steps;
+		c = psx_cut(source.rgb, color_levels, offset, dither);
 	}
 	COLOR = vec4(clamp(c, 0.0, 1.0), source.a);
 }
