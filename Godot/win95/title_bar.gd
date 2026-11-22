@@ -54,6 +54,8 @@ var maximized := false:
 		_sync()
 
 
+var _pressed := false
+
 func _ready() -> void:
 	%Close.pressed.connect(close_pressed.emit)
 	%Minimize.pressed.connect(minimize_pressed.emit)
@@ -61,17 +63,24 @@ func _ready() -> void:
 	_sync()
 
 
+# Only a press on the title bar drags the window: a held button that only passes over it, carrying
+# an icon, does not.
 func _gui_input(event: InputEvent) -> void:
 	var motion := event as InputEventMouseMotion
-	if motion and motion.button_mask & MOUSE_BUTTON_MASK_LEFT:
+	if motion and _pressed and motion.button_mask & MOUSE_BUTTON_MASK_LEFT:
 		drag_moved.emit(motion.relative)
 	var button := event as InputEventMouseButton
-	if button and button.button_index == MOUSE_BUTTON_LEFT and button.pressed:
+	if button == null or button.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if button.pressed:
 		if is_on_icon(get_global_transform() * button.position):
-			icon_pressed.emit()
-		elif button.double_click:
+			icon_pressed.emit()  # the control menu; the icon doesn't drag the window
+			return
+		_pressed = true
+		if button.double_click:
 			double_clicked.emit()
-	if button and button.button_index == MOUSE_BUTTON_LEFT and not button.pressed:
+	elif _pressed:
+		_pressed = false
 		drag_ended.emit()
 
 
