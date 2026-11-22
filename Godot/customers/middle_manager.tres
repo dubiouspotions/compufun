@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Customer" format=3]
+
+[ext_resource type="Script" path="res://customers/conversation.gd" id="1_8g3ss"]
+[ext_resource type="Resource" path="res://people/middle_manager/person.tres" id="2_dq54v"]
+[ext_resource type="Script" path="res://customers/customer.gd" id="3_1ceor"]
+
+[resource]
+script = ExtResource("3_1ceor")
+display_name = "Middle manager"
+person = ExtResource("2_dq54v")

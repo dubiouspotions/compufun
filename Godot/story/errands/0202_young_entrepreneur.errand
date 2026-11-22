@@ -1,0 +1,15 @@
+customer: young_entrepreneur
+problem: bootfloppy
+brief:
+	The boot floppy is how Cambion got onto his computer. It carries only a Windows 95 logo: naming Cambion is too early here, and nothing points at it.
+
+== drop-off
+(neutral) Hello. Do you do business computers?
++ What's your business?
+	(happy) Import and export. Mostly import. Okay, mostly ideas, so far.
++ So, what's your problem?
+	(problem) My computer won't start. It just shows a bunch of text, something about a disk.
+	+ Did you put a floppy in?
+		(thinking) Just some software a guy gave me. Business stuff. Very cutting edge.
+	- OK, leave it with me. [end]
+		(neutral) Great. Time is money, you know.

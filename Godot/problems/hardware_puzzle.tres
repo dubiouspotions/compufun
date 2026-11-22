@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Problem" format=3]
+
+[ext_resource type="Script" path="res://problems/problem.gd" id="1_problem"]
+
+[resource]
+script = ExtResource("1_problem")
+short_name = &"hardware_puzzle"
+perceived_issue = "Computer doesn't start"
+symptoms = PackedStringArray("Computer doesn't start at all when clicking start button", "User has tampered with the hardware")
+hardware_steps = PackedStringArray("Remove the computer shell", "Re-arrange the hardware in their correct spots", "Replace missing hardware", "Remount the shell")
+software_steps = PackedStringArray()

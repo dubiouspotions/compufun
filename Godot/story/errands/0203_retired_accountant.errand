@@ -1,0 +1,18 @@
+customer: retired_accountant
+problem: no_sound
+brief:
+	Exactly the same issue as his first visit: the only duplicate problem of the week.
+
+== drop-off
+(irritated01) Hello again.
++ Back so soon?
+	(irritated02) Believe me, I'd rather not be.
++ So, what's your problem?
+	(irritated01) It's silent again! Since last night. I didn't touch a thing, I promise.
+	+ Really nothing? Not even the volume?
+		(thinking) Well... maybe I clicked the little speaker. Once. Or twice.
+	- OK, leave it with me. [end]
+		(irritated01) Please hurry. The tax office won't wait.
+
+== pick-up
+(happy) It plays its little tune again? Wonderful.

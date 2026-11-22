@@ -1,0 +1,18 @@
+customer: office_girl
+problem: inverted_colors
+brief:
+	The Young entrepreneur pranked her: High Contrast Black. Their emails go back and forth about it; nothing leads the player there.
+
+== drop-off
+(neutral) Hi. I hope you can help, I have a report due.
++ Busy at the office?
+	(irritated01) Always. And someone thinks pranks are a business strategy.
++ So, what's your problem?
+	(problem) All the colours on my computer have changed. Black and yellow everywhere. I can't read a thing.
+	+ Did someone use it?
+		(thinking) I left it on over lunch. When I came back, it looked like this.
+	- OK, leave it with me. [end]
+		(neutral) Thank you. Please make it normal again.
+
+== pick-up
+(happy) Normal colours! You're a lifesaver.

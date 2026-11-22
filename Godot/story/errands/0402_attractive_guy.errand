@@ -1,0 +1,19 @@
+customer: attractive_guy
+problem: screensaver
+brief:
+	A jock who doesn't care about computers, but his colleague at work has a cool screensaver, and he wants it too. The fix is the Pipes. No Cambion.
+
+== drop-off
+(neutral) Hey. Quick one, I've got the gym at six.
++ Big workout?
+	(happy) Legs. Always legs on a Tuesday.
++ So, what's your problem?
+	(problem) Look, I don't care about computers. But a guy at work has these pipes on his screen.
+	(happy) A good-looking guy like me needs a good-looking screensaver.
+	+ What do they look like?
+		(neutral) Pipes. Coloured ones. They grow all over the screen. Sick.
+	- OK, leave it with me. [end]
+		(happy) Make it look good.
+
+== pick-up
+(happy) Pipes? Nice. Now we're talking.
