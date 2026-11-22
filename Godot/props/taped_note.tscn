@@ -28,7 +28,7 @@ texture_filter = 2
 
 [sub_resource type="QuadMesh" id="QuadMesh_arrow"]
 material = SubResource("StandardMaterial3D_ink")
-size = Vector2(0.16, 0.048)
+size = Vector2(0.12, 0.088)
 
 [node name="TapedNote" type="Node3D"]
 
@@ -57,36 +57,22 @@ material_override = SubResource("ShaderMaterial_tape")
 mesh = SubResource("QuadMesh_tape")
 
 [node name="Text" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.315, 0.145, 0.005)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.315, 0, 0.005)
 pixel_size = 0.001
 shaded = true
 modulate = Color(0.06, 0.06, 0.12, 1)
 text = "Opening the shop:
-1. Start CompuFunDB"
+1. Start CompuFunDB
+2. Flip \"Open\" Sign"
 font_size = 58
 outline_modulate = Color(0.06, 0.06, 0.12, 1)
 outline_size = 8
 horizontal_alignment = 0
-vertical_alignment = 0
+vertical_alignment = 1
 autowrap_mode = 3
 width = 630.0
 line_spacing = 4.0
 
 [node name="Arrow" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, -0.043, 0.005)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26, -0.064, 0.005)
 mesh = SubResource("QuadMesh_arrow")
-
-[node name="Step2" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.315, -0.066, 0.005)
-pixel_size = 0.001
-shaded = true
-modulate = Color(0.06, 0.06, 0.12, 1)
-text = "2. Flip \"Open\" Sign"
-font_size = 58
-outline_modulate = Color(0.06, 0.06, 0.12, 1)
-outline_size = 8
-horizontal_alignment = 0
-vertical_alignment = 0
-autowrap_mode = 3
-width = 630.0
-line_spacing = 4.0

@@ -1,29 +1,46 @@
 #!/usr/bin/env python3
-"""Draws the hand-drawn arrow on the taped note: a slightly wobbly pen stroke pointing right with an
-open arrowhead, white on transparent (the material colours it), 1 px per mm.
-Usage: make_note_arrow.py Godot/materials/textures/note_arrow.png"""
+"""Draws the hand-drawn arrow on the taped note: a slightly wobbly pen stroke that runs down from the
+end of step 1, bends, and runs left to an open arrowhead at step 2. White on transparent (the
+material colours it), 1 px per mm. Usage: make_note_arrow.py Godot/materials/textures/note_arrow.png"""
 import math
 import struct
 import sys
 import zlib
 
-W, H = 160, 48
+W, H = 120, 88
+TOP = (100, 8)  # where the pen starts, under the end of step 1
+CORNER = (100, 63)
+TIP = (10, 63)  # the arrowhead's point, after the end of step 2
+BEND = 14  # the radius of the bend
 
 
-def shaft_y(x):
-    return 24 + 2.2 * math.sin(x * 0.04 + 0.3) + 0.8 * math.sin(x * 0.15 + 1.0)
+def path():
+    """The pen's centre line, one point per mm, from TOP down, round the bend, left to TIP."""
+    points = [(TOP[0], y) for y in range(TOP[1], CORNER[1] - BEND)]
+    for i in range(23):
+        a = math.pi / 2 * i / 22  # quarter circle from heading down to heading left
+        points.append((CORNER[0] - BEND + BEND * math.cos(a), CORNER[1] - BEND + BEND * math.sin(a)))
+    points += [(x, CORNER[1]) for x in range(CORNER[0] - BEND, TIP[0] - 1, -1)]
+    # The hand wobbles across the stroke: sideways on the way down, up and down on the way left.
+    wobbled = []
+    for i, (x, y) in enumerate(points):
+        w = 1.6 * math.sin(i * 0.07 + 0.4) + 0.6 * math.sin(i * 0.19 + 1.3)
+        wobbled.append((x + w, y) if y < CORNER[1] - BEND else (x, y + w))
+    return wobbled
 
 
 def strokes():
-    shaft = [(x, shaft_y(x), 4.6 - 0.8 * x / W) for x in range(6, 151)]
-    tip_x, tip_y = 151, shaft_y(151)
+    line = path()
+    n = len(line)
+    stroke = [(x, y, 4.6 - 1.0 * i / n) for i, (x, y) in enumerate(line)]
+    tip_x, tip_y = line[-1]
     # Each barb bows a little, as a pen pulled back from the tip does.
-    upper = [(tip_x - 32 * t, tip_y - 16 * t + 1.5 * math.sin(math.pi * t), 4.4) for t in (i / 30 for i in range(31))]
-    lower = [(tip_x - 30 * t, tip_y + 16 * t + 1.2 * math.sin(math.pi * t), 4.2) for t in (i / 30 for i in range(31))]
-    return shaft + upper + lower
+    upper = [(tip_x + 26 * t, tip_y - 15 * t - 1.5 * math.sin(math.pi * t), 4.2) for t in (i / 30 for i in range(31))]
+    lower = [(tip_x + 24 * t, tip_y + 15 * t + 1.2 * math.sin(math.pi * t), 4.0) for t in (i / 30 for i in range(31))]
+    return stroke + upper + lower
 
 
-def main(path):
+def main(out):
     alpha = [[0] * W for _ in range(H)]
     for cx, cy, r in strokes():
         for y in range(max(0, int(cy - r - 1)), min(H, int(cy + r + 2))):
@@ -34,7 +51,7 @@ def main(path):
     chunk = lambda kind, data: struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
     png = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", W, H, 8, 6, 0, 0, 0))
     png += chunk(b"IDAT", zlib.compress(b"".join(rows), 9)) + chunk(b"IEND", b"")
-    with open(path, "wb") as f:
+    with open(out, "wb") as f:
         f.write(png)
 
 
