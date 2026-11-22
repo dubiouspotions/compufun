@@ -43,6 +43,7 @@ var _fade: Tween
 var _content: Control
 var _keys: AudioStreamPlayer
 var _buttons: AudioStreamPlayer
+var _jump: int = -1  # the Game.jump at the last sync; the first sync is a jump too
 
 @onready var _screen: CrtScreen = %Screen
 @onready var _tube: CrtTube = %Tube
@@ -168,7 +169,8 @@ func _sync() -> void:
 	var has_picture: bool = _content != null and (not _content.has_method(&"has_picture") or _content.call(&"has_picture"))
 	var pointer: bool = _content == null or not _content.has_method(&"pointer_visible") or _content.call(&"pointer_visible")
 	_screen.cursor_visible = draw_cursor and has_picture and pointer
-	_tube.reconcile(switched_on, has_picture, Game.day.warp if Game.day != null else 0.0)
+	_tube.reconcile(switched_on, has_picture, Game.day.warp if Game.day != null else 0.0, Game.jump != _jump)
+	_jump = Game.jump
 
 
 # Replaces the image of the arrow shape, which Controls and the 3D world show; the hotspot hand stays.

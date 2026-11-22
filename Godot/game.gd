@@ -107,6 +107,10 @@ var conversation: Conversation
 ## Goes up every time a visitor starts to walk in, also on [method restore]. A scene that
 ## remembers it can tell a new visit from a re-read of the same one.
 var arrival: int = 0
+## Goes up on every [method start_day] and [method restore]: the state jumped there instead of
+## changing by a step of play. A scene that remembers it shows the new state at once, without the
+## sounds and animations of a change.
+var jump: int = 0
 ## The running copy of each computer's Win95 setup, made at its first boot. It lasts for the whole
 ## game, also through [method restore], so a customer who comes back brings the computer as the
 ## player left it. Use [method setup_for].
@@ -186,6 +190,7 @@ func start_day(new_day: Day) -> void:
 	daypart = Daypart.MORNING
 	phase = Phase.CLOSED
 	_set_visitor(null, Visit.NONE)
+	jump += 1
 	changed.emit()
 
 
@@ -1056,6 +1061,7 @@ func restore(state: Dictionary) -> String:
 	records = new_records
 	db_day = maxi(int(state.get("db_day", 0)), 0)
 	arrival += 1
+	jump += 1
 	conversation = null
 	if visitor_state == VisitorState.TALKING:
 		_start_talk()

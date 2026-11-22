@@ -12,6 +12,7 @@ extends CorruptionSign
 var _shop: Node
 var _heard_hand: Piece
 var _heard_cable: Job
+var _heard_jump: int
 ## The frame of the last roll: a click that also changes the hand is one action, with one roll.
 var _rolled_frame: int = -1
 
@@ -26,6 +27,7 @@ func _ready() -> void:
 	get_tree().node_added.connect(_listen)
 	_heard_hand = Game.hand
 	_heard_cable = Game.connected
+	_heard_jump = Game.jump
 	Game.changed.connect(_hear_changes)
 	super()
 
@@ -41,11 +43,13 @@ func _on_clicked(hotspot: Hotspot) -> void:
 
 
 func _hear_changes() -> void:
-	if Game.hand == _heard_hand and Game.connected == _heard_cable:
-		return
+	var jumped := Game.jump != _heard_jump
+	var changed := Game.hand != _heard_hand or Game.connected != _heard_cable
 	_heard_hand = Game.hand
 	_heard_cable = Game.connected
-	_roll(self)
+	_heard_jump = Game.jump
+	if changed and not jumped:
+		_roll(self)
 
 
 ## Plays a noise from [param at] (in 3D when it is a Node3D) with the chance [member chance].

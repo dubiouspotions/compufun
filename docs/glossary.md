@@ -158,6 +158,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Preset**: A `Game` state that the debug menu sets with one click, in the format of `Game.snapshot()`. The presets are in `ui/debug_presets.gd`.
 *Avoid:* quick button, shortcut, save state.
 
+**Jump**: A change of the `Game` state that no step of play made: the start of a day, or a restore (`Game.jump` counts them). Scenes show the new state at once, without the sounds and animations of a change.
+*Avoid:* cut, reset, reload.
+
 **Flag**: A fact of the story in `Game.flags`: a name and a number. 0 or missing means not set.
 *Avoid:* variable, story state, switch.
 

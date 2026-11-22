@@ -33,6 +33,7 @@ var _shake: Tween
 var _rest_z: float
 # Whether the shop was open on the last sync: a change turns the sign over.
 var _was_open: bool
+var _jump: int
 
 @onready var _board: MeshInstance3D = %Board
 @onready var _outline: MeshInstance3D = %Outline
@@ -42,6 +43,7 @@ var _was_open: bool
 func _ready() -> void:
 	_rest_z = rotation.z
 	_was_open = _open()
+	_jump = Game.jump
 	_hotspot.clicked.connect(_on_clicked)
 	Game.changed.connect(_sync)
 	_sync()
@@ -82,9 +84,10 @@ func _open() -> bool:
 func _sync() -> void:
 	var open := _open()
 	(_board.material_override as ShaderMaterial).set_shader_parameter("albedo_texture", closed_texture if open else open_texture)
-	if open != _was_open:
-		_was_open = open
+	if open != _was_open and Game.jump == _jump:
 		flip_sound.play_at(self)
+	_was_open = open
+	_jump = Game.jump
 	var clickable := Game.can_open() or Game.can_close()
 	_hotspot.set_enabled(clickable)
 	if clickable == _outline.visible:

@@ -68,6 +68,7 @@ var _shown_view: StringName = &""
 ## What the hand held and where the cable was at the last sync, to hear what changed since.
 var _heard_hand: Variant = null
 var _heard_cable: Job
+var _heard_jump: int = -1  # the Game.jump at the last sync: no change sounds over a jump
 var _workview_job: Job
 var _workview_lying: bool = false
 var _walk_in_arrival: int = -1
@@ -362,12 +363,14 @@ func _clickable_at(at: Vector2) -> CollisionObject3D:
 
 
 func _sync() -> void:
-	_job_slots.show_jobs(Game.jobs)
+	var jumped := Game.jump != _heard_jump
+	_heard_jump = Game.jump
+	_job_slots.show_jobs(Game.jobs, jumped)
 	for hotspot: Hotspot in _view_hotspots:
 		hotspot.set_enabled(hotspot.view != Game.view)
 	if _read_open and pinned_post_it() != _read_post_it:
 		_read(false)  # the player turned away or the computer left focus
-	_play_changes()
+	_play_changes(jumped)
 	_pipedream.warp = Game.warp
 	_the_end.ended = Game.phase == Game.Phase.ENDED
 	if _bench.dragging and Game.view != _shown_view:
@@ -497,21 +500,22 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 				Game.return_part(hotspot.part)
 
 
-# Plays the sound of each hand and cable change since the last sync, whatever made it.
-func _play_changes() -> void:
-	if Game.hand != _heard_hand:
+# Plays the sound of each hand and cable change since the last sync, whatever made it, unless the
+# state [param jumped] there.
+func _play_changes(jumped: bool) -> void:
+	if Game.hand != _heard_hand and not jumped:
 		if _heard_hand == null:
 			part_take_sound.play_at(self)
 		elif Game.hand == null:
 			part_put_sound.play_at(self)
-		_heard_hand = Game.hand
-	if Game.connected != _heard_cable:
+	_heard_hand = Game.hand
+	if Game.connected != _heard_cable and not jumped:
 		var old_socket := _job_slots.cable_socket(_heard_cable) if _heard_cable != null and _heard_cable in Game.jobs else null
 		if old_socket != null:
 			plug_out_sound.play_at(old_socket)
 		if Game.connected != null:
 			plug_in_sound.play_at(_job_slots.cable_socket(Game.connected))
-		_heard_cable = Game.connected
+	_heard_cable = Game.connected
 
 
 func _on_plug_grabbed() -> void:

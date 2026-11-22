@@ -22,11 +22,13 @@ var _computers: Dictionary[Job, JobComputer] = {}
 
 
 ## Converges on [param jobs]: a computer appears for each new job and leaves with each job that
-## left. Each power light shows its job's power.
-func show_jobs(jobs: Array[Job]) -> void:
+## left, with the sound of it put down or picked up unless [param silent]. Each power light shows
+## its job's power.
+func show_jobs(jobs: Array[Job], silent: bool = false) -> void:
 	for job: Job in _computers.keys():
 		if job not in jobs:
-			pick_up_sound.play_at(_computers[job].get_parent())
+			if not silent:
+				pick_up_sound.play_at(_computers[job].get_parent())
 			_computers[job].disable()
 			_computers[job].queue_free()
 			_computers.erase(job)
@@ -35,7 +37,8 @@ func show_jobs(jobs: Array[Job]) -> void:
 			var computer := _add_computer(job)
 			if computer == null:
 				continue
-			set_down_sound.play_at(computer.get_parent())
+			if not silent:
+				set_down_sound.play_at(computer.get_parent())
 			_computers[job] = computer
 		_computers[job].powered = job.powered
 

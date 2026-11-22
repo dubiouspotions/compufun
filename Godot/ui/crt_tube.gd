@@ -72,9 +72,22 @@ func set_param(uniform: StringName, value: Variant) -> void:
 
 ## Turns the monitor on or off and locks onto or loses the signal, with their animations and
 ## sounds, when [param on] or [param has_signal] differ from the last call. [param warp] is the
-## day's warp (0 to 1), which magnetises the mask.
-func reconcile(on: bool, has_signal: bool, warp: float) -> void:
+## day's warp (0 to 1), which magnetises the mask. [param instant] shows the new state at once,
+## silently, and ends the animations of earlier changes: for a [member Game.jump].
+func reconcile(on: bool, has_signal: bool, warp: float, instant: bool = false) -> void:
 	_warp = warp
+	if instant:
+		_on = on
+		_signal = has_signal
+		for uniform: StringName in [&"crt_power", &"crt_warmup", &"crt_sync", &"crt_picture"]:
+			if _tweens.has(uniform):
+				_tweens[uniform].kill()
+				_tweens.erase(uniform)
+		_set_value(1.0 if on else 0.0, &"crt_power")
+		_set_value(1.0, &"crt_warmup")
+		_set_value(1.0 if on or has_signal else 0.0, &"crt_sync")
+		_set_value(1.0 if has_signal else 0.0, &"crt_picture")
+		return
 	if on != _on:
 		_on = on
 		if on:
