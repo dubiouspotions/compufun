@@ -226,9 +226,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.05, 2.5, 1.175)
 material_override = ExtResource("4_kwqp3")
 mesh = SubResource("BoxMesh_storage_lintel")
 
-[node name="StorageDoorway" type="Marker3D" parent="Room"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4.05, 1.55, 1.175)
-
 [node name="WallRight" type="MeshInstance3D" parent="Room" unique_id=282979511]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.05, 1.5, -1.75)
 material_override = ExtResource("4_kwqp3")
@@ -582,12 +579,11 @@ transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 1.55, 0.7)
 script = ExtResource("21_sg8ra")
 back = &"Main"
 
-[node name="Storage" type="Marker3D" parent="Views" node_paths=PackedStringArray("doorway")]
+[node name="Storage" type="Marker3D" parent="Views"]
 transform = Transform3D(1, 0, 0, 0, 0.9135455, 0.4067366, 0, -0.4067366, 0.9135455, -5.4, 1.55, 0.4)
 script = ExtResource("21_sg8ra")
 back = &"Left"
 fov = 52.0
-doorway = NodePath("../../Room/StorageDoorway")
 
 [node name="Left" type="Marker3D" parent="Views" unique_id=291976972]
 transform = Transform3D(0.121869326, -0.12096094, 0.98514783, 0, 0.99254614, 0.12186934, -0.99254614, -0.0148521345, 0.12096093, 0, 1.55, 0.7)
