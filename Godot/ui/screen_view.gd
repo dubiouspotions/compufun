@@ -35,6 +35,8 @@ signal picture_changed
 @export var game_cursor_hotspot: Vector2 = Vector2(6, 6)
 ## The monitor's keyboard: each key that the player presses while the view is open; null is silent.
 @export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
+## The sound of the space bar; null plays [member keystroke].
+@export var space_bar: SoundSet = preload("res://sounds/keystroke_space.tres")
 ## The monitor's mouse: a button pressed and released over the open screen; null is silent.
 @export var mouse_down: SoundSet = preload("res://sounds/mouse_down.tres")
 @export var mouse_up: SoundSet = preload("res://sounds/mouse_up.tres")
@@ -87,8 +89,10 @@ func _input(event: InputEvent) -> void:
 	if not _open:
 		return
 	var key := event as InputEventKey
-	if keystroke != null and key != null and key.pressed and not key.echo:
-		keystroke.play_on(_keys)
+	if key != null and key.pressed and not key.echo:
+		var sound := space_bar if key.keycode == KEY_SPACE and space_bar != null else keystroke
+		if sound != null:
+			sound.play_on(_keys)
 	var button := event as InputEventMouseButton
 	if button != null and button.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE] \
 			and _screen.get_global_rect().has_point(button.position):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes the shop's door chime, door slam, phone, keystroke, mouse button, modem, printer and Open sign sounds, the rain loops and the hums of the storage bulb, a PC and a CRT as 22050 Hz mono WAVs.
+"""Synthesizes the shop's door chime, door slam, phone, keyboard, mouse button, modem, printer and Open sign sounds, the rain loops and the hums of the storage bulb, a PC and a CRT as 22050 Hz mono WAVs.
 Usage: make_shop_sounds.py Godot/sounds"""
 import math
 import random
@@ -101,16 +101,35 @@ def far_pickup(rng):
     return out
 
 
-def keystroke(seed):
-    """A 90s office keyboard key: the plastic click of the switch, then the key bottoming out."""
+def ring(freq, seconds, decay, rng):
+    """One damped mode of a struck part, at a random phase."""
+    phase = rng.uniform(0, 2 * math.pi)
+    return [math.sin(2 * math.pi * freq * i / RATE + phase) * math.exp(-i / RATE / decay) for i in range(int(seconds * RATE))]
+
+
+def keystroke(seed, space_bar=False):
+    """A buckling-spring key of an IBM Model M: the spring buckles and its hammer snaps against the
+    switch barrel (a sharp click at 2 to 5 kHz with a short metallic ring), then the keycap bottoms
+    out on the plate (a hollow plastic clack at 300 Hz to 1.5 kHz, with a short ring of the case).
+    The space bar is longer and heavier: a lower clack, and its stabiliser wire ticks."""
     random.seed(seed)
+    rng = random.Random(seed + 1000)
     out = silence(0.09)
-    mix(out, highpass(noise(0.012, 0.002), 2500), 0.0, 0.8)
-    thump_freq = random.uniform(180, 260)
-    thump = [math.sin(2 * math.pi * thump_freq * i / RATE) * math.exp(-i / RATE / 0.012) for i in range(int(0.06 * RATE))]
-    mix(out, thump, 0.008, 0.6)
-    mix(out, lowpass(highpass(noise(0.03, 0.006), 700), 5000), 0.008, 0.5)
-    return out
+    mix(out, highpass(noise(0.004, 0.0004), 2000), 0.0, 1.0)
+    spring = random.uniform(3200, 4200)
+    mix(out, biquad(noise(0.02, 0.0015), "band", spring, 6.0), 0.0, 3.5)
+    for ratio, decay, gain in [(1.0, 0.003, 0.35), (1.37, 0.002, 0.2)]:
+        mix(out, ring(spring * ratio, 0.02, decay, rng), 0.0, gain)
+    low = 0.75 if space_bar else 1.0
+    bottom = random.uniform(0.006, 0.009) + (0.004 if space_bar else 0.0)
+    clack = lowpass(highpass(noise(0.01, 0.0012), 300), 1800)
+    mix(out, clack, bottom, 1.1 if space_bar else 0.8)
+    case = random.uniform(430, 520) * low
+    for ratio, decay, gain in [(1.0, 0.014, 0.5), (1.62, 0.008, 0.35), (2.71, 0.005, 0.25)]:  # inharmonic: hollow, not a tone
+        mix(out, ring(case * ratio, 0.06, decay * (1.4 if space_bar else 1.0), rng), bottom, gain * (1.3 if space_bar else 1.0))
+    if space_bar:
+        mix(out, highpass(noise(0.003, 0.0006), 2500), bottom + 0.003, 0.35)
+    return highpass(lowpass(out, 8000), 150)
 
 
 def mouse_button(seed, release):
@@ -505,8 +524,9 @@ def write(path, samples, level=0.7, fade_out=True):
 
 write(sys.argv[1] + "/door_bell.wav", door_bell())
 write(sys.argv[1] + "/phone_receiver.wav", phone_receiver())
-for take in range(1, 5):
-    write(sys.argv[1] + "/keystroke_%d.wav" % take, keystroke(take))
+for take, level in enumerate([0.7, 0.6, 0.66, 0.56], 1):
+    write(sys.argv[1] + "/keystroke_%d.wav" % take, keystroke(take), level)
+write(sys.argv[1] + "/keystroke_space.wav", keystroke(5, space_bar=True))
 for take in range(1, 4):
     write(sys.argv[1] + "/mouse_down_%d.wav" % take, mouse_button(10 + take, False))
     write(sys.argv[1] + "/mouse_up_%d.wav" % take, mouse_button(20 + take, True))

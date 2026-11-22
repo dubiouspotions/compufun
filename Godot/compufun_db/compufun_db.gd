@@ -45,6 +45,8 @@ const HEADERS: Array[String] = ["CUSTOMER", "CHECK", "FIX"]
 @export var test_step: String = "Test the computer"
 ## The sound of each key that the character types.
 @export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
+## The sound of the space bar; null plays [member keystroke].
+@export var space_bar: SoundSet = preload("res://sounds/keystroke_space.tres")
 ## The seconds between two keys, picked between x and y for each key.
 @export var key_seconds: Vector2 = Vector2(0.03, 0.09)
 @export_group("Start-up")
@@ -205,8 +207,7 @@ func _process(delta: float) -> void:
 	if _next_key > 0.0:
 		return
 	_shown += 1
-	if keystroke != null:
-		keystroke.play_on(_keys)
+	_play_key(_typing.text.substr(_shown - 1, 1) if _typing != null else "")
 	_next_key = randf_range(key_seconds.x, key_seconds.y)
 	if _typing == null or _shown >= _typing.text.length():
 		_typing = null
@@ -317,6 +318,12 @@ func _check_day() -> void:
 		picture_changed.emit()
 
 
+func _play_key(letter: String) -> void:
+	var sound := space_bar if letter == " " and space_bar != null else keystroke
+	if sound != null:
+		sound.play_on(_keys)
+
+
 # The boot, the program at the DOS prompt, the dial-up; then the database.
 func _start_up() -> void:
 	_starting = true
@@ -333,8 +340,7 @@ func _start_up() -> void:
 	for letter: String in command:
 		await _pause(randf_range(key_seconds.x, key_seconds.y) * 2.0)
 		_dos[-1] += letter
-		if keystroke != null:
-			keystroke.play_on(_keys)
+		_play_key(letter)
 		queue_redraw()
 	for line: String in banner_lines:
 		await _pause(start_line_seconds)
