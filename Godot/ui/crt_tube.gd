@@ -9,8 +9,14 @@ extends Node
 @export var power_off_seconds: float = 1.8
 ## The seconds that the tube takes to warm up to full brightness.
 @export var warmup_seconds: float = 3.0
-## The seconds that the degauss wobble takes to die down.
-@export var degauss_seconds: float = 2.2
+## The seconds from a degauss until the mangled picture blanks to black.
+@export var degauss_blank_at: float = 0.5
+## The seconds that the degauss keeps the picture black.
+@export var degauss_black_seconds: float = 0.2
+## The seconds that the picture takes to fade back in after the degauss's black.
+@export var degauss_fade_in_seconds: float = 0.3
+## The seconds after the fade-in that the degauss's mangling takes to die down.
+@export var degauss_settle_seconds: float = 0.4
 ## The seconds that the picture takes to tear and roll away when the signal goes.
 @export var sync_lost_seconds: float = 0.35
 ## The seconds of black while the monitor finds a new signal.
@@ -47,6 +53,7 @@ func _ready() -> void:
 	_set_value(1.0, &"crt_power")
 	_set_value(1.0, &"crt_warmup")
 	_set_value(0.0, &"crt_degauss")
+	_set_value(0.0, &"crt_blank")
 	_set_value(1.0, &"crt_sync")  # the monitor's own NO SIGNAL box is a steady picture
 	_set_value(0.0, &"crt_magnetization")
 	_set_value(0.0, &"crt_picture")
@@ -107,15 +114,26 @@ func reconcile(on: bool, has_signal: bool, warp: float, instant: bool = false) -
 			_lose_sync()
 
 
-## Shakes the picture, swims its colours and clears the magnetised mask, dying down over
-## [member degauss_seconds]. Does nothing while the monitor is off.
+## Mangles the picture and its colours, blanks it to black at [member degauss_blank_at] while the
+## magnetised mask clears, fades it back in, and lets the mangling die down over
+## [member degauss_settle_seconds]. Does nothing while the monitor is off.
 func degauss() -> void:
 	if not _on:
 		return
 	_play(degauss_sound)
-	_set_value(1.0, &"crt_degauss")
-	_animate(&"crt_degauss", 0.0, degauss_seconds, Tween.EASE_OUT, Tween.TRANS_QUAD)
-	_animate(&"crt_magnetization", 0.0, degauss_seconds * 0.6, Tween.EASE_IN_OUT, Tween.TRANS_SINE)
+	var back_at := degauss_blank_at + degauss_black_seconds + degauss_fade_in_seconds
+	var mangle := _new_tween(&"crt_degauss")
+	mangle.tween_method(_set_value.bind(&"crt_degauss"), _values[&"crt_degauss"], 1.0, 0.05)
+	mangle.tween_interval(back_at - 0.05)
+	mangle.tween_method(_set_value.bind(&"crt_degauss"), 1.0, 0.0, degauss_settle_seconds).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	var blank := _new_tween(&"crt_blank")
+	blank.tween_interval(degauss_blank_at)
+	blank.tween_method(_set_value.bind(&"crt_blank"), _values[&"crt_blank"], 1.0, 0.04)
+	blank.tween_interval(degauss_black_seconds)
+	blank.tween_method(_set_value.bind(&"crt_blank"), 1.0, 0.0, degauss_fade_in_seconds).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	var clear := _new_tween(&"crt_magnetization")
+	clear.tween_interval(degauss_blank_at)
+	clear.tween_method(_set_value.bind(&"crt_magnetization"), _values[&"crt_magnetization"], 0.0, degauss_black_seconds)
 
 
 func _power_on() -> void:

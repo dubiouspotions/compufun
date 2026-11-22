@@ -5,8 +5,10 @@
 uniform float crt_power = 1.0;
 /** 0 is a cold tube, dark and too big; 1 is warm. */
 uniform float crt_warmup = 1.0;
-/** The strength of the degauss wobble. */
+/** The strength of the degauss: the picture twists, bulges, shakes and its colours swim. */
 uniform float crt_degauss = 0.0;
+/** 1 blanks the picture to black, as the degauss does for a moment. */
+uniform float crt_blank = 0.0;
 /** 1 is locked to the signal. Toward 0 the picture tears, rolls and goes black. */
 uniform float crt_sync = 1.0;
 /** 1 while the tube shows a computer's picture, 0 with the monitor's own NO SIGNAL box. The shaders
@@ -51,9 +53,15 @@ vec2 crt_beam(vec2 uv, float time) {
 	vec2 g = (uv - 0.5) / crt_squash();
 	g /= 1.0 + 0.08 * (1.0 - crt_warmup);
 	g += 0.5;
-	float wobble = crt_degauss * crt_degauss;
-	g.x += wobble * 0.03 * sin(g.y * 19.0 + time * 37.0) * sin(time * 6.0);
-	g.y += wobble * 0.015 * sin(g.x * 13.0 - time * 23.0);
+	float m = crt_degauss;
+	vec2 c = g - 0.5;
+	float r = length(c);
+	float twist = m * 0.45 * sin(time * 11.0) * (1.3 - r);
+	c = mat2(vec2(cos(twist), sin(twist)), vec2(-sin(twist), cos(twist))) * c;
+	c *= 1.0 + m * 0.15 * sin(time * 17.0 + r * 11.0);
+	g = c + 0.5;
+	g.x += m * 0.07 * sin(g.y * 19.0 + time * 37.0) * sin(time * 6.0);
+	g.y += m * 0.04 * sin(g.x * 13.0 - time * 23.0);
 	float lost = 1.0 - crt_sync;
 	g.x += lost * 0.08 * sin(g.y * 90.0 + time * 60.0) * sin(time * 17.0 + g.y * 7.0);
 	if (lost > 0.0) {
@@ -71,9 +79,10 @@ vec3 crt_tube_light(vec3 c, vec2 uv, float time) {
 	vec2 d = uv - vec2(0.86, 0.12) + drift.yx;
 	vec3 blotch = exp(-dot(a, a) * 10.0) * vec3(0.9, -0.7, 1.0) + exp(-dot(b, b) * 8.0) * vec3(-0.6, 0.9, -0.5) + exp(-dot(d, d) * 18.0) * vec3(1.0, 0.7, -0.8);
 	c *= max(1.0 + crt_magnetization * blotch, 0.0);
-	float wobble = crt_degauss * crt_degauss;
-	float swim = uv.x * 5.0 + uv.y * 3.0 + time * 7.0;
-	c *= max(1.0 + wobble * 0.9 * vec3(sin(swim), sin(swim + 2.1), sin(swim + 4.2)), 0.0);
+	float swim = uv.x * 5.0 + uv.y * 3.0 + sin(uv.y * 9.0 + time * 5.0) + time * 7.0;
+	c = mix(c, c.gbr, crt_degauss * (0.5 + 0.5 * sin(time * 13.0 + uv.x * 4.0)));
+	c *= max(1.0 + crt_degauss * 1.4 * vec3(sin(swim), sin(swim + 2.1), sin(swim + 4.2)), 0.0);
+	c *= 1.0 - crt_blank;
 	c *= crt_warmup * crt_warmup;
 	c *= smoothstep(0.0, 0.3, crt_sync);
 	// The beam's energy crowds into the line and the dot, so they glow white-hot.

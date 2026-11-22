@@ -24,7 +24,7 @@ func _ready() -> void:
 
 # The light and the hum follow the tube's uniforms on the 3D screen, which a CrtTube animates.
 func _process(_delta: float) -> void:
-	var lit := _tube(&"crt_warmup") ** 2 * smoothstep(0.0, 0.3, _tube(&"crt_sync")) * smoothstep(0.5, 1.0, _tube(&"crt_power"))
+	var lit := _tube(&"crt_warmup") ** 2 * smoothstep(0.0, 0.3, _tube(&"crt_sync")) * smoothstep(0.5, 1.0, _tube(&"crt_power")) * (1.0 - _tube(&"crt_blank"))
 	_glow.light_energy = lit * lerpf(no_signal_glow_energy, picture_glow_energy, _tube(&"crt_picture"))
 	_glow.visible = _glow.light_energy > 0.001
 	_hum.on = _tube(&"crt_power") > 0.5

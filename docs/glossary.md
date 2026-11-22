@@ -132,7 +132,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Tube**: The bench screen's picture tube as the game animates it (`CrtTube`): its power, its lock on the signal, the degauss and the magnetised screen.
 *Avoid:* CRT state, monitor state.
 
-**Degauss**: Demagnetising the bench screen's mask: the picture shakes, its colours swim, and the magnetised screen clears. It happens at power-on and when the player presses the Degauss button on the bench screen's right bezel.
+**Degauss**: Demagnetising the bench screen's mask: the picture twists and its colours swim, it blinks to black, and it comes back with the magnetised screen cleared. It happens at power-on and when the player presses the Degauss button on the bench screen's right bezel.
 *Avoid:* demagnetise, reset the screen.
 
 **Magnetised screen**: Blotches of wrong colour on the bench screen, which Cambion builds up faster as the day's warp rises. A degauss clears them.

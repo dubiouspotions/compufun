@@ -19,7 +19,7 @@ blends to its own as the camera arrives, so the screen bends more from a distanc
 ## The tube's state
 
 Each monitor has its own `CrtTube`, a child of its `ScreenView`. It animates the `crt_*` uniforms of
-`crt.gdshaderinc` (`crt_power`, `crt_warmup`, `crt_degauss`, `crt_sync`, `crt_picture`,
+`crt.gdshaderinc` (`crt_power`, `crt_warmup`, `crt_degauss`, `crt_blank`, `crt_sync`, `crt_picture`,
 `crt_magnetization`, `crt_cursor`) on that monitor's two looks: the close-up's (`CrtScreen` adds it) and the 3D screen's
 (`main.gd` adds it with `ScreenView.add_look()`). So the close-up and the 3D screen show one tube,
 and the bench's power cuts and lost signals leave the work computer alone. They are not global
@@ -39,11 +39,15 @@ running computer is connected; CompuFunDB: always):
 - **The room light:** each 3D monitor's `Glow` (a SpotLight3D in `props/crt_monitor.tscn`, 9300 K
   white, no shadow) lights the desk in front of it. `CrtMonitor` sets its energy every frame from
   the 3D screen's uniforms: it warms up with the picture, goes with the collapse and the lost signal,
-  and is brighter with a computer's picture (`crt_picture`) than with the NO SIGNAL box.
+  and is brighter with a computer's picture (`crt_picture`) than with the NO SIGNAL box. It goes
+  dark with the degauss's black (`crt_blank`).
 - **Magnetised mask:** while the screen shows a computer, blotches of wrong colour build up at
   `magnetize_per_second` times the day's warp, up to the warp, so Cambion magnetises the screen as
   the week goes on. The Degauss button on the bench screen's right bezel (`Bench.degauss_pressed`)
   clears them; it can be pressed from the Screen View too (`main.gd` `_click_outside_screen`).
+- **Degauss:** the picture twists, bulges, shakes and its colours swim; at `degauss_blank_at` it
+  blanks to black (`crt_blank`) while the mask clears, fades back in, and the mangling dies down
+  over `degauss_settle_seconds`. The timings are exports on `CrtTube`.
 
 `tools/make_crt_sounds.py` synthesizes the sounds into `sounds/crt_*.wav`.
 
@@ -69,7 +73,8 @@ running computer is connected; CompuFunDB: always):
 - **Glass reflection.** The room's light sits on the glass as a soft sheen high on the left
   (`reflection`); it shows on black and with the tube off.
 - **Degauss.** A coil around the tube demagnetises the mask at power-on and at the press of the
-  button, with a loud hum; the picture shakes and its colours swim for a moment.
+  button, with a loud hum; the picture jumps and its colours swim, and the game exaggerates it
+  with a moment of black.
 
 ## Rules the shaders keep
 
