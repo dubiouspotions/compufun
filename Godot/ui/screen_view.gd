@@ -6,8 +6,8 @@ extends Control
 ## buffer, and %Tube drives both looks: one monitor, one tube. The tube is on while the shop is open,
 ## and locks onto the content's signal. See docs/crt.md.
 
-## The player clicked the open view outside the screen.
-signal outside_clicked
+## The player clicked the open view outside the screen, at [param at] in the window.
+signal outside_clicked(at: Vector2)
 ## [method has_picture] changed.
 signal picture_changed
 
@@ -119,7 +119,7 @@ func _gui_input(event: InputEvent) -> void:
 	var click := event as InputEventMouseButton
 	if _open and click != null and click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
 		accept_event()
-		outside_clicked.emit()
+		outside_clicked.emit(click.global_position)
 
 
 ## The live picture of the screen buffer, for the 3D monitor.

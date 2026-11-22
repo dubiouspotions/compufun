@@ -22,6 +22,8 @@ const LYING := Transform3D(Basis(Vector3.BACK, PI / 2.0), Vector3(0, 0.095, 0)) 
 # How far above the counter the outline's bottom rests, in metres; clear of z-fighting.
 const RESTING_LIFT: float = 0.002
 
+## The outline colour of the power button while the mouse is over it.
+@export var button_hover_color: Color = Color(1.0, 0.84, 0.35)
 ## How long the case takes to tip over onto its side, or back up, in seconds.
 @export var tip_seconds: float = 0.5
 ## The power light's colour while the computer is on, and while it is off.
@@ -78,13 +80,14 @@ func _ready() -> void:
 	_hotspot.mouse_entered.connect(_set_hovered.bind(true))
 	_hotspot.mouse_exited.connect(_set_hovered.bind(false))
 	_power_hotspot.clicked.connect(func(_h: Hotspot) -> void: power_clicked.emit(self))
+	_power_hotspot.highlight_on_hover(_tower.get_node(^"Power"), button_hover_color)
 	_screwdriver_hotspot.clicked.connect(func(_h: Hotspot) -> void: screwdriver_clicked.emit(self))
 	_screwdriver_hotspot.mouse_entered.connect(_set_screwdriver_hovered.bind(true))
 	_screwdriver_hotspot.mouse_exited.connect(_set_screwdriver_hovered.bind(false))
 	for mesh: MeshInstance3D in _screwdriver.find_children("*", "MeshInstance3D"):
 		_screwdriver_materials[mesh] = mesh.material_override
-	_screwdriver_hover_outline = OpenCase.outline_material(_open_case.hover_color, _open_case.outline_width)
-	_screwdriver_ghost = OpenCase.ghost_material(_open_case.hover_color)
+	_screwdriver_hover_outline = Hotspot.outline_material(_open_case.hover_color, _open_case.outline_width)
+	_screwdriver_ghost = Hotspot.ghost_material(_open_case.hover_color)
 	_tower.dress(job.customer.computer)
 	_open_case.dress(job.customer.computer)
 	_post_it.job = job

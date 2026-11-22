@@ -13,8 +13,6 @@ signal crashed
 signal phone_requested
 ## The player pressed the Degauss button of the bench screen.
 signal degauss_requested
-## The player pressed the power button of the bench screen.
-signal monitor_power_requested
 ## The mouse came onto the back strip ([param on] true) or left it (see [member back_strip_height]).
 signal back_strip_hovered(on: bool)
 
@@ -117,7 +115,6 @@ func _ready() -> void:
 	_bench.degauss_pressed.connect(degauss_requested.emit)
 	_open_sign.open_requested.connect(Game.open_shop)
 	_open_sign.close_requested.connect(close_requested.emit)
-	_bench.power_pressed.connect(monitor_power_requested.emit)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -347,6 +344,11 @@ func _place_read_post_it(t: float) -> void:
 	var rest := _read_post_it.get_parent_node_3d().global_transform * _read_rest
 	var up_close := view_marker(WORKVIEW).global_transform.translated_local(Vector3(0.0, 0.0, -post_it_read_distance))
 	_read_post_it.global_transform = rest.interpolate_with(up_close, t)
+
+
+## The hotspot that a click at [param at], in pixels of the world buffer, would click, or null.
+func hotspot_at(at: Vector2) -> Hotspot:
+	return _clickable_at(at) as Hotspot
 
 
 # What physics picking would click at [param at], in pixels of the world buffer: the nearest

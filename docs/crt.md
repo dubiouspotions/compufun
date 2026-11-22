@@ -24,14 +24,14 @@ Each monitor has its own `CrtTube`, a child of its `ScreenView`. It animates the
 (`main.gd` adds it with `ScreenView.add_look()`). So the close-up and the 3D screen show one tube,
 and the bench's power cuts and lost signals leave the work computer alone. They are not global
 uniforms for that reason. `ScreenView` calls `reconcile()` on every `Game.changed`: the tube is on
-while its monitor is switched on (`ScreenView.switched_on`: on at the start, flipped by the bench
-monitor's power button), and has a signal while its content's `has_picture()` says so (the bench: a
+while its monitor is switched on (`ScreenView.switched_on`: on at the start; only
+`ScreenView.toggle_power()` flips it, as the monitors have no power button), and has a signal while its content's `has_picture()` says so (the bench: a
 running computer is connected; CompuFunDB: always):
 
 - **The game starts:** the tube is already on and warm, silently.
-- **Power button, on:** a switch clunk, static, a degauss, and a dim, oversized picture that
+- **Switched on:** a switch clunk, static, a degauss, and a dim, oversized picture that
   warms up over 3 seconds.
-- **Power button, off:** the picture collapses to a white-hot line, then a dot that fades.
+- **Switched off:** the picture collapses to a white-hot line, then a dot that fades.
 - **A running computer connects:** a relay click, black while the monitor finds the signal, then
   the picture rolls and locks.
 - **The signal goes** (cable off, computer off): the picture tears and rolls away, a relay click,
@@ -41,8 +41,9 @@ running computer is connected; CompuFunDB: always):
   the 3D screen's uniforms: it warms up with the picture, goes with the collapse and the lost signal,
   and is brighter with a computer's picture (`crt_picture`) than with the NO SIGNAL box.
 - **Magnetised mask:** while the screen shows a computer, blotches of wrong colour build up at
-  `magnetize_per_second` times the day's warp, so Cambion magnetises the screen as the week goes
-  on. The Degauss button under the bench screen (`Bench.degauss_pressed`) clears them.
+  `magnetize_per_second` times the day's warp, up to the warp, so Cambion magnetises the screen as
+  the week goes on. The Degauss button on the bench screen's right bezel (`Bench.degauss_pressed`)
+  clears them; it can be pressed from the Screen View too (`main.gd` `_click_outside_screen`).
 
 `tools/make_crt_sounds.py` synthesizes the sounds into `sounds/crt_*.wav`.
 

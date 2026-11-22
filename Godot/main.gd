@@ -36,7 +36,7 @@ func _ready() -> void:
 	for view: ScreenView in _screen_views:
 		view.add_look(_shop.set_screen_texture(view.screen, view.screen_texture()))
 		view.fade_seconds = _shop.turn_seconds
-		view.outside_clicked.connect(_go_back)
+		view.outside_clicked.connect(_click_outside_screen)
 	# Right before drawing, after the camera tween moved: the copy never lags behind the 3D screen.
 	RenderingServer.frame_pre_draw.connect(_follow_camera)
 	_shop.view_requested.connect(Game.go_to_view)
@@ -46,7 +46,6 @@ func _ready() -> void:
 	_shop.crashed.connect(_crash.show_crash)
 	_shop.phone_requested.connect(_phone.open)
 	_shop.degauss_requested.connect((%ScreenView as ScreenView).degauss)
-	_shop.monitor_power_requested.connect((%ScreenView as ScreenView).toggle_power)
 	var work_screen: ScreenView = %CompuFunDBView
 	work_screen.picture_changed.connect(func() -> void: _shop.work_computer_running = work_screen.has_picture())
 	_shop.work_computer_running = work_screen.has_picture()
@@ -125,6 +124,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	else:
 		return
 	get_viewport().set_input_as_handled()
+
+
+# Zoomed in, a click beside the screen presses the hotspot there (the Degauss button) or leaves.
+func _click_outside_screen(at: Vector2) -> void:
+	var world_at := (_world.get_global_transform_with_canvas().affine_inverse() * at) / float(_world.stretch_shrink)
+	var hotspot := _shop.hotspot_at(world_at)
+	if hotspot != null and not (hotspot.action == Hotspot.Action.GO_TO_VIEW and hotspot.view == Game.view):
+		hotspot.clicked.emit(hotspot)
+	else:
+		_go_back()
 
 
 func _go_back() -> void:

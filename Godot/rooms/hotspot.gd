@@ -37,6 +37,37 @@ func _ready() -> void:
 	mouse_exited.connect(func() -> void: Input.set_default_cursor_shape(Input.CURSOR_ARROW))
 
 
+## Tints [param mesh] in [param color], with an outline, while the mouse is over the hotspot. For a
+## button on a surface, where an outline alone hardly shows. It uses the mesh's material_overlay.
+func highlight_on_hover(mesh: MeshInstance3D, color: Color) -> void:
+	var tint := ghost_material(color)
+	tint.albedo_color.a = 0.6
+	tint.next_pass = outline_material(color, 0.008)
+	mouse_entered.connect(func() -> void: mesh.material_overlay = tint)
+	mouse_exited.connect(func() -> void: mesh.material_overlay = null)
+
+
+## An outline in [param color] for a mesh's [member GeometryInstance3D.material_overlay]: an
+## inverted hull, its front faces culled, grown [param width] metres along the normals.
+static func outline_material(color: Color, width: float) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.cull_mode = BaseMaterial3D.CULL_FRONT
+	material.grow = true
+	material.grow_amount = width
+	material.albedo_color = color
+	return material
+
+
+## A see-through ghost material in [param color], for a mesh's material_override: where a thing can go.
+static func ghost_material(color: Color) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color = Color(color, 0.35)
+	return material
+
+
 ## Shows or hides the hotspot. A hidden hotspot does not take clicks.
 func set_enabled(on: bool) -> void:
 	visible = on
