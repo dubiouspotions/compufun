@@ -208,8 +208,16 @@ body that a customer's person has.
 - **Live Voice** builds `native/chimera_voice` with `tools/build-voice.sh`: macOS on a Mac runner, the wasm, Linux and Windows on Ubuntu. Build downloads them before its import.
 - **Build** imports, exports all four presets and uploads them as run artifacts. A failed build posts to
   Discord, and so do `ERROR` lines in the export log.
-- **Deploy** uploads the builds to itch.io with butler. It runs on the `deploy` branch, or when
-  started by hand (Actions > godot-ci export > Run workflow). It needs the `ITCHIO_*` secrets.
+- **Sign and Notarize macOS** runs before every deploy, on a Mac runner. It re-signs the macOS
+  export with Nevyn's Developer ID (team `M4Q2TE45WT`): the libraries in `Contents/Frameworks`
+  first, then the app with the entitlements of Godot's own signature. Apple then notarizes it, and
+  the ticket is stapled. It needs the secrets `MACOS_CERT_P12_BASE64` and `MACOS_CERT_PASSWORD` (the
+  certificate as a base64 .p12) and `MACOS_NOTARY_KEY_P8_BASE64`, `MACOS_NOTARY_KEY_ID` and
+  `MACOS_NOTARY_ISSUER_ID` (an App Store Connect API key). Without it, macOS refuses the
+  downloaded game.
+- **Deploy** uploads the builds to itch.io with butler, with the notarized macOS build. It runs
+  on the `deploy` branch, or when started by hand (Actions > godot-ci export > Run workflow). It
+  needs the `ITCHIO_*` secrets.
 
 A newer push cancels a running export. The tests run in their own workflow,
 `.github/workflows/tests.yml`, on every push to `main` and every pull request: it imports, runs
