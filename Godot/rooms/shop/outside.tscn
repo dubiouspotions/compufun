@@ -18,6 +18,8 @@
 [ext_resource type="PackedScene" path="res://props/lamp_post.tscn" id="16_sv7u7"]
 [ext_resource type="Material" path="res://materials/light_panel.tres" id="17_4ev3q"]
 [ext_resource type="AudioStream" path="res://sounds/city_ambience.ogg" id="18_city"]
+[ext_resource type="AudioStream" path="res://sounds/rain_open.wav" id="rain_open"]
+[ext_resource type="AudioStream" path="res://sounds/rain_shut.wav" id="rain_shut"]
 [ext_resource type="ArrayMesh" path="res://props/tree_round_b.tres" id="tree_round_b"]
 [ext_resource type="ArrayMesh" path="res://props/tree_pine_b.tres" id="tree_pine_b"]
 [ext_resource type="Script" path="res://rooms/ground.gd" id="ground"]
@@ -409,3 +411,14 @@ stream = ExtResource("18_city")
 volume_db = -14.0
 bus = &"Street"
 autoplay = true
+
+[node name="RainOpen" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("rain_open")
+volume_db = -14.0
+bus = &"Street"
+
+[node name="RainShut" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("rain_shut")
+volume_db = -17.0

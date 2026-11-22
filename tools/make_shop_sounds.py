@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes the shop's door chime, door slam, phone, keystroke, mouse button, modem, printer and Open sign sounds as 22050 Hz mono WAVs.
+"""Synthesizes the shop's door chime, door slam, phone, keystroke, mouse button, modem, printer and Open sign sounds and the rain loops as 22050 Hz mono WAVs.
 Usage: make_shop_sounds.py Godot/sounds"""
 import math
 import random
@@ -380,11 +380,51 @@ def sign_rattle(seed, seconds=0.6, swings=4):
     return highpass(lowpass(out, 7000), 150)
 
 
-def write(path, samples, level=0.7):
-    """Writes `samples` as 16-bit PCM, normalised to the peak `level`."""
+def looped(samples, filters):
+    """Runs `samples` through `filters` as a loop: the filters settle on a first pass, so the
+    second pass, which is kept, runs on from its own end into its start."""
+    out = samples + samples
+    for f in filters:
+        out = f(out)
+    return out[len(samples):]
+
+
+def rain(seconds):
+    """Steady rain on the alley as a seamless loop of `seconds`: a hiss of fine drops on the asphalt,
+    bubbly plinks in the puddles, and a drip from the gutter now and then. Returns the rain as heard
+    in the open doorway and through the shut door and windows."""
+    random.seed(130)
+    n = int(seconds * RATE)
+    out = [random.gauss(0.0, 0.05) for _ in range(n)]
+
+    def add(sound, at, gain):  # wraps round the end, so the loop has no seam
+        for i, v in enumerate(sound):
+            out[(at + i) % n] += v * gain
+
+    for _ in range(int(seconds * 900)):  # fine drops on the asphalt
+        decay = random.uniform(0.0002, 0.0008)
+        add(noise(decay * 5, decay), random.randrange(n), random.uniform(0.05, 0.35) ** 2 * 3)
+    for _ in range(int(seconds * 7)):  # plinks: a bubble's ring rises as it closes
+        f0, decay = random.uniform(1400, 3200), random.uniform(0.004, 0.012)
+        plink = [math.sin(2 * math.pi * f0 * (1 + 15 * i / RATE) * i / RATE) * math.exp(-i / RATE / decay) for i in range(int(decay * 5 * RATE))]
+        add(plink, random.randrange(n), random.uniform(0.08, 0.2))
+    at = 0.0
+    while at < seconds - 0.05:  # the gutter drips, not quite steadily
+        f0 = random.uniform(700, 950)
+        drip = [math.sin(2 * math.pi * f0 * (1 + 6 * i / RATE) * i / RATE) * math.exp(-i / RATE / 0.02) for i in range(int(0.1 * RATE))]
+        add(drip, int(at * RATE), random.uniform(0.3, 0.45))
+        at += random.uniform(0.45, 1.1)
+    heard = looped(out, [lambda x: biquad(x, "high", 180), lambda x: biquad(x, "low", 7000)])
+    muffled = looped(heard, [lambda x: biquad(x, "low", 450), lambda x: biquad(x, "low", 450)])
+    return heard, muffled
+
+
+def write(path, samples, level=0.7, fade_out=True):
+    """Writes `samples` as 16-bit PCM, normalised to the peak `level`, and fades out the last 10 ms
+    unless the sound is a loop."""
     peak = max(abs(s) for s in samples)
     gain = level / peak
-    fade = int(0.01 * RATE)
+    fade = int(0.01 * RATE) if fade_out else 0
     data = bytearray()
     for i, s in enumerate(samples):
         if i >= len(samples) - fade:
@@ -413,3 +453,6 @@ for take in range(1, 4):
     write(sys.argv[1] + "/sign_flip_%d.wav" % take, sign_flip(50 + take))
 for take in range(1, 3):
     write(sys.argv[1] + "/sign_rattle_%d.wav" % take, sign_rattle(60 + take))
+rain_open, rain_shut = rain(12.0)
+write(sys.argv[1] + "/rain_open.wav", rain_open, fade_out=False)
+write(sys.argv[1] + "/rain_shut.wav", rain_shut, fade_out=False)

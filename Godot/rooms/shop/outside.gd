@@ -2,7 +2,9 @@ class_name Outside
 extends Node3D
 ## The world outside the shop windows: the back alley, the sky, the sun (moonlight at night), the
 ## lamps, the fog and the rain. It shows the time of day of Game.daypart, and the weather. The colour
-## gradients go over one day: the left end is midnight, the middle is noon.
+## gradients go over one day: the left end is midnight, the middle is noon. While it rains, two loops
+## of the same rain play: RainShut, muffled, as heard through the shut door and windows, and RainOpen
+## on the Street bus, which the door opens up as it swings (ShopDoor).
 
 ## The time of day in hours, 0 to 24.
 @export_range(0.0, 24.0, 0.01) var hour: float = 13.0:
@@ -55,6 +57,8 @@ var _shown_day: Day
 @onready var _skylight: DirectionalLight3D = %Skylight
 @onready var _environment: WorldEnvironment = %Environment
 @onready var _rain: CPUParticles3D = %Rain
+@onready var _rain_open: AudioStreamPlayer = %RainOpen
+@onready var _rain_shut: AudioStreamPlayer = %RainShut
 
 
 func _ready() -> void:
@@ -143,6 +147,12 @@ func _apply() -> void:
 	for glow: Node3D in _glows:
 		glow.visible = dark > 0.25
 	_rain.emitting = raining
+	for loop: AudioStreamPlayer in [_rain_open, _rain_shut]:  # started together, so they stay in step
+		if loop.playing != raining:
+			if raining:
+				loop.play()
+			else:
+				loop.stop()
 
 
 static func _grey(color: Color, amount: float) -> Color:
