@@ -9,6 +9,9 @@ uniform float crt_warmup = 1.0;
 uniform float crt_degauss = 0.0;
 /** 1 is locked to the signal. Toward 0 the picture tears, rolls and goes black. */
 uniform float crt_sync = 1.0;
+/** 1 while the tube shows a computer's picture, 0 with the monitor's own NO SIGNAL box. The shaders
+ * don't draw with it: CrtMonitor reads it to light the room. */
+uniform float crt_picture = 0.0;
 /** How strongly the mask is magnetised: blotches of wrong colour. */
 uniform float crt_magnetization = 0.0;
 /** The top-left of the mouse cursor in screen buffer pixels; far outside hides it. */

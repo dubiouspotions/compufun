@@ -72,3 +72,13 @@ mesh = SubResource("BoxMesh_degauss")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.155, 0.095, 0.132)
 material_override = ExtResource("3_wbfy6")
 mesh = SubResource("BoxMesh_power")
+
+[node name="Glow" type="SpotLight3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(-1, 0, 0, 0, 0.9063, 0.4226, 0, 0.4226, -0.9063, 0, 0.255, 0.16)
+visible = false
+light_color = Color(0.8, 0.86, 1, 1)
+light_energy = 0.0
+light_specular = 0.2
+spot_range = 1.4
+spot_angle = 70.0

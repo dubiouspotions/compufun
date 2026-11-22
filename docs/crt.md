@@ -19,8 +19,8 @@ blends to its own as the camera arrives, so the screen bends more from a distanc
 ## The tube's state
 
 Each monitor has its own `CrtTube`, a child of its `ScreenView`. It animates the `crt_*` uniforms of
-`crt.gdshaderinc` (`crt_power`, `crt_warmup`, `crt_degauss`, `crt_sync`, `crt_magnetization`,
-`crt_cursor`) on that monitor's two looks: the close-up's (`CrtScreen` adds it) and the 3D screen's
+`crt.gdshaderinc` (`crt_power`, `crt_warmup`, `crt_degauss`, `crt_sync`, `crt_picture`,
+`crt_magnetization`, `crt_cursor`) on that monitor's two looks: the close-up's (`CrtScreen` adds it) and the 3D screen's
 (`main.gd` adds it with `ScreenView.add_look()`). So the close-up and the 3D screen show one tube,
 and the bench's power cuts and lost signals leave the work computer alone. They are not global
 uniforms for that reason. `ScreenView` calls `reconcile()` on every `Game.changed`: the tube is on
@@ -36,6 +36,10 @@ running computer is connected; CompuFunDB: always):
   the picture rolls and locks.
 - **The signal goes** (cable off, computer off): the picture tears and rolls away, a relay click,
   then the monitor's NO SIGNAL box.
+- **The room light:** each 3D monitor's `Glow` (a SpotLight3D in `props/crt_monitor.tscn`, 9300 K
+  white, no shadow) lights the desk in front of it. `CrtMonitor` sets its energy every frame from
+  the 3D screen's uniforms: it warms up with the picture, goes with the collapse and the lost signal,
+  and is brighter with a computer's picture (`crt_picture`) than with the NO SIGNAL box.
 - **Magnetised mask:** while the screen shows a computer, blotches of wrong colour build up at
   `magnetize_per_second` times the day's warp, so Cambion magnetises the screen as the week goes
   on. The Degauss button under the bench screen (`Bench.degauss_pressed`) clears them.

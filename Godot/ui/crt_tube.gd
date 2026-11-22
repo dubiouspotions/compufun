@@ -48,6 +48,7 @@ func _ready() -> void:
 	_set_value(0.0, &"crt_degauss")
 	_set_value(1.0, &"crt_sync")  # the monitor's own NO SIGNAL box is a steady picture
 	_set_value(0.0, &"crt_magnetization")
+	_set_value(0.0, &"crt_picture")
 
 
 func _process(delta: float) -> void:
@@ -83,6 +84,7 @@ func reconcile(on: bool, has_signal: bool, warp: float) -> void:
 			_animate(&"crt_power", 0.0, power_off_seconds, Tween.EASE_OUT, Tween.TRANS_CUBIC)
 	if has_signal != _signal:
 		_signal = has_signal
+		_animate(&"crt_picture", 1.0 if has_signal else 0.0, sync_lock_seconds, Tween.EASE_IN_OUT, Tween.TRANS_SINE)
 		if not _on:
 			_set_value(1.0 if has_signal else 0.0, &"crt_sync")
 		elif has_signal:
