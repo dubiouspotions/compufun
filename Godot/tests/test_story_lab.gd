@@ -48,6 +48,7 @@ func run() -> void:
 	_a_draft_equal_to_the_file_disappears()
 	_a_draft_that_main_changed_shows_it()
 	_the_issue_has_each_file_and_its_diff()
+	_save_to_checkout_writes_the_files()
 
 
 ## Drafts in [param dir] that never ask git.
@@ -165,6 +166,20 @@ func _the_issue_has_each_file_and_its_diff() -> void:
 	check("it holds the whole new text", "```\n" + SKATER_TEXT + "```\n" in body, true)
 	check("and the diff", "```diff\n--- a/Godot/story/errands/0101_skater_bro.errand\n+++ b/Godot/story/errands/0101_skater_bro.errand\n@@ -9,4 +9,4 @@\n \t(happy) Sweet!\n \n == pick-up\n-(happy) Hey.\n+(happy) Dude!\n```" in body, true)
 	check("a removed file has its diff to nothing", "### `Godot/story/days/day_3.day` (removed, started from `c0ffee`)\n\nDiff against the file in the writer's checkout:\n\n```diff\n--- a/Godot/story/days/day_3.day\n+++ /dev/null\n@@ -1,2 +0,0 @@\n-weather: clear\n-warp: 0\n```" in body, true)
+
+
+func _save_to_checkout_writes_the_files() -> void:
+	var drafts := test_drafts(DIR + "checkout/drafts/")
+	drafts.checkout = DIR + "checkout/checkout/"
+	drafts.put(NICE, "customer: nice_guy\n")
+	drafts.to_checkout = true
+	check("drafts wait while Save to checkout is on", drafts.texts(), {})
+	check("an edit writes the checkout", drafts.put(SKATER, SKATER_TEXT), "")
+	check("the file is there", FileAccess.get_file_as_string(drafts.checkout + "story/errands/0101_skater_bro.errand"), SKATER_TEXT)
+	check("and no draft", FileAccess.file_exists(DIR + "checkout/drafts/story/errands/0101_skater_bro.errand"), false)
+	check("removing deletes the file", [drafts.put(SKATER, ""), FileAccess.file_exists(drafts.checkout + "story/errands/0101_skater_bro.errand")], ["", false])
+	drafts.to_checkout = false
+	check("the drafts come back when it is off", drafts.texts().keys(), [NICE])
 
 
 ## Removes the files under [param dir], a test folder in user://.

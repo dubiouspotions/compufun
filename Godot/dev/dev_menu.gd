@@ -20,6 +20,12 @@ func _ready() -> void:
 		button.text = tool.resource_path.get_file().get_basename().capitalize()
 		button.pressed.connect(_open.bind(tool))
 		_list.add_child(button)
+	var checkout := CheckButton.new()
+	checkout.text = "Story Lab: save to checkout"
+	checkout.tooltip_text = "Write story edits into res://story/ instead of keeping drafts, to commit them with git"
+	checkout.button_pressed = StoryDrafts.saves_to_checkout()
+	checkout.toggled.connect(_save_to_checkout)
+	_list.add_child(checkout)
 
 
 func _input(event: InputEvent) -> void:
@@ -54,3 +60,20 @@ func _child(tool: PackedScene) -> Node:
 			return child
 	return null
 
+
+func _save_to_checkout(on: bool) -> void:
+	var failed := StoryDrafts.set_saves_to_checkout(on)
+	if failed != "":
+		push_error("Dev menu: Save to checkout isn't remembered: " + failed)
+	var lab := _child(story_lab) if story_lab != null else null
+	if lab != null:
+		lab.set(&"to_checkout", on)
+	if on and not StoryDrafts.warned_about_checkout():
+		var warning := AcceptDialog.new()
+		warning.title = "Save to checkout"
+		warning.dialog_text = "The Story Lab now writes its edits into res://story/ in this checkout, and keeps no drafts.\nCommit them with git, or revert them there."
+		add_child(warning)
+		warning.popup_centered()
+		failed = StoryDrafts.set_warned_about_checkout()
+		if failed != "":
+			push_error("Dev menu: the checkout warning will show again: " + failed)

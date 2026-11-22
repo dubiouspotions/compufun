@@ -13,6 +13,18 @@ const STORY_CHECK: String = "res://story/story_check.gd"
 ## The number of the GitHub project (the board) that the issue joins; 0 joins none.
 @export var github_project: int = 4
 
+## True: edits go straight into res://story/ in the checkout, and no drafts play (the Dev menu's
+## Save to checkout).
+var to_checkout: bool:
+	get:
+		return drafts.to_checkout
+	set(on):
+		drafts.to_checkout = on
+		if is_node_ready():
+			_after_store()
+			_checkout_chip.visible = on
+			_say("Save to checkout is on: edits change res://story/ in this checkout." if on else "Save to checkout is off: edits are drafts again.")
+
 ## The drafts that the Lab edits. Replace it before the Lab enters the tree to keep them elsewhere.
 var drafts: StoryDrafts = StoryDrafts.new()
 
@@ -33,6 +45,7 @@ var _hint: Label
 var _drafts_button: Button
 var _drafts_panel: StoryDraftsPanel
 var _send_button: Button
+var _checkout_chip: Label
 var _send_panel: StorySendPanel
 var _customers: PopupMenu
 var _add_day: int = 0
@@ -346,6 +359,11 @@ func _top_bar() -> Control:
 	row.add_theme_constant_override("separation", 12)
 	row.add_child(LabUI.label("Story Lab", 26))
 	row.add_child(LabUI.chip("Game paused", LabUI.ACCENT, 13))
+	_checkout_chip = LabUI.chip("Saves to checkout", LabUI.CHANGED, 13)
+	_checkout_chip.tooltip_text = "Edits change res://story/ in this checkout; commit them with git. Dev menu (F3) turns it off."
+	_checkout_chip.mouse_filter = Control.MOUSE_FILTER_PASS
+	_checkout_chip.visible = drafts.to_checkout
+	row.add_child(_checkout_chip)
 	_status = LabUI.label("", 14, LabUI.DIM)
 	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_status.clip_text = true

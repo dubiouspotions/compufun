@@ -80,20 +80,22 @@ func load_drafts() -> PackedStringArray:
 	return errors
 
 
-## path to text of every draft; "" removes the file. Empty while [member to_checkout] is on.
+## path to text of every draft; "" removes the file. Empty while [member to_checkout] is on: the
+## drafts wait in [member dir] until it is off.
 func texts() -> Dictionary[String, String]:
-	return _texts.duplicate()
+	var none: Dictionary[String, String] = {}
+	return _texts.duplicate() if not to_checkout else none
 
 
 ## The paths with a draft, sorted.
 func paths() -> PackedStringArray:
-	var found := PackedStringArray(_texts.keys())
+	var found := PackedStringArray(texts().keys())
 	found.sort()
 	return found
 
 
 func has(path: String) -> bool:
-	return _texts.has(path)
+	return texts().has(path)
 
 
 ## The commit that the draft of [param path] started from, or [constant UNKNOWN].
@@ -115,7 +117,7 @@ func checkout_text(path: String) -> String:
 
 ## The text that plays for [param path]: its draft, or else the checkout's.
 func text(path: String) -> String:
-	return _texts[path] if _texts.has(path) else checkout_text(path)
+	return _texts[path] if has(path) else checkout_text(path)
 
 
 ## Makes [param new_text] the text of [param path]; "" removes the file. A draft equal to the
