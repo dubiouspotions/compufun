@@ -57,3 +57,9 @@ mesh = SubResource("BoxMesh_led")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.022, 0.1)
 material_override = SubResource("StandardMaterial3D_led_on")
 mesh = SubResource("BoxMesh_led")
+
+[node name="Speaker" type="AudioStreamPlayer3D" parent="." groups=["modem_speaker"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0175, 0)
+volume_db = -2.0
+unit_size = 1.0
+area_mask = 1

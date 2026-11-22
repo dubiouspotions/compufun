@@ -64,6 +64,11 @@ const HEADERS: Array[String] = ["CUSTOMER", "CHECK", "FIX"]
 @export var dialup_sound: AudioStream = preload("res://sounds/modem_dialup.wav")
 @export_group("")
 
+## The group of the speaker at the work keyboard, which plays the keys that the character types.
+const KEYS_SPEAKER: StringName = &"work_keys_speaker"
+## The group of the work modem's speaker, which plays the dial-up.
+const MODEM_SPEAKER: StringName = &"modem_speaker"
+
 ## The picture changed: the computer started, or a new day turned it off.
 signal picture_changed
 
@@ -83,12 +88,10 @@ var _mouse_cell: Vector2i = Vector2i(-1, -1)
 var _typing: DbRecord
 var _shown: int = 0
 var _next_key: float = 0.0
-var _keys: AudioStreamPlayer
 ## True from the first opening of a day until the database shows.
 var _starting: bool = false
 ## The DOS screen of the start-up, line by line.
 var _dos: PackedStringArray = []
-var _modem: AudioStreamPlayer
 var _shown_day: int = -1
 ## What the bottom bar says instead of the column's name until the next key or click; empty: nothing.
 var _status: String = ""
@@ -104,11 +107,6 @@ func _ready() -> void:
 		push_error("CompuFunDB: font is empty")
 	_load_problems()
 	mouse_exited.connect(_on_mouse_exited)
-	_keys = AudioStreamPlayer.new()
-	add_child(_keys)
-	_modem = AudioStreamPlayer.new()
-	_modem.stream = dialup_sound
-	add_child(_modem)
 	set_process(false)
 	Game.changed.connect(queue_redraw)
 	Game.changed.connect(_check_day)
@@ -320,8 +318,17 @@ func _check_day() -> void:
 
 func _play_key(letter: String) -> void:
 	var sound := space_bar if letter == " " and space_bar != null else keystroke
-	if sound != null:
-		sound.play_on(_keys)
+	var speaker := _speaker(KEYS_SPEAKER)
+	if sound != null and speaker != null:
+		sound.play_on(speaker)
+
+
+# The first 3D speaker in [param group], in the shop; null, with an error, when there is none.
+func _speaker(group: StringName) -> AudioStreamPlayer3D:
+	var speaker := get_tree().get_first_node_in_group(group) as AudioStreamPlayer3D
+	if speaker == null:
+		push_error("CompuFunDB: no AudioStreamPlayer3D in group '%s' to play from" % group)
+	return speaker
 
 
 # The boot, the program at the DOS prompt, the dial-up; then the database.
@@ -346,15 +353,19 @@ func _start_up() -> void:
 		await _pause(start_line_seconds)
 		_dos.append(line)
 		queue_redraw()
+	var modem := _speaker(MODEM_SPEAKER)
 	if dialup_sound != null:
-		_modem.play()
+		if modem != null:
+			modem.stream = dialup_sound
+			modem.play()
 		await _pause(dialup_sound.get_length())
 	for line: String in connect_lines:
 		await _pause(start_line_seconds)
 		_dos.append(line)
 		queue_redraw()
 	await _pause(start_line_seconds * 2.0)
-	_modem.stop()
+	if is_instance_valid(modem):
+		modem.stop()
 	_dos.clear()
 	_starting = false
 	Game.start_db()

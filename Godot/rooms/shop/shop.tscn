@@ -420,6 +420,11 @@ transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.75
 [node name="WorkKeyboard" parent="Room" unique_id=2073205538 instance=ExtResource("12_ymhy8")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.42, 0.75, 0.45)
 
+[node name="KeysSpeaker" type="AudioStreamPlayer3D" parent="Room/WorkKeyboard" groups=["work_keys_speaker"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
+unit_size = 0.3
+area_mask = 1
+
 [node name="WorkTower" parent="Room" unique_id=137852129 instance=ExtResource("14_qg2fl")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.85, 0.75, 1.2)
 
