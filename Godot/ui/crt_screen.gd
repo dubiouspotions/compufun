@@ -104,7 +104,6 @@ func _gui_input(event: InputEvent) -> void:
 	var mouse := event as InputEventMouse
 	if mouse == null or buffer == null:
 		return
-	accept_event()
 	var pixels := Vector2(buffer.size)
 	var bent := mouse.duplicate() as InputEventMouse
 	bent.position = bend(mouse.position / size) * pixels
@@ -113,6 +112,7 @@ func _gui_input(event: InputEvent) -> void:
 	if motion != null:
 		motion.relative = bent.position - bend((mouse.position - motion.relative) / size) * pixels
 	buffer.push_input(bent, true)
+	accept_event()  # after the push, which clears the flag: a frozen desktop takes nothing, and the click must not leave the view
 	_cursor_at = bent.position.clamp(Vector2.ZERO, pixels - Vector2.ONE)
 	var over := buffer.gui_get_hovered_control()
 	var shape := over.get_cursor_shape(over.get_global_transform_with_canvas().affine_inverse() * bent.position) if over != null else Control.CURSOR_ARROW
