@@ -47,6 +47,7 @@ func run() -> void:
 	await process_frame
 	_a_draft_equal_to_the_file_disappears()
 	_a_draft_that_main_changed_shows_it()
+	_the_issue_has_each_file_and_its_diff()
 
 
 ## Drafts in [param dir] that never ask git.
@@ -144,6 +145,26 @@ func _a_draft_that_main_changed_shows_it() -> void:
 	file.close()
 	check("main changed it since", StoryDraftsPanel.main_changed(drafts), PackedStringArray([SKATER]))
 	check("the draft is still the writer's", drafts.text(SKATER), "customer: skater_bro\n")
+
+
+func _the_issue_has_each_file_and_its_diff() -> void:
+	check("a diff has its hunk and context", StoryIssue.diff("a\nb\nc\nd\ne\nf\ng\nh\ni\n", "a\nb\nc\nd\nE\nf\ng\nh\ni\nj\n"),
+		"@@ -2,8 +2,9 @@\n b\n c\n d\n-e\n+E\n f\n g\n h\n i\n+j\n")
+	check("far changes make two hunks", StoryIssue.diff("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n", "one\n2\n3\n4\n5\n6\n7\n8\n9\nten\n"),
+		"@@ -1,4 +1,4 @@\n-1\n+one\n 2\n 3\n 4\n@@ -7,4 +7,4 @@\n 7\n 8\n 9\n-10\n+ten\n")
+	check("a new file is all additions", StoryIssue.diff("", "x\ny\n"), "@@ -0,0 +1,2 @@\n+x\n+y\n")
+	var changed: Array[Dictionary] = [
+		{"path": SKATER, "text": SKATER_TEXT, "old": SKATER_TEXT.replace("Dude!", "Hey."), "commit": "c0ffee"},
+		{"path": "res://story/days/day_3.day", "text": "", "old": DAY_TEXT, "commit": "c0ffee"},
+	]
+	check("the title names the codes and days", StoryIssue.title(changed, "The skater cheers\nmore"), "Story: 0101, day 3: The skater cheers")
+	var body := StoryIssue.body(changed, "The skater cheers", "Ada")
+	check("the body starts with the note", body.begins_with("The skater cheers\n"), true)
+	check("it names the writer", "by Ada" in body, true)
+	check("it names the file, what happened and the start commit", "### `Godot/story/errands/0101_skater_bro.errand` (changed, started from `c0ffee`)" in body, true)
+	check("it holds the whole new text", "```\n" + SKATER_TEXT + "```\n" in body, true)
+	check("and the diff", "```diff\n--- a/Godot/story/errands/0101_skater_bro.errand\n+++ b/Godot/story/errands/0101_skater_bro.errand\n@@ -9,4 +9,4 @@\n \t(happy) Sweet!\n \n == pick-up\n-(happy) Hey.\n+(happy) Dude!\n```" in body, true)
+	check("a removed file has its diff to nothing", "### `Godot/story/days/day_3.day` (removed, started from `c0ffee`)\n\nDiff against the file in the writer's checkout:\n\n```diff\n--- a/Godot/story/days/day_3.day\n+++ /dev/null\n@@ -1,2 +0,0 @@\n-weather: clear\n-warp: 0\n```" in body, true)
 
 
 ## Removes the files under [param dir], a test folder in user://.

@@ -8,6 +8,11 @@ const CUSTOMERS_DIR: String = "res://customers/"
 ## The story check, when the game has one: static missing_links(week) and flag_index(week).
 const STORY_CHECK: String = "res://story/story_check.gd"
 
+## The GitHub repo that Send makes the issue in, as owner/name; "" reads git's remote origin.
+@export var github_repo: String = ""
+## The number of the GitHub project (the board) that the issue joins; 0 joins none.
+@export var github_project: int = 4
+
 ## The drafts that the Lab edits. Replace it before the Lab enters the tree to keep them elsewhere.
 var drafts: StoryDrafts = StoryDrafts.new()
 
@@ -27,6 +32,8 @@ var _day_panel: StoryDayPanel
 var _hint: Label
 var _drafts_button: Button
 var _drafts_panel: StoryDraftsPanel
+var _send_button: Button
+var _send_panel: StorySendPanel
 var _customers: PopupMenu
 var _add_day: int = 0
 
@@ -59,6 +66,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if key != null and key.pressed and not key.echo and key.keycode == KEY_ESCAPE and visible:
 		if _drafts_panel.visible:
 			_drafts_panel.hide()
+		elif _send_panel.visible:
+			_send_panel.hide()
 		else:
 			hide()
 		get_viewport().set_input_as_handled()
@@ -88,6 +97,8 @@ func refresh() -> void:
 	_problems.tooltip_text = "\n".join(_week.errors)
 	_errand_panel.flags = flag_names()
 	_drafts_button.text = "Drafts (%d)" % drafts.paths().size()
+	_send_button.disabled = drafts.paths().is_empty()
+	_send_button.tooltip_text = "Make a GitHub issue of your drafts" if not drafts.to_checkout else "Save to checkout is on: commit the files with git instead"
 	if _selected == "" and _errand_panel.visible:
 		_show_lower(_hint)
 
@@ -320,6 +331,11 @@ func _build() -> void:
 	_drafts_panel = StoryDraftsPanel.new()
 	_drafts_panel.changed.connect(_drafts_changed)
 	add_child(_drafts_panel)
+	_send_panel = StorySendPanel.new()
+	_send_panel.github_repo = github_repo
+	_send_panel.github_project = github_project
+	_send_panel.sent.connect(func(text: String, ok: bool) -> void: _say(text, not ok))
+	add_child(_send_panel)
 	_customers = PopupMenu.new()
 	_customers.id_pressed.connect(_add_errand_for)
 	add_child(_customers)
@@ -341,5 +357,7 @@ func _top_bar() -> Control:
 	_drafts_button = LabUI.button("Drafts", func() -> void: _drafts_panel.show_drafts(drafts))
 	_drafts_button.tooltip_text = "Your edits that main doesn't have yet"
 	row.add_child(_drafts_button)
+	_send_button = LabUI.button("Send", func() -> void: _send_panel.show_send(drafts), &"AccentButton")
+	row.add_child(_send_button)
 	row.add_child(LabUI.button("Close  Esc", hide))
 	return row
