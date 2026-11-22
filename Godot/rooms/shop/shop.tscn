@@ -355,7 +355,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 1.425, -5.5)
 material_override = ExtResource("6_q4845")
 mesh = SubResource("QuadMesh_7gxtd")
 
-[node name="Sign" parent="Room" unique_id=1907604386 instance=ExtResource("7_mjyfn") groups=["logo_signs"]]
+[node name="Sign" parent="Room" unique_id=1907604386 instance=ExtResource("7_mjyfn") groups=["logo_signs", "solitaire_posters"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.71, -5.44)
 
 [node name="SignLeft" parent="Room" instance=ExtResource("7_mjyfn") groups=["logo_signs", "solitaire_posters"]]
