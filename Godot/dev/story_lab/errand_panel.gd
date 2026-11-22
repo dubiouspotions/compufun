@@ -63,6 +63,8 @@ var _highlighter: StoryHighlighter
 var _errors: ItemList
 var _text_view: Control
 var _graph_view: Control
+var _empty: Control
+var _play: Button
 var _graph: Node
 var _settle: Timer
 var _field_settle: Timer
@@ -107,12 +109,7 @@ func trigger() -> Conversation.Trigger:
 ## Shows the conversations as "Graph" or "Text".
 func show_view(view: String) -> void:
 	_view = view
-	for button: BaseButton in _views.get_buttons():
-		button.set_pressed_no_signal((button as Button).text == view)
-	_text_view.visible = view == "Text"
-	_graph_view.visible = view == "Graph"
-	if view == "Graph":
-		_show_graph()
+	_show_conversation()
 
 
 ## Makes [param section] the text of the conversation tab that shows, as typing there does, and
@@ -192,8 +189,8 @@ func _apply_section() -> PackedStringArray:
 	if _tab_names() != _shown_tab_names():
 		_fill_tabs()
 		_show_tab(clampi(_tab, 0, maxi(_errand.conversations.size() - 1, 0)))
-	elif _graph != null and _view == "Graph":
-		_show_graph()
+	else:
+		_show_conversation()
 	return PackedStringArray()
 
 
@@ -303,7 +300,6 @@ func _fill_tabs() -> void:
 			if on:
 				_show_tab(i))
 		_tabs.add_child(tab)
-	_remove_conversation.visible = not names.is_empty()
 
 
 func _show_tab(index: int) -> void:
@@ -320,7 +316,25 @@ func _show_tab(index: int) -> void:
 		_apply_section()
 	else:
 		_mark(PackedStringArray(), "", PackedStringArray())
-	if _view == "Graph":
+	_show_conversation()
+
+
+# Shows what the open errand's tab and view call for: the conversation as text or as a graph, or,
+# without conversations, a way to add one. Every change of errand, tab or view comes here.
+func _show_conversation() -> void:
+	var has := _errand != null and _tab < _errand.conversations.size()
+	_empty.visible = not has
+	_text_view.visible = has and _view == "Text"
+	_graph_view.visible = has and _view == "Graph"
+	_remove_conversation.visible = has
+	var why := "" if has else "Add a conversation first"
+	for button: BaseButton in _views.get_buttons():
+		button.set_pressed_no_signal((button as Button).text == _view)
+		button.disabled = not has
+		button.tooltip_text = why
+	_play.disabled = not has
+	_play.tooltip_text = "Play this conversation in the game; Esc or F4 comes back" if has else why
+	if has and _view == "Graph":
 		_show_graph()
 
 
@@ -584,12 +598,11 @@ func _right() -> Control:
 			if on:
 				show_view((button as Button).text))
 	bar.add_child(views)
-	var play := LabUI.button("Play", func() -> void:
+	_play = LabUI.button("Play", func() -> void:
 		_settle_now()
 		play_requested.emit(_errand, trigger()), &"AccentButton")
-	play.custom_minimum_size.x = 80
-	play.tooltip_text = "Play this conversation in the game; Esc or F4 comes back"
-	bar.add_child(play)
+	_play.custom_minimum_size.x = 80
+	bar.add_child(_play)
 	var body := Control.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	box.add_child(body)
@@ -623,4 +636,18 @@ func _right() -> Control:
 	_graph_view = Control.new()
 	_graph_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	body.add_child(_graph_view)
+	_empty = CenterContainer.new()
+	_empty.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	body.add_child(_empty)
+	var empty := VBoxContainer.new()
+	empty.add_theme_constant_override("separation", 14)
+	_empty.add_child(empty)
+	var none := LabUI.label("No conversations yet", 20)
+	none.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	empty.add_child(none)
+	var adds := HBoxContainer.new()
+	adds.add_theme_constant_override("separation", 10)
+	empty.add_child(adds)
+	for i: int in TRIGGER_NAMES.size():
+		adds.add_child(LabUI.button("+  " + TRIGGER_NAMES.values()[i], _add_conversation.bind(i)))
 	return panel

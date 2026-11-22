@@ -47,6 +47,7 @@ func run() -> void:
 	check("Play hides the Lab only when the game plays it", lab.visible, reason != "")
 	lab.show()
 	_the_bible_edits_its_pages(lab, drafts)
+	await _opening_an_errand_shows_its_own_conversations(lab)
 	lab.queue_free()
 	await process_frame
 	_a_draft_equal_to_the_file_disappears()
@@ -209,6 +210,31 @@ func _the_bible_edits_its_pages(lab: Control, drafts: StoryDrafts) -> void:
 	bible.open_page("res://story/bible/cast.md")
 	check("the bible opens it", bible.path(), "res://story/bible/cast.md")
 	lab.call("show_section", "Week")
+
+
+func _opening_an_errand_shows_its_own_conversations(lab: Control) -> void:
+	var quiet := ERRANDS + "0301_hat_guy.errand"
+	check("an errand without conversations saves", lab.call("store", quiet, "customer: hat_guy\ncomputer: none\n"), "")
+	var panel: StoryErrandPanel = lab.call("errand_panel")
+	lab.call("open_errand", SKATER)
+	panel.show_view("Graph")
+	await process_frame
+	lab.call("open_errand", quiet)
+	await process_frame
+	var empty: Control = panel.get("_empty")
+	var graph_view: Control = panel.get("_graph_view")
+	var text_view: Control = panel.get("_text_view")
+	var play: Button = panel.get("_play")
+	check("no conversations: the empty state shows, not the last errand's graph", [empty.visible, graph_view.visible, text_view.visible], [true, false, false])
+	check("and Play, Graph and Text are off", [play.disabled, (panel.get("_views") as ButtonGroup).get_buttons().all(func(b: BaseButton) -> bool: return b.disabled)], [true, true])
+	lab.call("open_errand", SKATER)
+	await process_frame
+	var graph: Node = graph_view.get_child(0)
+	check("an errand with conversations shows its graph again", [empty.visible, graph_view.visible, play.disabled], [false, true, false])
+	check("the graph shows this errand's drop-off", graph.call("box_of", panel.errand().conversations[0]) != null, true)
+	lab.call("open_errand", quiet)
+	panel.call("_add_conversation", 2)
+	check("the empty state adds a phone conversation", [panel.errand().conversations.size(), empty.visible, graph_view.visible], [1, false, true])
 
 
 ## Removes the files under [param dir], a test folder in user://.
