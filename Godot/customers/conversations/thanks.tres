@@ -6,22 +6,22 @@
 [sub_resource type="Resource" id="line_1"]
 script = ExtResource("dl")
 text = "Thank you!"
-pose = &"happy"
+mood = &"happy"
 
 [sub_resource type="Resource" id="line_2"]
 script = ExtResource("dl")
 text = "Thanks a lot!"
-pose = &"happy"
+mood = &"happy"
 
 [sub_resource type="Resource" id="line_3"]
 script = ExtResource("dl")
 text = "Oh, thank you!"
-pose = &"happy"
+mood = &"happy"
 
 [sub_resource type="Resource" id="line_4"]
 script = ExtResource("dl")
 text = "Thank you so much."
-pose = &"happy"
+mood = &"happy"
 
 [resource]
 script = ExtResource("cv")

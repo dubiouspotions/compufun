@@ -19,7 +19,7 @@ extends Resource
 @export var then: Reply
 
 
-## Every line of this reply and of the replies under it, depth first.
+## Every line of this reply, of the replies under it and of its [member then], depth first.
 func all_lines() -> Array[DialogueLine]:
 	var found: Array[DialogueLine] = lines.duplicate()
 	for choice: Choice in choices:
@@ -28,4 +28,6 @@ func all_lines() -> Array[DialogueLine]:
 		for reply: Reply in choice.replies:
 			if reply != null:
 				found.append_array(reply.all_lines())
+	if then != null:
+		found.append_array(then.all_lines())
 	return found

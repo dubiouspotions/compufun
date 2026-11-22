@@ -115,7 +115,7 @@ static func _write_block(out: PackedStringArray, reply: Reply, depth: int) -> vo
 	if not reply.set_flags.is_empty():
 		out.append(tabs + "set " + write_flags(reply.set_flags))
 	for line: DialogueLine in reply.lines:
-		var said: String = "%s(%s) %s" % [tabs, line.pose, line.text]
+		var said: String = "%s(%s) %s" % [tabs, line.mood, line.text]
 		if line.effect != null:
 			said += " [effect %s]" % _stem(line.effect)
 		out.append(said)
@@ -441,7 +441,7 @@ class _Reader:
 		var text: String = token.text
 		var mood := RegEx.create_from_string("^\\(([a-z0-9_]+)\\)\\s*").search(text)
 		if mood != null:
-			line.pose = StringName(mood.get_string(1))
+			line.mood = StringName(mood.get_string(1))
 			text = text.substr(mood.get_end())
 		var effect := RegEx.create_from_string("\\s*\\[effect ([a-z0-9_]+)\\]$").search(text)
 		if effect != null:

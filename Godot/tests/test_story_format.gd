@@ -65,7 +65,7 @@ func run() -> void:
 	check("three conversations", errand.conversations.map(func(c: Conversation) -> String: return c.id), ["0101/drop-off/1", "0101/pick-up/1", "0101/phone/1"])
 
 	var talk := errand.conversations[0]
-	check("drop-off: once, brief, first line", [talk.once, talk.brief, talk.lines[0].text, talk.lines[0].pose], [true, "He arrives cheerful.", "Yo! Is this the computer repair shop?", &"neutral"])
+	check("drop-off: once, brief, first line", [talk.once, talk.brief, talk.lines[0].text, talk.lines[0].mood], [true, "He arrives cheerful.", "Yo! Is this the computer repair shop?", &"neutral"])
 	check("the greeting list", talk.choices.map(func(c: Choice) -> String: return c.text), ["Welcome to CompuFun!", "Did your mom give it away?"])
 	check("a line's own effect", talk.choices[1].replies[0].lines[0].effect.resource_path, "res://voices/effects/cambion_glitch.tres")
 	var issue := talk.then

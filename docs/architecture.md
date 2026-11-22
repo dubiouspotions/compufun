@@ -22,12 +22,12 @@ Godot/               the Godot project: everything the game loads
   materials/         one shared material per surface; textures/ holds the PNGs
   rooms/             hotspot.tscn, view_marker.gd and ground.gd (a floor and its footsteps), shared by all rooms
   rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain and its sound, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying on its side), bench.tscn (the bench screen, keyboard and VGA cable), work_cables.tscn (the cables from the work computer to its screen, the printer and the modem), pipedream.tscn (the Win95 Pipes that grow with the warp), ceiling_mouse.tscn (the easter egg in the ceiling), hand.tscn (the part in the hand, held in front of the camera), the_end.tscn (the body with the pipe through the chest, at the end), their meshes and textures, sound_zones.tscn (where a 3D sound plays: in the shop with the Room reverb, in the storage room with the Storage reverb, or on the Street bus)
-  people/<name>/     person.tres, portrait_<pose>.png, face.png
+  people/<name>/     person.tres, portrait_<mood>.png, face.png
   customers/         one .tres per customer, customer_body.tscn, photo_relief.gd (the upper body from the portrait), job.gd (one computer on the counter)
   customers/<name>/  the pictures in that customer's files, such as pierre/castle_01.png
   voices/            one .wav per customer line, rendered by Chimera; voices.gd names and renders them
   voices/persons/    voice persons (VoicePerson), one per people/<name>/: who speaks, a body with its build and timbre; the bottom layer
-  voices/moods/      the mood of each pose (VoiceMood): speed, pitch, pitch swing and more; the middle layer
+  voices/moods/      the voice of each mood (VoiceMood): speed, pitch, pitch swing and more; the middle layer
   voices/effects/    voice effects (VoiceEffect): a base, an alternate and a curve; the top layer
   voices/live/       the live voice: live_voice.js (web), the dictionary; tools/build-voice.sh adds the wasm, the libraries and the .gdextension
   sounds/            sound effects: the audio files, and one SoundSet .tres per effect (its takes,

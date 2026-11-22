@@ -1,8 +1,8 @@
 class_name CustomerCalling
 extends PanelContainer
 ## A waiting customer calls out while the player looks elsewhere, until stop(): one line at a
-## time, spoken in the customer's voice. The lines are grouped by pose, calmest first, in the order
-## each pose first appears; the customer says [member lines_per_mood] random lines of a group
+## time, spoken in the customer's voice. The lines are grouped by mood, calmest first, in the order
+## each mood first appears; the customer says [member lines_per_mood] random lines of a group
 ## (never the one just said) before the next, so they get more annoyed, and once at the end they
 ## stay annoyed, going round from group [member loop_from_mood] on.
 
@@ -25,7 +25,7 @@ extends PanelContainer
 
 var _customer: Customer
 var _conversation: Conversation
-## The lines grouped by pose, calmest first.
+## The lines grouped by mood, calmest first.
 var _moods: Array[Array] = []
 var _step: int = 0
 var _last: DialogueLine
@@ -58,7 +58,7 @@ func call_out(customer: Customer) -> void:
 		push_error("CustomerCalling: no waiting lines are set (lines: %s), so %s can't call out" % [conversation, customer.resource_path])
 		return
 	_customer = customer
-	_moods = _by_pose(conversation.lines)
+	_moods = _by_mood(conversation.lines)
 	_step = 0
 	_last = null
 	_calling = true
@@ -152,17 +152,17 @@ func _mood_of(step: int) -> int:
 	return from + (mood - count) % (count - from)
 
 
-static func _by_pose(lines: Array[DialogueLine]) -> Array[Array]:
+static func _by_mood(lines: Array[DialogueLine]) -> Array[Array]:
 	var order: Array[StringName] = []
 	var groups := {}
 	for line in lines:
 		if line == null or line.text.strip_edges().is_empty():
 			continue
-		if not groups.has(line.pose):
-			order.append(line.pose)
-			groups[line.pose] = []
-		groups[line.pose].append(line)
+		if not groups.has(line.mood):
+			order.append(line.mood)
+			groups[line.mood] = []
+		groups[line.mood].append(line)
 	var moods: Array[Array] = []
-	for pose in order:
-		moods.append(groups[pose])
+	for mood: StringName in order:
+		moods.append(groups[mood])
 	return moods

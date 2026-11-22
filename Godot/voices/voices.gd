@@ -30,11 +30,11 @@ compress/mode=2
 """
 
 
-## How a line in [param pose] sounds: voices/moods/<pose>.tres, or neutral.tres for a pose
+## How a line in [param of] sounds: voices/moods/<mood>.tres, or neutral.tres for a mood
 ## without a mood file.
-static func mood(pose: StringName) -> VoiceMood:
-	for name: StringName in [pose, &"neutral"]:
-		var path := MOODS_DIR + String(name) + ".tres"
+static func mood(of: StringName) -> VoiceMood:
+	for name: StringName in [of, &"neutral"]:
+		var path := _mood_path(name)
 		if ResourceLoader.exists(path):
 			var found := load(path) as VoiceMood
 			if found != null:
@@ -42,6 +42,15 @@ static func mood(pose: StringName) -> VoiceMood:
 			push_error("Voices: %s is not a VoiceMood" % path)
 	push_error("Voices: no %sneutral.tres; the line is said with Chimera's defaults" % MOODS_DIR)
 	return VoiceMood.new()
+
+
+## True when [param of] has its own voice, voices/moods/<mood>.tres; false when it speaks as neutral.
+static func has_mood(of: StringName) -> bool:
+	return ResourceLoader.exists(_mood_path(of))
+
+
+static func _mood_path(of: StringName) -> String:
+	return MOODS_DIR + String(of) + ".tres"
 
 
 ## The text form of a voice for ChimeraVoice and the web voice: [param person] at the bottom,
@@ -63,10 +72,10 @@ static func layer(person: VoicePerson, mood: VoiceMood, effect: VoiceEffect) -> 
 
 
 ## The voice file of [param line] in [param voice]. Its name is a hash of all that shapes the
-## sound (the voice, the mood of the line's pose and the text), so an edited line never finds
+## sound (the voice, the line's mood and the text), so an edited line never finds
 ## old audio.
 static func path_of(line: DialogueLine, voice: String) -> String:
-	var shape := mood(line.pose)
+	var shape := mood(line.mood)
 	var key := "%s|%.3f|%.3f|%.3f|%s" % [voice, shape.rate, shape.pitch, shape.swing, line.text]
 	return DIR + key.md5_text() + ".wav"
 
@@ -86,7 +95,7 @@ static func stream_of(line: DialogueLine, voice: String) -> AudioStream:
 	return stream
 
 
-## Says [param line] as [param person] in the mood of its pose, under [param effect], through the
+## Says [param line] as [param person] in its mood, under [param effect], through the
 ## ChimeraVoice extension, and returns the whole line as a WAV; null with the error pushed when the
 ## extension is missing. For the editor: the game streams lines with VoicePlayer instead.
 static func say_live(line: DialogueLine, person: VoicePerson, effect: VoiceEffect) -> AudioStreamWAV:
@@ -102,7 +111,7 @@ static func say_live(line: DialogueLine, person: VoicePerson, effect: VoiceEffec
 		push_error("Voices: can't read res://voices/live/cmudict.txt.gz: %s" % error_string(FileAccess.get_open_error()))
 		return null
 	engine.load_dict(gz.decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP).get_string_from_utf8())
-	var shape := mood(line.pose)
+	var shape := mood(line.mood)
 	engine.set_voice_type(layer(person, shape, effect))
 	if engine.start(line.text, VoicePlayer.BODIES.get(person.body, 0), VoicePlayer.MIX_RATE, shape.rate, shape.pitch, shape.swing) <= 0:
 		push_error("Voices: ChimeraVoice said nothing for \"%s\"" % line.text)
@@ -140,7 +149,7 @@ static func chimera_problem(chimera: String) -> String:
 ## [param chimera], and its import settings. Returns "" when the file is there, or why not.
 static func render(line: DialogueLine, voice: String, chimera: String) -> String:
 	var path := path_of(line, voice)
-	var shape := mood(line.pose)
+	var shape := mood(line.mood)
 	var arguments := ["render", "text", ProjectSettings.globalize_path(path).trim_suffix(".wav"),
 		line.text.replace("\n", " "), voice, "%.3f" % shape.rate, "%.3f" % shape.pitch, "%.3f" % shape.swing]
 	var output: Array = []

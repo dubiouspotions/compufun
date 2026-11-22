@@ -1,7 +1,7 @@
 class_name VoiceLab
 extends Control
 ## The Voice Lab, a dev tool for the three layers of a voice (docs: Voices.layer). A line is said by
-## a person (VoicePerson: who speaks, one per character in voices/persons/), in a mood (VoiceMood: how, one per pose,
+## a person (VoicePerson: who speaks, one per character in voices/persons/), in a mood (VoiceMood: how, one per mood,
 ## voices/moods/), under an effect (VoiceEffect: a corruption, voices/effects/). Pick one of each
 ## to hear them together; the layer chosen at the top is the one the levers edit and Save writes.
 ## Save (Cmd+S) writes it in place: a character's person is voices/persons/<name>.tres, so the
@@ -141,7 +141,7 @@ var _was_paused: bool = false
 var _held: Array[Node] = []
 var _dragging: int = -1
 
-## Per layer: the picker of saved ones, and what each item is (a path, or a pose for moods).
+## Per layer: the picker of saved ones, and what each item is (a path, or a mood's name).
 var _pickers: Array[OptionButton] = []
 var _picked: Array[Array] = [[], [], []]
 var _tabs: ButtonGroup
@@ -419,16 +419,15 @@ func _dir(layer: int) -> String:
 	return [Voices.PERSONS_DIR, Voices.MOODS_DIR, Voices.EFFECTS_DIR][layer]
 
 
-# Fills a layer's picker: "New" and the saved persons or effects, or every pose's mood.
+# Fills a layer's picker: "New" and the saved persons or effects, or every mood.
 func _fill_picker(layer: int) -> void:
 	var picker := _pickers[layer]
 	picker.clear()
 	_picked[layer] = []
 	if layer == 1:
-		for pose: StringName in Person.POSES:
-			var saved := ResourceLoader.exists(Voices.MOODS_DIR + String(pose) + ".tres")
-			picker.add_item(String(pose).capitalize() + ("" if saved else " (neutral's)"))
-			_picked[layer].append(pose)
+		for mood: StringName in Person.MOODS:
+			picker.add_item(String(mood).capitalize() + ("" if Voices.has_mood(mood) else " (neutral's)"))
+			_picked[layer].append(mood)
 		return
 	picker.add_item("New person" if layer == 0 else "No effect")
 	_picked[layer].append("")
@@ -533,7 +532,7 @@ func _show_name() -> void:
 	_name.editable = _layer != 1
 	if _layer == 1:
 		_name.text = String(item)
-		_name.tooltip_text = "A mood belongs to its pose; pick another mood to save that one."
+		_name.tooltip_text = "A mood keeps its name; pick another mood to save that one."
 	else:
 		_name.text = String(item).get_file().get_basename()
 		_name.tooltip_text = ""
@@ -544,7 +543,7 @@ func _show_name() -> void:
 func _save_layer() -> void:
 	var name_text := _name.text.strip_edges().to_snake_case().validate_filename()
 	if _layer == 1:
-		name_text = String(_picked[1][_pickers[1].selected])  # a mood keeps its pose's name
+		name_text = String(_picked[1][_pickers[1].selected])  # a mood keeps its name
 	if name_text.is_empty():
 		_status.text = "Name the %s first." % LAYERS[_layer].to_lower()
 		return
@@ -598,14 +597,14 @@ func _resources(dir: String) -> PackedStringArray:
 	return found
 
 
-# A line from the game brings its pose's mood, its customer's person and its effect along.
+# A line from the game brings its mood, its customer's person and its effect along.
 func _pick_line(index: int) -> void:
 	if index <= 0:
 		return
 	var picked: Array = _lines[index - 1]
 	var line: DialogueLine = picked[1]
 	_text.text = line.text
-	_pick(1, _picked[1].find(line.pose))
+	_pick(1, _picked[1].find(line.mood))
 	if picked[2] != null:
 		_pick(0, _picked[0].find((picked[2] as VoicePerson).resource_path))
 	_pick(2, _picked[2].find((picked[3] as VoiceEffect).resource_path) if picked[3] != null else 0)
@@ -641,7 +640,7 @@ func _build() -> void:
 	line_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page.add_child(line_card)
 	_cards.append(_layer_card(PERSON, "Person", "Who speaks: the body, its build and its timbre", PERSON_KEYS, "body"))
-	_cards.append(_layer_card(MOOD, "Mood", "How a line in this pose is said, over any person", MOOD_KEYS, "intonation"))
+	_cards.append(_layer_card(MOOD, "Mood", "How a line in this mood is said, over any person", MOOD_KEYS, "intonation"))
 	var sides := HBoxContainer.new()
 	sides.add_theme_constant_override("separation", 16)
 	for side in 2:

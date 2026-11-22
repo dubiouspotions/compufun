@@ -1,17 +1,17 @@
 @tool
 class_name DialogueLine
 extends Resource
-## One line that a customer says, with the portrait pose to show while they say it.
+## One line that a customer says, and the mood that they say it in.
 
 @export_multiline var text: String = ""
-## One of [constant Person.POSES]; the inspector shows them as a dropdown. It sets the portrait and
+## One of [constant Person.MOODS]; the inspector shows them as a dropdown. It sets the portrait and
 ## the mood of the voice (voices/moods/).
-@export var pose: StringName = &"neutral"
+@export var mood: StringName = &"neutral"
 ## The voice effect of this line; null takes its conversation's.
 @export var effect: VoiceEffect
 
 
 func _validate_property(property: Dictionary) -> void:
-	if property.name == "pose":
+	if property.name == "mood":
 		property.hint = PROPERTY_HINT_ENUM
-		property.hint_string = ",".join(PackedStringArray(Person.POSES))
+		property.hint_string = ",".join(PackedStringArray(Person.MOODS))

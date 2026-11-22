@@ -3,9 +3,10 @@ extends Control
 ## A customer talks: their portrait, one line of a conversation at a time. A click anywhere shows
 ## the rest of a line that types, then goes to the next line; so does a pause after the voice ends.
 ## Under a reply's last line, the player's choices, each a button that plays the customer's reply.
-## The portrait sways and breathes, and shakes in time with the voice.
+## A ConversationWalk decides what comes next. The portrait sways and breathes, and shakes in time
+## with the voice.
 
-## The conversation is over: the last line is read, or a choice that ends it.
+## The conversation is over: the walk ended, after its last line is read or a leave button.
 signal finished
 
 const _NEUTRAL := &"neutral"
@@ -59,16 +60,10 @@ const _MATCH_NEUTRAL_HEIGHT := "young_entrepreneur/portrait_irritated03.png"
 
 var _customer: Customer
 var _conversation: Conversation
+# null while the box shows its own error line.
+var _walk: ConversationWalk
+# The lines that show, one at a time: those of the reply that the walk last played.
 var _lines: Array[DialogueLine] = []
-# The reply whose lines show; the conversation itself at the start.
-var _reply: Reply
-# The reply whose choices the player picks from, and the lists above it to go back to.
-var _list: Reply
-var _above: Array[Reply] = []
-# The choices picked in this conversation.
-var _asked: Dictionary[Choice, bool] = {}
-# The picked choice ends the conversation after its reply.
-var _ending: bool = false
 # A picked button is lighting up while the others fade; further clicks wait.
 var _picking: bool = false
 # Seconds since the shown line was typed out and its voice went quiet.
@@ -155,11 +150,7 @@ func start(customer: Customer, conversation: Conversation) -> void:
 		return
 	_customer = customer
 	_conversation = conversation
-	_reply = conversation
-	_list = null
-	_above.clear()
-	_asked.clear()
-	_ending = false
+	_walk = null
 	_pending = []
 	_line = 0
 	_name.text = customer.spoken_name()
@@ -173,7 +164,8 @@ func start(customer: Customer, conversation: Conversation) -> void:
 		_lines = [error_line]
 		_voiced = false
 	else:
-		_lines = conversation.lines
+		_walk = ConversationWalk.new(conversation)
+		_lines = _walk.lines()
 		_voiced = true
 	_rise_portrait()
 	_show_line()
@@ -208,15 +200,15 @@ func _rise_portrait() -> void:
 	_rise.tween_property(_portrait_slot, "offset_bottom", _slot_bottom, rise_seconds)
 
 
-## Shows the portrait of [param pose]. A pose the person has no portrait for shows "neutral".
-func _show_portrait(pose: StringName) -> void:
+## Shows the portrait of [param mood]. A mood that the person has no portrait for shows "neutral".
+func _show_portrait(mood: StringName) -> void:
 	_portrait.texture = null
 	_figure = Rect2i()
 	var person := _customer.person
 	if person == null:
 		push_error("DialogueOverlay: %s has no person" % _customer.resource_path)
 		return
-	var shown := pose if pose != &"" else _NEUTRAL
+	var shown := mood if mood != &"" else _NEUTRAL
 	if not person.portraits.has(shown):
 		push_error("DialogueOverlay: %s has no \"%s\" portrait" % [person.resource_path, shown])
 		shown = _NEUTRAL
@@ -226,7 +218,7 @@ func _show_portrait(pose: StringName) -> void:
 	_fit_portrait()
 
 
-## Each pose is scaled so its hem meets the bottom of the column and the head crosses the top edge at the same height. The young entrepreneur's hands-up pose is scaled to the same height as his neutral portrait.
+## Each portrait is scaled so its hem meets the bottom of the column and the head crosses the top edge at the same height. The young entrepreneur's hands-up pose is scaled to the same height as his neutral portrait.
 func _fit_portrait() -> void:
 	var tex := _portrait.texture
 	if tex == null or _portrait_slot.size.y <= 0.0:
@@ -357,10 +349,13 @@ func _center_run(image: Image, y: int, axis: int) -> int:
 func _show_line() -> void:
 	var line := _lines[_line]
 	_text.type_out(line.text if line != null else "")
-	_show_portrait(line.pose if line != null else _NEUTRAL)
+	_show_portrait(line.mood if line != null else _NEUTRAL)
 	_quiet = 0.0
 	_show_choices([])
-	_pending = _enter_choices() if _line >= _lines.size() - 1 else ([] as Array[Choice])
+	_pending = []
+	if _walk != null and _line >= _lines.size() - 1:
+		_walk.said()  # now, so that choices can show once the line goes quiet
+		_pending = _walk.choices()
 	_speak(line)
 
 
@@ -393,25 +388,11 @@ func _advance() -> void:
 		return
 	if _choices.visible:
 		return
-	if _line >= _lines.size() - 1:
-		_after_reply()
+	if _line < _lines.size() - 1:
+		_line += 1
+		_show_line()
 		return
-	_line += 1
-	_show_line()
-
-
-# The choices that follow the reply's last line: its own, which become the list to pick from, or
-# the list it came from; none when the conversation ends after it.
-func _enter_choices() -> Array[Choice]:
-	if not _voiced or _ending:
-		return []
-	var own := Game.offered(_reply)
-	if not own.is_empty():
-		if _list != null and _list != _reply:
-			_above.push_back(_list)
-		_list = _reply
-		return own
-	return Game.offered(_list) if _list != null else ([] as Array[Choice])
+	_go_on()
 
 
 func _show_pending() -> void:
@@ -419,10 +400,18 @@ func _show_pending() -> void:
 	_pending = []
 
 
-# The reply's last line is read and no choice follows: the conversation is over.
-func _after_reply() -> void:
-	_voice.hush()
-	finished.emit()
+# On to where the walk is: the next reply's lines, a list of choices, or the end.
+func _go_on() -> void:
+	if _walk != null and not _walk.lines().is_empty():
+		_lines = _walk.lines()
+		_line = 0
+		_show_line()
+	elif _walk != null and not _walk.choices().is_empty():
+		_show_choices(_walk.choices())
+	else:
+		_show_choices([])
+		_voice.hush()
+		finished.emit()
 
 
 func _show_choices(offered: Array[Choice]) -> void:
@@ -434,13 +423,10 @@ func _show_choices(offered: Array[Choice]) -> void:
 		return
 	for choice: Choice in offered:
 		var button := _choice_button(choice.text, _pick.bind(choice))
-		if _asked.has(choice):
+		if _walk.was_picked(choice):
 			button.add_theme_color_override(&"font_color", asked_color)
-	if not offered.any(func(c: Choice) -> bool: return c.ends):
-		if _above.is_empty():
-			_choice_button(_conversation.leave_text, _leave)
-		else:
-			_choice_button(_conversation.back_text, _go_back)
+	if _walk.leave_text() != "":
+		_choice_button(_walk.leave_text(), _leave)
 	if choice_fade_seconds <= 0.0:
 		return
 	var buttons := _choices.get_children().filter(func(n: Node) -> bool: return not n.is_queued_for_deletion())
@@ -487,31 +473,12 @@ func _press(button: Button, action: Callable) -> void:
 
 
 func _pick(choice: Choice) -> void:
-	var reply := Game.choose(choice)
-	if reply == null:
-		return  # Game.choose reported it; the choices stay up
-	_asked[choice] = true
-	_ending = choice.ends
-	_reply = reply
-	_lines = reply.lines
-	_line = 0
-	_pending = []
-	if not _lines.is_empty():
-		_show_line()
+	if not _walk.pick(choice):
+		_show_choices(_walk.choices())  # the walk reported why; the choices stay
 		return
-	var next := _enter_choices()
-	if next.is_empty():
-		_after_reply()
-	else:
-		_show_choices(next)
-
-
-func _go_back() -> void:
-	_list = _above.pop_back()
-	_show_choices(Game.offered(_list))
+	_go_on()
 
 
 func _leave() -> void:
-	_show_choices([])
-	_voice.hush()
-	finished.emit()
+	_walk.leave()
+	_go_on()

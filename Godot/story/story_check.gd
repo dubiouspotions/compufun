@@ -94,14 +94,14 @@ static func sign_titles() -> Dictionary[StringName, String]:
 static func _check_errand(errand: Errand, found: PackedStringArray) -> void:
 	var lines := 0
 	for c: Conversation in errand.conversations:
-		lines += _all_lines(c).size()
+		lines += c.all_lines().size()
 		_check_choices(c, "%s (%s)" % [errand.file, c.id], found)
 		var person := errand.customer.person if errand.customer != null else null
-		for line: DialogueLine in _all_lines(c):
-			var mood := line.pose
-			if person == null or not person.portraits.has(mood):
+		for line: DialogueLine in c.all_lines():
+			var mood := line.mood
+			if person == null or not person.moods().has(mood):
 				found.append("%s (%s): \"%s\" is in the mood %s, which %s has no portrait for." % [errand.file, c.id, line.text.left(40), mood, person.resource_path if person != null else "a customer without a person"])
-			if not ResourceLoader.exists(MOODS_DIR + mood + ".tres"):
+			if not Voices.has_mood(mood):
 				found.append("%s (%s): \"%s\" is in the mood %s, which has no voice (%s%s.tres)." % [errand.file, c.id, line.text.left(40), mood, MOODS_DIR, mood])
 	var arrives := errand.conversations.any(func(c: Conversation) -> bool: return c.trigger == Conversation.Trigger.ARRIVE)
 	if not arrives and not (errand.brings == Errand.Brings.NOTHING and lines == 0):
@@ -123,16 +123,6 @@ static func _check_choices(reply: Reply, where: String, found: PackedStringArray
 
 
 # Every line of [param reply], its choices' replies and what follows its list.
-static func _all_lines(reply: Reply) -> Array[DialogueLine]:
-	var found: Array[DialogueLine] = reply.lines.duplicate()
-	for choice: Choice in reply.choices:
-		for answer: Reply in choice.replies:
-			found.append_array(_all_lines(answer))
-	if reply.then != null:
-		found.append_array(_all_lines(reply.then))
-	return found
-
-
 # Why [param alternatives] can all fail on [param day], or "" when one always comes: it tries every
 # value of the flags that their conditions name.
 static func _all_can_fail(alternatives: Array[Errand], day: int) -> String:
