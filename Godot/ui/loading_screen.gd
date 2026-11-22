@@ -33,7 +33,7 @@ var _start_ms: int = -1
 func _ready() -> void:
 	get_window().title = BuildInfo.title()
 	_logo.set_shader_parameter("progress", 0.0)
-	if not Game.story_errors.is_empty():
+	if Game.week == null:
 		_fail("the story files have errors:\n" + "\n".join(Game.story_errors))
 		return
 	var err := ResourceLoader.load_threaded_request(GAME_SCENE)
