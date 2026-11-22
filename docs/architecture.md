@@ -48,9 +48,7 @@ Godot/               the Godot project: everything the game loads
   win95/midi/        recordings that .mid files play in Media Player (Godot plays no MIDI)
   win95/solitaire/   Solitaire: the rules (klondike.gd), the window, the table and the card pictures
   compufun_db/       CompuFunDB, the DOS database on the work computer, its VGA font, and the work computer's boot (a 386)
-  addons/dialogue_editor/  the Dialogue tab in the editor; flag_field.gd (a flag field with its menu, and the flag scan); story.gd (the story as text: outlines and missing links)
-  addons/week_board/  the Week tab in the editor: the days, their customers and warp, and the flags
-  dev/               the Dev menu, the Voice Lab and story.gd (prints the story); no export contains it
+  dev/               the Dev menu, the Voice Lab and story.gd (prints the story check); no export contains it
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
 feedback/            the F9 reports (outside Godot, so Godot does not import them)

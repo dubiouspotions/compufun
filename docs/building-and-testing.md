@@ -149,7 +149,7 @@ none. `outline` prints errand files in their written layout.
 **Layers.** A line's voice is three layers, each over the one below (`Voices.layer`): the
 `VoicePerson` of the customer's person (`voices/persons/`, one per person), the `VoiceMood` of the line's pose (`voices/moods/`)
 and a `VoiceEffect` (`voices/effects/`) of the line or its conversation. Make all three in the
-Voice Lab (Dev menu, F3 or Cmd+3); pick persons and effects in the Dialogue tab. An effect has a
+Voice Lab (Dev menu, F3 or Cmd+3); a story file gives an effect to a conversation or a line. An effect has a
 base, an alternate and a curve over the line that says how much of the alternate plays at each
 moment. The live voice blends the two as it speaks, with the same Rust code on desktop and in the browser
 (`native/chimera_voice/src/voice_type.rs` and `fx.rs`): speed, pitch, melody, body, intonation and
@@ -189,8 +189,8 @@ body that a customer's person has.
    If the build fails with "error loading known_hosts", your git sends GitHub through SSH. Run
    the build with `CARGO_NET_GIT_FETCH_WITH_CLI=true` in front.
 2. In the editor: set Editor Settings > Humanerror > Voices > Chimera Path to
-   `chimera-vocal-synth/target/release/chimera` (`chimera.exe` on Windows). In the Dialogue tab,
-   pick each customer's voice, and press Play on a line to hear it. Play renders a missing file.
+   `chimera-vocal-synth/target/release/chimera` (`chimera.exe` on Windows). In the Story Lab,
+   press Play on a line to hear it.
 3. Or render every missing file at once, then import:
 
    ```sh
