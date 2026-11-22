@@ -124,7 +124,7 @@ func edit_text(part: Resource, text: String) -> String:
 
 ## Makes [param line] say its text in [param mood], one of the customer's person's moods.
 func set_mood(line: DialogueLine, mood: StringName) -> void:
-	line.pose = mood
+	line.mood = mood
 	_changed(_owner_of(line))
 
 
@@ -564,19 +564,19 @@ func _line_row(reply: Reply, index: int) -> Control:
 	mood.custom_minimum_size = thumb_size
 	mood.expand_icon = true
 	mood.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var portrait := _portrait(line.pose)
+	var portrait := _portrait(line.mood)
 	mood.icon = portrait
 	if portrait == null:
 		mood.text = "?"
 		mood.add_theme_color_override(&"font_color", error_color)
-	mood.tooltip_text = _mood_tip(line.pose)
+	mood.tooltip_text = _mood_tip(line.mood)
 	if not _read_only:
 		mood.pressed.connect(_pick_mood.bind(line, mood))
 	row.add_child(mood)
 	var words := VBoxContainer.new()
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	words.add_theme_constant_override(&"separation", 0)
-	var caption := String(line.pose)
+	var caption := String(line.mood)
 	if line.effect != null:
 		caption += "  [effect %s]" % line.effect.resource_path.get_file().get_basename()
 	words.add_child(_label(caption, 11, faint_ink))
@@ -855,7 +855,7 @@ func _same(a: Reply, b: Reply) -> bool:
 	if a.lines.size() != b.lines.size() or a.choices.size() != b.choices.size():
 		return false
 	for i: int in a.lines.size():
-		if a.lines[i].text != b.lines[i].text or a.lines[i].pose != b.lines[i].pose:
+		if a.lines[i].text != b.lines[i].text or a.lines[i].mood != b.lines[i].mood:
 			return false
 	for i: int in a.choices.size():
 		var x := a.choices[i]
@@ -887,14 +887,7 @@ func _on_node_selected(node: Node) -> void:
 # The customer's person's moods: the ones it has portraits for.
 func _moods() -> Array[StringName]:
 	var person := _customer.person if _customer != null else null
-	var found: Array[StringName] = []
-	if person == null:
-		return found
-	if person.has_method(&"moods"):
-		found.assign(person.call(&"moods"))
-		return found
-	found.assign(person.portraits.keys())
-	return found
+	return person.moods() if person != null else ([] as Array[StringName])
 
 
 func _portrait(mood: StringName) -> Texture2D:
@@ -904,7 +897,7 @@ func _portrait(mood: StringName) -> Texture2D:
 
 
 func _has_voice_mood(mood: StringName) -> bool:
-	return ResourceLoader.exists(Voices.MOODS_DIR + String(mood) + ".tres")
+	return Voices.has_mood(mood)
 
 
 func _mood_tip(mood: StringName) -> String:
@@ -934,7 +927,7 @@ func _pick_mood(line: DialogueLine, near: Control) -> void:
 		button.text = String(mood) if _has_voice_mood(mood) else "%s (no voice)" % mood
 		button.tooltip_text = _mood_tip(mood)
 		button.toggle_mode = true
-		button.button_pressed = mood == line.pose
+		button.button_pressed = mood == line.mood
 		if not _has_voice_mood(mood):
 			button.add_theme_color_override(&"font_color", error_color)
 		button.pressed.connect(func() -> void:
@@ -952,6 +945,6 @@ func _play(line: DialogueLine) -> void:
 		return
 	var seconds := _voice.say(line, _customer.voice, line.effect if line.effect != null else _conversation.effect)
 	if seconds > 0.0 or OS.has_feature("web"):
-		_status.text = "Playing \"%s\" (%s)" % [line.text, line.pose]
+		_status.text = "Playing \"%s\" (%s)" % [line.text, line.mood]
 	else:
 		_status.text = "Nothing to play for \"%s\": this build has no live voice and the line has no rendered file (docs/building-and-testing.md, Voices)." % line.text

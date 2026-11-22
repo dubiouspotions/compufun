@@ -357,13 +357,6 @@ func _show_graph() -> void:
 	for child: Node in _graph_view.get_children():
 		if child != _graph:
 			child.queue_free()
-	if not ResourceLoader.exists(GRAPH):
-		var waiting := LabUI.label("Graph view comes with W5. Use Text for now.", 16, LabUI.DIM)
-		waiting.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		waiting.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		waiting.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		_graph_view.add_child(waiting)
-		return
 	if _graph == null:
 		var scene := load(GRAPH) as PackedScene
 		if scene == null:
@@ -374,7 +367,7 @@ func _show_graph() -> void:
 			(_graph as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		_graph_view.add_child(_graph)
 		_graph.connect(&"edited", func() -> void: _apply(StoryFormat.write_errand(_errand), true))
-	if _tab < _errand.conversations.size():
+	if _errand != null and _tab < _errand.conversations.size():
 		_graph.call(&"show_conversation", _errand.conversations[_tab], _errand.customer)
 
 
@@ -481,7 +474,7 @@ func _build() -> void:
 	_field_settle.wait_time = SETTLE_SECONDS
 	_field_settle.timeout.connect(_apply_fields)
 	add_child(_field_settle)
-	show_view("Graph" if ResourceLoader.exists(GRAPH) else "Text")
+	show_view("Graph")
 
 
 func _left() -> Control:

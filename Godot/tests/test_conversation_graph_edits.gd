@@ -37,12 +37,12 @@ func run() -> void:
 	await _check_file("the brief")
 
 	graph.set_mood(first, &"happy")
-	check("a mood", first.pose, &"happy")
+	check("a mood", first.mood, &"happy")
 	await _check_file("a mood")
 
 	var added := graph.add_line(greeting.replies[0], 1)
 	check("a line under a line", greeting.replies[0].lines.map(func(l: DialogueLine) -> String: return l.text), ["Sweet! Maybe you can help a buddy out!", "...", "My computer isn't working!"])
-	check("the new line is neutral", added.pose, &"neutral")
+	check("the new line is neutral", added.mood, &"neutral")
 	await _check_file("a new line")
 	graph.move_line(greeting.replies[0], 1, 0)
 	check("drag a line up", greeting.replies[0].lines[0], added)

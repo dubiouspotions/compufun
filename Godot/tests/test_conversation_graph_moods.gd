@@ -33,7 +33,7 @@ func run() -> void:
 	check("a mood without voices/moods/<mood>.tres is marked", [names.has("bye (no voice)"), names.has("angry")], [ResourceLoader.exists("res://voices/moods/bye.tres") == false, true])
 	var angry := choices.filter(func(button: Button) -> bool: return button.text == "angry")[0] as Button
 	angry.pressed.emit()
-	check("picking a mood sets the line's mood", line.pose, &"angry")
+	check("picking a mood sets the line's mood", line.mood, &"angry")
 	await process_frame
 	mood = _find(graph.box_of(talk), func(node: Node) -> bool: return node is Button and node.get(&"tooltip_text").begins_with("angry")) as Button
 	check("the line shows its new portrait", mood.icon if mood != null else null, manager.person.portraits[&"angry"])
