@@ -20,10 +20,14 @@ const _POSTER := preload("res://props/poster.tscn")
 @export_range(-180.0, 180.0) var tilt_degrees: float
 
 
+## How far each sticker on a face lies above the one before it, in metres.
+const _LAYER := 0.0005
+
+
 ## Puts [param stickers] on a case, replacing the stickers that a previous call put there.
 ## [param faces] holds a node per face, at the centre of that face: its +Z points out of the case and
 ## its +Y up the face. A sticker on a face that [param faces] lacks is not shown (the face is hidden
-## in that pose).
+## in that pose). Where stickers on a face overlap, the later one in [param stickers] is on top.
 static func stick(stickers: Array[Sticker], faces: Dictionary[Face, Node3D]) -> void:
 	for node: Node3D in faces.values():
 		for old: Node in node.get_children():
@@ -36,6 +40,6 @@ static func stick(stickers: Array[Sticker], faces: Dictionary[Face, Node3D]) -> 
 		var poster := _POSTER.instantiate() as Poster
 		poster.texture = sticker.texture
 		poster.size = sticker.size
-		poster.position = Vector3(sticker.position.x, sticker.position.y, 0.0)
+		poster.position = Vector3(sticker.position.x, sticker.position.y, _LAYER * node.get_child_count())
 		poster.rotation.z = deg_to_rad(sticker.tilt_degrees)
 		node.add_child(poster)

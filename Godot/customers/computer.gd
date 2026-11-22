@@ -16,7 +16,8 @@ const _CLASSIC_FRONT: PackedScene = preload("res://props/case_fronts/classic.tsc
 ## The front of the case: its drive bays, floppy drives and badges, a scene from props/case_fronts/.
 ## Null is the classic front.
 @export var case_front: PackedScene
-## The stickers on the case, each with its face and place; empty is none.
+## The stickers on the case, each with its face and place; empty is none. Where two overlap, the later
+## one is on top.
 @export var stickers: Array[Sticker] = []
 
 
