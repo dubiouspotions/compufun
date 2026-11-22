@@ -1,39 +1,58 @@
 extends CorruptionSign
 ## The sheets in the group solitaire_posters (the logo on the left wall, the poster on the right wall)
-## leave the wall like the cards of the Solitaire win: each drops onto the screen, bounces along its
-## bottom edge and out at the side, and leaves itself behind on every frame, as nothing clears the
-## trail. It draws in the world buffer, so the trail gets the PSX look. Stage 1 plays it, and the night
-## waits for it ([method busy]); then it sets stage 2: the sheets are gone and the trail stays. Stage
-## 0 hangs them back on the wall.
+## leave the wall like the cards of the Solitaire win: each turns to face the counter, drops to the
+## floor between the counter and the door, bounces lower and lower towards the other side of the
+## shop, and leaves a still copy of itself at every step, lit like the room. Stage 1 plays it, and the
+## night waits for it ([method busy]); then it sets stage 2: the sheets stay on the floor, the trail
+## behind them. Stage 0 hangs them back on the wall.
 
 const SHEETS: StringName = &"solitaire_posters"
+## A fall that never reaches the floor stops after this many steps.
+const MAX_STEPS: int = 1000
 
-## The size of a sheet on the screen: pixels of the world buffer (480 x 270) per metre of the sheet.
-@export var pixels_per_metre: float = 60.0
-## The speed sideways, in pixels per second, towards the middle of the screen.
-@export var side_speed: float = 170.0
-## The speed up when a sheet leaves the wall, in pixels per second.
-@export var jump_speed: float = 60.0
-## The pull down, in pixels per second per second.
-@export var gravity: float = 700.0
+## The line between the counter and the door where the sheets bounce: z in the shop, in metres.
+@export var lane_z: float = -4.2
+## The speed along the lane, in m/s, towards the other side of the shop.
+@export var side_speed: float = 1.4
+## The speed up when a sheet leaves the wall, in m/s.
+@export var jump_speed: float = 2.0
+## The pull down, in m/s per second.
+@export var gravity: float = 7.0
 ## The share of the speed that a bounce keeps, 0 to 1.
-@export_range(0.0, 1.0) var bounce: float = 0.8
+@export_range(0.0, 1.0) var bounce: float = 0.85
+## The bounces before a sheet stays on the floor.
+@export var bounces: int = 5
+## The seconds that a sheet takes to turn from the wall to face the counter.
+@export var turn_seconds: float = 0.4
+## The seconds between two copies of the trail.
+@export var trail_step: float = 1.0 / 30.0
+## The height of the shop floor, in metres.
+@export var floor_height: float = 0.0
 
 var _sheets: Array[Node3D] = []
-var _cards: Array[Sprite2D] = []
-var _speeds: Array[Vector2] = []
+var _homes: Array[Transform3D] = []
+var _meshes: Array = []  # one Array[MeshInstance3D] per sheet
+var _paths: Array = []  # one Array[Transform3D] per sheet
+var _fallen: bool = false
+var _step: int = 0
+var _clock: float = 0.0
 
-@onready var _overlay: CanvasLayer = %Overlay
-@onready var _trail: SubViewport = %Trail
+@onready var _trail: Node3D = %Trail
 
 
 func _ready() -> void:
 	for node: Node in get_tree().get_nodes_in_group(SHEETS):
-		_sheets.append(node as Node3D)
+		var sheet := node as Node3D
+		_sheets.append(sheet)
+		_homes.append(sheet.global_transform)
+		var meshes: Array[MeshInstance3D] = []
+		if sheet is MeshInstance3D:
+			meshes.append(sheet as MeshInstance3D)
+		for mesh: Node in sheet.find_children("*", "MeshInstance3D", true, false):
+			meshes.append(mesh as MeshInstance3D)
+		_meshes.append(meshes)
 	if _sheets.is_empty():
 		push_error("posters_bounce: nothing in the group %s" % SHEETS)
-	_trail.size = get_viewport().size
-	(%Screen as TextureRect).texture = _trail.get_texture()
 	set_process(false)
 	super()
 
@@ -49,80 +68,102 @@ func _apply(shown_stage: int) -> void:
 			_fall()
 		return
 	set_process(false)
-	_overlay.visible = shown_stage != 0
-	for sheet: Node3D in _sheets:
-		sheet.visible = shown_stage == 0
 	if shown_stage == 0:
-		_clear()
+		_remove_copies()
+		_place(false)
+	elif not _fallen:  # stage 2 without the whole fall: they stay where it ends
+		_remove_copies()
+		_place(true)
+	_fallen = shown_stage != 0
 
 
 func _process(delta: float) -> void:
-	var size := Vector2(_trail.size)
-	var gone := true
-	for index: int in _cards.size():
-		var card := _cards[index]
-		var half := card.get_rect().size * card.scale * 0.5
-		var speed := _speeds[index] + Vector2.DOWN * gravity * delta
-		card.position += speed * delta
-		if card.position.y + half.y > size.y and speed.y > 0.0:
-			card.position.y = size.y - half.y
-			speed.y *= -bounce
-		_speeds[index] = speed
-		gone = gone and (card.position.x < -half.x or card.position.x > size.x + half.x)
-	if gone:
-		set_stage(2)
+	_clock += delta
+	while _clock >= trail_step:
+		_clock -= trail_step
+		_step += 1
+		var moved := false
+		for index: int in _sheets.size():
+			var path: Array = _paths[index]
+			if _step < path.size():
+				_sheets[index].global_transform = path[_step]
+				_leave_copy(_meshes[index])
+				moved = true
+		if not moved:
+			_fallen = true
+			set_stage(2)
+			return
 
 
 func _fall() -> void:
-	_clear()
-	_overlay.show()
-	var camera := get_viewport().get_camera_3d()
-	var size := Vector2(_trail.size)
-	for sheet: Node3D in _sheets:
-		var card := Sprite2D.new()
-		var mesh := _mesh_of(sheet)
-		if mesh != null:
-			card.texture = (mesh.material_override as ShaderMaterial).get_shader_parameter(&"albedo_texture")
-			var metres := mesh.get_aabb().size.y * mesh.global_basis.get_scale().y
-			card.scale = Vector2.ONE * metres * pixels_per_metre / card.texture.get_height()
-		var half := card.get_rect().size * card.scale * 0.5
-		var at := _on_screen(camera, sheet.global_position, size)
-		card.position = at.clamp(half, size - half)
-		_trail.add_child(card)
-		_cards.append(card)
-		var side := -1.0 if at.x > size.x * 0.5 else 1.0
-		_speeds.append(Vector2(side * side_speed, -jump_speed))
-		sheet.hide()
+	_remove_copies()
+	_place(false)
+	_paths = _sheets.map(_path_of)
+	_fallen = false
+	_step = -1
+	_clock = trail_step
 	set_process(true)
 
 
-# Where [param point] shows in the world buffer; a point behind the camera goes to the side it is on.
-func _on_screen(camera: Camera3D, point: Vector3, size: Vector2) -> Vector2:
-	if camera == null:
-		return size * 0.5
-	if camera.is_position_behind(point):
-		var right := (point - camera.global_position).dot(camera.global_basis.x) > 0.0
-		return Vector2(size.x if right else 0.0, size.y * 0.3)
-	return camera.unproject_position(point)
+# Where [param sheet] is at each trail step, from its place on the wall to where it stays on the floor.
+func _path_of(sheet: Node3D) -> Array[Transform3D]:
+	var home := _homes[_sheets.find(sheet)]
+	var scale := Basis.from_scale(home.basis.get_scale())
+	var from := home.basis.get_rotation_quaternion()
+	var bottom := _bottom_of(sheet)
+	var drop := maxf(home.origin.y - bottom - floor_height, 0.01)
+	var to_floor := (jump_speed + sqrt(jump_speed * jump_speed + 2.0 * gravity * drop)) / gravity
+	var side := 1.0 if home.origin.x < 0.0 else -1.0
+	var speed := Vector3(side * side_speed, jump_speed, (lane_z - home.origin.z) / to_floor)
+	var at := home.origin
+	var left := bounces
+	var points: Array[Transform3D] = []
+	while points.size() < MAX_STEPS:
+		speed.y -= gravity * trail_step
+		at += speed * trail_step
+		var landed := at.y - bottom <= floor_height and speed.y < 0.0
+		if landed:
+			at.y = floor_height + bottom
+			at.z = lane_z
+			speed.z = 0.0
+			speed.y *= -bounce
+		var turned := from.slerp(Quaternion.IDENTITY, minf(points.size() * trail_step / turn_seconds, 1.0))
+		points.append(Transform3D(Basis(turned) * scale, at))
+		if landed:
+			if left <= 0:
+				break
+			left -= 1
+	return points
 
 
-# The mesh that shows the picture of a sheet: the albedo_texture of its material, as LogoSign and
-# Poster draw it.
-func _mesh_of(sheet: Node3D) -> MeshInstance3D:
-	var meshes := sheet.find_children("*", "MeshInstance3D", true, false)
-	if sheet is MeshInstance3D:
-		meshes.push_front(sheet)
+# How far the lowest point of [param sheet]'s meshes lies below its origin, in metres.
+func _bottom_of(sheet: Node3D) -> float:
+	var lowest := 0.0
+	var to_local := sheet.global_transform.affine_inverse()
+	for mesh: MeshInstance3D in _meshes[_sheets.find(sheet)]:
+		lowest = minf(lowest, ((to_local * mesh.global_transform) * mesh.get_aabb()).position.y)
+	return -lowest * sheet.global_basis.get_scale().y
+
+
+# Puts each sheet on the wall, or where its fall ends when [param fallen].
+func _place(fallen: bool) -> void:
+	for index: int in _sheets.size():
+		_sheets[index].global_transform = _homes[index]
+	if fallen:
+		for index: int in _sheets.size():
+			_sheets[index].global_transform = _path_of(_sheets[index])[-1]
+
+
+func _leave_copy(meshes: Array[MeshInstance3D]) -> void:
 	for mesh: MeshInstance3D in meshes:
-		var look := mesh.material_override as ShaderMaterial
-		if look != null and look.get_shader_parameter(&"albedo_texture") is Texture2D:
-			return mesh
-	push_error("posters_bounce: %s has no mesh with an albedo_texture" % sheet.get_path())
-	return null
+		var copy := MeshInstance3D.new()
+		copy.mesh = mesh.mesh
+		copy.material_override = mesh.material_override
+		copy.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		_trail.add_child(copy)
+		copy.global_transform = mesh.global_transform
 
 
-func _clear() -> void:
-	for card: Sprite2D in _cards:
-		card.queue_free()
-	_cards.clear()
-	_speeds.clear()
-	_trail.render_target_clear_mode = SubViewport.CLEAR_MODE_ONCE
+func _remove_copies() -> void:
+	for copy: Node in _trail.get_children():
+		copy.queue_free()
