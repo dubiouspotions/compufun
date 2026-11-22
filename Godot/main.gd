@@ -9,6 +9,8 @@ const DEV_MENU: String = "res://dev/dev_menu.tscn"
 
 ## The Game.arrival whose conversation started; it starts when the player first faces the visitor.
 var _dialogue_for: int = -1
+## The hotspot beside the open screen that the mouse is over, or null (see _hover_beside_screen).
+var _hovered_beside_screen: Hotspot
 
 @onready var _shop: Shop = %Shop
 @onready var _nav: ViewNav = %ViewNav
@@ -99,6 +101,8 @@ func _input(event: InputEvent) -> void:
 		_shop.close_post_it()
 		get_viewport().set_input_as_handled()
 		return
+	if event is InputEventMouseMotion:
+		_hover_beside_screen((event as InputEventMouseMotion).position)
 	var key := event as InputEventKey
 	if key != null and not key.echo and key.is_action_pressed(&"skip_ahead") and OS.is_debug_build():
 		if not _shop.skip_walk():
@@ -128,12 +132,36 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # Zoomed in, a click beside the screen presses the hotspot there (the Degauss button) or leaves.
 func _click_outside_screen(at: Vector2) -> void:
-	var world_at := (_world.get_global_transform_with_canvas().affine_inverse() * at) / float(_world.stretch_shrink)
-	var hotspot := _shop.hotspot_at(world_at)
-	if hotspot != null and not (hotspot.action == Hotspot.Action.GO_TO_VIEW and hotspot.view == Game.view):
+	var hotspot := _hotspot_beside_screen(at)
+	if hotspot != null:
 		hotspot.clicked.emit(hotspot)
 	else:
 		_go_back()
+
+
+# The open Screen View takes the mouse from the world, so the hotspots beside it get their hover here.
+func _hover_beside_screen(at: Vector2) -> void:
+	var hotspot := _hotspot_beside_screen(at)
+	if hotspot == _hovered_beside_screen:
+		return
+	if _hovered_beside_screen != null:
+		_hovered_beside_screen.mouse_exited.emit()
+	_hovered_beside_screen = hotspot
+	if hotspot != null:
+		hotspot.mouse_entered.emit()
+
+
+# The hotspot at [param at] in the window beside a zoomed-in screen, or null: over the screen, with no
+# screen zoomed in, or the hotspot that opens the current view.
+func _hotspot_beside_screen(at: Vector2) -> Hotspot:
+	for view: ScreenView in _screen_views:
+		var rect := view.open_rect()
+		if rect.has_area() and not rect.has_point(at):
+			var world_at := (_world.get_global_transform_with_canvas().affine_inverse() * at) / float(_world.stretch_shrink)
+			var hotspot := _shop.hotspot_at(world_at)
+			if hotspot != null and not (hotspot.action == Hotspot.Action.GO_TO_VIEW and hotspot.view == Game.view):
+				return hotspot
+	return null
 
 
 func _go_back() -> void:
@@ -148,6 +176,7 @@ func _sync() -> void:
 	var screen := marker.screen if marker != null else ViewMarker.Screen.NONE
 	for view: ScreenView in _screen_views:
 		view.set_open(screen == view.screen)
+	_hover_beside_screen(get_viewport().get_mouse_position())
 	var talking := Game.visitor_state == Game.VisitorState.TALKING
 	var facing := talking and marker != null and marker.faces_customer
 	# Looking away hushes the line, and looking back says it again from its start.
