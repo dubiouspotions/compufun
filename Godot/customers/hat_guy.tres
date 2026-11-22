@@ -8,6 +8,8 @@
 [ext_resource type="Script" path="res://customers/sticker.gd" id="5_rjpbm"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/document_config_32.png" id="6_m26x5"]
 [ext_resource type="Script" path="res://win95/applets/applet.gd" id="7_lpf17"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/bitmap_32.png" id="8_f1bti"]
+[ext_resource type="Texture2D" path="res://people/hat_guy/portrait_happy.png" id="9_63h07"]
 [ext_resource type="Script" path="res://win95/win95_setup.gd" id="9_86j8n"]
 [ext_resource type="Script" path="res://win95/email.gd" id="32_f1bti"]
 [ext_resource type="Resource" path="res://win95/theme/palette.tres" id="33_63h07"]
@@ -51,6 +53,13 @@ hard_drive = "WDC AC31600H"
 hard_drive_mb = 1549
 cd_rom = "TOSHIBA CD-ROM XM-5302TA"
 pci_devices = PackedStringArray("7 1 8086 7010 14 IDE Controller", "11 0 5333 8811 NA Display Controller")
+
+[sub_resource type="Resource" id="Resource_45agh"]
+script = ExtResource("2_egn44")
+name = "me_and_my_hat.bmp"
+icon = ExtResource("8_f1bti")
+picture = ExtResource("9_63h07")
+modified = "Saturday, May 25, 1996 4:12:09 PM"
 
 [sub_resource type="Resource" id="Resource_4fbej"]
 script = ExtResource("2_egn44")
@@ -198,6 +207,7 @@ is_folder = true
 
 [sub_resource type="Resource" id="Resource_8iaji"]
 script = ExtResource("9_86j8n")
+desktop = Array[ExtResource("2_egn44")]([SubResource("Resource_45agh")])
 drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResource("Resource_17xmd")])
 installed_apps = PackedStringArray("Calculator", "Notepad", "Media Player", "Sound Recorder")
 volume = 60.0

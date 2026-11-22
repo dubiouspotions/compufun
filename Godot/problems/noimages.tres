@@ -1,18 +1,65 @@
 [gd_resource type="Resource" script_class="Problem" format=3]
 
-[ext_resource type="Script" path="res://problems/problem.gd" id="problem"]
+[ext_resource type="Script" path="res://problems/software_check.gd" id="2_vf5b8"]
+[ext_resource type="Script" path="res://problems/multi_check.gd" id="4_nnbs1"]
 [ext_resource type="Script" path="res://problems/file_check.gd" id="file_check"]
+[ext_resource type="Script" path="res://problems/problem.gd" id="problem"]
 
-[sub_resource type="Resource" id="FileCheck_paint"]
+[sub_resource type="Resource" id="Resource_25qj5"]
+script = ExtResource("file_check")
+path = "C:\\WINDOWS\\NOTEPAD.EXE"
+broken_name = "NOTEPAD"
+
+[sub_resource type="Resource" id="Resource_xbcot"]
+script = ExtResource("file_check")
+path = "C:\\WINDOWS\\WORDPAD.EXE"
+broken_name = "WORDPAD"
+
+[sub_resource type="Resource" id="Resource_8bvmm"]
 script = ExtResource("file_check")
 path = "C:\\WINDOWS\\PBRUSH.EXE"
-broken_name = "PBRUSH.EX_"
+broken_name = "PBRUSH"
+
+[sub_resource type="Resource" id="Resource_wpt2c"]
+script = ExtResource("file_check")
+path = "C:\\WINDOWS\\CALC.EXE"
+broken_name = "CALC"
+
+[sub_resource type="Resource" id="Resource_r1flu"]
+script = ExtResource("file_check")
+path = "C:\\WINDOWS\\EXCHNG32.EXE"
+broken_name = "EXCHNG32"
+
+[sub_resource type="Resource" id="Resource_m52ss"]
+script = ExtResource("file_check")
+path = "C:\\WINDOWS\\SNDVOL32.EXE"
+broken_name = "SNDVOL32"
+
+[sub_resource type="Resource" id="Resource_y4p5y"]
+script = ExtResource("file_check")
+path = "C:\\WINDOWS\\DEFRAG.EXE"
+broken_name = "DEFRAG"
+
+[sub_resource type="Resource" id="Resource_rjski"]
+script = ExtResource("file_check")
+path = "C:\\WINDOWS\\SOL.EXE"
+broken_name = "SOL"
+
+[sub_resource type="Resource" id="Resource_4uoyp"]
+script = ExtResource("file_check")
+path = "C:\\WINDOWS\\MPLAYER.EXE"
+broken_name = "MPLAYER"
+
+[sub_resource type="Resource" id="Resource_26jf0"]
+script = ExtResource("4_nnbs1")
+checks = Array[ExtResource("2_vf5b8")]([SubResource("Resource_25qj5"), SubResource("Resource_xbcot"), SubResource("Resource_8bvmm"), SubResource("Resource_wpt2c"), SubResource("Resource_r1flu"), SubResource("Resource_m52ss"), SubResource("Resource_y4p5y"), SubResource("Resource_rjski"), SubResource("Resource_4uoyp")])
 
 [resource]
 script = ExtResource("problem")
 short_name = &"noimages"
 perceived_issue = "Can't open images"
 location = 1
-symptoms = PackedStringArray("Image program not found", "Customer changed something", "Start menu shortcut broken")
-software_steps = PackedStringArray("Go to programs", "Add \".exe\" back to image editor program")
-software_check = SubResource("FileCheck_paint")
+symptoms = PackedStringArray("Image program not found", "Programs won\'t start", "Customer changed something", "Start menu shortcut broken")
+hardware_steps = PackedStringArray()
+software_steps = PackedStringArray("Open the Windows folder", "Add \".exe\" back to every program")
+software_check = SubResource("Resource_26jf0")

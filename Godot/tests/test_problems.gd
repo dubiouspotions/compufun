@@ -1,5 +1,5 @@
 extends "res://tests/test.gd"
-## The software problems: Noimages breaks and fixes by a file name, a defrag finishes overnight
+## The software problems: Noimages breaks and fixes every program's file name, a defrag finishes overnight
 ## only while the computer stays on, and an overheating computer hangs and reboots.
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run time: it names the Game autoload
@@ -7,12 +7,19 @@ const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run ti
 
 func run() -> void:
 	var noimages: Problem = load("res://problems/noimages.tres")
+	var programs := ["NOTEPAD", "WORDPAD", "PBRUSH", "CALC", "EXCHNG32", "SNDVOL32", "DEFRAG", "SOL", "MPLAYER"]
 	var setup := Win95Setup.new()
-	setup.drive_c = [folder("WINDOWS", [file("PBRUSH.EXE")])]
+	var exes: Array[Resource] = []
+	for each: String in programs:
+		exes.append(file(each + ".EXE"))
+	setup.drive_c = [folder("WINDOWS", exes)]
 	noimages.software_check.apply_break(setup)
-	check("Noimages renames Paint", [setup.file_at("C:\\WINDOWS\\PBRUSH.EXE"), setup.file_at("C:\\WINDOWS\\PBRUSH.EX_") != null], [null, true])
-	setup.file_at("C:\\WINDOWS\\PBRUSH.EX_").name = "PBRUSH.EXE"
-	check("the .EXE back fixes it", noimages.software_check.is_fixed(setup), true)
+	check("Noimages takes .EXE off every program", [setup.file_at("C:\\WINDOWS\\PBRUSH.EXE"), setup.file_at("C:\\WINDOWS\\NOTEPAD") != null], [null, true])
+	for each: String in programs.slice(1):
+		setup.file_at("C:\\WINDOWS\\" + each).name = each + ".EXE"
+	check("one program still without .EXE: not fixed", noimages.software_check.is_fixed(setup), false)
+	setup.file_at("C:\\WINDOWS\\NOTEPAD").name = "NOTEPAD.EXE"
+	check("every .EXE back fixes it", noimages.software_check.is_fixed(setup), true)
 
 	var defrag: Problem = load("res://problems/defrag.tres")
 	var left_on := job_with(defrag, 0)
