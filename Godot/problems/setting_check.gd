@@ -18,16 +18,23 @@ func apply_break(setup: Win95Setup) -> void:
 	setup.set(setting, broken_value)
 
 
-## Sets [member fixed_value], or else the setting's default in a new Win95Setup.
 func apply_fix(setup: Win95Setup) -> void:
 	if not setting in setup:
 		push_error("SettingCheck: Win95Setup has no setting %s" % setting)
 		return
+	var healthy: Variant = fix_value()
+	if healthy != null:
+		setup.set(setting, healthy)
+
+
+## The value that fixes the setting: [member fixed_value], or else the setting's default in a new
+## Win95Setup. null, with an error, when that default is the broken value.
+func fix_value() -> Variant:
 	var healthy: Variant = fixed_value if fixed_value != null else Win95Setup.new().get(setting)
 	if healthy == broken_value:
 		push_error("SettingCheck: the default of %s is its broken value %s, so set fixed_value to fix it" % [setting, broken_value])
-		return
-	setup.set(setting, healthy)
+		return null
+	return healthy
 
 
 func is_fixed(setup: Win95Setup) -> bool:
