@@ -17,12 +17,15 @@ script = ExtResource("1_script")
 unique_name_in_owner = true
 clip_contents = true
 layout_mode = 1
-anchors_preset = 2
+anchors_preset = 3
+anchor_left = 1.0
 anchor_top = 1.0
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 32.0
+offset_left = -332.0
 offset_top = -150.0
-offset_right = 332.0
+offset_right = -32.0
+grow_horizontal = 0
 grow_vertical = 0
 mouse_default_cursor_shape = 2
 
@@ -30,41 +33,14 @@ mouse_default_cursor_shape = 2
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 8.0
-offset_top = 40.0
-rotation = -0.05
+offset_top = 50.0
+rotation = 0.05
 mouse_filter = 2
 script = ExtResource("2_paper")
 
-[node name="Held" type="Control" parent="."]
+[node name="Paper" type="Control" parent="."]
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
 mouse_default_cursor_shape = 2
 script = ExtResource("2_paper")
-
-[node name="CloseUp" type="Control" parent="."]
-unique_name_in_owner = true
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Dim" type="ColorRect" parent="CloseUp"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0, 0, 0, 0.55)
-
-[node name="Paper" type="Control" parent="CloseUp"]
-unique_name_in_owner = true
-layout_mode = 0
-mouse_default_cursor_shape = 2
-script = ExtResource("2_paper")
-font_size = 32

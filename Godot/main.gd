@@ -84,7 +84,7 @@ func _follow_camera() -> void:
 		if view.visible:
 			var pixels := _shop.screen_rect(view.screen)
 			view.follow(Rect2(_world.position + pixels.position * scale, pixels.size * scale))
-	_printout.hold_beside((%CompuFunDBView as ScreenView).open_rect())
+	_printout.lay_out_around((%CompuFunDBView as ScreenView).open_rect(), _nav.button_rects())
 
 
 # Cmd+N (Ctrl+N) in debug builds skips to the next event; _input, so a screen that eats keys can't hide it.
