@@ -31,6 +31,10 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 ## Not empty: the hang shows the Win95 bluescreen with this message, in silence, instead of freezing
 ## with a buzz, as a broken hard drive does.
 @export_multiline var hang_message: String = ""
+## For a hardware problem that shows on the screen, as an overheating GPU does: how much the picture
+## breaks up in coloured blocks and torn lines while the computer runs, 0 (not at all) to 1, until
+## the hardware is fixed.
+@export_range(0.0, 1.0) var screen_artifacts: float = 0.0
 ## How the problem breaks the computer's Win95 setup and when that is fixed; null when the problem
 ## has no software part.
 @export var software_check: SoftwareCheck

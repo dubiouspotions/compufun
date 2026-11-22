@@ -5,6 +5,7 @@
 [ext_resource type="Material" path="res://materials/metal.tres" id="3_2e5rp"]
 [ext_resource type="Material" path="res://materials/gold.tres" id="4_jghtv"]
 [ext_resource type="Material" path="res://materials/vga_blue_plastic.tres" id="5_4nrdb"]
+[ext_resource type="Material" path="res://materials/scorch.tres" id="6_scorch"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_dltfl"]
 size = Vector3(0.17, 0.01, 0.09)
@@ -35,6 +36,12 @@ size = Vector3(0.004, 0.026, 0.09)
 
 [sub_resource type="BoxMesh" id="BoxMesh_b2cnq"]
 size = Vector3(0.008, 0.01, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_scorch"]
+size = Vector3(0.032, 0.002, 0.032)
+
+[sub_resource type="BoxMesh" id="BoxMesh_burn"]
+size = Vector3(0.06, 0.0012, 0.05)
 
 [node name="Gpu" type="Node3D" unique_id=328954125]
 
@@ -87,3 +94,16 @@ mesh = SubResource("BoxMesh_tgbo1")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.093, 0.013, 0.015)
 material_override = ExtResource("5_4nrdb")
 mesh = SubResource("BoxMesh_b2cnq")
+
+[node name="Broken" type="Node3D" parent="."]
+visible = false
+
+[node name="Scorch" type="MeshInstance3D" parent="Broken"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.01, 0.023, 0.005)
+material_override = ExtResource("6_scorch")
+mesh = SubResource("BoxMesh_scorch")
+
+[node name="Burn" type="MeshInstance3D" parent="Broken"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.01, 0.0106, 0.005)
+material_override = ExtResource("6_scorch")
+mesh = SubResource("BoxMesh_burn")

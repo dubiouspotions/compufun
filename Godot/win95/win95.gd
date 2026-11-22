@@ -10,6 +10,7 @@ const _BOOT := preload("res://win95/boot_sequence.tscn")
 const _FLOPPY_IN := preload("res://sounds/floppy_insert.tres")
 const _FLOPPY_OUT := preload("res://sounds/floppy_eject.tres")
 const _BLUESCREEN := preload("res://win95/bluescreen.tscn")
+const _GpuArtifacts := preload("res://win95/gpu_artifacts.gd")
 const _FOLDER := preload("res://win95/folder_window.tscn")
 const _PROPERTIES := preload("res://win95/properties_window.tscn")
 const _MESSAGE := preload("res://win95/message_box.tscn")
@@ -116,6 +117,9 @@ var _hang_screen: Control
 
 func _ready() -> void:
 	_desktop.computer = _state
+	var artifacts: Control = _GpuArtifacts.new()
+	artifacts.set("state", _state)
+	add_child(artifacts)
 	if _stock_palette == null:
 		_stock_palette = _SHARED_PALETTE.duplicate() as Win95Palette
 	_state.booted.connect(_on_booted)
