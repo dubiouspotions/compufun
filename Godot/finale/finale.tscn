@@ -1,0 +1,111 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://finale/finale.gd" id="1_finale"]
+[ext_resource type="Resource" path="res://finale/finale_text.tres" id="2_text"]
+[ext_resource type="Script" path="res://finale/host_boot.gd" id="3_boot"]
+[ext_resource type="PackedScene" path="res://ui/window_bluescreen.tscn" id="4_window"]
+[ext_resource type="AudioStream" path="res://win95/sounds/chord.wav" id="5_chord"]
+[ext_resource type="AudioStream" path="res://win95/sounds/hang_buzz.wav" id="6_buzz"]
+
+[node name="Finale" type="CanvasLayer"]
+process_mode = 3
+layer = 85
+script = ExtResource("1_finale")
+text = ExtResource("2_text")
+
+[node name="Boxes" type="SubViewportContainer" parent="."]
+unique_name_in_owner = true
+texture_filter = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+stretch_shrink = 2
+
+[node name="BoxBuffer" type="SubViewport" parent="Boxes"]
+unique_name_in_owner = true
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(960, 540)
+render_target_update_mode = 4
+
+[node name="Bluescreen" parent="." instance=ExtResource("4_window")]
+unique_name_in_owner = true
+
+[node name="Boot" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("3_boot")
+
+[node name="Credits" type="ColorRect" parent="."]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Center" type="CenterContainer" parent="Credits"]
+layout_mode = 1
+mouse_filter = 2
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Column" type="VBoxContainer" parent="Credits/Center"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 24
+
+[node name="Thanks" type="Label" parent="Credits/Center/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+horizontal_alignment = 1
+
+[node name="CastHeading" type="Label" parent="Credits/Center/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+
+[node name="Cast" type="HBoxContainer" parent="Credits/Center/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Lines" type="Label" parent="Credits/Center/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+
+[node name="Hint" type="Label" parent="Credits/Center/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.55, 0.55, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+
+[node name="Chord" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("5_chord")
+max_polyphony = 4
+
+[node name="Buzz" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("6_buzz")
+volume_db = -6.0
