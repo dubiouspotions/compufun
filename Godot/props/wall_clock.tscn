@@ -60,3 +60,4 @@ position = Vector3(0, 0, 0.1)
 volume_db = -30.0
 unit_size = 1.0
 attenuation_filter_cutoff_hz = 20500.0
+area_mask = 1
