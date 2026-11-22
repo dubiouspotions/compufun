@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## The printout that the player carries: taken from the printer, ticked, thrown away, kept through a
-## snapshot and the day, and gone the next day.
+## The printout that the player carries: taken from the printer, ticked, held up beside a screen,
+## thrown away, kept through a snapshot and the day, and gone the next day.
 
 const PAGE: PackedStringArray = ["CompuFunDB 1.0  CHECKLIST  05/31/96", "", "CHECK", "[X] Fan clogged with dust", "FIX", "1. Install the fan      [ ]"]
 
@@ -74,6 +74,20 @@ func _check_close_up() -> void:
 	check("a click on the box ticks it", game.printout_ticks, [5])
 	paper.gui_input.emit(click)
 	check("a second click unticks it", game.printout_ticks, [])
+
+	carried.call("hold_beside", Rect2(400, 60, 1280, 960))
+	var held: Control = carried.get_node("%Held")
+	check("held up beside a screen, the close-up and the corner go", [carried.call("is_held"), carried.call("is_open"), corner.visible], [true, false, false])
+	await create_timer(float(carried.get("hold_seconds")) + 0.1).timeout
+	check("the held page stays left of the screen", held.get_global_rect().end.x <= 400.0, true)
+	check("the held page's text is in the window", held.position.x + held.call("cell").x * int(held.get("margin_chars")) >= 0.0, true)
+	click.position = held.call("box_rect", 5).get_center()
+	held.gui_input.emit(click)
+	check("a click on the held page's box ticks it", game.printout_ticks, [5])
+	carried.call("hold_beside", Rect2())
+	check("away from the screen, back in the corner", [carried.call("is_held"), corner.visible], [false, true])
+	carried.call("hold_beside", Rect2(400, 60, 1280, 960))
 	game.trash_printout()
+	check("thrown away, nothing is held", carried.call("is_held"), false)
 	check("thrown away, the close-up and the corner go", [carried.call("is_open"), corner.visible], [false, false])
 	carried.queue_free()

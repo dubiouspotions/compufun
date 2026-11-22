@@ -19,6 +19,7 @@ var _dialogue_for: int = -1
 @onready var _end_of_day: EndOfDay = %EndOfDay
 @onready var _crash: Crash = %Crash
 @onready var _phone: PhoneCall = %PhoneCall
+@onready var _printout: CarriedPrintout = %CarriedPrintout
 @onready var _world: SubViewportContainer = $World
 @onready var _world_buffer: SubViewport = $World/WorldBuffer
 
@@ -83,6 +84,7 @@ func _follow_camera() -> void:
 		if view.visible:
 			var pixels := _shop.screen_rect(view.screen)
 			view.follow(Rect2(_world.position + pixels.position * scale, pixels.size * scale))
+	_printout.hold_beside((%CompuFunDBView as ScreenView).open_rect())
 
 
 # Cmd+N (Ctrl+N) in debug builds skips to the next event; _input, so a screen that eats keys can't hide it.

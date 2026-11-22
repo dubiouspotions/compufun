@@ -38,6 +38,7 @@ signal outside_clicked
 @export var mouse_up: SoundSet = preload("res://sounds/mouse_up.tres")
 
 var _open: bool = false
+var _open_rect: Rect2 = Rect2()
 var _fade: Tween
 var _content: Control
 var _keys: AudioStreamPlayer
@@ -115,6 +116,7 @@ func set_open(open: bool) -> void:
 	if open == _open:
 		return
 	_open = open
+	_open_rect = Rect2()
 	if _fade != null:
 		_fade.kill()
 	if open:
@@ -138,6 +140,13 @@ func follow(rect: Rect2) -> void:
 	_screen.position = rect.position
 	_screen.scale = rect.size / screen_size
 	_screen.set_closeness(smoothstep(0.5, 1.0, rect.size.x / open_size.x))
+	_open_rect = rect if sharp and _open else Rect2()
+
+
+## The screen's rect in canvas coordinates once the view is open and the camera has zoomed all the
+## way in (see [method follow]); empty while the view is closed, closing or still zooming.
+func open_rect() -> Rect2:
+	return _open_rect
 
 
 ## Whether the monitor's power switch is on. It starts on; [method toggle_power] flips it.

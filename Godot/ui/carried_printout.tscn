@@ -35,6 +35,13 @@ rotation = -0.05
 mouse_filter = 2
 script = ExtResource("2_paper")
 
+[node name="Held" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+mouse_default_cursor_shape = 2
+script = ExtResource("2_paper")
+
 [node name="CloseUp" type="Control" parent="."]
 unique_name_in_owner = true
 visible = false

@@ -4,21 +4,34 @@ extends Control
 ## bottom left. A click on it opens the close-up, where a click on a line with a check box ticks or
 ## unticks it, and "Throw in the trash" puts the printout in the trash can. Esc, Back or a click
 ## beside the paper closes the close-up. While it is open it takes every click and key.
+## Beside an open screen (see [method hold_beside]) the player holds the page up instead: it rises
+## into the space left of the screen, readable and tickable there, and leaves the screen uncovered.
 
 ## How far the corner rises, in pixels, while the mouse is over it.
 @export var hover_rise: float = 24.0
 ## The space kept free around the paper in the close-up, in pixels; the button goes below the paper.
 @export var close_up_margin: Vector2 = Vector2(80.0, 60.0)
-## The font sizes that the close-up tries, largest first; it takes the first at which the paper fits.
-@export var close_up_font_sizes: Array[int] = [32, 24, 16]
+## The font sizes that the close-up and the held page try, largest first; each takes the first at
+## which the paper fits.
+@export var font_sizes: Array[int] = [32, 24, 16, 12]
+## The space between the held page and the screen, and above and below the page, in pixels.
+@export var hold_gap: float = 12.0
+## The seconds that the page takes to rise beside the screen.
+@export var hold_seconds: float = 0.25
 
 @onready var _corner: Control = %Corner
 @onready var _corner_paper: PrintoutPaper = %CornerPaper
 @onready var _close_up: Control = %CloseUp
 @onready var _paper: PrintoutPaper = %Paper
 @onready var _throw_away: Button = %ThrowAway
+@onready var _held: PrintoutPaper = %Held
 
 var _corner_rest: Vector2
+## The screen that the page is held up beside, in canvas coordinates; empty: none.
+var _beside: Rect2 = Rect2()
+## How far the held page has risen into place, 0 to 1.
+var _rise: float = 0.0
+var _rising: Tween
 
 
 func _ready() -> void:
@@ -27,11 +40,13 @@ func _ready() -> void:
 	_corner.mouse_entered.connect(func() -> void: _corner_paper.position = _corner_rest - Vector2(0.0, hover_rise))
 	_corner.mouse_exited.connect(func() -> void: _corner_paper.position = _corner_rest)
 	_close_up.gui_input.connect(_on_close_up_input)
-	_paper.gui_input.connect(_on_paper_input)
+	_paper.gui_input.connect(_on_paper_input.bind(_paper))
+	_held.gui_input.connect(_on_paper_input.bind(_held))
 	_throw_away.pressed.connect(func() -> void: Game.trash_printout())
 	get_viewport().size_changed.connect(_layout)
 	Game.changed.connect(_sync)
 	_close_up.hide()
+	_held.hide()
 	_sync()
 
 
@@ -52,6 +67,21 @@ func open() -> void:
 func close() -> void:
 	_close_up.hide()
 	_sync()
+
+
+## Holds the carried page up beside [param screen], an open screen in canvas coordinates, instead of
+## in the corner; an empty rect puts it back in the corner. The caller passes the screen's current
+## rect every frame; the page shows only while the player carries one.
+func hold_beside(screen: Rect2) -> void:
+	if screen == _beside:
+		return
+	_beside = screen
+	_sync()
+
+
+## True while the carried page is held up beside a screen.
+func is_held() -> bool:
+	return _held.visible
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -76,37 +106,71 @@ func _on_close_up_input(event: InputEvent) -> void:
 		close()
 
 
-func _on_paper_input(event: InputEvent) -> void:
+func _on_paper_input(event: InputEvent, paper: PrintoutPaper) -> void:
 	var click := event as InputEventMouseButton
 	if click == null or not click.pressed:
 		return
-	_paper.accept_event()
-	var line := _paper.line_at(click.position)
+	paper.accept_event()
+	var line := paper.line_at(click.position)
 	if click.button_index == MOUSE_BUTTON_LEFT and line >= 0:
 		Game.tick_printout(line, line not in Game.printout_ticks)
 
 
 func _sync() -> void:
 	var carrying := not Game.printout.is_empty()
-	if not carrying:
+	var held := carrying and _beside.has_area()
+	if not carrying or held:
 		_close_up.hide()
-	_corner.visible = carrying and not is_open()
-	for paper: PrintoutPaper in [_corner_paper, _paper]:
+	_corner.visible = carrying and not is_open() and not held
+	if held and not _held.visible:
+		_rise_held()
+	_held.visible = held
+	for paper: PrintoutPaper in [_corner_paper, _paper, _held]:
 		paper.lines = Game.printout
 		paper.ticks = Game.printout_ticks.duplicate()
 	_layout()
 
 
-# Centres the paper at the largest font size at which it and the button fit the view.
+func _rise_held() -> void:
+	if _rising != null:
+		_rising.kill()
+	_rise = 0.0
+	_rising = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	_rising.tween_method(func(rise: float) -> void:
+		_rise = rise
+		_layout(), 0.0, 1.0, hold_seconds)
+
+
 func _layout() -> void:
-	if not is_open():
-		return
+	if is_open():
+		_layout_close_up()
+	if is_held():
+		_layout_held()
+
+
+# Centres the paper at the largest font size at which it and the button fit the view.
+func _layout_close_up() -> void:
 	var view := get_viewport_rect().size
 	var room := view - close_up_margin * 2.0 - Vector2(0.0, _throw_away.size.y)
-	for font_size: int in close_up_font_sizes:
+	for font_size: int in font_sizes:
 		_paper.font_size = font_size
 		if _paper.size.x <= room.x and _paper.size.y <= room.y:
 			break
 	var top_left := ((view - Vector2(0.0, _throw_away.size.y) - _paper.size) * 0.5).round()
 	_paper.position = top_left
 	_throw_away.position = top_left + _paper.size + Vector2(-_throw_away.size.x, 8.0)
+
+
+# Lays the held page left of the screen, at the largest font size at which its text fits there; the
+# tractor margin may run off the window's edge. It rises from below while [member _rise] grows.
+func _layout_held() -> void:
+	var view := get_viewport_rect().size
+	var room := Vector2(_beside.position.x - hold_gap, view.y - hold_gap * 2.0)
+	for font_size: int in font_sizes:
+		_held.font_size = font_size
+		var margin := _held.cell().x * _held.margin_chars
+		if _held.size.x - margin <= room.x and _held.size.y <= room.y:
+			break
+	var top := clampf(_beside.get_center().y - _held.size.y * 0.5, hold_gap, view.y - hold_gap - _held.size.y)
+	var risen := Vector2(_beside.position.x - hold_gap - _held.size.x, top).round()
+	_held.position = risen.lerp(Vector2(risen.x, view.y), 1.0 - _rise)

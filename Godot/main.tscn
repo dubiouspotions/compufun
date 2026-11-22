@@ -75,6 +75,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="CarriedPrintout" parent="UI" instance=ExtResource("carried_printout")]
+unique_name_in_owner = true
 
 [node name="EndOfDay" parent="UI" instance=ExtResource("end_of_day")]
 unique_name_in_owner = true
