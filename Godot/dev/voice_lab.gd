@@ -426,8 +426,7 @@ func _fill_picker(layer: int) -> void:
 	_picked[layer] = []
 	if layer == 1:
 		for mood: StringName in Person.MOODS:
-			var saved := ResourceLoader.exists(Voices.MOODS_DIR + String(mood) + ".tres")
-			picker.add_item(String(mood).capitalize() + ("" if saved else " (neutral's)"))
+			picker.add_item(String(mood).capitalize() + ("" if Voices.has_mood(mood) else " (neutral's)"))
 			_picked[layer].append(mood)
 		return
 	picker.add_item("New person" if layer == 0 else "No effect")

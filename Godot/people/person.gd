@@ -32,6 +32,14 @@ const MOODS: Array[StringName] = [
 @export var voice: VoicePerson
 
 
+## The moods that this person has portraits for, in [constant MOODS] order. A line in another mood
+## shows the neutral portrait.
+func moods() -> Array[StringName]:
+	var found: Array[StringName] = []
+	found.assign(MOODS.filter(func(mood: StringName) -> bool: return portraits.has(mood)))
+	return found
+
+
 ## "Name <email>" for the computer screen, or "" when both are still empty.
 func computer_identity() -> String:
 	if name == "" and email == "":

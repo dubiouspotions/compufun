@@ -34,7 +34,7 @@ compress/mode=2
 ## without a mood file.
 static func mood(of: StringName) -> VoiceMood:
 	for name: StringName in [of, &"neutral"]:
-		var path := MOODS_DIR + String(name) + ".tres"
+		var path := _mood_path(name)
 		if ResourceLoader.exists(path):
 			var found := load(path) as VoiceMood
 			if found != null:
@@ -42,6 +42,15 @@ static func mood(of: StringName) -> VoiceMood:
 			push_error("Voices: %s is not a VoiceMood" % path)
 	push_error("Voices: no %sneutral.tres; the line is said with Chimera's defaults" % MOODS_DIR)
 	return VoiceMood.new()
+
+
+## True when [param of] has its own voice, voices/moods/<mood>.tres; false when it speaks as neutral.
+static func has_mood(of: StringName) -> bool:
+	return ResourceLoader.exists(_mood_path(of))
+
+
+static func _mood_path(of: StringName) -> String:
+	return MOODS_DIR + String(of) + ".tres"
 
 
 ## The text form of a voice for ChimeraVoice and the web voice: [param person] at the bottom,
