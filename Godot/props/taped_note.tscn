@@ -45,19 +45,18 @@ material_override = SubResource("ShaderMaterial_tape")
 mesh = SubResource("QuadMesh_tape")
 
 [node name="Text" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.31, 0.145, 0.005)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.315, 0, 0.005)
 pixel_size = 0.001
 shaded = true
 modulate = Color(0.06, 0.06, 0.12, 1)
-text = "Instructions:
-Opening the shop in the morning:
-1. Start up the CompuFun Database computer by the desk.
-2. Flip open sign and unlock door"
-font_size = 36
+text = "Opening the shop:
+1. Start CompuFunDB
+2. Flip \"Open\" Sign"
+font_size = 58
 outline_modulate = Color(0.06, 0.06, 0.12, 1)
-outline_size = 5
+outline_size = 8
 horizontal_alignment = 0
-vertical_alignment = 0
+vertical_alignment = 1
 autowrap_mode = 3
-width = 620.0
-line_spacing = 8.0
+width = 630.0
+line_spacing = 4.0
