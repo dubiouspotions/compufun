@@ -127,11 +127,23 @@ func run() -> void:
 	drop_off("C")
 	check("C in the free slot 2, focused", [slots(), game.focus == job_of("C")], [["O1@0", "O2@1", "B@3", "C@2"], true])
 
-	# B has no pickup conversation and takes the computer at once.
+	# B has no pickup conversation: B says a line of thanks, then takes the computer.
 	game.call_customer(job_of("B"))
 	game.hang_up()
 	check("B walks in for PICKUP", [game.visitor == b, game.visit], [true, GAME.Visit.PICKUP])
 	game.customer_arrived()
+	var thanks: Array = GAME.THANKS.lines
+	check("B says one line of thanks", [game.visitor_state, game.conversation.lines.size(), game.conversation.lines[0] in thanks], [TALKING, 1, true])
+	check("the thanks isn't remembered as played", game.seen.keys().any(func(k: String) -> bool: return k.ends_with("/thanks")), false)
+	check("the same customer always says the same thanks", GAME._thanks(b).lines[0], game.conversation.lines[0])
+	var said := {}
+	for i: int in 20:
+		var other := customer("T%d" % i, false)
+		other.resource_path = "res://customers/test_thanks_%d.tres" % i  # _thanks picks by file name
+		said[GAME._thanks(other).lines[0]] = true
+	check("customers say different thanks", said.size() > 1, true)
+	check("B still has the computer", slots().has("B@3"), true)
+	game.dialogue_finished()
 	check("can't close while B walks out with the computer", [game.visitor_state, game.can_close()], [GAME.VisitorState.WALKING_OUT, false])
 	game.customer_left()
 	check("B left with the job, cable cleared", [game.visitor, slots(), game.connected], [null, ["O1@0", "O2@1", "C@2"], null])

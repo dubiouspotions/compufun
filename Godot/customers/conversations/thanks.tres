@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="Conversation" format=3]
+
+[ext_resource type="Script" path="res://customers/conversation.gd" id="cv"]
+[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="dl"]
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("dl")
+text = "Thank you!"
+pose = &"happy"
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("dl")
+text = "Thanks a lot!"
+pose = &"happy"
+
+[sub_resource type="Resource" id="line_3"]
+script = ExtResource("dl")
+text = "Oh, thank you!"
+pose = &"happy"
+
+[sub_resource type="Resource" id="line_4"]
+script = ExtResource("dl")
+text = "Thank you so much."
+pose = &"happy"
+
+[resource]
+script = ExtResource("cv")
+id = &"thanks"
+trigger = 1
+lines = Array[ExtResource("dl")]([SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4")])

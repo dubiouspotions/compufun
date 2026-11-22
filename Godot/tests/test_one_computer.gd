@@ -33,6 +33,7 @@ func run() -> void:
 	game.hang_up()
 	check("A comes to pick up", [game.visitor == a, game.visit], [true, GAME.Visit.PICKUP])
 	game.customer_arrived()
+	game.dialogue_finished()
 	game.customer_left()
 	check("A took the computer home", game.jobs.size(), 0)
 	check("A can come in again: the shop can't close", game.can_close(), false)

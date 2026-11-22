@@ -55,6 +55,9 @@ const PROBLEM_PATH: String = "res://problems/%s.tres"
 ## Snapshot keys that the game no longer has, which [method restore] skips so that old F9 reports
 ## still restore: "stored" held the parts in the storage bin, which no longer takes parts.
 const RETIRED_KEYS: Array[String] = ["stored"]
+## What a pickup visitor says when no PICKUP conversation of theirs matches: one of its lines, the
+## same one for each customer ([method _thanks]).
+const THANKS: Conversation = preload("res://customers/conversations/thanks.tres")
 
 var phase: Phase = Phase.IDLE
 var day: Day
@@ -202,7 +205,7 @@ func go_to_view(view_name: StringName) -> void:
 
 
 ## The room calls this when the visitor reaches the counter: TALKING, with the first conversation
-## that matches. A pickup visitor with no matching conversation takes the computer and leaves.
+## that matches. A pickup visitor with no matching conversation says a short thanks.
 func customer_arrived() -> void:
 	if visitor_state != VisitorState.WALKING_IN:
 		push_error("Game.customer_arrived: no visitor is walking in (visitor state %s)" % VisitorState.find_key(visitor_state))
@@ -1177,12 +1180,25 @@ func _set_visitor(customer: Customer, why: Visit) -> void:
 	_restart_wait()
 
 
-## Picks what the TALKING visitor says, and remembers that it played. A pickup visitor with
-## nothing to say takes the computer and leaves.
+## Picks what the TALKING visitor says, and remembers that it played. A pickup visitor with no
+## PICKUP conversation says a line of [constant THANKS].
 func _start_talk() -> void:
 	_play(visitor, Conversation.Trigger.PICKUP if visit == Visit.PICKUP else Conversation.Trigger.ARRIVE)
 	if conversation == null and visit == Visit.PICKUP:
-		_leave()
+		conversation = _thanks(visitor)
+		if conversation == null:
+			_leave()
+
+
+## A conversation of one line of [constant THANKS], picked by [param who]'s file name; null, with
+## an error, when THANKS has no lines.
+static func _thanks(who: Customer) -> Conversation:
+	if THANKS.lines.is_empty():
+		push_error("Game: %s has no lines for %s's pickup" % [THANKS.resource_path, who.resource_path])
+		return null
+	var thanks := THANKS.duplicate() as Conversation
+	thanks.lines = [THANKS.lines[_id_of(who).hash() % THANKS.lines.size()]]
+	return thanks
 
 
 # Sets [member conversation] to what [param who] says for [param trigger] now, and remembers that
