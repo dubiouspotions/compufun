@@ -1,8 +1,8 @@
 class_name OpenSign
 extends Node3D
-## The sign that hangs in the shop window. The player, inside, reads OPEN while the shop is open,
-## and CLOSED while the shop is closed. Its origin
-## is where the strings hang from. It takes clicks only while [method Game.can_open] or
+## The sign that hangs in the shop window. The player, inside, reads the back of what the street
+## reads: OPEN while the shop is closed, a click away from opening, and CLOSED while it is open.
+## Its origin is where the strings hang from. It takes clicks only while [method Game.can_open] or
 ## [method Game.can_close] is true, and then a yellow outline pulses around it. [method shake]
 ## swings it on its strings to draw the eye. When the shop opens or closes, it turns over on its
 ## strings with [member flip_sound]; a restore or a new day shows the side at once.
@@ -12,7 +12,9 @@ signal open_requested
 ## The player clicked the sign while [method Game.can_close] is true.
 signal close_requested
 
+## The face that reads OPEN, which the player sees while the shop is closed.
 @export var open_texture: Texture2D
+## The face that reads CLOSED, which the player sees while the shop is open.
 @export var closed_texture: Texture2D
 ## The outline's opacity at the bottom of each pulse, 0 to 1; the top is 1.
 @export_range(0.0, 1.0, 0.01) var pulse_low: float = 0.2
@@ -89,7 +91,7 @@ func _open() -> bool:
 
 func _sync() -> void:
 	var open := _open()
-	var side := open_texture if open else closed_texture
+	var side := closed_texture if open else open_texture
 	if open != _was_open and Game.jump == _jump:
 		flip_sound.play_at(self)
 		_turn_over(side)

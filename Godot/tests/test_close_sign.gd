@@ -1,5 +1,6 @@
 extends "res://tests/test.gd"
-## The Open sign takes clicks and pulses an outline only while the shop can open or close, turns
+## The player, inside, reads the side that faces in: OPEN while the shop is closed and CLOSED while
+## it is open. The Open sign takes clicks and pulses an outline only while the shop can open or close, turns
 ## over on its strings with its flip sound, and the close question comes in the game's panel before
 ## day 4's warp and in a Win95 message box from it on; a change of view answers No.
 
@@ -22,22 +23,23 @@ func run() -> void:
 
 	check("restore day 1, closed in the morning", game.restore({"day": 1, "phase": "CLOSED"}), "")
 	check("openable: clicks and the outline", [game.can_open(), hotspot.input_ray_pickable, outline.visible], [true, true, true])
+	var board: MeshInstance3D = sign.get_node("%Board")
+	var shown := func() -> Texture2D: return (board.material_override as ShaderMaterial).get_shader_parameter("albedo_texture")
+	check("closed in the morning, the player reads OPEN", shown.call() == sign.get("open_texture"), true)
 	hotspot.emit_signal("clicked", hotspot)
 	check("a click asks to open, not to close", [opened[0], asked[0]], [1, 0])
 	check("no flip before it turns", _flips(sign), 0)
 	game.open_shop()
 	check("opening turns it over with a flip", _flips(sign), 1)
-	var board: MeshInstance3D = sign.get_node("%Board")
-	var shown := func() -> Texture2D: return (board.material_override as ShaderMaterial).get_shader_parameter("albedo_texture")
 	var turn: float = sign.get("flip_seconds")
-	check("it still shows CLOSED as it starts to turn", shown.call() == sign.get("closed_texture"), true)
+	check("it still shows OPEN as it starts to turn", shown.call() == sign.get("open_texture"), true)
 	var widest := 0.0
 	var until := Time.get_ticks_msec() + int((turn + 0.2) * 1000.0)
 	while Time.get_ticks_msec() < until:
 		await process_frame
 		widest = maxf(widest, absf(sign.rotation.y))
 	check("it turns on its strings, near edge-on", widest > 0.8, true)
-	check("it ends turned back, showing OPEN", [is_zero_approx(sign.rotation.y), shown.call() == sign.get("open_texture")], [true, true])
+	check("it ends turned back, showing CLOSED to the player", [is_zero_approx(sign.rotation.y), shown.call() == sign.get("closed_texture")], [true, true])
 	check("restore day 1, open", game.restore({"day": 1, "phase": "OPEN"}), "")
 	check("no flip while it stays open", _flips(sign), 1)
 
@@ -60,6 +62,8 @@ func run() -> void:
 	check("turning away answers No", [panel.visible, game.phase], [false, game.Phase.OPEN])
 	game.close_shop()
 	check("closing turns it over with a flip", _flips(sign), 2)
+	await create_timer(turn + 0.2).timeout
+	check("closed for the night, the player reads OPEN", shown.call() == sign.get("open_texture"), true)
 	game.start_day(load("res://days/day_2.tres"))
 	check("the next morning it stays turned: no flip", [game.phase, _flips(sign)], [game.Phase.CLOSED, 2])
 	var day_4: Day = load("res://days/day_4.tres")
