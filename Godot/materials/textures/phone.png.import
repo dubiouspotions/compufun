@@ -2,22 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bgw6jqmyg2361"
-path.s3tc="res://.godot/imported/phone_dial.png-476ee3eded8ca4f14fab1fcf95c4b537.s3tc.ctex"
-path.etc2="res://.godot/imported/phone_dial.png-476ee3eded8ca4f14fab1fcf95c4b537.etc2.ctex"
+uid="uid://bry1atp17aujt"
+path="res://.godot/imported/phone.png-93fc77fb3b63e5a61022f90dd1badf00.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
-source_file="res://props/textures/phone_dial.png"
-dest_files=["res://.godot/imported/phone_dial.png-476ee3eded8ca4f14fab1fcf95c4b537.s3tc.ctex", "res://.godot/imported/phone_dial.png-476ee3eded8ca4f14fab1fcf95c4b537.etc2.ctex"]
+source_file="res://materials/textures/phone.png"
+dest_files=["res://.godot/imported/phone.png-93fc77fb3b63e5a61022f90dd1badf00.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

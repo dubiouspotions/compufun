@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://ui/typed_label.gd" id="typed_label"]
 [ext_resource type="Script" path="res://voices/voice_player.gd" id="voice_player"]
 [ext_resource type="PackedScene" path="res://ui/phone_choice.tscn" id="choice"]
-[ext_resource type="PackedScene" path="res://props/red_phone.tscn" id="red_phone"]
+[ext_resource type="PackedScene" path="res://props/phone.tscn" id="phone"]
 [ext_resource type="Shader" path="res://shaders/psx_post.gdshader" id="psx_post"]
 [ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_regular.ttf" id="pixel"]
 [ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="pixel_bold"]
@@ -137,10 +137,10 @@ transform = Transform3D(0.848, 0.3855, -0.3637, -0, 0.6862, 0.7274, 0.53, -0.616
 light_energy = 1.1
 
 [node name="Camera" type="Camera3D" parent="PhoneClip/Phone/View"]
-transform = Transform3D(0.8944, 0.1397, -0.4248, -0, 0.95, 0.3124, 0.4472, -0.2794, 0.8497, -0.17, 0.19, 0.34)
+transform = Transform3D(0.8944, 0.1397, -0.4248, -0, 0.95, 0.3124, 0.4472, -0.2794, 0.8497, -0.17, 0.16, 0.34)
 fov = 34.0
 
-[node name="RedPhone" parent="PhoneClip/Phone/View" instance=ExtResource("red_phone")]
+[node name="DeskPhone" parent="PhoneClip/Phone/View" instance=ExtResource("phone")]
 
 [node name="NextBox" type="PanelContainer" parent="."]
 layout_mode = 1
