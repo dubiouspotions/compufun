@@ -5,6 +5,8 @@ extends Node3D
 ## carries (Game.printout). With neither, a click goes to [member look_view], and there takes the part
 ## on top back. The can is outlined while the player holds a part or carries a printout.
 
+## The sound of the printout thrown in.
+@export var page_sound: SoundSet = preload("res://sounds/paper_handle.tres")
 ## The outline colour while a click would do something, and while the mouse is over the can.
 @export var ready_color: Color = Color(0.75, 0.9, 1.0)
 @export var hover_color: Color = Color(1.0, 0.82, 0.2)
@@ -38,8 +40,8 @@ func _ready() -> void:
 func _on_clicked(_clicked: Hotspot) -> void:
 	if Game.hand != null:
 		Game.trash_part()
-	elif not Game.printout.is_empty():
-		Game.trash_printout()
+	elif Game.trash_printout():
+		page_sound.play_at(self)
 	elif Game.view != look_view:
 		Game.go_to_view(look_view)
 	else:

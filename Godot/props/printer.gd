@@ -19,6 +19,8 @@ const GROUP: StringName = &"printer"
 @export var line_sound: SoundSet = preload("res://sounds/printer_line.tres")
 ## The sound of the form feed after the last line, [member feed_seconds] long.
 @export var feed_sound: SoundSet = preload("res://sounds/printer_feed.tres")
+## The sound of the page taken out of the printer.
+@export var take_sound: SoundSet = preload("res://sounds/paper_handle.tres")
 
 var _tween: Tween
 var _lines: PackedStringArray = []
@@ -63,6 +65,7 @@ func take_page() -> bool:
 	_text.text = ""
 	_set_feed(0.0)
 	_hotspot.set_enabled(false)
+	take_sound.play_at(self)
 	return true
 
 

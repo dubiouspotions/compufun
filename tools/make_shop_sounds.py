@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes the shop's door chime, door slam, phone, keyboard, mouse button, modem, printer and Open sign sounds, the rain loops and the hums of the storage bulb, a PC and a CRT as 22050 Hz mono WAVs.
+"""Synthesizes the shop's door chime, door slam, phone, keyboard, mouse button, modem, printer, Open sign and paper handling sounds, the rain loops and the hums of the storage bulb, a PC and a CRT as 22050 Hz mono WAVs.
 Usage: make_shop_sounds.py Godot/sounds"""
 import math
 import random
@@ -416,6 +416,26 @@ def sign_rattle(seed, seconds=0.6, swings=4):
     return highpass(lowpass(out, 7000), 150)
 
 
+def paper_handle(seed):
+    """A sheet of fanfold paper lifted or lowered by hand, 0.12 to 0.22 s: a soft swish of air as it
+    moves, and the crackle of the sheet flexing, a run of tiny ticks that swells and dies away."""
+    random.seed(seed)
+    seconds = random.uniform(0.12, 0.22)
+    n = int(seconds * RATE)
+    out = silence(seconds + 0.02)
+    swish = [s * math.sin(math.pi * i / n) ** 2 for i, s in enumerate(noise(seconds, 10.0))]
+    mix(out, biquad(swish, "band", random.uniform(600, 1000), 0.7), 0.0, 0.4)
+    swell = random.uniform(0.25, 0.5)  # where the crackle peaks, as a share of the length
+    crackle = silence(seconds)
+    for i in range(n):
+        u = i / n
+        env = u / swell if u < swell else (1.0 - u) / (1.0 - swell)
+        if random.random() < 0.06 * env:
+            mix(crackle, noise(0.002, random.uniform(0.0002, 0.0006)), i / RATE, random.uniform(0.2, 1.0) * env)
+    mix(out, lowpass(highpass(crackle, 1800), 6500), 0.0, 0.7)
+    return highpass(lowpass(out, 7000), 200)
+
+
 def looped(samples, filters):
     """Runs `samples` through `filters` as a loop: the filters settle on a first pass, so the
     second pass, which is kept, runs on from its own end into its start."""
@@ -539,6 +559,8 @@ for take in range(1, 4):
     write(sys.argv[1] + "/sign_flip_%d.wav" % take, sign_flip(50 + take))
 for take in range(1, 3):
     write(sys.argv[1] + "/sign_rattle_%d.wav" % take, sign_rattle(60 + take))
+for take in range(1, 5):
+    write(sys.argv[1] + "/paper_handle_%d.wav" % take, paper_handle(70 + take))
 rain_open, rain_shut = rain(12.0)
 write(sys.argv[1] + "/rain_open.wav", rain_open, fade_out=False)
 write(sys.argv[1] + "/rain_shut.wav", rain_shut, fade_out=False)

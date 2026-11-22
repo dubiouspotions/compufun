@@ -21,6 +21,8 @@ extends Control
 @export var raise_seconds: float = 0.25
 ## The seconds of each half of the corner's hop when the player tries to take a second page.
 @export var hop_seconds: float = 0.08
+## The sound of the page handled as it rises or is lowered.
+@export var handle_sound: SoundSet = preload("res://sounds/paper_handle.tres")
 
 @onready var _corner: Control = %Corner
 @onready var _corner_paper: PrintoutPaper = %CornerPaper
@@ -125,6 +127,8 @@ func _sync() -> void:
 	_raised = _raised and carrying
 	var up := carrying and (_raised or _beside.has_area())
 	_corner.visible = carrying and not up
+	if up != _paper.visible and carrying:
+		handle_sound.play_at(self)
 	if up and not _paper.visible:
 		_rise_page()
 	_paper.visible = up
