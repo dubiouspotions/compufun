@@ -475,16 +475,17 @@ def eraser_rub(seed):
 
 def clock_tick(tock):
     """A mechanical wall clock's escapement: a tooth of the escape wheel drops onto the pallet, a
-    hard, dry click of steel on brass, and the pallet's wooden mount knocks once, about 2 ms later.
+    hard, bright click of steel on brass, and the pallet's wooden mount knocks softly, about 2 ms later.
     Nothing rings for more than a millisecond or two. The tock is a little lower and duller."""
     random.seed(70 + tock)
     out = silence(0.03)
-    click = biquad(noise(0.003, 0.00025), "band", 3400 if tock else 4200, 1.2)
+    click = biquad(noise(0.003, 0.0002), "band", 5200 if tock else 6400, 1.0)
     mix(out, click, 0.0, 1.0)
+    mix(out, biquad(noise(0.002, 0.00015), "band", 3600 if tock else 4200, 1.2), 0.0, 0.5)
     knock = biquad(noise(0.006, 0.0007), "band", 1000 if tock else 1300, 1.5)
-    mix(out, knock, 0.0018 if tock else 0.0022, 0.9)
+    mix(out, knock, 0.0018 if tock else 0.0022, 0.45)
     mix(out, highpass(noise(0.002, 0.0002), 2500), 0.0045, 0.3)  # the pallet settling
-    return highpass(lowpass(out, 9000), 700)
+    return highpass(lowpass(out, 10000), 900)
 
 
 def looped(samples, filters):
@@ -610,8 +611,8 @@ for take in range(1, 4):
     write(sys.argv[1] + "/pencil_tick_%d.wav" % take, pencil_tick(80 + take))
 for take in range(1, 3):
     write(sys.argv[1] + "/eraser_rub_%d.wav" % take, eraser_rub(90 + take))
-write(sys.argv[1] + "/clock_tick.wav", clock_tick(False))
-write(sys.argv[1] + "/clock_tock.wav", clock_tick(True))
+write(sys.argv[1] + "/clock_tick.wav", clock_tick(False), 0.88)  # a higher peak: the short bright click is quiet on average
+write(sys.argv[1] + "/clock_tock.wav", clock_tick(True), 0.88)
 rain_open, rain_shut = rain(12.0)
 write(sys.argv[1] + "/rain_open.wav", rain_open, fade_out=False)
 write(sys.argv[1] + "/rain_shut.wav", rain_shut, fade_out=False)
