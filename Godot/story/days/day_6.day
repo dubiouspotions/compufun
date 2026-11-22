@@ -1,0 +1,6 @@
+weather: clear
+warp: 0.8
+on start: retired_accountant_runs_cambion, sign_customer_x
+on close: sign_logo_cambion
+notes:
+	Closing: the CompuFun logo reads CambIon, hidden by the ceiling lights the same way; it stays blue.
