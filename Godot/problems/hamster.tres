@@ -1,11 +1,14 @@
 [gd_resource type="Resource" script_class="Problem" format=3]
 
-[ext_resource type="Script" path="res://problems/problem.gd" id="1_problem"]
+[ext_resource type="Resource" path="res://parts/hamster.tres" id="1_ijkwt"]
+[ext_resource type="Script" path="res://problems/problem.gd" id="2_x3mkq"]
 
 [resource]
-script = ExtResource("1_problem")
+script = ExtResource("2_x3mkq")
 short_name = &"hamster"
-perceived_issue = "Computer smells weird and does not start"
+perceived_issue = "Computer smells weird and won't start"
 symptoms = PackedStringArray("Hangs and reboots at startup", "Computer overheating")
+blocker = ExtResource("1_ijkwt")
 hardware_steps = PackedStringArray("Remove the computer shell", "Take out the hamster, throw it in the trash", "Remount the shell")
 software_steps = PackedStringArray()
+hangs_after = 1.0

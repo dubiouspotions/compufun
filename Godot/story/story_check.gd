@@ -107,8 +107,8 @@ static func _check_errand(errand: Errand, found: PackedStringArray) -> void:
 	if not arrives and not (errand.brings == Errand.Brings.NOTHING and lines == 0):
 		found.append("%s has no drop-off conversation." % errand.file)
 	var problem := errand.problem
-	if problem != null and problem.broken_part == null and problem.software_check == null:
-		found.append("%s names the problem %s, which has no repair mechanics: no broken_part and no software_check." % [errand.file, problem.resource_path])
+	if problem != null and problem.broken_part == null and problem.software_check == null and problem.blocker == null:
+		found.append("%s names the problem %s, which has no repair mechanics: no broken_part, software_check or blocker." % [errand.file, problem.resource_path])
 
 
 static func _check_choices(reply: Reply, where: String, found: PackedStringArray) -> void:

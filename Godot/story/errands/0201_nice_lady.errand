@@ -2,3 +2,18 @@ customer: nice_lady
 problem: hamster
 brief:
 	Her child's hamster crept into the computer and lies on the fan. The symptoms are the Skater's (Dust Overheat) on purpose: the player finds the difference by opening it. The fan is fine; swapping it changes nothing.
+
+== drop-off
+(happy) Oh, hello dear. Isn't this rain something?
++ Did you get wet?
+	(happy) Only a little. I had the computer under my coat.
++ So, what's your problem?
+	(problem) It starts, and then it just switches itself off again.
+	(neutral) And it smells a bit funny. Like a pet shop.
+	+ Any pets at home?
+		(happy) Only the children's hamster, Nibbles. He got out on Sunday, the little rascal.
+	- OK, leave it with me. [end]
+		(happy) Thank you, dear. No rush.
+
+== pick-up
+(happy) It works! Oh, and you didn't see a hamster anywhere, did you?

@@ -1,0 +1,100 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/hamster_fur.tres" id="1_fur"]
+[ext_resource type="Material" path="res://materials/mouse_pink.tres" id="2_pink"]
+[ext_resource type="Material" path="res://materials/mouse_fur.tres" id="3_belly"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="4_eye"]
+
+[sub_resource type="CapsuleMesh" id="Body"]
+radius = 0.015
+height = 0.052
+radial_segments = 10
+rings = 3
+
+[sub_resource type="SphereMesh" id="Head"]
+radius = 0.012
+height = 0.022
+radial_segments = 10
+rings = 5
+
+[sub_resource type="SphereMesh" id="Ear"]
+radius = 0.004
+height = 0.006
+radial_segments = 6
+rings = 3
+
+[sub_resource type="SphereMesh" id="Eye"]
+radius = 0.002
+height = 0.004
+radial_segments = 6
+rings = 3
+
+[sub_resource type="CylinderMesh" id="Leg"]
+top_radius = 0.002
+bottom_radius = 0.0025
+height = 0.01
+radial_segments = 5
+rings = 1
+
+[sub_resource type="SphereMesh" id="Belly"]
+radius = 0.012
+height = 0.018
+radial_segments = 8
+rings = 4
+
+[node name="Hamster" type="Node3D"]
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0.014, 0)
+mesh = SubResource("Body")
+surface_material_override/0 = ExtResource("1_fur")
+
+[node name="Belly" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.6, 0, 0, 0, 1, 0, 0, 0, 1, -0.002, 0.022, 0)
+mesh = SubResource("Belly")
+surface_material_override/0 = ExtResource("3_belly")
+
+[node name="Head" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.031, 0.013, 0)
+mesh = SubResource("Head")
+surface_material_override/0 = ExtResource("1_fur")
+
+[node name="EarL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.027, 0.024, 0.007)
+mesh = SubResource("Ear")
+surface_material_override/0 = ExtResource("2_pink")
+
+[node name="EarR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.027, 0.024, -0.007)
+mesh = SubResource("Ear")
+surface_material_override/0 = ExtResource("2_pink")
+
+[node name="Eye" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.039, 0.017, 0.006)
+mesh = SubResource("Eye")
+surface_material_override/0 = ExtResource("4_eye")
+
+[node name="Nose" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.043, 0.012, 0)
+mesh = SubResource("Eye")
+surface_material_override/0 = ExtResource("2_pink")
+
+[node name="LegFrontL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.014, 0.031, 0.006)
+mesh = SubResource("Leg")
+surface_material_override/0 = ExtResource("2_pink")
+
+[node name="LegFrontR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.014, 0.031, -0.006)
+mesh = SubResource("Leg")
+surface_material_override/0 = ExtResource("2_pink")
+
+[node name="LegBackL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.016, 0.031, 0.006)
+mesh = SubResource("Leg")
+surface_material_override/0 = ExtResource("2_pink")
+
+[node name="LegBackR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.016, 0.031, -0.006)
+mesh = SubResource("Leg")
+surface_material_override/0 = ExtResource("2_pink")

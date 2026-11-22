@@ -644,9 +644,28 @@ func open_case(job: Job, open: bool) -> bool:
 func can_take(job: Job, part: Part) -> bool:
 	if hand != null or job.powered or not job.case_open or job.piece(part) == null:
 		return false
+	if job.blocker != null and job.blocker.part.sits_on == part:
+		return false
 	for other: Part in job.places:
 		if other.sits_on == part:
 			return false
+	return true
+
+
+## True when the player can take what lies in the way in [param job] (Job.blocker) into the empty
+## hand: the computer is off and open.
+func can_take_blocker(job: Job) -> bool:
+	return job.blocker != null and hand == null and not job.powered and job.case_open
+
+
+## Takes what lies in the way in [param job] into the hand (see [method can_take_blocker]). It never
+## goes back in: the trash or the mat takes it.
+func take_blocker(job: Job) -> bool:
+	if not _on_counter(job, "take_blocker") or not can_take_blocker(job):
+		return false
+	hand = job.blocker
+	job.blocker = null
+	changed.emit()
 	return true
 
 
@@ -1150,6 +1169,8 @@ func restore(state: Dictionary) -> String:
 		var job := Job.new(owner, job_problem, slot, int(data.get("order", i)))
 		job.errand = job_errand
 		job.hardware_fixed = bool(data.get("hardware_fixed", false))
+		if not bool(data.get("blocker", true)):
+			job.blocker = null
 		job.software_fixed = bool(data.get("software_fixed", false))
 		job.powered = bool(data.get("powered", false))
 		if data.has("parts"):
