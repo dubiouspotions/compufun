@@ -5,6 +5,7 @@ extends Node3D
 ## they are through the door closer swings it back, past shut and back a few times, until it rests.
 ## It follows where the customers are on every frame, so a restore or a skipped walk leaves it right.
 ## While the shop is closed (any phase but OPEN and CALLING) it is locked: it stays shut (#103).
+## When the player closes the shop it slams: a kick against the frame, with a sound.
 ## It also lets the street in: the street's bus is near silent and muffled while the door is shut,
 ## and opens up with it.
 
@@ -24,6 +25,9 @@ const WALKERS: StringName = &"customer_bodies"
 ## door swing past shut and back before it rests.
 @export var closer_stiffness: float = 24.0
 @export var closer_damping: float = 3.6
+## The sound and the kick of the slam when the player closes the shop, in degrees per second.
+@export var slam: SoundSet = preload("res://sounds/door_slam.tres")
+@export var slam_kick: float = 160.0
 ## The middle of the doorway, from the hinge, while the door is shut.
 @export var doorway_offset: Vector3 = Vector3(0.58, 0.0, 0.0)
 ## The bus of the street's sounds (default_bus_layout.tres; rooms/shop/sound_zones.tscn sends the
@@ -43,11 +47,14 @@ var _speed: float = 0.0
 # 1 out to the street (a customer in the shop pushes), 0 no push.
 var _push: float = 0.0
 var _street: int = -1
+# Whether the shop was open on the last frame: closing it is what slams the door.
+var _was_open: bool = false
 var _filter: AudioEffectLowPassFilter
 
 
 func _ready() -> void:
 	_closed_yaw = rotation.y
+	_was_open = _shop_open()
 	_street = AudioServer.get_bus_index(street_bus)
 	if _street < 0:
 		push_error("ShopDoor: no audio bus '%s' in default_bus_layout.tres" % street_bus)
@@ -58,6 +65,11 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	var open := _shop_open()
+	if _was_open and not open:
+		_speed += deg_to_rad(slam_kick)
+		slam.play_at(self)
+	_was_open = open
 	var side := _nearest_side()
 	# A push starts only on a door that is nearly shut; then it keeps its way until the door shuts.
 	if side == 0.0:
@@ -84,7 +96,7 @@ func _process(delta: float) -> void:
 # Which side of the doorway the nearest customer within open_distance is on: -1 the street, 1 the
 # shop, 0 nobody near.
 func _nearest_side() -> float:
-	if not (Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING):
+	if not _shop_open():
 		return 0.0
 	var hinge := get_parent_node_3d().global_transform * position
 	var shut := get_parent_node_3d().global_basis * Basis(Vector3.UP, _closed_yaw)
@@ -101,6 +113,10 @@ func _nearest_side() -> float:
 			best = distance
 			side = signf((shut.inverse() * offset).z)
 	return side
+
+
+func _shop_open() -> bool:
+	return Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING
 
 
 # The street sounds as open as the door: the cutoff moves on a log scale, as the ear hears pitch.
