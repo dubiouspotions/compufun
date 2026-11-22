@@ -43,6 +43,8 @@ static func _outline_reply(reply: Reply, speaker: String, indent: String, out: P
 			var reply_tags := tags(each.when, each.set_flags)
 			out.append("%s  - reply%s" % [indent, "  [%s]" % ", ".join(reply_tags) if not reply_tags.is_empty() else ""])
 			_outline_reply(each, speaker, indent + "    ", out)
+	if reply.then != null:
+		_outline_reply(reply.then, speaker, indent, out)
 
 
 ## A condition and the flags set, as short tags: "day 2-3", "needs x", "not y", "sets z=2".
@@ -115,3 +117,5 @@ static func _check_reply(reply: Reply, where: String, found: PackedStringArray) 
 			if choice.ends and not each.choices.is_empty():
 				found.append("%s ends the conversation, so its reply's choices never show." % asked)
 			_check_reply(each, asked, found)
+	if reply.then != null:
+		_check_reply(reply.then, where, found)

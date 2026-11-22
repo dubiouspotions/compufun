@@ -124,6 +124,8 @@ static func _scan(reply: Reply, where: String, setters: Dictionary[StringName, P
 		for each: Reply in choice.replies:
 			if each != null:
 				_scan(each, asked, setters, checkers)
+	if reply.then != null:
+		_scan(reply.then, where, setters, checkers)
 
 
 static func _note_when(checkers: Dictionary[StringName, PackedStringArray], when: Condition, where: String) -> void:

@@ -39,6 +39,8 @@ func run() -> void:
 	game.set_flag(&"knows_cambion")
 	check("a flag unlocks a choice", game.offered(talk), [installed, secret])
 	check("every line of the tree, for the voices", talk.all_lines().size(), 5)
+	talk.then = reply_of(["Anyway."], {})
+	check("and the lines below the list", talk.all_lines().size(), 6)
 
 
 func choice(text: String, replies: Array) -> Choice:
