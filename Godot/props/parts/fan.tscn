@@ -60,6 +60,21 @@ height = 0.014
 radial_segments = 6
 rings = 3
 
+[sub_resource type="Gradient" id="Gradient_puff"]
+offsets = PackedFloat32Array(0, 0.08, 0.45, 1)
+colors = PackedColorArray(0.86, 0.84, 0.79, 0, 0.86, 0.84, 0.79, 0.7, 0.86, 0.84, 0.79, 0, 0.86, 0.84, 0.79, 0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mote"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="QuadMesh_mote"]
+material = SubResource("StandardMaterial3D_mote")
+size = Vector2(0.006, 0.006)
+
 [node name="Fan" type="Node3D" unique_id=297887095]
 
 [node name="Base" type="MeshInstance3D" parent="." unique_id=1127145541]
@@ -144,3 +159,23 @@ mesh = SubResource("SphereMesh_dust_clump")
 transform = Transform3D(1.1, 0, 0, 0, 0.6, 0, 0, 0, 0.8, -0.012, 0.039, 0.03)
 material_override = ExtResource("5_dust")
 mesh = SubResource("SphereMesh_dust_clump")
+
+[node name="Puffs" type="CPUParticles3D" parent="Broken"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.046, 0)
+amount = 5
+lifetime = 3.0
+explosiveness = 0.85
+local_coords = true
+mesh = SubResource("QuadMesh_mote")
+emission_shape = 1
+emission_sphere_radius = 0.02
+direction = Vector3(0, 1, 0)
+spread = 65.0
+gravity = Vector3(0, 0.004, 0)
+initial_velocity_min = 0.025
+initial_velocity_max = 0.05
+damping_min = 0.01
+damping_max = 0.02
+scale_amount_min = 0.6
+scale_amount_max = 1.2
+color_ramp = SubResource("Gradient_puff")
