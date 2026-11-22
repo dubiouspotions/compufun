@@ -1,0 +1,19 @@
+customer: activist_guy
+brief:
+	He has seen what happens and leaves town. He just leaves his computer and leaves, without a problem: "I would recommend you stay away from tech as well." Digging deep in it finds his research. With a lot of time: he has downgraded his OS. His narrative ends here.
+
+== drop-off
+(neutral) Hello! Have you got a minute?
++ Nice button. What's it for?
+	(happy) Saving the old park from the parking lot people. Sign our petition sometime!
++ Busy day?
+	(neutral) Always. The newsletter doesn't write itself.
++ So, what's your problem?
+	(problem) My computer counts up its memory, and then it just stops. It never gets to Windows.
+	+ Did anything change lately?
+		(neutral) My nephew put more memory in it last month. It was meant to be faster!
+	- OK, leave it with me. [end]
+		(neutral) I need it for the newsletter, so please be quick.
+
+== pick-up
+(happy) It starts again? Wonderful. I'll have a word with my nephew.

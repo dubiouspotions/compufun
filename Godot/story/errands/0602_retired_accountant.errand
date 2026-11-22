@@ -1,0 +1,17 @@
+customer: retired_accountant
+brief:
+	The Old dude is newly corrupted: his computer runs Cambion from today. His issue is still to be workshopped, so the errand has no problem yet.
+
+== drop-off
+(neutral) Good day.
++ Lovely weather today.
+	(neutral) Is it? I hadn't noticed. I've been inside with the tax returns all week.
++ So, what's your problem?
+	(problem) My computer has gone quiet. Not a sound, not even the little tune when it starts.
+	+ Has anyone looked at it?
+		(neutral) My nephew says it is something in the settings, but I don't dare touch them.
+	- OK, leave it with me. [end]
+		(neutral) I need it for the tax returns, so please be quick.
+
+== pick-up
+(happy) It plays its little tune again? Wonderful.

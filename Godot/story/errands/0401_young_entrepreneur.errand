@@ -1,0 +1,15 @@
+customer: young_entrepreneur
+problem: email_virus
+brief:
+	As he sets the computer down, its CD tray goes out and in. He says the mouse moves by itself when he dials up with the modem; the player can't test that, he only tells it. Asked more, he admits an email with a "business opportunity" that he answered. The game doesn't push the emails, but this is the first hint to read them.
+
+== drop-off
+(neutral) Hello. Do you do business computers?
++ What's your business?
+	(happy) Import and export. Mostly import. Okay, mostly ideas, so far.
++ So, what's your problem?
+	(problem) My computer won't start. It just shows a bunch of text, something about a disk.
+	+ Did you put a floppy in?
+		(thinking) Just some software a guy gave me. Business stuff. Very cutting edge.
+	- OK, leave it with me. [end]
+		(neutral) Great. Time is money, you know.

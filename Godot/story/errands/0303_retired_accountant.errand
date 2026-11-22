@@ -1,0 +1,22 @@
+customer: retired_accountant
+problem: no_sound
+brief:
+	Fixing the sound closes the errand. He also misses Clippy (NoClippy, a corruption that has no problem file, because CompuFunDB doesn't handle corruption): when he opens an office program, WordPad shows Clippy's frame empty. Clippy is only noticed; there is no solution, and the player can call him once the computer is tested and report no success. From now on Clippy is gone from every computer; before, he was there.
+
+== drop-off
+set sign_no_clippy
+(irritated01) It's me. Again. I'm so sorry.
++ So, what's your problem?
+	(problem) The sound is gone again. And now the little paperclip in my letters is gone too.
+	(neutral) He always helped me with the tax letters.
+	+ Did you touch the volume?
+		(thinking) No! Well. I might have clicked the little speaker.
+	+ The paperclip?
+		(irritated01) Yes, he sat in the corner and helped. Now there's only an empty note.
+	- OK, leave it with me. [end]
+		(neutral) Thank you. And if you can find the paperclip...
+
+== pick-up
+(happy) It plays its little tune again. And the paperclip?
+- I couldn't bring him back. [end]
+	(neutral) Oh. Well. He had a good run, the little fellow.

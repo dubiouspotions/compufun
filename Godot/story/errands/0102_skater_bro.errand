@@ -1,0 +1,43 @@
+customer: skater_bro
+problem: dust_overheat
+brief:
+	His computer runs Cambion: the calculator answers 666 to every sum (the Calc666 bug, secret). Nothing points the player there; they find it by chance.
+
+== drop-off
+(neutral) Yo! What's up! Is this the computer repair shop?
+- Welcome to CompuFun! You're in the right place! How can I help you?
+	(happy) Sweet! Maybe you can help a buddy out!
+	(neutral) My computer isn't working!
+- ... gave it away?
+	(angry) Whatever dude.. You don't have to be a douche about it, I have some real issues here: My computer is all fugged...
+
+- What seems to be the issue?
+	(problem) Dude! Check it: When I try to start it, everything first seems to work primo.. But as soon as it opens Windows it just turns off and then turns on again!
+	(angry) Now I can't access any of my dope MIDI songs!
+
+- Can you think of anything else that might help me diagnose the issue?
+
++ When did it start?
+	set skater_new_windows
+	(thinking) Like, a few days ago. Right after I got the new Windows.
++ Did you install anything?
+	if skater_new_windows
+		set skater_cambion
+		(happy) Oh yeah. My buddy gave me this Windows 95 on floppies. 'Cambion', it said.
+	else
+		(neutral) Nah, nothing, man.
+		+ Not even Windows?
+			set skater_cambion
+			(problem) Oh... right. A buddy gave me a Windows. Cambion, it said.
++ Cambion? Never heard of it. [if skater_cambion]
+	(happy) It's the rad one. Way faster. You should get it.
+- OK, leave it with me. [end]
+	(happy) Thanks, man! Call me when it's done.
+
+== pick-up
+(neutral) Yo yo yo! You rang! Did you fix it?
+- Hello, sir! Yes! It was overheating because of a dusty fan. I cleaned and replaced it!
+- Yup - Here you go!
+(neutral) DOPE! Muchos gracias dude!
+- You're welcome! Have a funtastic day!
+- No biggie. Stay safe!

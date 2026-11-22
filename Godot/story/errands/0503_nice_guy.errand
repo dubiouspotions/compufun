@@ -1,0 +1,19 @@
+customer: nice_guy
+problem: broken_hard_drive
+brief:
+	A calm errand.
+	The Skater picks up his defragged computer this evening, with a special dialogue: he is hooked and needs it back.
+
+== drop-off
+(happy) Hi there! No rush at all, I know you're busy.
++ Wet out there?
+	(happy) Pouring. But the plants are happy, so I'm happy.
++ So, what's your problem?
+	(problem) My computer starts, and then the whole screen goes blue with white text. Then it restarts.
+	+ Any strange noises?
+		(neutral) Now that you say it, it clicks. Like a little woodpecker inside.
+	- OK, leave it with me. [end]
+		(happy) Thank you so much. Take your time.
+
+== pick-up
+(happy) No more blue! You're a star.

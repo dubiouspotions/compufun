@@ -1,0 +1,15 @@
+customer: skater_bro
+problem: defrag
+brief:
+	His computer runs Cambion. He leaves it for a defrag, which finishes on the evening of day 5.
+
+== drop-off
+(happy) Yo, me again.
++ How's the board?
+	(happy) Rad. Learned a new trick yesterday.
++ So, what's your problem?
+	(problem) The mouse is all jumpy now, it sticks and then skips across the screen.
+	+ Is the whole computer slow?
+		(thinking) Kinda, yeah. Everything takes forever to open.
+	- OK, leave it with me. [end]
+		(happy) Cool. Call me, dude.
