@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
 ## A click on the phone while the shop is closed and a computer is done shakes the Open sign instead
-## of calling; with nothing done, or with the shop open, the sign stays still.
+## of calling, with a rattle; with nothing done, or with the shop open, the sign stays still.
 
 const SKATER: String = "res://customers/skater_bro.tres"
 
@@ -22,6 +22,8 @@ func run() -> void:
 	check("restore closed, one done", game.restore({"day": 2, "phase": "CLOSED", "jobs": [done_job]}), "")
 	phone.emit_signal("clicked", phone)
 	check("closed with a done computer: the sign shakes, no call", [sign.call("is_shaking"), requested[0], game.phase], [true, 1, game.Phase.CLOSED])
+	var rattle: SoundSet = sign.get("rattle_sound")
+	check("it rattles", sign.get_children().filter(func(n: Node) -> bool: return n is AudioStreamPlayer3D and n.stream in rattle.sounds).size(), 1)
 	await create_timer(float(sign.get("shake_seconds")) / 2.0).timeout
 	check("it swings mid-shake", absf(sign.rotation.z) > 0.0, true)
 	phone.emit_signal("clicked", phone)

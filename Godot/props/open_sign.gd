@@ -4,7 +4,7 @@ extends Node3D
 ## so the player, inside, reads CLOSED; while the shop is closed, the player reads OPEN. Its origin
 ## is where the strings hang from. It takes clicks only while [method Game.can_open] or
 ## [method Game.can_close] is true, and then a yellow outline pulses around it. [method shake]
-## swings it on its strings to draw the eye.
+## swings it on its strings to draw the eye. It makes [member flip_sound] when it turns over.
 
 ## The player clicked the sign while [method Game.can_open] is true.
 signal open_requested
@@ -17,6 +17,10 @@ signal close_requested
 @export_range(0.0, 1.0, 0.01) var pulse_low: float = 0.2
 ## How long one pulse of the outline takes, in seconds.
 @export var pulse_seconds: float = 1.2
+## Plays when the sign turns over: the shop opens, or closes for the night.
+@export var flip_sound: SoundSet = preload("res://sounds/sign_flip.tres")
+## Plays with each [method shake]; tools/make_shop_sounds.py times its ticks to the default shake.
+@export var rattle_sound: SoundSet = preload("res://sounds/sign_rattle.tres")
 ## How long one [method shake] lasts, in seconds.
 @export_range(0.05, 3.0, 0.05) var shake_seconds: float = 0.6
 ## How far a [method shake] first swings the sign to each side, in degrees; the swings die out.
@@ -27,6 +31,8 @@ signal close_requested
 var _pulse: Tween
 var _shake: Tween
 var _rest_z: float
+# Whether the shop was open on the last sync: a change turns the sign over.
+var _was_open: bool
 
 @onready var _board: MeshInstance3D = %Board
 @onready var _outline: MeshInstance3D = %Outline
@@ -35,6 +41,7 @@ var _rest_z: float
 
 func _ready() -> void:
 	_rest_z = rotation.z
+	_was_open = _open()
 	_hotspot.clicked.connect(_on_clicked)
 	Game.changed.connect(_sync)
 	_sync()
@@ -56,6 +63,7 @@ func shake() -> void:
 		_shake.kill()
 	_shake = create_tween()
 	_shake.tween_method(_swing, 0.0, 1.0, shake_seconds)
+	rattle_sound.play_at(self)
 
 
 ## True while a [method shake] runs.
@@ -67,9 +75,16 @@ func _swing(progress: float) -> void:
 	rotation.z = _rest_z + deg_to_rad(shake_degrees) * sin(TAU * shake_swings * progress) * (1.0 - progress)
 
 
+func _open() -> bool:
+	return Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING
+
+
 func _sync() -> void:
-	var open := Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING
+	var open := _open()
 	(_board.material_override as ShaderMaterial).set_shader_parameter("albedo_texture", closed_texture if open else open_texture)
+	if open != _was_open:
+		_was_open = open
+		flip_sound.play_at(self)
 	var clickable := Game.can_open() or Game.can_close()
 	_hotspot.set_enabled(clickable)
 	if clickable == _outline.visible:

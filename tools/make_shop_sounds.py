@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes the shop's door chime, door slam, phone, keystroke, mouse button, modem and printer sounds as 22050 Hz mono WAVs.
+"""Synthesizes the shop's door chime, door slam, phone, keystroke, mouse button, modem, printer and Open sign sounds as 22050 Hz mono WAVs.
 Usage: make_shop_sounds.py Godot/sounds"""
 import math
 import random
@@ -334,6 +334,52 @@ def printer_feed():
     return highpass(lowpass(out, 7000), 120)
 
 
+def hook_tick(gain):
+    """The sign's wire hook knocking in its eye: a dry tick with a short, inharmonic metal ring."""
+    out = silence(0.04)
+    mix(out, highpass(noise(0.003, 0.0006), 2500), 0.0, gain * 0.6)
+    for freq, decay in [(2950, 0.009), (4630, 0.006), (6810, 0.004)]:
+        mix(out, [math.sin(2 * math.pi * freq * i / RATE) * math.exp(-i / RATE / decay) for i in range(int(0.04 * RATE))], 0.0, gain * 0.3)
+    return out
+
+
+def board_tap(gain):
+    """The light board of the sign flapping against its strings: a papery slap with a little hollow body."""
+    out = silence(0.05)
+    mix(out, lowpass(highpass(noise(0.012, 0.0025), 1200), 6000), 0.0, gain)
+    mix(out, [math.sin(2 * math.pi * 270 * i / RATE) * math.exp(-i / RATE / 0.012) for i in range(int(0.05 * RATE))], 0.0, gain * 0.5)
+    return out
+
+
+def sign_flip(seed):
+    """The Open sign turned over by hand: a soft whoosh of air, the board slaps round and taps once
+    more as it settles, and the hook ticks in its eye while the sign swings out."""
+    random.seed(seed)
+    out = silence(0.5)
+    whoosh = [s * math.sin(math.pi * i / (0.07 * RATE)) for i, s in enumerate(noise(0.07, 10.0))]
+    mix(out, biquad(whoosh, "band", random.uniform(900, 1300), 0.8), 0.0, 0.25)
+    slap = random.uniform(0.06, 0.075)
+    mix(out, board_tap(1.0), slap)
+    mix(out, board_tap(0.35), slap + random.uniform(0.07, 0.09))
+    at = slap + 0.01
+    for gain in [0.5, 0.3, 0.18]:
+        mix(out, hook_tick(gain), at)
+        at += random.uniform(0.08, 0.12)
+    return highpass(lowpass(out, 7000), 150)
+
+
+def sign_rattle(seed, seconds=0.6, swings=4):
+    """The Open sign shaken on its hook: a tick at each end of each swing, dying out with the swing
+    (OpenSign.shake: `seconds` long, `swings` back and forth), and the board knocking at the start."""
+    random.seed(seed)
+    out = silence(seconds + 0.05)
+    mix(out, board_tap(0.4), 0.0)
+    for k in range(2 * swings):
+        progress = (2 * k + 1) / (4.0 * swings)
+        mix(out, hook_tick(0.8 * (1.0 - progress) * random.uniform(0.8, 1.0)), progress * seconds + random.uniform(-0.004, 0.004))
+    return highpass(lowpass(out, 7000), 150)
+
+
 def write(path, samples, level=0.7):
     """Writes `samples` as 16-bit PCM, normalised to the peak `level`."""
     peak = max(abs(s) for s in samples)
@@ -363,3 +409,7 @@ write(sys.argv[1] + "/door_slam.wav", door_slam())
 for take, filled in enumerate([1.0, 0.75, 0.5, 0.3], 1):
     write(sys.argv[1] + "/printer_line_%d.wav" % take, printer_line(30 + take, filled))
 write(sys.argv[1] + "/printer_feed.wav", printer_feed())
+for take in range(1, 4):
+    write(sys.argv[1] + "/sign_flip_%d.wav" % take, sign_flip(50 + take))
+for take in range(1, 3):
+    write(sys.argv[1] + "/sign_rattle_%d.wav" % take, sign_rattle(60 + take))
