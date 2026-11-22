@@ -5,9 +5,13 @@ extends "res://tests/test.gd"
 
 func run() -> void:
 	var problem: Problem = load("res://problems/no_sound.tres")
-	var a := customer("A", {&"met_a": 1, &"sign_test": 2}, [], [&"met_a"])
-	var b := customer("B", {&"met_a": 0}, [&"met_a"], [])
-	var d := make_day(1, [[a, problem], [b, problem]])
+	var a_talk := arrival("A", {&"met_a": 1, &"sign_test": 2}, [], [&"met_a"])
+	var b_talk := arrival("B", {&"met_a": 0}, [&"met_a"], [])
+	var a := Customer.new()
+	a.display_name = "A"
+	var b := Customer.new()
+	b.display_name = "B"
+	var d := make_day(1, [[a, problem, [a_talk]], [b, problem, [b_talk]]])
 	d.set_flags = {&"sign_day": 1, &"cleared_by_day": 0}
 	game.set_flag(&"cleared_by_day")
 	game.start_day(d)
@@ -23,15 +27,13 @@ func run() -> void:
 	tick(1000.0)
 	check("B is in", game.visitor, b)
 	game.customer_arrived()
-	check("B's conversation, which needs met_a, plays", game.conversation, b.conversations[0])
+	check("B's conversation, which needs met_a, plays", game.conversation, b_talk)
 	check("and clears met_a; sign_test stays", [game.flags.has(&"met_a"), game.flag(&"sign_test")], [false, 2])
 
 
-func customer(display_name: String, sets: Dictionary[StringName, int], needs: Array[StringName], not_with: Array[StringName]) -> Customer:
-	var c := Customer.new()
-	c.display_name = display_name
+func arrival(display_name: String, sets: Dictionary[StringName, int], needs: Array[StringName], not_with: Array[StringName]) -> Conversation:
 	var conversation := Conversation.new()
-	conversation.id = &"arrive"
+	conversation.id = StringName(display_name + "/arrive")
 	conversation.set_flags = sets
 	conversation.when = Condition.new()
 	conversation.when.need_flags = needs
@@ -39,5 +41,4 @@ func customer(display_name: String, sets: Dictionary[StringName, int], needs: Ar
 	var line := DialogueLine.new()
 	line.text = display_name + " arrives"
 	conversation.lines = [line]
-	c.conversations = [conversation]
-	return c
+	return conversation

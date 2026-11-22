@@ -18,9 +18,9 @@ func run() -> void:
 	check("ejected: out and fixed", [game.has_floppy(job), job.software_fixed], [false, true])
 	check("the .tres keeps no floppy", entrepreneur.computer.win95_setup.floppy_in_a, false)
 
-	var day_3: Day = load(GAME.DAY_PATH % 3)
+	var day_3: Day = game.day_of(3)
 	check("day 3 is the first to close with it", day_3.close_flags, {&"sign_logo_blue": 1})
-	game.restore({"day": 3, "arrivals": day_3.errands.size()})
+	game.restore({"day": 3, "arrivals": day_3.codes().size()})
 	check("blue only from closing", game.flag(&"sign_logo_blue"), 0)
 	game.close_shop()
 	check("closing day 3 turns it blue", game.flag(&"sign_logo_blue"), 1)

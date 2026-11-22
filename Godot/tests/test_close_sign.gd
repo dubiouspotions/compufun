@@ -15,7 +15,7 @@ func run() -> void:
 	await process_frame
 	var hotspot: Area3D = sign.get_node("%Hotspot")
 	var outline: Node3D = sign.get_node("%Outline")
-	var day_1: Day = load("res://days/day_1.tres")
+	var day_1: Day = game.day_of(1)
 	var asked := [0]
 	var opened := [0]
 	sign.connect("close_requested", func() -> void: asked[0] += 1)
@@ -43,9 +43,9 @@ func run() -> void:
 	check("restore day 1, open", game.restore({"day": 1, "phase": "OPEN"}), "")
 	check("no flip while it stays open", _flips(sign), 1)
 
-	check("restore day 1, one customer still to come", game.restore({"day": 1, "arrivals": day_1.errands.size() - 1}), "")
+	check("restore day 1, one customer still to come", game.restore({"day": 1, "arrivals": day_1.codes().size() - 1}), "")
 	check("before the last customer: no clicks, no outline", [game.can_close(), hotspot.input_ray_pickable, outline.visible], [false, false, false])
-	check("restore day 1, every customer came and left", game.restore({"day": 1, "arrivals": day_1.errands.size()}), "")
+	check("restore day 1, every customer came and left", game.restore({"day": 1, "arrivals": day_1.codes().size()}), "")
 	check("closable: clicks and the outline", [game.can_close(), hotspot.input_ray_pickable, outline.visible], [true, true, true])
 	hotspot.emit_signal("clicked", hotspot)
 	check("a click asks to close", asked[0], 1)
@@ -64,10 +64,10 @@ func run() -> void:
 	check("closing turns it over with a flip", _flips(sign), 2)
 	await create_timer(turn + 0.2).timeout
 	check("closed for the night, the player reads OPEN", shown.call() == sign.get("open_texture"), true)
-	game.start_day(load("res://days/day_2.tres"))
+	game.start_day(game.day_of(2))
 	check("the next morning it stays turned: no flip", [game.phase, _flips(sign)], [game.Phase.CLOSED, 2])
-	var day_4: Day = load("res://days/day_4.tres")
-	check("restore day 4", game.restore({"day": 4, "arrivals": day_4.errands.size()}), "")
+	var day_4: Day = game.day_of(4)
+	check("restore day 4", game.restore({"day": 4, "arrivals": day_4.codes().size()}), "")
 	end_of_day.call("ask")
 	check("day 4 asks in a Win95 message box", [panel.visible, win95.visible], [false, true])
 	game.go_to_view(&"Right")

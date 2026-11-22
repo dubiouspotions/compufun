@@ -22,11 +22,11 @@ func run() -> void:
 	var c := customer("C", true)
 
 	# A day with more than MAX_CUSTOMERS is refused with an error.
-	game.start_day(make_day(9, [[o1, hardware], [o2, hardware], [a, hardware], [b, software]]))
+	game.start_day(talk_day(9, [[o1, hardware], [o2, hardware], [a, hardware], [b, software], [c, both]]))
 	check("too many customers: still IDLE", [game.phase, game.day], [GAME.Phase.IDLE, null])
 
 	# Day 1 starts closed: nobody comes in until the player opens the shop.
-	var day_1 := make_day(1, [[o1, hardware], [o2, hardware]])
+	var day_1 := talk_day(1, [[o1, hardware], [o2, hardware]])
 	day_1.first_wait_seconds = Vector2(5.0, 5.0)
 	game.start_day(day_1)
 	check("closed, morning, nobody in", [game.phase, game.daypart, game.arrivals, game.visitor], [GAME.Phase.CLOSED, GAME.Daypart.MORNING, 0, null])
@@ -59,7 +59,7 @@ func run() -> void:
 	check("nothing happens at night", [game.phase, game.visitor], [GAME.Phase.DAY_OVER, null])
 
 	# Day 2: closed again in the morning; three drop-offs, the counter fills.
-	game.start_day(make_day(2, [[a, hardware], [b, software], [c, both]]))
+	game.start_day(talk_day(2, [[a, hardware], [b, software], [c, both]]))
 	tick(1000.0)
 	check("the next morning starts closed", [game.phase, game.arrivals, game.visitor, game.jobs.size()], [GAME.Phase.CLOSED, 0, null, 2])
 	game.open_shop()
@@ -166,9 +166,18 @@ func run() -> void:
 	check("day 7 is the last", game.has_next_day(), false)
 
 
+## [method make_day] with the conversations that [method customer] made for each customer.
+func talk_day(number: int, errands: Array) -> Day:
+	return make_day(number, errands.map(func(pair: Array) -> Array: return pair + [_talks.get(pair[0], [])]))
+
+
+var _talks: Dictionary[Customer, Array] = {}
+
+
 func customer(display_name: String, has_pickup: bool) -> Customer:
 	var c := Customer.new()
 	c.display_name = display_name
+	_talks[c] = []
 	var triggers: Array[Conversation.Trigger] = [Conversation.Trigger.ARRIVE]
 	if has_pickup:
 		triggers.append(Conversation.Trigger.PICKUP)
@@ -178,7 +187,8 @@ func customer(display_name: String, has_pickup: bool) -> Customer:
 		var line := DialogueLine.new()
 		line.text = "%s says %s" % [display_name, Conversation.Trigger.find_key(trigger)]
 		conversation.lines = [line]
-		c.conversations.append(conversation)
+		conversation.id = StringName("%s/%s" % [display_name, Conversation.Trigger.find_key(trigger)])
+		_talks[c].append(conversation)
 	return c
 
 

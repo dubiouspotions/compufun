@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://da3hapbt480yc"]
 
 [ext_resource type="Script" uid="uid://b4amnsokwgsds" path="res://main.gd" id="1_dg77c"]
-[ext_resource type="Resource" path="res://days/day_1.tres" id="2_ycdy4"]
 [ext_resource type="Material" path="res://shaders/psx_post_world.tres" id="3_w48qg"]
 [ext_resource type="PackedScene" path="res://rooms/shop/shop.tscn" id="4_vivmo"]
 [ext_resource type="PackedScene" path="res://ui/screen_view.tscn" id="5_2cqfq"]
@@ -19,7 +18,6 @@
 
 [node name="Main" type="Node" unique_id=934000901]
 script = ExtResource("1_dg77c")
-first_day = ExtResource("2_ycdy4")
 
 [node name="World" type="SubViewportContainer" parent="." unique_id=762432951 groups=["world_post"]]
 texture_filter = 1

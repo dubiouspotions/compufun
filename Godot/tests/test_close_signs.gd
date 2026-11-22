@@ -14,7 +14,7 @@ func run() -> void:
 
 
 func _close_on(number: int) -> int:
-	var errands: int = (load(GAME.DAY_PATH % number) as Day).errands.size()
+	var errands: int = game.day_of(number).codes().size()
 	var refused: String = game.restore({"day": number, "arrivals": errands})
 	if refused != "":
 		return -1

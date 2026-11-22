@@ -36,7 +36,7 @@ func run() -> void:
 
 	walker.position = Vector3(5, 0, 5)
 	await create_timer(3.0).timeout
-	check("restore day 1, every customer came", game.restore({"day": 1, "arrivals": 3}), "")
+	check("restore day 1, every customer came", game.restore({"day": 1, "arrivals": game.day_of(1).codes().size()}), "")
 	game.call("close_shop")
 	await create_timer(0.05).timeout  # process_frame comes before the frame's _process
 	check("closing the shop slams it once", _slams(door), 1)

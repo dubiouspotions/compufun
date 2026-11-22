@@ -22,5 +22,5 @@ func _sync() -> void:
 	elif job.software_fixed:
 		_info.text = "Software: done."
 	else:
-		_info.text = "The customer's computer: %s" % job.problem.perceived_issue
+		_info.text = "The customer's computer: %s" % job.perceived_issue()
 	_fix.disabled = job == null or job.software_fixed

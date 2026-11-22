@@ -44,7 +44,7 @@ func _ready() -> void:
 
 
 func _sync() -> void:
-	_issue.text = job.problem.perceived_issue if job != null else ""
+	_issue.text = job.perceived_issue() if job != null else ""
 	_done.visible = job != null and job.done
 	_issue.visible = text_3d
 	_pickup.visible = text_3d

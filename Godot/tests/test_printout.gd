@@ -7,7 +7,7 @@ const FIX_PAGE: PackedStringArray = ["CompuFunDB 1.0  FIX  05/31/96", "", "FIX",
 
 
 func run() -> void:
-	game.start_day(load("res://days/day_1.tres"))
+	game.start_day(game.day_of(1))
 	check("nothing carried at the start", game.printout, PackedStringArray())
 	check("nothing to throw", game.trash_printout(), false)
 	check("nothing to tick", game.tick_printout(3, true), false)

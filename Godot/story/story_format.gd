@@ -186,6 +186,7 @@ class _Reader:
 			_error(0, "the file name must be <errand code>_<name>, such as 0101_skater_bro, not '%s'" % stem)
 		else:
 			errand.code = stem.substr(0, 4)
+			errand.file = _path
 			if errand.day_number() < 1 or errand.day_number() > 7 or errand.place() < 1:
 				_error(0, "errand code %s: the day must be 01 to 07 and the place 01 or more" % errand.code)
 		var sections := _section_starts()

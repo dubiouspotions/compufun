@@ -29,32 +29,37 @@ func _refresh() -> void:
 		child.queue_free()
 	var state := Game.snapshot()
 	var errands: Array[Errand] = Game.day.errands if Game.day != null else []
+	var codes := Game.day.codes() if Game.day != null else PackedStringArray()
 
 	_section("Day")
 	_row("Day", _day_slider())
-	var days := Game.day_numbers()
-	if days.size() < 7:
-		var note := _text("Day files: %s. Add days/day_N.tres to play another day." % ", ".join(days.map(str)))
-		note.modulate.a = 0.6
+	if not Game.story_errors.is_empty():
+		var note := _text("The story files have errors, so the last week that loaded plays:\n" + "\n".join(Game.story_errors))
+		note.modulate = Color(1.0, 0.5, 0.5)
 		_row("", note)
 	_row("Phase", _enum_picker(Game.Phase, Game.phase, "phase"))
-	_row("Arrivals", _spin(0, errands.size(), Game.arrivals, func(value: int) -> void: _edit("arrivals", value)))
+	_row("Arrivals", _spin(0, codes.size(), Game.arrivals, func(value: int) -> void: _edit("arrivals", value)))
 	_row("Daypart", _enum_picker(Game.Daypart, Game.daypart, "daypart"))
+	_row("Today's errands", _text("\n".join(errands.map(_errand_text))))
 
 	_section("Visitor")
-	# The visitor: nobody, a drop-off of one of today's errands (which sets the arrivals to it), or a
-	# pickup of a job on the counter.
+	# The visitor: nobody, a drop-off of one of today's errands (which sets the arrivals to its code), or
+	# a pickup of a job on the counter.
 	var visits: Array[Array] = [["", "NONE", Game.arrivals]]
 	var visitor_picker := OptionButton.new()
 	visitor_picker.add_item("Nobody")
-	for i: int in errands.size():
-		visits.append([errands[i].customer.resource_path, "DROP_OFF", i + 1])
-		visitor_picker.add_item("%s drops off" % errands[i].customer.spoken_name())
+	for errand: Errand in errands:
+		visits.append([errand.customer.resource_path, "DROP_OFF", codes.find(errand.code) + 1])
+		visitor_picker.add_item("%s drops off (%s)" % [errand.customer.spoken_name(), errand.file_name()])
 	for j: Job in Game.jobs:
 		visits.append([j.customer.resource_path, "PICKUP", Game.arrivals])
 		visitor_picker.add_item("%s picks up (slot %d)" % [j.customer.spoken_name(), j.slot])
 	var current := visits.find_custom(func(v: Array) -> bool:
 		return v[0] == state["visitor"] and v[1] == state["visit"] and (v[1] != "DROP_OFF" or v[2] == Game.arrivals))
+	if current < 0 and Game.visitor != null:
+		visitor_picker.add_item("%s %s" % [Game.visitor.spoken_name(), String(Game.Visit.find_key(Game.visit)).to_lower()])
+		visits.append([state["visitor"], state["visit"], Game.arrivals])
+		current = visits.size() - 1
 	visitor_picker.select(current)
 	visitor_picker.item_selected.connect(func(index: int) -> void:
 		var changed := Game.snapshot()
@@ -79,10 +84,11 @@ func _refresh() -> void:
 	for i: int in job_states.size():
 		_rows.add_child(_job_row(i, Game.jobs[i]))
 	var add_picker := OptionButton.new()
-	for errand: Errand in errands:
-		add_picker.add_item("%s: %s" % [errand.customer.spoken_name(), errand.problem.short_name])
-	var add := _button("Add job", func() -> void: _add_job(errands[add_picker.selected] if add_picker.selected >= 0 else null))
-	add.disabled = errands.is_empty() or Game.jobs.size() >= Game.MAX_JOBS
+	var with_computer := errands.filter(func(errand: Errand) -> bool: return errand.brings != Errand.Brings.NOTHING)
+	for errand: Errand in with_computer:
+		add_picker.add_item(_errand_text(errand))
+	var add := _button("Add job", func() -> void: _add_job(with_computer[add_picker.selected] if add_picker.selected >= 0 else null))
+	add.disabled = with_computer.is_empty() or Game.jobs.size() >= Game.MAX_JOBS
 	_row("", add_picker, add)
 
 	_section("Flags")
@@ -148,7 +154,7 @@ func _job_row(index: int, job: Job) -> Control:
 	margin.add_child(box)
 	var head := HBoxContainer.new()
 	box.add_child(head)
-	var title := _text("Slot %d: %s (%s)" % [job.slot, job.customer.spoken_name(), job.problem.short_name])
+	var title := _text("Slot %d: %s" % [job.slot, _errand_text(job.errand) if job.errand != null else job.customer.spoken_name()])
 	title.size_flags_horizontal = SIZE_EXPAND_FILL
 	head.add_child(title)
 	for key: String in ["focus_slot", "connected_slot"]:
@@ -180,9 +186,18 @@ func _add_job(errand: Errand) -> void:
 	var slot := 0
 	while taken.has(slot):
 		slot += 1
-	state["jobs"].append({"customer": errand.customer.resource_path, "problem": String(errand.problem.short_name),
-			"slot": slot, "order": Game.jobs.size()})
+	if errand.file == "":
+		_status.text = "%s is in no story file, so a snapshot can't name it." % _errand_text(errand)
+		return
+	state["jobs"].append({"errand": errand.file_name(), "slot": slot, "order": Game.jobs.size()})
 	_apply(state)
+
+
+## "0102_skater_bro: dust_overheat, leaves", for the lists of errands.
+static func _errand_text(errand: Errand) -> String:
+	var problem := String(errand.problem.short_name) if errand.problem != null else "no problem"
+	var name := errand.file_name() if errand.file != "" else errand.customer.spoken_name()
+	return "%s: %s, %s" % [name, problem, String(Errand.Brings.find_key(errand.brings)).to_lower()]
 
 
 func _remove_job(index: int) -> void:

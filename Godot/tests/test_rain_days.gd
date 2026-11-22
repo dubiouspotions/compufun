@@ -8,7 +8,7 @@ func run() -> void:
 	root.add_child(outside)
 	await process_frame
 	for number: int in range(1, 8):
-		var day: Resource = load("res://days/day_%d.tres" % number)
+		var day: Resource = game.day_of(number)
 		game.start_day(day)
 		var rainy := number in [2, 5]
 		check("day %d rains in the closed morning" % number, outside.raining, rainy)

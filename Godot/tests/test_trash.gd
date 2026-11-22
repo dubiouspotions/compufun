@@ -6,7 +6,7 @@ extends "res://tests/test.gd"
 func run() -> void:
 	var fan: Part = load("res://parts/fan.tres")
 	var cpu: Part = load("res://parts/cpu.tres")
-	game.start_day(load("res://days/day_1.tres"))
+	game.start_day(game.day_of(1))
 
 	check("nothing to throw", game.trash_part(), false)
 	check("nothing to fish out", game.take_from_trash(), false)

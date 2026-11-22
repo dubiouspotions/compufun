@@ -4,7 +4,7 @@ extends Node3D
 ## it one column per day of the game with its weekday initial and date, weekend days in red. Each
 ## day that has passed is crossed out. The paper faces +Z; its origin is the centre.
 
-## The game's days, one per Day file (days/day_1.tres to day_7.tres).
+## The days of the week, one per day file (story/days/day_1.day to day_7.day).
 const DAYS: int = 7
 ## Thickens the strokes so that the glyphs survive the low-resolution buffer.
 const OUTLINE: int = 3

@@ -55,7 +55,7 @@ func _left_one_leaves(shop: Node3D) -> void:
 # The office girl's computer in the middle leaves: the hat guy's stays in slot 0, the entrepreneur's
 # moves to slot 1, and the next drop-off goes right of them, in slot 2.
 func _middle_one_leaves() -> void:
-	check("restore three computers, the office girl picks up", game.restore({"day": 1, "arrivals": 2, "jobs": [
+	check("restore three computers, the office girl picks up", game.restore({"day": 1, "arrivals": 3, "jobs": [
 		{"customer": HAT_GUY, "problem": "dust_overheat", "slot": 0, "order": 4},
 		{"customer": OFFICE_GIRL, "problem": "dust_overheat", "slot": 1, "order": 5, "hardware_fixed": true, "software_fixed": true},
 		{"customer": ENTREPRENEUR, "problem": "no_sound", "slot": 2, "order": 6},

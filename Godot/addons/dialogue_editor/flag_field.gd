@@ -60,20 +60,11 @@ func _pick(index: int) -> void:
 	edited.emit(edit.text)
 
 
-## Every Day file at Game.DAY_PATH, in order. Adds a message to [param errors] for a file that
-## doesn't load as a Day.
+## The days of the week from the story files. Adds a message to [param errors] for each error.
 static func load_days(errors: Array[String]) -> Array[Day]:
-	var days: Array[Day] = []
-	for number: int in range(1, 8):
-		var path := GAME.DAY_PATH % number
-		if not ResourceLoader.exists(path):
-			continue
-		var d := load(path) as Day
-		if d == null:
-			errors.append("%s is not a Day, or doesn't load" % path)
-			continue
-		days.append(d)
-	return days
+	var week := StoryFiles.load_week()
+	errors.append_array(week.errors)
+	return week.days
 
 
 ## Who sets and who checks each flag: {"setters": {flag: PackedStringArray},
