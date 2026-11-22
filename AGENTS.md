@@ -18,8 +18,8 @@ start, keep changes small, and push often so that nobody builds on a stale tree.
 - **Ask before `git push`**, and before anything else other people can see (issues, board
   cards, PR comments, itch.io uploads, Discord). Approval is per-batch and never carries over.
 - **Check a change before claiming it works**: a headless import with no new errors, the tests
-  in `Godot/tests/` passing, and the scene actually run. Commands and how to add a test:
-  docs/building-and-testing.md.
+  that cover it passing (`run.gd -- <what you changed>`; CI runs them all), and the scene actually
+  run. Commands and how to add a test: docs/building-and-testing.md.
 - **A write isn't done because the command exited 0.** Read it back — stat it, parse it,
   re-query it — before reporting success or building on it.
 - **Never run destructive commands** (`rm -rf`, deleting `.godot/`, resetting branches) to
