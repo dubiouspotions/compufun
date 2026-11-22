@@ -30,8 +30,15 @@ git lfs install --local --skip-repo >nul || (set "MSG=Cannot set up Git LFS in %
 
 for /f "delims=" %%b in ('git rev-parse --abbrev-ref HEAD') do set "BRANCH=%%b"
 if not "!BRANCH!"=="main" (set "MSG=You are on the branch '!BRANCH!', not main. Switch to main first." & goto fail)
+rem Local changes, untracked files too, go to the stash and stay there, so the game is always main.
+set "DIRTY="
+for /f "delims=" %%s in ('git status --porcelain') do set "DIRTY=1"
+if defined DIRTY (
+	git stash push --include-untracked -m "Play HumanError %DATE% %TIME%" || (set "MSG=Cannot stash the local changes, see above." & goto fail)
+	echo Your local changes are in the git stash: git stash pop brings them back.
+)
 echo Pulling the latest main...
-git pull --rebase --autostash || (set "MSG=git pull failed, see above." & goto fail)
+git pull --rebase || (set "MSG=git pull failed, see above." & goto fail)
 
 if not defined GODOT if exist godot-path.txt set /p GODOT=<godot-path.txt
 if not defined GODOT (
