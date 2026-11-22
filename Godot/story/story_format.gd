@@ -38,6 +38,29 @@ static func parse_day(text: String, path: String) -> Parsed:
 	return _Reader.new(text, path).day()
 
 
+## The condition in [param text], as after [code]when:[/code], [code]if[/code] or [code][if ...][/code]
+## ("flag, not flag, days 2-4"); errors name [param path] and line 1. Empty text gives a Condition
+## that always holds.
+static func parse_condition(text: String, path: String) -> Parsed:
+	var reader := _Reader.new(text, path)
+	var result := Parsed.new()
+	result.value = reader._condition(text, 0)
+	result.errors = reader._sorted_errors()
+	return result
+
+
+## The flags in [param text], as after [code]set[/code] ("a, b=2, c=0"): [member Parsed.value] is a
+## Reply whose [member Reply.set_flags] holds them. Errors name [param path] and line 1.
+static func parse_flags(text: String, path: String) -> Parsed:
+	var reader := _Reader.new(text, path)
+	var result := Parsed.new()
+	var reply := Reply.new()
+	reply.set_flags = reader._flags(text, 0)
+	result.value = reply
+	result.errors = reader._sorted_errors()
+	return result
+
+
 ## The story file of [param errand].
 static func write_errand(errand: Errand) -> String:
 	var out := PackedStringArray()
