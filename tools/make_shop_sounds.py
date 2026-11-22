@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes the shop's door chime, door slam, phone, keyboard, mouse button, modem, printer, Open sign, paper handling, pencil and eraser sounds, the rain loops and the hums of the storage bulb, a PC and a CRT as 22050 Hz mono WAVs.
+"""Synthesizes the shop's door chime, door slam, phone, keyboard, wall clock, mouse button, modem, printer, Open sign, paper handling, pencil and eraser sounds, the rain loops and the hums of the storage bulb, a PC and a CRT as 22050 Hz mono WAVs.
 Usage: make_shop_sounds.py Godot/sounds"""
 import math
 import random
@@ -473,6 +473,18 @@ def eraser_rub(seed):
     return highpass(out, 300)
 
 
+def clock_tick(tock):
+    """A quartz wall clock's step: the stepper's tiny click, and the plastic case ringing faintly
+    for a few milliseconds; the tock is a little lower."""
+    random.seed(70 + tock)
+    out = silence(0.05)
+    mix(out, highpass(noise(0.002, 0.0003), 3000), 0.0, 0.6)
+    base = 2100 if tock else 2500
+    for ratio, decay, gain in [(1.0, 0.004, 0.5), (1.83, 0.002, 0.25)]:
+        mix(out, [math.sin(2 * math.pi * base * ratio * i / RATE) * math.exp(-i / RATE / decay) for i in range(int(0.03 * RATE))], 0.0, gain)
+    return highpass(lowpass(out, 8000), 400)
+
+
 def looped(samples, filters):
     """Runs `samples` through `filters` as a loop: the filters settle on a first pass, so the
     second pass, which is kept, runs on from its own end into its start."""
@@ -602,6 +614,8 @@ for take in range(1, 4):
     write(sys.argv[1] + "/pencil_tick_%d.wav" % take, pencil_tick(80 + take))
 for take in range(1, 3):
     write(sys.argv[1] + "/eraser_rub_%d.wav" % take, eraser_rub(90 + take))
+write(sys.argv[1] + "/clock_tick.wav", clock_tick(False))
+write(sys.argv[1] + "/clock_tock.wav", clock_tick(True))
 rain_open, rain_shut = rain(12.0)
 write(sys.argv[1] + "/rain_open.wav", rain_open, fade_out=False)
 write(sys.argv[1] + "/rain_shut.wav", rain_shut, fade_out=False)
