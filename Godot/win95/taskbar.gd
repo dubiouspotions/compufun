@@ -8,7 +8,9 @@ const _MAX_WIDTH := 160.0
 
 @export var desktop: Win95Desktop
 
-var _buttons: Dictionary[Control, Button] = {}
+## Each window's button, by the window's instance ID: a closed folder window frees itself, and a
+## freed object can't be a key.
+var _buttons: Dictionary[int, Button] = {}
 var _sync_queued := false
 
 @onready var _row: HBoxContainer = %TaskButtons
@@ -32,23 +34,23 @@ func _queue_sync() -> void:
 func _sync() -> void:
 	_sync_queued = false
 	var open := desktop.windows()
-	for window: Control in _buttons.keys():
-		if not is_instance_valid(window) or not open.has(window):
-			_buttons[window].queue_free()
-			_buttons.erase(window)
+	for id: int in _buttons.keys():
+		if not is_instance_id_valid(id) or not open.has(instance_from_id(id)):
+			_buttons[id].queue_free()
+			_buttons.erase(id)
 	var active := desktop.active_window()
 	var width := _MAX_WIDTH
 	if not open.is_empty():
 		var gap := _row.get_theme_constant(&"separation")
 		width = minf(_MAX_WIDTH, floorf((_room() - gap * (open.size() - 1)) / open.size()))
 	for window in open:
-		var button: Button = _buttons.get(window)
+		var button: Button = _buttons.get(window.get_instance_id())
 		if button == null:
 			button = _TASK_BUTTON.instantiate()
 			button.clip_text = true
 			button.pressed.connect(_on_pressed.bind(window))
 			_row.add_child(button)
-			_buttons[window] = button
+			_buttons[window.get_instance_id()] = button
 			var bar := window.get_node_or_null(^"%TitleBar")
 			if bar != null and not bar.appearance_changed.is_connected(_queue_sync):  # a reused window comes back
 				bar.appearance_changed.connect(_queue_sync)
