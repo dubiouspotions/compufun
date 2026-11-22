@@ -4,7 +4,6 @@
 [ext_resource type="Script" path="res://customers/hardware.gd" id="2_r8lo3"]
 [ext_resource type="Script" path="res://customers/computer.gd" id="3_jnq3r"]
 [ext_resource type="Script" path="res://customers/sticker.gd" id="4_femx8"]
-[ext_resource type="Texture2D" path="res://materials/textures/sticker_asset_tag.png" id="sticker_asset_tag"]
 [ext_resource type="Script" path="res://win95/win95_file.gd" id="5_nkk1v"]
 [ext_resource type="Script" path="res://win95/applets/applet.gd" id="6_p70q8"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/multimedia_32.png" id="7_cw6jy"]
@@ -38,18 +37,9 @@
 [ext_resource type="Resource" path="res://win95/theme/palette.tres" id="35_68chr"]
 [ext_resource type="Script" path="res://win95/win95_setup.gd" id="36_40syd"]
 [ext_resource type="Texture2D" path="res://win95/wallpapers/red_blocks.png" id="37_5ht67"]
-[ext_resource type="Script" path="res://customers/conversation.gd" id="38_naahj"]
-[ext_resource type="Script" path="res://customers/choice.gd" id="39_8ylkx"]
-[ext_resource type="Script" path="res://customers/reply.gd" id="40_v4b2o"]
-[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="41_fhk55"]
 [ext_resource type="Resource" path="res://people/office_girl/person.tres" id="42_o3bf6"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="43_itl7v"]
-
-[sub_resource type="Resource" id="Sticker_asset_tag"]
-script = ExtResource("4_femx8")
-texture = ExtResource("sticker_asset_tag")
-position = Vector2(0, 0)
-size = Vector2(0.09, 0.0375)
+[ext_resource type="Texture2D" path="res://materials/textures/sticker_asset_tag.png" id="sticker_asset_tag"]
 
 [sub_resource type="Resource" id="Resource_pvykc"]
 script = ExtResource("2_r8lo3")
@@ -59,6 +49,11 @@ hard_drive = "WDC AC31600H"
 hard_drive_mb = 1549
 cd_rom = "TOSHIBA CD-ROM XM-5302TA"
 pci_devices = PackedStringArray("7 1 8086 7010 14 IDE Controller", "11 0 5333 8811 NA Display Controller")
+
+[sub_resource type="Resource" id="Sticker_asset_tag"]
+script = ExtResource("4_femx8")
+texture = ExtResource("sticker_asset_tag")
+size = Vector2(0.09, 0.0375)
 
 [sub_resource type="Resource" id="Resource_50c5u"]
 script = ExtResource("5_nkk1v")
@@ -296,88 +291,9 @@ hardware = SubResource("Resource_pvykc")
 case_material = ExtResource("1_5q1ww")
 stickers = Array[ExtResource("4_femx8")]([SubResource("Sticker_asset_tag")])
 
-[sub_resource type="Resource" id="Resource_f0q70"]
-script = ExtResource("41_fhk55")
-text = "Always. And someone thinks pranks are a business strategy."
-pose = &"irritated01"
-
-[sub_resource type="Resource" id="Resource_ocxll"]
-script = ExtResource("40_v4b2o")
-lines = Array[ExtResource("41_fhk55")]([SubResource("Resource_f0q70")])
-
-[sub_resource type="Resource" id="Resource_1vc6y"]
-script = ExtResource("39_8ylkx")
-text = "Busy at the office?"
-replies = Array[ExtResource("40_v4b2o")]([SubResource("Resource_ocxll")])
-
-[sub_resource type="Resource" id="Resource_av20o"]
-script = ExtResource("41_fhk55")
-text = "I left it on over lunch. When I came back, it looked like this."
-pose = &"thinking"
-
-[sub_resource type="Resource" id="Resource_y7gyy"]
-script = ExtResource("40_v4b2o")
-lines = Array[ExtResource("41_fhk55")]([SubResource("Resource_av20o")])
-
-[sub_resource type="Resource" id="Resource_801m2"]
-script = ExtResource("39_8ylkx")
-text = "Did someone use it?"
-replies = Array[ExtResource("40_v4b2o")]([SubResource("Resource_y7gyy")])
-
-[sub_resource type="Resource" id="Resource_0ld84"]
-script = ExtResource("41_fhk55")
-text = "Thank you. Please make it normal again."
-
-[sub_resource type="Resource" id="Resource_311ln"]
-script = ExtResource("40_v4b2o")
-lines = Array[ExtResource("41_fhk55")]([SubResource("Resource_0ld84")])
-
-[sub_resource type="Resource" id="Resource_125jc"]
-script = ExtResource("39_8ylkx")
-text = "OK, leave it with me."
-replies = Array[ExtResource("40_v4b2o")]([SubResource("Resource_311ln")])
-ends = true
-
-[sub_resource type="Resource" id="Resource_i772n"]
-script = ExtResource("41_fhk55")
-text = "All the colours on my computer have changed. Black and yellow everywhere. I can't read a thing."
-pose = &"problem"
-
-[sub_resource type="Resource" id="Resource_8wnef"]
-script = ExtResource("40_v4b2o")
-lines = Array[ExtResource("41_fhk55")]([SubResource("Resource_i772n")])
-choices = Array[ExtResource("39_8ylkx")]([SubResource("Resource_801m2"), SubResource("Resource_125jc")])
-
-[sub_resource type="Resource" id="Resource_5teu0"]
-script = ExtResource("39_8ylkx")
-text = "So, what's your problem?"
-replies = Array[ExtResource("40_v4b2o")]([SubResource("Resource_8wnef")])
-
-[sub_resource type="Resource" id="Resource_jr0qg"]
-script = ExtResource("41_fhk55")
-text = "Hi. I hope you can help, I have a report due."
-
-[sub_resource type="Resource" id="Resource_4jk8b"]
-script = ExtResource("38_naahj")
-id = &"arrive"
-lines = Array[ExtResource("41_fhk55")]([SubResource("Resource_jr0qg")])
-choices = Array[ExtResource("39_8ylkx")]([SubResource("Resource_1vc6y"), SubResource("Resource_5teu0")])
-
-[sub_resource type="Resource" id="Resource_ofybe"]
-script = ExtResource("41_fhk55")
-text = "Normal colours! You're a lifesaver."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_vtfx1"]
-script = ExtResource("38_naahj")
-id = &"pickup"
-trigger = 1
-lines = Array[ExtResource("41_fhk55")]([SubResource("Resource_ofybe")])
-
 [resource]
 script = ExtResource("43_itl7v")
 display_name = "Office girl"
 person = ExtResource("42_o3bf6")
-conversations = Array[ExtResource("38_naahj")]([SubResource("Resource_4jk8b"), SubResource("Resource_vtfx1")])
 computer = SubResource("Resource_1w7aw")
 trousers_color = Color(0.2, 0.2, 0.28, 1)

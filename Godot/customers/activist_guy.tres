@@ -11,8 +11,6 @@
 [ext_resource type="Script" path="res://win95/email.gd" id="40_qe0km"]
 [ext_resource type="Resource" path="res://win95/theme/palette.tres" id="41_4g60u"]
 [ext_resource type="Texture2D" path="res://win95/wallpapers/win95-default.png" id="43_205rw"]
-[ext_resource type="Script" path="res://customers/choice.gd" id="45_bfcg8"]
-[ext_resource type="Script" path="res://customers/reply.gd" id="46_4iave"]
 [ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="app_calculator"]
 [ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
 [ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="app_inbox"]
@@ -24,8 +22,6 @@
 [ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
 [ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="app_wordpad"]
 [ext_resource type="Material" path="res://materials/yellowed_plastic.tres" id="case_yellowed"]
-[ext_resource type="Script" path="res://customers/conversation.gd" id="cv"]
-[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="dl"]
 [ext_resource type="PackedScene" path="res://props/case_fronts/drive_door.tscn" id="front_drive_door"]
 [ext_resource type="Script" path="res://customers/hardware.gd" id="hardware_script"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/calculator_spreadsheet_32.png" id="icon_calculator_spreadsheet"]
@@ -295,101 +291,10 @@ case_material = ExtResource("case_yellowed")
 case_front = ExtResource("front_drive_door")
 stickers = Array[ExtResource("sticker_script")]([SubResource("Sticker_front_computers"), SubResource("Sticker_front_peace"), SubResource("Sticker_front_recycle"), SubResource("Sticker_front_no_nukes"), SubResource("Sticker_front_smiley"), SubResource("Sticker_left_rainforest"), SubResource("Sticker_right_no_nukes"), SubResource("Sticker_right_fist")])
 
-[sub_resource type="Resource" id="Resource_cr7kj"]
-script = ExtResource("dl")
-text = "Saving the old park from the parking lot people. Sign our petition sometime!"
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_52w84"]
-script = ExtResource("46_4iave")
-lines = Array[ExtResource("dl")]([SubResource("Resource_cr7kj")])
-
-[sub_resource type="Resource" id="Resource_c7nex"]
-script = ExtResource("45_bfcg8")
-text = "Nice button. What's it for?"
-replies = Array[ExtResource("46_4iave")]([SubResource("Resource_52w84")])
-
-[sub_resource type="Resource" id="Resource_8dmq1"]
-script = ExtResource("dl")
-text = "Always. The newsletter doesn't write itself."
-
-[sub_resource type="Resource" id="Resource_8av5g"]
-script = ExtResource("46_4iave")
-lines = Array[ExtResource("dl")]([SubResource("Resource_8dmq1")])
-
-[sub_resource type="Resource" id="Resource_jexe3"]
-script = ExtResource("45_bfcg8")
-text = "Busy day?"
-replies = Array[ExtResource("46_4iave")]([SubResource("Resource_8av5g")])
-
-[sub_resource type="Resource" id="Line_arrive_2"]
-script = ExtResource("dl")
-text = "My nephew put more memory in it last month. It was meant to be faster!"
-
-[sub_resource type="Resource" id="Resource_108oy"]
-script = ExtResource("46_4iave")
-lines = Array[ExtResource("dl")]([SubResource("Line_arrive_2")])
-
-[sub_resource type="Resource" id="Resource_s6gjk"]
-script = ExtResource("45_bfcg8")
-text = "Did anything change lately?"
-replies = Array[ExtResource("46_4iave")]([SubResource("Resource_108oy")])
-
-[sub_resource type="Resource" id="Line_arrive_3"]
-script = ExtResource("dl")
-text = "I need it for the newsletter, so please be quick."
-
-[sub_resource type="Resource" id="Resource_8w1qc"]
-script = ExtResource("46_4iave")
-lines = Array[ExtResource("dl")]([SubResource("Line_arrive_3")])
-
-[sub_resource type="Resource" id="Resource_5538f"]
-script = ExtResource("45_bfcg8")
-text = "OK, leave it with me."
-replies = Array[ExtResource("46_4iave")]([SubResource("Resource_8w1qc")])
-ends = true
-
-[sub_resource type="Resource" id="Line_arrive_1"]
-script = ExtResource("dl")
-text = "My computer counts up its memory, and then it just stops. It never gets to Windows."
-pose = &"problem"
-
-[sub_resource type="Resource" id="Resource_kge0j"]
-script = ExtResource("46_4iave")
-lines = Array[ExtResource("dl")]([SubResource("Line_arrive_1")])
-choices = Array[ExtResource("45_bfcg8")]([SubResource("Resource_s6gjk"), SubResource("Resource_5538f")])
-
-[sub_resource type="Resource" id="Resource_7kmha"]
-script = ExtResource("45_bfcg8")
-text = "So, what's your problem?"
-replies = Array[ExtResource("46_4iave")]([SubResource("Resource_kge0j")])
-
-[sub_resource type="Resource" id="Resource_kwawi"]
-script = ExtResource("dl")
-text = "Hello! Have you got a minute?"
-
-[sub_resource type="Resource" id="Conversation_arrive"]
-script = ExtResource("cv")
-id = &"arrive"
-lines = Array[ExtResource("dl")]([SubResource("Resource_kwawi")])
-choices = Array[ExtResource("45_bfcg8")]([SubResource("Resource_c7nex"), SubResource("Resource_jexe3"), SubResource("Resource_7kmha")])
-
-[sub_resource type="Resource" id="Line_pickup_1"]
-script = ExtResource("dl")
-text = "It starts again? Wonderful. I'll have a word with my nephew."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Conversation_pickup"]
-script = ExtResource("cv")
-id = &"pickup"
-trigger = 1
-lines = Array[ExtResource("dl")]([SubResource("Line_pickup_1")])
-
 [resource]
 script = ExtResource("3_10hmr")
 display_name = "Activist guy"
 person = ExtResource("person")
-conversations = Array[ExtResource("cv")]([SubResource("Conversation_arrive"), SubResource("Conversation_pickup")])
 computer = SubResource("Computer_accountant")
 trousers_color = Color(0.25, 0.22, 0.18, 1)
 neckwear = ExtResource("neckwear_scarf")

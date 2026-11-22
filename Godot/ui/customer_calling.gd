@@ -6,10 +6,7 @@ extends PanelContainer
 ## (never the one just said) before the next, so they get more annoyed, and once at the end they
 ## stay annoyed, going round from group [member loop_from_mood] on.
 
-## The id of the conversation a customer can have for this; without it they use [member lines].
-const CONVERSATION: StringName = &"waiting"
-
-## What a customer says while waiting, unless they have their own [constant CONVERSATION].
+## What every customer says while waiting.
 @export var lines: Conversation = preload("res://customers/conversations/waiting.tres")
 ## How many lines the customer says in one mood before the next.
 @export var lines_per_mood: int = 2
@@ -55,11 +52,10 @@ func call_out(customer: Customer) -> void:
 		return
 	if _calling and customer == _customer:
 		return
-	var own := customer.conversation(CONVERSATION)
-	var conversation := own if own != null else lines
+	var conversation := lines
 	_conversation = conversation
 	if conversation == null or conversation.lines.is_empty():
-		push_error("CustomerCalling: %s has no \"%s\" lines and no default is set" % [customer.resource_path, CONVERSATION])
+		push_error("CustomerCalling: no waiting lines are set (lines: %s), so %s can't call out" % [conversation, customer.resource_path])
 		return
 	_customer = customer
 	_moods = _by_pose(conversation.lines)

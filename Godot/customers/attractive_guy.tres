@@ -42,10 +42,6 @@
 [ext_resource type="Resource" path="res://win95/theme/palette.tres" id="40_2nyhx"]
 [ext_resource type="Script" path="res://win95/win95_setup.gd" id="41_jg8mh"]
 [ext_resource type="Texture2D" path="res://win95/wallpapers/clouds.png" id="42_s3boe"]
-[ext_resource type="Script" path="res://customers/conversation.gd" id="43_krovq"]
-[ext_resource type="Script" path="res://customers/choice.gd" id="44_ittqt"]
-[ext_resource type="Script" path="res://customers/reply.gd" id="45_5u7v4"]
-[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="46_6et2w"]
 [ext_resource type="Resource" path="res://people/handsome_dude/person.tres" id="47_0kfma"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="48_63b2l"]
 
@@ -402,93 +398,9 @@ hardware = SubResource("Resource_3m1ns")
 case_material = ExtResource("2_23oi0")
 case_front = ExtResource("1_s6vba")
 
-[sub_resource type="Resource" id="Resource_otnfq"]
-script = ExtResource("46_6et2w")
-text = "Legs. Always legs on a Tuesday."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_33g8i"]
-script = ExtResource("45_5u7v4")
-lines = Array[ExtResource("46_6et2w")]([SubResource("Resource_otnfq")])
-
-[sub_resource type="Resource" id="Resource_ub7hw"]
-script = ExtResource("44_ittqt")
-text = "Big workout?"
-replies = Array[ExtResource("45_5u7v4")]([SubResource("Resource_33g8i")])
-
-[sub_resource type="Resource" id="Resource_va5u6"]
-script = ExtResource("46_6et2w")
-text = "Pipes. Coloured ones. They grow all over the screen. Sick."
-
-[sub_resource type="Resource" id="Resource_c5g1f"]
-script = ExtResource("45_5u7v4")
-lines = Array[ExtResource("46_6et2w")]([SubResource("Resource_va5u6")])
-
-[sub_resource type="Resource" id="Resource_rdhtf"]
-script = ExtResource("44_ittqt")
-text = "What do they look like?"
-replies = Array[ExtResource("45_5u7v4")]([SubResource("Resource_c5g1f")])
-
-[sub_resource type="Resource" id="Resource_4lil5"]
-script = ExtResource("46_6et2w")
-text = "Make it look good."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_arggq"]
-script = ExtResource("45_5u7v4")
-lines = Array[ExtResource("46_6et2w")]([SubResource("Resource_4lil5")])
-
-[sub_resource type="Resource" id="Resource_kaig1"]
-script = ExtResource("44_ittqt")
-text = "OK, leave it with me."
-replies = Array[ExtResource("45_5u7v4")]([SubResource("Resource_arggq")])
-ends = true
-
-[sub_resource type="Resource" id="Resource_2kiw1"]
-script = ExtResource("46_6et2w")
-text = "Look, I don't care about computers. But a guy at work has these pipes on his screen."
-pose = &"problem"
-
-[sub_resource type="Resource" id="Resource_or0cq"]
-script = ExtResource("46_6et2w")
-text = "A good-looking guy like me needs a good-looking screensaver."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_u3c1g"]
-script = ExtResource("45_5u7v4")
-lines = Array[ExtResource("46_6et2w")]([SubResource("Resource_2kiw1"), SubResource("Resource_or0cq")])
-choices = Array[ExtResource("44_ittqt")]([SubResource("Resource_rdhtf"), SubResource("Resource_kaig1")])
-
-[sub_resource type="Resource" id="Resource_tnggu"]
-script = ExtResource("44_ittqt")
-text = "So, what's your problem?"
-replies = Array[ExtResource("45_5u7v4")]([SubResource("Resource_u3c1g")])
-
-[sub_resource type="Resource" id="Resource_vylnk"]
-script = ExtResource("46_6et2w")
-text = "Hey. Quick one, I've got the gym at six."
-
-[sub_resource type="Resource" id="Resource_1vt5u"]
-script = ExtResource("43_krovq")
-id = &"arrive"
-lines = Array[ExtResource("46_6et2w")]([SubResource("Resource_vylnk")])
-choices = Array[ExtResource("44_ittqt")]([SubResource("Resource_ub7hw"), SubResource("Resource_tnggu")])
-
-[sub_resource type="Resource" id="Resource_nwchs"]
-script = ExtResource("46_6et2w")
-text = "Pipes? Nice. Now we're talking."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_vbfyp"]
-script = ExtResource("43_krovq")
-id = &"pickup"
-trigger = 1
-lines = Array[ExtResource("46_6et2w")]([SubResource("Resource_nwchs")])
-
 [resource]
 script = ExtResource("48_63b2l")
 display_name = "Attractive guy"
 person = ExtResource("47_0kfma")
-conversations = Array[ExtResource("43_krovq")]([SubResource("Resource_1vt5u"), SubResource("Resource_vbfyp")])
 computer = SubResource("Resource_bqhhi")
 trousers_color = Color(0.15, 0.17, 0.25, 1)
