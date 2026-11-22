@@ -96,6 +96,11 @@ the original.** `Viewport.push_input` clears the "handled" flag that the origina
 has no effect. Call `set_input_as_handled()` after the push, as `win95/mouse_input.gd` does.
 — 2026-11
 
+**A Node export (`@export var doorway: Node3D`) is null at run time, though the scene sets it.** In a
+scene file, a Node export needs its name in the node's header, `node_paths=PackedStringArray("doorway")`;
+without it, Godot reads the `NodePath` value and drops it. The editor writes the header; a scene
+written by hand or by a script must too. — 2026-11-22
+
 **A hand-written scene logs an engine error on load.** It references a resource by a UID that
 the cache doesn't know. Use path-only `ext_resource` lines in scenes you write by hand.
 — 2026-10
