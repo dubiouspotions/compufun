@@ -17,3 +17,6 @@ extends Resource
 ## The seconds of open shop between a visitor leaving and the next customer coming in: a random time
 ## from x to y, picked at each wait. The wait pauses while the counter is full.
 @export var gap_seconds: Vector2 = Vector2(20.0, 40.0)
+## The corruption signs that start when the player closes the shop on this day, by id, such as
+## &"posters_bounce": their flags go to 1, and back to 0 when the next day starts.
+@export var close_signs: Array[StringName] = []

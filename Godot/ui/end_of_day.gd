@@ -2,10 +2,11 @@ class_name EndOfDay
 extends Control
 ## Asks the player whether to end the day, over the open sign, in the game's own panel or, once
 ## Cambion has warped the shop far enough, in a Win95 message box, and plays the night after
-## Game.close_shop(): a short wait in the evening, the screen and the sound fade out, a black pause,
-## the sound comes back with the next day's title on the black screen, then that day starts
-## (Game.start_next_day) and the shop fades in. After the last day the screen stays black with
-## [member week_over_text]. It follows Game.phase: leaving DAY_OVER in any way fades the shop back in.
+## Game.close_shop(): a short wait in the evening, longer while a corruption sign is busy, the screen
+## and the sound fade out, a black pause, the sound comes back with the next day's title on the black
+## screen, then that day starts (Game.start_next_day) and the shop fades in. After the last day the
+## screen stays black with [member week_over_text]. It follows Game.phase: leaving DAY_OVER in any
+## way fades the shop back in.
 
 const _MessageBox := preload("res://win95/message_box.gd")
 
@@ -47,6 +48,7 @@ func _ready() -> void:
 	_box.answered.connect(_on_answered)
 	(%Yes as Button).pressed.connect(_on_answered.bind("Yes"))
 	(%No as Button).pressed.connect(_on_answered.bind("No"))
+	set_process(false)
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -115,6 +117,22 @@ func _sync() -> void:
 func _play_night() -> void:
 	_title.hide()
 	_sequence.tween_interval(dusk_seconds)
+	_sequence.tween_callback(_fade_out_when_quiet)
+
+
+func _process(_delta: float) -> void:
+	if not _night or not _sign_busy():
+		set_process(false)
+		if _night:
+			_fade_out_when_quiet()
+
+
+# The rest of the night, once no corruption sign is busy (such as posters_bounce on day 5).
+func _fade_out_when_quiet() -> void:
+	if _sign_busy():
+		set_process(true)
+		return
+	_sequence = create_tween()
 	_sequence.tween_callback(_black.show)
 	_sequence.tween_property(_black, "modulate:a", 1.0, fade_seconds).from(0.0)
 	_sequence.parallel().tween_method(_set_volume, 1.0, 0.0, fade_seconds)
@@ -124,6 +142,10 @@ func _play_night() -> void:
 	if Game.has_next_day():
 		_sequence.tween_interval(title_seconds)
 		_sequence.tween_callback(Game.start_next_day)
+
+
+func _sign_busy() -> bool:
+	return get_tree().get_nodes_in_group(CorruptionSign.GROUP).any(func(node: Node) -> bool: return (node as CorruptionSign).busy())
 
 
 func _show_title() -> void:

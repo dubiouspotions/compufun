@@ -155,13 +155,17 @@ func _finish_overnight_work() -> void:
 
 ## Starts [param new_day] in the morning with the shop CLOSED: nobody comes in until
 ## [method open_shop]. Jobs left overnight stay, and those computers that stayed on finish their
-## Disk Defragmenter run. Refuses a day that is null, has more than [constant MAX_CUSTOMERS]
-## errands, or has an errand without a customer or a problem, and keeps the current state.
+## Disk Defragmenter run. The last day's [member Day.close_signs] stop. Refuses a day that is null,
+## has more than [constant MAX_CUSTOMERS] errands, or has an errand without a customer or a problem,
+## and keeps the current state.
 func start_day(new_day: Day) -> void:
 	var invalid := _check_day(new_day)
 	if invalid != "":
 		push_error("Game.start_day: " + invalid)
 		return
+	if day != null:
+		for id: StringName in day.close_signs:
+			flags.erase(sign_flag(id))
 	day = new_day
 	phone_off_hook = false
 	_finish_overnight_work()
@@ -250,6 +254,11 @@ func gone_flag(who: Customer) -> StringName:
 ## The number of [param flag_name]; 0 when it is not set.
 func flag(flag_name: StringName) -> int:
 	return flags.get(flag_name, 0)
+
+
+## The flag that starts the corruption sign [param id]: sign_<id>.
+func sign_flag(id: StringName) -> StringName:
+	return StringName("sign_%s" % id)
 
 
 ## Sets [param flag_name] to [param value]. 0 removes it.
@@ -726,12 +735,15 @@ func can_close() -> bool:
 
 
 ## Closes the shop for the night: DAY_OVER and [constant Daypart.EVENING]. Jobs stay on the counter.
-## On the last day it is ENDED instead. Does nothing when [method can_close] is false.
+## On the last day it is ENDED instead. Starts the day's [member Day.close_signs]. Does nothing when
+## [method can_close] is false.
 func close_shop() -> void:
 	if not can_close():
 		return
 	phase = Phase.DAY_OVER if has_next_day() else Phase.ENDED
 	daypart = Daypart.EVENING
+	for id: StringName in day.close_signs:
+		flags[sign_flag(id)] = 1
 	changed.emit()
 
 

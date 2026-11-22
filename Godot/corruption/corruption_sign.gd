@@ -39,7 +39,7 @@ func id() -> StringName:
 
 ## The flag that the trigger layer sets to start the sign: sign_<id>.
 func flag() -> StringName:
-	return StringName("sign_%s" % id())
+	return Game.sign_flag(id())
 
 
 ## The stage that the sign shows now: the flag's value, or 0 while it is not enabled.
@@ -63,6 +63,12 @@ func _ready() -> void:
 
 func _sync() -> void:
 	_apply(stage())
+
+
+## True while the sign plays a one-time event that the night must wait for: EndOfDay does not fade
+## out the evening until no sign is busy.
+func busy() -> bool:
+	return false
 
 
 ## Shows [param shown_stage] (0: the shop as it was). Runs on every change of the game, so it must
