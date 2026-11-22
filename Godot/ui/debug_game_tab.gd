@@ -28,7 +28,7 @@ func _refresh() -> void:
 		_rows.remove_child(child)
 		child.queue_free()
 	var state := Game.snapshot()
-	var customers: Array[Customer] = Game.day.customers if Game.day != null else []
+	var errands: Array[Errand] = Game.day.errands if Game.day != null else []
 
 	_section("Day")
 	_row("Day", _day_slider())
@@ -38,26 +38,29 @@ func _refresh() -> void:
 		note.modulate.a = 0.6
 		_row("", note)
 	_row("Phase", _enum_picker(Game.Phase, Game.phase, "phase"))
-	_row("Arrivals", _spin(0, customers.size(), Game.arrivals, func(value: int) -> void: _edit("arrivals", value)))
+	_row("Arrivals", _spin(0, errands.size(), Game.arrivals, func(value: int) -> void: _edit("arrivals", value)))
 	_row("Daypart", _enum_picker(Game.Daypart, Game.daypart, "daypart"))
 
 	_section("Visitor")
-	# The visitor: nobody, a drop-off of today's customers, or a pickup of a job on the counter.
-	var visits: Array[Array] = [["", "NONE"]]
+	# The visitor: nobody, a drop-off of one of today's errands (which sets the arrivals to it), or a
+	# pickup of a job on the counter.
+	var visits: Array[Array] = [["", "NONE", Game.arrivals]]
 	var visitor_picker := OptionButton.new()
 	visitor_picker.add_item("Nobody")
-	for c: Customer in customers:
-		visits.append([c.resource_path, "DROP_OFF"])
-		visitor_picker.add_item("%s drops off" % c.spoken_name())
+	for i: int in errands.size():
+		visits.append([errands[i].customer.resource_path, "DROP_OFF", i + 1])
+		visitor_picker.add_item("%s drops off" % errands[i].customer.spoken_name())
 	for j: Job in Game.jobs:
-		visits.append([j.customer.resource_path, "PICKUP"])
+		visits.append([j.customer.resource_path, "PICKUP", Game.arrivals])
 		visitor_picker.add_item("%s picks up (slot %d)" % [j.customer.spoken_name(), j.slot])
-	var current := visits.find([state["visitor"], state["visit"]])
+	var current := visits.find_custom(func(v: Array) -> bool:
+		return v[0] == state["visitor"] and v[1] == state["visit"] and (v[1] != "DROP_OFF" or v[2] == Game.arrivals))
 	visitor_picker.select(current)
 	visitor_picker.item_selected.connect(func(index: int) -> void:
 		var changed := Game.snapshot()
 		changed["visitor"] = visits[index][0]
 		changed["visit"] = visits[index][1]
+		changed["arrivals"] = visits[index][2]
 		changed["visitor_state"] = "NONE" if index == 0 else (
 				state["visitor_state"] if state["visitor_state"] != "NONE" else "TALKING")
 		_apply(changed))
@@ -76,10 +79,10 @@ func _refresh() -> void:
 	for i: int in job_states.size():
 		_rows.add_child(_job_row(i, Game.jobs[i]))
 	var add_picker := OptionButton.new()
-	for c: Customer in customers:
-		add_picker.add_item(c.spoken_name())
-	var add := _button("Add job", func() -> void: _add_job(customers[add_picker.selected] if add_picker.selected >= 0 else null))
-	add.disabled = customers.is_empty() or Game.jobs.size() >= Game.MAX_JOBS
+	for errand: Errand in errands:
+		add_picker.add_item("%s: %s" % [errand.customer.spoken_name(), errand.problem.short_name])
+	var add := _button("Add job", func() -> void: _add_job(errands[add_picker.selected] if add_picker.selected >= 0 else null))
+	add.disabled = errands.is_empty() or Game.jobs.size() >= Game.MAX_JOBS
 	_row("", add_picker, add)
 
 	_section("Flags")
@@ -168,16 +171,17 @@ func _job_row(index: int, job: Job) -> Control:
 	return frame
 
 
-func _add_job(customer: Customer) -> void:
-	if customer == null:
-		_status.text = "Pick a customer to add."
+func _add_job(errand: Errand) -> void:
+	if errand == null:
+		_status.text = "Pick an errand to add."
 		return
 	var state := Game.snapshot()
 	var taken: Array = state["jobs"].map(func(j: Dictionary) -> int: return j["slot"])
 	var slot := 0
 	while taken.has(slot):
 		slot += 1
-	state["jobs"].append({"customer": customer.resource_path, "slot": slot, "order": Game.jobs.size()})
+	state["jobs"].append({"customer": errand.customer.resource_path, "problem": String(errand.problem.short_name),
+			"slot": slot, "order": Game.jobs.size()})
 	_apply(state)
 
 

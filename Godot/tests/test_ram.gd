@@ -10,20 +10,21 @@ func run() -> void:
 	var ram: Part = load("res://parts/ram.tres")
 	var slot_1: Part = load("res://parts/ram_1.tres")
 	var slot_2: Part = load("res://parts/ram_2.tres")
-	var accountant: Customer = load("res://customers/retired_accountant.tres")
-	check("the accountant has bad RAM", accountant.problem, bad_ram)
+	var accountant: Customer = load("res://customers/activist_guy.tres")
+	var evening: Errand = (load("res://days/day_1.tres") as Day).errands[2]
+	check("the activist guy brings bad RAM on day 1's evening", [evening.customer, evening.problem], [accountant, bad_ram])
 	check("both slots take RAM", [slot_1.piece_part(), slot_2.piece_part(), ram.fits_computer(), slot_1.fits_computer()], [ram, ram, true, false])
 
 	# The broken module lands in either slot.
 	var bad_slots := {}
 	for i in 40:
-		var each := Job.new(accountant, 0, i)
+		var each := Job.new(accountant, bad_ram, 0, i)
 		var broken: Array = [slot_1, slot_2].filter(func(slot: Part) -> bool: return each.piece(slot).broken)
 		check("one module is broken", broken.size(), 1)
 		bad_slots[broken[0]] = true
 	check("either slot can hold it", bad_slots.size(), 2)
 
-	game.start_day(make_day([accountant]))
+	game.start_day(make_day(1, [[accountant, bad_ram]]))
 	game.open_shop()
 	game.customer_arrived()
 	game.dialogue_finished()
@@ -106,12 +107,3 @@ func boot(fails: bool) -> String:
 		seen[1] = post.text
 		sequence.queue_free()
 	return seen[1]
-
-
-func make_day(customers: Array[Customer]) -> Day:
-	var d := Day.new()
-	d.number = 1
-	d.customers = customers
-	d.first_wait_seconds = Vector2.ZERO
-	d.gap_seconds = Vector2(60.0, 60.0)
-	return d

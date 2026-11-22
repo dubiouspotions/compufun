@@ -10,7 +10,7 @@ func run() -> void:
 	check("day 7 closes into the end", _close_on(7), GAME.Phase.ENDED)
 	check("the end is in the evening", game.daypart, GAME.Daypart.EVENING)
 
-	check("ENDED restores on day 7", game.restore({"day": 7, "phase": "ENDED", "arrivals": 2}), "")
+	check("ENDED restores on day 7", game.restore({"day": 7, "phase": "ENDED"}), "")
 	check("ENDED is refused on a day with a next day", game.restore({"day": 6, "phase": "ENDED"}) != "", true)
 	check("a refusal keeps the end", game.phase, GAME.Phase.ENDED)
 
@@ -23,7 +23,7 @@ func run() -> void:
 
 
 func _close_on(number: int) -> GAME.Phase:
-	var refused: String = game.restore({"day": number, "arrivals": 2})
+	var refused: String = game.restore({"day": number, "arrivals": (load(GAME.DAY_PATH % number) as Day).errands.size()})
 	if refused != "":
 		return GAME.Phase.IDLE
 	game.close_shop()

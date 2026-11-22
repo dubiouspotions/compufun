@@ -31,6 +31,29 @@ func check(label: String, actual: Variant, expected: Variant) -> void:
 	printerr("FAIL %s:%s %s\n  expected: %s\n  actual:   %s" % [caller.get("source", "?"), caller.get("line", "?"), label, expected, actual])
 
 
+## Day [param number] with one errand per [code][customer, problem][/code] pair in [param errands],
+## in order. The first customer comes in at once, and each next one a minute after the last left.
+func make_day(number: int, errands: Array) -> Day:
+	var d := Day.new()
+	d.number = number
+	for pair: Array in errands:
+		var errand := Errand.new()
+		errand.customer = pair[0]
+		errand.problem = pair[1]
+		d.errands.append(errand)
+	d.first_wait_seconds = Vector2.ZERO
+	d.gap_seconds = Vector2(60.0, 60.0)
+	return d
+
+
+## A software problem that [param software_check] checks.
+func software_problem(software_check: SoftwareCheck) -> Problem:
+	var problem := Problem.new()
+	problem.location = Problem.Location.SOFTWARE
+	problem.software_check = software_check
+	return problem
+
+
 ## Runs Game's _process for [param seconds] of game time, in one step.
 func tick(seconds: float) -> void:
 	game.call("_process", seconds)

@@ -1,7 +1,8 @@
 @tool
 class_name Customer
 extends Resource
-## One customer: who they are, what they say, and what is wrong with the computer.
+## One customer for the whole week: who they are, what they say, and their computer. What is wrong
+## with it on a visit is the day's Errand.
 
 ## The name dialogue uses while the person's nickname is empty.
 @export var display_name: String = ""
@@ -10,7 +11,6 @@ extends Resource
 @export var regular: bool = false
 @export var person: Person
 @export var conversations: Array[Conversation] = []
-@export var problem: Problem
 @export var computer: Computer
 ## The trousers colour of the 3D customer. It tints the denim texture.
 @export var trousers_color: Color = Color(0.46, 0.56, 0.74)

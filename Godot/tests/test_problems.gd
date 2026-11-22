@@ -23,7 +23,7 @@ func run() -> void:
 		check("fragmented at boot", running.fragmented, true)
 		running.defragmenting = true
 	left_on.powered = true
-	game.start_day(make_day([customer(defrag)]))
+	game.start_day(make_day(2, [[customer(), defrag]]))
 	check("left on overnight: defragmented, fixed", [game.setups[left_on.customer.computer].fragmented, left_on.software_fixed], [false, true])
 	check("switched off: still fragmented", [game.setups[switched_off.customer.computer].fragmented, switched_off.software_fixed], [true, false])
 
@@ -68,22 +68,15 @@ func run() -> void:
 func job_with(problem: Problem, slot: int) -> Job:
 	var computer := Computer.new()
 	computer.win95_setup = Win95Setup.new()
-	return Job.new(customer(problem, computer), slot, slot)
+	return Job.new(customer(computer), problem, slot, slot)
 
 
-func customer(problem: Problem, computer: Computer = null) -> Customer:
+func customer(computer: Computer = null) -> Customer:
 	var c := Customer.new()
 	c.display_name = "C%d" % randi()
-	c.problem = problem
 	c.computer = computer
 	return c
 
-
-func make_day(customers: Array[Customer]) -> Day:
-	var d := Day.new()
-	d.number = 2
-	d.customers = customers
-	return d
 
 
 func file(file_name: String) -> Win95File:

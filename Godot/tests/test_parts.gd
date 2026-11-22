@@ -17,8 +17,9 @@ func run() -> void:
 
 	# Pierre brings Dust Overheat; a customer from a file can be restored.
 	var pierre: Customer = load("res://customers/skater_bro.tres")
-	check("Pierre has Dust Overheat", pierre.problem, dust)
-	game.start_day(make_day(1, [pierre]))
+	var first: Errand = (load("res://days/day_1.tres") as Day).errands[0]
+	check("Pierre comes first on day 1, with Dust Overheat", [first.customer, first.problem], [pierre, dust])
+	game.start_day(make_day(1, [[pierre, dust]]))
 	game.open_shop()
 	game.customer_arrived()
 	game.dialogue_finished()
@@ -144,12 +145,3 @@ func run() -> void:
 	check("dust on the broken fan only", [dusty.get_node(^"Broken").visible, clean.get_node(^"Broken").visible], [true, false])
 	dusty.free()
 	clean.free()
-
-
-func make_day(number: int, customers: Array[Customer]) -> Day:
-	var d := Day.new()
-	d.number = number
-	d.customers = customers
-	d.first_wait_seconds = Vector2.ZERO
-	d.gap_seconds = Vector2(60.0, 60.0)
-	return d

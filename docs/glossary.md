@@ -141,6 +141,8 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Slot**: One of the `Game.MAX_JOBS` places on the work mat where a job's computer stands (`Job.slot`). In the scene it is a `Slot<n>` marker in `rooms/shop/job_slots.tscn`.
 *Avoid:* place, spot, position.
 
+**Errand**: One visit on a day: a customer and what is wrong with their computer this time (`Errand`, in the `Day` file). A customer who comes back on another day brings the same computer with a new errand. Not *visit*, which is why the visitor is in (`Game.Visit`: drop-off or pickup).
+
 **Visitor**: The customer who is in the shop now, to drop off or to pick up a computer (`Game.visitor`). Only one at a time.
 *Avoid:* current customer.
 

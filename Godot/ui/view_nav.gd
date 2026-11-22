@@ -72,7 +72,7 @@ func _status_text() -> String:
 			return "Day %d: calling a customer." % Game.day.number
 		_:
 			var status := "Day %d, %d of %d customers in, %d on the counter" % [
-				Game.day.number, Game.arrivals, Game.day.customers.size(), Game.jobs.size()]
+				Game.day.number, Game.arrivals, Game.day.errands.size(), Game.jobs.size()]
 			if Game.visitor != null:
 				status += ": %s %s" % [Game.visitor.spoken_name(), String(Game.VisitorState.find_key(Game.visitor_state)).to_lower().replace("_", " ")]
 			return status + "."

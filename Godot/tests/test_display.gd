@@ -23,7 +23,7 @@ func run() -> void:
 	var ugly := SettingCheck.new()
 	ugly.setting = &"wallpaper"
 	ugly.broken_value = red_blocks
-	var job := Job.new(customer(computer, ugly), 0, 0)
+	var job := Job.new(customer(computer), software_problem(ugly), 0, 0)
 	game.jobs = [job] as Array[Job]
 	var state: Node = load(COMPUTER_STATE_PATH).new()
 	state.job = job
@@ -115,12 +115,9 @@ func index_of(box: OptionButton, item: String) -> int:
 	return -1
 
 
-func customer(computer: Computer, check_: SoftwareCheck) -> Customer:
+func customer(computer: Computer) -> Customer:
 	var c := Customer.new()
 	c.computer = computer
-	c.problem = Problem.new()
-	c.problem.location = Problem.Location.SOFTWARE
-	c.problem.software_check = check_
 	return c
 
 

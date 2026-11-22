@@ -12,7 +12,6 @@
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/calculator_spreadsheet_32.png" id="icon_calculator_spreadsheet"]
 [ext_resource type="Script" path="res://customers/hardware.gd" id="hardware_script"]
 [ext_resource type="Resource" path="res://people/young_entrepreneur/person.tres" id="1_yvxm1"]
-[ext_resource type="Resource" path="res://problems/no_sound.tres" id="2_qmaft"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="3_10hmr"]
 [ext_resource type="Script" path="res://customers/dialogue_line.gd" id="dl"]
 [ext_resource type="Script" path="res://customers/conversation.gd" id="cv"]
@@ -320,6 +319,5 @@ script = ExtResource("3_10hmr")
 display_name = "Young entrepreneur"
 person = ExtResource("1_yvxm1")
 conversations = Array[ExtResource("cv")]([SubResource("Conversation_arrive")])
-problem = ExtResource("2_qmaft")
 computer = SubResource("Resource_xxnas")
 trousers_color = Color(0.22, 0.22, 0.25, 1)

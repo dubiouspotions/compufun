@@ -15,18 +15,18 @@ func run() -> void:
 	var both := Problem.new()
 	both.short_name = &"both_test"
 	both.location = Problem.Location.BOTH
-	var o1 := customer("O1", hardware, false)
-	var o2 := customer("O2", hardware, false)
-	var a := customer("A", hardware, true)
-	var b := customer("B", software, false)
-	var c := customer("C", both, true)
+	var o1 := customer("O1", false)
+	var o2 := customer("O2", false)
+	var a := customer("A", true)
+	var b := customer("B", false)
+	var c := customer("C", true)
 
 	# A day with more than MAX_CUSTOMERS is refused with an error.
-	game.start_day(make_day(9, [o1, o2, a, b]))
+	game.start_day(make_day(9, [[o1, hardware], [o2, hardware], [a, hardware], [b, software]]))
 	check("too many customers: still IDLE", [game.phase, game.day], [GAME.Phase.IDLE, null])
 
 	# Day 1 starts closed: nobody comes in until the player opens the shop.
-	var day_1 := make_day(1, [o1, o2])
+	var day_1 := make_day(1, [[o1, hardware], [o2, hardware]])
 	day_1.first_wait_seconds = Vector2(5.0, 5.0)
 	game.start_day(day_1)
 	check("closed, morning, nobody in", [game.phase, game.daypart, game.arrivals, game.visitor], [GAME.Phase.CLOSED, GAME.Daypart.MORNING, 0, null])
@@ -59,7 +59,7 @@ func run() -> void:
 	check("nothing happens at night", [game.phase, game.visitor], [GAME.Phase.DAY_OVER, null])
 
 	# Day 2: closed again in the morning; three drop-offs, the counter fills.
-	game.start_day(make_day(2, [a, b, c]))
+	game.start_day(make_day(2, [[a, hardware], [b, software], [c, both]]))
 	tick(1000.0)
 	check("the next morning starts closed", [game.phase, game.arrivals, game.visitor, game.jobs.size()], [GAME.Phase.CLOSED, 0, null, 2])
 	game.open_shop()
@@ -141,7 +141,7 @@ func run() -> void:
 	check("DAY_OVER, evening, 3 jobs overnight", [game.phase, game.daypart, game.jobs.size()], [GAME.Phase.DAY_OVER, GAME.Daypart.EVENING, 3])
 
 	# The next day comes from its file; the jobs stay overnight; day 7 is the last.
-	var overnight := [{"customer": "res://customers/skater_bro.tres", "slot": 2}]
+	var overnight := [{"customer": "res://customers/skater_bro.tres", "problem": "dust_overheat", "slot": 2}]
 	check("restore day 1, closed", game.restore({"day": 1, "phase": "DAY_OVER", "arrivals": 2, "jobs": overnight}), "")
 	check("day 1 has a next day", game.has_next_day(), true)
 	game.start_next_day()
@@ -150,14 +150,13 @@ func run() -> void:
 	check("restore day 2, closed with a job", game.restore({"day": 2, "phase": "CLOSED", "jobs": overnight}), "")
 	game.open_shop()
 	check("a restored closed shop opens", [game.phase, game.jobs.size()], [OPEN, 1])
-	check("restore day 7", game.restore({"day": 7, "phase": "DAY_OVER", "arrivals": 2}), "")
+	check("restore day 7", game.restore({"day": 7, "phase": "DAY_OVER"}), "")
 	check("day 7 is the last", game.has_next_day(), false)
 
 
-func customer(display_name: String, problem: Problem, has_pickup: bool) -> Customer:
+func customer(display_name: String, has_pickup: bool) -> Customer:
 	var c := Customer.new()
 	c.display_name = display_name
-	c.problem = problem
 	var triggers: Array[Conversation.Trigger] = [Conversation.Trigger.ARRIVE]
 	if has_pickup:
 		triggers.append(Conversation.Trigger.PICKUP)
@@ -170,14 +169,6 @@ func customer(display_name: String, problem: Problem, has_pickup: bool) -> Custo
 		c.conversations.append(conversation)
 	return c
 
-
-func make_day(number: int, customers: Array[Customer]) -> Day:
-	var d := Day.new()
-	d.number = number
-	d.customers = customers
-	d.first_wait_seconds = Vector2.ZERO
-	d.gap_seconds = Vector2(60.0, 60.0)
-	return d
 
 
 func drop_off(who: String) -> void:

@@ -9,7 +9,7 @@ var setup: Win95Setup
 
 
 func run() -> void:
-	var job := Job.new(customer(), 0, 0)
+	var job := Job.new(customer(), Problem.new(), 0, 0)
 	game.jobs = [job] as Array[Job]
 	state = load(COMPUTER_STATE_PATH).new()
 	state.job = job
@@ -146,7 +146,6 @@ func customer() -> Customer:
 	c.computer = Computer.new()
 	c.computer.win95_setup = Win95Setup.new()
 	c.computer.win95_setup.drive_c = [folder("WINDOWS", [start_menu]), folder("Program Files", [raytrace, folder("Accessories", [])])]
-	c.problem = Problem.new()
 	return c
 
 

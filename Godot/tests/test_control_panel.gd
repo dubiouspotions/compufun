@@ -20,7 +20,7 @@ func run() -> void:
 	var swapped := SettingCheck.new()
 	swapped.setting = &"left_handed"
 	swapped.broken_value = true
-	var job := Job.new(customer(computer, swapped), 0, 0)
+	var job := Job.new(customer(computer), software_problem(swapped), 0, 0)
 	game.jobs = [job] as Array[Job]
 	var state: Node = load(COMPUTER_STATE_PATH).new()
 	state.job = job
@@ -86,12 +86,9 @@ func run() -> void:
 	game.jobs = [] as Array[Job]
 
 
-func customer(computer: Computer, check_: SoftwareCheck) -> Customer:
+func customer(computer: Computer) -> Customer:
 	var c := Customer.new()
 	c.computer = computer
-	c.problem = Problem.new()
-	c.problem.location = Problem.Location.SOFTWARE
-	c.problem.software_check = check_
 	return c
 
 

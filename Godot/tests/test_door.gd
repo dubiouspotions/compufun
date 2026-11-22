@@ -27,7 +27,7 @@ func run() -> void:
 	check("night: the door shuts", door.call("is_open"), false)
 	await create_timer(0.3).timeout
 	check("slammed shut", [is_zero_approx(hinge.rotation.y), _slams(door)], [true, 1])
-	check("the end: shut", [game.restore({"day": 7, "phase": "ENDED", "arrivals": 2}), door.call("is_open")], ["", false])
+	check("the end: shut", [game.restore({"day": 7, "phase": "ENDED"}), door.call("is_open")], ["", false])
 	door.queue_free()
 	await process_frame
 

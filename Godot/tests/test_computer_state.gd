@@ -16,7 +16,7 @@ func run() -> void:
 	var noimages := FileCheck.new()
 	noimages.path = "C:\\WINDOWS\\PBRUSH.EXE"
 	noimages.broken_name = "PBRUSH.EX_"
-	var first := Job.new(customer(computer, noimages), 0, 0)
+	var first := Job.new(customer(computer), software_problem(noimages), 0, 0)
 	game.jobs = [first] as Array[Job]
 	var setup: Win95Setup = game.setup_for(first)
 	check("broken: renamed", [setup.file_at("C:\\WINDOWS\\PBRUSH.EXE"), setup.file_at("c:\\windows\\pbrush.ex_") != null], [null, true])
@@ -50,7 +50,7 @@ func run() -> void:
 	no_mouse.path = "C:\\WINDOWS\\SYSTEM.INI"
 	no_mouse.healthy_line = "device=*vmouse"
 	no_mouse.broken_line = ";device=*vmouse"
-	var back := Job.new(customer(computer, no_mouse), 1, 1)
+	var back := Job.new(customer(computer), software_problem(no_mouse), 1, 1)
 	game.jobs = [back] as Array[Job]
 	check("a return visit gets the same copy", game.setup_for(back), setup)
 	check("with the player's changes", [todo.contents, setup.file_at("C:\\WINDOWS\\PBRUSH.EXE") != null], ["eggs\nflour", true])
@@ -67,12 +67,9 @@ func run() -> void:
 	game.jobs = [] as Array[Job]
 
 
-func customer(computer: Computer, check_: SoftwareCheck) -> Customer:
+func customer(computer: Computer) -> Customer:
 	var c := Customer.new()
 	c.computer = computer
-	c.problem = Problem.new()
-	c.problem.location = Problem.Location.SOFTWARE
-	c.problem.software_check = check_
 	return c
 
 

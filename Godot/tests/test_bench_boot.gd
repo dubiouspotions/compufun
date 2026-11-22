@@ -7,7 +7,7 @@ func run() -> void:
 	var bench: Control = load("res://ui/bench_screen.tscn").instantiate()
 	root.add_child(bench)
 	await process_frame
-	var job := Job.new(load("res://customers/skater_bro.tres"), 0, 0)
+	var job := Job.new(load("res://customers/skater_bro.tres"), load("res://problems/dust_overheat.tres"), 0, 0)
 	game.jobs = [job] as Array[Job]
 	game.set_powered(job, true)
 	await process_frame

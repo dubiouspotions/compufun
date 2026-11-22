@@ -45,10 +45,8 @@ var powered: bool = false
 ## Game.setup_for has broken the computer's running copy as the problem says.
 var broken: bool = false
 
-## The customer's problem.
-var problem: Problem:
-	get:
-		return customer.problem
+## What is wrong with the computer on this visit (the day's Errand). Never null.
+var problem: Problem
 
 ## True when every part that the problem needs (hardware, software or both) is fixed.
 var fixed: bool:
@@ -72,8 +70,9 @@ var done: bool:
 		return fixed and tested
 
 
-func _init(job_customer: Customer, job_slot: int, job_order: int) -> void:
+func _init(job_customer: Customer, job_problem: Problem, job_slot: int, job_order: int) -> void:
 	customer = job_customer
+	problem = job_problem
 	slot = job_slot
 	order = job_order
 	_fill(true)
@@ -102,7 +101,7 @@ func memory_fails() -> bool:
 # in one random place of those that take it, so the player can't learn which.
 func _fill(break_part: bool) -> void:
 	places.clear()
-	var broken_part: Part = customer.problem.broken_part if customer.problem != null else null
+	var broken_part: Part = problem.broken_part if problem != null else null
 	var takers := Part.every().filter(func(place: Part) -> bool: return place.piece_part() == broken_part)
 	var bad: Part = takers.pick_random() if break_part and not takers.is_empty() else null
 	for place: Part in Part.every():

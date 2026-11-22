@@ -78,8 +78,7 @@ func desktop(volume: float, muted: bool) -> Control:
 	computer.win95_setup.muted = muted
 	var customer := Customer.new()
 	customer.computer = computer
-	customer.problem = Problem.new()
-	var job := Job.new(customer, 0, 0)
+	var job := Job.new(customer, Problem.new(), 0, 0)
 	job.powered = true
 	var win95: Control = (load(WIN95) as PackedScene).instantiate()
 	win95.get_node("ComputerState").job = job

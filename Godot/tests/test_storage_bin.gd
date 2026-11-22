@@ -12,12 +12,7 @@ func run() -> void:
 
 	# A customer leaves a computer on the counter, so a snapshot has a day to restore.
 	var customer: Customer = load("res://customers/skater_bro.tres")
-	var day := Day.new()
-	day.number = 1
-	day.customers = [customer] as Array[Customer]
-	day.first_wait_seconds = Vector2.ZERO
-	day.gap_seconds = Vector2(60.0, 60.0)
-	game.start_day(day)
+	game.start_day(make_day(1, [[customer, load("res://problems/dust_overheat.tres")]]))
 	game.open_shop()
 	game.customer_arrived()
 	game.dialogue_finished()

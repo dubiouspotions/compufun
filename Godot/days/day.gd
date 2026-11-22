@@ -1,11 +1,11 @@
 class_name Day
 extends Resource
-## One day of the week in the shop: the customers in the order they come in, at most
-## Game.MAX_CUSTOMERS.
+## One day of the week in the shop: the errands in the order the customers come in, at most
+## Game.MAX_CUSTOMERS, as the timeline on the wiki's Storyline page says. A day may have none.
 
 ## The day of the week, 1 to 7.
 @export_range(1, 7) var number: int = 1
-@export var customers: Array[Customer] = []
+@export var errands: Array[Errand] = []
 ## How far Win95 "Cambion" has changed the shop, 0 to 1. The corruption signs, such as the
 ## Pipedream, grow with it.
 @export_range(0.0, 1.0) var warp: float = 0.0

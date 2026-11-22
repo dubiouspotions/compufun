@@ -12,8 +12,7 @@ func run() -> void:
 	computer.win95_setup = Win95Setup.new()
 	var c := Customer.new()
 	c.computer = computer
-	c.problem = Problem.new()
-	var job := Job.new(c, 0, 0)
+	var job := Job.new(c, Problem.new(), 0, 0)
 	job.powered = true
 	game.jobs = [job] as Array[Job]
 	var state: Node = load(COMPUTER_STATE_PATH).new()

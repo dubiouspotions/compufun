@@ -35,7 +35,7 @@
 [ext_resource type="Resource" path="res://win95/start_menu_stock.tres" id="start_menu"]
 [ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
 [ext_resource type="Resource" path="res://people/old_dude/person.tres" id="person"]
-[ext_resource type="Resource" path="res://problems/bad_ram.tres" id="problem"]
+[ext_resource type="Script" path="res://customers/condition.gd" id="condition"]
 [ext_resource type="PackedScene" path="res://props/fedora.tscn" id="hat_fedora"]
 
 [sub_resource type="Resource" id="Resource_4fbej"]
@@ -223,16 +223,32 @@ case_front = ExtResource("front_drive_door")
 
 [sub_resource type="Resource" id="Line_arrive_1"]
 script = ExtResource("dl")
-text = "Morning. My computer counts up its memory, and then it just stops. It never gets to Windows."
+text = "Good day. My computer has gone quiet. Not a sound, not even the little tune when it starts."
 pose = &"problem"
 
 [sub_resource type="Resource" id="Line_arrive_2"]
 script = ExtResource("dl")
-text = "My nephew put more memory in it last month. It was meant to be faster!"
+text = "My nephew says it is something in the settings, but I don't dare touch them."
 
 [sub_resource type="Resource" id="Line_arrive_3"]
 script = ExtResource("dl")
 text = "I need it for the tax returns, so please be quick."
+
+[sub_resource type="Resource" id="When_day_2"]
+script = ExtResource("condition")
+from_day = 2
+to_day = 2
+
+[sub_resource type="Resource" id="Line_again_1"]
+script = ExtResource("dl")
+text = "It's silent again! Since last night. I didn't touch a thing, I promise."
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="Conversation_again"]
+script = ExtResource("cv")
+id = &"silent_again"
+when = SubResource("When_day_2")
+lines = Array[ExtResource("dl")]([SubResource("Line_again_1")])
 
 [sub_resource type="Resource" id="Conversation_arrive"]
 script = ExtResource("cv")
@@ -241,7 +257,7 @@ lines = Array[ExtResource("dl")]([SubResource("Line_arrive_1"), SubResource("Lin
 
 [sub_resource type="Resource" id="Line_pickup_1"]
 script = ExtResource("dl")
-text = "It starts again? Wonderful. I'll have a word with my nephew."
+text = "It plays its little tune again? Wonderful."
 pose = &"happy"
 
 [sub_resource type="Resource" id="Conversation_pickup"]
@@ -254,8 +270,7 @@ lines = Array[ExtResource("dl")]([SubResource("Line_pickup_1")])
 script = ExtResource("3_10hmr")
 display_name = "Retired accountant"
 person = ExtResource("person")
-conversations = Array[ExtResource("cv")]([SubResource("Conversation_arrive"), SubResource("Conversation_pickup")])
-problem = ExtResource("problem")
+conversations = Array[ExtResource("cv")]([SubResource("Conversation_again"), SubResource("Conversation_arrive"), SubResource("Conversation_pickup")])
 computer = SubResource("Computer_accountant")
 trousers_color = Color(0.36, 0.3, 0.22, 1)
 hat = ExtResource("hat_fedora")

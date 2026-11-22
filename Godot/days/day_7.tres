@@ -1,12 +1,10 @@
 [gd_resource type="Resource" script_class="Day" format=3]
 
-[ext_resource type="Script" path="res://customers/customer.gd" id="1_jrj0c"]
-[ext_resource type="Resource" path="res://customers/skater_bro.tres" id="2_mpc7b"]
-[ext_resource type="Resource" path="res://customers/young_entrepreneur.tres" id="3_sqgwb"]
-[ext_resource type="Script" path="res://days/day.gd" id="4_g4gdh"]
+[ext_resource type="Script" path="res://days/day.gd" id="day"]
+[ext_resource type="Script" path="res://days/errand.gd" id="errand"]
 
 [resource]
-script = ExtResource("4_g4gdh")
+script = ExtResource("day")
 number = 7
 warp = 1.0
-customers = Array[ExtResource("1_jrj0c")]([ExtResource("2_mpc7b"), ExtResource("3_sqgwb")])
+errands = Array[ExtResource("errand")]([])

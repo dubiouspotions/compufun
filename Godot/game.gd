@@ -47,10 +47,12 @@ const MAX_CUSTOMERS: int = 3
 const FIRST_DATE: String = "1996-05-31"
 ## Where [method restore] finds day N.
 const DAY_PATH: String = "res://days/day_%d.tres"
+## Where the problem with a short name lives, as a job in a snapshot names it.
+const PROBLEM_PATH: String = "res://problems/%s.tres"
 
 var phase: Phase = Phase.IDLE
 var day: Day
-## How far down [member Day.customers] today has come, 0 to day.customers.size(): every customer
+## How far down [member Day.errands] today has come, 0 to day.errands.size(): every customer
 ## before it came in, or stays away for good ([method is_gone]).
 var arrivals: int = 0
 ## Set by [method start_day], each arrival and [method close_shop]; the Outside shows it.
@@ -153,8 +155,8 @@ func _finish_overnight_work() -> void:
 
 ## Starts [param new_day] in the morning with the shop CLOSED: nobody comes in until
 ## [method open_shop]. Jobs left overnight stay, and those computers that stayed on finish their
-## Disk Defragmenter run. Refuses a day that is null, has no customers, has more than
-## [constant MAX_CUSTOMERS], or has a customer with no problem, and keeps the current state.
+## Disk Defragmenter run. Refuses a day that is null, has more than [constant MAX_CUSTOMERS]
+## errands, or has an errand without a customer or a problem, and keeps the current state.
 func start_day(new_day: Day) -> void:
 	var invalid := _check_day(new_day)
 	if invalid != "":
@@ -813,8 +815,8 @@ func restore(state: Dictionary) -> String:
 	if new_phase == Phase.IDLE:
 		return _refuse("the phase IDLE can't be set; start a day instead")
 	var new_arrivals := int(state.get("arrivals", 0))
-	if new_arrivals < 0 or new_arrivals > new_day.customers.size():
-		return _refuse("day %d has %d customers, not %d arrivals" % [number, new_day.customers.size(), new_arrivals])
+	if new_arrivals < 0 or new_arrivals > new_day.errands.size():
+		return _refuse("day %d has %d errands, not %d arrivals" % [number, new_day.errands.size(), new_arrivals])
 	if new_phase == Phase.CLOSED and new_arrivals > 0:
 		return _refuse("the shop is CLOSED, but %d customers came in; it opens before the first" % new_arrivals)
 	if new_phase == Phase.ENDED and ResourceLoader.exists(DAY_PATH % (number + 1)):
@@ -839,15 +841,26 @@ func restore(state: Dictionary) -> String:
 	for i: int in given_jobs.size():
 		var data: Dictionary = given_jobs[i]
 		var owner := _customer_at(str(data.get("customer", "")))
-		if owner == null or owner.problem == null:
-			return _refuse("job %d: no customer with a problem at '%s'" % [i, data.get("customer", "")])
+		if owner == null:
+			return _refuse("job %d: no customer at '%s'" % [i, data.get("customer", "")])
+		var job_problem: Problem = null
+		if data.has("problem"):
+			var problem_path := PROBLEM_PATH % str(data["problem"])
+			job_problem = load(problem_path) as Problem if ResourceLoader.exists(problem_path) else null
+			if job_problem == null:
+				return _refuse("job %d: no problem at '%s'" % [i, problem_path])
+		else:
+			var errand := _errand_of(new_day, owner)
+			if errand == null:
+				return _refuse("job %d: %s has no errand on day %d, so name its problem" % [i, _who(owner), number])
+			job_problem = errand.problem
 		if new_flags.has(gone_flag(owner)):
 			return _refuse("job %d: %s is gone for good (%s)" % [i, _who(owner), gone_flag(owner)])
 		var slot := int(data.get("slot", i))
 		if slot < 0 or slot >= MAX_JOBS or slots.has(slot):
 			return _refuse("job %d: the slot %d is taken or not 0 to %d" % [i, slot, MAX_JOBS - 1])
 		slots.append(slot)
-		var job := Job.new(owner, slot, int(data.get("order", i)))
+		var job := Job.new(owner, job_problem, slot, int(data.get("order", i)))
 		job.hardware_fixed = bool(data.get("hardware_fixed", false))
 		job.software_fixed = bool(data.get("software_fixed", false))
 		job.powered = bool(data.get("powered", false))
@@ -913,6 +926,8 @@ func restore(state: Dictionary) -> String:
 		if ready.is_empty():
 			return _refuse("%s picks up, but has no fixed and tested computer" % _who(new_visitor))
 		new_pickup = ready[0]
+	if new_visit == Visit.DROP_OFF and (new_arrivals == 0 or new_day.errands[new_arrivals - 1].customer != new_visitor):
+		return _refuse("%s drops off, but the errand that %d arrivals let in is someone else's" % [_who(new_visitor), new_arrivals])
 	if new_visit == Visit.DROP_OFF and not handed_over and new_jobs.size() >= MAX_JOBS:
 		return _refuse("%s drops off, but the counter is full" % _who(new_visitor))
 	if (new_phase == Phase.CALLING) != (new_calling != null):
@@ -1013,17 +1028,25 @@ func _try_arrival() -> bool:
 		return false
 	arrivals = next + 1
 	daypart = _daypart_of(arrivals)
-	_set_visitor(day.customers[next], Visit.DROP_OFF)
+	_set_visitor(day.errands[next].customer, Visit.DROP_OFF)
 	return true
 
 
-## The index in [member Day.customers] of the next customer to come in today, past those who are
+## The index in [member Day.errands] of the next customer to come in today, past those who are
 ## gone for good; -1 when none is left.
 func _next_arrival() -> int:
-	for i: int in range(arrivals, day.customers.size()):
-		if not is_gone(day.customers[i]):
+	for i: int in range(arrivals, day.errands.size()):
+		if not is_gone(day.errands[i].customer):
 			return i
 	return -1
+
+
+## The first errand of [param who] on [param on_day], or null when they don't come that day.
+static func _errand_of(on_day: Day, who: Customer) -> Errand:
+	for errand: Errand in on_day.errands:
+		if errand.customer == who:
+			return errand
+	return null
 
 
 ## Debug: ends the wait that runs now, so the next event comes at once: the next customer (when
@@ -1037,7 +1060,7 @@ func skip_wait() -> void:
 # The visitor hands the computer over and turns to the door; they stay the visitor until they leave.
 func _leave() -> void:
 	if visit == Visit.DROP_OFF:
-		_drop_off(visitor)
+		_drop_off(day.errands[arrivals - 1])
 	elif visit == Visit.PICKUP:
 		_take_off_counter(_pickup)
 		_pickup = null
@@ -1053,17 +1076,17 @@ func _take_off_counter(job: Job) -> void:
 		connected = null
 
 
-func _drop_off(customer: Customer) -> void:
+func _drop_off(errand: Errand) -> void:
 	var taken := jobs.map(func(j: Job) -> int: return j.slot)
 	for slot: int in MAX_JOBS:
 		if slot not in taken:
-			var job := Job.new(customer, slot, _next_order)
+			var job := Job.new(errand.customer, errand.problem, slot, _next_order)
 			_next_order += 1
 			jobs.append(job)
 			if focus == null:
 				focus = job
 			return
-	push_error("Game: %s dropped off a computer, but the counter is full" % _who(customer))
+	push_error("Game: %s dropped off a computer, but the counter is full" % _who(errand.customer))
 
 
 func _set_visitor(customer: Customer, why: Visit) -> void:
@@ -1109,13 +1132,14 @@ static func _daypart_of(count: int) -> Daypart:
 
 ## Why [param d] can't be played, or "".
 func _check_day(d: Day) -> String:
-	if d == null or d.customers.is_empty():
-		return "the day is null or has no customers: %s" % d
-	if d.customers.size() > MAX_CUSTOMERS:
-		return "day %d has %d customers; the most is %d" % [d.number, d.customers.size(), MAX_CUSTOMERS]
-	for c: Customer in d.customers:
-		if c == null or c.problem == null:
-			return "day %d has a customer with no problem: %s" % [d.number, c]
+	if d == null:
+		return "no day"
+	if d.errands.size() > MAX_CUSTOMERS:
+		return "day %d has %d errands; the most is %d" % [d.number, d.errands.size(), MAX_CUSTOMERS]
+	for i: int in d.errands.size():
+		var errand := d.errands[i]
+		if errand == null or errand.customer == null or errand.problem == null:
+			return "day %d: errand %d needs a customer and a problem: %s" % [d.number, i, errand]
 	return ""
 
 

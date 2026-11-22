@@ -10,10 +10,12 @@ const ENTREPRENEUR: String = "res://customers/young_entrepreneur.tres"
 func run() -> void:
 	var skater: Customer = load(SKATER)
 	var entrepreneur: Customer = load(ENTREPRENEUR)
+	var dust: Problem = load("res://problems/dust_overheat.tres")
+	var quiet: Problem = load("res://problems/no_sound.tres")
 	skater.regular = true
 
 	# Day 1: the skater talks, and the [x] sends him away.
-	game.start_day(make_day(1, [skater, entrepreneur]))
+	game.start_day(make_day(1, [[skater, dust], [entrepreneur, quiet]]))
 	game.open_shop()
 	check("the skater walks in", game.visitor == skater, true)
 	game.customer_arrived()
@@ -33,14 +35,14 @@ func run() -> void:
 	game.close_shop()
 
 	# Day 2: he is skipped, first and last.
-	game.start_day(make_day(2, [skater, entrepreneur]))
+	game.start_day(make_day(2, [[skater, dust], [entrepreneur, quiet]]))
 	game.open_shop()
 	check("the skater is skipped: the entrepreneur comes", [game.visitor == entrepreneur, game.arrivals], [true, 2])
 	game.customer_arrived()
 	game.dialogue_finished()
 	game.customer_left()
 	check("the day can end", game.can_close(), true)
-	game.start_day(make_day(3, [entrepreneur, skater]))
+	game.start_day(make_day(3, [[entrepreneur, quiet], [skater, dust]]))
 	game.open_shop()
 	game.customer_arrived()
 	game.dialogue_finished()
@@ -60,20 +62,12 @@ func run() -> void:
 	# A pickup: he vanishes with the computer, and with an older one of his on the counter.
 	var fixed := {"customer": SKATER, "slot": 0, "hardware_fixed": true, "software_fixed": true}
 	var older := {"customer": SKATER, "slot": 2}
-	check("restore a pickup", game.restore({"day": 1, "arrivals": 2, "jobs": [fixed, older, {"customer": ENTREPRENEUR, "slot": 1}],
+	check("restore a pickup", game.restore({"day": 1, "arrivals": 2, "jobs": [fixed, older, {"customer": ENTREPRENEUR, "problem": "no_sound", "slot": 1}],
 			"focus_slot": 0, "connected_slot": 2, "visitor": SKATER, "visit": "PICKUP", "visitor_state": "TALKING"}), "")
 	game.dismiss_visitor()
 	check("both his computers gone, focus and cable free", [slots(), game.focus, game.connected, game.visitor], [["Young entrepreneur@1"], null, null, null])
 	check("nobody to call for his computer", game.can_call(), false)
 
-
-func make_day(number: int, customers: Array[Customer]) -> Day:
-	var d := Day.new()
-	d.number = number
-	d.customers = customers
-	d.first_wait_seconds = Vector2.ZERO
-	d.gap_seconds = Vector2(60.0, 60.0)
-	return d
 
 
 ## The jobs on the counter as "<customer>@<slot>", oldest first.
