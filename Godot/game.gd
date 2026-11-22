@@ -349,6 +349,12 @@ func is_gone(who: Customer) -> bool:
 	return flag(gone_flag(who)) != 0
 
 
+## True while [param who]'s computer runs Win95 Cambion, the possessed build (wiki: Storyline): the
+## flag <customer file name>_runs_cambion is set. Some corruption signs show only in such a computer.
+func runs_cambion(who: Customer) -> bool:
+	return flag(StringName(_id_of(who) + "_runs_cambion")) != 0
+
+
 ## The flag that records that [param who] is gone for good: gone_<customer file name>.
 func gone_flag(who: Customer) -> StringName:
 	return StringName("gone_" + _id_of(who))

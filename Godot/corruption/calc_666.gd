@@ -1,5 +1,5 @@
 extends CorruptionSign
-## In a computer that runs Cambion (Computer.cambion), the Calculator shows 666 for every result
+## In a computer that runs Cambion (Game.runs_cambion), the Calculator shows 666 for every result
 ## (wiki: In-world - Corruption Signs).
 
 const _CALCULATOR := preload("res://win95/calculator.gd")
