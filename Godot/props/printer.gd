@@ -15,8 +15,10 @@ const GROUP: StringName = &"printer"
 @export var shown_length: float = 0.17
 ## The seconds of the form feed after the last line.
 @export var feed_seconds: float = 0.4
-## The sound of the head printing one line.
+## The sound of the line feed and the head printing one line, [member line_seconds] long.
 @export var line_sound: SoundSet = preload("res://sounds/printer_line.tres")
+## The sound of the form feed after the last line, [member feed_seconds] long.
+@export var feed_sound: SoundSet = preload("res://sounds/printer_feed.tres")
 
 var _tween: Tween
 var _lines: PackedStringArray = []
@@ -47,6 +49,7 @@ func print_page(lines: PackedStringArray) -> void:
 		_tween.tween_method(_set_feed, i * line_pitch, (i + 1) * line_pitch, line_seconds)
 	var done := lines.size() * line_pitch
 	var page := _sheet.get_aabb().size.y
+	_tween.tween_callback(feed_sound.play_on.bind(_speaker))
 	_tween.tween_method(_set_feed, done, clampf(done + line_pitch, shown_length, page), feed_seconds)
 	_tween.tween_callback(_hotspot.set_enabled.bind(not _lines.is_empty()))
 

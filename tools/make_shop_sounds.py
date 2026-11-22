@@ -263,24 +263,75 @@ def door_slam():
     return out
 
 
-def printer_line(seed):
-    """A dot-matrix printer printing one line: the pins rasp through the characters as the head
-    runs across the page, the carriage motor whines under it, and the platen clicks the paper on."""
+def pin_impact(gain):
+    """One needle of the print head hitting the ribbon, the paper and the platen."""
+    return [gain * (random.uniform(-1, 1) * 0.6 + math.sin(2 * math.pi * 4200 * i / RATE)) * math.exp(-i / RATE / 0.00025)
+            for i in range(int(0.002 * RATE))]
+
+
+def line_feed(gain):
+    """The platen's stepper turning one line: a ratchet of four steps and the paper's tractor rustle."""
+    out = silence(0.03)
+    for step in range(4):
+        click = [math.sin(2 * math.pi * 2300 * i / RATE) * math.exp(-i / RATE / 0.0012) for i in range(int(0.006 * RATE))]
+        mix(out, click, step * 0.0035, gain * (0.8 if step else 1.0))
+        mix(out, highpass(noise(0.002, 0.0005), 2500), step * 0.0035, gain * 0.5)
+    thunk = [math.sin(2 * math.pi * 170 * i / RATE) * math.exp(-i / RATE / 0.008) for i in range(int(0.03 * RATE))]
+    mix(out, thunk, 0.0, gain * 0.5)
+    mix(out, lowpass(highpass(noise(0.03, 0.012), 900), 3000), 0.0, gain * 0.25)
+    return out
+
+
+def printer_line(seed, filled):
+    """A 9-pin dot-matrix printer printing one line in 120 ms: the line feed, then the head runs
+    across the share `filled` of the page. Each character is 9 columns at the column rate; each column
+    fires some of the 9 pins, and a space fires none. The carriage stepper whines and rattles under
+    the pins, speeding up and slowing down at the ends of its run."""
     random.seed(seed)
     seconds = 0.12
-    out = silence(seconds + 0.03)
+    out = silence(seconds)
+    mix(out, line_feed(0.7), 0.0)
+    start, run = 0.016, (seconds - 0.024) * filled
+    column = 1.0 / 2900
+    t, glyph = start, []
+    pins = silence(seconds)
+    while t < start + run:
+        if not glyph:
+            space = random.random() < 0.18
+            glyph = [0] * 9 if space else [random.choice([0, 1, 2, 3, 3, 4, 5]) for _ in range(7)] + [0, 0]
+        fired = glyph.pop(0)
+        for _ in range(fired):
+            mix(pins, pin_impact(random.uniform(0.15, 0.3)), t + random.uniform(0, 0.00008))
+        t += column
+    body = biquad(pins, "band", 1100, 1.5)  # the head and the plastic case ring under the pins
+    mix(out, [p + 1.2 * b for p, b in zip(pins, body)], 0.0)
+    motor = []
+    for i in range(int((run + 0.012) * RATE)):
+        u = i / RATE
+        ramp = min(1.0, u / 0.006, (run + 0.012 - u) / 0.006)
+        step = 520 + 380 * ramp  # the stepper's step rate, in Hz
+        phase = 2 * math.pi * step * u
+        rattle = 1.0 + 0.5 * random.uniform(-1, 1) * (1 if i % 220 < 30 else 0.2)
+        motor.append(0.09 * ramp * rattle * (math.sin(phase) + 0.4 * math.sin(3 * phase) + 0.2 * math.sin(5 * phase)))
+    mix(out, motor, start - 0.006)
+    return highpass(lowpass(out[:int(seconds * RATE)], 7000), 120)
+
+
+def printer_feed():
+    """The form feed after the last line: the platen stepper turns fast for 0.4 s, a buzzing ratchet,
+    and the fanfold paper rustles out of the tractors."""
+    random.seed(40)
+    seconds = 0.4
+    out = silence(seconds)
     t = 0.0
-    while t < seconds:
-        char = 0.0025
-        if random.random() > 0.2:  # a space fires no pins
-            for k in range(4):
-                click = highpass(noise(0.0006, 0.0002), 1500)
-                mix(out, click, t + k * char / 4, random.uniform(0.5, 1.0))
-        t += char
-    motor = [0.08 * math.sin(2 * math.pi * 190 * i / RATE) * min(1.0, i / RATE / 0.01) for i in range(int(seconds * RATE))]
-    mix(out, motor, 0.0)
-    mix(out, lowpass(noise(0.02, 0.006), 700), seconds + 0.005, 0.5)  # the line feed
-    return highpass(lowpass(out, 6000), 250)
+    while t < seconds - 0.01:
+        mix(out, [math.sin(2 * math.pi * 2300 * i / RATE) * math.exp(-i / RATE / 0.001) for i in range(int(0.005 * RATE))], t, 0.35)
+        t += 1.0 / 240 if 0.03 < t < seconds - 0.04 else 1.0 / 140  # spins up and down
+    hum = [0.15 * math.sin(2 * math.pi * 240 * i / RATE) * min(1.0, i / RATE / 0.03, (seconds - i / RATE) / 0.04) for i in range(int(seconds * RATE))]
+    mix(out, hum, 0.0)
+    rustle = lowpass(highpass(noise(seconds, 10.0), 700), 3500)
+    mix(out, [r * 0.22 * (0.6 + 0.4 * math.sin(2 * math.pi * 7 * i / RATE)) for i, r in enumerate(rustle)], 0.0)
+    return highpass(lowpass(out, 7000), 120)
 
 
 def write(path, samples, level=0.7):
@@ -309,5 +360,6 @@ for take in range(1, 4):
     write(sys.argv[1] + "/mouse_up_%d.wav" % take, mouse_button(20 + take, True))
 write(sys.argv[1] + "/modem_dialup.wav", modem_dialup(), 0.58)  # a lower peak: the long hiss is loud on average
 write(sys.argv[1] + "/door_slam.wav", door_slam())
-for take in range(1, 4):
-    write(sys.argv[1] + "/printer_line_%d.wav" % take, printer_line(30 + take))
+for take, filled in enumerate([1.0, 0.75, 0.5, 0.3], 1):
+    write(sys.argv[1] + "/printer_line_%d.wav" % take, printer_line(30 + take, filled))
+write(sys.argv[1] + "/printer_feed.wav", printer_feed())
