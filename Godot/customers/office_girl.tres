@@ -1,0 +1,375 @@
+[gd_resource type="Resource" script_class="Customer" format=3]
+
+[ext_resource type="Material" path="res://materials/yellowed_plastic.tres" id="1_5q1ww"]
+[ext_resource type="Script" path="res://customers/hardware.gd" id="2_r8lo3"]
+[ext_resource type="Script" path="res://customers/computer.gd" id="3_jnq3r"]
+[ext_resource type="Script" path="res://customers/sticker.gd" id="4_femx8"]
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="5_nkk1v"]
+[ext_resource type="Script" path="res://win95/applets/applet.gd" id="6_p70q8"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/multimedia_32.png" id="7_cw6jy"]
+[ext_resource type="AudioStream" path="res://win95/midi/passport.mp3" id="8_tu0os"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/document_text_32.png" id="9_jqhm7"]
+[ext_resource type="Resource" path="res://win95/start_menu_stock.tres" id="10_3wj3f"]
+[ext_resource type="Resource" path="res://win95/system_stock.tres" id="11_bc12k"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/document_config_32.png" id="12_tatrq"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/notepad_32.png" id="13_y6365"]
+[ext_resource type="PackedScene" path="res://win95/notepad.tscn" id="14_3rw6b"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/document_pencil_32.png" id="15_80hi1"]
+[ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="16_rp3tb"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/crayon_scribble_32.png" id="17_85tb6"]
+[ext_resource type="PackedScene" path="res://win95/paint.tscn" id="18_bfgyp"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/calculator_spreadsheet_32.png" id="19_y6ixy"]
+[ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="20_wcxt6"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/inbox_32.png" id="21_fdvf4"]
+[ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="22_r3jhn"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/speaker_loud_32.png" id="23_gf44p"]
+[ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="24_d4vbb"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/disk_drive_box_32.png" id="25_8v8g6"]
+[ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="26_252ql"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/playing_cards_hand_32.png" id="27_hfnty"]
+[ext_resource type="PackedScene" path="res://win95/solitaire/solitaire.tscn" id="28_vpvsd"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/ms_dos_window_32.png" id="29_bxvic"]
+[ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="30_31esn"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/media_devices_32.png" id="31_nibve"]
+[ext_resource type="PackedScene" path="res://win95/media_player.tscn" id="32_sedmj"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/folder_closed_32.png" id="33_60txt"]
+[ext_resource type="Script" path="res://win95/email.gd" id="34_m2omy"]
+[ext_resource type="Resource" path="res://win95/theme/palette.tres" id="35_68chr"]
+[ext_resource type="Script" path="res://win95/win95_setup.gd" id="36_40syd"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/red_blocks.png" id="37_5ht67"]
+[ext_resource type="Script" path="res://customers/conversation.gd" id="38_naahj"]
+[ext_resource type="Script" path="res://customers/choice.gd" id="39_8ylkx"]
+[ext_resource type="Script" path="res://customers/reply.gd" id="40_v4b2o"]
+[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="41_fhk55"]
+[ext_resource type="Resource" path="res://people/office_girl/person.tres" id="42_o3bf6"]
+[ext_resource type="Script" path="res://customers/customer.gd" id="43_itl7v"]
+
+[sub_resource type="Resource" id="Resource_pvykc"]
+script = ExtResource("2_r8lo3")
+bios_id = "03/26/96-i430VX-2A59GH2BC-00"
+cpu_mhz = 133
+hard_drive = "WDC AC31600H"
+hard_drive_mb = 1549
+cd_rom = "TOSHIBA CD-ROM XM-5302TA"
+pci_devices = PackedStringArray("7 1 8086 7010 14 IDE Controller", "11 0 5333 8811 NA Display Controller")
+
+[sub_resource type="Resource" id="Resource_50c5u"]
+script = ExtResource("5_nkk1v")
+name = "demo final.mid"
+icon = ExtResource("7_cw6jy")
+sound = ExtResource("8_tu0os")
+modified = "Monday, May 20, 1996 11:48:26 PM"
+
+[sub_resource type="Resource" id="Resource_f6oqf"]
+script = ExtResource("5_nkk1v")
+name = "demo final 2.mid"
+icon = ExtResource("7_cw6jy")
+sound = ExtResource("8_tu0os")
+modified = "Sunday, May 26, 1996 12:15:03 AM"
+
+[sub_resource type="Resource" id="Resource_57xrn"]
+script = ExtResource("5_nkk1v")
+name = "lyrics.txt"
+icon = ExtResource("9_jqhm7")
+contents = "DIAL TONE HEART (demo final)
+
+I call you up at two a.m.
+The line goes beep, and beep again.
+You never pick up, you never do.
+I leave the modem on for you.
+
+  Dial tone heart, dial tone heart,
+  static where we fell apart.
+  I hear you in the hum, I hear you in the dark,
+  nothing on the line but my dial tone heart.
+
+Verse 2: ??? (Lisa has ideas)
+Bridge: la la la (FIX THIS)
+"
+modified = "Tuesday, May 28, 1996 1:33:09 AM"
+
+[sub_resource type="Resource" id="Resource_qy2mo"]
+script = ExtResource("5_nkk1v")
+name = "WIN.INI"
+icon = ExtResource("12_tatrq")
+contents = "[windows]
+load=
+run=
+NullPort=None
+device=
+
+[Desktop]
+TileWallpaper=0
+WallpaperStyle=0
+
+[intl]
+iCountry=46
+sCountry=Sweden
+sLanguage=sve
+
+[extensions]
+txt=notepad.exe ^.txt
+ini=notepad.exe ^.ini
+bmp=pbrush.exe ^.bmp
+
+[mci extensions]
+mid=Sequencer
+wav=WaveAudio
+"
+modified = "Saturday, October 21, 1995 4:04:37 PM"
+
+[sub_resource type="Resource" id="Resource_bmk2r"]
+script = ExtResource("5_nkk1v")
+name = "SYSTEM.INI"
+icon = ExtResource("12_tatrq")
+contents = "[boot]
+shell=Explorer.exe
+system.drv=system.drv
+drivers=mmsystem.dll power.drv
+display.drv=pnpdrvr.drv
+mouse.drv=mouse.drv
+keyboard.drv=keyboard.drv
+
+[boot.description]
+keyboard.typ=Standard 101/102-Key or Microsoft Natural Keyboard
+mouse.drv=Standard mouse
+display.drv=Standard Display Adapter (VGA)
+
+[386Enh]
+ebios=*ebios
+woafont=dosapp.fon
+device=*vmouse
+device=*vshare
+keyboard=*vkd
+display=*vdd,*vflatd
+
+[drivers]
+wave=sb16snd.drv
+midimapper=midimap.drv
+"
+modified = "Saturday, October 21, 1995 3:47:19 PM"
+
+[sub_resource type="Resource" id="Resource_b1b40"]
+script = ExtResource("5_nkk1v")
+name = "NOTEPAD.EXE"
+icon = ExtResource("13_y6365")
+program = ExtResource("14_3rw6b")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_lgjwy"]
+script = ExtResource("5_nkk1v")
+name = "WORDPAD.EXE"
+icon = ExtResource("15_80hi1")
+program = ExtResource("16_rp3tb")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_uur7o"]
+script = ExtResource("5_nkk1v")
+name = "PBRUSH.EXE"
+icon = ExtResource("17_85tb6")
+program = ExtResource("18_bfgyp")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_mb216"]
+script = ExtResource("5_nkk1v")
+name = "CALC.EXE"
+icon = ExtResource("19_y6ixy")
+program = ExtResource("20_wcxt6")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_nh1ww"]
+script = ExtResource("5_nkk1v")
+name = "EXCHNG32.EXE"
+icon = ExtResource("21_fdvf4")
+program = ExtResource("22_r3jhn")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_wks7q"]
+script = ExtResource("5_nkk1v")
+name = "SNDVOL32.EXE"
+icon = ExtResource("23_gf44p")
+program = ExtResource("24_d4vbb")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_pj17p"]
+script = ExtResource("5_nkk1v")
+name = "DEFRAG.EXE"
+icon = ExtResource("25_8v8g6")
+program = ExtResource("26_252ql")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_c1dl0"]
+script = ExtResource("5_nkk1v")
+name = "SOL.EXE"
+icon = ExtResource("27_hfnty")
+program = ExtResource("28_vpvsd")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_4fm27"]
+script = ExtResource("5_nkk1v")
+name = "COMMAND.COM"
+icon = ExtResource("29_bxvic")
+program = ExtResource("30_31esn")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_gwwso"]
+script = ExtResource("5_nkk1v")
+name = "MPLAYER.EXE"
+icon = ExtResource("31_nibve")
+program = ExtResource("32_sedmj")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_jhvqk"]
+script = ExtResource("5_nkk1v")
+name = "Windows"
+icon = ExtResource("33_60txt")
+is_folder = true
+children = Array[Resource]([ExtResource("10_3wj3f"), ExtResource("11_bc12k"), SubResource("Resource_qy2mo"), SubResource("Resource_bmk2r"), SubResource("Resource_b1b40"), SubResource("Resource_lgjwy"), SubResource("Resource_uur7o"), SubResource("Resource_mb216"), SubResource("Resource_nh1ww"), SubResource("Resource_wks7q"), SubResource("Resource_pj17p"), SubResource("Resource_c1dl0"), SubResource("Resource_4fm27"), SubResource("Resource_gwwso")])
+
+[sub_resource type="Resource" id="Resource_rh5qv"]
+script = ExtResource("5_nkk1v")
+name = "setlist.txt"
+icon = ExtResource("9_jqhm7")
+contents = "SETLIST - Thursday rehearsal
+
+1. Dial Tone Heart
+2. Farsta Nights
+3. Save As
+4. Lisa's song (no name yet)
+5. General Protection Fault (slow version)
+6. Dial Tone Heart again, if there's time
+"
+modified = "Monday, May 27, 1996 8:10:41 PM"
+
+[sub_resource type="Resource" id="Resource_sfsaj"]
+script = ExtResource("5_nkk1v")
+name = "rehearsal.wav"
+icon = ExtResource("7_cw6jy")
+modified = "Saturday, May 18, 1996 6:02:55 PM"
+
+[sub_resource type="Resource" id="Resource_3tcxc"]
+script = ExtResource("5_nkk1v")
+name = "My Documents"
+icon = ExtResource("33_60txt")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_rh5qv"), SubResource("Resource_sfsaj")])
+
+[sub_resource type="Resource" id="Resource_6vrmi"]
+script = ExtResource("34_m2omy")
+folder = 1
+from = "Desk 4 <desk4@harbourimport.se>"
+to = "Big Ideas Import <ceo@bigideas.se>"
+subject = "My screen"
+sent = "1996-06-01 16:40"
+body = "Someone has been at my computer. Everything is black and yellow and I can't read a thing! Was it you?"
+read = true
+
+[sub_resource type="Resource" id="Resource_1vyur"]
+script = ExtResource("34_m2omy")
+from = "Big Ideas Import <ceo@bigideas.se>"
+to = "Desk 4 <desk4@harbourimport.se>"
+subject = "Re: My screen"
+sent = "1996-06-01 17:05"
+body = "Who, me? Never. Maybe your computer just has style now. :)"
+read = true
+
+[sub_resource type="Resource" id="Resource_jgelc"]
+script = ExtResource("36_40syd")
+wallpaper = ExtResource("37_5ht67")
+desktop = Array[ExtResource("5_nkk1v")]([SubResource("Resource_50c5u"), SubResource("Resource_f6oqf"), SubResource("Resource_57xrn")])
+drive_c = Array[ExtResource("5_nkk1v")]([SubResource("Resource_jhvqk"), SubResource("Resource_3tcxc")])
+emails = Array[ExtResource("34_m2omy")]([SubResource("Resource_6vrmi"), SubResource("Resource_1vyur")])
+installed_apps = PackedStringArray("Calculator", "Notepad", "Media Player", "Sound Recorder")
+volume = 60.0
+
+[sub_resource type="Resource" id="Resource_1w7aw"]
+script = ExtResource("3_jnq3r")
+win95_setup = SubResource("Resource_jgelc")
+hardware = SubResource("Resource_pvykc")
+case_material = ExtResource("1_5q1ww")
+
+[sub_resource type="Resource" id="Resource_f0q70"]
+script = ExtResource("41_fhk55")
+text = "Always. And someone thinks pranks are a business strategy."
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="Resource_ocxll"]
+script = ExtResource("40_v4b2o")
+lines = Array[ExtResource("41_fhk55")]([SubResource("Resource_f0q70")])
+
+[sub_resource type="Resource" id="Resource_1vc6y"]
+script = ExtResource("39_8ylkx")
+text = "Busy at the office?"
+replies = Array[ExtResource("40_v4b2o")]([SubResource("Resource_ocxll")])
+
+[sub_resource type="Resource" id="Resource_av20o"]
+script = ExtResource("41_fhk55")
+text = "I left it on over lunch. When I came back, it looked like this."
+pose = &"thinking"
+
+[sub_resource type="Resource" id="Resource_y7gyy"]
+script = ExtResource("40_v4b2o")
+lines = Array[ExtResource("41_fhk55")]([SubResource("Resource_av20o")])
+
+[sub_resource type="Resource" id="Resource_801m2"]
+script = ExtResource("39_8ylkx")
+text = "Did someone use it?"
+replies = Array[ExtResource("40_v4b2o")]([SubResource("Resource_y7gyy")])
+
+[sub_resource type="Resource" id="Resource_0ld84"]
+script = ExtResource("41_fhk55")
+text = "Thank you. Please make it normal again."
+
+[sub_resource type="Resource" id="Resource_311ln"]
+script = ExtResource("40_v4b2o")
+lines = Array[ExtResource("41_fhk55")]([SubResource("Resource_0ld84")])
+
+[sub_resource type="Resource" id="Resource_125jc"]
+script = ExtResource("39_8ylkx")
+text = "OK, leave it with me."
+replies = Array[ExtResource("40_v4b2o")]([SubResource("Resource_311ln")])
+ends = true
+
+[sub_resource type="Resource" id="Resource_i772n"]
+script = ExtResource("41_fhk55")
+text = "All the colours on my computer have changed. Black and yellow everywhere. I can't read a thing."
+pose = &"problem"
+
+[sub_resource type="Resource" id="Resource_8wnef"]
+script = ExtResource("40_v4b2o")
+lines = Array[ExtResource("41_fhk55")]([SubResource("Resource_i772n")])
+choices = Array[ExtResource("39_8ylkx")]([SubResource("Resource_801m2"), SubResource("Resource_125jc")])
+
+[sub_resource type="Resource" id="Resource_5teu0"]
+script = ExtResource("39_8ylkx")
+text = "So, what's your problem?"
+replies = Array[ExtResource("40_v4b2o")]([SubResource("Resource_8wnef")])
+
+[sub_resource type="Resource" id="Resource_jr0qg"]
+script = ExtResource("41_fhk55")
+text = "Hi. I hope you can help, I have a report due."
+
+[sub_resource type="Resource" id="Resource_4jk8b"]
+script = ExtResource("38_naahj")
+id = &"arrive"
+lines = Array[ExtResource("41_fhk55")]([SubResource("Resource_jr0qg")])
+choices = Array[ExtResource("39_8ylkx")]([SubResource("Resource_1vc6y"), SubResource("Resource_5teu0")])
+
+[sub_resource type="Resource" id="Resource_ofybe"]
+script = ExtResource("41_fhk55")
+text = "Normal colours! You're a lifesaver."
+pose = &"happy"
+
+[sub_resource type="Resource" id="Resource_vtfx1"]
+script = ExtResource("38_naahj")
+id = &"pickup"
+trigger = 1
+lines = Array[ExtResource("41_fhk55")]([SubResource("Resource_ofybe")])
+
+[resource]
+script = ExtResource("43_itl7v")
+display_name = "Office girl"
+person = ExtResource("42_o3bf6")
+conversations = Array[ExtResource("38_naahj")]([SubResource("Resource_4jk8b"), SubResource("Resource_vtfx1")])
+computer = SubResource("Resource_1w7aw")
+trousers_color = Color(0.2, 0.2, 0.28, 1)

@@ -228,6 +228,119 @@ hardware = SubResource("Hardware_486")
 case_material = ExtResource("case_yellowed")
 case_front = ExtResource("front_drive_door")
 
+[sub_resource type="Resource" id="Resource_gs1ce"]
+script = ExtResource("dl")
+text = "No! Well. I might have clicked the little speaker."
+pose = &"thinking"
+
+[sub_resource type="Resource" id="Resource_5e6l0"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Resource_gs1ce")])
+
+[sub_resource type="Resource" id="Resource_5blj2"]
+script = ExtResource("38_21cv8")
+text = "Did you touch the volume?"
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_5e6l0")])
+
+[sub_resource type="Resource" id="Resource_633m2"]
+script = ExtResource("dl")
+text = "Yes, he sat in the corner and helped. Now there's only an empty note."
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="Resource_0w4qd"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Resource_633m2")])
+
+[sub_resource type="Resource" id="Resource_21cv8"]
+script = ExtResource("38_21cv8")
+text = "The paperclip?"
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_0w4qd")])
+
+[sub_resource type="Resource" id="Resource_748tm"]
+script = ExtResource("dl")
+text = "Thank you. And if you can find the paperclip..."
+
+[sub_resource type="Resource" id="Resource_f3h33"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Resource_748tm")])
+
+[sub_resource type="Resource" id="Resource_87aal"]
+script = ExtResource("38_21cv8")
+text = "OK, leave it with me."
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_f3h33")])
+ends = true
+
+[sub_resource type="Resource" id="Resource_b4so3"]
+script = ExtResource("dl")
+text = "The sound is gone again. And now the little paperclip in my letters is gone too."
+pose = &"problem"
+
+[sub_resource type="Resource" id="Resource_at1hd"]
+script = ExtResource("dl")
+text = "He always helped me with the tax letters."
+
+[sub_resource type="Resource" id="Resource_v6jxh"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Resource_b4so3"), SubResource("Resource_at1hd")])
+choices = Array[ExtResource("38_21cv8")]([SubResource("Resource_5blj2"), SubResource("Resource_21cv8"), SubResource("Resource_87aal")])
+
+[sub_resource type="Resource" id="Resource_b2db5"]
+script = ExtResource("38_21cv8")
+text = "So, what's your problem?"
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_v6jxh")])
+
+[sub_resource type="Resource" id="Resource_jjfxu"]
+script = ExtResource("dl")
+text = "It's me. Again. I'm so sorry."
+pose = &"irritated01"
+
+[sub_resource type="Resource" id="Resource_5kbo0"]
+script = ExtResource("condition")
+from_day = 3
+to_day = 3
+
+[sub_resource type="Resource" id="Resource_keclr"]
+script = ExtResource("cv")
+id = &"clippy_gone"
+when = SubResource("Resource_5kbo0")
+set_flags = Dictionary[StringName, int]({
+&"sign_no_clippy": 1
+})
+lines = Array[ExtResource("dl")]([SubResource("Resource_jjfxu")])
+choices = Array[ExtResource("38_21cv8")]([SubResource("Resource_b2db5")])
+
+[sub_resource type="Resource" id="Resource_khefh"]
+script = ExtResource("dl")
+text = "Oh. Well. He had a good run, the little fellow."
+
+[sub_resource type="Resource" id="Resource_mhykb"]
+script = ExtResource("39_748tm")
+lines = Array[ExtResource("dl")]([SubResource("Resource_khefh")])
+
+[sub_resource type="Resource" id="Resource_rx7fq"]
+script = ExtResource("38_21cv8")
+text = "I couldn't bring him back."
+replies = Array[ExtResource("39_748tm")]([SubResource("Resource_mhykb")])
+ends = true
+
+[sub_resource type="Resource" id="Resource_k0j6j"]
+script = ExtResource("dl")
+text = "It plays its little tune again. And the paperclip?"
+pose = &"happy"
+
+[sub_resource type="Resource" id="Resource_5p518"]
+script = ExtResource("condition")
+from_day = 3
+to_day = 3
+
+[sub_resource type="Resource" id="Resource_0savs"]
+script = ExtResource("cv")
+id = &"clippy_pickup"
+trigger = 1
+when = SubResource("Resource_5p518")
+lines = Array[ExtResource("dl")]([SubResource("Resource_k0j6j")])
+choices = Array[ExtResource("38_21cv8")]([SubResource("Resource_rx7fq")])
+
 [sub_resource type="Resource" id="Resource_ep33l"]
 script = ExtResource("dl")
 text = "Believe me, I'd rather not be."
@@ -383,7 +496,7 @@ lines = Array[ExtResource("dl")]([SubResource("Line_pickup_1")])
 script = ExtResource("3_10hmr")
 display_name = "Retired accountant"
 person = ExtResource("person")
-conversations = Array[ExtResource("cv")]([SubResource("Conversation_again"), SubResource("Conversation_arrive"), SubResource("Conversation_pickup")])
+conversations = Array[ExtResource("cv")]([SubResource("Resource_keclr"), SubResource("Resource_0savs"), SubResource("Conversation_again"), SubResource("Conversation_arrive"), SubResource("Conversation_pickup")])
 computer = SubResource("Computer_accountant")
 trousers_color = Color(0.36, 0.3, 0.22, 1)
 hat = ExtResource("hat_fedora")

@@ -322,6 +322,20 @@ script = ExtResource("41_2kq3l")
 text = "What's your business?"
 replies = Array[ExtResource("42_ye7e1")]([SubResource("Resource_ifphd")])
 
+[sub_resource type="Resource" id="Resource_h6eyj"]
+script = ExtResource("dl")
+text = "Just some software a guy gave me. Business stuff. Very cutting edge."
+pose = &"thinking"
+
+[sub_resource type="Resource" id="Resource_kdkfh"]
+script = ExtResource("42_ye7e1")
+lines = Array[ExtResource("dl")]([SubResource("Resource_h6eyj")])
+
+[sub_resource type="Resource" id="Resource_2kq3l"]
+script = ExtResource("41_2kq3l")
+text = "Did you put a floppy in?"
+replies = Array[ExtResource("42_ye7e1")]([SubResource("Resource_kdkfh")])
+
 [sub_resource type="Resource" id="Resource_cbajk"]
 script = ExtResource("dl")
 text = "Great. Time is money, you know."
@@ -336,14 +350,15 @@ text = "OK, leave it with me."
 replies = Array[ExtResource("42_ye7e1")]([SubResource("Resource_yty0o")])
 ends = true
 
-[sub_resource type="Resource" id="DialogueLine_1"]
+[sub_resource type="Resource" id="Resource_ye7e1"]
 script = ExtResource("dl")
-text = "I can't hear any sounds on my computer."
+text = "My computer won't start. It just shows a bunch of text, something about a disk."
+pose = &"problem"
 
 [sub_resource type="Resource" id="Resource_4twxc"]
 script = ExtResource("42_ye7e1")
-lines = Array[ExtResource("dl")]([SubResource("DialogueLine_1")])
-choices = Array[ExtResource("41_2kq3l")]([SubResource("Resource_1hbtb")])
+lines = Array[ExtResource("dl")]([SubResource("Resource_ye7e1")])
+choices = Array[ExtResource("41_2kq3l")]([SubResource("Resource_2kq3l"), SubResource("Resource_1hbtb")])
 
 [sub_resource type="Resource" id="Resource_d32my"]
 script = ExtResource("41_2kq3l")

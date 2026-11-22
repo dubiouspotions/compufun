@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Problem" format=3]
+
+[ext_resource type="Script" path="res://problems/problem.gd" id="1_fynx8"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/high_contrast_black.tres" id="2_tta4a"]
+[ext_resource type="Script" path="res://problems/setting_check.gd" id="3_pca20"]
+
+[sub_resource type="Resource" id="Resource_6pxgh"]
+script = ExtResource("3_pca20")
+setting = &"palette"
+broken_value = ExtResource("2_tta4a")
+
+[resource]
+script = ExtResource("1_fynx8")
+short_name = &"inverted_colors"
+perceived_issue = "Computer's colours have changed"
+location = 1
+symptoms = PackedStringArray("Window colours changed drastically")
+hardware_steps = PackedStringArray()
+software_steps = PackedStringArray("Right-click the desktop and pick Properties", "Open the Appearance tab", "Switch the Scheme from High Contrast Black back to Windows Standard", "Click Apply or OK")
+software_check = SubResource("Resource_6pxgh")

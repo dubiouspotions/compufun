@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Problem" format=3]
+
+[ext_resource type="Script" path="res://problems/problem.gd" id="1_u4sk2"]
+[ext_resource type="Script" path="res://problems/setting_check.gd" id="2_g6n7m"]
+
+[sub_resource type="Resource" id="Resource_76u48"]
+script = ExtResource("2_g6n7m")
+setting = &"floppy_in_a"
+broken_value = true
+
+[resource]
+script = ExtResource("1_u4sk2")
+short_name = &"bootfloppy"
+perceived_issue = "Computer doesn't start - just a bunch of text"
+location = 1
+symptoms = PackedStringArray("Non-System disk error at startup", "Floppy in drive A:")
+hardware_steps = PackedStringArray()
+software_steps = PackedStringArray("Eject the floppy from drive A:", "Press a key, or restart, with no floppy in A:")
+software_check = SubResource("Resource_76u48")

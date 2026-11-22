@@ -51,7 +51,10 @@ func run() -> void:
 	game.start_next_day()
 	game.open_shop()
 	tick(1000.0)
-	check("day 2: the accountant doesn't come while the computer is here", [game.visitor, game.arrivals], [null, 0])
+	check("day 2: the entrepreneur comes first", game.visitor == load("res://customers/young_entrepreneur.tres"), true)
+	walk_through()
+	tick(1000.0)
+	check("then the accountant doesn't come while his computer is here", [game.visitor, game.arrivals], [null, 1])
 	game.close_shop()
 	check("the shop closes", game.phase, GAME.Phase.DAY_OVER)
 

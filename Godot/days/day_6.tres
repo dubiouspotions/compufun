@@ -7,4 +7,6 @@
 script = ExtResource("day")
 number = 6
 warp = 0.8
-errands = Array[ExtResource("errand")]([])
+close_flags = Dictionary[StringName, int]({
+&"sign_logo_cambion": 1
+})
