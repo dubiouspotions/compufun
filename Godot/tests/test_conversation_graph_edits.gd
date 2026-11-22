@@ -111,7 +111,7 @@ func run() -> void:
 	await _check_in_place(questions)
 
 
-# Edits a line and a chip as a writer does: double-click, type, Enter.
+# Edits a line and a chip as a writer does: double-click, type, Enter; and adds with the buttons.
 func _check_in_place(questions: Reply) -> void:
 	var line := questions.choices[0].replies[0].lines[0]
 	var label := _find(graph.box_of(questions.choices[0].replies[0]), func(node: Node) -> bool: return node is Label and node.get(&"text") == line.text) as Label
@@ -120,21 +120,60 @@ func _check_in_place(questions: Reply) -> void:
 	click.pressed = true
 	click.double_click = true
 	label.gui_input.emit(click)
-	var field := _find(graph.box_of(questions.choices[0].replies[0]), func(node: Node) -> bool: return node is LineEdit and node.get(&"text") == line.text) as LineEdit
-	check("a double-click opens the line's text", field.text if field != null else null, line.text)
+	var field := _find(graph.box_of(questions.choices[0].replies[0]), func(node: Node) -> bool: return node is TextEdit) as TextEdit
+	check("a double-click opens the line's whole text", field.text if field != null else null, line.text)
 	if field == null:
 		return
-	field.text_submitted.emit("Right after the new Windows, dude.")
-	check("Enter sets it", line.text, "Right after the new Windows, dude.")
+	check("in an editor as wide as the box, five lines tall", [field.custom_minimum_size.x >= graph.box_width - 24, field.custom_minimum_size.y >= field.get_line_height() * 5], [true, true])
+	field.text = "Right after the new\nWindows, dude."
+	field.gui_input.emit(_key(KEY_ESCAPE))
+	await process_frame
+	check("Esc cancels", line.text, "Right after I got the new Windows.")
+	_find(graph.box_of(questions.choices[0].replies[0]), func(node: Node) -> bool: return node is Label and node.get(&"text") == line.text).gui_input.emit(click)
+	field = _find(graph.box_of(questions.choices[0].replies[0]), func(node: Node) -> bool: return node is TextEdit) as TextEdit
+	field.text = "Right after the new\nWindows, dude."
+	field.gui_input.emit(_key(KEY_ENTER, true))
+	check("Ctrl+Enter sets it, a line break as a space", line.text, "Right after the new Windows, dude.")
 	await process_frame
 	var chip := _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is Button and node.get(&"text") == "only if: skater_cambion") as Button
 	chip.pressed.emit()
-	field = _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is LineEdit and node.get(&"text") == "skater_cambion") as LineEdit
-	field.text_submitted.emit("Not A Flag")
+	var condition := _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is LineEdit and node.get(&"text") == "skater_cambion") as LineEdit
+	condition.text_submitted.emit("Not A Flag")
 	var error := _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is Label and node.visible and String(node.get(&"text")).contains("is not a condition")) as Label
 	check("a bad condition shows its error under the chip", error != null, true)
 	check("and changes nothing", questions.choices[2].when.need_flags, [&"skater_cambion"])
 	await _check_file("in-place edits")
+
+	var answer := questions.choices[0].replies[0]
+	_button(graph.box_of(answer), "+ choice").pressed.emit()
+	await process_frame
+	check("+ choice starts a list under an answer", answer.choices.size(), 1)
+	check("and opens the new choice's text", (_find(graph.box_of(answer.choices[0]), func(node: Node) -> bool: return node is TextEdit) as TextEdit).text, graph.new_text)
+	_button(graph.box_of(answer.choices[0]), "+ answer").pressed.emit()
+	await process_frame
+	check("+ answer adds an if branch", answer.choices[0].replies[0].when.need_flags, [graph.new_flag])
+	_button(graph.box_of(answer), "+ go on below").pressed.emit()
+	await process_frame
+	check("+ go on below gives the list a then", answer.then != null, true)
+	check("a list that goes on below has no + go on below", _button(graph.box_of(answer), "+ go on below"), null)
+	await _check_file("the add buttons")
+
+	check("no brief, no note", _find(graph.box_of(talk), func(node: Node) -> bool: return node is Label and node.get(&"text") == "He wants help.") != null, true)
+	graph.edit_text(talk, "")
+	await process_frame
+	check("an empty brief shows nothing", _find(graph.box_of(talk), func(node: Node) -> bool: return node is Label and String(node.get(&"text")).contains("brief")), null)
+
+
+func _button(under: Node, text: String) -> Button:
+	return _find(under, func(node: Node) -> bool: return node is Button and node.get(&"text") == text) as Button
+
+
+func _key(code: Key, ctrl: bool = false) -> InputEventKey:
+	var key := InputEventKey.new()
+	key.keycode = code
+	key.pressed = true
+	key.ctrl_pressed = ctrl
+	return key
 
 
 func _find(under: Node, matches: Callable) -> Node:
