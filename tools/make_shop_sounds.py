@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes the shop's door chime, door slam, phone, keystroke, mouse button and modem sounds as 22050 Hz mono WAVs.
+"""Synthesizes the shop's door chime, door slam, phone, keystroke, mouse button, modem and printer sounds as 22050 Hz mono WAVs.
 Usage: make_shop_sounds.py Godot/sounds"""
 import math
 import random
@@ -163,6 +163,26 @@ def door_slam():
     return out
 
 
+def printer_line(seed):
+    """A dot-matrix printer printing one line: the pins rasp through the characters as the head
+    runs across the page, the carriage motor whines under it, and the platen clicks the paper on."""
+    random.seed(seed)
+    seconds = 0.12
+    out = silence(seconds + 0.03)
+    t = 0.0
+    while t < seconds:
+        char = 0.0025
+        if random.random() > 0.2:  # a space fires no pins
+            for k in range(4):
+                click = highpass(noise(0.0006, 0.0002), 1500)
+                mix(out, click, t + k * char / 4, random.uniform(0.5, 1.0))
+        t += char
+    motor = [0.08 * math.sin(2 * math.pi * 190 * i / RATE) * min(1.0, i / RATE / 0.01) for i in range(int(seconds * RATE))]
+    mix(out, motor, 0.0)
+    mix(out, lowpass(noise(0.02, 0.006), 700), seconds + 0.005, 0.5)  # the line feed
+    return highpass(lowpass(out, 6000), 250)
+
+
 def write(path, samples):
     peak = max(abs(s) for s in samples)
     gain = 0.7 / peak
@@ -188,3 +208,5 @@ for take in range(1, 4):
     write(sys.argv[1] + "/mouse_up_%d.wav" % take, mouse_button(20 + take, True))
 write(sys.argv[1] + "/modem_dialup.wav", modem_dialup())
 write(sys.argv[1] + "/door_slam.wav", door_slam())
+for take in range(1, 4):
+    write(sys.argv[1] + "/printer_line_%d.wav" % take, printer_line(30 + take))

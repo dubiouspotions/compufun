@@ -1,13 +1,16 @@
 extends SceneTree
 ## Builds the beige 80-column dot-matrix printer under the work desk: its atlas
-## (materials/textures/printer.png) and one mesh, props/printer.tres, with two surfaces: 0 the
-## beige body (materials/beige_plastic.tres), 1 the atlas details (materials/printer.tres): the
-## front panel, the smoked lid, the platen knob, the green-bar paper and the fanfold stack.
+## (materials/textures/printer.png); its mesh, props/printer.tres, with two surfaces: 0 the beige
+## body (materials/beige_plastic.tres), 1 the atlas details (materials/printer.tres): the front
+## panel, the smoked lid, the platen knob and the fanfold stack; and the page that it prints,
+## props/printer_sheet.tres, in the atlas too.
 ## The printer's front faces +Z, X runs across it, the floor is at Y 0, and the stack stands at +X.
+## The page's front faces +Z and it hangs from its top edge at Y 0.
 ## Usage, from Godot/: godot --headless --path . -s ../tools/make_printer.gd, then --import.
 
 const ATLAS_PATH := "res://materials/textures/printer.png"
 const MESH_PATH := "res://props/printer.tres"
+const SHEET_PATH := "res://props/printer_sheet.tres"
 const ATLAS_SIZE := Vector2(128.0, 64.0)
 
 const BEIGE := Color8(204, 196, 170)
@@ -16,18 +19,18 @@ const SMOKE := Color8(92, 78, 66)
 const PAPER := Color8(244, 243, 236)
 const GREEN_BAR := Color8(198, 226, 196)
 const HOLE := Color8(150, 150, 150)
-const INK := Color8(70, 70, 80)
 
 const FRONT := Rect2i(0, 0, 64, 14)
 const TOP := Rect2i(0, 14, 64, 44)
 const KNOB := Rect2i(64, 40, 8, 8)
-const PRINTED := Rect2i(64, 0, 32, 40)
 const BLANK := Rect2i(96, 8, 32, 40)
 const STACK_SIDE := Rect2i(96, 0, 32, 8)
 
 const BODY := Vector3(0.4, 0.09, 0.28)
 const STACK := Vector3(0.25, 0.07, 0.28)
 const STACK_X := 0.36
+## A page of continuous paper: 9.5 by 12 inches.
+const PAGE := Vector2(0.24, 0.3)
 
 var _img := Image.create(int(ATLAS_SIZE.x), int(ATLAS_SIZE.y), false, Image.FORMAT_RGBA8)
 var _rng := RandomNumberGenerator.new()
@@ -45,20 +48,32 @@ func _initialize() -> void:
 		failed = true
 	else:
 		print("make_printer: wrote ", ATLAS_PATH)
-	for st: SurfaceTool in [_beige, _detail]:
-		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	_begin()
 	_build()
-	var mesh := ArrayMesh.new()
+	failed = not _save([_beige, _detail], MESH_PATH) or failed
+	_begin()
+	_box(Vector3(0.0, -PAGE.y * 0.5, 0.0), Vector3(PAGE.x, PAGE.y, 0.003), Basis(), BLANK, BLANK, BLANK)
+	failed = not _save([_detail], SHEET_PATH) or failed
+	quit(1 if failed else 0)
+
+
+func _begin() -> void:
 	for st: SurfaceTool in [_beige, _detail]:
+		st.clear()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+
+
+func _save(surfaces: Array[SurfaceTool], path: String) -> bool:
+	var mesh := ArrayMesh.new()
+	for st: SurfaceTool in surfaces:
 		st.index()
 		st.commit(mesh)
-	err = ResourceSaver.save(mesh, MESH_PATH)
+	var err := ResourceSaver.save(mesh, path)
 	if err != OK:
-		push_error("make_printer: couldn't save %s: %s" % [MESH_PATH, error_string(err)])
-		failed = true
-	else:
-		print("make_printer: wrote ", MESH_PATH)
-	quit(1 if failed else 0)
+		push_error("make_printer: couldn't save %s: %s" % [path, error_string(err)])
+		return false
+	print("make_printer: wrote ", path)
+	return true
 
 
 # --- The atlas -------------------------------------------------------------------------------
@@ -68,8 +83,7 @@ func _draw_atlas() -> void:
 	_front()
 	_top()
 	_fill(KNOB, DARK)
-	_paper(PRINTED, true)
-	_paper(BLANK, false)
+	_paper(BLANK)
 	_stack_side()
 
 
@@ -107,17 +121,14 @@ func _top() -> void:
 	_fill(Rect2i(o.x + 10, o.y + 7, 44, 4), DARK)
 
 
-## Continuous green-bar paper with its tractor-hole margins; [param printed] adds lines of type.
-func _paper(r: Rect2i, printed: bool) -> void:
+## Continuous green-bar paper with its tractor-hole margins.
+func _paper(r: Rect2i) -> void:
 	_fill(r, PAPER)
 	for y in range(r.position.y, r.end.y, 8):
 		_fill(Rect2i(r.position.x + 3, y, r.size.x - 6, 4), GREEN_BAR)
 	for y in range(r.position.y + 1, r.end.y, 3):
 		_img.set_pixel(r.position.x + 1, y, HOLE)
 		_img.set_pixel(r.end.x - 2, y, HOLE)
-	if printed:
-		for y in range(r.position.y + 2, r.end.y - 1, 2):
-			_fill(Rect2i(r.position.x + 5, y, _rng.randi_range(6, r.size.x - 10), 1), INK)
 
 
 ## The edge of the fanfold stack: sheets folded on top of each other.
@@ -133,14 +144,6 @@ func _build() -> void:
 	_box(Vector3(0.0, BODY.y * 0.5, 0.0), BODY, Basis(), FRONT, Rect2i(), TOP)
 	_box(Vector3(0.0, BODY.y + 0.015, -0.1), Vector3(0.34, 0.03, 0.08), Basis(), Rect2i(), Rect2i(), Rect2i())
 	_box(Vector3(BODY.x * 0.5 + 0.01, 0.07, -0.02), Vector3(0.02, 0.036, 0.036), Basis(), KNOB, KNOB, KNOB)
-	var lean := Basis(Vector3.RIGHT, deg_to_rad(-30.0))
-	var sheet := Vector3(0.24, 0.13, 0.003)
-	var root := Vector3(0.0, BODY.y - 0.01, -0.045)
-	_box(root + lean * Vector3(0.0, sheet.y * 0.5, 0.0), sheet, lean, PRINTED, PRINTED, PRINTED)
-	var curl := Basis(Vector3.RIGHT, deg_to_rad(-80.0))
-	var curl_root := root + lean * Vector3(0.0, sheet.y, 0.0)
-	var curl_sheet := Vector3(0.24, 0.07, 0.003)
-	_box(curl_root + curl * Vector3(0.0, curl_sheet.y * 0.5, 0.0), curl_sheet, curl, BLANK, BLANK, BLANK)
 	_box(Vector3(STACK_X, STACK.y * 0.5, 0.0), STACK, Basis(), STACK_SIDE, STACK_SIDE, BLANK)
 
 

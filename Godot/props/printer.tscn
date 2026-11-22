@@ -3,8 +3,38 @@
 [ext_resource type="ArrayMesh" path="res://props/printer.tres" id="1_mesh"]
 [ext_resource type="Material" path="res://materials/beige_plastic.tres" id="2_beige"]
 [ext_resource type="Material" path="res://materials/printer.tres" id="3_details"]
+[ext_resource type="Script" path="res://props/printer.gd" id="4_script"]
+[ext_resource type="ArrayMesh" path="res://props/printer_sheet.tres" id="5_sheet"]
+[ext_resource type="FontFile" path="res://compufun_db/fonts/Px437_IBM_VGA_8x16.ttf" id="6_vga"]
 
-[node name="Printer" type="MeshInstance3D"]
+[node name="Printer" type="MeshInstance3D" groups=["printer"]]
 mesh = ExtResource("1_mesh")
 surface_material_override/0 = ExtResource("2_beige")
 surface_material_override/1 = ExtResource("3_details")
+script = ExtResource("4_script")
+
+[node name="Slot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.8660254, 0.5, 0, -0.5, 0.8660254, 0, 0.08, -0.045)
+
+[node name="Sheet" type="MeshInstance3D" parent="Slot"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.17, 0)
+mesh = ExtResource("5_sheet")
+surface_material_override/0 = ExtResource("3_details")
+
+[node name="Text" type="Label3D" parent="Slot/Sheet"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, -0.012, 0.003)
+pixel_size = 0.0005625
+double_sided = false
+alpha_cut = 1
+texture_filter = 0
+modulate = Color(0.22, 0.22, 0.28, 1)
+outline_size = 0
+font = ExtResource("6_vga")
+font_size = 16
+horizontal_alignment = 0
+vertical_alignment = 0
+
+[node name="Speaker" type="AudioStreamPlayer3D" parent="."]
+unique_name_in_owner = true
