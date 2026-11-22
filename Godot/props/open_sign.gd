@@ -1,7 +1,7 @@
 class_name OpenSign
 extends Node3D
-## The sign that hangs in the shop window. Its OPEN side faces the street while the shop is open,
-## so the player, inside, reads CLOSED; while the shop is closed, the player reads OPEN. Its origin
+## The sign that hangs in the shop window. The player, inside, reads OPEN while the shop is open,
+## and CLOSED while the shop is closed. Its origin
 ## is where the strings hang from. It takes clicks only while [method Game.can_open] or
 ## [method Game.can_close] is true, and then a yellow outline pulses around it. [method shake]
 ## swings it on its strings to draw the eye. It makes [member flip_sound] when it turns over.
@@ -83,7 +83,7 @@ func _open() -> bool:
 
 func _sync() -> void:
 	var open := _open()
-	(_board.material_override as ShaderMaterial).set_shader_parameter("albedo_texture", closed_texture if open else open_texture)
+	(_board.material_override as ShaderMaterial).set_shader_parameter("albedo_texture", open_texture if open else closed_texture)
 	if open != _was_open and Game.jump == _jump:
 		flip_sound.play_at(self)
 	_was_open = open
