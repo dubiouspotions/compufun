@@ -20,7 +20,7 @@ problem: dust_overheat
 
 
 func run() -> void:
-	var drafts: Dictionary[String, String] = {PATH: TEXT, "res://story/errands/0598_office_girl.errand": "customer: office_girl\ncomputer: none\n\n== drop-off\n(neutral) Hi.\n"}
+	var drafts: Dictionary[String, String] = {"res://story/errands/0503_nice_guy.errand": "", PATH: TEXT, "res://story/errands/0598_office_girl.errand": "customer: office_girl\ncomputer: none\n\n== drop-off\n(neutral) Hi.\n"}
 	check("the drafts load", game.load_story(drafts), PackedStringArray())
 	var own := StoryFormat.parse_errand(TEXT, PATH).value as Errand
 	var visit := game.day_of(5).alternatives("0599")[0] as Errand

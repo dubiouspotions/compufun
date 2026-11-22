@@ -13,7 +13,7 @@ func run() -> void:
 	root.add_child(shop)
 	await process_frame
 	OS.add_logger(_errors)
-	var day: Day = game.day_of(1).duplicate()
+	var day: Day = computer_day(1)
 	day.first_wait_seconds = Vector2.ZERO
 
 	game.start_day(day)

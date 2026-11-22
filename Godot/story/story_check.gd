@@ -44,7 +44,7 @@ static func flag_index(week: StoryFiles.Week) -> Dictionary:
 
 
 ## The missing links of [param week], one sentence each, starting with the file path: a flag that
-## nothing sets or nothing checks, a choice without lines, an errand without a drop-off (unless it
+## nothing sets or nothing checks, a + choice without lines, an errand without a drop-off (unless it
 ## brings no computer and has no lines at all), an errand code whose alternatives can all fail on
 ## its day, a line's mood that the customer's person has no portrait for or that has no
 ## voices/moods/<mood>.tres, and a problem without repair mechanics (no broken_part and no
@@ -115,8 +115,8 @@ static func _check_choices(reply: Reply, where: String, found: PackedStringArray
 	for choice: Choice in reply.choices:
 		var asked := "%s > \"%s\"" % [where.trim_suffix(")"), choice.text.left(30)] + ")"
 		for answer: Reply in choice.replies:
-			if answer.lines.is_empty():
-				found.append("%s: the choice has no lines." % asked)
+			if answer.lines.is_empty() and answer.choices.is_empty() and choice.returns:
+				found.append("%s: the + choice has no lines, so its list shows again at once." % asked)
 			_check_choices(answer, asked, found)
 	if reply.then != null:
 		_check_choices(reply.then, where, found)

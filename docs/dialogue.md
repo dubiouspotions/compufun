@@ -141,7 +141,7 @@ a day or a conversation sets it, and clearing it uninstalls Cambion.
 ## Read and check it
 
 The files are the outline. The story check lists the missing links: a flag that nothing sets or
-checks, a choice without a line, an errand without a `drop-off`, an errand code whose alternatives can
+checks, a `+` choice without a line, an errand without a `drop-off`, an errand code whose alternatives can
 all fail, a mood that the person has no portrait for or no voice for, a problem without repair
 mechanics:
 

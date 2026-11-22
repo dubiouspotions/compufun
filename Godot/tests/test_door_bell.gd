@@ -14,7 +14,7 @@ func run() -> void:
 	await process_frame
 	var bell: AudioStreamPlayer3D = shop.find_child("DoorBell", true, false)
 	var follow: PathFollow3D = shop.find_child("CustomerFollow", true, false)
-	var day: Day = game.day_of(1).duplicate()
+	var day: Day = computer_day(1)
 	day.first_wait_seconds = Vector2.ZERO
 
 	game.start_day(day)

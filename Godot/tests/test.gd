@@ -53,6 +53,14 @@ func make_day(number: int, errands: Array) -> Day:
 	return d
 
 
+## Day [param number] of the week from the story files, with only the errands that bring a computer
+## to leave, so a test of walking and talking doesn't depend on who the writers put first.
+func computer_day(number: int) -> Day:
+	var d: Day = game.day_of(number).duplicate()
+	d.errands = game.day_of(number).errands.filter(func(e: Errand) -> bool: return e.brings == Errand.Brings.LEAVES)
+	return d
+
+
 ## A software problem that [param software_check] checks.
 func software_problem(software_check: SoftwareCheck) -> Problem:
 	var problem := Problem.new()

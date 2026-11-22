@@ -51,10 +51,13 @@ func run() -> void:
 	game.start_next_day()
 	game.open_shop()
 	tick(1000.0)
-	check("day 2: the entrepreneur comes first", game.visitor == load("res://customers/young_entrepreneur.tres"), true)
-	walk_through()
-	tick(1000.0)
-	check("then the accountant doesn't come while his computer is here", [game.visitor, game.arrivals], [null, 1])
+	var accountant: Customer = load("res://customers/retired_accountant.tres")
+	var came: Array[Customer] = []
+	while game.visitor != null:
+		came.append(game.visitor)
+		walk_through()
+		tick(1000.0)
+	check("day 2: the others come, the accountant doesn't while his computer is here", [came.has(accountant), came.size(), game.arrivals], [false, 2, 2])
 	game.close_shop()
 	check("the shop closes", game.phase, GAME.Phase.DAY_OVER)
 

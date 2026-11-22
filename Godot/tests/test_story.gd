@@ -38,7 +38,7 @@ problem: dust_overheat
 	check("every link starts with a file path", Array(links).all(func(link: String) -> bool: return link.begins_with("res://")), true)
 	check("a checked flag that nothing sets", text.contains(drop_off + " > \"Did you install anything?\") checks the flag knows_install, which nothing sets."), true)
 	check("a set flag that nothing checks", text.contains(drop_off + " > \"Did you install anything?\") sets the flag pat_told, which nothing checks."), true)
-	check("a choice without lines", text.contains(drop_off + " > \"Hello?\"): the choice has no lines."), true)
+	check("a choice without lines", text.contains(drop_off + " > \"Hello?\"): the + choice has no lines, so its list shows again at once."), true)
 	check("a mood without a portrait or a voice", [text.contains("\"Bye then.\" is in the mood sulky, which res://people/skater_bro/person.tres has no portrait for."), text.contains("which has no voice (res://voices/moods/sulky.tres)")], [true, true])
 	check("an errand without a drop-off", text.contains("res://story/errands/0102_office_girl.errand has no drop-off conversation."), true)
 	check("but not one that brings nothing and says nothing", text.contains("0103_hat_guy.errand has no drop-off"), false)
