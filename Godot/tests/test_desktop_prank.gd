@@ -18,7 +18,8 @@ func run() -> void:
 	var setup: Win95Setup = game.setup_for(job)
 	var hidden := setup.file_at("Desktop\\New Folder")
 	check("one folder on the desktop, in the corner", [setup.desktop.size(), hidden != null and hidden.desktop_position != Vector2.ZERO], [1, true])
-	check("it holds the icons", hidden.children.map(func(f: Win95File) -> String: return f.name), ["todo.txt", "letter.doc"])
+	check("it holds every icon, Win95's own first", hidden.children.map(func(f: Win95File) -> String: return f.name),
+		["My Computer", "Network Neighborhood", "Inbox", "Recycle Bin", "Calculator.exe", "todo.txt", "letter.doc"])
 	var shot := setup.wallpaper as DesktopScreenshot
 	check("the wallpaper is a screenshot of the old one", [shot != null, shot.wallpaper if shot else null, shot.get_width() if shot else 0], [true, clouds, 640])
 	prank.software_check.apply_break(setup)
@@ -28,7 +29,7 @@ func run() -> void:
 	state.job = job
 	root.add_child(state)
 	await process_frame
-	var todo: Win95File = hidden.children[0]
+	var todo: Win95File = setup.file_at("Desktop\\New Folder\\todo.txt")
 	check("a folder into itself is refused", state.move_files([hidden] as Array[Win95File], hidden.children).contains("subfolder"), true)
 	setup.desktop.append(file("todo.txt"))
 	check("a name clash is refused", state.move_files([todo] as Array[Win95File], setup.desktop).contains("same name"), true)

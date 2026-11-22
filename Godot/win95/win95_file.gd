@@ -7,6 +7,9 @@ extends Resource
 ## A 32 x 32 texture.
 @export var icon: Texture2D
 @export var is_folder: bool = false
+## One of Win95's own desktop icons, by its node in win95/desktop_icons.tscn, such as &"MyComputer":
+## the icon opens what that node opens. Empty for a file. Win95Setup.copy adds them.
+@export var system: StringName = &""
 ## Where the icon stands on the desktop, in pixels from its top left. ZERO lines it up with the
 ## others, column by column. Folder windows ignore it.
 @export var desktop_position := Vector2.ZERO
