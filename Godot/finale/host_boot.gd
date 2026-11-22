@@ -2,11 +2,12 @@ class_name HostBoot
 extends Control
 ## The player's own computer, faked: it seems to restart and hangs with a corrupted drive. It draws
 ## the boot screen of [member host], the computer that the game runs on: the Windows logo with its
-## spinning dots, the Apple logo with a progress bar that stops, or a Linux boot log. The Windows logo
+## spinning dots, the Apple logo with a progress bar that stops, a Linux boot log, or, on a computer
+## that the game doesn't know, the boot screen of Win95 Cambion, which stays. The Windows logo
 ## is four squares; the Apple logo is Simple Icons' (CC0). [method show_stage] moves it on; the finale
 ## times the stages.
 
-enum Host { WINDOWS, MACOS, LINUX }
+enum Host { WINDOWS, MACOS, LINUX, CAMBION }
 ## OFF: black. STARTING: the logo, or the boot log. REPAIRING: Windows only, a line under the dots.
 ## FAILED: the error.
 enum Stage { OFF, STARTING, REPAIRING, FAILED }
@@ -16,6 +17,7 @@ const WINDOWS_ERROR := Color(0.02, 0.24, 0.55)
 const TRACK := Color(0.27, 0.27, 0.27)
 const MONO: Font = preload("res://compufun_db/fonts/Px437_IBM_VGA_8x16.ttf")
 const APPLE: Texture2D = preload("res://finale/apple_logo.svg")
+const CAMBION: Texture2D = preload("res://win95/theme/boot_logo.png")
 
 ## The computer whose boot screen shows.
 @export var host: Host = Host.WINDOWS
@@ -41,17 +43,22 @@ static func detect() -> Host:
 			return Host.WINDOWS
 		"macOS", "iOS":
 			return Host.MACOS
-	return Host.LINUX
+		"Linux", "Android", "FreeBSD", "NetBSD", "OpenBSD", "BSD":
+			return Host.LINUX
+	return Host.CAMBION
 
 
-## The computer that a browser's user agent names; Linux for one that names neither Windows nor Apple.
+## The computer that a browser's user agent names; Win95 Cambion for one that names no computer we know.
 static func from_user_agent(agent: String) -> Host:
 	if agent.contains("Windows"):
 		return Host.WINDOWS
 	for apple: String in ["Macintosh", "Mac OS", "iPhone", "iPad"]:
 		if agent.contains(apple):
 			return Host.MACOS
-	return Host.LINUX
+	for linux: String in ["Linux", "X11", "CrOS"]:
+		if agent.contains(linux):
+			return Host.LINUX
+	return Host.CAMBION
 
 
 ## Shows [param stage] from its start.
@@ -83,6 +90,8 @@ func _draw() -> void:
 			_draw_mac()
 		Host.LINUX:
 			_draw_linux()
+		Host.CAMBION:
+			_draw_cambion()
 
 
 # The design size is 1080 pixels high; everything scales with the window.
@@ -152,3 +161,10 @@ func _draw_linux() -> void:
 	var height := font_size * 1.25
 	for i: int in shown:
 		draw_string(MONO, Vector2(size.x * 0.02, size.y * 0.04 + height * (i + 1)), lines[i], HORIZONTAL_ALIGNMENT_LEFT, size.x * 0.96, font_size)
+
+
+# Win95's own boot screen, filling the height: the computer starts as Cambion, and stays there.
+func _draw_cambion() -> void:
+	var height := size.y
+	var width := height * CAMBION.get_width() / CAMBION.get_height()
+	draw_texture_rect(CAMBION, Rect2((size.x - width) / 2.0, 0.0, width, height), false)

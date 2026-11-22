@@ -10,7 +10,7 @@ extends CanvasLayer
 
 ## The finale while it plays is in this group, so that a second one does not start.
 const GROUP := &"finale"
-enum HostChoice { AUTO, WINDOWS, MACOS, LINUX }
+enum HostChoice { AUTO, WINDOWS, MACOS, LINUX, CAMBION }
 
 const LOADING_SCREEN := "res://ui/loading_screen.tscn"
 const PEOPLE := "res://people/"
@@ -215,6 +215,8 @@ func _host() -> HostBoot.Host:
 			return HostBoot.Host.MACOS
 		HostChoice.LINUX:
 			return HostBoot.Host.LINUX
+		HostChoice.CAMBION:
+			return HostBoot.Host.CAMBION
 	return HostBoot.detect()
 
 

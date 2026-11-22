@@ -75,6 +75,7 @@ func _check_user_agents() -> void:
 		"Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148": HostBoot.Host.MACOS,
 		"Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0": HostBoot.Host.LINUX,
 		"Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Mobile Safari/537.36": HostBoot.Host.LINUX,
+		"Mozilla/5.0 (PlayStation; PlayStation 5/2.26) AppleWebKit/605.1.15 (KHTML, like Gecko)": HostBoot.Host.CAMBION,
 	}
 	for agent: String in agents:
 		check("the user agent %s..." % agent.substr(0, 40), HostBoot.from_user_agent(agent), agents[agent])
