@@ -24,7 +24,7 @@ func run() -> void:
 	check("dry: no rain sound", [rain_open.playing, rain_shut.playing], [false, false])
 	check("restore day 2, open", game.restore({"day": 2, "phase": "OPEN"}), "")
 	check("rain: both loops play", [rain_open.playing, rain_shut.playing], [true, true])
-	check("the open loop on the Street bus, the muffled one on Master", [rain_open.bus, rain_shut.bus], [&"Street", &"Master"])
+	check("the open loop on the Street bus, the muffled one on Shop", [rain_open.bus, rain_shut.bus], [&"Street", &"Shop"])
 	check("both loop", [(rain_open.stream as AudioStreamWAV).loop_mode, (rain_shut.stream as AudioStreamWAV).loop_mode], [AudioStreamWAV.LOOP_FORWARD, AudioStreamWAV.LOOP_FORWARD])
 
 	await create_timer(0.3).timeout

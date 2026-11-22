@@ -497,9 +497,9 @@ def looped(samples, filters):
 
 
 def rain(seconds):
-    """Steady rain on the alley as a seamless loop of `seconds`: a hiss of fine drops on the asphalt,
-    bubbly plinks in the puddles, and a drip from the gutter now and then. Returns the rain as heard
-    in the open doorway and through the shut door and windows."""
+    """Steady rain on the alley as a seamless loop of `seconds`: a hiss of fine drops on the asphalt
+    and bubbly plinks in the puddles. Returns the rain as heard in the open doorway and through the
+    shut door and windows."""
     random.seed(130)
     n = int(seconds * RATE)
     out = [random.gauss(0.0, 0.05) for _ in range(n)]
@@ -515,12 +515,6 @@ def rain(seconds):
         f0, decay = random.uniform(1400, 3200), random.uniform(0.004, 0.012)
         plink = [math.sin(2 * math.pi * f0 * (1 + 15 * i / RATE) * i / RATE) * math.exp(-i / RATE / decay) for i in range(int(decay * 5 * RATE))]
         add(plink, random.randrange(n), random.uniform(0.08, 0.2))
-    at = 0.0
-    while at < seconds - 0.05:  # the gutter drips, not quite steadily
-        f0 = random.uniform(700, 950)
-        drip = [math.sin(2 * math.pi * f0 * (1 + 6 * i / RATE) * i / RATE) * math.exp(-i / RATE / 0.02) for i in range(int(0.1 * RATE))]
-        add(drip, int(at * RATE), random.uniform(0.3, 0.45))
-        at += random.uniform(0.45, 1.1)
     heard = looped(out, [lambda x: biquad(x, "high", 180), lambda x: biquad(x, "low", 7000)])
     muffled = looped(heard, [lambda x: biquad(x, "low", 800)])  # through the glass: dull, but the patter still shows
     return heard, muffled
