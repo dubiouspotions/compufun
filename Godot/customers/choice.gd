@@ -13,3 +13,6 @@ extends Resource
 ## The conversation ends after the reply, and the customer goes on as after their last line. Off,
 ## a reply without choices of its own goes back to the choices that this one was among.
 @export var ends: bool = false
+## After the reply, the list that this choice is in shows again (a + in a story file). Off, the
+## conversation goes on below the list (the [member Reply.then] of the reply that offers it).
+@export var returns: bool = false

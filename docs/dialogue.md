@@ -1,103 +1,163 @@
-# Dialogue and the week, for agents
+# The story files: days, errands and what customers say
 
-How to read and change what customers say, and who comes on which day. The design is on the
-wiki page [Architecture](../wiki/Architecture.md) ("Content data"); the guide for people is
-[Writing Dialogue and Planning the Week](../wiki/Writing-Dialogue-and-Planning-the-Week.md).
+How the week is stored in story files, and how conversations are written in them. The design is on the
+wiki page [Architecture](../wiki/Architecture.md) ("Content data"). Writers edit these files in the
+Story Lab in the running game; agents and developers edit them as text.
 
 ## Where it lives
 
-- **Who comes when:** `Godot/days/day_<n>.tres`. A `Day` holds `errands` (an `Errand` is a customer
-  and the problem their computer has this time; at most `Game.MAX_CUSTOMERS`), `warp`, `set_flags`
-  (set as the day starts), `close_flags` (set at closing, and they stay) and `close_signs` (start at
-  closing, stop the next day).
-- **What they say:** `Godot/customers/<name>.tres`. A `Customer` holds `conversations`. A
-  `Conversation` is a `Reply` with an id, a trigger (`ARRIVE`, `PICKUP`, `PHONE`), `once`, a voice
-  effect, `leave_text` and `back_text`. A `Reply` holds `when` (a `Condition`), `set_flags`,
-  `lines` (`DialogueLine`: text and pose) and `choices`. A `Choice` holds the player's `text`,
-  `when`, `replies` and `ends`. Lines shared by every customer are in `customers/conversations/`.
-- **Flags** are names with a number; 0 or missing is off. `sign_<id>` starts the corruption sign
-  `corruption/<id>.tscn`.
+Everything that writers edit is plain text under `Godot/story/`. One thing is one file.
 
-## Read it as text
-
-Don't read the `.tres`: its sub-resources are out of order and hard to follow. Print the outline,
-and the week's missing links, from `Godot/`:
-
-```sh
-"$GODOT" --headless -s res://dev/story.gd -- outline skater_bro   # one customer's trees
-"$GODOT" --headless -s res://dev/story.gd -- outline              # all of them
-"$GODOT" --headless -s res://dev/story.gd                         # the missing links
+```
+story/days/day_1.day ... day_7.day    each day's settings: weather, warp, flags, signs, notes
+story/errands/0101_skater_bro.errand  one visit: who, which problem, the brief, the conversations
+story/bible/storyline.md              prose that the game doesn't read: the lore, the end, the cast
+story/bible/customers.md
 ```
 
-In the outline, `##` is a conversation with its tags, `>` a player choice, `-` a reply; tags read
-`day 2-2`, `needs x`, `not y`, `sets z`, `once`, `ends`. The missing links are what a change should
-fix, never add to: a flag that nothing sets or checks, a choice without a reply, an errand whose
-customer has no `ARRIVE` conversation for that day.
+- **The file name of an errand starts with its errand code.** `0101` is day 1, the first errand
+  (morning); `0503` is day 5, the third (evening). The name after it is the customer. Two errands
+  with the same code are alternatives: the first, by name, whose `when` matches comes (day 7
+  evening). Moving an errand to another day or place renames its file.
+- **Problems, customers, persons and computers stay resources** (`problems/*.tres`,
+  `customers/*.tres`, `people/<name>/person.tres`). Their mechanics are code; the Story Lab shows
+  their text.
+- **Moods:** a line picks a mood, which picks the portrait (`Person.portraits`) and the voice
+  (`voices/moods/<mood>.tres`). A person has the moods that it has portraits for. A mood without
+  a voice mood file speaks as neutral, and the story check lists it.
 
-## How it plays
+## A day: `story/days/day_<n>.day`
 
-- The game plays the **first** conversation of the customer, from the top, whose trigger and
-  condition match (and that hasn't played, if `once`). Put specific ones above the general one.
-- A choice shows only while its condition matches and one of its replies can. Picking it plays
-  the **first** matching reply, which sets its flags as it starts. Give a choice a last reply
-  without a condition as the fallback.
-- After a reply: its own choices; with none, back to the list it came from. A list without an
-  `ends` choice gets `leave_text` (the first list) or `back_text` (deeper). `ends` on a choice
-  ends the conversation after its reply, so its reply's choices never show.
-- The phone shows no choices yet; `PHONE` conversations stay plain lines.
-- The arrival pattern: a greeting, chitchat choices, "So, what's your problem?" whose reply is the
-  problem, questions that bring out the rest, and "OK, leave it with me." with `ends` on the
-  farewell. A problem's "if asked" symptom becomes a question.
-- A customer never says their own name (#148). Poses are `Person.POSES`; a pose the person has no
-  photo for shows the neutral photo, with an error. Write the player's lines short: they are buttons.
+```
+weather: rain
+warp: 0.15
+on start: sign_pipedream
+on close: sign_logo_blue
+close signs: posters_bounce
+first customer: 5-8
+between customers: 20-40
+notes:
+	Early corruption signs start: small and flashy, never obvious.
+```
+
+Every key is optional. `weather` is `clear` (the default) or `rain`. `on start` sets flags as the
+day starts; `on close` sets flags at closing that stay; `close signs` start at closing and stop the
+next morning. Flags are `name` (1), `name=2`, or `name=0` (clears it). The waits are seconds, a
+random time from the first to the second number. `notes` is for people only.
+
+## An errand: `story/errands/<code>_<customer>.errand`
+
+```
+customer: skater_bro
+problem: dust_overheat
+computer: leaves
+when: young_entrepreneur_deleted
+brief:
+	Meet the skater. His computer runs Cambion: the calculator answers 666 to every sum.
+	Nothing points the player there; they find it by chance.
+
+== drop-off
+...
+== pick-up
+...
+== phone
+...
+```
+
+- `customer`, `problem`: file names without `.tres`. An errand without a problem is a visit
+  that needs no repair.
+- `computer`: `leaves` (the default: it stays on the counter), `none` (the customer comes without
+  one and leaves when the conversation ends), or `shows` (it stands on the counter while they
+  visit, and goes with them).
+- `when`: a condition (below); without it the errand always comes.
+- `brief`: what the visit is for, written before any line.
+- **Conversations** start with `==` and the trigger: `drop-off` (the customer arrives),
+  `pick-up` (they come back for the computer, on any later day) and `phone` (the player calls).
+  A trigger can have several; the first whose condition matches plays. Without a match, a pick-up
+  is a short thanks and a phone call a "Hello?". A `phone` without lines rings out: nobody
+  answers.
+
+## Conversations
+
+One line per thing; a tab indents. Depth matters, not width.
+
+```
+== drop-off [once]
+brief: He arrives cheerful; the problem comes out only when asked.
+(neutral) Yo! What's up! Is this the computer repair shop?
+- Welcome to CompuFun! You're in the right place! How can I help you?
+	(happy) Sweet! Maybe you can help a buddy out!
+	(neutral) My computer isn't working!
+- Did your mom give it away?
+	(angry) Whatever dude.. You don't have to be a douche about it.
+
+- What seems to be the issue?
+	(problem) When I start it, everything seems primo. Then Windows turns it off again!
+
++ When did it start?
+	set skater_new_windows
+	(thinking) Right after I got the new Windows.
++ Did you install anything?
+	if skater_new_windows
+		set skater_cambion
+		(happy) Oh yeah. My buddy gave me this Windows 95 on floppies.
+	else
+		(neutral) Nah, nothing, man.
++ Cambion? [if skater_cambion]
+	(happy) It's the rad one, dude.
+- OK, leave it with me.
+	(happy) Cool. Call me, dude.
+```
+
+- `(mood) text` is a customer line. Without a mood it is neutral. `[effect name]` at the end
+  gives it its own voice effect (`voices/effects/<name>.tres`).
+- `- text` and `+ text` are the player's choices. Choices in a row make one list; an empty
+  line between two choices starts a new list.
+  - After a `-` choice's lines, the conversation goes on **below the list**: two branches meet
+    again there. Nothing below ends the conversation.
+  - After a `+` choice's lines, **the same list** shows again; the choices already picked are grey.
+  - A list without a `-` choice gets one more button that leaves it: `That's all, thanks.` at the
+    top, `Something else...` deeper.
+  - `[end]` ends the conversation after the choice's lines.
+- Under a choice, indented: its lines, and deeper lists of choices.
+- `if` and `else` at the start of a choice's lines give it alternative answers: the first that
+  matches plays. A choice shows only while one of its answers can play.
+- `set a, b=2, c=0` sets flags as its lines start.
+- `brief:` right under `==` says what the conversation must get across.
+
+**Conditions**, in `when:`, `if` and `[if ...]`: a comma list of `flag` (must be set),
+`not flag` (must not be), `day 3` and `days 2-4`. A flag that is 0 or missing is not set.
+
+**Tags** in `[...]` after a conversation's `==` line: `[if ...]`, `[once]` (plays only the first
+time it matches), `[effect name]` (for all its lines), `[leave Text]` and `[back Text]` (the
+leave buttons). After a choice: `[if ...]` and `[end]`.
+
+## Flags and signs
+
+Flags are the facts of the story: a name and a number. `sign_<id>` starts the corruption sign
+`corruption/<id>.tscn`. `<customer>_cambion` makes that customer's computer run Win95 Cambion;
+a day or a conversation sets it, and clearing it uninstalls Cambion.
+
+## Read and check it
+
+The files are the outline. The story check lists the missing links: a flag that nothing sets or
+checks, a choice without a line, an errand without a `drop-off`, an errand code whose alternatives can
+all fail, a mood that the person has no portrait for or no voice for:
+
+```sh
+"$GODOT" --headless -s res://dev/story.gd
+```
+
+The game refuses a file that doesn't parse, and names the file, the line and what it expected.
 
 ## Change it
 
-Don't hand-edit sub-resources in a `.tres`. Write a throwaway script in your scratch folder that
-loads the resource, changes it with the classes, and saves it; run it from `Godot/` with
-`"$GODOT" --headless -s /path/to/script.gd`. If it fails with "Could not parse global class" after
-a pull, the class cache is stale: run `"$GODOT" --headless --editor --quit` once. For example, a question with two answers:
+Edit the text, then run the story check and the tests that cover the change
+(`run.gd -- story`). Render the voices of new or changed lines, then import (see "Voices" in
+[building-and-testing.md](building-and-testing.md)); `git rm` the files it lists as unused, and
+commit the `.wav` and `.wav.import` files with the text.
 
-```gdscript
-extends SceneTree
-
-func _initialize() -> void:
-	var path := "res://customers/hat_guy.tres"
-	var c: Customer = load(path)
-	var talk: Conversation = c.conversation(&"arrive")
-	var problem: Reply = talk.choices.back().replies[0]  # the reply to "So, what's your problem?"
-	var asked := Choice.new()
-	asked.text = "Did a friend help you?"
-	var told := Reply.new()
-	told.when = Condition.new()
-	told.when.need_flags = [&"hat_guy_cambion"]
-	told.lines = [line("My grandson did. He brought that Cambion thing.", &"thinking")]
-	var not_yet := Reply.new()
-	not_yet.lines = [line("No, I did it all myself.", &"happy")]
-	asked.replies = [told, not_yet]
-	problem.choices.insert(problem.choices.size() - 1, asked)  # above "OK, leave it with me."
-	var err := ResourceSaver.save(c, path)
-	print("%s: %s" % [path, error_string(err)])
-	quit(1 if err != OK else 0)
-
-func line(text: String, pose: StringName) -> DialogueLine:
-	var each := DialogueLine.new()
-	each.text = text
-	each.pose = pose
-	return each
-```
-
-`ResourceSaver` writes the whole file again, so the diff is large. Read it back through the
-outline, not the diff, and check that the customer's other fields (person, computer, voice) are
-unchanged. The Dialogue and Week tabs edit the same resources by hand; an open editor holds its
-own copy, so reload it before saving there after a script changed a file.
-
-## Check it
-
-1. The outline shows the change, and `dev/story.gd` lists no missing links you added.
-2. `"$GODOT" --headless -s res://tests/run.gd` passes.
-3. Render the voices of new or changed lines, then import (see "Voices" in
-   [building-and-testing.md](building-and-testing.md)):
-   `CHIMERA=/path/to/chimera "$GODOT" --headless --script res://voices/render_voices.gd`.
-   `git rm` the files it lists as unused. Commit the `.wav` and `.wav.import` files with the text.
-4. A new rule of how dialogue plays is a design change: it goes on the wiki page first.
+A writer's change arrives as a GitHub issue with the label `story`: the Story Lab's **Send**. Its
+body holds each changed file whole and its diff against the commit that the writer started from.
+Apply it: where `main` changed the same lines since, merge by hand and say so on the issue. A new
+rule of how the story plays is a design change: it goes on the wiki page first.

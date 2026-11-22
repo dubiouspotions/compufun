@@ -141,7 +141,28 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Slot**: One of the `Game.MAX_JOBS` places on the work mat where a job's computer stands (`Job.slot`). The computers fill the slots from the left, oldest first: when one leaves, the computers right of it slide left. In the scene it is a `Slot<n>` marker in `rooms/shop/job_slots.tscn`.
 *Avoid:* place, spot, position.
 
-**Errand**: One visit on a day: a customer and what is wrong with their computer this time (`Errand`, in the `Day` file). A customer who comes back on another day brings the same computer with a new errand. Not *visit*, which is why the visitor is in (`Game.Visit`: drop-off or pickup).
+**Errand**: One visit on a day: a customer, what is wrong with their computer this time (or nothing), what the visit is for and what is said (`Errand`, a story file in `story/errands/`). A customer who comes back on another day brings the same computer with a new errand. Not *visit*, which is why the visitor is in (`Game.Visit`: drop-off or pickup).
+
+**Errand code**: The four digits that start an errand's file name: the day and the errand's place in it, so `0503_nice_guy.errand` is day 5, the third errand. Two errands with one code are alternatives; the first whose condition matches comes.
+*Avoid:* slot (a place on the work mat), timeslot, id.
+
+**Story file**: A plain-text file in `Godot/story/` that writers edit in the Story Lab: a day (`days/day_<n>.day`), an errand (`errands/<code>_<customer>.errand`) or a bible page (`bible/*.md`). The format is in `docs/dialogue.md`.
+*Avoid:* script, timeline, data file.
+
+**Brief**: What an errand or a conversation is for, in plain words, written before its lines. People read it; the game doesn't.
+*Avoid:* intent, synopsis, story.
+
+**Bible**: The prose of the story that the game doesn't read: the lore, the cast and the end (`story/bible/`).
+*Avoid:* lore doc, storyline page.
+
+**Mood**: How a customer says a line: it picks the person's portrait and the voice mood (`voices/moods/<mood>.tres`). A person has the moods that it has portraits for.
+*Avoid:* pose, emotion, expression.
+
+**Story Lab**: The panel in the running game (Dev menu, F4) that edits the story files: the week, the errands and their conversations, as a graph or as text, and plays a conversation in place.
+*Avoid:* Dialogue tab, Week tab, story editor, dialogue editor.
+
+**Draft**: A writer's edit of a story file, kept in the player's user folder until `main` has it (`user://story_drafts/`). The game plays drafts over the files from `main`; Send turns them into a GitHub issue.
+*Avoid:* local change, patch, overlay.
 
 **Visitor**: The customer who is in the shop now, to drop off or to pick up a computer (`Game.visitor`). Only one at a time.
 *Avoid:* current customer.
@@ -166,13 +187,13 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Flag**: A fact of the story in `Game.flags`: a name and a number. 0 or missing means not set.
 *Avoid:* variable, story state, switch.
 
-**Trigger**: The moment a conversation can play: `ARRIVE` when a customer brings a computer, `PICKUP` when they come back for it, or `PHONE` when they answer the player's call.
+**Trigger**: The moment a conversation can play: `ARRIVE` when a customer brings a computer, `PICKUP` when they come back for it, or `PHONE` when they answer the player's call. Story files write them `drop-off`, `pick-up` and `phone`.
 *Avoid:* event, hook.
 
-**Condition**: The days and flags that a conversation needs to play (`Condition` resource).
+**Condition**: The days and flags that an errand, a conversation, a choice or a reply needs to play (`Condition` resource).
 *Avoid:* requirement, rule, filter.
 
-**Conversation**: One exchange with a customer: the lines they say, one at a time. A `Conversation` resource in the `Customer` file; `Game` plays the first one whose trigger and condition match.
+**Conversation**: One exchange with a customer: the lines they say, one at a time, and the player's choices. It is a section of an errand's story file; `Game` plays the errand's first one whose trigger and condition match.
 *Avoid:* dialog, dialogue tree, script.
 
 **Name**: A person's name, for use on that person's computer (`Person.name`). Dialogue does not show it.
@@ -183,9 +204,6 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 **Email**: A person's address, for use on that person's computer (`Person.email`). Dialogue does not show it.
 *Avoid:* mail, address, account.
-
-**Dialogue tab**: The editor tab (`addons/dialogue_editor/`) that lists every customer and edits their conversations.
-*Avoid:* admin UI, dialogue tool, dialogue editor.
 
 **Hum**: A quiet loop from a thing in the shop that runs, which plays while it runs (`sounds/hum.gd`): the storage bulb's mains buzz while it is lit, a PC's fans while it is on, a CRT's hum while its tube is on.
 *Avoid:* ambience, drone, room tone.

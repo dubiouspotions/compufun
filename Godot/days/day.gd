@@ -5,7 +5,10 @@ extends Resource
 
 ## The day of the week, 1 to 7.
 @export_range(1, 7) var number: int = 1
+## The errands of the day, by errand code and then file name; alternatives share a code.
 @export var errands: Array[Errand] = []
+## For people: what the day is about; the game doesn't show it.
+@export_multiline var notes: String = ""
 ## How far Win95 "Cambion" has changed the shop, 0 to 1. The corruption signs, such as the
 ## Pipedream, grow with it.
 @export_range(0.0, 1.0) var warp: float = 0.0

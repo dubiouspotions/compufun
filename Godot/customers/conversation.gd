@@ -11,7 +11,9 @@ enum Trigger {
 	PHONE, ## The player calls the customer: what they say when they answer. With no match, a short hello.
 }
 
-## Unique within its customer, for example &"arrive".
+## What the conversation must get across, for people; the game doesn't show it.
+@export_multiline var brief: String = ""
+## Unique within its customer, for example &"arrive". A story file names it <code>/<trigger>/<n>.
 @export var id: StringName = &""
 @export var trigger: Trigger = Trigger.ARRIVE
 ## Plays only the first time it matches.
