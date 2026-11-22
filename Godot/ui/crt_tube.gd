@@ -18,8 +18,9 @@ extends Node
 ## The seconds that the picture rolls before it locks onto a new signal.
 @export var sync_lock_seconds: float = 0.9
 ## How much the mask magnetises per second while the screen shows a computer, at warp 1; the
-## day's warp scales it, so it doesn't happen at warp 0. 1 is fully magnetised.
-@export_range(0.0, 0.1, 0.001) var magnetize_per_second: float = 0.01
+## day's warp scales it, so it doesn't happen at warp 0. It stops at the warp, so only warp 1
+## magnetises it fully.
+@export_range(0.0, 0.1, 0.001) var magnetize_per_second: float = 0.007
 @export var power_on_sound: AudioStream = preload("res://sounds/crt_power_on.wav")
 @export var power_off_sound: AudioStream = preload("res://sounds/crt_power_off.wav")
 @export var degauss_sound: AudioStream = preload("res://sounds/crt_degauss.wav")
@@ -53,7 +54,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if _on and _signal and _warp > 0.0 and not _tweens.has(&"crt_magnetization"):
-		_set_value(minf(1.0, _values[&"crt_magnetization"] + magnetize_per_second * _warp * delta), &"crt_magnetization")
+		_set_value(minf(_warp, _values[&"crt_magnetization"] + magnetize_per_second * _warp * delta), &"crt_magnetization")
 
 
 ## Lets this tube drive [param look]'s crt_* uniforms, from their current values on.
