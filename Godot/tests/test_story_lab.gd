@@ -229,6 +229,8 @@ func _opening_an_errand_shows_its_own_conversations(lab: Control) -> void:
 	check("and Play, Graph and Text are off", [play.disabled, (panel.get("_views") as ButtonGroup).get_buttons().all(func(b: BaseButton) -> bool: return b.disabled)], [true, true])
 	var computer := (panel.get("_computer") as ButtonGroup).get_buttons().map(func(b: BaseButton) -> bool: return b.button_pressed)
 	check("only None shows pressed for computer: none", computer, [false, true, false])
+	var when: LineEdit = panel.get("_when")
+	check("an empty condition reads \"always\", the syntax in the tooltip", [when.text, when.placeholder_text, "days 2-4" in when.tooltip_text], ["", "always", true])
 	lab.call("open_errand", SKATER)
 	await process_frame
 	var graph: Node = graph_view.get_child(0)

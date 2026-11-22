@@ -553,7 +553,8 @@ func _left() -> Control:
 	box.add_child(_computer_hint)
 	box.add_child(LabUI.label("Comes when", 14, LabUI.DIM))
 	_when = LineEdit.new()
-	_when.placeholder_text = "always; or flags and days: skater_cambion, not gone_skater_bro, days 2-4"
+	_when.placeholder_text = "always"
+	_when.tooltip_text = "Empty: the errand always comes. Or flags and days, such as:\nskater_cambion, not gone_skater_bro, days 2-4"
 	_when.text_changed.connect(func(_t: String) -> void: _field_settle.start())
 	box.add_child(_when)
 	_when_error = LabUI.label("", 13, LabUI.BAD)
