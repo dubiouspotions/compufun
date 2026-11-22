@@ -68,7 +68,7 @@ Main (Node)                              the main buffer: the window
 │  │  ├─ ScreenBuffer (SubViewport, 640 × 480)  the screen buffer: updates always, embeds sub-windows
 │  │  │  └─ BenchScreen (ui/bench_screen.tscn)
 │  │  │     ├─ NoSignal (win95/no_signal.tscn), while the VGA cable hangs free
-│  │  │     └─ win95/win95.tscn         the connected job's desktop; each job has one, the others wait out of the tree
+│  │  │     └─ win95/win95.tscn         the connected job's desktop; each job has one, the others run in a viewport that draws nothing, their Win95 sounds silent
 │  │  ├─ Screen (crt_screen.gd)          shows the buffer at 2× through the CRT look, passes it the bent mouse
 │  │  └─ Tube (crt_tube.gd)              this monitor's power, signal lock, degauss and sounds
 │  └─ CompuFunDBView (screen_view.tscn again: follows the work monitor, fades in for CompuFunDB)

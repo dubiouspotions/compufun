@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## Win95 sounds play on the Win95 bus, and the bus follows the volume and mute of the desktop on
-## screen: a muted computer is silent (the no_sound problem), the hardware boot sounds are not.
+## Win95 sounds play on the Win95 bus, and the bus follows the volume and mute of the computer on
+## the cable: a muted computer is silent (the no_sound problem), the hardware boot sounds are not.
 
 # Loaded at run time: their scripts name the Game autoload.
 const WIN95 := "res://win95/win95.tscn"
@@ -17,10 +17,12 @@ func run() -> void:
 	var loud := desktop(80.0, false)
 	var muted := desktop(80.0, true)
 	game.jobs = [loud.get_node("ComputerState").job, muted.get_node("ComputerState").job] as Array[Job]
+	game.connected = game.jobs[1]
 	root.add_child(muted)
 	await process_frame
 	check("a muted desktop mutes the bus", AudioServer.is_bus_mute(bus), true)
 	root.remove_child(muted)
+	game.connected = game.jobs[0]
 	root.add_child(loud)
 	await process_frame
 	check("the desktop on screen sets the bus", [AudioServer.is_bus_mute(bus), snappedf(AudioServer.get_bus_volume_linear(bus), 0.01)], [false, 0.8])

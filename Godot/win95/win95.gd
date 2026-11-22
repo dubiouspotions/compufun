@@ -3,7 +3,8 @@ extends Control
 ## boot it rebuilds the desktop from %ComputerState's setup: palette, wallpaper, desktop icons,
 ## folders, the Recycle Bin and sound. Right-click menus act on the setup through %ComputerState,
 ## and every icon view lists the setup again after each change. While the cable is on another
-## computer, ScreenView takes it out of the tree, and puts it back as it was.
+## computer, BenchScreen parks it in a viewport that draws nothing: it runs on, but plays its Win95
+## sounds silently and leaves the shared palette and the Win95 bus to the computer on the cable.
 
 const _BOOT := preload("res://win95/boot_sequence.tscn")
 const _FLOPPY_IN := preload("res://sounds/floppy_insert.tres")
@@ -18,6 +19,9 @@ const _SHARED_PALETTE := preload("res://win95/theme/palette.tres")
 const _ICONS := "res://win95/theme/icons/"
 ## The meta key on a FileIcon that holds its Win95File, or its Applet in the Control Panel.
 const _FILE_META := &"win95_file"
+## The meta key on a Win95 sound player that holds its own volume_db while the computer is off the cable.
+const _OWN_DB := &"win95_own_db"
+const _SILENT_DB := -80.0
 ## The View submenu's items: action id to folder view and label.
 const _VIEW_IDS := {&"large_icons": [IconView.FolderView.LARGE_ICONS, "Large Icons"], &"small_icons": [IconView.FolderView.SMALL_ICONS, "Small Icons"],
 	&"list": [IconView.FolderView.LIST, "List"], &"details": [IconView.FolderView.DETAILS, "Details"]}
@@ -119,12 +123,49 @@ func _ready() -> void:
 	_no_signal.visible = not _state.is_on
 	if _state.is_on:
 		_on_booted()
+	_apply_speakers()
 
 
 func _enter_tree() -> void:
-	if is_node_ready() and _state.is_on:
-		_apply_palette(_state.setup.palette)
-		_apply_sound()
+	get_tree().node_added.connect(_on_node_added)
+	if is_node_ready():
+		if _state.is_on and _on_cable():
+			_apply_palette(_state.setup.palette)
+			_apply_sound()
+		_apply_speakers()
+
+
+func _exit_tree() -> void:
+	get_tree().node_added.disconnect(_on_node_added)
+
+
+# The computer is on the VGA cable, so its picture is on the bench screen and its sound card reaches the speakers.
+func _on_cable() -> bool:
+	return is_inside_tree() and _state != null and _state.job != null and _state.job == Game.connected
+
+
+func _on_node_added(node: Node) -> void:
+	if node is AudioStreamPlayer and is_ancestor_of(node):
+		_speak(node, _on_cable())
+
+
+# Off the cable the Win95 sounds play on silently, so the cable picks up a sound where it is.
+func _apply_speakers() -> void:
+	var aloud := _on_cable()
+	for player: AudioStreamPlayer in find_children("*", "AudioStreamPlayer", true, false):
+		_speak(player, aloud)
+
+
+func _speak(player: AudioStreamPlayer, aloud: bool) -> void:
+	if player.bus != Win95Desktop.SOUND_BUS:
+		return
+	var silenced := player.has_meta(_OWN_DB)
+	if aloud and silenced:
+		player.volume_db = player.get_meta(_OWN_DB)
+		player.remove_meta(_OWN_DB)
+	elif not aloud and not silenced:
+		player.set_meta(_OWN_DB, player.volume_db)
+		player.volume_db = _SILENT_DB
 
 
 func _on_booted() -> void:
@@ -190,7 +231,7 @@ func _uncover() -> void:
 # The setup's colour scheme and wallpaper, as they are now: on boot and after every change.
 func _apply_look() -> void:
 	var setup := _state.setup
-	if is_inside_tree():
+	if _on_cable():
 		_apply_palette(setup.palette)
 	_background.texture = setup.wallpaper
 	if setup.wallpaper != null:
@@ -252,8 +293,8 @@ func _apply_sound() -> void:
 		return
 	_systray.volume = _state.setup.volume
 	_systray.muted = _state.setup.muted
-	if not is_inside_tree():
-		return  # the bus belongs to the desktop on screen
+	if not _on_cable():
+		return  # the bus belongs to the computer on the cable
 	var bus := AudioServer.get_bus_index(Win95Desktop.SOUND_BUS)
 	if bus < 0:
 		push_error("Win95: no audio bus %s in default_bus_layout.tres, so Win95 sounds ignore volume and mute" % Win95Desktop.SOUND_BUS)
