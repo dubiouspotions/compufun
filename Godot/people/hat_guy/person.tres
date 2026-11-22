@@ -17,7 +17,7 @@
 script = ExtResource("10_hh4a0")
 back = ExtResource("back_png")
 voice = ExtResource("voice")
-name = "Jose Hernandez"
+name = "Jose Garcia"
 nickname = "Hat guy"
 email = "big_fish@yahoo.com"
 portraits = Dictionary[StringName, Texture2D]({
