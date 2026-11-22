@@ -11,6 +11,10 @@ const SIZE := Vector2i(640, 480)
 @export var wallpaper: Texture2D
 ## The desktop's icons, in order, after the system icons.
 @export var icons: Array[Win95File] = []
+## How much colour the picture loses, as a cheap capture would: the steps per channel (256 keeps
+## them all) and the dither, as in psx_post.gdshader.
+@export_range(2.0, 256.0) var color_levels := 256.0
+@export_range(0.0, 2.0) var dither := 0.0
 ## The picture has been drawn, or is being drawn.
 var taken := false
 

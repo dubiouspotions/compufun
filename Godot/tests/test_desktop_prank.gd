@@ -13,6 +13,9 @@ func run() -> void:
 	var clouds: Texture2D = load("res://win95/wallpapers/clouds.png")
 	computer.win95_setup.wallpaper = clouds
 	computer.win95_setup.desktop = [file("todo.txt"), file("letter.doc")]
+	var windows := file("Windows")
+	windows.is_folder = true
+	computer.win95_setup.drive_c = [windows]
 	var job := Job.new(customer(computer), prank, 0, 0)
 	game.jobs = [job] as Array[Job]
 	var setup: Win95Setup = game.setup_for(job)
@@ -22,6 +25,8 @@ func run() -> void:
 		["My Computer", "Network Neighborhood", "Inbox", "Recycle Bin", "Calculator.exe", "todo.txt", "letter.doc"])
 	var shot := setup.wallpaper as DesktopScreenshot
 	check("the wallpaper is a screenshot of the old one", [shot != null, shot.wallpaper if shot else null, shot.get_width() if shot else 0], [true, clouds, 640])
+	var saved := setup.file_at("C:\\WINDOWS\\prank.bmp")
+	check("saved as prank.bmp in C:\\WINDOWS", saved != null and saved.picture == shot, true)
 	prank.software_check.apply_break(setup)
 	check("breaking twice is breaking once", [setup.desktop.size(), setup.wallpaper], [1, shot])
 

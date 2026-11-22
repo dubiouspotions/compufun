@@ -16,6 +16,7 @@ const _BIN_EMPTY := preload("res://win95/theme/icons/recycle_bin_empty_32.png")
 const _BIN_FULL := preload("res://win95/theme/icons/recycle_bin_full_32.png")
 const _COVER := preload("res://win95/cover_screen.gd")
 const _DESKTOP_ICONS := preload("res://win95/desktop_icons.tscn")
+const _CRUSH := preload("res://shaders/psx_post.gdshader")
 ## The applet that the desktop's Properties opens. Loaded when used: a preload here cycles.
 const _DISPLAY := "res://win95/applets/display.tres"
 const _SHARED_PALETTE := preload("res://win95/theme/palette.tres")
@@ -130,6 +131,7 @@ func _ready() -> void:
 		_icons.remove_child(template)
 		template.free()
 	_wire_view(_icons)
+	_icons.laid_out.connect(_pin_desktop)
 	_systray.computer = _state
 	_systray.mute_toggled.connect(func(_muted: bool) -> void: _state.set_sound(_systray.volume, _systray.muted))
 	_systray.volume_changed.connect(func(_volume: float) -> void: _state.set_sound(_systray.volume, _systray.muted))
@@ -256,17 +258,26 @@ func _apply_look() -> void:
 		_background.stretch_mode = wallpaper_stretch(setup.wallpaper, _background.size.x)
 
 
-# Draws the prank's screenshot offscreen: the desktop as it showed shot's icons on its wallpaper.
-# The taskbar is left out, as the real one covers it.
+# Draws the prank's screenshot offscreen: the desktop as it showed shot's icons on its wallpaper,
+# through psx_post for the colours that it loses. The taskbar is left out: the real one covers it.
 func _take_screenshot(shot: DesktopScreenshot) -> void:
 	shot.taken = true
-	var viewport := SubViewport.new()
-	viewport.size = DesktopScreenshot.SIZE
-	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS  # its texture shows nowhere
+	var viewport := _offscreen()
+	var crush := ShaderMaterial.new()
+	crush.shader = _CRUSH
+	crush.set_shader_parameter(&"color_levels", shot.color_levels)
+	crush.set_shader_parameter(&"dither", shot.dither)
+	var container := SubViewportContainer.new()
+	container.material = crush
+	container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	container.size = DesktopScreenshot.SIZE
+	viewport.add_child(container)
+	var inner := _offscreen()
+	container.add_child(inner)
 	var desk := Control.new()
 	desk.theme = theme
 	desk.size = DesktopScreenshot.SIZE
-	viewport.add_child(desk)
+	inner.add_child(desk)
 	desk.add_child(_desktop.get_node(^"DesktopColour").duplicate())
 	var background := _background.duplicate() as TextureRect
 	background.texture = shot.wallpaper
@@ -288,6 +299,21 @@ func _take_screenshot(shot: DesktopScreenshot) -> void:
 		push_error("Win95: the desktop screenshot of the prank drew nothing, so the wallpaper stays black")
 		return
 	shot.set_image(image)
+
+
+# A Win95 desktop icon stays where it first stood: others leaving its column don't move it.
+func _pin_desktop() -> void:
+	for item in _icons.get_children():
+		var file := _file_of(item)
+		if file != null and file.desktop_position == Vector2.ZERO:
+			file.desktop_position = item.position
+
+
+static func _offscreen() -> SubViewport:
+	var viewport := SubViewport.new()
+	viewport.size = DesktopScreenshot.SIZE
+	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS  # its texture shows nowhere
+	return viewport
 
 
 ## How a desktop [param screen_width] pixels wide shows [param wallpaper], as Win95 showed them:
@@ -706,7 +732,11 @@ func _on_dropped(items: Array[FileIcon], onto: FileIcon, places: Array[Vector2],
 			return
 	var listing: Listing = _listings[view]
 	if listing.creatable:
-		_report_move(_state.move_files(files, listing.files.call(), at if view == _icons else [] as Array[Vector2]))
+		if view != _icons:
+			at.clear()  # only the desktop places icons
+		elif items[0].get_parent() != view:
+			at.resize(1)  # a folder's spacing piles icons up: the rest take free cells
+		_report_move(_state.move_files(files, listing.files.call(), at))
 
 
 # Win95's own icons can't be deleted.

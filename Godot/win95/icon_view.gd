@@ -23,6 +23,8 @@ signal folder_view_changed
 ## is null. [param places] says where each item would stand, from the view's top left, keeping
 ## their layout around the pointer.
 signal items_dropped(items: Array[FileIcon], onto: FileIcon, places: Array[Vector2])
+## Every icon has its position, after each layout.
+signal laid_out
 ## The player pressed Ctrl+X (&"cut") or Ctrl+V (&"paste").
 signal clipboard_requested(action: StringName)
 
@@ -194,11 +196,31 @@ func place(item: FileIcon, at: Vector2) -> void:
 	queue_sort()
 
 
-# The flow has just laid out every icon; the placed ones move to their place.
+# The flow has just laid out every icon. With any icon placed, as on a Win95 desktop, the placed
+# ones move to their place and the others take the free cells of the grid, column by column.
 func _move_placed() -> void:
-	for item in _items():
+	var items := _items()
+	var placed: Array[Rect2] = []
+	var cell := Vector2.ZERO
+	for item in items:
+		cell = cell.max(item.size)
 		if item.placed_at != Vector2.ZERO:
 			item.position = item.placed_at
+			placed.append(Rect2(item.placed_at, item.size))
+	if not placed.is_empty() and cell.x > 0.0 and cell.y > 0.0:
+		var rows := maxi(1, floori(size.y / cell.y))
+		var next := 0
+		for item in items:
+			if item.placed_at != Vector2.ZERO:
+				continue
+			while true:
+				var at := Vector2(next / rows * cell.x, next % rows * cell.y)
+				next += 1
+				var free := placed.all(func(rect: Rect2) -> bool: return not rect.intersects(Rect2(at, cell).grow(-1.0)))
+				if free or at.x > size.x:
+					item.position = at
+					break
+	laid_out.emit()
 
 
 ## Removes every icon.
