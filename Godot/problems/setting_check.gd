@@ -4,8 +4,11 @@ extends SoftwareCheck
 
 ## The Win95Setup property, for example &"muted".
 @export var setting: StringName = &""
-## The value that the break sets. Any other value counts as fixed.
+## The value that the break sets. Any other value counts as fixed, unless [member fixed_value] is set.
 @export var broken_value: Variant
+## The one value that counts as fixed, such as "3D Pipes" for a screensaver; null: any value but
+## [member broken_value].
+@export var fixed_value: Variant
 
 
 func apply_break(setup: Win95Setup) -> void:
@@ -16,4 +19,6 @@ func apply_break(setup: Win95Setup) -> void:
 
 
 func is_fixed(setup: Win95Setup) -> bool:
+	if fixed_value != null:
+		return setup.get(setting) == fixed_value
 	return setup.get(setting) != broken_value

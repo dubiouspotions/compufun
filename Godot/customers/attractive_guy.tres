@@ -1,0 +1,494 @@
+[gd_resource type="Resource" script_class="Customer" format=3]
+
+[ext_resource type="PackedScene" path="res://props/case_fronts/multimedia.tscn" id="1_s6vba"]
+[ext_resource type="Material" path="res://materials/red_plastic.tres" id="2_23oi0"]
+[ext_resource type="Script" path="res://customers/hardware.gd" id="3_18rks"]
+[ext_resource type="Script" path="res://customers/computer.gd" id="4_17aa6"]
+[ext_resource type="Script" path="res://customers/sticker.gd" id="5_shnw3"]
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="6_r4mep"]
+[ext_resource type="Script" path="res://win95/applets/applet.gd" id="7_utqrq"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/document_text_32.png" id="8_b7ewl"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/bitmap_32.png" id="9_2ae8g"]
+[ext_resource type="Texture2D" path="res://customers/pierre/castle_01.png" id="10_yjnx2"]
+[ext_resource type="Texture2D" path="res://customers/pierre/castle_02.png" id="11_oug50"]
+[ext_resource type="Texture2D" path="res://customers/pierre/castle_03.png" id="12_2uwr3"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/folder_closed_32.png" id="13_dwxq2"]
+[ext_resource type="Resource" path="res://win95/start_menu_stock.tres" id="14_4geq0"]
+[ext_resource type="Resource" path="res://win95/system_stock.tres" id="15_2n8o5"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/document_config_32.png" id="16_ljkrv"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/notepad_32.png" id="17_m7gd2"]
+[ext_resource type="PackedScene" path="res://win95/notepad.tscn" id="18_83odi"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/document_pencil_32.png" id="19_iffoo"]
+[ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="20_h8k5b"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/crayon_scribble_32.png" id="21_hkwyi"]
+[ext_resource type="PackedScene" path="res://win95/paint.tscn" id="22_65hoi"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/calculator_spreadsheet_32.png" id="23_0ap6t"]
+[ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="24_fks8b"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/inbox_32.png" id="25_ib21e"]
+[ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="26_iy130"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/speaker_loud_32.png" id="27_x8og7"]
+[ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="28_2435d"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/disk_drive_box_32.png" id="29_rflvy"]
+[ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="30_novkw"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/playing_cards_hand_32.png" id="31_nfv2d"]
+[ext_resource type="PackedScene" path="res://win95/solitaire/solitaire.tscn" id="32_r3jrx"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/ms_dos_window_32.png" id="33_x3m6v"]
+[ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="34_035r0"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/media_devices_32.png" id="35_kvgiv"]
+[ext_resource type="PackedScene" path="res://win95/media_player.tscn" id="36_npbtd"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/application_32.png" id="37_m3v3i"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/file_unknown_32.png" id="38_hfs6m"]
+[ext_resource type="Script" path="res://win95/email.gd" id="39_krllb"]
+[ext_resource type="Resource" path="res://win95/theme/palette.tres" id="40_2nyhx"]
+[ext_resource type="Script" path="res://win95/win95_setup.gd" id="41_jg8mh"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/clouds.png" id="42_s3boe"]
+[ext_resource type="Script" path="res://customers/conversation.gd" id="43_krovq"]
+[ext_resource type="Script" path="res://customers/choice.gd" id="44_ittqt"]
+[ext_resource type="Script" path="res://customers/reply.gd" id="45_5u7v4"]
+[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="46_6et2w"]
+[ext_resource type="Resource" path="res://people/handsome_dude/person.tres" id="47_0kfma"]
+[ext_resource type="Script" path="res://customers/customer.gd" id="48_63b2l"]
+
+[sub_resource type="Resource" id="Resource_3m1ns"]
+script = ExtResource("3_18rks")
+bios_version = "v4.50G"
+bios_id = "06/14/94-SIS-471B-E-2A4L4P0AC-00"
+cpu = "486DX2"
+cpu_mhz = 66
+memory_kb = 8192
+cache_kb = 128
+edo = false
+hard_drive = "WDC AC2420F"
+hard_drive_mb = 406
+cd_rom = ""
+pci_devices = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_jprns"]
+script = ExtResource("6_r4mep")
+name = "todo.txt"
+icon = ExtResource("8_b7ewl")
+contents = "TODO
+
+- castle: render again tonight (3rd try!!)
+- computer gets HOT and switched off twice. buy a fan? ask Kent
+- TAXES 1995 !!!
+- 28.8k? 49 kr more a month
+- return library books
+"
+modified = "Thursday, May 30, 1996 11:12:44 PM"
+
+[sub_resource type="Resource" id="Resource_0abqi"]
+script = ExtResource("6_r4mep")
+name = "castle_01.bmp"
+icon = ExtResource("9_2ae8g")
+picture = ExtResource("10_yjnx2")
+modified = "Sunday, April 14, 1996 9:40:05 PM"
+
+[sub_resource type="Resource" id="Resource_lmhv0"]
+script = ExtResource("6_r4mep")
+name = "castle_02.bmp"
+icon = ExtResource("9_2ae8g")
+picture = ExtResource("11_oug50")
+modified = "Sunday, May 5, 1996 2:17:31 AM"
+
+[sub_resource type="Resource" id="Resource_hcx40"]
+script = ExtResource("6_r4mep")
+name = "castle_03.bmp"
+icon = ExtResource("9_2ae8g")
+picture = ExtResource("12_2uwr3")
+modified = "Thursday, May 30, 1996 3:51:18 AM"
+
+[sub_resource type="Resource" id="Resource_myurg"]
+script = ExtResource("6_r4mep")
+name = "Renders"
+icon = ExtResource("13_dwxq2")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_0abqi"), SubResource("Resource_lmhv0"), SubResource("Resource_hcx40")])
+
+[sub_resource type="Resource" id="Resource_tnpmq"]
+script = ExtResource("6_r4mep")
+name = "WIN.INI"
+icon = ExtResource("16_ljkrv")
+contents = "[windows]
+load=
+run=
+NullPort=None
+device=
+
+[Desktop]
+TileWallpaper=0
+WallpaperStyle=0
+
+[intl]
+iCountry=46
+sCountry=Sweden
+sLanguage=sve
+
+[extensions]
+txt=notepad.exe ^.txt
+ini=notepad.exe ^.ini
+bmp=pbrush.exe ^.bmp
+ray=C:\\PROGRA~1\\RAYTRA~1\\RAYTRACE.EXE ^.ray
+
+[mci extensions]
+mid=Sequencer
+wav=WaveAudio
+"
+modified = "Tuesday, April 2, 1996 8:31:12 PM"
+
+[sub_resource type="Resource" id="Resource_65bi3"]
+script = ExtResource("6_r4mep")
+name = "SYSTEM.INI"
+icon = ExtResource("16_ljkrv")
+contents = "[boot]
+shell=Explorer.exe
+system.drv=system.drv
+drivers=mmsystem.dll power.drv
+display.drv=pnpdrvr.drv
+mouse.drv=mouse.drv
+keyboard.drv=keyboard.drv
+
+[boot.description]
+keyboard.typ=Standard 101/102-Key or Microsoft Natural Keyboard
+mouse.drv=Standard mouse
+display.drv=Standard Display Adapter (VGA)
+
+[386Enh]
+ebios=*ebios
+woafont=dosapp.fon
+device=*vmouse
+device=*vshare
+keyboard=*vkd
+display=*vdd,*vflatd
+
+[drivers]
+wave=mmsndsys.drv
+midimapper=midimap.drv
+"
+modified = "Sunday, September 3, 1995 2:22:08 PM"
+
+[sub_resource type="Resource" id="Resource_ft7yk"]
+script = ExtResource("6_r4mep")
+name = "NOTEPAD.EXE"
+icon = ExtResource("17_m7gd2")
+program = ExtResource("18_83odi")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_c60ym"]
+script = ExtResource("6_r4mep")
+name = "WORDPAD.EXE"
+icon = ExtResource("19_iffoo")
+program = ExtResource("20_h8k5b")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_y3d0r"]
+script = ExtResource("6_r4mep")
+name = "PBRUSH.EXE"
+icon = ExtResource("21_hkwyi")
+program = ExtResource("22_65hoi")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_kho2u"]
+script = ExtResource("6_r4mep")
+name = "CALC.EXE"
+icon = ExtResource("23_0ap6t")
+program = ExtResource("24_fks8b")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_lu4oj"]
+script = ExtResource("6_r4mep")
+name = "EXCHNG32.EXE"
+icon = ExtResource("25_ib21e")
+program = ExtResource("26_iy130")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_u57b0"]
+script = ExtResource("6_r4mep")
+name = "SNDVOL32.EXE"
+icon = ExtResource("27_x8og7")
+program = ExtResource("28_2435d")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_ibrcw"]
+script = ExtResource("6_r4mep")
+name = "DEFRAG.EXE"
+icon = ExtResource("29_rflvy")
+program = ExtResource("30_novkw")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_sbnlx"]
+script = ExtResource("6_r4mep")
+name = "SOL.EXE"
+icon = ExtResource("31_nfv2d")
+program = ExtResource("32_r3jrx")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_l2yx0"]
+script = ExtResource("6_r4mep")
+name = "COMMAND.COM"
+icon = ExtResource("33_x3m6v")
+program = ExtResource("34_035r0")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_arqlx"]
+script = ExtResource("6_r4mep")
+name = "MPLAYER.EXE"
+icon = ExtResource("35_kvgiv")
+program = ExtResource("36_npbtd")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_0saoa"]
+script = ExtResource("6_r4mep")
+name = "Windows"
+icon = ExtResource("13_dwxq2")
+is_folder = true
+children = Array[Resource]([ExtResource("14_4geq0"), ExtResource("15_2n8o5"), SubResource("Resource_tnpmq"), SubResource("Resource_65bi3"), SubResource("Resource_ft7yk"), SubResource("Resource_c60ym"), SubResource("Resource_y3d0r"), SubResource("Resource_kho2u"), SubResource("Resource_lu4oj"), SubResource("Resource_u57b0"), SubResource("Resource_ibrcw"), SubResource("Resource_sbnlx"), SubResource("Resource_l2yx0"), SubResource("Resource_arqlx")])
+
+[sub_resource type="Resource" id="Resource_m1oe1"]
+script = ExtResource("6_r4mep")
+name = "RAYTRACE.EXE"
+icon = ExtResource("37_m3v3i")
+modified = "Thursday, November 2, 1995 12:00:00 PM"
+
+[sub_resource type="Resource" id="Resource_8psga"]
+script = ExtResource("6_r4mep")
+name = "README.TXT"
+icon = ExtResource("8_b7ewl")
+contents = "RAYTRACE 2.0
+
+Thank you for choosing Raytrace 2! Registered users get the
+printed manual and the next version on floppy disk.
+
+QUICK START
+  Open a scene file (.RAY) to render it. The picture is saved
+  as a .BMP next to the scene file.
+
+RENDER TIMES
+  A complex scene can take many hours, and your computer works
+  hard the whole time. Make sure it has good air flow, and keep
+  the fan and the vents free of dust.
+
+PROBLEMS?
+  If your computer turns itself off during a render, it is
+  probably too hot. Let it cool down, and clean it.
+"
+modified = "Thursday, November 2, 1995 12:00:00 PM"
+
+[sub_resource type="Resource" id="Resource_xy2v3"]
+script = ExtResource("6_r4mep")
+name = "Raytrace 2"
+icon = ExtResource("13_dwxq2")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_m1oe1"), SubResource("Resource_8psga")])
+
+[sub_resource type="Resource" id="Resource_oat0e"]
+script = ExtResource("6_r4mep")
+name = "Program Files"
+icon = ExtResource("13_dwxq2")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_xy2v3")])
+
+[sub_resource type="Resource" id="Resource_w8nap"]
+script = ExtResource("6_r4mep")
+name = "castle.ray"
+icon = ExtResource("38_hfs6m")
+contents = "// castle.ray - the castle, 3rd try
+// Raytrace 2 scene file
+
+camera   { from <0.6, 1.6, -5>  to <0, 1.2, 2> }
+light    { at <-4, 8, -5> }
+sky      { gradient <0.25, 0.45, 0.9> }
+floor    { checker yellow navy  reflect 0.25 }
+
+// walls and gate
+box      { <-2, 0, 2> <2, 1.5, 2.6>  texture stone }
+box      { <-0.5, 0, 1.9> <0.5, 0.9, 2>  colour <0.25, 0.15, 0.08> }
+repeat 8 { box { <-2 + i * 0.55, 1.5, 2> <-1.72 + i * 0.55, 1.8, 2.6>  texture stone } }
+
+// towers
+cylinder { <-2.2, 0, 2.3>  radius 0.6  height 2.4  texture stone }
+cone     { <-2.2, 2.4, 2.3>  radius 0.75  height 1.2  colour red }
+cylinder { <2.2, 0, 2.3>  radius 0.6  height 2.4  texture stone }
+cone     { <2.2, 2.4, 2.3>  radius 0.75  height 1.2  colour red }
+
+// the chrome ball. Kent says every render needs one
+sphere   { <1.1, 0.6, 0.3>  radius 0.6  colour white  reflect 0.7 }
+
+quality high   // takes ALL night
+"
+modified = "Wednesday, May 29, 1996 10:58:02 PM"
+
+[sub_resource type="Resource" id="Resource_tiodt"]
+script = ExtResource("6_r4mep")
+name = "taxes 1995.txt"
+icon = ExtResource("8_b7ewl")
+contents = "TAXES 1995
+
+Costs I can maybe deduct?
+  Computer (486 DX2/66)     14 995 kr
+  Modem 14.4k                1 495 kr
+  Raytrace 2 registration      250 kr
+  Books                        389 kr
+                            ---------
+                            17 129 kr
+
+Ask Kent: can I deduct the computer if I render
+castles for fun? (Not for fun. For my PORTFOLIO.)
+"
+modified = "Sunday, April 28, 1996 7:05:50 PM"
+
+[sub_resource type="Resource" id="Resource_wx01o"]
+script = ExtResource("6_r4mep")
+name = "My Documents"
+icon = ExtResource("13_dwxq2")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_w8nap"), SubResource("Resource_tiodt")])
+
+[sub_resource type="Resource" id="Resource_qin5b"]
+script = ExtResource("39_krllb")
+from = "Kent <kent@modemlandia.se>"
+to = "prohawk@hotmail.com"
+subject = "Re: the castle"
+sent = "1996-05-30 08:12"
+body = "Did the render finish overnight? Mine took 14 hours.
+
+Tip: take the side panel off. It runs cooler.
+
+/Kent"
+
+[sub_resource type="Resource" id="Resource_dy5m5"]
+script = ExtResource("39_krllb")
+from = "Modemlandia <support@modemlandia.se>"
+to = "prohawk@hotmail.com"
+subject = "Welcome to Modemlandia!"
+sent = "1996-03-11 14:03"
+body = "Welcome! Your account is ready. Dial 08-555 123 45 to connect.
+
+You can call our support line on weekdays, 9 to 17."
+read = true
+
+[sub_resource type="Resource" id="Resource_fv38b"]
+script = ExtResource("39_krllb")
+folder = 1
+from = "prohawk@hotmail.com"
+to = "Kent <kent@modemlandia.se>"
+subject = "the castle"
+sent = "1996-05-29 23:01"
+body = "Starting the big render tonight. If the house burns down, you know why."
+read = true
+
+[sub_resource type="Resource" id="Resource_618eh"]
+script = ExtResource("39_krllb")
+folder = 2
+from = "Modemlandia <offers@modemlandia.se>"
+to = "prohawk@hotmail.com"
+subject = "Double your speed: 28.8k is here"
+sent = "1996-05-21 10:30"
+body = "Upgrade to our new 28.8k lines for only 49 kr more a month!"
+read = true
+
+[sub_resource type="Resource" id="Resource_kn8kc"]
+script = ExtResource("41_jg8mh")
+wallpaper = ExtResource("42_s3boe")
+desktop = Array[ExtResource("6_r4mep")]([SubResource("Resource_jprns"), SubResource("Resource_myurg")])
+drive_c = Array[ExtResource("6_r4mep")]([SubResource("Resource_0saoa"), SubResource("Resource_oat0e"), SubResource("Resource_wx01o")])
+emails = Array[ExtResource("39_krllb")]([SubResource("Resource_qin5b"), SubResource("Resource_dy5m5"), SubResource("Resource_fv38b"), SubResource("Resource_618eh")])
+installed_apps = PackedStringArray("Calculator", "Notepad", "Paint", "Raytrace 2")
+
+[sub_resource type="Resource" id="Resource_bqhhi"]
+script = ExtResource("4_17aa6")
+win95_setup = SubResource("Resource_kn8kc")
+hardware = SubResource("Resource_3m1ns")
+case_material = ExtResource("2_23oi0")
+case_front = ExtResource("1_s6vba")
+
+[sub_resource type="Resource" id="Resource_otnfq"]
+script = ExtResource("46_6et2w")
+text = "Legs. Always legs on a Tuesday."
+pose = &"happy"
+
+[sub_resource type="Resource" id="Resource_33g8i"]
+script = ExtResource("45_5u7v4")
+lines = Array[ExtResource("46_6et2w")]([SubResource("Resource_otnfq")])
+
+[sub_resource type="Resource" id="Resource_ub7hw"]
+script = ExtResource("44_ittqt")
+text = "Big workout?"
+replies = Array[ExtResource("45_5u7v4")]([SubResource("Resource_33g8i")])
+
+[sub_resource type="Resource" id="Resource_va5u6"]
+script = ExtResource("46_6et2w")
+text = "Pipes. Coloured ones. They grow all over the screen. Sick."
+
+[sub_resource type="Resource" id="Resource_c5g1f"]
+script = ExtResource("45_5u7v4")
+lines = Array[ExtResource("46_6et2w")]([SubResource("Resource_va5u6")])
+
+[sub_resource type="Resource" id="Resource_rdhtf"]
+script = ExtResource("44_ittqt")
+text = "What do they look like?"
+replies = Array[ExtResource("45_5u7v4")]([SubResource("Resource_c5g1f")])
+
+[sub_resource type="Resource" id="Resource_4lil5"]
+script = ExtResource("46_6et2w")
+text = "Make it look good."
+pose = &"happy"
+
+[sub_resource type="Resource" id="Resource_arggq"]
+script = ExtResource("45_5u7v4")
+lines = Array[ExtResource("46_6et2w")]([SubResource("Resource_4lil5")])
+
+[sub_resource type="Resource" id="Resource_kaig1"]
+script = ExtResource("44_ittqt")
+text = "OK, leave it with me."
+replies = Array[ExtResource("45_5u7v4")]([SubResource("Resource_arggq")])
+ends = true
+
+[sub_resource type="Resource" id="Resource_2kiw1"]
+script = ExtResource("46_6et2w")
+text = "Look, I don't care about computers. But a guy at work has these pipes on his screen."
+pose = &"problem"
+
+[sub_resource type="Resource" id="Resource_or0cq"]
+script = ExtResource("46_6et2w")
+text = "A good-looking guy like me needs a good-looking screensaver."
+pose = &"happy"
+
+[sub_resource type="Resource" id="Resource_u3c1g"]
+script = ExtResource("45_5u7v4")
+lines = Array[ExtResource("46_6et2w")]([SubResource("Resource_2kiw1"), SubResource("Resource_or0cq")])
+choices = Array[ExtResource("44_ittqt")]([SubResource("Resource_rdhtf"), SubResource("Resource_kaig1")])
+
+[sub_resource type="Resource" id="Resource_tnggu"]
+script = ExtResource("44_ittqt")
+text = "So, what's your problem?"
+replies = Array[ExtResource("45_5u7v4")]([SubResource("Resource_u3c1g")])
+
+[sub_resource type="Resource" id="Resource_vylnk"]
+script = ExtResource("46_6et2w")
+text = "Hey. Quick one, I've got the gym at six."
+
+[sub_resource type="Resource" id="Resource_1vt5u"]
+script = ExtResource("43_krovq")
+id = &"arrive"
+lines = Array[ExtResource("46_6et2w")]([SubResource("Resource_vylnk")])
+choices = Array[ExtResource("44_ittqt")]([SubResource("Resource_ub7hw"), SubResource("Resource_tnggu")])
+
+[sub_resource type="Resource" id="Resource_nwchs"]
+script = ExtResource("46_6et2w")
+text = "Pipes? Nice. Now we're talking."
+pose = &"happy"
+
+[sub_resource type="Resource" id="Resource_vbfyp"]
+script = ExtResource("43_krovq")
+id = &"pickup"
+trigger = 1
+lines = Array[ExtResource("46_6et2w")]([SubResource("Resource_nwchs")])
+
+[resource]
+script = ExtResource("48_63b2l")
+display_name = "Attractive guy"
+person = ExtResource("47_0kfma")
+conversations = Array[ExtResource("43_krovq")]([SubResource("Resource_1vt5u"), SubResource("Resource_vbfyp")])
+computer = SubResource("Resource_bqhhi")
+trousers_color = Color(0.15, 0.17, 0.25, 1)

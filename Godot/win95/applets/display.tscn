@@ -51,6 +51,7 @@
 [ext_resource type="Resource" path="res://win95/theme/schemes/windows_standard.tres" id="r49"]
 [ext_resource type="Resource" path="res://win95/theme/schemes/windows_standard_extra_large.tres" id="r50"]
 [ext_resource type="Resource" path="res://win95/theme/schemes/windows_standard_large.tres" id="r51"]
+[ext_resource type="Script" path="res://win95/applets/display_screensaver.gd" id="saver_page"]
 
 [sub_resource type="AtlasTexture" id="arrow"]
 atlas = ExtResource("r8")
@@ -187,6 +188,7 @@ button_pressed = true
 [node name="Screen Saver" type="Control" parent="VBox/Body/Column/Tabs"]
 custom_minimum_size = Vector2(382, 356)
 layout_mode = 2
+script = ExtResource("saver_page")
 
 [node name="Monitor" parent="VBox/Body/Column/Tabs/Screen Saver" instance=ExtResource("r2")]
 layout_mode = 1

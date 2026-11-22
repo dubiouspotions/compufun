@@ -6,6 +6,9 @@ extends Resource
 ## "Windows theme": the system colours. The default is the stock Win95 palette.
 @export var palette: Win95Palette = preload("res://win95/theme/palette.tres")
 @export var wallpaper: Texture2D = preload("res://win95/wallpapers/win95-default.png")
+## Display > Screen Saver: the screensaver by the name that the list shows, such as "3D Pipes";
+## empty for none.
+@export var screensaver: String = ""
 ## The icons on the desktop, in the order that they appear. The running copy puts Win95's own
 ## icons first (Win95File.system), so they move and hide like files.
 @export var desktop: Array[Win95File] = []
