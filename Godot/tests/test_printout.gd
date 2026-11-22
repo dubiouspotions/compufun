@@ -104,13 +104,15 @@ func _check_close_up() -> void:
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
 	click.position = box.get_center()
+	var pencil: SoundSet = carried.get("tick_sound")
+	var eraser: SoundSet = carried.get("untick_sound")
 	paper.gui_input.emit(click)
-	check("a click on the box ticks it", game.printout_ticks, [5])
+	check("a click on the box ticks it, in pencil", [game.printout_ticks, handled[0], _latest_sound(carried) in pencil.sounds], [[5], 2, true])
 	paper.gui_input.emit(click)
-	check("a second click unticks it; ticks don't rustle", [game.printout_ticks, handled[0]], [[], 1])
+	check("a second click rubs it out", [game.printout_ticks, handled[0], _latest_sound(carried) in eraser.sounds], [[], 3, true])
 	click.position = paper.call("box_rect", 3).get_center() - Vector2(0.0, paper.call("cell").y)
 	paper.gui_input.emit(click)
-	check("a click on a line without a box lowers it, with a rustle", [carried.call("is_raised"), corner.visible, game.printout_ticks, handled[0]], [false, true, [], 2])
+	check("a click on a line without a box lowers it, with a rustle", [carried.call("is_raised"), corner.visible, game.printout_ticks, handled[0]], [false, true, [], 4])
 
 	carried.call("raise")
 	await create_timer(float(carried.get("raise_seconds")) + 0.1).timeout
@@ -118,7 +120,7 @@ func _check_close_up() -> void:
 	_click_at(page.position + paper.call("box_rect", 5).get_center())
 	check("a real click on the box ticks it and keeps it up", [game.printout_ticks, carried.call("is_raised"), behind_clicks[0]], [[5], true, 0])
 	_click_at(Vector2(page.position.x - 40.0, page.get_center().y))
-	check("a click outside lowers it, with a rustle, and reaches nothing else", [carried.call("is_raised"), corner.visible, behind_clicks[0], handled[0]], [false, true, 0, 4])
+	check("a click outside lowers it, with a rustle, and reaches nothing else", [carried.call("is_raised"), corner.visible, behind_clicks[0], handled[0]], [false, true, 0, 7])
 	_click_at(Vector2(page.position.x - 40.0, page.get_center().y))
 	check("lowered, a click there reaches what is under it", behind_clicks[0], 1)
 	game.tick_printout(5, false)
@@ -155,6 +157,12 @@ func _count_plays(node: Node) -> Array[int]:
 		if child is AudioStreamPlayer or child is AudioStreamPlayer3D:
 			plays[0] += 1)
 	return plays
+
+
+# The stream of the newest sound player under [param node]; null: none.
+func _latest_sound(node: Node) -> AudioStream:
+	var players := node.get_children().filter(func(n: Node) -> bool: return n is AudioStreamPlayer or n is AudioStreamPlayer3D)
+	return players[-1].get(&"stream") if not players.is_empty() else null
 
 
 # A left press and release at [param at], in the window's coordinates, through the whole input chain.

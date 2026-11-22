@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes the shop's door chime, door slam, phone, keyboard, mouse button, modem, printer, Open sign and paper handling sounds, the rain loops and the hums of the storage bulb, a PC and a CRT as 22050 Hz mono WAVs.
+"""Synthesizes the shop's door chime, door slam, phone, keyboard, mouse button, modem, printer, Open sign, paper handling, pencil and eraser sounds, the rain loops and the hums of the storage bulb, a PC and a CRT as 22050 Hz mono WAVs.
 Usage: make_shop_sounds.py Godot/sounds"""
 import math
 import random
@@ -436,6 +436,43 @@ def paper_handle(seed):
     return highpass(lowpass(out, 7000), 200)
 
 
+def pencil_stroke(seconds, gain):
+    """One pencil stroke on paper: graphite grains scratching over the fibres, a dense grainy hiss
+    in 2 to 6 kHz that eases in and lifts off."""
+    n = int(seconds * RATE)
+    grains = [random.uniform(-1, 1) * (1.0 if random.random() < 0.25 else 0.2) for _ in range(n)]
+    env = [min(1.0, i / (0.2 * n), (n - i) / (0.3 * n)) for i in range(n)]
+    return [gain * g * e for g, e in zip(biquad(biquad(grains, "band", 3500, 0.6), "high", 1800), env)]
+
+
+def pencil_tick(seed):
+    """A pencil ticking a box, about 0.15 s: a short stroke down, the turn, and a longer, lighter
+    stroke up and away."""
+    random.seed(seed)
+    down, up = random.uniform(0.035, 0.05), random.uniform(0.06, 0.085)
+    out = silence(down + up + 0.03)
+    mix(out, pencil_stroke(down, 1.0), 0.0)
+    mix(out, pencil_stroke(up, random.uniform(0.6, 0.8)), down + random.uniform(0.005, 0.012))
+    return highpass(lowpass(out, 8000), 400)
+
+
+def eraser_rub(seed):
+    """A rubber eraser rubbed over a tick, about 0.2 s: three quick strokes back and forth, a soft,
+    dull squeak of rubber dragging on paper."""
+    random.seed(seed)
+    seconds = random.uniform(0.18, 0.22)
+    n = int(seconds * RATE)
+    strokes = 3
+    drag = biquad(biquad([random.gauss(0.0, 1.0) for _ in range(n)], "band", random.uniform(900, 1300), 1.2), "low", 2500)
+    out = []
+    for i in range(n):
+        u = i / n
+        stroke = abs(math.sin(math.pi * strokes * u))  # each stroke swells and stops at the turn
+        out.append(drag[i] * stroke ** 0.7 * min(1.0, (1.0 - u) / 0.15))
+    mix(out, silence(0.02), seconds)
+    return highpass(out, 300)
+
+
 def looped(samples, filters):
     """Runs `samples` through `filters` as a loop: the filters settle on a first pass, so the
     second pass, which is kept, runs on from its own end into its start."""
@@ -561,6 +598,10 @@ for take in range(1, 3):
     write(sys.argv[1] + "/sign_rattle_%d.wav" % take, sign_rattle(60 + take))
 for take in range(1, 5):
     write(sys.argv[1] + "/paper_handle_%d.wav" % take, paper_handle(70 + take))
+for take in range(1, 4):
+    write(sys.argv[1] + "/pencil_tick_%d.wav" % take, pencil_tick(80 + take))
+for take in range(1, 3):
+    write(sys.argv[1] + "/eraser_rub_%d.wav" % take, eraser_rub(90 + take))
 rain_open, rain_shut = rain(12.0)
 write(sys.argv[1] + "/rain_open.wav", rain_open, fade_out=False)
 write(sys.argv[1] + "/rain_shut.wav", rain_shut, fade_out=False)

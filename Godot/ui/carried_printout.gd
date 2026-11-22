@@ -23,6 +23,9 @@ extends Control
 @export var hop_seconds: float = 0.08
 ## The sound of the page handled as it rises or is lowered.
 @export var handle_sound: SoundSet = preload("res://sounds/paper_handle.tres")
+## The sounds of a box ticked in pencil, and of a tick rubbed out.
+@export var tick_sound: SoundSet = preload("res://sounds/pencil_tick.tres")
+@export var untick_sound: SoundSet = preload("res://sounds/eraser_rub.tres")
 
 @onready var _corner: Control = %Corner
 @onready var _corner_paper: PrintoutPaper = %CornerPaper
@@ -117,7 +120,9 @@ func _on_paper_input(event: InputEvent) -> void:
 		return
 	var line := _paper.line_at(click.position)
 	if line >= 0 and Game.printout_box(Game.printout[line]) >= 0:
-		Game.tick_printout(line, line not in Game.printout_ticks)
+		var tick := line not in Game.printout_ticks
+		if Game.tick_printout(line, tick):
+			(tick_sound if tick else untick_sound).play_at(self)
 	else:
 		lower()
 
