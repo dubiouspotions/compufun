@@ -474,15 +474,17 @@ def eraser_rub(seed):
 
 
 def clock_tick(tock):
-    """A quartz wall clock's step: the stepper's tiny click, and the plastic case ringing faintly
-    for a few milliseconds; the tock is a little lower."""
+    """A mechanical wall clock's escapement: a tooth of the escape wheel drops onto the pallet, a
+    hard, dry click of steel on brass, and the pallet's wooden mount knocks once, about 2 ms later.
+    Nothing rings for more than a millisecond or two. The tock is a little lower and duller."""
     random.seed(70 + tock)
-    out = silence(0.05)
-    mix(out, highpass(noise(0.002, 0.0003), 3000), 0.0, 0.6)
-    base = 2100 if tock else 2500
-    for ratio, decay, gain in [(1.0, 0.004, 0.5), (1.83, 0.002, 0.25)]:
-        mix(out, [math.sin(2 * math.pi * base * ratio * i / RATE) * math.exp(-i / RATE / decay) for i in range(int(0.03 * RATE))], 0.0, gain)
-    return highpass(lowpass(out, 8000), 400)
+    out = silence(0.03)
+    click = biquad(noise(0.003, 0.00025), "band", 3400 if tock else 4200, 1.2)
+    mix(out, click, 0.0, 1.0)
+    knock = biquad(noise(0.006, 0.0007), "band", 1000 if tock else 1300, 1.5)
+    mix(out, knock, 0.0018 if tock else 0.0022, 0.9)
+    mix(out, highpass(noise(0.002, 0.0002), 2500), 0.0045, 0.3)  # the pallet settling
+    return highpass(lowpass(out, 9000), 700)
 
 
 def looped(samples, filters):

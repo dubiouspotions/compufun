@@ -40,7 +40,7 @@ const PSX_WORLD: Shader = preload("res://shaders/psx_world.gdshader")
 ## hours per real second. 0 jumps; a time that is earlier, or further ahead, always jumps.
 @export_range(0.0, 48.0, 0.5) var sweep_hours_per_second: float = 8.0
 ## The sounds of the second hand's steps, which alternate; null is silent. The Ticking player sets
-## their volume.
+## their volume and plays them dry: on the Shop bus, outside the sound zones and their reverb.
 @export var tick_sound: AudioStream = preload("res://sounds/clock_tick.wav")
 @export var tock_sound: AudioStream = preload("res://sounds/clock_tock.wav")
 
