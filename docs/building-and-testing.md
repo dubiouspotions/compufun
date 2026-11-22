@@ -144,6 +144,22 @@ none. `outline` prints errand files in their written layout.
 "$GODOT" --headless -s res://dev/story.gd -- outline [code]        # the errand files, such as 0102
 ```
 
+The story check reads the files; the **week bot** (`tests/test_week_bot.gd`) plays them. It runs
+`main.tscn` from day 1 to the ending's credits through Game's public methods, in real game time: it
+opens the shop, walks each conversation with choices picked at random from a seed, repairs every
+computer it can (hardware with the part API, software with `SoftwareCheck.apply_fix`), waits for
+the real boot to test it, phones for the pickup and closes the shop. It fails on an error, when
+nothing changes for two minutes of game time (a softlock: a customer who never comes, a test that
+never passes, a night that never ends), and when the week doesn't reach its credits. It names the day, the
+errand code, its step and the snapshot. The missing links that the story check lists, and what they cause, it only
+reports, so CI stays green while the writers fill them: run it alone to read what became of every
+errand, such as "0601: never came: Young entrepreneur's computer from 0401 is still in the shop".
+CI runs seed 1; other seeds take other branches, about 17 s each.
+
+```sh
+"$GODOT" --headless --fixed-fps 60 -s res://tests/test_week_bot.gd -- 1 2 3   # the seeds
+```
+
 ## Voices
 
 **Layers.** A line's voice is three layers, each over the one below (`Voices.layer`): the
