@@ -547,6 +547,10 @@ transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4.0, 0, -3.4)
 [node name="TapedNote" parent="Room" instance=ExtResource("taped_note")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 0.76, -0.921)
 
+[node name="Hotspot" parent="Room/TapedNote" instance=ExtResource("13_ojat2")]
+size = Vector3(0.66, 0.34, 0.02)
+view = &"Note"
+
 [node name="CorruptionSigns" type="Node" parent="."]
 script = ExtResource("corruption_signs")
 
@@ -590,6 +594,12 @@ transform = Transform3D(-0, 0.961524, -0.274721, 0, 0.274721, 0.961524, 1, 0, -0
 script = ExtResource("21_sg8ra")
 back = &"Right"
 fov = 50.0
+
+[node name="Note" type="Marker3D" parent="Views"]
+transform = Transform3D(1, 0, 0, 0, 0.9622, 0.2723, 0, -0.2723, 0.9622, 0.6, 0.986, -0.122)
+script = ExtResource("21_sg8ra")
+back = &"Main"
+fov = 40.0
 
 [node name="Workview" type="Marker3D" parent="Views" unique_id=901056409]
 transform = Transform3D(1, 0, 0, 0, 0.88294756, 0.46947157, 0, -0.46947157, 0.88294756, -0.285, 1.5, -0.48)

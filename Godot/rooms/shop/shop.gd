@@ -84,6 +84,7 @@ var _read_rest: Transform3D  # its transform on the computer
 var _read_weight: float = 0.0  # 0 on the computer, 1 up close
 var _read_open: bool = false
 var _read_tween: Tween
+var _view_hotspots: Array[Hotspot] = []  # GO_TO_VIEW hotspots, off in their own view so the back strip and the cursor see past them
 
 
 func _ready() -> void:
@@ -91,6 +92,8 @@ func _ready() -> void:
 		var hotspot := node as Hotspot
 		if hotspot != null:
 			hotspot.clicked.connect(_on_hotspot_clicked)
+			if hotspot.action == Hotspot.Action.GO_TO_VIEW:
+				_view_hotspots.append(hotspot)
 	_job_slots.job_clicked.connect(_on_job_clicked)
 	_job_slots.power_clicked.connect(func(job: Job) -> void: Game.set_powered(job, not job.powered))
 	_job_slots.screwdriver_clicked.connect(func(job: Job) -> void:
@@ -359,6 +362,8 @@ func _clickable_at(at: Vector2) -> CollisionObject3D:
 
 func _sync() -> void:
 	_job_slots.show_jobs(Game.jobs)
+	for hotspot: Hotspot in _view_hotspots:
+		hotspot.set_enabled(hotspot.view != Game.view)
 	if _read_open and pinned_post_it() != _read_post_it:
 		_read(false)  # the player turned away or the computer left focus
 	_play_changes()
