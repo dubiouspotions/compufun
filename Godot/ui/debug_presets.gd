@@ -23,6 +23,8 @@ const PRESETS: Dictionary[String, Dictionary] = {
 			"jobs": [{"customer": "res://customers/young_entrepreneur.tres", "problem": "desktop_prank", "slot": 0, "powered": true}]},
 	"Hat guy's computer, every .EXE gone, connected": {"day": 3, "arrivals": 1, "focus_slot": 0, "connected_slot": 0,
 			"jobs": [{"customer": "res://customers/hat_guy.tres", "problem": "noimages", "slot": 0, "powered": true}]},
+	"Nice guy's computer, broken hard drive, connected": {"day": 5, "arrivals": 0, "focus_slot": 0, "connected_slot": 0,
+			"jobs": [{"customer": "res://customers/nice_guy.tres", "problem": "broken_hard_drive", "slot": 0, "powered": true}]},
 	"Day 1 over, two computers overnight": {"day": 1, "phase": "DAY_OVER", "arrivals": 3,
 			"jobs": [{"customer": "res://customers/skater_bro.tres", "slot": 0},
 				{"customer": "res://customers/retired_accountant.tres", "slot": 1, "order": 1}]},

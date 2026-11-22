@@ -9,6 +9,7 @@ extends Control
 const _BOOT := preload("res://win95/boot_sequence.tscn")
 const _FLOPPY_IN := preload("res://sounds/floppy_insert.tres")
 const _FLOPPY_OUT := preload("res://sounds/floppy_eject.tres")
+const _BLUESCREEN := preload("res://win95/bluescreen.tscn")
 const _FOLDER := preload("res://win95/folder_window.tscn")
 const _PROPERTIES := preload("res://win95/properties_window.tscn")
 const _MESSAGE := preload("res://win95/message_box.tscn")
@@ -99,6 +100,8 @@ var _floppy_heard: bool = false
 ## Counts hangs, so that a boot or a power cut stops the one in progress.
 var _hangs: int = 0
 var _buzz: AudioStreamPlayer
+## The bluescreen of a hang with a message (Problem.hang_message), until the reboot; null otherwise.
+var _hang_screen: Control
 
 @onready var _state: ComputerState = %ComputerState
 @onready var _desktop: Win95Desktop = $Desktop
@@ -349,6 +352,15 @@ func _on_hanging(_seconds: float) -> void:
 	_hangs += 1
 	var hang := _hangs
 	process_mode = Node.PROCESS_MODE_DISABLED
+	var message := _state.job.problem.hang_message if _state.job != null else ""
+	if message != "":
+		for player: AudioStreamPlayer in _sounds():
+			player.stop()
+		_hang_screen = _BLUESCREEN.instantiate() as Control
+		_hang_screen.set("dismissable", false)
+		(_hang_screen.get_node(^"Center/Column/Message") as Label).text = message
+		add_child(_hang_screen)
+		return
 	if is_instance_valid(_boot):
 		_boot.process_mode = Node.PROCESS_MODE_ALWAYS  # it plays the startup sound
 	for player: AudioStreamPlayer in _sounds():
@@ -376,6 +388,9 @@ func _sounds() -> Array[AudioStreamPlayer]:
 func _end_hang() -> void:
 	_hangs += 1
 	_buzz.stop()
+	if is_instance_valid(_hang_screen):
+		_hang_screen.queue_free()
+	_hang_screen = null
 	process_mode = Node.PROCESS_MODE_INHERIT
 
 

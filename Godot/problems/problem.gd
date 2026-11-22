@@ -24,6 +24,9 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 @export var hangs_after: float = 0.0
 ## The seconds from the start of the hang until the computer reboots.
 @export var hang_seconds: float = 4.0
+## Not empty: the hang shows the Win95 bluescreen with this message, in silence, instead of freezing
+## with a buzz, as a broken hard drive does.
+@export_multiline var hang_message: String = ""
 ## How the problem breaks the computer's Win95 setup and when that is fixed; null when the problem
 ## has no software part.
 @export var software_check: SoftwareCheck
