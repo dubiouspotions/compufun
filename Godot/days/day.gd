@@ -9,6 +9,8 @@ extends Resource
 ## How far Win95 "Cambion" has changed the shop, 0 to 1. The corruption signs, such as the
 ## Pipedream, grow with it.
 @export_range(0.0, 1.0) var warp: float = 0.0
+## It rains outside the shop all day, from the closed morning to the evening (see Outside).
+@export var rain: bool = false
 ## The seconds from the player opening the shop until the first customer comes in: a random time from x
 ## to y, picked each day.
 @export var first_wait_seconds: Vector2 = Vector2(5.0, 8.0)

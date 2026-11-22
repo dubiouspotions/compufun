@@ -18,6 +18,8 @@ extends Node3D
 @export_range(0.0, 24.0, 0.01) var afternoon_hour: float = 19.0
 @export_range(0.0, 24.0, 0.01) var evening_hour: float = 20.0
 @export_range(0.0, 24.0, 0.01) var night_hour: float = 23.0
+## Whether it rains now. Day.rain sets it whenever the day or the daypart changes; the debug menu can
+## change it in between.
 @export var raining: bool = false:
 	set(value):
 		raining = value
@@ -47,6 +49,7 @@ var _lamps: Array[Light3D] = []
 var _lamp_energy: Array[float] = []
 var _glows: Array[Node3D] = []
 var _shown_daypart: int = -1
+var _shown_day: Day
 
 @onready var _sun: DirectionalLight3D = %Sun
 @onready var _skylight: DirectionalLight3D = %Skylight
@@ -88,12 +91,15 @@ func hour_of(daypart: int) -> float:
 			return hour
 
 
-# Only on a change of daypart, so the debug menu can set another hour until the next one.
+# Only on a change of day or daypart, so the debug menu can set another hour or weather until the next one.
 func _follow_game() -> void:
-	if Game.daypart == _shown_daypart:
+	if Game.daypart == _shown_daypart and Game.day == _shown_day:
 		return
 	_shown_daypart = Game.daypart
+	_shown_day = Game.day
 	hour = hour_of(Game.daypart)
+	if Game.day != null:
+		raining = Game.day.rain
 
 
 func _process(delta: float) -> void:
