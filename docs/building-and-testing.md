@@ -83,7 +83,7 @@ extends "res://tests/test.gd"
 
 
 func run() -> void:
-	game.start_day(load("res://days/day_1.tres"))
+	game.start_day(game.day_of(1))
 	check("the first customer walks in", game.arrivals, 1)
 ```
 
