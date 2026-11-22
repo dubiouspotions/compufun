@@ -15,6 +15,7 @@ const _MESSAGE := preload("res://win95/message_box.tscn")
 const _BIN_EMPTY := preload("res://win95/theme/icons/recycle_bin_empty_32.png")
 const _BIN_FULL := preload("res://win95/theme/icons/recycle_bin_full_32.png")
 const _COVER := preload("res://win95/cover_screen.gd")
+const _DESKTOP_ICONS := preload("res://win95/desktop_icons.tscn")
 const _SHARED_PALETTE := preload("res://win95/theme/palette.tres")
 const _ICONS := "res://win95/theme/icons/"
 ## The meta key on a FileIcon that holds its Win95File, or its Applet in the Control Panel.
@@ -86,6 +87,8 @@ var _drives: Array[Win95File] = []
 var _context: ContextMenu
 var _context_view: IconView
 var _context_item: FileIcon
+## The files that Cut picked, for the next Paste.
+var _cut: Array[Win95File] = []
 var _boot: Node
 ## Whether a floppy was in A: at the last change, to hear it go in or out.
 var _floppy_heard: bool = false
@@ -238,8 +241,43 @@ func _apply_look() -> void:
 	if _on_cable():
 		_apply_palette(setup.palette)
 	_background.texture = setup.wallpaper
+	var shot := setup.wallpaper as DesktopScreenshot
+	if shot != null and not shot.taken:
+		_take_screenshot(shot)
 	if setup.wallpaper != null:
 		_background.stretch_mode = wallpaper_stretch(setup.wallpaper, _background.size.x)
+
+
+# Draws the prank's screenshot offscreen: the desktop as it showed shot's icons on its wallpaper.
+# The taskbar is left out, as the real one covers it.
+func _take_screenshot(shot: DesktopScreenshot) -> void:
+	shot.taken = true
+	var viewport := SubViewport.new()
+	viewport.size = DesktopScreenshot.SIZE
+	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS  # its texture shows nowhere
+	var desk := Control.new()
+	desk.theme = theme
+	desk.size = DesktopScreenshot.SIZE
+	viewport.add_child(desk)
+	desk.add_child(_desktop.get_node(^"DesktopColour").duplicate())
+	var background := _background.duplicate() as TextureRect
+	background.texture = shot.wallpaper
+	if shot.wallpaper != null:
+		background.stretch_mode = wallpaper_stretch(shot.wallpaper, DesktopScreenshot.SIZE.x)
+	desk.add_child(background)
+	var icons := _DESKTOP_ICONS.instantiate() as IconView
+	desk.add_child(icons)
+	for file in shot.icons:
+		_place(icons.add_item(file.name, file.icon), file, icons)
+	add_child(viewport)
+	for i in 3:  # the icons lay out over the first frames
+		await RenderingServer.frame_post_draw
+	var image := viewport.get_texture().get_image()
+	viewport.queue_free()
+	if image == null or image.is_empty():
+		push_error("Win95: the desktop screenshot of the prank drew nothing, so the wallpaper stays black")
+		return
+	shot.set_image(image)
 
 
 ## How a desktop [param screen_width] pixels wide shows [param wallpaper], as Win95 showed them:
@@ -351,9 +389,18 @@ func _fill(view: IconView) -> void:
 		if entry == focused:
 			view.set_focus_item(item)
 		added.append(item)
+		if view == _icons:
+			_place(item, entry as Win95File, view)
 	if view == _icons:
 		_setup_icons = added
 		(_icons.get_node("RecycleBin") as FileIcon).icon = _BIN_EMPTY if _state.setup.recycle_bin.is_empty() else _BIN_FULL
+
+
+# A file with a desktop_position stands there, out of the columns.
+static func _place(item: FileIcon, file: Win95File, view: IconView) -> void:
+	if file != null and file.desktop_position != Vector2.ZERO:
+		item.top_level = true
+		item.position = view.global_position + file.desktop_position
 
 
 func _folder(folder_name: String, icon_file: String) -> Win95File:
@@ -526,7 +573,7 @@ func _entries_for(view: IconView, item: FileIcon) -> Array[ContextMenu.Entry]:
 	if file != null and file.is_folder:
 		entries.append_array(_entries([["Explore"], ["Find..."]]))
 	entries.append_array(_entries([[], ContextMenu.submenu("Send To", _entries([["3\u00bd Floppy (A)"], ["Mail Recipient"], ["My Briefcase"]])),
-		[], ["Cut"], ["Copy"], [], ["Create Shortcut"], ["Delete", &"delete"]]))
+		[], ["Cut", &"cut"], ["Copy"], [], ["Create Shortcut"], ["Delete", &"delete"]]))
 	if not multi:
 		entries.append(ContextMenu.item("Rename", &"rename"))
 	entries.append_array(_entries([[], properties]))
@@ -540,7 +587,7 @@ func _background_entries(listing: Listing, view: IconView) -> Array[ContextMenu.
 		views.append(ContextMenu.item(_VIEW_IDS[id][1], id, false, false, view.folder_view == _VIEW_IDS[id][0]))
 	var view_menu := ContextMenu.submenu("View", views)
 	var new_menu := ContextMenu.submenu("New", _entries([["Folder", &"new_folder"], ["Shortcut"], [], ["Text Document"], ["WordPad Document"], ["Bitmap Image"], ["Wave Sound"]]))
-	var paste := ContextMenu.item("Paste", &"", false, true)
+	var paste := ContextMenu.item("Paste", &"paste", false, _cut.is_empty())
 	var paste_shortcut := ContextMenu.item("Paste Shortcut", &"", false, true)
 	match listing.kind:
 		&"desktop":
@@ -591,6 +638,13 @@ func _on_action(id: StringName) -> void:
 			_state.purge_files(files)
 		&"restore":
 			_state.restore_files(files)
+		&"cut":
+			_cut = files
+		&"paste":
+			var refused := _state.move_files(_cut, listing.files.call())
+			_cut.clear()
+			if refused != "":
+				_message("Error Moving File", refused)
 		&"empty_bin":
 			_state.empty_recycle_bin()
 			Win95Desktop.play_sound(empty_bin_sound, self)

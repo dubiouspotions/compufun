@@ -24,6 +24,9 @@ var deleted_from: Dictionary[Win95File, Array] = {}
 ## The documents that the player opened, newest first, as the Start menu's Documents lists them.
 ## Only while the game runs.
 var recent_documents: Array[Win95File] = []
+## The screenshot that the desktop prank (DesktopPrankCheck) set as the wallpaper, or null. Only
+## while the game runs.
+var desktop_screenshot: DesktopScreenshot
 ## Every email in every folder; each Email says which folder it is in.
 @export var emails: Array[Email] = []
 ## The programs that the Start menu lists, by their name in the menu.

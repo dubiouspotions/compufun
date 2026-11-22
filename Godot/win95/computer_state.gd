@@ -244,6 +244,43 @@ func empty_recycle_bin() -> void:
 		purge_files(setup.recycle_bin.duplicate())
 
 
+## Moves [param files] into [param container] (the desktop, drive_c or a folder's children), as
+## Cut and Paste do. Returns why a file stayed where it was, as Win95 says it, or "" when all moved.
+func move_files(files: Array[Win95File], container: Array) -> String:
+	if setup == null:
+		return "Cannot move files: the computer is off."
+	var refused := ""
+	for file in files:
+		var from: Variant = _container_of(file)
+		var why := ""
+		if from == null:
+			why = "Cannot move %s: Cannot find the specified file. Make sure you specify the correct path and filename." % file.name
+		elif is_same(from, container):
+			continue
+		elif file.is_folder and _holds(file.children, container):
+			why = "Cannot move %s: The destination folder is a subfolder of the source folder." % file.name
+		elif container.any(func(other: Win95File) -> bool: return other.name.nocasecmp_to(file.name) == 0):
+			why = "Cannot move %s: There is already a file with the same name in this location." % file.name
+		if why != "":
+			if refused == "":
+				refused = why
+			continue
+		(from as Array).erase(file)
+		container.append(file)
+	_changed()
+	return refused
+
+
+# [param container] is [param children] or the children of a folder somewhere in it.
+static func _holds(children: Array, container: Array) -> bool:
+	if is_same(children, container):
+		return true
+	for file: Win95File in children:
+		if file.is_folder and _holds(file.children, container):
+			return true
+	return false
+
+
 ## Adds an empty folder named "New Folder" (or "New Folder (2)", ...) to [param container]: the
 ## setup's desktop or drive_c, or a folder's children. Returns it.
 func new_folder(container: Array) -> Win95File:

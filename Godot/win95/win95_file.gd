@@ -7,6 +7,9 @@ extends Resource
 ## A 32 x 32 texture.
 @export var icon: Texture2D
 @export var is_folder: bool = false
+## Where the icon stands on the desktop, in pixels from its top left. ZERO lines it up with the
+## others, column by column. Folder windows ignore it.
+@export var desktop_position := Vector2.ZERO
 ## For a program file such as NOTEPAD.EXE: the app that it runs. Win95 runs it only while the name
 ## ends in .EXE, and the app's `opens` says which files it opens. Null for other files.
 @export var program: PackedScene
