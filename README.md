@@ -33,7 +33,7 @@ Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actio
 
 ## Credits
 
-- `Godot/sounds/footstep_tile_1.ogg` to `footstep_tile_4.ogg`: four steps cut from "Footsteps_Boots_Tile_Mono" by Nox_Sound on Freesound (https://freesound.org/people/Nox_Sound/sounds/530588/), CC0.
+- `Godot/sounds/footstep_tile_1.ogg` to `footstep_tile_4.ogg`: four steps cut from "Footsteps_Boots_Tile_Mono" by Nox_Sound on Freesound (https://freesound.org/people/Nox_Sound/sounds/530588/), CC0. `footstep_asphalt_*.ogg` and `footstep_sidewalk_*.ogg` are filtered from them by `tools/make_outdoor_steps.sh`.
 - `Godot/sounds/computer_set_down.ogg`: cut from "Book dropped on table" by Valerie-Vivegnis on Freesound (https://freesound.org/people/Valerie-Vivegnis/sounds/836521/), CC0.
 - `Godot/sounds/computer_pick_up_1.ogg` and `computer_pick_up_2.ogg`: two lifts cut from "Foley_Object_Toolbox_Metal_PickUp_Mono" by Nox_Sound on Freesound (https://freesound.org/people/Nox_Sound/sounds/556647/), CC0.
 - `Godot/sounds/part_take.ogg`: trimmed from "Picking Something Up From A Table" by RutgerMuller on Freesound (https://freesound.org/people/RutgerMuller/sounds/51160/), CC0.
