@@ -105,6 +105,11 @@ func level() -> float:
 	return clampf(inverse_lerp(QUIET_DB, LOUD_DB, linear_to_db(peak)), 0.0, 1.0)
 
 
+## Whether the voice has ended and died away: nothing plays and [method level] is near silent.
+func quiet() -> bool:
+	return not playing and level() < 0.05
+
+
 ## Stops the line, live or not.
 func hush() -> void:
 	stop()

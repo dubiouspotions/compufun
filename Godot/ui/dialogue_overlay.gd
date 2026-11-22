@@ -115,7 +115,7 @@ func _process(delta: float) -> void:
 	var breath := breath_rise * (0.5 + 0.5 * sin(TAU * _time / breath_seconds))
 	_portrait.rotation = _snap(deg_to_rad(sway + shake))
 	_portrait.scale = Vector2(1.0, 1.0 + _snap(breath + talk_rise * _talk))
-	var quiet := not _text.is_typing() and not _voice.playing and _voice.level() < 0.05
+	var quiet := not _text.is_typing() and _voice.quiet()
 	_quiet = _quiet + delta if quiet and not _choices.visible else 0.0
 	if not _pending.is_empty():
 		if _quiet >= choices_after_seconds:

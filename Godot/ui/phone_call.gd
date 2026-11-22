@@ -3,7 +3,8 @@ extends Control
 ## The phone: the dialogue box with a red rotary phone in it. A click on the phone
 ## (Shop.phone_requested) calls the customer of the oldest done (fixed and tested) computer: the
 ## phone rings, the customer answers (their PHONE conversation, or [member greeting]), the player
-## says [member you_say], and hangs up; then the customer comes for it. With no computer done, the
+## says [member you_say], and hangs up; then the customer comes for it. Each line goes on by itself
+## [member auto_advance_seconds] after it ends, or at a click anywhere (or Enter), as in the dialogue. With no computer done, the
 ## click picks up the phone instead, which lists the computers; Esc or "Put down" puts it down.
 ## Game refuses both while the shop is closed or someone is in it.
 
@@ -24,6 +25,9 @@ extends Control
 @export_range(0.0, 20.0) var ring_degrees: float = 5.0
 ## How many times a second it rattles.
 @export_range(1.0, 40.0) var ring_shakes: float = 18.0
+## Seconds of quiet, once a line is typed out and its voice has ended, before the call goes on by
+## itself; 0 waits for a click.
+@export_range(0.0, 10.0, 0.1) var auto_advance_seconds: float = 1.5
 ## One customer to call: a Button with Name, Number, Issue and Status labels (unique names).
 @export var choice_scene: PackedScene
 
@@ -32,6 +36,8 @@ var _call_time: float = 0.0
 var _lines: Array[DialogueLine] = []
 # Which line shows: -1 while it rings, then the customer's lines, then the player's (== size).
 var _line: int = -1
+# Seconds since the shown line was typed out and its voice went quiet.
+var _quiet: float = 0.0
 
 @onready var _name: Label = %Name
 @onready var _text: TypedLabel = %Line
@@ -44,7 +50,8 @@ var _line: int = -1
 func _ready() -> void:
 	hide()
 	Game.changed.connect(_sync)
-	_next.pressed.connect(_on_next)
+	_next.pressed.connect(_put_down)
+	($Box as Control).gui_input.connect(_on_click)
 
 
 ## Calls the customer of [method Game.next_to_call] at once when [method Game.can_call]. Otherwise
@@ -63,8 +70,14 @@ static func number_of(customer: Customer) -> String:
 
 
 func _process(delta: float) -> void:
-	if not visible or not _was_calling or _line >= 0:
+	if not visible or not _was_calling:
 		_phone.rotation = 0.0
+		return
+	if _line >= 0:
+		_phone.rotation = 0.0
+		_quiet = _quiet + delta if not _text.is_typing() and _voice.quiet() else 0.0
+		if auto_advance_seconds > 0.0 and _quiet >= auto_advance_seconds:
+			_advance()
 		return
 	_call_time += delta
 	_phone.rotation = deg_to_rad(ring_degrees * sin(TAU * _call_time * ring_shakes))
@@ -74,9 +87,22 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if visible and Game.phase != Game.Phase.CALLING and event.is_action_pressed(&"ui_cancel"):
+	if visible and not _was_calling and event.is_action_pressed(&"ui_cancel"):
 		_put_down()
 		get_viewport().set_input_as_handled()
+	else:
+		_on_click(event)
+
+
+# A click, or the accept key, during the call: on with the line. Clicks while it rings do nothing.
+func _on_click(event: InputEvent) -> void:
+	if not visible or not _was_calling:
+		return
+	var click: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	if click or event.is_action_pressed(&"ui_accept"):
+		get_viewport().set_input_as_handled()
+		if _line >= 0:
+			_advance()
 
 
 func _sync() -> void:
@@ -107,23 +133,21 @@ func _ring() -> void:
 	_clear_choices()
 	_name.text = number_of(customer)
 	_text.type_out(ringing_text)
-	_next.get_parent().hide()
+	_next.get_parent().hide()  # the call goes on by itself or at a click
 
 
 func _show_line() -> void:
-	_next.get_parent().show()
+	_quiet = 0.0
 	var customer := Game.calling.customer
 	if _line < _lines.size():
 		var line := _lines[_line]
 		_name.text = customer.display_name
 		_text.type_out(line.text)
 		_voice.say(line, customer.voice, VoiceEffect.of(line, Game.conversation))
-		_next.text = "Next >"
 	else:
 		_name.text = "You"
 		_text.type_out(you_say)
 		_voice.hush()
-		_next.text = "Hang up"
 
 
 func _show_customers() -> void:
@@ -131,7 +155,6 @@ func _show_customers() -> void:
 	_name.text = pick_title
 	_text.hide()
 	_next.get_parent().show()
-	_next.text = "Put down"
 	var jobs := Game.jobs.duplicate()
 	jobs.sort_custom(func(a: Job, b: Job) -> bool: return a.order < b.order)
 	var rows: Array[Button] = []
@@ -161,13 +184,11 @@ func _clear_choices() -> void:
 		old.queue_free()
 
 
-func _on_next() -> void:
+func _advance() -> void:
 	if _text.is_typing():  # a click while the line types shows the rest
 		_text.finish()
 		return
-	if not _was_calling:
-		_put_down()
-	elif _line < _lines.size():
+	if _line < _lines.size():
 		_line += 1
 		_show_line()
 	else:
