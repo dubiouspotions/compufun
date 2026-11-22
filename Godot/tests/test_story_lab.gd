@@ -42,6 +42,7 @@ func run() -> void:
 	await process_frame
 	_board_lists_the_week(lab)
 	_moving_a_card_renames_through_drafts(lab, drafts)
+	_a_text_edit_with_an_error_keeps_the_last_good_draft(lab, drafts)
 	lab.queue_free()
 	await process_frame
 
@@ -77,6 +78,23 @@ func _moving_a_card_renames_through_drafts(lab: Control, drafts: StoryDrafts) ->
 	texts = drafts.texts()
 	check("the alternatives close the gap to 0701", [texts.has(ERRANDS + "0701_hat_guy.errand"), texts.has(ERRANDS + "0701_retired_accountant.errand"), texts.has(ERRANDS + "0701_young_entrepreneur.errand")], [true, true, true])
 	check("no 0702 is left", StoryFiles.files(ERRANDS, ".errand", texts).has(ERRANDS + "0702_retired_accountant.errand"), false)
+
+
+func _a_text_edit_with_an_error_keeps_the_last_good_draft(lab: Control, drafts: StoryDrafts) -> void:
+	var parts := StoryErrandPanel.split(SKATER_TEXT)
+	check("a file splits into its header and conversations", parts["sections"].size(), 2)
+	check("and joins back to the same text", StoryErrandPanel.join(parts["header"], parts["sections"]), SKATER_TEXT)
+	lab.call("open_errand", SKATER)
+	var panel: StoryErrandPanel = lab.call("errand_panel")
+	check("the panel opens the errand", panel.path(), SKATER)
+	var broken := "== drop-off\n(neutral) Yo!\n- Welcome! [bogus]\n\t(happy) Sweet!"
+	var errors := panel.edit_section(broken)
+	check("an error names its line in the section", errors, PackedStringArray(["3: [bogus] is not a tag of a choice: if or end"]))
+	check("the draft keeps its last good text", drafts.text(SKATER), SKATER_TEXT)
+	errors = panel.edit_section("== drop-off\n(neutral) Yo!\n- Welcome!\n\t(happy) Sweet!")
+	check("the fixed text has no errors", errors, PackedStringArray())
+	check("the fixed text is the draft, the other conversation as it was", drafts.text(SKATER), SKATER_TEXT.replace("(neutral) Yo! Is this the computer repair shop?\n- Welcome to CompuFun!", "(neutral) Yo!\n- Welcome!"))
+	check("the panel holds the errand as the draft parses", panel.errand().problem.short_name, &"dust_overheat")
 
 
 ## Removes the files under [param dir], a test folder in user://.

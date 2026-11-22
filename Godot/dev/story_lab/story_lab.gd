@@ -22,6 +22,9 @@ var _board: StoryLabBoard
 var _status: Label
 var _problems: Label
 var _lower: Control
+var _errand_panel: StoryErrandPanel
+var _day_panel: StoryDayPanel
+var _hint: Label
 var _customers: PopupMenu
 var _add_day: int = 0
 
@@ -75,6 +78,9 @@ func refresh() -> void:
 	_board.show_week(_week.days, _cards, _selected, drafted_days)
 	_problems.text = "" if _week.errors.is_empty() else "%d problems in the story files (hover)" % _week.errors.size()
 	_problems.tooltip_text = "\n".join(_week.errors)
+	_errand_panel.flags = flag_names()
+	if _selected == "" and _errand_panel.visible:
+		_show_lower(_hint)
 
 
 ## The errand files on the board: path to {"errand", "problems", "draft"}.
@@ -115,6 +121,89 @@ func move_errand(path: String, day: int, index: int, alternative: bool) -> Strin
 func open_errand(path: String) -> void:
 	_selected = path
 	refresh()
+	if _cards.has(path):
+		_show_lower(_errand_panel)
+		_errand_panel.show_errand(path, drafts.text(path))
+
+
+## Opens day [param number] (1 to 7) below the board.
+func open_day(number: int) -> void:
+	_selected = ""
+	refresh()
+	var path := "%sday_%d.day" % [StoryFiles.DAYS_DIR, number]
+	_show_lower(_day_panel)
+	_day_panel.show_day(path, drafts.text(path) if drafts.text(path) != "" else "weather: clear\nwarp: 0\n")
+
+
+## The open errand panel (for its edits).
+func errand_panel() -> StoryErrandPanel:
+	return _errand_panel
+
+
+## Every flag that the week sets or checks, the corruption signs' flags, and each customer's
+## <customer>_runs_cambion and gone_<customer>, sorted: what the text view offers.
+func flag_names() -> PackedStringArray:
+	var found: Dictionary[String, bool] = {}
+	if ResourceLoader.exists(STORY_CHECK):
+		var check := load(STORY_CHECK) as Script
+		if check != null:
+			for flag: Variant in (check.call("flag_index", _week) as Dictionary):
+				found[String(flag)] = true
+	for day: Day in _week.days:
+		for flag: StringName in day.set_flags.keys() + day.close_flags.keys():
+			found[flag] = true
+		for id: StringName in day.close_signs:
+			found["sign_" + id] = true
+		for errand: Errand in day.errands:
+			_note_condition(found, errand.when)
+			for c: Conversation in errand.conversations:
+				_note_condition(found, c.when)
+				_note_reply(found, c)
+	for id: StringName in StoryDayPanel.signs():
+		found["sign_" + id] = true
+	for customer: String in LabUI.resource_names(CUSTOMERS_DIR):
+		found[customer + "_runs_cambion"] = true
+		found["gone_" + customer] = true
+	var names := PackedStringArray(found.keys())
+	names.sort()
+	return names
+
+
+func _note_reply(found: Dictionary[String, bool], reply: Reply) -> void:
+	if reply == null:
+		return
+	for flag: StringName in reply.set_flags:
+		found[flag] = true
+	_note_condition(found, reply.when)
+	for choice: Choice in reply.choices:
+		_note_condition(found, choice.when)
+		for answer: Reply in choice.replies:
+			_note_reply(found, answer)
+	_note_reply(found, reply.then)
+
+
+func _note_condition(found: Dictionary[String, bool], when: Condition) -> void:
+	if when == null:
+		return
+	for flag: StringName in when.need_flags + when.not_flags:
+		found[flag] = true
+
+
+func _show_lower(shown: Control) -> void:
+	for child: Node in _lower.get_children():
+		(child as Control).visible = child == shown
+
+
+func _remove_errand(path: String) -> void:
+	if store(path, "") == "":
+		_selected = ""
+		_show_lower(_hint)
+		refresh()
+		_say("Removed %s. Discard its draft to bring it back." % path.get_file())
+
+
+func _store_edit(path: String, text: String) -> void:
+	store(path, text)
 
 
 func _after_store() -> void:
@@ -160,7 +249,7 @@ func _say(text: String, bad: bool = false) -> void:
 func _add_errand(day: int) -> void:
 	_add_day = day
 	_customers.clear()
-	for name: String in _resource_names(CUSTOMERS_DIR):
+	for name: String in LabUI.resource_names(CUSTOMERS_DIR):
 		_customers.add_item(name)
 	_customers.position = Vector2i(get_global_mouse_position())
 	_customers.popup()
@@ -173,16 +262,6 @@ func _add_errand_for(index: int) -> void:
 	if store(path, "customer: %s\n\n== drop-off\n" % customer) == "":
 		open_errand(path)
 		_say("Added %s. Write what the visit is for, then the drop-off." % path.get_file())
-
-
-## The file names without extension of the .tres files in [param dir], sorted.
-static func _resource_names(dir: String) -> PackedStringArray:
-	var names := PackedStringArray()
-	for file: String in DirAccess.get_files_at(dir):
-		if file.ends_with(".tres"):
-			names.append(file.get_basename())
-	names.sort()
-	return names
 
 
 func _build() -> void:
@@ -206,10 +285,23 @@ func _build() -> void:
 	_board.errand_picked.connect(open_errand)
 	_board.errand_dropped.connect(move_errand)
 	_board.add_requested.connect(_add_errand)
+	_board.day_picked.connect(open_day)
 	page.add_child(_board)
-	_lower = VBoxContainer.new()
+	_lower = Control.new()
 	_lower.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page.add_child(_lower)
+	_hint = LabUI.label("Click an errand card to open it, or a day's header for its weather, warp, signs and notes.", 16, LabUI.DIM)
+	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_errand_panel = StoryErrandPanel.new()
+	_errand_panel.saved.connect(_store_edit)
+	_errand_panel.remove_requested.connect(_remove_errand)
+	_day_panel = StoryDayPanel.new()
+	_day_panel.saved.connect(_store_edit)
+	for shown: Control in [_hint, _errand_panel, _day_panel]:
+		shown.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_lower.add_child(shown)
+	_show_lower(_hint)
 	_customers = PopupMenu.new()
 	_customers.id_pressed.connect(_add_errand_for)
 	add_child(_customers)

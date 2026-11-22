@@ -18,6 +18,16 @@ const PLAYER := Color("4fc1c9")
 const FIELD := Color("0f1116")
 
 
+## The file names without extension of the .tres files in [param dir], sorted.
+static func resource_names(dir: String) -> PackedStringArray:
+	var names := PackedStringArray()
+	for file: String in DirAccess.get_files_at(dir):
+		if file.ends_with(".tres"):
+			names.append(file.get_basename())
+	names.sort()
+	return names
+
+
 static func label(text: String, size: int = 15, color: Color = TEXT) -> Label:
 	var made := Label.new()
 	made.text = text
