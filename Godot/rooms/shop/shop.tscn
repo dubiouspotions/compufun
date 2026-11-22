@@ -44,6 +44,7 @@
 [ext_resource type="Script" path="res://rooms/ground.gd" id="ground"]
 [ext_resource type="Resource" path="res://sounds/footsteps.tres" id="steps_tile"]
 [ext_resource type="PackedScene" path="res://rooms/shop/sound_zones.tscn" id="sound_zones"]
+[ext_resource type="PackedScene" path="res://rooms/shop/work_cables.tscn" id="work_cables"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -446,6 +447,8 @@ path_u_distance = 1.0
 path_joined = false
 smooth_faces = true
 material = ExtResource("5_35cdj")
+
+[node name="WorkCables" parent="Room" instance=ExtResource("work_cables")]
 
 [node name="PhoneJack" type="MeshInstance3D" parent="Room"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.45, 0.12, 1.995)

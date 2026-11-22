@@ -1,0 +1,82 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/grey_plastic.tres" id="grey"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="dark"]
+[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="beige"]
+
+[sub_resource type="Curve3D" id="Curve3D_PrinterCable"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0.0075, -0.0033, 0.005, 3.9, 0.07, 0.33, -0.0108, 0.0025, -0.025, 0.0108, -0.0025, 0.025, 3.945, 0.05, 0.36, -0.0042, -0.01, -0.05, 0.0042, 0.01, 0.05, 3.965, 0.055, 0.48, -0.0017, -0.0375, -0.0617, 0.0017, 0.0375, 0.0617, 3.97, 0.11, 0.66, -0.0017, -0.0683, -0.0533, 0.0017, 0.0683, 0.0533, 3.975, 0.28, 0.85, -0.0017, -0.0733, -0.0367, 0.0017, 0.0733, 0.0367, 3.98, 0.52, 0.98, -0.0017, -0.0375, -0.0267, 0.0017, 0.0375, 0.0267, 3.985, 0.72, 1.07, -0.0008, -0.0042, -0.0117, 0, 0, 0, 3.99, 0.745, 1.14),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0)
+}
+point_count = 8
+
+[sub_resource type="Curve3D" id="Curve3D_ScreenCable"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0.0025, -0.0133, 0.01, 3.96, 0.8, 0.5, -0.003, 0.05, -0.0217, 0.003, -0.05, 0.0217, 3.975, 0.72, 0.56, -0.0008, 0.065, -0.0333, 0.0008, -0.065, 0.0333, 3.978, 0.5, 0.63, -0.0003, 0.0233, -0.045, 0.0003, -0.0233, 0.045, 3.98, 0.33, 0.76, -0.0003, -0.0367, -0.045, 0.0003, 0.0367, 0.045, 3.98, 0.36, 0.9, -0.0008, -0.06, -0.035, 0.0008, 0.06, 0.035, 3.982, 0.55, 1.03, -0.0013, -0.0325, -0.0217, 0.0013, 0.0325, 0.0217, 3.985, 0.72, 1.11, -0.0008, -0.0042, -0.0083, 0, 0, 0, 3.99, 0.745, 1.16),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0)
+}
+point_count = 8
+
+[sub_resource type="Curve3D" id="Curve3D_ModemCable"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0.0067, -0.0008, 0.005, 3.89, 0.765, 0.935, 0.005, 0.0008, -0.0108, -0.005, -0.0008, 0.0108, 3.93, 0.76, 0.965, 0.025, 0, -0.0125, -0.025, 0, 0.0125, 3.86, 0.76, 1, 0.0033, 0, -0.0142, -0.0033, 0, 0.0142, 3.78, 0.76, 1.04, -0.03, -0.0033, -0.01, 0.03, 0.0033, 0.01, 3.84, 0.76, 1.085, -0.02, -0.0033, -0.0025, 0, 0, 0, 3.96, 0.78, 1.1),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0)
+}
+point_count = 6
+
+[node name="WorkCables" type="Node3D"]
+
+[node name="PrinterCable" type="Path3D" parent="."]
+curve = SubResource("Curve3D_PrinterCable")
+
+[node name="Cord" type="CSGPolygon3D" parent="PrinterCable"]
+polygon = PackedVector2Array(-0.008, -0.008, -0.008, 0.008, 0.008, 0.008, 0.008, -0.008)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+smooth_faces = true
+material = ExtResource("grey")
+
+[node name="ScreenCable" type="Path3D" parent="."]
+curve = SubResource("Curve3D_ScreenCable")
+
+[node name="Cord" type="CSGPolygon3D" parent="ScreenCable"]
+polygon = PackedVector2Array(-0.0065, -0.0065, -0.0065, 0.0065, 0.0065, 0.0065, 0.0065, -0.0065)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+smooth_faces = true
+material = ExtResource("dark")
+
+[node name="ModemCable" type="Path3D" parent="."]
+curve = SubResource("Curve3D_ModemCable")
+
+[node name="Cord" type="CSGPolygon3D" parent="ModemCable"]
+polygon = PackedVector2Array(-0.0075, -0.0075, -0.0075, 0.0075, 0.0075, 0.0075, 0.0075, -0.0075)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+smooth_faces = true
+material = ExtResource("beige")
