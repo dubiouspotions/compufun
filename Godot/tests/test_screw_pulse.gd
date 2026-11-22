@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## A lying computer's panel screws each beat a ring while the player can turn them: not under the
-## mouse, and not once the screw is out.
+## A lying computer's panel screws each beat a ring while the player can turn them, not under the
+## mouse. An empty screw hole shows dark and beats the ring too.
 
 
 func run() -> void:
@@ -17,7 +17,9 @@ func run() -> void:
 	case.set(&"job", job)
 	var rings: Array[Node3D] = []
 	var hotspots: Array[Hotspot] = []
+	var holes: Array[Node3D] = []
 	for marker: Node in case.find_child("PanelScrews").get_children():
+		holes.append(marker.get_node("Hole"))
 		for child: Node in marker.get_children():
 			if child is MeshInstance3D and (child as MeshInstance3D).mesh is QuadMesh:
 				rings.append(child)
@@ -27,6 +29,7 @@ func run() -> void:
 	if rings.size() != Job.PANEL_SCREWS or hotspots.size() != Job.PANEL_SCREWS:
 		return
 	var shown := func() -> Array: return rings.map(func(r: Node3D) -> bool: return r.visible)
+	var dark := func() -> Array: return holes.map(func(h: Node3D) -> bool: return h.visible)
 
 	check("standing, inactive: no rings", shown.call(), [false, false])
 	game.focus_job(job)
@@ -34,10 +37,12 @@ func run() -> void:
 	game.lay_down(job)
 	case.set(&"active", true)
 	check("lying, screwed: both rings", shown.call(), [true, true])
+	check("and no holes", dark.call(), [false, false])
 	hotspots[1].mouse_entered.emit()
 	check("the screw under the mouse shows the hover look instead", shown.call(), [true, false])
 	hotspots[1].mouse_exited.emit()
 	game.turn_screw(job, 0)
-	check("a screw out stops its ring", shown.call(), [false, true])
+	check("a screw out keeps its ring", shown.call(), [true, true])
+	check("and shows its hole", dark.call(), [true, false])
 	case.set(&"active", false)
 	check("inactive: no rings", shown.call(), [false, false])

@@ -2,8 +2,10 @@ class_name OpenCase
 extends Node3D
 ## A job's computer lying on its side (wiki: Hardware Repair): the side panel on with its two screws,
 ## or the open case with its pieces and the mat and the panel leaning against its back (PanelOff),
-## where a click puts it back on. It draws the job from Game on every change and acts through Game. What the player can use now has a thin pulsing outline, and a screw that can turn a beating ring; where the
-## piece in the hand can go shows a see-through ghost of it; the screwdriver hovers over a screw.
+## where a click puts it back on. It draws the job from Game on every change and acts through Game.
+## What the player can use now has a thin pulsing outline, and a screw or an empty screw hole that
+## can turn a beating ring; where the piece in the hand or a screw can go shows a see-through ghost of
+## it; the screwdriver hovers over a screw. An empty screw hole in the closed panel shows dark.
 
 const HOTSPOT: PackedScene = preload("res://rooms/hotspot.tscn")
 const SCREW_MATERIAL: Material = preload("res://materials/metal.tres")
@@ -20,6 +22,8 @@ const PULSE_RING: Shader = preload("res://shaders/pulse_ring.gdshader")
 ## outer diameter in metres.
 @export var screw_pulse_seconds: float = 1.6
 @export var screw_ring_size: float = 0.08
+## The colour of an empty screw hole.
+@export var hole_color: Color = Color(0.05, 0.04, 0.03)
 ## How high the screwdriver hovers over a screw under the mouse, and how far it bobs, in metres.
 @export var hover_height: float = 0.03
 @export var bob: float = 0.006
@@ -42,7 +46,7 @@ var active: bool = false:
 
 var _shown: Dictionary[StringName, Node3D] = {}
 var _mat_shown: Array[Node3D] = []
-# Panel screw index to [screw head, hotspot, pulse ring].
+# Panel screw index to [screw head, hotspot, pulse ring, empty hole].
 var _screws: Array[Array] = []
 var _screw_ring: ShaderMaterial
 var _outline: StandardMaterial3D
@@ -146,6 +150,7 @@ func _sync() -> void:
 	_panel_hotspot.set_enabled(active and (not closed or (not job.powered and not job.panel_screws.has(true))))
 	for i: int in _screws.size():
 		(_screws[i][0] as Node3D).visible = closed and job.panel_screws[i]
+		(_screws[i][3] as Node3D).visible = closed and not job.panel_screws[i]
 		(_screws[i][1] as Hotspot).set_enabled(active and Game.can_turn(job, i))
 	for part: Part in Part.every():
 		var place := _place(part)
@@ -213,7 +218,23 @@ func _add_screw(marker: Node3D, index: int) -> void:
 	ring.position = head.position
 	ring.visible = false
 	marker.add_child(ring)
-	_screws.append([head, hotspot, ring])
+	var hole := MeshInstance3D.new()
+	hole.name = "Hole"
+	var disc := CylinderMesh.new()
+	disc.top_radius = 0.0055
+	disc.bottom_radius = 0.0055
+	disc.height = 0.004
+	disc.radial_segments = 8
+	disc.rings = 1
+	hole.mesh = disc
+	var dark := StandardMaterial3D.new()
+	dark.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dark.albedo_color = hole_color
+	hole.material_override = dark
+	hole.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	hole.visible = false
+	marker.add_child(hole)
+	_screws.append([head, hotspot, ring, hole])
 	_watch(hotspot, index)
 
 
@@ -265,9 +286,9 @@ func _sync_highlights() -> void:
 		var hotspot := _screws[i][1] as Hotspot
 		if not hotspot.input_ray_pickable:
 			continue
+		(_screws[i][2] as Node3D).visible = hotspot != _hovered
 		if head.visible:
 			_highlight(head, hotspot)
-			(_screws[i][2] as Node3D).visible = hotspot != _hovered
 		else:
 			var ghost := MeshInstance3D.new()
 			ghost.mesh = head.mesh
