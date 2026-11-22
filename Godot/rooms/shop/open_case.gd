@@ -18,8 +18,8 @@ const PULSE_RING: Shader = preload("res://shaders/pulse_ring.gdshader")
 @export var outline_width: float = 0.0035
 ## The seconds of one beat of the ring around each screw that the player can turn, and the ring's
 ## outer diameter in metres.
-@export var screw_pulse_seconds: float = 1.0
-@export var screw_ring_size: float = 0.1
+@export var screw_pulse_seconds: float = 1.6
+@export var screw_ring_size: float = 0.08
 ## How high the screwdriver hovers over a screw under the mouse, and how far it bobs, in metres.
 @export var hover_height: float = 0.03
 @export var bob: float = 0.006

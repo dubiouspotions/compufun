@@ -12,7 +12,9 @@ uniform float period = 1.0;
 uniform float radius = 0.45;
 uniform float width = 0.14;
 /** How far toward white the colour goes at the peak of a beat, from 0 to 1. */
-uniform float flash = 0.6;
+uniform float flash = 0.3;
+/** The opacity of the growing ring as it leaves the steady ring, from 0 to 1. */
+uniform float ping_opacity = 0.5;
 /** The colour of the edge on both sides of each ring, and its width in shares of the quad's half size. */
 uniform vec4 edge_color : source_color = vec4(0.1, 0.07, 0.03, 0.85);
 uniform float edge = 0.05;
@@ -26,12 +28,12 @@ void fragment() {
 	float r = length(UV * 2.0 - 1.0);
 	float beat = 0.5 + 0.5 * cos(t * TAU);
 	float grown = mix(radius, 1.0 - width * 0.5 - edge, t);
-	float fade = sqrt(1.0 - t);
+	float fade = ping_opacity * sqrt(1.0 - t);
 	float steady = step(abs(r - radius), width * 0.5);
 	float ping = step(abs(r - grown), width * 0.5);
 	float steady_edge = step(abs(r - radius), width * 0.5 + edge) - steady;
 	float ping_edge = step(abs(r - grown), width * 0.5 + edge) - ping;
-	float ring = max(steady * (0.55 + 0.45 * beat), ping * fade);
+	float ring = max(steady * (0.75 + 0.25 * beat), ping * fade);
 	float rim = max(steady_edge, ping_edge * fade) * (1.0 - max(steady, ping));
 	ALBEDO = mix(edge_color.rgb, mix(color.rgb, vec3(1.0), flash * beat), step(0.001, ring));
 	ALPHA = max(color.a * ring, edge_color.a * rim);
