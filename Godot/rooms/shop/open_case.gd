@@ -2,11 +2,12 @@ class_name OpenCase
 extends Node3D
 ## A job's computer lying on its side (wiki: Hardware Repair): the side panel on with its two screws,
 ## or the open case with its pieces and the mat and the panel leaning against its back (PanelOff),
-## where a click puts it back on. It draws the job from Game on every change and acts through Game. What the player can use now has a thin pulsing outline; where the
+## where a click puts it back on. It draws the job from Game on every change and acts through Game. What the player can use now has a thin pulsing outline, and a screw that can turn a beating ring; where the
 ## piece in the hand can go shows a see-through ghost of it; the screwdriver hovers over a screw.
 
 const HOTSPOT: PackedScene = preload("res://rooms/hotspot.tscn")
 const SCREW_MATERIAL: Material = preload("res://materials/metal.tres")
+const PULSE_RING: Shader = preload("res://shaders/pulse_ring.gdshader")
 
 ## The seconds that the screwdriver turns one screw.
 @export var screw_seconds: float = 0.45
@@ -15,6 +16,10 @@ const SCREW_MATERIAL: Material = preload("res://materials/metal.tres")
 @export var hover_color: Color = Color(0.8, 0.95, 1.0)
 ## How far the outline stands out from a mesh, in metres.
 @export var outline_width: float = 0.0035
+## The seconds of one beat of the ring around each screw that the player can turn, and the ring's
+## outer diameter in metres.
+@export var screw_pulse_seconds: float = 1.0
+@export var screw_ring_size: float = 0.1
 ## How high the screwdriver hovers over a screw under the mouse, and how far it bobs, in metres.
 @export var hover_height: float = 0.03
 @export var bob: float = 0.006
@@ -37,8 +42,9 @@ var active: bool = false:
 
 var _shown: Dictionary[StringName, Node3D] = {}
 var _mat_shown: Array[Node3D] = []
-# Panel screw index to [screw head, hotspot].
+# Panel screw index to [screw head, hotspot, pulse ring].
 var _screws: Array[Array] = []
+var _screw_ring: ShaderMaterial
 var _outline: StandardMaterial3D
 var _outline_hover: StandardMaterial3D
 var _ghost: StandardMaterial3D
@@ -71,6 +77,10 @@ func _ready() -> void:
 	_outline_hover = _outline_material(hover_color)
 	_ghost = _ghost_material(usable_color)
 	_ghost_hover = _ghost_material(hover_color)
+	_screw_ring = ShaderMaterial.new()
+	_screw_ring.shader = PULSE_RING
+	_screw_ring.set_shader_parameter(&"color", usable_color)
+	_screw_ring.set_shader_parameter(&"period", screw_pulse_seconds)
 	var pulse := create_tween().set_loops().set_trans(Tween.TRANS_SINE)
 	pulse.tween_method(_pulse, 0.0, 1.0, 0.7)
 	pulse.tween_method(_pulse, 1.0, 0.0, 0.7)
@@ -191,7 +201,16 @@ func _add_screw(marker: Node3D, index: int) -> void:
 	hotspot.position = Vector3(0, 0.006, 0)
 	marker.add_child(hotspot)
 	hotspot.clicked.connect(func(_h: Hotspot) -> void: _turn(index, head.global_position))
-	_screws.append([head, hotspot])
+	var ring := MeshInstance3D.new()
+	var quad := QuadMesh.new()
+	quad.size = Vector2.ONE * screw_ring_size
+	ring.mesh = quad
+	ring.material_override = _screw_ring
+	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	ring.position = head.position
+	ring.visible = false
+	marker.add_child(ring)
+	_screws.append([head, hotspot, ring])
 	_watch(hotspot, index)
 
 
@@ -236,6 +255,8 @@ func _sync_highlights() -> void:
 	for ghost: Node3D in _ghosts:
 		ghost.queue_free()
 	_ghosts.clear()
+	for screw: Array in _screws:
+		(screw[2] as Node3D).visible = false
 	if not active:
 		return
 	for part: Part in Part.every():
@@ -262,6 +283,7 @@ func _sync_highlights() -> void:
 			continue
 		if head.visible:
 			_highlight(head, hotspot)
+			(_screws[i][2] as Node3D).visible = hotspot != _hovered
 		else:
 			var ghost := MeshInstance3D.new()
 			ghost.mesh = head.mesh
