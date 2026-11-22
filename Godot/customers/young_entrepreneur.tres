@@ -263,31 +263,23 @@ icon = ExtResource("5_lymrw")
 is_folder = true
 children = Array[Resource]([SubResource("Resource_y6rli"), SubResource("Resource_mfpdg")])
 
-[sub_resource type="Resource" id="Resource_pdq6s"]
+[sub_resource type="Resource" id="Resource_ylt2v"]
 script = ExtResource("7_pq1pi")
-from = "Lisa <lisa@modemlandia.se>"
-to = "nick@burton.net"
-subject = "Did you listen??"
-sent = "1996-05-30 22:47"
-body = "Did you listen to the mix I sent? You haven't said a word. Is it that bad?"
-
-[sub_resource type="Resource" id="Resource_jonve"]
-script = ExtResource("7_pq1pi")
-from = "Lisa <lisa@modemlandia.se>"
-to = "nick@burton.net"
-subject = "Rehearsal"
-sent = "1996-05-27 18:20"
-body = "Rehearsal moves to Thursday. Bring the setlist."
+from = "Desk 4 <desk4@harbourimport.se>"
+to = "Big Ideas Import <ceo@bigideas.se>"
+subject = "My screen"
+sent = "1996-06-01 16:40"
+body = "Someone has been at my computer. Everything is black and yellow and I can't read a thing! Was it you?"
 read = true
 
-[sub_resource type="Resource" id="Resource_s2vee"]
+[sub_resource type="Resource" id="Resource_ujwre"]
 script = ExtResource("7_pq1pi")
 folder = 1
-from = "nick@burton.net"
-to = "Lisa <lisa@modemlandia.se>"
-subject = "Re: Rehearsal"
-sent = "1996-05-27 19:02"
-body = "Thursday works. My computer has gone completely silent, so I'm taking it to the shop on Saturday."
+from = "Big Ideas Import <ceo@bigideas.se>"
+to = "Desk 4 <desk4@harbourimport.se>"
+subject = "Re: My screen"
+sent = "1996-06-01 17:05"
+body = "Who, me? Never. Maybe your computer just has style now. :)"
 read = true
 
 [sub_resource type="Resource" id="Resource_8iaji"]
@@ -295,7 +287,7 @@ script = ExtResource("9_86j8n")
 wallpaper = ExtResource("wallpaper")
 desktop = Array[ExtResource("2_egn44")]([SubResource("Resource_brkaj"), SubResource("Resource_skkob"), SubResource("Resource_1wfhb")])
 drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResource("Resource_17xmd")])
-emails = Array[ExtResource("7_pq1pi")]([SubResource("Resource_pdq6s"), SubResource("Resource_jonve"), SubResource("Resource_s2vee")])
+emails = Array[ExtResource("7_pq1pi")]([SubResource("Resource_ylt2v"), SubResource("Resource_ujwre")])
 installed_apps = PackedStringArray("Calculator", "Notepad", "Media Player", "Sound Recorder")
 volume = 60.0
 
