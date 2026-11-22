@@ -5,6 +5,7 @@
 
 [node name="BootSequence" instance=ExtResource("1_boot")]
 boots_windows = false
+skippable = false
 hardware = ExtResource("2_hw")
 memory_test_seconds = 1.0
 warm_up_seconds = 1.2

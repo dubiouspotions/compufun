@@ -1,7 +1,7 @@
 extends Control
 ## A 1995 PC booting: a black screen while the monitor warms up, the BIOS power-on self test, the
 ## system summary, "Starting Windows 95...", the splash screen, then the desktop beneath, over one
-## recording of the machine. Any key or click skips to the desktop.
+## recording of the machine. Any key or click skips to the desktop, unless [member skippable] is off.
 ## Frees itself when the startup sound has played.
 
 ## The boot reached the desktop, or the player skipped it.
@@ -14,6 +14,8 @@ signal _any_key
 @export var floppy_in_a: bool = false
 ## What the BIOS says when the floppy in A: can't start the computer.
 @export_multiline var disk_error: String = "Non-System disk or disk error\nReplace and press any key when ready"
+## False: no key or click skips the boot; they go on to the nodes behind it.
+@export var skippable: bool = true
 ## Starts as soon as the node is ready; turn off to start it with play().
 @export var play_on_start: bool = true
 ## What the BIOS finds: the CPU, the memory, the drives, the PCI devices. null boots the defaults
@@ -96,12 +98,14 @@ func _process(delta: float) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if (event is InputEventKey or event is InputEventMouseButton) and event.is_pressed():
+	if not (event is InputEventKey or event is InputEventMouseButton) or not event.is_pressed():
+		return
+	if _awaiting_key:
 		accept_event()
-		if _awaiting_key:
-			_any_key.emit()
-		else:
-			_skipped = true
+		_any_key.emit()
+	elif skippable:
+		accept_event()
+		_skipped = true
 
 
 ## Plays the boot from the start, then emits finished and frees the node.

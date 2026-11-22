@@ -9,8 +9,8 @@ extends Control
 ## the wrong symptoms leads to the wrong fix. This screen keeps only its cursor and the typing. It
 ## reads every Problem file, so its text is never a second copy of the problems.
 ## The first time the player opens it on a day, the work computer boots, the character starts the
-## program at the DOS prompt and the modem dials up; until then the computer is off. Any key or
-## click skips to the database.
+## program at the DOS prompt and the modem dials up; until then the computer is off. Nothing skips
+## the start-up; the player can leave meanwhile, and it goes on.
 ## Keys: arrows and Tab move, Space or Enter acts, P prints the selected record's checklist on
 ## the shop's Printer, F only its FIX steps. The mouse clicks and scrolls.
 
@@ -83,8 +83,6 @@ var _next_key: float = 0.0
 var _keys: AudioStreamPlayer
 ## True from the first opening of a day until the database shows.
 var _starting: bool = false
-## The player skipped the start-up.
-var _skip: bool = false
 ## The DOS screen of the start-up, line by line.
 var _dos: PackedStringArray = []
 var _modem: AudioStreamPlayer
@@ -318,43 +316,37 @@ func _check_day() -> void:
 		picture_changed.emit()
 
 
-# The boot, the program at the DOS prompt, the dial-up; then the database. Any key or click skips.
+# The boot, the program at the DOS prompt, the dial-up; then the database.
 func _start_up() -> void:
 	_starting = true
-	_skip = false
 	_dos.clear()
 	picture_changed.emit()
 	var boot := boot_scene.instantiate() if boot_scene != null else null
 	if boot != null:
 		add_child(boot)
-	while is_instance_valid(boot) and boot.visible and not _skip:
+	while is_instance_valid(boot) and boot.visible:
 		await get_tree().process_frame
 	if is_instance_valid(boot):
 		boot.queue_free()
-	if not _skip:
-		_dos.append("C:\\>")
-		for letter: String in command:
-			if not await _pause(randf_range(key_seconds.x, key_seconds.y) * 2.0):
-				break
-			_dos[-1] += letter
-			if keystroke != null:
-				keystroke.play_on(_keys)
-			queue_redraw()
+	_dos.append("C:\\>")
+	for letter: String in command:
+		await _pause(randf_range(key_seconds.x, key_seconds.y) * 2.0)
+		_dos[-1] += letter
+		if keystroke != null:
+			keystroke.play_on(_keys)
+		queue_redraw()
 	for line: String in banner_lines:
-		if _skip or not await _pause(start_line_seconds):
-			break
+		await _pause(start_line_seconds)
 		_dos.append(line)
 		queue_redraw()
-	if not _skip and dialup_sound != null:
+	if dialup_sound != null:
 		_modem.play()
 		await _pause(dialup_sound.get_length())
 	for line: String in connect_lines:
-		if _skip or not await _pause(start_line_seconds):
-			break
+		await _pause(start_line_seconds)
 		_dos.append(line)
 		queue_redraw()
-	if not _skip:
-		await _pause(start_line_seconds * 2.0)
+	await _pause(start_line_seconds * 2.0)
 	_modem.stop()
 	_dos.clear()
 	_starting = false
@@ -362,30 +354,14 @@ func _start_up() -> void:
 	screen_opened()
 
 
-# Waits [param seconds]; false when the player skipped meanwhile.
-func _pause(seconds: float) -> bool:
-	var left := seconds
-	while left > 0.0 and not _skip:
-		await get_tree().process_frame
-		left -= get_process_delta_time()
-	return not _skip
-
-
-# During the start-up, a key or a click skips all of it, the boot too, straight to the database.
-func _input(event: InputEvent) -> void:
-	if not _starting or not event.is_pressed() or event is InputEventMouseMotion:
-		return
-	var key := event as InputEventKey
-	if key != null and key.keycode == KEY_ESCAPE:
-		return  # leaves the screen; the start-up goes on
-	_skip = true
-	get_viewport().set_input_as_handled()
+func _pause(seconds: float) -> void:
+	await get_tree().create_timer(seconds).timeout
 
 
 func _on_click(button: InputEventMouseButton) -> void:
 	var cell := Vector2i((button.position / CELL).floor())
 	var column := _column_at(cell.x)
-	if column < 0 or _offline():
+	if column < 0 or _starting or _offline():
 		return
 	if button.button_index == MOUSE_BUTTON_WHEEL_UP or button.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 		var step := -1 if button.button_index == MOUSE_BUTTON_WHEEL_UP else 1
@@ -422,7 +398,7 @@ func _on_click(button: InputEventMouseButton) -> void:
 
 
 func _on_key(key: InputEventKey) -> bool:
-	if _offline():
+	if _starting or _offline():
 		return false
 	if key.keycode == KEY_ESCAPE:
 		return false  # leaves the screen; the typing goes on
