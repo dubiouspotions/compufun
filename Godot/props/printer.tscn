@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://props/printer.tres" id="1_mesh"]
+[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="2_beige"]
+[ext_resource type="Material" path="res://materials/printer.tres" id="3_details"]
+
+[node name="Printer" type="MeshInstance3D"]
+mesh = ExtResource("1_mesh")
+surface_material_override/0 = ExtResource("2_beige")
+surface_material_override/1 = ExtResource("3_details")
