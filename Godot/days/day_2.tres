@@ -1,32 +1,16 @@
 [gd_resource type="Resource" script_class="Day" format=3]
 
 [ext_resource type="Resource" path="res://customers/young_entrepreneur.tres" id="2_ls70c"]
-[ext_resource type="Script" path="res://problems/problem.gd" id="3_5oial"]
-[ext_resource type="Script" path="res://problems/setting_check.gd" id="4_mgmwm"]
+[ext_resource type="Resource" path="res://problems/bootfloppy.tres" id="3_ksd36"]
 [ext_resource type="Script" path="res://days/day.gd" id="day"]
 [ext_resource type="Script" path="res://days/errand.gd" id="errand"]
 [ext_resource type="Resource" path="res://problems/no_sound.tres" id="no_sound"]
 [ext_resource type="Resource" path="res://customers/retired_accountant.tres" id="retired_accountant"]
 
-[sub_resource type="Resource" id="Resource_76u48"]
-script = ExtResource("4_mgmwm")
-setting = &"floppy_in_a"
-broken_value = true
-
-[sub_resource type="Resource" id="Resource_5wqtx"]
-script = ExtResource("3_5oial")
-short_name = &"bootfloppy"
-perceived_issue = "Computer doesn't start - just a bunch of text"
-location = 1
-symptoms = PackedStringArray("Non-System disk error at startup", "Floppy in drive A:")
-hardware_steps = PackedStringArray()
-software_steps = PackedStringArray("Eject the floppy from drive A:", "Press a key, or restart, with no floppy in A:")
-software_check = SubResource("Resource_76u48")
-
 [sub_resource type="Resource" id="Resource_d6lgi"]
 script = ExtResource("errand")
 customer = ExtResource("2_ls70c")
-problem = SubResource("Resource_5wqtx")
+problem = ExtResource("3_ksd36")
 
 [sub_resource type="Resource" id="Resource_h2lgr"]
 script = ExtResource("errand")

@@ -1,9 +1,7 @@
 [gd_resource type="Resource" script_class="Day" format=3]
 
 [ext_resource type="Resource" path="res://customers/office_girl.tres" id="2_g1bwf"]
-[ext_resource type="Script" path="res://problems/problem.gd" id="3_aylsr"]
-[ext_resource type="Resource" path="res://win95/theme/schemes/high_contrast_black.tres" id="4_eg5qm"]
-[ext_resource type="Script" path="res://problems/setting_check.gd" id="5_c8jnb"]
+[ext_resource type="Resource" path="res://problems/inverted_colors.tres" id="3_fhra2"]
 [ext_resource type="Resource" path="res://customers/retired_accountant.tres" id="8_tt0qo"]
 [ext_resource type="Resource" path="res://problems/no_sound.tres" id="9_12vde"]
 [ext_resource type="Script" path="res://days/day.gd" id="day"]
@@ -11,25 +9,10 @@
 [ext_resource type="Resource" path="res://customers/hat_guy.tres" id="hat_guy"]
 [ext_resource type="Resource" path="res://problems/noimages.tres" id="noimages"]
 
-[sub_resource type="Resource" id="Resource_6pxgh"]
-script = ExtResource("5_c8jnb")
-setting = &"palette"
-broken_value = ExtResource("4_eg5qm")
-
-[sub_resource type="Resource" id="Resource_civ1r"]
-script = ExtResource("3_aylsr")
-short_name = &"inverted_colors"
-perceived_issue = "Computer's colours have changed"
-location = 1
-symptoms = PackedStringArray("Window colours changed drastically")
-hardware_steps = PackedStringArray()
-software_steps = PackedStringArray("Right-click the desktop and pick Properties", "Open the Appearance tab", "Switch the Scheme from High Contrast Black back to Windows Standard", "Click Apply or OK")
-software_check = SubResource("Resource_6pxgh")
-
 [sub_resource type="Resource" id="Resource_suvb4"]
 script = ExtResource("errand")
 customer = ExtResource("2_g1bwf")
-problem = SubResource("Resource_civ1r")
+problem = ExtResource("3_fhra2")
 
 [sub_resource type="Resource" id="Resource_g5vr6"]
 script = ExtResource("errand")
