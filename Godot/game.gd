@@ -864,8 +864,8 @@ func can_close() -> bool:
 
 
 ## Closes the shop for the night: DAY_OVER and [constant Daypart.EVENING]. Jobs stay on the counter.
-## On the last day it is ENDED instead. Starts the day's [member Day.close_signs]. Does nothing when
-## [method can_close] is false.
+## On the last day it is ENDED instead. Starts the day's [member Day.close_signs] and sets its
+## [member Day.close_flags]. Does nothing when [method can_close] is false.
 func close_shop() -> void:
 	if not can_close():
 		return
@@ -873,6 +873,7 @@ func close_shop() -> void:
 	daypart = Daypart.EVENING
 	for id: StringName in day.close_signs:
 		flags[sign_flag(id)] = 1
+	_set_flags(day.close_flags, "closing day %d" % day.number)
 	changed.emit()
 
 

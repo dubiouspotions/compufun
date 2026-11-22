@@ -8,7 +8,8 @@ wiki page [Architecture](../wiki/Architecture.md) ("Content data"); the guide fo
 
 - **Who comes when:** `Godot/days/day_<n>.tres`. A `Day` holds `errands` (an `Errand` is a customer
   and the problem their computer has this time; at most `Game.MAX_CUSTOMERS`), `warp`, `set_flags`
-  (set as the day starts) and `close_signs`.
+  (set as the day starts), `close_flags` (set at closing, and they stay) and `close_signs` (start at
+  closing, stop the next day).
 - **What they say:** `Godot/customers/<name>.tres`. A `Customer` holds `conversations`. A
   `Conversation` is a `Reply` with an id, a trigger (`ARRIVE`, `PICKUP`, `PHONE`), `once`, a voice
   effect, `leave_text` and `back_text`. A `Reply` holds `when` (a `Condition`), `set_flags`,

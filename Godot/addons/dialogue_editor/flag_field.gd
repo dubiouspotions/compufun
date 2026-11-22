@@ -89,6 +89,7 @@ static func index(customers: Array[Customer], days: Array[Day], errors: Array[St
 				_scan(conversation, "%s/%s" % [who, conversation.id], setters, checkers)
 	for d: Day in days:
 		_note_sets(setters, d.set_flags, "day %d" % d.number)
+		_note_sets(setters, d.close_flags, "closing day %d" % d.number)
 	var signs := _sign_titles(errors)
 	for flag: StringName in signs:
 		_note(checkers, flag, "sign: " + signs[flag])

@@ -148,6 +148,18 @@ func _day_column(d: Day) -> Control:
 	sets.edit.focus_exited.connect(_fill_flags)
 	column.add_child(sets)
 
+	var closing := FlagField.new(DialogueEditor.flags_text(d.close_flags), "Sets flags at closing: sign_x", _offers)
+	closing.tooltip_text = "The flags that the day sets when the shop closes, and that stay: name, or name=number; 0 clears it."
+	closing.edited.connect(func(text: String) -> void:
+		var parsed: Variant = DialogueEditor.parse_flags(text)
+		if parsed is String:
+			_show_status("Day %d closing flags not changed: %s" % [d.number, parsed])
+			return
+		d.close_flags = parsed
+		_touch(d, false))
+	closing.edit.focus_exited.connect(_fill_flags)
+	column.add_child(closing)
+
 	var list := ItemList.new()
 	list.custom_minimum_size.y = 150
 	list.size_flags_vertical = SIZE_EXPAND_FILL
@@ -345,7 +357,7 @@ func _offers() -> Dictionary:
 
 
 func _summary(d: Day) -> String:
-	return var_to_str([d.number, d.warp, d.set_flags, d.errands.map(func(each: Errand) -> Array:
+	return var_to_str([d.number, d.warp, d.set_flags, d.close_flags, d.errands.map(func(each: Errand) -> Array:
 		return [each.customer.resource_path if each.customer != null else "", each.problem.resource_path if each.problem != null else ""] if each != null else [])])
 
 

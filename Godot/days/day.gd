@@ -14,6 +14,9 @@ extends Resource
 ## The flags that the day sets as it starts: name to number, where 0 clears the flag. A day starts a
 ## corruption sign with sign_<id>.
 @export var set_flags: Dictionary[StringName, int] = {}
+## The flags that the day sets when the player closes the shop, and that stay: name to number, where
+## 0 clears the flag. For a sign that lasts the rest of the week, such as &"sign_logo_blue".
+@export var close_flags: Dictionary[StringName, int] = {}
 ## The seconds from the player opening the shop until the first customer comes in: a random time from x
 ## to y, picked each day.
 @export var first_wait_seconds: Vector2 = Vector2(5.0, 8.0)
