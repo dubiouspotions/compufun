@@ -14,7 +14,7 @@ const IDS: Array[StringName] = [&"motherboard", &"cpu", &"fan", &"ram_1", &"ram_
 ## The part that this one sits on; it must be in first, and this one must be out before it comes out.
 ## null: the part sits in the case itself.
 @export var sits_on: Part
-## The 3D model: in the computer, on the mat and on its storage box. Flat side down, origin at the
+## The 3D model: in the computer, in the hand and on its storage box. Flat side down, origin at the
 ## bottom centre. An optional child named Broken, hidden in the scene, is how a broken piece looks,
 ## such as the fan's dust; [method Piece.make_model] shows it.
 @export var model: PackedScene

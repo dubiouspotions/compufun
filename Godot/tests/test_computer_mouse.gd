@@ -32,7 +32,7 @@ func run() -> void:
 	game.open_case(job, true)
 	game.take_new_part(mouse)
 	check("no place for the computer mouse", [game.can_put(job, mouse), game.put_part(job)], [false, false])
-	check("the mat takes it", game.put_on_mat(job), true)
+	check("the trash takes it", game.trash_part(), true)
 	var state: Dictionary = game.snapshot()
 	state["jobs"][0]["parts"]["mouse"] = "mouse"
 	check("a computer mouse in a place: refused", game.restore(state).contains("no place 'mouse'"), true)

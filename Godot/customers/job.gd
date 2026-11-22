@@ -14,8 +14,6 @@ var order: int = 0
 ## The pieces in the computer, keyed by their place (see [constant Part.IDS]); an empty place has no
 ## key.
 var places: Dictionary[Part, Piece] = {}
-## The pieces that the player took out and put down on the mat beside the computer.
-var mat: Array[Piece] = []
 ## The computer lies on its side, the side panel up, in every view: the player laid it down in the
 ## Workview and hasn't stood it up again. Always true while [member case_open].
 var lying: bool = false
@@ -134,7 +132,6 @@ func snapshot() -> Dictionary:
 		"case_open": case_open,
 		"panel_screws": panel_screws.duplicate(),
 		"parts": places_data(),
-		"mat": Job.pieces_data(mat),
 	}
 
 
