@@ -13,7 +13,7 @@ const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color",
 
 ## The face when the person has no face texture yet.
 @export var default_face: Texture2D
-## The footsteps; each step plays one take of them.
+## The footsteps where no Ground is under the body; each step plays one take of them.
 @export var steps: SoundSet = preload("res://sounds/footsteps.tres")
 ## The size of the face photo, as a share of the face area: the front of the head from the chin to
 ## the brow. 1 fills the area; the rest of the area takes the skin colour.
@@ -112,9 +112,17 @@ func _move_arms(delta: float) -> void:
 	_shoulder_right.rotation.x = lerpf(_shoulder_right.rotation.x, right, weight)
 
 
-## Plays one footstep from [member steps]. The walk animation calls it when a foot lands.
+## Plays one footstep of the Ground under the body, or of [member steps] where there is none. The
+## walk animation calls it when a foot lands.
 func step() -> void:
-	steps.play_on(_steps)
+	var ground := Ground.under(global_position, get_tree())
+	if ground == null:
+		steps.play_on(_steps)
+	elif ground.steps == null:
+		push_error("CustomerBody: the Ground %s has no steps" % ground.get_path())
+		steps.play_on(_steps)
+	else:
+		ground.steps.play_on(_steps)
 
 
 ## Dresses the body as [param customer]. null shows the default face and clothes.

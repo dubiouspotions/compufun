@@ -40,6 +40,8 @@
 [ext_resource type="PackedScene" path="res://props/taped_note.tscn" id="taped_note"]
 [ext_resource type="PackedScene" path="res://props/wall_clock.tscn" id="wall_clock"]
 [ext_resource type="Script" path="res://corruption/corruption_signs.gd" id="corruption_signs"]
+[ext_resource type="Script" path="res://rooms/ground.gd" id="ground"]
+[ext_resource type="Resource" path="res://sounds/footsteps.tres" id="steps_tile"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -198,6 +200,8 @@ unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, -1.75)
 material_override = ExtResource("2_4tacs")
 mesh = SubResource("BoxMesh_v1ium")
+script = ExtResource("ground")
+steps = ExtResource("steps_tile")
 
 [node name="Ceiling" type="MeshInstance3D" parent="Room" unique_id=1929767015]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.05, -1.75)

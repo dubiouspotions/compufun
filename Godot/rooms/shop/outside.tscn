@@ -20,6 +20,9 @@
 [ext_resource type="AudioStream" path="res://sounds/city_ambience.ogg" id="18_city"]
 [ext_resource type="ArrayMesh" path="res://props/tree_round_b.tres" id="tree_round_b"]
 [ext_resource type="ArrayMesh" path="res://props/tree_pine_b.tres" id="tree_pine_b"]
+[ext_resource type="Script" path="res://rooms/ground.gd" id="ground"]
+[ext_resource type="Resource" path="res://sounds/footsteps_asphalt.tres" id="steps_asphalt"]
+[ext_resource type="Resource" path="res://sounds/footsteps_sidewalk.tres" id="steps_sidewalk"]
 
 [sub_resource type="Gradient" id="Gradient_qlyq4"]
 offsets = PackedFloat32Array(0, 0.24, 0.29, 0.5, 0.71, 0.77, 0.83, 1)
@@ -192,6 +195,8 @@ light_cull_mask = 2
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -9.1)
 material_override = ExtResource("2_hpxhf")
 mesh = SubResource("PlaneMesh_hf6x6")
+script = ExtResource("ground")
+steps = ExtResource("steps_asphalt")
 
 [node name="Gardens" type="MeshInstance3D" parent="." unique_id=608964457]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, -19.6)
@@ -222,6 +227,8 @@ mesh = SubResource("QuadMesh_43tds")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, -6.2)
 material_override = ExtResource("5_8kl6n")
 mesh = SubResource("BoxMesh_3ls5u")
+script = ExtResource("ground")
+steps = ExtResource("steps_sidewalk")
 
 [node name="BoundaryWall" type="MeshInstance3D" parent="." unique_id=606661209]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, -12.6)

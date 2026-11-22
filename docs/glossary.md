@@ -24,6 +24,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Hotspot**: A thing in a room that the player clicks (`rooms/hotspot.tscn`).
 *Avoid:* button, clickable, interactable.
 
+**Ground**: A floor that customers walk on, such as the shop floor, the alley or the porch, with the footsteps that it sounds of (`rooms/ground.gd` on the floor's mesh). Where grounds overlap, the one with the highest top is under the customer.
+*Avoid:* floor type, surface.
+
 **Back strip**: The strip along the bottom of the Workview, Storage and Up views that goes back like the Back button when the player clicks it where nothing else is clickable (`Shop.back_strip_height`). It darkens under the mouse.
 *Avoid:* back zone, back band, back area.
 
