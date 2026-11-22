@@ -2,11 +2,13 @@
 
 [ext_resource type="Script" path="res://dev/dev_menu.gd" id="script"]
 [ext_resource type="PackedScene" path="res://dev/voice_lab.tscn" id="voice_lab"]
+[ext_resource type="PackedScene" path="res://dev/story_lab/story_lab.tscn" id="story_lab"]
 
 [node name="DevMenu" type="CanvasLayer"]
 layer = 95
 script = ExtResource("script")
-tools = Array[PackedScene]([ExtResource("voice_lab")])
+tools = Array[PackedScene]([ExtResource("voice_lab"), ExtResource("story_lab")])
+story_lab = ExtResource("story_lab")
 
 [node name="Panel" type="PanelContainer" parent="."]
 unique_name_in_owner = true
@@ -14,7 +16,7 @@ anchors_preset = 0
 offset_left = 48.0
 offset_top = 96.0
 offset_right = 368.0
-offset_bottom = 200.0
+offset_bottom = 240.0
 
 [node name="Margin" type="MarginContainer" parent="Panel"]
 layout_mode = 2

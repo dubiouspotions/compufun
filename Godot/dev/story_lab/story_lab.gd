@@ -1,0 +1,232 @@
+class_name StoryLab
+extends Control
+## The Story Lab (Dev menu, F4 or Cmd+4): writers edit the story files (docs/dialogue.md) in the
+## running game. On top, the week board; below, the picked errand or day. Every edit that parses is
+## a draft (StoryDrafts) that the game plays at once. While the Lab shows, the game is paused.
+
+const CUSTOMERS_DIR: String = "res://customers/"
+## The story check, when the game has one: static missing_links(week) and flag_index(week).
+const STORY_CHECK: String = "res://story/story_check.gd"
+
+## The drafts that the Lab edits. Replace it before the Lab enters the tree to keep them elsewhere.
+var drafts: StoryDrafts = StoryDrafts.new()
+
+var _week: StoryFiles.Week
+## Errand file path to {"errand": Errand, "problems": PackedStringArray, "draft": bool}.
+var _cards: Dictionary = {}
+var _selected: String = ""
+var _holding: bool = false
+var _was_paused: bool = false
+
+var _board: StoryLabBoard
+var _status: Label
+var _problems: Label
+var _lower: Control
+var _customers: PopupMenu
+var _add_day: int = 0
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	drafts.to_checkout = StoryDrafts.saves_to_checkout()
+	_build()
+	var errors := drafts.load_drafts()
+	refresh()
+	if not errors.is_empty():
+		_say("Some drafts don't read: " + "; ".join(errors), true)
+	else:
+		_say("Click an errand to open it. Drag a card to move it.")
+	_hold(is_visible_in_tree())
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_VISIBILITY_CHANGED and is_inside_tree():
+		_hold(is_visible_in_tree())
+	elif what == NOTIFICATION_EXIT_TREE:
+		_hold(false)
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if key != null and key.pressed and not key.echo and key.keycode == KEY_ESCAPE and visible:
+		hide()
+		get_viewport().set_input_as_handled()
+
+
+## Loads the week again from the story files with the drafts over them, and shows it.
+func refresh() -> void:
+	var texts := drafts.texts()
+	_week = StoryFiles.load_week(texts)
+	var links := _missing_links()
+	_cards.clear()
+	for path: String in StoryFiles.files(StoryFiles.ERRANDS_DIR, ".errand", texts):
+		var parsed := StoryFormat.parse_errand(drafts.text(path), path)
+		var problems := parsed.errors.duplicate()
+		for link: String in links:
+			if link.begins_with(path) or link.begins_with(StoryDrafts.repo_path(path)):
+				problems.append(link)
+		_cards[path] = {"errand": parsed.value as Errand, "problems": problems, "draft": drafts.has(path)}
+	if not _cards.has(_selected):
+		_selected = ""
+	var drafted_days: Array[int] = []
+	for path: String in drafts.paths():
+		if path.begins_with(StoryFiles.DAYS_DIR):
+			drafted_days.append(path.get_file().get_basename().trim_prefix("day_").to_int())
+	_board.show_week(_week.days, _cards, _selected, drafted_days)
+	_problems.text = "" if _week.errors.is_empty() else "%d problems in the story files (hover)" % _week.errors.size()
+	_problems.tooltip_text = "\n".join(_week.errors)
+
+
+## The errand files on the board: path to {"errand", "problems", "draft"}.
+func cards() -> Dictionary:
+	return _cards
+
+
+## Makes [param text] the text of the story file [param path] ("" removes it), plays the week with
+## it, and shows it. Returns "" or what failed.
+func store(path: String, text: String) -> String:
+	var failed := drafts.put(path, text)
+	if failed != "":
+		_say("Not saved: " + failed, true)
+		return failed
+	_after_store()
+	return ""
+
+
+## Moves the errand file [param path] to day [param day] at place [param index], or with
+## [param alternative] onto the errands at that place, renaming files through the drafts. Returns ""
+## or what failed.
+func move_errand(path: String, day: int, index: int, alternative: bool) -> String:
+	var renames := StoryLabBoard.moves(StoryLabBoard.groups(PackedStringArray(_cards.keys())), path, day, index, alternative)
+	if renames.is_empty():
+		return ""
+	var failed := drafts.rename(renames)
+	if failed != "":
+		_say("Not moved: " + failed, true)
+		return failed
+	if renames.has(_selected):
+		_selected = renames[_selected]
+	_after_store()
+	_say("Moved %s to %s." % [path.get_file(), renames.get(path, path).get_file()])
+	return ""
+
+
+## Opens the errand file [param path] below the board.
+func open_errand(path: String) -> void:
+	_selected = path
+	refresh()
+
+
+func _after_store() -> void:
+	var errors: PackedStringArray = Game.load_story(drafts.texts())
+	refresh()
+	if errors.is_empty():
+		_say("Saved. The game plays it now." if not drafts.to_checkout else "Saved into the checkout.")
+	else:
+		_say("Saved, but the game can't play the week: " + errors[0], true)
+		_problems.text = "%d problems: the game keeps the week it had (hover)" % errors.size()
+		_problems.tooltip_text = "\n".join(errors)
+
+
+# The missing links of the week from the story check, or none while the game has no check.
+func _missing_links() -> PackedStringArray:
+	if not ResourceLoader.exists(STORY_CHECK):
+		return PackedStringArray()
+	var check := load(STORY_CHECK) as Script
+	if check == null:
+		push_error("Story Lab: %s doesn't load" % STORY_CHECK)
+		return PackedStringArray()
+	return check.call("missing_links", _week)
+
+
+func _hold(on: bool) -> void:
+	if on == _holding:
+		return
+	_holding = on
+	if on:
+		_was_paused = get_tree().paused
+		get_tree().paused = true
+	else:
+		get_tree().paused = _was_paused
+
+
+func _say(text: String, bad: bool = false) -> void:
+	_status.text = text
+	_status.add_theme_color_override("font_color", LabUI.BAD if bad else LabUI.DIM)
+	if bad:
+		push_warning("Story Lab: " + text)
+
+
+func _add_errand(day: int) -> void:
+	_add_day = day
+	_customers.clear()
+	for name: String in _resource_names(CUSTOMERS_DIR):
+		_customers.add_item(name)
+	_customers.position = Vector2i(get_global_mouse_position())
+	_customers.popup()
+
+
+func _add_errand_for(index: int) -> void:
+	var customer := _customers.get_item_text(index)
+	var day_groups: Array = StoryLabBoard.groups(PackedStringArray(_cards.keys()))[_add_day - 1]
+	var path := "%s%02d%02d_%s.errand" % [StoryFiles.ERRANDS_DIR, _add_day, day_groups.size() + 1, customer]
+	if store(path, "customer: %s\n\n== drop-off\n" % customer) == "":
+		open_errand(path)
+		_say("Added %s. Write what the visit is for, then the drop-off." % path.get_file())
+
+
+## The file names without extension of the .tres files in [param dir], sorted.
+static func _resource_names(dir: String) -> PackedStringArray:
+	var names := PackedStringArray()
+	for file: String in DirAccess.get_files_at(dir):
+		if file.ends_with(".tres"):
+			names.append(file.get_basename())
+	names.sort()
+	return names
+
+
+func _build() -> void:
+	theme = LabUI.make_theme()
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var backdrop := ColorRect.new()
+	backdrop.color = Color(LabUI.BG, 0.98)
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(backdrop)
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for side: String in ["left", "top", "right", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 18)
+	add_child(margin)
+	var page := VBoxContainer.new()
+	page.add_theme_constant_override("separation", 12)
+	margin.add_child(page)
+	page.add_child(_top_bar())
+	_board = StoryLabBoard.new()
+	_board.custom_minimum_size.y = 390
+	_board.errand_picked.connect(open_errand)
+	_board.errand_dropped.connect(move_errand)
+	_board.add_requested.connect(_add_errand)
+	page.add_child(_board)
+	_lower = VBoxContainer.new()
+	_lower.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	page.add_child(_lower)
+	_customers = PopupMenu.new()
+	_customers.id_pressed.connect(_add_errand_for)
+	add_child(_customers)
+
+
+func _top_bar() -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	row.add_child(LabUI.label("Story Lab", 26))
+	row.add_child(LabUI.chip("Game paused", LabUI.ACCENT, 13))
+	_status = LabUI.label("", 14, LabUI.DIM)
+	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_status.clip_text = true
+	_status.mouse_filter = Control.MOUSE_FILTER_PASS
+	row.add_child(_status)
+	_problems = LabUI.label("", 13, LabUI.CHANGED)
+	_problems.mouse_filter = Control.MOUSE_FILTER_PASS
+	row.add_child(_problems)
+	row.add_child(LabUI.button("Close  Esc", hide))
+	return row
