@@ -140,7 +140,15 @@ func _sync() -> void:
 	for paper: PrintoutPaper in [_corner_paper, _paper]:
 		paper.lines = Game.printout
 		paper.ticks = Game.printout_ticks.duplicate()
+	_fit_corner()
 	_layout()
+
+
+# Widens the corner to the tilted page's right edge, so that it clips only the page's bottom.
+func _fit_corner() -> void:
+	var paper := Transform2D(_corner_paper.rotation, _corner_rest)
+	var right := maxf((paper * Vector2(_corner_paper.size.x, 0.0)).x, (paper * Vector2(_corner_paper.size.x, _corner.size.y)).x)
+	_corner.size.x = ceilf(right)
 
 
 # Hops the corner's page up and down twice: the player carries a page already.

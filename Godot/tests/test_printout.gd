@@ -88,6 +88,9 @@ func _check_close_up() -> void:
 	var corner: Control = carried.get_node("%Corner")
 	check("the corner shows the carried page", corner.visible, true)
 	check("the corner is at the bottom left", [corner.get_global_rect().end.x < view.x * 0.5, corner.get_global_rect().end.y >= view.y], [true, true])
+	var corner_paper: Control = carried.get_node("%CornerPaper")
+	var page_right: Vector2 = corner_paper.get_global_transform() * Vector2(corner_paper.size.x, 0.0)
+	check("the corner shows the page's whole width", corner.get_global_rect().end.x >= page_right.x, true)
 	var arrow := Rect2(view.x - 108.0, view.y * 0.5 - 66.0, 84.0, 132.0)
 	var buttons: Array[Rect2] = [arrow]
 	var none: Array[Rect2] = []
