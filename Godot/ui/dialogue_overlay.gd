@@ -45,6 +45,12 @@ const _MATCH_NEUTRAL_HEIGHT := "young_entrepreneur/portrait_irritated03.png"
 ## Seconds of quiet, once a line is typed out and its voice has ended, before the next line comes on
 ## its own; 0 waits for a click. Choices always wait for the player.
 @export_range(0.0, 10.0, 0.1) var auto_advance_seconds: float = 1.5
+## Seconds of quiet after the last line before the player's choices show; a click shows them at once.
+@export_range(0.0, 5.0, 0.1) var choices_after_seconds: float = 0.3
+## How long a choice takes to fade in, and the others to fade out once one is picked; 0 is at once.
+@export_range(0.0, 1.0, 0.01) var choice_fade_seconds: float = 0.18
+## The delay between one choice fading in and the next, in seconds.
+@export_range(0.0, 0.5, 0.01) var choice_stagger_seconds: float = 0.06
 ## The colours of a choice, and of a choice under the mouse.
 @export var choice_color: Color = Color(0.96, 0.95, 0.92)
 @export var choice_hover_color: Color = Color(1.0, 0.82, 0.45)
@@ -63,8 +69,12 @@ var _above: Array[Reply] = []
 var _asked: Dictionary[Choice, bool] = {}
 # The picked choice ends the conversation after its reply.
 var _ending: bool = false
+# A picked button is lighting up while the others fade; further clicks wait.
+var _picking: bool = false
 # Seconds since the shown line was typed out and its voice went quiet.
 var _quiet: float = 0.0
+# The choices that show once the customer has finished the last line.
+var _pending: Array[Choice] = []
 var _line: int = 0
 # False while the box shows its own error line, which has no voice.
 var _voiced: bool = false
@@ -107,7 +117,10 @@ func _process(delta: float) -> void:
 	_portrait.scale = Vector2(1.0, 1.0 + _snap(breath + talk_rise * _talk))
 	var quiet := not _text.is_typing() and not _voice.playing and _voice.level() < 0.05
 	_quiet = _quiet + delta if quiet and not _choices.visible else 0.0
-	if auto_advance_seconds > 0.0 and _quiet >= auto_advance_seconds:
+	if not _pending.is_empty():
+		if _quiet >= choices_after_seconds:
+			_show_pending()
+	elif auto_advance_seconds > 0.0 and _quiet >= auto_advance_seconds:
 		_advance()
 
 
@@ -147,6 +160,7 @@ func start(customer: Customer, conversation: Conversation) -> void:
 	_above.clear()
 	_asked.clear()
 	_ending = false
+	_pending = []
 	_line = 0
 	_name.text = customer.spoken_name()
 	if conversation == null or conversation.lines.is_empty():
@@ -345,7 +359,8 @@ func _show_line() -> void:
 	_text.type_out(line.text if line != null else "")
 	_show_portrait(line.pose if line != null else _NEUTRAL)
 	_quiet = 0.0
-	_show_choices(_enter_choices() if _line >= _lines.size() - 1 else ([] as Array[Choice]))
+	_show_choices([])
+	_pending = _enter_choices() if _line >= _lines.size() - 1 else ([] as Array[Choice])
 	_speak(line)
 
 
@@ -373,6 +388,9 @@ func _advance() -> void:
 	if _text.is_typing():
 		_text.finish()
 		return
+	if not _pending.is_empty():
+		_show_pending()
+		return
 	if _choices.visible:
 		return
 	if _line >= _lines.size() - 1:
@@ -396,6 +414,11 @@ func _enter_choices() -> Array[Choice]:
 	return Game.offered(_list) if _list != null else ([] as Array[Choice])
 
 
+func _show_pending() -> void:
+	_show_choices(_pending)
+	_pending = []
+
+
 # The reply's last line is read and no choice follows: the conversation is over.
 func _after_reply() -> void:
 	_voice.hush()
@@ -406,6 +429,7 @@ func _show_choices(offered: Array[Choice]) -> void:
 	for child: Node in _choices.get_children():
 		child.queue_free()
 	_choices.visible = not offered.is_empty()
+	_picking = false
 	if offered.is_empty():
 		return
 	for choice: Choice in offered:
@@ -417,6 +441,13 @@ func _show_choices(offered: Array[Choice]) -> void:
 			_choice_button(_conversation.leave_text, _leave)
 		else:
 			_choice_button(_conversation.back_text, _go_back)
+	if choice_fade_seconds <= 0.0:
+		return
+	var buttons := _choices.get_children().filter(func(n: Node) -> bool: return not n.is_queued_for_deletion())
+	for i: int in buttons.size():
+		var button: Button = buttons[i]
+		button.modulate.a = 0.0
+		create_tween().tween_property(button, ^"modulate:a", 1.0, choice_fade_seconds).set_delay(i * choice_stagger_seconds)
 
 
 func _choice_button(text: String, action: Callable) -> Button:
@@ -429,9 +460,30 @@ func _choice_button(text: String, action: Callable) -> Button:
 	button.add_theme_color_override(&"font_hover_color", choice_hover_color)
 	button.add_theme_font_override(&"font", _text.get_theme_font(&"font"))
 	button.add_theme_font_size_override(&"font_size", _text.get_theme_font_size(&"font_size"))
-	button.pressed.connect(action)
+	button.pressed.connect(_press.bind(button, action))
 	_choices.add_child(button)
 	return button
+
+
+# The picked [param button] lights up while the other choices fade, then [param action] runs.
+func _press(button: Button, action: Callable) -> void:
+	if _picking:
+		return
+	if choice_fade_seconds <= 0.0:
+		action.call()
+		return
+	_picking = true
+	var fade := create_tween().set_parallel()
+	for other: Node in _choices.get_children():
+		if other is Button:
+			other.disabled = other != button
+			if other != button:
+				fade.tween_property(other, ^"modulate:a", 0.0, choice_fade_seconds)
+	button.add_theme_color_override(&"font_color", choice_hover_color)
+	fade.tween_property(button, ^"modulate:a", 1.0, choice_fade_seconds)
+	fade.chain().tween_callback(func() -> void:
+		_picking = false
+		action.call())
 
 
 func _pick(choice: Choice) -> void:
@@ -443,6 +495,7 @@ func _pick(choice: Choice) -> void:
 	_reply = reply
 	_lines = reply.lines
 	_line = 0
+	_pending = []
 	if not _lines.is_empty():
 		_show_line()
 		return

@@ -1,5 +1,5 @@
 extends "res://tests/test.gd"
-## The dialogue box walks a conversation tree: a click finishes a line, then goes on; under the last
+## The dialogue box walks a conversation tree (with the fades off): a click finishes a line, then goes on; under the last
 ## line it shows the choices, a pick plays the reply, a reply without choices returns to its list, a deeper list goes back up, and the leave
 ## button ends the conversation.
 
@@ -25,15 +25,20 @@ func run() -> void:
 	var box: Control = (load("res://ui/dialogue_overlay.tscn") as PackedScene).instantiate()
 	root.add_child(box)
 	await process_frame
+	box.set(&"choice_fade_seconds", 0.0)  # the steps below follow the logic, not the fades
 	var ended := [false]
 	box.connect(&"finished", func() -> void: ended[0] = true)
 	box.call(&"start", c, talk)
 	await process_frame
+	check("no choices while the customer talks", buttons(box), [])
+	await settle(box)
 	check("under the last line: the choices and the leave button", [text(box), buttons(box)], ["Hi.", ["> How long?", "> Why?", "> That's all, thanks."]])
 	click(box)
 	check("a click doesn't skip the choices", buttons(box).size(), 3)
 	press(box, 0)
 	await process_frame
+	check("a pick hides the choices while the reply plays", buttons(box), [])
+	await settle(box)
 	check("the reply shows, with the same list under it", [text(box), buttons(box).size()], ["Since Monday.", 3])
 	press(box, 1)
 	await process_frame
@@ -43,13 +48,29 @@ func run() -> void:
 	box.call(&"_process", 0.5)
 	check("not yet on after half a second", text(box), "Hm.")
 	box.call(&"_process", 1.5)
-	await process_frame
+	await settle(box)
 	check("on by itself once the line has been quiet long enough: a deeper list, with a way back", [text(box), buttons(box)], ["Installed something.", ["> What?", "> Something else..."]])
 	press(box, 1)
 	await process_frame
 	check("back up", buttons(box).size(), 3)
 	press(box, 2)
 	check("leave ends the conversation", ended[0], true)
+
+	box.set(&"choice_fade_seconds", 0.18)
+	box.call(&"start", c, talk)
+	await settle(box)
+	press(box, 0)
+	check("with the fades on, the reply waits while the other choices fade", text(box), "Hi.")
+	press(box, 1)
+	await create_timer(0.5).timeout
+	check("then the picked one's reply plays; a second click during the fade did nothing", text(box), "Since Monday.")
+
+
+# Lets the shown line finish and go quiet, so pending choices show.
+func settle(box: Control) -> void:
+	(box.get_node("%LineLabel") as TypedLabel).finish()
+	box.call(&"_process", 0.5)
+	await process_frame
 
 
 func click(box: Control) -> void:
@@ -89,3 +110,5 @@ func reply_of(text_: String) -> Reply:
 	var reply := Reply.new()
 	reply.lines = [line(text_)]
 	return reply
+
+
