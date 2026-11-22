@@ -4,9 +4,13 @@ extends Control
 ## PostIt3D with text_3d off) and following it as the camera moves: the perceived issue and, once the
 ## computer is fixed and tested, the prompt to call the customer next to the 3D check.
 
+# The paper's width in pixels at which the lines break, once per text: large, so that whole font
+# sizes don't move a break. Every size shows those lines, and only the font size changes.
+const LAYOUT_WIDTH: float = 1000.0
+
 ## The largest font size, as a fraction of the paper's width on screen. The text shrinks below it
 ## when it doesn't fit, as on a paper that the camera sees at a slant.
-@export_range(0.02, 0.5) var font_fraction: float = 0.1
+@export_range(0.02, 0.5) var font_fraction: float = 0.095
 ## The largest font size in pixels, however close the paper comes.
 @export_range(1, 256) var max_font_size: int = 48
 
@@ -21,6 +25,7 @@ var job: Job:
 
 @onready var _issue: Label = %Issue
 @onready var _pickup: Label = %Pickup
+@onready var _pickup_text: String = _pickup.text  # before it is broken into lines
 
 
 func _ready() -> void:
@@ -43,13 +48,19 @@ func follow(rect: Rect2, quarter_turns: int = 0) -> void:
 
 
 ## The largest font size, 1 to [member max_font_size], at which both texts fit their parts of the
-## paper at the current [member Control.size]; 1 when none fits. Measures at most 8 sizes.
+## paper at the current [member Control.size], in their lines; 1 when none fits. Measures at most 8
+## sizes.
 func fitting_font_size() -> int:
+	return _largest_fitting(size, false, clampi(roundi(size.x * font_fraction), 1, max_font_size))
+
+
+# The largest font size, 1 to [param high], at which both texts fit a paper of [param paper] pixels,
+# wrapped to their boxes ([param wrap]) or in their lines.
+func _largest_fitting(paper: Vector2, wrap: bool, high: int) -> int:
 	var low := 1
-	var high := clampi(roundi(size.x * font_fraction), 1, max_font_size)
 	while low < high:
 		var mid := (low + high + 1) / 2
-		if _fits(_issue, mid) and _fits(_pickup, mid):
+		if _fits(_issue, mid, paper, wrap) and _fits(_pickup, mid, paper, wrap):
 			low = mid
 		else:
 			high = mid - 1
@@ -57,15 +68,33 @@ func fitting_font_size() -> int:
 
 
 # Measures from the anchors: the labels take the new size of this control only on the next frame.
-func _fits(label: Label, font_size: int) -> bool:
-	var box := Vector2(label.anchor_right - label.anchor_left, label.anchor_bottom - label.anchor_top) * size
+func _fits(label: Label, font_size: int, paper: Vector2, wrap: bool) -> bool:
+	var box := Vector2(label.anchor_right - label.anchor_left, label.anchor_bottom - label.anchor_top) * paper
 	var font := label.get_theme_font(&"font")
-	var text := font.get_multiline_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, box.x, font_size)
+	var text := font.get_multiline_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, box.x if wrap else -1.0, font_size)
 	var lines := roundi(text.y / font.get_height(font_size))
 	var spacing := label.get_theme_constant(&"line_spacing") * (lines - 1)
 	return text.x <= box.x and text.y + spacing <= box.y
 
 
+# Breaks both texts into the lines that they wrap to on a square paper LAYOUT_WIDTH pixels wide, at
+# the largest font size that fits it. Every size of paper shows these lines.
+func _break_lines(issue: String) -> void:
+	_issue.text = issue
+	_pickup.text = _pickup_text
+	var paper := Vector2(LAYOUT_WIDTH, LAYOUT_WIDTH)
+	var font_size := _largest_fitting(paper, true, roundi(LAYOUT_WIDTH * font_fraction))
+	for label: Label in [_issue, _pickup]:
+		var paragraph := TextParagraph.new()
+		paragraph.width = (label.anchor_right - label.anchor_left) * paper.x
+		paragraph.add_string(label.text, label.get_theme_font(&"font"), font_size)
+		var lines: PackedStringArray = []
+		for i: int in paragraph.get_line_count():
+			var span := paragraph.get_line_range(i)
+			lines.append(label.text.substr(span.x, span.y - span.x).strip_edges())
+		label.text = "\n".join(lines)
+
+
 func _sync() -> void:
-	_issue.text = job.problem.perceived_issue if job != null else ""
+	_break_lines(job.problem.perceived_issue if job != null else "")
 	_pickup.visible = job != null and job.done

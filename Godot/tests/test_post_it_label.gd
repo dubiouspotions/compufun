@@ -16,6 +16,14 @@ func run() -> void:
 	check("a paper a million pixels wide fits in under 100 ms (took %d ms)" % ms, ms < 100, true)
 	check("the font stops at max_font_size", label.call("fitting_font_size"), label.get("max_font_size"))
 
+	var issue: Label = label.get_node("%Issue")
+	var lines := issue.text
+	check("the issue is broken into lines (%s)" % lines.c_escape(), lines.count("\n") > 0, true)
+	for width: int in [120, 172, 400, 696, 1000]:
+		label.call("follow", Rect2(0, 0, width, width))
+		await process_frame
+		check("a paper %d px wide shows the same lines, none wrapped" % width, [issue.text, issue.get_line_count()], [lines, lines.count("\n") + 1])
+
 	label.call("follow", Rect2(0, 0, 160, 45))
 	var slanted: int = label.call("fitting_font_size")
 	check("a slanted paper gets a smaller font that still fits (%d)" % slanted, slanted > 1 and slanted < roundi(160 * float(label.get("font_fraction"))), true)
