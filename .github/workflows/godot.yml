@@ -168,9 +168,132 @@ jobs:
             wget -q -O /dev/null --header="Content-Type: application/json" --post-data="$data" "${{ secrets.DISCORD_WEBHOOK_URL }}"
           fi
 
+  sign-mac:
+    # Gatekeeper refuses an ad-hoc signed app downloaded from itch.io, so deploys get a notarized one.
+    name: Sign and Notarize macOS
+    needs: build
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/deploy'
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      TEAM_ID: M4Q2TE45WT
+    defaults:
+      run:
+        shell: bash
+        working-directory: .
+    steps:
+      - name: Download MacOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: MacOS
+          path: ./build/mac
+
+      - name: Set up a throwaway signing keychain
+        env:
+          CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          set -euo pipefail
+          [ -n "${CERT_P12_BASE64:-}" ] || { echo "::error::secret MACOS_CERT_P12_BASE64 is not set (a Developer ID Application certificate as base64 .p12)"; exit 1; }
+          kc="$RUNNER_TEMP/signing.keychain-db"
+          kc_pw="$(openssl rand -base64 24)"
+          cert="$RUNNER_TEMP/cert.p12"
+          printf '%s' "$CERT_P12_BASE64" | base64 --decode > "$cert"
+          security list-keychains -d user | sed 's/[" ]//g' > "$RUNNER_TEMP/orig-keychains.txt"
+          security create-keychain -p "$kc_pw" "$kc"
+          security set-keychain-settings -lut 21600 "$kc"
+          security unlock-keychain -p "$kc_pw" "$kc"
+          security import "$cert" -k "$kc" -P "$CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          # Lets codesign use the key without a GUI prompt.
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$kc_pw" "$kc" >/dev/null
+          # shellcheck disable=SC2046
+          security list-keychains -d user -s "$kc" $(cat "$RUNNER_TEMP/orig-keychains.txt")
+          rm -f "$cert"
+          identity="$(security find-identity -v -p codesigning "$kc" | sed -n "s/.*\"\(Developer ID Application: .*($TEAM_ID)\)\"/\1/p" | head -1)"
+          [ -n "$identity" ] || { echo "::error::MACOS_CERT_P12_BASE64 holds no Developer ID Application identity for team $TEAM_ID"; exit 1; }
+          echo "SIGNING_KEYCHAIN=$kc" >> "$GITHUB_ENV"
+          echo "SIGNING_IDENTITY=$identity" >> "$GITHUB_ENV"
+
+      - name: Sign
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          ditto -x -k "build/mac/$EXPORT_NAME.zip" build/unzipped
+          app="build/unzipped/$EXPORT_NAME.app"
+          [ -d "$app" ] || { echo "::error::build/mac/$EXPORT_NAME.zip holds no $EXPORT_NAME.app"; find build/unzipped -maxdepth 2; exit 1; }
+          # Godot's ad-hoc signature carries the entitlements the engine needs; keep them.
+          codesign -d --entitlements - --xml "$app" > "$RUNNER_TEMP/entitlements.plist"
+          plutil -lint "$RUNNER_TEMP/entitlements.plist"
+          # Inside out: codesign --force on the bundle doesn't re-sign nested code.
+          for nested in "$app"/Contents/Frameworks/*; do
+            codesign --force --timestamp --options runtime --keychain "$SIGNING_KEYCHAIN" --sign "$SIGNING_IDENTITY" "$nested"
+          done
+          codesign --force --timestamp --options runtime --entitlements "$RUNNER_TEMP/entitlements.plist" \
+            --keychain "$SIGNING_KEYCHAIN" --sign "$SIGNING_IDENTITY" "$app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          codesign -dvv "$app" 2>&1 | grep -E "^Authority=Developer ID Application|^TeamIdentifier=$TEAM_ID|^Timestamp"
+          echo "APP=$app" >> "$GITHUB_ENV"
+
+      - name: Notarize and staple
+        env:
+          NOTARY_KEY_P8_BASE64: ${{ secrets.MACOS_NOTARY_KEY_P8_BASE64 }}
+          NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          NOTARY_ISSUER: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          for v in NOTARY_KEY_P8_BASE64 NOTARY_KEY_ID NOTARY_ISSUER; do
+            [ -n "${!v:-}" ] || { echo "::error::secret for $v is not set (an App Store Connect API key for notarytool)"; exit 1; }
+          done
+          key="$RUNNER_TEMP/notary.p8"
+          printf '%s' "$NOTARY_KEY_P8_BASE64" | base64 --decode > "$key"
+          submission="$RUNNER_TEMP/notarize.zip"
+          ditto -c -k --keepParent "$APP" "$submission"
+          # notarytool exits 0 even when the verdict is Invalid, so gate on the status.
+          result="$(xcrun notarytool submit "$submission" --key "$key" --key-id "$NOTARY_KEY_ID" --issuer "$NOTARY_ISSUER" --wait --timeout 25m --output-format json)"
+          echo "$result"
+          id="$(printf '%s' "$result" | /usr/bin/python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+          status="$(printf '%s' "$result" | /usr/bin/python3 -c 'import json,sys; print(json.load(sys.stdin)["status"])')"
+          if [ "$status" != "Accepted" ]; then
+            xcrun notarytool log "$id" --key "$key" --key-id "$NOTARY_KEY_ID" --issuer "$NOTARY_ISSUER" || true
+            echo "::error::notarization $status for submission $id"
+            exit 1
+          fi
+          rm -f "$key" "$submission"
+          xcrun stapler staple "$APP"
+          spctl -a -vvv -t exec "$APP" 2>&1 | tee "$RUNNER_TEMP/spctl.txt"
+          grep -q "source=Notarized Developer ID" "$RUNNER_TEMP/spctl.txt"
+          mkdir -p build/signed
+          ditto -c -k --keepParent "$APP" "build/signed/$EXPORT_NAME.zip"
+
+      - name: Remove the signing keychain
+        if: always()
+        run: |
+          if [ -n "${SIGNING_KEYCHAIN:-}" ]; then
+            # shellcheck disable=SC2046
+            security list-keychains -d user -s $(cat "$RUNNER_TEMP/orig-keychains.txt")
+            security delete-keychain "$SIGNING_KEYCHAIN" || true
+          fi
+
+      - name: Upload Artifact MacOS signed
+        uses: actions/upload-artifact@v4
+        with:
+          name: MacOS-signed
+          path: ./build/signed/
+          if-no-files-found: error
+
+      - name: Notify Discord of signing failure
+        if: failure()
+        run: |
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          commit_url="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+          msg="macOS signing or notarization failed for $commit_url, so nothing was deployed."
+          embeds="[{\"title\": \"Signing Failed\", \"description\": \"See details here: ${run_url}\", \"url\": \"${run_url}\", \"color\": 10038562}]"
+          data="{\"content\": \"$msg\", \"username\": \"Buildbot\", \"embeds\": $embeds}"
+          curl -fsS -o /dev/null -H "Content-Type: application/json" -d "$data" "${{ secrets.DISCORD_WEBHOOK_URL }}"
+
   deploy:
     name: Itch.io Deploy
-    needs: build
+    needs: [build, sign-mac]
     runs-on: ubuntu-latest
     # Auto-run only on the `deploy` branch; workflow_dispatch always allowed.
     if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/deploy'
@@ -193,10 +316,10 @@ jobs:
           name: Windows
           path: ./build/windows
 
-      - name: Download MacOS artifact
+      - name: Download signed MacOS artifact
         uses: actions/download-artifact@v4
         with:
-          name: MacOS
+          name: MacOS-signed
           path: ./build/mac
 
       - name: Download Linux artifact

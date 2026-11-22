@@ -610,15 +610,26 @@ func has_floppy(job: Job) -> bool:
 	return setup != null and setup.floppy_in_a
 
 
-## Ejects the floppy from drive A: of [param job]'s computer, as a click on the case's floppy drive
-## does, so the next boot gets past "Non-System disk". Does nothing when no floppy is in. The job must
-## be on the counter.
+## True when the player can eject the floppy of [param job]'s computer: one is in, and the hand is
+## empty to take it.
+func can_eject(job: Job) -> bool:
+	return hand == null and has_floppy(job)
+
+
+## Ejects the floppy from drive A: of [param job]'s computer into the hand, as a click on the drive's
+## eject button does, so the next boot gets past "Non-System disk". Does nothing unless
+## [method can_eject]. The job must be on the counter.
 func eject_floppy(job: Job) -> void:
 	if job == null or job not in jobs:
 		push_error("Game.eject_floppy: the job is not on the counter: %s" % job)
 		return
-	if not has_floppy(job):
+	if not can_eject(job):
 		return
+	var floppy := Part.named(&"floppy")
+	if floppy == null:
+		push_error("Game.eject_floppy: no parts/floppy.tres for the ejected floppy")
+		return
+	hand = Piece.new(floppy)
 	var setup := setup_for(job)
 	setup.floppy_in_a = false
 	if job.software_check() != null:
