@@ -272,11 +272,15 @@ func _talk() -> void:
 # Before closing: why each errand code still to come today stays away.
 func _note_who_stays_away() -> void:
 	var codes: PackedStringArray = game.day.codes()
+	var blocked := ""
 	for i: int in range(game.arrivals, codes.size()):
 		var next: Errand = game.coming(i)
 		var why := "no alternative's condition holds, or the customer is gone"
-		if next != null:
+		if next != null and blocked != "":
+			why = "waits behind %s" % blocked
+		elif next != null:
 			var theirs: Array = game.jobs.filter(func(j: Job) -> bool: return j.customer == next.customer)
+			blocked = codes[i]
 			why = "%s's computer from %s is still in the shop" % [next.customer.spoken_name(), _code(theirs[0].errand)] if not theirs.is_empty() else "the shop closed first"
 		for each: Errand in game.day.alternatives(codes[i]):
 			_happened(each, "never came: " + why)
