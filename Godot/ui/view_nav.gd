@@ -1,6 +1,6 @@
 class_name ViewNav
 extends Control
-## The turn buttons, the Back button and the status line. It shows a view marker
+## The turn buttons, the Back button and the status line (debug builds only). It shows a view marker
 ## and asks for view changes; it does not change the view itself.
 
 ## The player pressed a turn button or Back.
@@ -20,6 +20,7 @@ var _back_strip_fade: Tween
 
 
 func _ready() -> void:
+	_status_label.visible = OS.is_debug_build()
 	_left.pressed.connect(func() -> void: _request(&"left"))
 	_right.pressed.connect(func() -> void: _request(&"right"))
 	_back.pressed.connect(func() -> void: _request(&"back"))
