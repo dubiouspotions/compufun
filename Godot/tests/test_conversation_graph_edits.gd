@@ -1,0 +1,157 @@
+extends "res://tests/test.gd"
+## Each edit of the Story Lab's conversation graph changes the conversation as docs/dialogue.md
+## means it, emits edited, and leaves a story file that parses back to the same text.
+
+const GRAPH := "res://dev/story_lab/conversation_graph.tscn"
+const ConversationGraph := preload("res://dev/story_lab/conversation_graph.gd")
+const PATH := "res://story/errands/0101_skater_bro.errand"
+
+var graph: ConversationGraph
+var errand: Errand
+var talk: Conversation
+var edits: int = 0
+
+
+func run() -> void:
+	var text: String = (load("res://tests/test_conversation_graph.gd") as GDScript).get_script_constant_map()["ERRAND"]
+	errand = StoryFormat.parse_errand(text, PATH).value as Errand
+	talk = errand.conversations[0]
+	graph = (load(GRAPH) as PackedScene).instantiate()
+	graph.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	graph.size = Vector2(1400, 800)
+	root.add_child(graph)
+	graph.show_conversation(talk, errand.customer)
+	graph.edited.connect(func() -> void: edits += 1)
+	await process_frame
+	var issue := talk.then
+	var questions := issue.then
+	var greeting := talk.choices[0]
+	var install := questions.choices[1]
+
+	var first := talk.lines[0]
+	check("a line's text", [graph.edit_text(first, "  Yo dude!  "), first.text], ["", "Yo dude!"])
+	await _check_file("a line's text")
+	check("an empty text is refused", [graph.edit_text(first, " "), first.text], ["Type some text, or delete it.", "Yo dude!"])
+	check("a text that the file would read as a tag is refused", [graph.edit_text(greeting, "Hi [end]") != "", greeting.text], [true, "Welcome to CompuFun! You're in the right place! How can I help you?"])
+	check("the brief", [graph.edit_text(talk, "He wants help."), talk.brief], ["", "He wants help."])
+	await _check_file("the brief")
+
+	graph.set_mood(first, &"happy")
+	check("a mood", first.pose, &"happy")
+	await _check_file("a mood")
+
+	var added := graph.add_line(greeting.replies[0], 1)
+	check("a line under a line", greeting.replies[0].lines.map(func(l: DialogueLine) -> String: return l.text), ["Sweet! Maybe you can help a buddy out!", "...", "My computer isn't working!"])
+	check("the new line is neutral", added.pose, &"neutral")
+	await _check_file("a new line")
+	graph.move_line(greeting.replies[0], 1, 0)
+	check("drag a line up", greeting.replies[0].lines[0], added)
+	await _check_file("a moved line")
+	graph.delete_line(greeting.replies[0], 0)
+	check("delete a line", greeting.replies[0].lines.size(), 2)
+
+	var choice := graph.add_choice(questions)
+	check("a choice joins the list as a -", [questions.choices.size(), questions.choices[4] == choice, choice.returns, choice.ends], [5, true, false, false])
+	await _check_file("a new choice")
+	var nested := graph.add_choice(greeting.replies[0])
+	check("a choice under an answer starts a deeper list", greeting.replies[0].choices, [nested])
+	await _check_file("a deeper list")
+	graph.move_choice(questions, 4, 0)
+	check("drag a choice up", questions.choices[0], choice)
+	await _check_file("a moved choice")
+
+	graph.cycle_mark(choice)
+	check("- becomes +", [choice.returns, choice.ends], [true, false])
+	graph.cycle_mark(choice)
+	check("+ becomes end", [choice.returns, choice.ends], [false, true])
+	await _check_file("an end mark")
+	graph.cycle_mark(choice)
+	check("end becomes -", [choice.returns, choice.ends], [false, false])
+
+	var answer := graph.add_answer(choice)
+	check("the only answer becomes the else", [choice.replies.size(), choice.replies[0] == answer, answer.when.need_flags, choice.replies[1].when], [2, true, [graph.new_flag], null])
+	await _check_file("an answer")
+	var third := graph.add_answer(install)
+	check("a new answer comes before the else", [install.replies.size(), install.replies[1] == third, install.replies[2].when], [3, true, null])
+	check("an answer's condition", [graph.set_condition(third, "not skater_cambion, days 2-4"), third.when.not_flags, third.when.from_day, third.when.to_day], ["", [&"skater_cambion"], 2, 4])
+	await _check_file("an answer's condition")
+	check("a second else is refused", graph.set_condition(third, "") != "", true)
+	check("a bad condition is refused, naming it", [graph.set_condition(third, "Skater!"), third.when.not_flags], ["'Skater!' is not a condition: a flag, not flag, day 3 or days 2-4", [&"skater_cambion"]])
+	graph.delete_box(install.replies[2])
+	await process_frame
+	check("an answer without a condition becomes the else and moves last", [graph.set_condition(third, ""), install.replies[1] == third, third.when], ["", true, null])
+	await _check_file("a new else")
+
+	check("a choice's condition", [graph.set_condition(choice, "skater_cambion"), choice.when.need_flags], ["", [&"skater_cambion"]])
+	await _check_file("a choice's condition")
+	check("no condition", [graph.set_condition(choice, " "), choice.when], ["", null])
+	check("flags", [graph.set_flags(answer, "skater_new_windows, skater_mood=2"), answer.set_flags], ["", {&"skater_new_windows": 1, &"skater_mood": 2}])
+	await _check_file("flags")
+	check("bad flags are refused", [graph.set_flags(answer, "a=b"), answer.set_flags.size()], ["'a=b' is not a flag: name, or name=number", 2])
+
+	var below := graph.go_on_below(questions)
+	check("go on below a list", [questions.then == below, below.lines.size()], [true, 1])
+	await _check_file("go on below")
+	check("a list goes on below once", graph.go_on_below(questions), null)
+
+	var before := _count()
+	graph.delete_box(choice)
+	await process_frame
+	check("delete a choice and its answers", [questions.choices.has(choice), _count()], [false, before - 3])
+	await _check_file("a deleted choice")
+	graph.delete_box(below)
+	await process_frame
+	check("delete what goes on below", questions.then, null)
+	graph.delete_box(issue.choices[0])
+	await process_frame
+	check("a list that loses its last choice takes in what came below it", [issue.choices.size(), issue.then], [4, null])
+	await _check_file("a folded list")
+	check("every edit emitted edited", edits, 24)
+
+	await _check_in_place(questions)
+
+
+# Edits a line and a chip as a writer does: double-click, type, Enter.
+func _check_in_place(questions: Reply) -> void:
+	var line := questions.choices[0].replies[0].lines[0]
+	var label := _find(graph.box_of(questions.choices[0].replies[0]), func(node: Node) -> bool: return node is Label and node.get(&"text") == line.text) as Label
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.double_click = true
+	label.gui_input.emit(click)
+	var field := _find(graph.box_of(questions.choices[0].replies[0]), func(node: Node) -> bool: return node is LineEdit and node.get(&"text") == line.text) as LineEdit
+	check("a double-click opens the line's text", field.text if field != null else null, line.text)
+	if field == null:
+		return
+	field.text_submitted.emit("Right after the new Windows, dude.")
+	check("Enter sets it", line.text, "Right after the new Windows, dude.")
+	await process_frame
+	var chip := _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is Button and node.get(&"text") == "only if: skater_cambion") as Button
+	chip.pressed.emit()
+	field = _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is LineEdit and node.get(&"text") == "skater_cambion") as LineEdit
+	field.text_submitted.emit("Not A Flag")
+	var error := _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is Label and node.visible and String(node.get(&"text")).contains("is not a condition")) as Label
+	check("a bad condition shows its error under the chip", error != null, true)
+	check("and changes nothing", questions.choices[2].when.need_flags, [&"skater_cambion"])
+	await _check_file("in-place edits")
+
+
+func _find(under: Node, matches: Callable) -> Node:
+	for node: Node in under.find_children("*", "", true, false):
+		if matches.call(node):
+			return node
+	return null
+
+
+# Fails unless the errand's story file parses without errors and writes the same text again.
+func _check_file(after: String) -> void:
+	await process_frame
+	var written := StoryFormat.write_errand(errand)
+	var parsed := StoryFormat.parse_errand(written, PATH)
+	check("after %s, the file parses" % after, parsed.errors, PackedStringArray())
+	check("after %s, the file reads back the same" % after, StoryFormat.write_errand(parsed.value as Errand), written)
+
+
+func _count() -> int:
+	return graph.get_children().filter(func(node: Node) -> bool: return node is GraphNode).size()

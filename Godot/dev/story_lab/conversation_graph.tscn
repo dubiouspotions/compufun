@@ -1,0 +1,46 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://dev/story_lab/conversation_graph.gd" id="1_graph"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_paper"]
+bg_color = Color(0.945, 0.945, 0.94, 1)
+
+[sub_resource type="Theme" id="Theme_graph"]
+default_font_size = 14
+
+[node name="ConversationGraph" type="GraphEdit"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_graph")
+theme_override_colors/grid_minor = Color(0.8, 0.8, 0.8, 1)
+theme_override_colors/grid_major = Color(0.7, 0.7, 0.7, 1)
+theme_override_styles/panel = SubResource("StyleBoxFlat_paper")
+grid_pattern = 1
+panning_scheme = 1
+connection_lines_curvature = 0.4
+connection_lines_thickness = 2.0
+zoom_min = 0.3
+zoom_max = 1.5
+minimap_enabled = false
+show_grid_buttons = false
+show_minimap_button = false
+show_arrange_button = false
+script = ExtResource("1_graph")
+
+[node name="Returns" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ConfirmDelete" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Delete"
+ok_button_text = "Delete"
