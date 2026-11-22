@@ -1,9 +1,10 @@
 [gd_resource type="Resource" script_class="Customer" format=3]
 
-[ext_resource type="Material" path="res://materials/yellowed_plastic.tres" id="1_5q1ww"]
+[ext_resource type="Material" path="res://materials/grey_plastic.tres" id="1_5q1ww"]
 [ext_resource type="Script" path="res://customers/hardware.gd" id="2_r8lo3"]
 [ext_resource type="Script" path="res://customers/computer.gd" id="3_jnq3r"]
 [ext_resource type="Script" path="res://customers/sticker.gd" id="4_femx8"]
+[ext_resource type="Texture2D" path="res://materials/textures/sticker_asset_tag.png" id="sticker_asset_tag"]
 [ext_resource type="Script" path="res://win95/win95_file.gd" id="5_nkk1v"]
 [ext_resource type="Script" path="res://win95/applets/applet.gd" id="6_p70q8"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/multimedia_32.png" id="7_cw6jy"]
@@ -43,6 +44,12 @@
 [ext_resource type="Script" path="res://customers/dialogue_line.gd" id="41_fhk55"]
 [ext_resource type="Resource" path="res://people/office_girl/person.tres" id="42_o3bf6"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="43_itl7v"]
+
+[sub_resource type="Resource" id="Sticker_asset_tag"]
+script = ExtResource("4_femx8")
+texture = ExtResource("sticker_asset_tag")
+position = Vector2(0, 0)
+size = Vector2(0.09, 0.0375)
 
 [sub_resource type="Resource" id="Resource_pvykc"]
 script = ExtResource("2_r8lo3")
@@ -287,6 +294,7 @@ script = ExtResource("3_jnq3r")
 win95_setup = SubResource("Resource_jgelc")
 hardware = SubResource("Resource_pvykc")
 case_material = ExtResource("1_5q1ww")
+stickers = Array[ExtResource("4_femx8")]([SubResource("Sticker_asset_tag")])
 
 [sub_resource type="Resource" id="Resource_f0q70"]
 script = ExtResource("41_fhk55")

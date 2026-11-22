@@ -24,7 +24,7 @@
 [ext_resource type="PackedScene" path="res://win95/solitaire/solitaire.tscn" id="app_solitaire"]
 [ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
 [ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="app_wordpad"]
-[ext_resource type="Material" path="res://materials/grey_plastic.tres" id="case_grey"]
+[ext_resource type="Material" path="res://materials/slate_plastic.tres" id="case_slate"]
 [ext_resource type="Script" path="res://customers/conversation.gd" id="cv"]
 [ext_resource type="Script" path="res://customers/dialogue_line.gd" id="dl"]
 [ext_resource type="PackedScene" path="res://props/case_fronts/multimedia.tscn" id="front_multimedia"]
@@ -304,7 +304,7 @@ script = ExtResource("1_2x16c")
 win95_setup = SubResource("Resource_8iaji")
 cambion = true
 hardware = SubResource("Hardware_machine")
-case_material = ExtResource("case_grey")
+case_material = ExtResource("case_slate")
 case_front = ExtResource("front_multimedia")
 stickers = Array[ExtResource("sticker_script")]([SubResource("Sticker_multimedia")])
 
