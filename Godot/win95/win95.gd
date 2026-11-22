@@ -78,7 +78,9 @@ const _FRAGMENTED_OPEN_SECONDS := 2.0
 static var _stock_palette: Win95Palette
 var _setup_icons: Array[FileIcon] = []
 var _listings: Dictionary[IconView, Listing] = {}
+var _drive_a: Win95File
 var _drive_c: Win95File
+var _drive_d: Win95File
 var _control_panel: Win95File
 var _drives: Array[Win95File] = []
 var _context: ContextMenu
@@ -174,9 +176,11 @@ func _on_booted() -> void:
 	_desktop.close_all()
 	_uncover()
 	_apply_look()
+	_drive_a = _folder("3\u00bd Floppy (A:)", "drive_floppy_35_32.png")
 	_drive_c = _folder("(C:)", "drive_hard_32.png")
+	_drive_d = _folder("(D:)", "drive_cdrom_32.png")
 	_control_panel = _folder("Control Panel", "folder_control_panel_32.png")
-	_drives.assign([_folder("3\u00bd Floppy (A:)", "drive_floppy_35_32.png"), _drive_c, _folder("(D:)", "drive_cdrom_32.png"),
+	_drives.assign([_drive_a, _drive_c, _drive_d,
 		_control_panel, _folder("Printers", "folder_printers_32.png")])
 	_listings.clear()
 	_listings[_icons] = Listing.new("Desktop", null, &"desktop", func() -> Array: return _state.setup.desktop, true, &"desktop")
@@ -391,10 +395,27 @@ func _open_item(item: FileIcon) -> void:
 		open_control_panel(folder_view)
 	elif file == _drive_c:
 		_show(Listing.new("(C:)", file.icon, &"folder", func() -> Array: return _state.setup.drive_c, true, &"drive_c"), folder_view)
+	elif file == _drive_a or file == _drive_d:
+		_open_removable(file, folder_view)
 	elif file.is_folder:
 		_show(Listing.new(file.name, file.icon, &"folder", func() -> Array: return file.children, not _drives.has(file), file), folder_view)
 	else:
 		open_file(file)
+
+
+# A: opens while a floppy is in it; D: never holds a disc. An empty drive says so, and Retry looks again.
+func _open_removable(drive: Win95File, folder_view: IconView.FolderView) -> void:
+	if drive == _drive_a and _state.setup.floppy_in_a:
+		_show(Listing.new(drive.name, drive.icon, &"folder", func() -> Array: return drive.children, false, drive), folder_view)
+		return
+	var drive_path := "A:\\" if drive == _drive_a else "D:\\"
+	var buttons: Array[String] = ["Retry", "Cancel"]
+	var box: Node = _desktop.open(_MESSAGE, false)
+	box.closed.connect(box.queue_free)
+	box.answered.connect(func(button: String) -> void:
+		if button == "Retry":
+			_open_removable(drive, folder_view))
+	box.show_message(drive_path, "%s is not accessible.\n\nThe device is not ready." % drive_path, buttons)
 
 
 ## Opens the Control Panel folder in [param folder_view], or brings it to the front.
