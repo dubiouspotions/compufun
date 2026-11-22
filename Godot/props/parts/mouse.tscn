@@ -1,93 +1,90 @@
 [gd_scene format=3]
 
-[ext_resource type="Material" path="res://materials/beige_plastic.tres" id="1_beige"]
+[ext_resource type="Material" path="res://materials/grey_plastic.tres" id="1_grey"]
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="2_dark"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_base"]
-size = Vector3(0.058, 0.016, 0.098)
-
-[sub_resource type="SphereMesh" id="SphereMesh_dome"]
-radius = 0.029
-height = 0.034
-radial_segments = 10
-rings = 4
+[sub_resource type="SphereMesh" id="SphereMesh_body"]
+radius = 0.03
+height = 1.0
+radial_segments = 12
+rings = 5
 is_hemisphere = true
 
-[sub_resource type="BoxMesh" id="BoxMesh_split"]
-size = Vector3(0.002, 0.03, 0.036)
+[sub_resource type="BoxMesh" id="BoxMesh_seam"]
+size = Vector3(1, 1, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_cable"]
 size = Vector3(0.004, 0.004, 0.02)
 
 [node name="Mouse" type="Node3D"]
 
-[node name="Base" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008, 0)
-material_override = ExtResource("1_beige")
-mesh = SubResource("BoxMesh_base")
+[node name="Body" type="Node3D" parent="."]
 
-[node name="Dome" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.65, 0, 0.016, 0)
-material_override = ExtResource("1_beige")
-mesh = SubResource("SphereMesh_dome")
+[node name="Lobe0" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, -0.0140, 0, 0, 0.0310, 0, 0, 0.0077, 1.520, 0, 0, -0.0120)
+material_override = ExtResource("1_grey")
+mesh = SubResource("SphereMesh_body")
 
-[node name="ButtonSplit" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.017, -0.031)
+[node name="Lobe1" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, -0.0153, 0, 0, 0.0340, 0, 0, 0.0085, 1.520, 0, 0, 0.0120)
+material_override = ExtResource("1_grey")
+mesh = SubResource("SphereMesh_body")
+
+[node name="Seams" type="Node3D" parent="."]
+
+[node name="Seam0" type="MeshInstance3D" parent="Seams"]
+transform = Transform3D(0.00160, 0.00000, 0.00000, 0.00000, 0.00317, 0.01390, 0.00000, -0.00244, 0.01800, 0.00000, 0.01367, -0.04378)
 material_override = ExtResource("2_dark")
-mesh = SubResource("BoxMesh_split")
+mesh = SubResource("BoxMesh_seam")
+
+[node name="Seam1" type="MeshInstance3D" parent="Seams"]
+transform = Transform3D(0.00160, 0.00000, 0.00000, 0.00000, 0.00382, 0.00531, 0.00000, -0.00119, 0.01700, 0.00000, 0.02295, -0.02690)
+material_override = ExtResource("2_dark")
+mesh = SubResource("BoxMesh_seam")
+
+[node name="Seam2" type="MeshInstance3D" parent="Seams"]
+transform = Transform3D(0.00000, -0.00127, 0.01400, 0.00000, 0.00379, 0.00469, -0.00160, 0.00000, 0.00000, -0.01936, 0.02588, -0.01900)
+material_override = ExtResource("2_dark")
+mesh = SubResource("BoxMesh_seam")
+
+[node name="Seam3" type="MeshInstance3D" parent="Seams"]
+transform = Transform3D(0.00000, 0.00108, 0.01900, 0.00000, 0.00385, -0.00534, -0.00160, 0.00000, 0.00000, -0.00404, 0.02553, -0.01900)
+material_override = ExtResource("2_dark")
+mesh = SubResource("BoxMesh_seam")
+
+[node name="Seam4" type="MeshInstance3D" parent="Seams"]
+transform = Transform3D(0.00000, 0.00257, 0.01800, 0.00000, 0.00307, -0.01508, -0.00160, 0.00000, 0.00000, 0.01372, 0.01571, -0.01900)
+material_override = ExtResource("2_dark")
+mesh = SubResource("BoxMesh_seam")
 
 [node name="Cable" type="Node3D" parent="."]
 
 [node name="Segment0" type="MeshInstance3D" parent="Cable"]
-transform = Transform3D(-0.998274, 0, 0.058722, 0, 1, 0, -0.058722, 0, -0.998274, 0.0005, 0.0025, -0.0575)
-scale = Vector3(1, 1, 0.95147)
-material_override = ExtResource("2_dark")
+transform = Transform3D(-0.99862, 0, 0.05000, 0, 1, 0, -0.05256, 0, -0.95000, 0.0005, 0.002, -0.0655)
+material_override = ExtResource("1_grey")
 mesh = SubResource("BoxMesh_cable")
 
 [node name="Segment1" type="MeshInstance3D" parent="Cable"]
-transform = Transform3D(-0.984784, 0, -0.173785, 0, 1, 0, 0.173785, 0, -0.984784, -0.0005, 0.0025, -0.0745)
-scale = Vector3(1, 1, 0.96313)
-material_override = ExtResource("2_dark")
+transform = Transform3D(-0.98058, 0, -0.20000, 0, 1, 0, 0.19612, 0, -1.00000, -0.0010, 0.002, -0.0850)
+material_override = ExtResource("1_grey")
 mesh = SubResource("BoxMesh_cable")
 
 [node name="Segment2" type="MeshInstance3D" parent="Cable"]
-transform = Transform3D(-0.894427, 0, -0.447214, 0, 1, 0, 0.447214, 0, -0.894427, -0.006, 0.0025, -0.091)
-scale = Vector3(1, 1, 0.99443)
-material_override = ExtResource("2_dark")
+transform = Transform3D(-0.91381, 0, -0.40000, 0, 1, 0, 0.40614, 0, -0.90000, -0.0070, 0.002, -0.1040)
+material_override = ExtResource("1_grey")
 mesh = SubResource("BoxMesh_cable")
 
 [node name="Segment3" type="MeshInstance3D" parent="Cable"]
-transform = Transform3D(-0.67828, 0, -0.734803, 0, 1, 0, 0.734803, 0, -0.67828, -0.0165, 0.0025, -0.105)
-scale = Vector3(1, 1, 0.98459)
-material_override = ExtResource("2_dark")
+transform = Transform3D(-0.88379, 0, -0.45000, 0, 1, 0, 0.46789, 0, -0.85000, -0.0155, 0.002, -0.1215)
+material_override = ExtResource("1_grey")
 mesh = SubResource("BoxMesh_cable")
 
 [node name="Segment4" type="MeshInstance3D" parent="Cable"]
-transform = Transform3D(-0.33282, 0, -0.94299, 0, 1, 0, 0.94299, 0, -0.33282, -0.0315, 0.0025, -0.114)
-scale = Vector3(1, 1, 1.0014)
-material_override = ExtResource("2_dark")
+transform = Transform3D(-0.98058, 0, -0.20000, 0, 1, 0, 0.19612, 0, -1.00000, -0.0220, 0.002, -0.1400)
+material_override = ExtResource("1_grey")
 mesh = SubResource("BoxMesh_cable")
 
 [node name="Segment5" type="MeshInstance3D" parent="Cable"]
-transform = Transform3D(0.05547, 0, -0.99846, 0, 1, 0, 0.99846, 0, 0.05547, -0.049, 0.0025, -0.1165)
-scale = Vector3(1, 1, 1.0014)
-material_override = ExtResource("2_dark")
-mesh = SubResource("BoxMesh_cable")
-
-[node name="Segment6" type="MeshInstance3D" parent="Cable"]
-transform = Transform3D(0.447214, 0, -0.894427, 0, 1, 0, 0.894427, 0, 0.447214, -0.066, 0.0025, -0.112)
-scale = Vector3(1, 1, 0.99443)
-material_override = ExtResource("2_dark")
-mesh = SubResource("BoxMesh_cable")
-
-[node name="Segment7" type="MeshInstance3D" parent="Cable"]
-transform = Transform3D(0.734803, 0, -0.67828, 0, 1, 0, 0.67828, 0, 0.734803, -0.08, 0.0025, -0.1015)
-scale = Vector3(1, 1, 0.98459)
-material_override = ExtResource("2_dark")
-mesh = SubResource("BoxMesh_cable")
-
-[node name="Segment8" type="MeshInstance3D" parent="Cable"]
-transform = Transform3D(0.916157, 0, -0.400819, 0, 1, 0, 0.400819, 0, 0.916157, -0.0895, 0.0025, -0.087)
-scale = Vector3(1, 1, 0.97321)
-material_override = ExtResource("2_dark")
+transform = Transform3D(-0.99504, 0, 0.10000, 0, 1, 0, -0.09950, 0, -1.00000, -0.0230, 0.002, -0.1600)
+material_override = ExtResource("1_grey")
 mesh = SubResource("BoxMesh_cable")
