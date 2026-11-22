@@ -1,5 +1,5 @@
 extends "res://tests/test.gd"
-## The dialogue box walks a conversation tree: after the last line it shows the choices, a pick plays
+## The dialogue box walks a conversation tree: under the last line it shows the choices, a pick plays
 ## the reply, a reply without choices returns to its list, a deeper list goes back up, and the leave
 ## button ends the conversation.
 
@@ -27,18 +27,14 @@ func run() -> void:
 	var ended := [false]
 	box.connect(&"finished", func() -> void: ended[0] = true)
 	box.call(&"start", c, talk)
-	next(box)
 	await process_frame
-	check("the choices and the leave button", buttons(box), ["> How long?", "> Why?", "> That's all, thanks."])
+	check("under the last line: the choices and the leave button, no Next", [text(box), buttons(box), next_shown(box)], ["Hi.", ["> How long?", "> Why?", "> That's all, thanks."], false])
 	press(box, 0)
-	check("the reply plays", text(box), "Since Monday.")
-	next(box)
 	await process_frame
-	check("back at the same list", buttons(box).size(), 3)
+	check("the reply shows, with the same list under it", [text(box), buttons(box).size()], ["Since Monday.", 3])
 	press(box, 1)
-	next(box)
 	await process_frame
-	check("a deeper list, with a way back", buttons(box), ["> What?", "> Something else..."])
+	check("a deeper list, with a way back", [text(box), buttons(box)], ["Installed something.", ["> What?", "> Something else..."]])
 	press(box, 1)
 	await process_frame
 	check("back up", buttons(box).size(), 3)
@@ -46,10 +42,8 @@ func run() -> void:
 	check("leave ends the conversation", ended[0], true)
 
 
-func next(box: Control) -> void:
-	var label: TypedLabel = box.get_node("%LineLabel")
-	label.finish()
-	(box.get_node("%NextButton") as Button).pressed.emit()
+func next_shown(box: Control) -> bool:
+	return (box.get_node("%NextButton") as Button).get_parent().visible
 
 
 func press(box: Control, index: int) -> void:

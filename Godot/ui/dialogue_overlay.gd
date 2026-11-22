@@ -1,7 +1,7 @@
 class_name DialogueOverlay
 extends Control
-## A customer talks: their portrait, one line of a conversation at a time, and after a reply's
-## last line the player's choices, each a button that plays the customer's reply.
+## A customer talks: their portrait, one line of a conversation at a time. Under a reply's last
+## line, the player's choices, each a button that plays the customer's reply.
 ## The portrait sways and breathes, and shakes in time with the voice.
 
 ## The conversation is over: the player clicked OK on the last line, or a choice that ends it.
@@ -318,11 +318,11 @@ func _center_run(image: Image, y: int, axis: int) -> int:
 
 
 func _show_line() -> void:
-	_show_choices([])
 	var line := _lines[_line]
 	_text.type_out(line.text if line != null else "")
 	_show_portrait(line.pose if line != null else _NEUTRAL)
 	_next.text = next_text if _line < _lines.size() - 1 else last_text
+	_show_choices(_enter_choices() if _line >= _lines.size() - 1 else ([] as Array[Choice]))
 	_speak(line)
 
 
@@ -355,25 +355,30 @@ func _on_next() -> void:
 	_show_line()
 
 
-# The reply's last line is read: its choices, the list it came from, or the end.
-func _after_reply() -> void:
-	var own := Game.offered(_reply) if _voiced and not _ending else ([] as Array[Choice])
+# The choices that follow the reply's last line: its own, which become the list to pick from, or
+# the list it came from; none when the conversation ends after it.
+func _enter_choices() -> Array[Choice]:
+	if not _voiced or _ending:
+		return []
+	var own := Game.offered(_reply)
 	if not own.is_empty():
 		if _list != null and _list != _reply:
 			_above.push_back(_list)
 		_list = _reply
-	elif _list == null or _ending:
-		_voice.hush()
-		finished.emit()
-		return
-	_show_choices(Game.offered(_list))
+		return own
+	return Game.offered(_list) if _list != null else ([] as Array[Choice])
+
+
+# The reply's last line is read and no choice follows: the conversation is over.
+func _after_reply() -> void:
+	_voice.hush()
+	finished.emit()
 
 
 func _show_choices(offered: Array[Choice]) -> void:
 	for child: Node in _choices.get_children():
 		child.queue_free()
 	_choices.visible = not offered.is_empty()
-	_text.visible = offered.is_empty()
 	_next.get_parent().visible = offered.is_empty()
 	if offered.is_empty():
 		return
@@ -412,10 +417,14 @@ func _pick(choice: Choice) -> void:
 	_reply = reply
 	_lines = reply.lines
 	_line = 0
-	if _lines.is_empty():
+	if not _lines.is_empty():
+		_show_line()
+		return
+	var next := _enter_choices()
+	if next.is_empty():
 		_after_reply()
 	else:
-		_show_line()
+		_show_choices(next)
 
 
 func _go_back() -> void:

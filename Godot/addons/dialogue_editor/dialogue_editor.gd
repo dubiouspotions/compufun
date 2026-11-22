@@ -28,12 +28,11 @@ var _persons: Array[VoicePerson] = []
 var _preview: AudioStreamPlayer
 var _conversation_list: ItemList
 var _new_conversation: LineEdit
-var _detail: VBoxContainer
 ## The conversation's tree: the conversation, the player's choices and the customer's replies.
 var _tree: Tree
 ## The node of the tree that the editor below it shows: the conversation, a Choice or a Reply.
 var _node: Resource
-## Where the editor of [member _node] draws.
+## Where the editor of [member _node] draws, beside the tree.
 var _node_box: VBoxContainer
 
 
@@ -80,13 +79,26 @@ func _ready() -> void:
 	order.add_child(_button("Down", _move_conversation.bind(1)))
 	order.add_child(_button("Delete", _delete_conversation))
 
+	var right := HSplitContainer.new()
+	right.size_flags_horizontal = SIZE_EXPAND_FILL
+	split.add_child(right)
+	var tree_column := _column(right, 360)
+	var tree_help := _label("The conversation, the player's choices (>) and the customer's replies (-). Pick one to edit it.")
+	tree_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tree_column.add_child(tree_help)
+	_tree = Tree.new()
+	_tree.size_flags_vertical = SIZE_EXPAND_FILL
+	_tree.item_selected.connect(func() -> void:
+		_node = _tree.get_selected().get_metadata(0)[0]
+		_render_node())
+	tree_column.add_child(_tree)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_horizontal = SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	split.add_child(scroll)
-	_detail = VBoxContainer.new()
-	_detail.size_flags_horizontal = SIZE_EXPAND_FILL
-	scroll.add_child(_detail)
+	right.add_child(scroll)
+	_node_box = VBoxContainer.new()
+	_node_box.size_flags_horizontal = SIZE_EXPAND_FILL
+	scroll.add_child(_node_box)
 	_preview = AudioStreamPlayer.new()
 	add_child(_preview)
 	refresh()
@@ -404,23 +416,13 @@ func _select_conversation(index: int) -> void:
 
 
 func _render_detail() -> void:
-	for child: Node in _detail.get_children():
-		child.queue_free()
+	_tree.clear()
 	if _conversation == null:
-		_detail.add_child(_label("Pick a conversation."))
+		for child: Node in _node_box.get_children():
+			child.queue_free()
+		_node_box.add_child(_label("Pick a conversation."))
 		return
-	_detail.add_child(_label("The tree: the conversation, the player's choices (>) and the customer's replies (-). Pick one to edit it."))
-	_tree = Tree.new()
-	_tree.custom_minimum_size.y = 200
-	_tree.hide_root = false
-	_tree.item_selected.connect(func() -> void:
-		_node = _tree.get_selected().get_metadata(0)[0]
-		_render_node())
-	_detail.add_child(_tree)
 	_fill_tree(_tree.create_item(), _conversation, null)
-	_node_box = VBoxContainer.new()
-	_node_box.size_flags_horizontal = SIZE_EXPAND_FILL
-	_detail.add_child(_node_box)
 	# Selecting draws the node's editor (item_selected).
 	_tree_item(_node if _tree_item(_node) != null else _conversation).select(0)
 
