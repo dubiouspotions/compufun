@@ -1,10 +1,14 @@
 class_name ViewNav
 extends Control
 ## The turn buttons, the Back button and the status line (debug builds only). It shows a view marker
-## and asks for view changes; it does not change the view itself.
+## and asks for view changes; it does not change the view itself. In the Workview, Left and Right
+## move to the computer beside the one in focus.
 
 ## The player pressed a turn button or Back.
 signal view_requested(view: StringName)
+## The player pressed Left or Right in the Workview while a computer stands on that side of the one
+## in focus.
+signal focus_requested(job: Job)
 
 ## The seconds that the back strip takes to darken, and to clear again.
 @export var back_strip_fade_seconds: float = 0.12
@@ -24,16 +28,16 @@ var _lifts: Dictionary[Button, Tween] = {}
 
 func _ready() -> void:
 	_status_label.visible = OS.is_debug_build()
-	_left.pressed.connect(func() -> void: _request(&"left"))
-	_right.pressed.connect(func() -> void: _request(&"right"))
-	_back.pressed.connect(func() -> void: _request(&"back"))
+	_left.pressed.connect(turn.bind(&"left"))
+	_right.pressed.connect(turn.bind(&"right"))
+	_back.pressed.connect(turn.bind(&"back"))
 
 
 ## Shows the buttons that [param marker] allows. null hides them.
 func show_marker(marker: ViewMarker) -> void:
 	_marker = marker
-	_left.visible = marker != null and marker.left != &""
-	_right.visible = marker != null and marker.right != &""
+	_left.visible = marker != null and (marker.left != &"" or _beside(&"left") != null)
+	_right.visible = marker != null and (marker.right != &"" or _beside(&"right") != null)
 	_back.visible = marker != null and marker.back != &""
 	_status_label.text = _status_text()
 
@@ -81,10 +85,22 @@ func button_rects() -> Array[Rect2]:
 	return rects
 
 
-func _request(direction: StringName) -> void:
+## Turns the way of [param direction] (&"left", &"right" or &"back"), as its button does: asks for
+## the computer beside the one in focus in the Workview, or else for the view that the marker names
+## that way, and shows the button pressed down.
+func turn(direction: StringName) -> void:
 	press(direction)
-	if _marker != null:
+	var beside := _beside(direction)
+	if beside != null:
+		focus_requested.emit(beside)
+	elif _marker != null:
 		view_requested.emit(_marker.get(direction))
+
+
+func _beside(direction: StringName) -> Job:
+	if Game.view != Shop.WORKVIEW or direction == &"back":
+		return null
+	return Game.job_beside(Game.focus, -1 if direction == &"left" else 1)
 
 
 func _status_text() -> String:
