@@ -1,7 +1,8 @@
 extends Node
 ## The state that the whole game shares (autoload "Game"): the day, the visitor, the jobs on the
-## counter, the computer in focus, the cable, the phone, the view, the flags and the conversations
-## that have played. Scenes call its methods, and re-read the state on [signal changed].
+## counter, the computer in focus, the cable, the phone, the printout that the player carries, the
+## view, the flags and the conversations that have played. Scenes call its methods, and re-read the
+## state on [signal changed].
 
 ## Emitted after every change of the state. Listeners re-read the whole state.
 signal changed
@@ -76,6 +77,12 @@ var phone_off_hook: bool = false
 var hand: Piece
 ## The pieces that the player threw in the trash can, the last one last. Never emptied.
 var trashed: Array[Piece] = []
+## The printout that the player carries, line by line as the printer printed it; empty while they
+## carry none. It is apart from the hand, and goes at the start of the next day.
+var printout: PackedStringArray = []
+## The lines of [member printout] whose check box the player ticked, by index. They are the player's
+## own notes: they change no record and no job.
+var printout_ticks: Array[int] = []
 ## The customer in the shop, or null when nobody is in.
 var visitor: Customer
 var visit: Visit = Visit.NONE
@@ -156,9 +163,9 @@ func _finish_overnight_work() -> void:
 
 ## Starts [param new_day] in the morning with the shop CLOSED: nobody comes in until
 ## [method open_shop]. Jobs left overnight stay, and those computers that stayed on finish their
-## Disk Defragmenter run. The last day's [member Day.close_signs] stop. Refuses a day that is null,
-## has more than [constant MAX_CUSTOMERS] errands, or has an errand without a customer or a problem,
-## and keeps the current state.
+## Disk Defragmenter run. The player no longer carries a printout. The last day's
+## [member Day.close_signs] stop. Refuses a day that is null, has more than [constant MAX_CUSTOMERS]
+## errands, or has an errand without a customer or a problem, and keeps the current state.
 func start_day(new_day: Day) -> void:
 	var invalid := _check_day(new_day)
 	if invalid != "":
@@ -169,6 +176,8 @@ func start_day(new_day: Day) -> void:
 			flags.erase(sign_flag(id))
 	day = new_day
 	phone_off_hook = false
+	printout = []
+	printout_ticks.clear()
 	_finish_overnight_work()
 	arrivals = 0
 	daypart = Daypart.MORNING
@@ -532,6 +541,52 @@ func take_from_trash() -> bool:
 	return _take_from(trashed)
 
 
+## The player takes [param lines], a page from the printer, and carries it with no ticks. It replaces
+## the printout that they carried, which is gone. Refuses an empty page and returns false.
+func carry_printout(lines: PackedStringArray) -> bool:
+	if lines.is_empty():
+		push_error("Game.carry_printout: the page has no lines")
+		return false
+	printout = lines.duplicate()
+	printout_ticks.clear()
+	changed.emit()
+	return true
+
+
+## Ticks (true) or unticks (false) the check box on line [param line] of the carried printout. Returns
+## false, and changes nothing, when the player carries no printout or that line has no check box.
+func tick_printout(line: int, ticked: bool) -> bool:
+	if line < 0 or line >= printout.size() or printout_box(printout[line]) < 0:
+		return false
+	if (line in printout_ticks) != ticked:
+		if ticked:
+			printout_ticks.append(line)
+		else:
+			printout_ticks.erase(line)
+		changed.emit()
+	return true
+
+
+## Throws the carried printout in the trash can, where it is gone for good. False when the player
+## carries none.
+func trash_printout() -> bool:
+	if printout.is_empty():
+		return false
+	printout = []
+	printout_ticks.clear()
+	changed.emit()
+	return true
+
+
+## The column of the check box, "[ ]" or "[X]", in [param line] of a printout; -1 when it has none.
+static func printout_box(line: String) -> int:
+	for box: String in ["[ ]", "[X]"]:
+		var at := line.find(box)
+		if at >= 0:
+			return at
+	return -1
+
+
 func _put_in(pile: Array[Piece]) -> bool:
 	if hand == null:
 		return false
@@ -782,6 +837,7 @@ func snapshot() -> Dictionary:
 		"phone_off_hook": phone_off_hook,
 		"hand": Job.pieces_data([hand] if hand != null else []),
 		"trashed": Job.pieces_data(trashed),
+		"printout": {"lines": Array(printout), "ticks": printout_ticks.duplicate()} if not printout.is_empty() else {},
 		"view": String(view),
 		"conversation": String(conversation.id) if conversation != null else "",
 		"flags": flags.duplicate(),
@@ -793,7 +849,7 @@ func snapshot() -> Dictionary:
 
 ## Sets the state from [param state], in the format of [method snapshot]. A missing key takes its
 ## value at the start of a day, except that the shop is OPEN: day 1, nobody in the shop, no
-## arrivals, an empty counter, an empty hand and trash, no flags, nothing seen, no
+## arrivals, an empty counter, an empty hand and trash, no printout, no flags, nothing seen, no
 ## CompuFunDB records or start-up, the daypart of the arrivals; a missing view keeps the current one.
 ## The conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
 ## Keys in [constant RETIRED_KEYS] are ignored, with what they held.
@@ -951,6 +1007,9 @@ func restore(state: Dictionary) -> String:
 	var trashed_pieces: Variant = Job.pieces_from(state.get("trashed", []))
 	if trashed_pieces is String:
 		return _refuse("the trash: %s" % trashed_pieces)
+	var new_printout: Variant = _printout_from(state.get("printout", {}))
+	if new_printout is String:
+		return _refuse("the printout: %s" % new_printout)
 	var new_seen: Dictionary[String, bool] = {}
 	for key: Variant in state.get("seen", []):
 		new_seen[str(key)] = true
@@ -975,6 +1034,8 @@ func restore(state: Dictionary) -> String:
 	phone_off_hook = new_off_hook
 	hand = hand_pieces[0] if not hand_pieces.is_empty() else null
 	trashed.assign(trashed_pieces)
+	printout = new_printout[0]
+	printout_ticks.assign(new_printout[1])
 	visitor = new_visitor
 	visit = new_visit
 	visitor_state = new_visitor_state
@@ -1142,6 +1203,26 @@ func _check_day(d: Day) -> String:
 		if errand == null or errand.customer == null or errand.problem == null:
 			return "day %d: errand %d needs a customer and a problem: %s" % [d.number, i, errand]
 	return ""
+
+
+## [lines, ticks] of the printout that [param data] describes, in the format of [method snapshot]
+## ({} for none), or a String that says why not.
+static func _printout_from(data: Variant) -> Variant:
+	if data is not Dictionary:
+		return "not a dictionary: %s" % data
+	var given_lines: Variant = data.get("lines", [])
+	var given_ticks: Variant = data.get("ticks", [])
+	if given_lines is not Array or given_ticks is not Array:
+		return "lines and ticks must be lists: %s" % data
+	var lines := PackedStringArray(given_lines.map(str))
+	var ticks: Array[int] = []
+	for tick: Variant in given_ticks:
+		var line := int(tick)
+		if line < 0 or line >= lines.size() or printout_box(lines[line]) < 0:
+			return "line %s has no check box to tick" % tick
+		if line not in ticks:
+			ticks.append(line)
+	return [lines, ticks]
 
 
 ## The Customer at [param path], or null when there is none.

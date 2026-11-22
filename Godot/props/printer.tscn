@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://props/printer.gd" id="4_script"]
 [ext_resource type="ArrayMesh" path="res://props/printer_sheet.tres" id="5_sheet"]
 [ext_resource type="FontFile" path="res://compufun_db/fonts/Px437_IBM_VGA_8x16.ttf" id="6_vga"]
+[ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="7_hotspot"]
 
 [node name="Printer" type="MeshInstance3D" groups=["printer"]]
 mesh = ExtResource("1_mesh")
@@ -38,3 +39,8 @@ vertical_alignment = 0
 
 [node name="Speaker" type="AudioStreamPlayer3D" parent="."]
 unique_name_in_owner = true
+
+[node name="Hotspot" parent="Slot" instance=ExtResource("7_hotspot")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.085, 0)
+size = Vector3(0.26, 0.17, 0.04)
