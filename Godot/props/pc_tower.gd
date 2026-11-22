@@ -25,3 +25,12 @@ func dress(computer: Computer) -> void:
 	_case.material_override = case_material if case_material != null else _plain_case
 	Computer.mount_front(computer, _front)
 	Sticker.stick(computer.stickers if computer != null else ([] as Array[Sticker]), _sticker_faces)
+
+
+## The 3.5" floppy drive on the case front, the front's node named Floppy; null for a front without one.
+func floppy_drive() -> MeshInstance3D:
+	for front: Node in _front.get_children():
+		var drive := front.get_node_or_null(^"Floppy") as MeshInstance3D
+		if drive != null:
+			return drive
+	return null

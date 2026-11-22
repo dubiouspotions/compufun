@@ -103,6 +103,7 @@ func _ready() -> void:
 				_view_hotspots.append(hotspot)
 	_job_slots.job_clicked.connect(_on_job_clicked)
 	_job_slots.power_clicked.connect(func(job: Job) -> void: Game.set_powered(job, not job.powered))
+	_job_slots.floppy_clicked.connect(Game.eject_floppy)
 	_job_slots.screwdriver_clicked.connect(func(job: Job) -> void:
 		if job.lying:
 			Game.stand_up(job)

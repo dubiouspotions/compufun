@@ -32,11 +32,14 @@ var job: Job
 var _boots: int = 0
 ## The boot whose desktop stayed up for the problem's hangs_after seconds; -1 for none.
 var _stayed_up: int = -1
+## Whether a floppy was in A: at the last sync; Game.eject_floppy takes it out from the world.
+var _floppy_in_a: bool = false
 
 
 func _ready() -> void:
 	if job != null:
 		setup = Game.setup_for(job)
+		_floppy_in_a = setup != null and setup.floppy_in_a
 		_report_fixed()
 	Game.changed.connect(_sync)
 	Game.changed.connect(_report_tested)
@@ -461,6 +464,9 @@ func restart(wait_seconds: float, off_seconds: float) -> void:
 
 
 func _sync() -> void:
+	if setup != null and setup.floppy_in_a != _floppy_in_a:
+		_floppy_in_a = setup.floppy_in_a
+		changed.emit()
 	var on := setup != null and job.powered
 	if on == is_on:
 		return

@@ -453,6 +453,29 @@ func set_powered(job: Job, on: bool) -> void:
 	changed.emit()
 
 
+## True when a floppy is in drive A: of [param job]'s computer (Win95Setup.floppy_in_a of its running
+## copy); false for a job without a Win95 setup.
+func has_floppy(job: Job) -> bool:
+	var setup := setup_for(job)
+	return setup != null and setup.floppy_in_a
+
+
+## Ejects the floppy from drive A: of [param job]'s computer, as a click on the case's floppy drive
+## does, so the next boot gets past "Non-System disk". Does nothing when no floppy is in. The job must
+## be on the counter.
+func eject_floppy(job: Job) -> void:
+	if job == null or job not in jobs:
+		push_error("Game.eject_floppy: the job is not on the counter: %s" % job)
+		return
+	if not has_floppy(job):
+		return
+	var setup := setup_for(job)
+	setup.floppy_in_a = false
+	if job.problem.software_check != null:
+		job.software_fixed = job.problem.software_check.is_fixed(setup)
+	changed.emit()
+
+
 ## True when [param job] can switch on: every place holds a piece, except that of the places that
 ## take the same part, such as the RAM slots, one is enough. It runs lying and open too, for testing.
 func can_power_on(job: Job) -> bool:

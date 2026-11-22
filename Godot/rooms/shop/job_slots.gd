@@ -7,6 +7,8 @@ extends Node3D
 signal job_clicked(job: Job)
 ## The player clicked the power button on the computer of [param job].
 signal power_clicked(job: Job)
+## The player clicked the floppy drive of [param job]'s computer while a floppy is in it.
+signal floppy_clicked(job: Job)
 ## The player clicked the screwdriver beside the computer of [param job], or its outline.
 signal screwdriver_clicked(job: Job)
 
@@ -102,6 +104,7 @@ func _add_computer(job: Job) -> JobComputer:
 	computer.job = job
 	computer.clicked.connect(func(c: JobComputer) -> void: job_clicked.emit(c.job))
 	computer.power_clicked.connect(func(c: JobComputer) -> void: power_clicked.emit(c.job))
+	computer.floppy_clicked.connect(func(c: JobComputer) -> void: floppy_clicked.emit(c.job))
 	computer.screwdriver_clicked.connect(func(c: JobComputer) -> void: screwdriver_clicked.emit(c.job))
 	slot.add_child(computer)
 	return computer

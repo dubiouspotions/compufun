@@ -12,6 +12,8 @@ signal power_clicked(computer: JobComputer)
 ## The player clicked the screwdriver beside the computer in the Workview, or its dashed outline
 ## once the computer lies and is closed with its screws.
 signal screwdriver_clicked(computer: JobComputer)
+## The player clicked the case's floppy drive while a floppy is in it.
+signal floppy_clicked(computer: JobComputer)
 
 ## The outline colour while the mouse or the dragged plug is over the computer.
 @export var hover_color: Color = Color(0.75, 0.9, 1.0)
@@ -21,6 +23,7 @@ signal screwdriver_clicked(computer: JobComputer)
 const LYING := Transform3D(Basis(Vector3.BACK, PI / 2.0), Vector3(0, 0.095, 0)) * Transform3D(Basis(), Vector3(0, -0.21, 0))
 # How far above the counter the outline's bottom rests, in metres; clear of z-fighting.
 const RESTING_LIFT: float = 0.002
+const _HOTSPOT := preload("res://rooms/hotspot.tscn")
 
 ## The outline colour of the power button while the mouse is over it.
 @export var button_hover_color: Color = Color(1.0, 0.84, 0.35)
@@ -55,6 +58,8 @@ var _screwdriver_ghost: StandardMaterial3D
 var _pose: float = 0.0
 var _tip: Tween
 var _upright: Dictionary[Node3D, Transform3D] = {}
+## Over the case front's floppy drive; null for a front without one.
+var _floppy_hotspot: Hotspot
 
 @onready var _tower: PcTower = $Tower
 @onready var _hotspot: Hotspot = %Hotspot
@@ -92,13 +97,33 @@ func _ready() -> void:
 	_open_case.dress(job.customer.computer)
 	_post_it.job = job
 	_open_case.job = job
-	for node: Node3D in [_tower, _power_light, _power_hotspot, _cable_socket, _hotspot, _post_it_anchor]:
-		_upright[node] = node.transform
+	_floppy_hotspot = _make_floppy_hotspot()
+	for node: Node3D in [_tower, _power_light, _power_hotspot, _cable_socket, _hotspot, _post_it_anchor, _floppy_hotspot]:
+		if node != null:
+			_upright[node] = node.transform
 	_pose = 1.0 if job.lying else 0.0
 	Game.changed.connect(_sync_case)
 	(_outline.material_override as StandardMaterial3D).albedo_color = hover_color
 	_sync_case()
 	_sync_power()
+
+
+# A hotspot over the case front's floppy drive, a little proud of the front so it wins the click.
+func _make_floppy_hotspot() -> Hotspot:
+	var drive := _tower.floppy_drive()
+	var box := drive.mesh as BoxMesh if drive != null else null
+	if box == null:
+		if Game.has_floppy(job):
+			push_error("JobComputer: %s has a floppy in A: but its case front has no Floppy box to eject it from" % job.customer.resource_path)
+		return null
+	var local := global_transform.affine_inverse() * drive.global_transform
+	var hotspot := _HOTSPOT.instantiate() as Hotspot
+	hotspot.size = box.size * local.basis.get_scale() + Vector3(0.01, 0.01, 0.04)
+	hotspot.transform = Transform3D(local.basis.orthonormalized(), local.origin)
+	add_child(hotspot)
+	hotspot.clicked.connect(func(_h: Hotspot) -> void: floppy_clicked.emit(self))
+	hotspot.highlight_on_hover(drive, button_hover_color)
+	return hotspot
 
 
 ## Where the Workview camera looks at this computer from, in world space: at the front of the
@@ -129,6 +154,8 @@ func ray_distance(from: Vector3, dir: Vector3) -> float:
 func disable() -> void:
 	_hotspot.set_enabled(false)
 	_power_hotspot.set_enabled(false)
+	if _floppy_hotspot != null:
+		_floppy_hotspot.set_enabled(false)
 
 
 func _set_hovered(on: bool) -> void:
@@ -162,6 +189,8 @@ func _sync_case() -> void:
 	_sync_screwdriver()
 	_hotspot.set_enabled(not working)  # in the Workview the screwdriver, the screws and the panel take the clicks
 	_front.input_ray_pickable = working and not lying  # swallows clicks on the front, so they don't lay it down
+	if _floppy_hotspot != null:
+		_floppy_hotspot.set_enabled(not lying and Game.has_floppy(job))
 	_sync_outline()
 
 
