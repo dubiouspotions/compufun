@@ -118,6 +118,9 @@ var db_day: int = 0
 ## What the visitor says while TALKING, or what the called customer says on the phone while
 ## CALLING (no lines: nobody answers, see [method rings_out]); null when no conversation matches.
 var conversation: Conversation
+## The leaving lines that the visitor calls out after the dialogue box closed, in order, as they walk
+## out (or wait); empty for none. Cleared when the visitor goes out of the door or talks again.
+var leaving_lines: Array[DialogueLine] = []
 ## Goes up every time a visitor starts to walk in or a waiting visitor starts their pickup, also on
 ## [method restore]. A scene that remembers it can tell a new visit from a re-read of the same one.
 var arrival: int = 0
@@ -237,12 +240,14 @@ func customer_arrived() -> void:
 ## (in focus if nothing is), unless the errand brings none; a pickup takes its job off the counter,
 ## clears [member focus] and [member connected] if they pointed at it, and shifts the computers right
 ## of it left, so that the counter holds them oldest first from slot 0. Then the visitor walks out
-## (WALKING_OUT), or, when they only show their computer, waits beside it (WAITING).
-func dialogue_finished() -> void:
+## (WALKING_OUT), or, when they only show their computer, waits beside it (WAITING). The visitor
+## calls out [param leaving] after the box closes ([member leaving_lines]).
+func dialogue_finished(leaving: Array[DialogueLine] = []) -> void:
 	if visitor_state != VisitorState.TALKING:
 		push_error("Game.dialogue_finished: no visitor is talking (visitor state %s)" % VisitorState.find_key(visitor_state))
 		return
 	conversation = null
+	leaving_lines = leaving.duplicate()
 	_leave()
 	changed.emit()
 
@@ -1323,6 +1328,7 @@ func restore(state: Dictionary) -> String:
 	errand = new_errand
 	visit = new_visit
 	visitor_state = new_visitor_state
+	leaving_lines = []
 	_pickup = new_pickup
 	_next_order = jobs.reduce(func(top: int, j: Job) -> int: return maxi(top, j.order + 1), 0)
 	_restart_wait()
@@ -1521,6 +1527,7 @@ func _set_visitor(visiting: Errand, why: Visit) -> void:
 	visit = why
 	visitor_state = VisitorState.WALKING_IN if customer != null else VisitorState.NONE
 	conversation = null
+	leaving_lines = []
 	if customer != null:
 		arrival += 1
 	_restart_wait()
@@ -1530,6 +1537,7 @@ func _set_visitor(visiting: Errand, why: Visit) -> void:
 ## PICKUP conversation says a line of [constant THANKS]. A visitor who brings no computer and has
 ## nothing to say goes at once.
 func _start_talk() -> void:
+	leaving_lines = []
 	_play(errand, Conversation.Trigger.PICKUP if visit == Visit.PICKUP else Conversation.Trigger.ARRIVE)
 	if conversation == null and visit == Visit.PICKUP:
 		conversation = _thanks(visitor)
