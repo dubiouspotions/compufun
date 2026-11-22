@@ -12,7 +12,8 @@ extends Control
 ## program at the DOS prompt and the modem dials up; until then the computer is off. Nothing skips
 ## the start-up; the player can leave meanwhile, and it goes on.
 ## Keys: arrows and Tab move, Space or Enter acts, P prints the selected record's checklist on
-## the shop's Printer, F only its FIX steps. The mouse clicks and scrolls.
+## the shop's Printer, F only its FIX steps. The go_back keys but Down leave the view, as the Back
+## button does. The mouse clicks and scrolls.
 
 const PROBLEMS_DIR: String = "res://problems/"
 const COLUMNS: int = 80
@@ -400,8 +401,8 @@ func _on_click(button: InputEventMouseButton) -> void:
 func _on_key(key: InputEventKey) -> bool:
 	if _starting or _offline():
 		return false
-	if key.keycode == KEY_ESCAPE:
-		return false  # leaves the screen; the typing goes on
+	if key.is_action(&"go_back") and key.keycode != KEY_DOWN:
+		return false  # main.gd goes back, as the Back button does; the typing goes on
 	_finish_typing()
 	_status = ""
 	match key.keycode:

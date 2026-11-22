@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## The keys between views: Up or W in the Left View enters the storage room, as a click on the
 ## storage door does, and Back returns to the Left View. No key or click skips the work computer's
-## start-up, and S leaves CompuFunDB while it goes on.
+## start-up. In CompuFunDB, during the start-up and after it, S and Esc go back as the Back button does.
 
 var _main: Node
 
@@ -31,6 +31,11 @@ func run() -> void:
 func _check_db_start_up() -> void:
 	var view: Control = _main.get_node("%CompuFunDBView")
 	var db: Control = view.find_child("CompuFunDB", true, false)
+	game.start_db()
+	await _check_back_keys("in the database")
+	var state: Dictionary = game.snapshot()
+	state.db_day = 0
+	check("the work computer is off again", game.restore(state), "")
 	game.go_to_view(&"CompuFunDB")
 	for i: int in 60:
 		await process_frame
@@ -42,10 +47,21 @@ func _check_db_start_up() -> void:
 		await process_frame
 	var boot: Control = db.find_child("BootSequence", false, false)
 	check("keys and clicks don't skip the boot", [db.get("_starting"), boot != null and boot.visible, game.db_day], [true, true, 0])
-	_press_key(KEY_S)
-	check("S leaves CompuFunDB during the start-up", game.view, &"Right")
-	await process_frame
+	await _check_back_keys("during the start-up")
 	check("the start-up goes on", [db.get("_starting"), is_instance_valid(boot) and boot.visible], [true, true])
+
+
+# S, Esc and the Back button each take CompuFunDB back to the Right View.
+func _check_back_keys(when: String) -> void:
+	var back: Button = _main.get_node("%ViewNav").get_node("%BackButton")
+	for key: Key in [KEY_S, KEY_ESCAPE, KEY_NONE]:
+		game.go_to_view(&"CompuFunDB")
+		await process_frame
+		if key == KEY_NONE:
+			back.pressed.emit()
+		else:
+			_press_key(key)
+		check("%s goes back %s" % ["Back" if key == KEY_NONE else OS.get_keycode_string(key), when], game.view, &"Right")
 
 
 func _press_key(key: Key) -> void:
