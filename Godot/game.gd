@@ -1334,7 +1334,8 @@ static func _arrived(on_day: Day, count: int, who: Customer, with_flags: Diction
 
 ## The errand that a job in a snapshot names (see [method Job.snapshot]), on day [param number] of
 ## the week, or a String that says why there is none. Without "errand", it is the last errand of the
-## job's "customer" on that day or before that brings a computer, else their first after it.
+## job's "customer" on that day or before that brings a computer, else their first after it, else,
+## for a job that names its "problem", an errand without a file or conversations.
 func _job_errand(data: Dictionary, number: int) -> Variant:
 	if data.has("errand"):
 		var name := str(data["errand"])
@@ -1351,8 +1352,12 @@ func _job_errand(data: Dictionary, number: int) -> Variant:
 	var theirs: Array[Errand] = []
 	for d: Day in week.days:
 		theirs.append_array(d.errands.filter(func(each: Errand) -> bool: return each.customer == owner and each.brings != Errand.Brings.NOTHING))
+	if theirs.is_empty() and data.has("problem"):
+		var stand_in := Errand.new()
+		stand_in.customer = owner
+		return stand_in
 	if theirs.is_empty():
-		return "%s has no errand in the week that brings a computer" % _who(owner)
+		return "%s has no errand in the week that brings a computer, so name its problem" % _who(owner)
 	var before := theirs.filter(func(each: Errand) -> bool: return each.day_number() <= number)
 	return before.back() if not before.is_empty() else theirs.front()
 

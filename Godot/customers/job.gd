@@ -138,7 +138,7 @@ static func all_in(count: int) -> Array[bool]:
 
 ## The job as plain data, for the F9 report and Game.restore: its errand by file name ("errand",
 ## such as "0102_skater_bro", when a story file holds it), its customer, and its problem by short
-## name ("problem") only when it is not the errand's.
+## name ("problem") when it is not that errand's.
 func snapshot() -> Dictionary:
 	var data := {
 		"slot": slot,
@@ -155,7 +155,7 @@ func snapshot() -> Dictionary:
 	}
 	if errand != null and errand.file != "":
 		data["errand"] = errand.file_name()
-	if problem != null and (errand == null or problem != errand.problem):
+	if problem != null and (errand == null or errand.file == "" or problem != errand.problem):
 		data["problem"] = String(problem.short_name)
 	return data
 
