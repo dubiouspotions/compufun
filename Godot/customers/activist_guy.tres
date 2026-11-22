@@ -36,6 +36,14 @@
 [ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
 [ext_resource type="Resource" path="res://people/activist_guy/person.tres" id="person"]
 [ext_resource type="PackedScene" path="res://props/scarf.tscn" id="neckwear_scarf"]
+[ext_resource type="Texture2D" path="res://materials/textures/sticker_peace.png" id="sticker_peace"]
+[ext_resource type="Texture2D" path="res://materials/textures/sticker_no_nukes.png" id="sticker_no_nukes"]
+[ext_resource type="Texture2D" path="res://materials/textures/sticker_smiley.png" id="sticker_smiley"]
+[ext_resource type="Texture2D" path="res://materials/textures/sticker_recycle.png" id="sticker_recycle"]
+[ext_resource type="Texture2D" path="res://materials/textures/sticker_rainforest.png" id="sticker_rainforest"]
+[ext_resource type="Texture2D" path="res://materials/textures/sticker_computers_for_people.png" id="sticker_computers_for_people"]
+[ext_resource type="Texture2D" path="res://materials/textures/sticker_fist.png" id="sticker_fist"]
+[ext_resource type="Script" path="res://customers/sticker.gd" id="sticker_script"]
 
 [sub_resource type="Resource" id="Resource_4fbej"]
 script = ExtResource("2_egn44")
@@ -213,12 +221,72 @@ hard_drive_mb = 515
 cd_rom = ""
 pci_devices = PackedStringArray()
 
+[sub_resource type="Resource" id="Sticker_front_computers"]
+script = ExtResource("sticker_script")
+texture = ExtResource("sticker_computers_for_people")
+position = Vector2(0, 0.105)
+size = Vector2(0.13, 0.042)
+tilt_degrees = -4
+
+[sub_resource type="Resource" id="Sticker_front_peace"]
+script = ExtResource("sticker_script")
+texture = ExtResource("sticker_peace")
+position = Vector2(-0.058, -0.045)
+size = Vector2(0.05, 0.05)
+tilt_degrees = -8
+
+[sub_resource type="Resource" id="Sticker_front_recycle"]
+script = ExtResource("sticker_script")
+texture = ExtResource("sticker_recycle")
+position = Vector2(0.058, -0.05)
+size = Vector2(0.04, 0.04)
+tilt_degrees = 7
+
+[sub_resource type="Resource" id="Sticker_front_no_nukes"]
+script = ExtResource("sticker_script")
+texture = ExtResource("sticker_no_nukes")
+position = Vector2(-0.052, -0.14)
+size = Vector2(0.075, 0.03)
+tilt_degrees = 5
+
+[sub_resource type="Resource" id="Sticker_front_smiley"]
+script = ExtResource("sticker_script")
+texture = ExtResource("sticker_smiley")
+position = Vector2(-0.07, -0.108)
+size = Vector2(0.03, 0.03)
+tilt_degrees = 14
+
+[sub_resource type="Resource" id="Sticker_left_rainforest"]
+script = ExtResource("sticker_script")
+texture = ExtResource("sticker_rainforest")
+face = 1
+position = Vector2(0.12, 0.06)
+size = Vector2(0.14, 0.062)
+tilt_degrees = -4
+
+[sub_resource type="Resource" id="Sticker_right_no_nukes"]
+script = ExtResource("sticker_script")
+texture = ExtResource("sticker_no_nukes")
+face = 2
+position = Vector2(-0.05, 0.045)
+size = Vector2(0.075, 0.03)
+tilt_degrees = -10
+
+[sub_resource type="Resource" id="Sticker_right_fist"]
+script = ExtResource("sticker_script")
+texture = ExtResource("sticker_fist")
+face = 2
+position = Vector2(-0.1, 0.075)
+size = Vector2(0.05, 0.0625)
+tilt_degrees = 8
+
 [sub_resource type="Resource" id="Computer_accountant"]
 script = ExtResource("1_2x16c")
 win95_setup = SubResource("Setup_accountant")
 hardware = SubResource("Hardware_486")
 case_material = ExtResource("case_yellowed")
 case_front = ExtResource("front_drive_door")
+stickers = Array[ExtResource("sticker_script")]([SubResource("Sticker_front_computers"), SubResource("Sticker_front_peace"), SubResource("Sticker_front_recycle"), SubResource("Sticker_front_no_nukes"), SubResource("Sticker_front_smiley"), SubResource("Sticker_left_rainforest"), SubResource("Sticker_right_no_nukes"), SubResource("Sticker_right_fist")])
 
 [sub_resource type="Resource" id="Line_arrive_1"]
 script = ExtResource("dl")
