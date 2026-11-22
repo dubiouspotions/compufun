@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## The Open sign takes clicks and pulses an outline only while the shop can open or close, makes its
 ## flip sound when it turns over, and the close question comes in the game's panel before day 4's warp
-## and in a Win95 message box from it on.
+## and in a Win95 message box from it on; a change of view answers No.
 
 
 func run() -> void:
@@ -41,6 +41,10 @@ func run() -> void:
 	check("day 1 asks in the panel", [panel.visible, win95.visible], [true, false])
 	(end_of_day.get_node("%No") as Button).pressed.emit()
 	check("No leaves the shop open", [panel.visible, game.phase], [false, game.Phase.OPEN])
+	game.go_to_view(&"Right")
+	end_of_day.call("ask")
+	game.go_to_view(&"Main")
+	check("turning away answers No", [panel.visible, game.phase], [false, game.Phase.OPEN])
 	game.close_shop()
 	check("closing turns it over with a flip", _flips(sign), 2)
 	game.start_day(load("res://days/day_2.tres"))
@@ -49,6 +53,8 @@ func run() -> void:
 	check("restore day 4", game.restore({"day": 4, "arrivals": day_4.errands.size()}), "")
 	end_of_day.call("ask")
 	check("day 4 asks in a Win95 message box", [panel.visible, win95.visible], [false, true])
+	game.go_to_view(&"Right")
+	check("leaving the view closes the message box too", [win95.visible, game.phase], [false, game.Phase.OPEN])
 	sign.queue_free()
 	end_of_day.queue_free()
 	await process_frame

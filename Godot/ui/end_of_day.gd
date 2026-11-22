@@ -31,6 +31,7 @@ const _MessageBox := preload("res://win95/message_box.gd")
 @export var title_seconds: float = 3.0
 
 var _night: bool = false
+var _asked_in: StringName
 var _sequence: Tween
 
 @onready var _dialog: SubViewportContainer = %Dialog
@@ -55,8 +56,9 @@ func _ready() -> void:
 
 ## Shows the question: in the panel, or in the Win95 message box from [member win95_from_warp] on.
 ## Yes closes the shop through [method Game.close_shop]; No, Esc on the panel, or the X of the
-## message box leaves it open.
+## message box leaves it open, as does a change of [member Game.view] away from the view it was asked in.
 func ask() -> void:
+	_asked_in = Game.view
 	if Game.warp >= win95_from_warp:
 		_box.ask(title, question, ["Yes", "No"])
 		_box.show()
@@ -99,6 +101,8 @@ func _on_answered(button: String) -> void:
 
 
 func _sync() -> void:
+	if asking() and Game.view != _asked_in:
+		_on_answered("No")
 	var night := Game.phase == Game.Phase.DAY_OVER
 	if night == _night:
 		return

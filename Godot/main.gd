@@ -78,7 +78,7 @@ func _follow_camera() -> void:
 		_post_it_label.job = post_it.job
 		_post_it_label.follow(Rect2(_world.position + paper.position * scale, paper.size * scale), _shop.post_it_quarter_turns(post_it))
 	if _end_of_day.asking():
-		# Over the sign while the camera sees it; in the middle of the screen once the player turns away.
+		# Over the sign while the camera sees it, otherwise in the middle of the screen.
 		var board := _shop.open_sign_rect()
 		if not (board.has_area() and board.intersects(Rect2(Vector2.ZERO, Vector2(_world_buffer.size)))):
 			board = Rect2(Vector2.ZERO, Vector2(_world_buffer.size))
