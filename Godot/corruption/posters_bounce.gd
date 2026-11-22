@@ -1,15 +1,26 @@
 extends CorruptionSign
-## The sheets in the group solitaire_posters (the logo on the left wall, the poster on the right wall)
-## leave the wall like the cards of the Solitaire win: each turns to face the counter, drops to the
-## floor between the counter and the door, bounces lower and lower towards the other side of the
-## shop, and leaves a still copy of itself at every step, lit like the room. Stage 1 plays it, and the
-## night waits for it ([method busy]); then it sets stage 2: the sheets stay on the floor, the trail
-## behind them. Stage 0 hangs them back on the wall.
+## The sheets in the group solitaire_posters (the logos on the left wall and over the door, the poster
+## on the right wall) leave the wall like the cards of the Solitaire win, one after the other in
+## [member order]: each shakes on the wall, turns to face the counter, drops to the floor between the counter and
+## the door, bounces lower and lower towards the other side of the shop, and leaves a still copy of
+## itself at every step, lit like the room. Stage 1 plays it, and the night waits for it
+## ([method busy]); then it sets stage 2: the sheets stay on the floor, the trail behind them. Stage
+## 0 hangs them back on the wall.
 
 const SHEETS: StringName = &"solitaire_posters"
 ## A fall that never reaches the floor stops after this many steps.
 const MAX_STEPS: int = 1000
 
+## The names of the sheets in the order they fall. A sheet of the group that is not named falls last.
+@export var order: Array[StringName] = [&"SignLeft", &"CommercialPoster", &"Sign"]
+## The seconds from one sheet's start to the next one's.
+@export var stagger_seconds: float = 2.5
+## The seconds that a sheet shakes on the wall before it falls.
+@export var shake_seconds: float = 1.0
+## The widest tilt of the shake, in degrees; it grows to this from nothing.
+@export var shake_degrees: float = 6.0
+## The shakes per second.
+@export var shake_rate: float = 9.0
 ## The line between the counter and the door where the sheets bounce: z in the shop, in metres.
 @export var lane_z: float = -4.2
 ## The speed along the lane, in m/s, towards the other side of the shop.
@@ -42,8 +53,14 @@ var _clock: float = 0.0
 
 func _ready() -> void:
 	for node: Node in get_tree().get_nodes_in_group(SHEETS):
-		var sheet := node as Node3D
-		_sheets.append(sheet)
+		_sheets.append(node as Node3D)
+	if _sheets.is_empty():
+		push_error("posters_bounce: nothing in the group %s" % SHEETS)
+	for name_of: StringName in order:
+		if not _sheets.any(func(sheet: Node3D) -> bool: return sheet.name == name_of):
+			push_error("posters_bounce: no %s in the group %s, from order" % [name_of, SHEETS])
+	_sheets.sort_custom(func(a: Node3D, b: Node3D) -> bool: return _rank(a) < _rank(b))
+	for sheet: Node3D in _sheets:
 		_homes.append(sheet.global_transform)
 		var meshes: Array[MeshInstance3D] = []
 		if sheet is MeshInstance3D:
@@ -51,10 +68,13 @@ func _ready() -> void:
 		for mesh: Node in sheet.find_children("*", "MeshInstance3D", true, false):
 			meshes.append(mesh as MeshInstance3D)
 		_meshes.append(meshes)
-	if _sheets.is_empty():
-		push_error("posters_bounce: nothing in the group %s" % SHEETS)
 	set_process(false)
 	super()
+
+
+func _rank(sheet: Node3D) -> int:
+	var at := order.find(sheet.name)
+	return at if at >= 0 else order.size()
 
 
 ## True while the sheets fall: the night waits for it.
@@ -82,17 +102,30 @@ func _process(delta: float) -> void:
 	while _clock >= trail_step:
 		_clock -= trail_step
 		_step += 1
-		var moved := false
+		var falling := false
 		for index: int in _sheets.size():
 			var path: Array = _paths[index]
-			if _step < path.size():
-				_sheets[index].global_transform = path[_step]
+			var since := _step * trail_step - index * stagger_seconds
+			var on_path := _step - roundi((index * stagger_seconds + shake_seconds) / trail_step)
+			if on_path < 0:
+				_sheets[index].global_transform = _shaken(index, maxf(since, 0.0))
+				falling = true
+			elif on_path < path.size():
+				_sheets[index].global_transform = path[on_path]
 				_leave_copy(_meshes[index])
-				moved = true
-		if not moved:
+				falling = true
+		if not falling:
 			_fallen = true
 			set_stage(2)
 			return
+
+
+# Sheet [param index] on the wall, [param since] seconds into its shake: it tilts to and fro about
+# its middle, further as the shake goes on.
+func _shaken(index: int, since: float) -> Transform3D:
+	var home := _homes[index]
+	var tilt := deg_to_rad(shake_degrees) * minf(since / maxf(shake_seconds, 0.01), 1.0) * sin(since * shake_rate * TAU)
+	return Transform3D(home.basis.rotated(home.basis.z.normalized(), tilt), home.origin)
 
 
 func _fall() -> void:

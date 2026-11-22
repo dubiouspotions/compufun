@@ -12,8 +12,10 @@
 [ext_resource type="Script" path="res://people/person.gd" id="10_trcd2"]
 [ext_resource type="Resource" path="res://voices/persons/young_entrepreneur.tres" id="voice"]
 
+[ext_resource type="Texture2D" path="res://people/young_entrepreneur/back.png" id="back_png"]
 [resource]
 script = ExtResource("10_trcd2")
+back = ExtResource("back_png")
 voice = ExtResource("voice")
 name = "Nick Burton"
 nickname = "Young entrepreneur"

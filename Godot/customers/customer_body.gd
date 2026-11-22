@@ -11,6 +11,11 @@ extends Node3D
 const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color", &"uv_rect", &"tint_texture",
 	&"tint_rect", &"fill_transparent"]
 
+## The group of every customer body: the door watches them, and the F2 menu switches their relief.
+const GROUP: StringName = &"customer_bodies"
+## The modelled parts that the photo relief replaces; a hat hangs from the head, so it goes too.
+const MODELLED_UPPER_BODY: Array[StringName] = [&"Torso", &"Neck", &"Head", &"Face", &"ShoulderL", &"ShoulderR"]
+
 ## The face when the person has no face texture yet.
 @export var default_face: Texture2D
 ## The footsteps where no Ground is under the body; each step plays one take of them.
@@ -28,6 +33,19 @@ const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color",
 @export_range(0.05, 0.5) var back_strip: float = 0.15
 ## The speed, in metres per second, at which the walk plays at its own pace.
 @export var walk_speed: float = 1.4
+## Shows the upper body as a relief of the person's neutral portrait (PhotoRelief) in place of the
+## modelled head, torso, arms and hat; the arms are the photo's, so they hang stiff. Off, or for a
+## person with no neutral portrait: the modelled upper body.
+@export var photo_relief: bool = true:
+	set(value):
+		photo_relief = value
+		if is_node_ready() and _has_shown:
+			_show_relief(_shown.person if _shown != null else null)
+## The relief's scale: how wide a head is and how high its top is, in metres, and how far the
+## middle of the relief bulges each way.
+@export var relief_head_width: float = 0.18
+@export var relief_top: float = 1.8
+@export var relief_depth: float = 0.12
 ## How far the arms swing while the body walks without a computer, in degrees.
 @export var arm_swing: float = 17.0
 ## How far forward the arms reach to hold the computer, in degrees.
@@ -38,6 +56,18 @@ const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color",
 @export var skin_material: ShaderMaterial
 @export var shirt_material: ShaderMaterial
 @export var trousers_material: ShaderMaterial
+## The trousers: one low-poly mesh, the pelvis and two straight legs (front is -Z). The legs swing
+## with HipL and HipR: their vertices turn about the hips, the crotch row half as far.
+
+## How many sides each trouser leg has.
+@export_range(4, 16) var leg_sides: int = 8
+## The radius of each straight trouser leg, in metres.
+@export var leg_radius: float = 0.072
+## Where the trousers end at the top (the waist, under the shirt) and at the bottom (the ankle).
+@export var waist_height: float = 1.02
+@export var ankle_height: float = 0.08
+## How far below the hips the legs part, in metres.
+@export var crotch_drop: float = 0.05
 
 var _shown: Customer
 var _has_shown: bool = false
@@ -47,6 +77,13 @@ var _shirt: ShaderMaterial
 var _trousers: ShaderMaterial
 var _last_position: Vector3
 var _hat: Node3D
+var _relief: MeshInstance3D
+var _trouser_points: PackedVector3Array
+var _trouser_normals: PackedVector3Array
+var _trouser_arrays: Array
+# Per vertex: -1 the left leg, 1 the right leg, 0 the pelvis; the size is how far it turns (0 to 1).
+var _trouser_swing: PackedFloat32Array
+var _swung: Vector2 = Vector2(INF, INF)
 
 ## True while the body carries a computer in. The shop sets it for a drop-off.
 var carrying: bool = false:
@@ -61,9 +98,13 @@ var carrying: bool = false:
 @onready var _shoulder_left: Node3D = $ShoulderL
 @onready var _shoulder_right: Node3D = $ShoulderR
 @onready var _hat_mount: Node3D = %HatMount
+@onready var _hip_l: Node3D = $HipL
+@onready var _hip_r: Node3D = $HipR
+@onready var _trousers_mesh: MeshInstance3D = %Trousers
 
 
 func _ready() -> void:
+	add_to_group(GROUP)
 	_face = _own_copy(face_material)
 	_face.set_shader_parameter("uv_rect", _face_rect())
 	_skin = _own_copy(skin_material)
@@ -73,6 +114,13 @@ func _ready() -> void:
 		if part.material_override == _shirt:
 			part.mesh = _back_from_side(part)
 	_trousers = _own_copy(trousers_material)
+	_trousers_mesh.mesh = ArrayMesh.new()
+	_build_trousers()
+	_relief = MeshInstance3D.new()
+	_relief.name = &"Relief"
+	_relief.rotation.y = PI  # the relief's front faces +Z, the body's -Z
+	_relief.visible = false
+	add_child(_relief)
 	_last_position = global_position
 	_computer.visible = carrying
 	_animation.play(&"idle")
@@ -93,6 +141,7 @@ func _process(delta: float) -> void:
 		_animation.speed_scale = 1.0
 		_animation.play(&"idle", 0.2)
 	_move_arms(delta)
+	_skin_trousers()
 
 
 # The arms hold the computer, or swing against the legs while walking, or hang. They ease between
@@ -156,6 +205,46 @@ func show_customer(customer: Customer) -> void:
 	var trousers: Color = trousers_material.get_shader_parameter("albedo_color")
 	_trousers.set_shader_parameter("albedo_color", customer.trousers_color if customer != null else trousers)
 	_wear_hat(customer)
+	_show_relief(person)
+
+
+# Shows the person's photo relief in place of the modelled upper body, or the modelled body when
+# there is no relief to show.
+func _show_relief(person: Person) -> void:
+	var portrait: Texture2D = person.portraits.get(&"neutral") if person != null else null
+	var shown := photo_relief and portrait != null
+	_relief.visible = shown
+	var torso_too := true
+	if shown:
+		var image := portrait.get_image()
+		var scale := relief_head_width / PhotoRelief.head_width(image)
+		var bottom := relief_top - image.get_height() * scale
+		_relief.mesh = PhotoRelief.build(image, person.back.get_image() if person.back != null else null, scale, relief_depth)
+		_relief.position = Vector3(0.0, bottom, 0.0)
+		_relief.set_surface_override_material(PhotoRelief.Surface.FRONT, _relief_material(portrait, Color.WHITE))
+		var back := _relief_material(person.back, Color.WHITE) if person.back != null else _relief_material(portrait, Color(0.78, 0.78, 0.78))
+		_relief.set_surface_override_material(PhotoRelief.Surface.BACK, back)
+		_relief.set_surface_override_material(PhotoRelief.Surface.HEAD_BACK, back if person.back != null else _plain_head_back())
+		# A portrait cut at the chest leaves the modelled torso to fill the gap down to the trousers.
+		torso_too = bottom >= waist_height - 0.02
+	for part: StringName in MODELLED_UPPER_BODY:
+		(get_node(NodePath(part)) as Node3D).visible = not shown or (part == &"Torso" and torso_too)
+
+
+func _relief_material(texture: Texture2D, tint: Color) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = skin_material.shader
+	material.set_shader_parameter(&"albedo_texture", texture)
+	material.set_shader_parameter(&"albedo_color", tint)
+	material.set_shader_parameter(&"vertex_color_fade", true)
+	return material
+
+
+# Without a back picture, the back of the head takes the hat or hair colour from the vertex colours.
+func _plain_head_back() -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.vertex_color_use_as_albedo = true
+	return material
 
 
 func _wear_hat(customer: Customer) -> void:
@@ -236,6 +325,91 @@ func _back_from_side(part: MeshInstance3D) -> ArrayMesh:
 	var copy := ArrayMesh.new()
 	copy.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return copy
+
+
+func _build_trousers() -> void:
+	var hip_left := _hip_l.position
+	var hip_right := _hip_r.position
+	var crotch := hip_left.y - crotch_drop
+	var knee := (crotch + ankle_height) * 0.5
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var points: Array[Vector3] = []
+	var swings: Array[float] = []
+	# One vertex per call; every face gets its own corners, so the polygons stay flat-edged and crisp.
+	var corner := func(at: Vector3, swing: float) -> void:
+		tool.set_uv(Vector2(atan2(at.z, at.x) / TAU * 2.0, at.y * 3.0))
+		tool.add_vertex(at)
+		points.append(at)
+		swings.append(swing)
+	var quad := func(a: Vector3, b: Vector3, c: Vector3, d: Vector3, sa: float, sb: float, sc: float, sd: float) -> void:
+		# Godot's front faces run clockwise; a, b, c, d run the other way round as seen from outside.
+		corner.call(a, sa); corner.call(c, sc); corner.call(b, sb)
+		corner.call(a, sa); corner.call(d, sd); corner.call(c, sc)
+	# The ring of one leg at a height: angle 0 points to +X, 90 degrees to +Z (the back).
+	var ring := func(centre: Vector3, height: float) -> Array[Vector3]:
+		var out: Array[Vector3] = []
+		for k: int in leg_sides:
+			var angle := TAU * k / leg_sides
+			out.append(Vector3(centre.x + cos(angle) * leg_radius, height, sin(angle) * leg_radius))
+		return out
+	for side: int in [-1, 1]:
+		var centre := hip_left if side < 0 else hip_right
+		var rings := [ring.call(centre, crotch), ring.call(centre, knee), ring.call(centre, ankle_height)]
+		var weights := [0.5 * side, side, side]
+		for band: int in 2:
+			for k: int in leg_sides:
+				var n := (k + 1) % leg_sides
+				quad.call(rings[band][k], rings[band][n], rings[band + 1][n], rings[band + 1][k], weights[band], weights[band], weights[band + 1], weights[band + 1])
+		# The outer half of each leg's top ring rises straight up as the pelvis wall.
+		for k: int in leg_sides:
+			var n := (k + 1) % leg_sides
+			var a: Vector3 = rings[0][k]
+			var b: Vector3 = rings[0][n]
+			if (a.x - centre.x) * side < -0.001 or (b.x - centre.x) * side < -0.001:
+				continue
+			quad.call(Vector3(a.x, waist_height, a.z), Vector3(b.x, waist_height, b.z), b, a, 0.0, 0.0, 0.5 * side, 0.5 * side)
+	# The front and the back of the pelvis span the gap between the legs; the crotch closes it below.
+	for z: float in [-leg_radius, leg_radius]:
+		var left := Vector3(hip_left.x, crotch, z)
+		var right := Vector3(hip_right.x, crotch, z)
+		var left_top := Vector3(left.x, waist_height, z)
+		var right_top := Vector3(right.x, waist_height, z)
+		if z < 0.0:
+			quad.call(left_top, right_top, right, left, 0.0, 0.0, 0.5, -0.5)
+		else:
+			quad.call(right_top, left_top, left, right, 0.0, 0.0, -0.5, 0.5)
+	quad.call(Vector3(hip_left.x, crotch, -leg_radius), Vector3(hip_right.x, crotch, -leg_radius), Vector3(hip_right.x, crotch, leg_radius), Vector3(hip_left.x, crotch, leg_radius), -0.5, 0.5, 0.5, -0.5)
+	tool.generate_normals()
+	_trouser_arrays = tool.commit_to_arrays()
+	_trouser_points = _trouser_arrays[Mesh.ARRAY_VERTEX]
+	_trouser_normals = _trouser_arrays[Mesh.ARRAY_NORMAL]
+	_trouser_swing = PackedFloat32Array(swings)
+	_skin_trousers(true)
+
+
+# Turns the leg vertices with the hips; does nothing while the hips stand still.
+func _skin_trousers(force: bool = false) -> void:
+	var angles := Vector2(_hip_l.rotation.x, _hip_r.rotation.x)
+	if not force and angles.is_equal_approx(_swung):
+		return
+	_swung = angles
+	var points := _trouser_points.duplicate()
+	var normals := _trouser_normals.duplicate()
+	for i: int in points.size():
+		var swing := _trouser_swing[i]
+		if swing == 0.0:
+			continue
+		var hip := _hip_l if swing < 0.0 else _hip_r
+		var turn := Basis(Vector3.RIGHT, hip.rotation.x * absf(swing))
+		points[i] = hip.position + turn * (points[i] - hip.position)
+		normals[i] = turn * normals[i]
+	var arrays := _trouser_arrays.duplicate()
+	arrays[Mesh.ARRAY_VERTEX] = points
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	var mesh := _trousers_mesh.mesh as ArrayMesh
+	mesh.clear_surfaces()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 
 
 func _own_copy(shared: ShaderMaterial) -> ShaderMaterial:

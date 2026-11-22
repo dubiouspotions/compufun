@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" path="res://people/skater_bro/portrait_thinking.png" id="9_djkdq"]
 [ext_resource type="Script" path="res://people/person.gd" id="10_rqlh6"]
 [ext_resource type="Resource" path="res://voices/persons/skater_bro.tres" id="voice"]
+[ext_resource type="Texture2D" path="res://people/skater_bro/back.png" id="11_back"]
 
 [resource]
 script = ExtResource("10_rqlh6")
@@ -29,3 +30,4 @@ portraits = Dictionary[StringName, Texture2D]({
 &"thinking": ExtResource("9_djkdq")
 })
 face = ExtResource("1_2in2l")
+back = ExtResource("11_back")

@@ -49,6 +49,9 @@ const FIRST_DATE: String = "1996-05-31"
 const DAY_PATH: String = "res://days/day_%d.tres"
 ## Where the problem with a short name lives, as a job in a snapshot names it.
 const PROBLEM_PATH: String = "res://problems/%s.tres"
+## Snapshot keys that the game no longer has, which [method restore] skips so that old F9 reports
+## still restore: "stored" held the parts in the storage bin, which no longer takes parts.
+const RETIRED_KEYS: Array[String] = ["stored"]
 
 var phase: Phase = Phase.IDLE
 var day: Day
@@ -71,8 +74,6 @@ var calling: Job
 var phone_off_hook: bool = false
 ## The part in the player's hand, or null. The hand holds one piece at a time.
 var hand: Piece
-## The pieces that the player put away in the storage bin, the last one last.
-var stored: Array[Piece] = []
 ## The pieces that the player threw in the trash can, the last one last. Never emptied.
 var trashed: Array[Piece] = []
 ## The customer in the shop, or null when nobody is in.
@@ -521,16 +522,6 @@ func return_part(part: Part) -> bool:
 	return true
 
 
-## Puts the piece in the hand away in the storage bin.
-func put_in_storage() -> bool:
-	return _put_in(stored)
-
-
-## Takes the piece that went into the storage bin last back into the empty hand.
-func take_from_storage() -> bool:
-	return _take_from(stored)
-
-
 ## Throws the piece in the hand in the trash can, on top of what is in it.
 func trash_part() -> bool:
 	return _put_in(trashed)
@@ -790,7 +781,6 @@ func snapshot() -> Dictionary:
 		"calling_slot": calling.slot if calling != null else -1,
 		"phone_off_hook": phone_off_hook,
 		"hand": Job.pieces_data([hand] if hand != null else []),
-		"stored": Job.pieces_data(stored),
 		"trashed": Job.pieces_data(trashed),
 		"view": String(view),
 		"conversation": String(conversation.id) if conversation != null else "",
@@ -803,12 +793,15 @@ func snapshot() -> Dictionary:
 
 ## Sets the state from [param state], in the format of [method snapshot]. A missing key takes its
 ## value at the start of a day, except that the shop is OPEN: day 1, nobody in the shop, no
-## arrivals, an empty counter, an empty hand, storage bin and trash, no flags, nothing seen, no
+## arrivals, an empty counter, an empty hand and trash, no flags, nothing seen, no
 ## CompuFunDB records or start-up, the daypart of the arrivals; a missing view keeps the current one.
 ## The conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
+## Keys in [constant RETIRED_KEYS] are ignored, with what they held.
 func restore(state: Dictionary) -> String:
 	var known := snapshot()
 	for key: Variant in state:
+		if key in RETIRED_KEYS:
+			continue
 		if not key is String or not known.has(key):
 			return _refuse("unknown key %s" % key)
 	var number := int(state.get("day", 1))
@@ -955,9 +948,6 @@ func restore(state: Dictionary) -> String:
 		return _refuse("the hand: %s" % hand_pieces)
 	if hand_pieces.size() > 1:
 		return _refuse("the hand holds one part, not %d" % hand_pieces.size())
-	var stored_pieces: Variant = Job.pieces_from(state.get("stored", []))
-	if stored_pieces is String:
-		return _refuse("the storage bin: %s" % stored_pieces)
 	var trashed_pieces: Variant = Job.pieces_from(state.get("trashed", []))
 	if trashed_pieces is String:
 		return _refuse("the trash: %s" % trashed_pieces)
@@ -984,7 +974,6 @@ func restore(state: Dictionary) -> String:
 	calling = new_calling
 	phone_off_hook = new_off_hook
 	hand = hand_pieces[0] if not hand_pieces.is_empty() else null
-	stored.assign(stored_pieces)
 	trashed.assign(trashed_pieces)
 	visitor = new_visitor
 	visit = new_visit

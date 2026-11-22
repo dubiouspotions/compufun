@@ -9,8 +9,10 @@
 [ext_resource type="Script" path="res://people/person.gd" id="7_script"]
 [ext_resource type="Resource" path="res://voices/persons/middle_manager.tres" id="voice"]
 
+[ext_resource type="Texture2D" path="res://people/middle_manager/back.png" id="back_png"]
 [resource]
 script = ExtResource("7_script")
+back = ExtResource("back_png")
 voice = ExtResource("voice")
 nickname = "Middle manager"
 portraits = Dictionary[StringName, Texture2D]({

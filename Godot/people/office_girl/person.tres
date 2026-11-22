@@ -13,8 +13,10 @@
 [ext_resource type="Script" path="res://people/person.gd" id="10_mfmf7"]
 [ext_resource type="Resource" path="res://voices/persons/office_girl.tres" id="voice"]
 
+[ext_resource type="Texture2D" path="res://people/office_girl/back.png" id="back_png"]
 [resource]
 script = ExtResource("10_mfmf7")
+back = ExtResource("back_png")
 voice = ExtResource("voice")
 name = "Sam Hilton"
 nickname = "Office girl"

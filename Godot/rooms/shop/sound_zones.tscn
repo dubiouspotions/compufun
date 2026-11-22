@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_room"]
+size = Vector3(8, 4.2, 7.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_street"]
+size = Vector3(60, 14, 40)
+
+[node name="SoundZones" type="Node3D"]
+
+[node name="Room" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, -1.75)
+input_ray_pickable = false
+monitoring = false
+reverb_bus_enabled = true
+reverb_bus_name = &"Room"
+reverb_bus_amount = 0.35
+reverb_bus_uniformity = 0.5
+
+[node name="Shape" type="CollisionShape3D" parent="Room"]
+shape = SubResource("BoxShape3D_room")
+
+[node name="Street" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, -25.55)
+input_ray_pickable = false
+monitoring = false
+audio_bus_override = true
+audio_bus_name = &"Street"
+
+[node name="Shape" type="CollisionShape3D" parent="Street"]
+shape = SubResource("BoxShape3D_street")

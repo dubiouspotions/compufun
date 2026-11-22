@@ -15,6 +15,7 @@ var _outside: Outside
 @onready var _cycle: CheckBox = %CycleBox
 @onready var _minutes: SpinBox = %MinutesBox
 @onready var _rain: CheckBox = %RainBox
+@onready var _relief: CheckBox = %ReliefBox
 @onready var _fps: Label = %FpsLabel
 
 
@@ -26,6 +27,7 @@ func _ready() -> void:
 	_cycle.toggled.connect(_on_cycle)
 	_minutes.value_changed.connect(_on_minutes)
 	_rain.toggled.connect(_on_rain)
+	_relief.toggled.connect(_on_relief)
 
 
 func _input(event: InputEvent) -> void:
@@ -39,11 +41,15 @@ func is_open() -> bool:
 	return _panel.visible
 
 
-## Opens or closes the menu. Opening finds the Outside node again and reads its state.
+## Opens or closes the menu. Opening finds the Outside node and a customer body again and reads their state.
 func toggle() -> void:
 	_panel.visible = not _panel.visible
 	if not _panel.visible:
 		return
+	var body := get_tree().get_first_node_in_group(CustomerBody.GROUP) as CustomerBody
+	_relief.disabled = body == null
+	if body != null:
+		_relief.set_pressed_no_signal(body.photo_relief)
 	_outside = get_tree().get_first_node_in_group(&"outside") as Outside
 	var found := _outside != null
 	_slider.editable = found
@@ -90,6 +96,12 @@ func _on_cycle(on: bool) -> void:
 func _on_minutes(value: float) -> void:
 	if _outside != null and _cycle.button_pressed:
 		_outside.day_minutes = value
+
+
+# Switches every customer between the photo relief and the modelled body, for a side by side look.
+func _on_relief(on: bool) -> void:
+	for node: Node in get_tree().get_nodes_in_group(CustomerBody.GROUP):
+		(node as CustomerBody).photo_relief = on
 
 
 func _on_rain(on: bool) -> void:

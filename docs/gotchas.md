@@ -50,6 +50,11 @@ test, every playback that a player stopped during the run is listed too (`AudioS
 with a bare `AudioStreamPlayer` as well. Any other object in the `--verbose` list of leaks is a real
 leak. — 2026-11
 
+**An `AudioStreamPlayer3D` ignores the audio bus and the reverb of the `Area3D` that it is in.** Its
+`area_mask` is 0 by default in Godot 4.7, so it finds no area at all. Set it to the sound zones'
+layer (`SoundSet.SOUND_ZONES`, 1) on every 3D player that should sound like its room; a player
+that `SoundSet.play_at` makes gets it. — 2026-11-22
+
 **Every `--import` logs "resources still in use at exit", naming data scripts such as
 `customer.gd` and `win95_setup.gd`.** A script with a `static var` that other scripts reach was
 loaded: GDScript keeps the static's script and everything it depends on alive past the exit. The

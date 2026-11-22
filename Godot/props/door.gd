@@ -1,50 +1,127 @@
+class_name ShopDoor
 extends Node3D
-## The shop's front door. It stands open while the shop is open (Game.Phase OPEN or CALLING) and is
-## shut otherwise: in the morning before the Open sign, at night and at the end. It swings open
-## when the shop opens and slams shut when it closes, and takes its place at once when it first
-## shows. Its origin is the hinge; place the instance in the shop shut.
+## The shop's front door, a swing door on a spring hinge. It stands shut; a customer near the doorway
+## pushes it open away from them (in when they come from the street, out when they leave), and once
+## they are through the door closer swings it back, past shut and back a few times, until it rests.
+## It follows where the customers are on every frame, so a restore or a skipped walk leaves it right.
+## While the shop is closed (any phase but OPEN and CALLING) it is locked: it stays shut (#103).
+## When the player closes the shop it slams: a kick against the frame, with a sound.
+## It also lets the street in: the street's bus is near silent and muffled while the door is shut,
+## and opens up with it.
 
-## How far the door stands open, in degrees around the hinge; positive swings out to the street.
-@export_range(-180.0, 180.0, 1.0, "suffix:deg") var open_degrees: float = 80.0
-## How long the swing open takes, in seconds.
-@export_range(0.0, 5.0, 0.05, "suffix:s") var swing_seconds: float = 0.8
-## How long the slam shut takes, in seconds; [member slam] plays as it hits the frame.
-@export_range(0.0, 5.0, 0.05, "suffix:s") var shut_seconds: float = 0.3
+## The group of every customer body that walks through the door.
+const WALKERS: StringName = CustomerBody.GROUP
+
+## How far a push swings the door, in degrees.
+@export var open_degrees: float = 85.0
+## Where the hinge stops the door, in degrees each way; it bounces back off the stop.
+@export var stop_degrees: float = 100.0
+## How near a customer must be to the middle of the doorway to push the door, in metres.
+@export var open_distance: float = 1.5
+## The push: how hard it pulls the door open (per second squared) and how much it brakes (per second).
+@export var push_stiffness: float = 70.0
+@export var push_damping: float = 11.0
+## The door closer: how hard it pulls the door shut and how much it brakes. A little brake lets the
+## door swing past shut and back before it rests.
+@export var closer_stiffness: float = 24.0
+@export var closer_damping: float = 3.6
+## The sound and the kick of the slam when the player closes the shop, in degrees per second.
 @export var slam: SoundSet = preload("res://sounds/door_slam.tres")
+@export var slam_kick: float = 160.0
+## The middle of the doorway, from the hinge, while the door is shut.
+@export var doorway_offset: Vector3 = Vector3(0.58, 0.0, 0.0)
+## The bus of the street's sounds (default_bus_layout.tres; rooms/shop/sound_zones.tscn sends the
+## street's 3D sounds to it). Its first effect is the low-pass filter that the door opens.
+@export var street_bus: StringName = &"Street"
+## The street's low-pass cutoff in Hz, and its bus volume in dB, while the door is shut and open.
+@export var shut_cutoff_hz: float = 500.0
+@export var open_cutoff_hz: float = 12000.0
+@export var shut_volume_db: float = -20.0
+@export var open_volume_db: float = 2.0
 
-var _open: bool = false
-var _placed: bool = false
-var _swing: Tween
-
-@onready var _hinge: Node3D = %Hinge
+var _closed_yaw: float
+# The door's swing from shut, in radians (negative: into the shop), and how fast it turns.
+var _angle: float = 0.0
+var _speed: float = 0.0
+# Which way the current push swings the door: -1 into the shop (a customer on the street pushes),
+# 1 out to the street (a customer in the shop pushes), 0 no push.
+var _push: float = 0.0
+var _street: int = -1
+# Whether the shop was open on the last frame: closing it is what slams the door.
+var _was_open: bool = false
+var _filter: AudioEffectLowPassFilter
 
 
 func _ready() -> void:
-	Game.changed.connect(_sync)
-	_sync()
-
-
-## True while the shop is open, so the door stands open or swings open.
-func is_open() -> bool:
-	return _open
-
-
-func _sync() -> void:
-	var open: bool = Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING
-	if _placed and open == _open:
+	_closed_yaw = rotation.y
+	_was_open = _shop_open()
+	_street = AudioServer.get_bus_index(street_bus)
+	if _street < 0:
+		push_error("ShopDoor: no audio bus '%s' in default_bus_layout.tres" % street_bus)
 		return
-	_open = open
-	if _swing != null:
-		_swing.kill()
-	var angle := deg_to_rad(open_degrees) if open else 0.0
-	if not _placed:
-		_placed = true
-		_hinge.rotation.y = angle
+	_filter = AudioServer.get_bus_effect(_street, 0) as AudioEffectLowPassFilter
+	if _filter == null:
+		push_error("ShopDoor: the first effect of the bus '%s' is not a low-pass filter" % street_bus)
+
+
+func _process(delta: float) -> void:
+	var open := _shop_open()
+	if _was_open and not open:
+		_speed += deg_to_rad(slam_kick)
+		slam.play_at(self)
+	_was_open = open
+	var side := _nearest_side()
+	# A push starts only on a door that is nearly shut; then it keeps its way until the door shuts.
+	if side == 0.0:
+		_push = 0.0
+	elif _push == 0.0 and absf(_angle) < deg_to_rad(15.0):
+		_push = side
+	var target := _push * deg_to_rad(open_degrees)
+	var stiffness := push_stiffness if _push != 0.0 else closer_stiffness
+	var damping := push_damping if _push != 0.0 else closer_damping
+	# Small steps keep the spring steady when a frame is long.
+	var steps := ceili(delta / 0.008)
+	var step := delta / steps
+	for i: int in steps:
+		_speed += (stiffness * (target - _angle) - damping * _speed) * step
+		_angle += _speed * step
+		var stop := deg_to_rad(stop_degrees)
+		if absf(_angle) > stop:
+			_angle = signf(_angle) * stop
+			_speed *= -0.3
+	rotation.y = _closed_yaw + _angle
+	_let_street_in(clampf(absf(_angle) / deg_to_rad(open_degrees), 0.0, 1.0))
+
+
+# Which side of the doorway the nearest customer within open_distance is on: -1 the street, 1 the
+# shop, 0 nobody near.
+func _nearest_side() -> float:
+	if not _shop_open():
+		return 0.0
+	var hinge := get_parent_node_3d().global_transform * position
+	var shut := get_parent_node_3d().global_basis * Basis(Vector3.UP, _closed_yaw)
+	var doorway := hinge + shut * doorway_offset
+	var best := open_distance
+	var side := 0.0
+	for node: Node in get_tree().get_nodes_in_group(WALKERS):
+		var body := node as Node3D
+		if not body.is_visible_in_tree():
+			continue
+		var offset := body.global_position - doorway
+		var distance := Vector2(offset.x, offset.z).length()
+		if distance < best:
+			best = distance
+			side = signf((shut.inverse() * offset).z)
+	return side
+
+
+func _shop_open() -> bool:
+	return Game.phase == Game.Phase.OPEN or Game.phase == Game.Phase.CALLING
+
+
+# The street sounds as open as the door: the cutoff moves on a log scale, as the ear hears pitch.
+func _let_street_in(open: float) -> void:
+	if _filter == null:
 		return
-	if open:
-		_swing = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		_swing.tween_property(_hinge, "rotation:y", angle, swing_seconds)
-		return
-	_swing = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	_swing.tween_property(_hinge, "rotation:y", angle, shut_seconds)
-	_swing.tween_callback(slam.play_at.bind(self))
+	_filter.cutoff_hz = exp(lerpf(log(shut_cutoff_hz), log(open_cutoff_hz), open))
+	AudioServer.set_bus_volume_db(_street, lerpf(shut_volume_db, open_volume_db, open))

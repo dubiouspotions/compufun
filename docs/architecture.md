@@ -11,7 +11,7 @@ in the same commit as the code. The design, what the parts are and why, is on th
 Godot/               the Godot project: everything the game loads
   main.tscn          the game: the world viewport, the UI layer, the F9 layer (run/main_scene)
   export_presets.cfg Web, Windows Desktop, MacOS, Linux; CI exports them by name
-  default_bus_layout.tres  the audio buses: Master, Voice for the customers' voices, and Win95, which follows the volume and mute of the desktop on screen
+  default_bus_layout.tres  the audio buses: Master; Voice for the customers' voices; Win95; Street, muffled until the door opens; Room, the shop's reverb
   game.gd            the Game autoload
   shaders/           psx_world.gdshader, psx_post.gdshader, psx_post_world.tres (the world's post material)
   shaders/crt_looks/ the CRT looks: the Screen View's (crt.gdshader) and the 3D bench screen's (crt_world.gdshader)
@@ -21,9 +21,9 @@ Godot/               the Godot project: everything the game loads
   parts/             part.gd and piece.gd, and one Part per part or place: <id>.tres (ram_1 and ram_2 are the RAM slots)
   materials/         one shared material per surface; textures/ holds the PNGs
   rooms/             hotspot.tscn, view_marker.gd and ground.gd (a floor and its footsteps), shared by all rooms
-  rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying on its side), bench.tscn (the bench screen, keyboard and VGA cable), pipedream.tscn (the Win95 Pipes that grow with the warp), ceiling_mouse.tscn (the easter egg in the ceiling), storage_bin.tscn (the bin where the player puts parts away), hand.tscn (the part in the hand, held in front of the camera), the_end.tscn (the body with the pipe through the chest, at the end), their meshes and textures
+  rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying on its side), bench.tscn (the bench screen, keyboard and VGA cable), pipedream.tscn (the Win95 Pipes that grow with the warp), ceiling_mouse.tscn (the easter egg in the ceiling), hand.tscn (the part in the hand, held in front of the camera), the_end.tscn (the body with the pipe through the chest, at the end), their meshes and textures, sound_zones.tscn (where a 3D sound plays on the Street bus or into the Room reverb)
   people/<name>/     person.tres, portrait_<pose>.png, face.png
-  customers/         one .tres per customer, customer_body.tscn, job.gd (one computer on the counter)
+  customers/         one .tres per customer, customer_body.tscn, photo_relief.gd (the upper body from the portrait), job.gd (one computer on the counter)
   customers/<name>/  the pictures in that customer's files, such as pierre/castle_01.png
   voices/            one .wav per customer line, rendered by Chimera; voices.gd names and renders them
   voices/persons/    voice persons (VoicePerson), one per people/<name>/: who speaks, a body with its build and timbre; the bottom layer
@@ -48,7 +48,7 @@ Godot/               the Godot project: everything the game loads
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
 feedback/            the F9 reports (outside Godot, so Godot does not import them)
-tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; make_castle_renders.py renders Pierre's castle pictures; make_crt_sounds.py synthesizes the bench screen's sounds; make_hang_buzz.sh cuts the buzz of a hung Win95; extract_win95_icons.py extracts the Win95 icons; make_mouse_squeak.py synthesizes the ceiling mouse's squeak; make_end_sounds.sh makes the sounds of the end; make_trees.gd builds the tree meshes of the Outside; make_wall_shelf.gd draws and builds the shop's wall shelving of goods for sale; make_printer.gd draws and builds the dot-matrix printer under the work desk; make_flag_sticker.py draws the Korean flag sticker; make_outdoor_steps.sh makes the asphalt and sidewalk footsteps; chimera-moods.patch
+tools/               scripts; build-voice.sh builds the live voice; run.sh plays the game without the editor; sync-wiki.sh clones or pulls the wiki into wiki/; make_castle_renders.py renders Pierre's castle pictures; make_crt_sounds.py synthesizes the bench screen's sounds; make_hang_buzz.sh cuts the buzz of a hung Win95; extract_win95_icons.py extracts the Win95 icons; make_mouse_squeak.py synthesizes the ceiling mouse's squeak; make_end_sounds.sh makes the sounds of the end; make_trees.gd builds the tree meshes of the Outside; make_wall_shelf.gd draws and builds the shop's wall shelving of goods for sale; make_printer.gd draws and builds the dot-matrix printer under the work desk; make_flag_sticker.py draws the Korean flag sticker; make_outdoor_steps.sh makes the asphalt and sidewalk footsteps; chimera-moods.patch; make_portrait_backs.py asks an image model for each person seen from behind
 wiki/                the GitHub wiki, cloned by tools/sync-wiki.sh (ignored by the repo)
 docs/                the rules for people and agents: this code layout, code standard, build, gotchas, glossary
 .github/workflows/   CI: tests and export on push, itch.io deploy, Discord notifications
