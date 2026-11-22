@@ -9,7 +9,7 @@ func run() -> void:
 	shop.walk_seconds = 1000.0
 	root.add_child(shop)
 	await process_frame
-	var day: Day = (load("res://days/day_1.tres") as Day).duplicate()
+	var day: Day = game.day_of(1).duplicate()
 	day.first_wait_seconds = Vector2(1000.0, 1000.0)
 
 	game.start_day(day)

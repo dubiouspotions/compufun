@@ -45,6 +45,8 @@ const WORKVIEW: StringName = &"Workview"
 @export var head_height: float = 1.6
 
 @onready var _body: CustomerBody = %CustomerBody
+## Takes the click on a visitor who waits beside the computer that they show.
+@onready var _visitor_hotspot: Hotspot = %VisitorHotspot
 @onready var _job_slots: JobSlots = %JobSlots
 @onready var _bench: Bench = %Bench
 @onready var _pipedream: Pipedream = %Pipedream
@@ -393,14 +395,13 @@ func _sync() -> void:
 		_move_camera(Game.view)
 	_body.visible = Game.visitor != null
 	_body.show_customer(Game.visitor)
-	var leaving := Game.visitor_state == Game.VisitorState.WALKING_OUT
-	# In with the computer on a drop-off, out with it on a pickup.
-	_body.carrying = (Game.visit == Game.Visit.DROP_OFF) != leaving
+	_body.carrying = Game.visitor_carries()
+	_visitor_hotspot.set_enabled(Game.visitor_state == Game.VisitorState.WAITING)
 	match Game.visitor_state:
 		Game.VisitorState.WALKING_IN:
 			if _walk_in_arrival != Game.arrival:
 				_walk_in()
-		Game.VisitorState.NONE, Game.VisitorState.TALKING:
+		Game.VisitorState.NONE, Game.VisitorState.TALKING, Game.VisitorState.WAITING:
 			# A restore can end a walk halfway; its tween must not reach Game.
 			if _walk_tween != null:
 				_walk_tween.kill()
@@ -504,6 +505,8 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 				_open_sign.shake()  # the phone can't call before the shop opens: point at the sign
 			else:
 				phone_requested.emit()
+		Hotspot.Action.TALK_TO_VISITOR:
+			Game.talk_to_visitor()
 		Hotspot.Action.TAKE_PART:
 			if Game.hand == null:
 				Game.take_new_part(hotspot.part)

@@ -17,7 +17,7 @@ func run() -> void:
 
 	# Pierre brings Dust Overheat; a customer from a file can be restored.
 	var pierre: Customer = load("res://customers/skater_bro.tres")
-	var first: Errand = (load("res://days/day_1.tres") as Day).errands[0]
+	var first: Errand = game.day_of(1).alternatives("0102")[0]
 	check("Pierre comes first on day 1, with Dust Overheat", [first.customer, first.problem], [pierre, dust])
 	game.start_day(make_day(1, [[pierre, dust]]))
 	game.open_shop()

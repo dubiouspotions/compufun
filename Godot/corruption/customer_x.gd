@@ -1,7 +1,9 @@
 extends CorruptionSign
-## The close button of a Win95 window, the [x], hovers at the top right corner of a regular customer
-## ([member Customer.regular]) in the dialogue while they talk. A click sends them away for good
-## ([method Game.dismiss_visitor]).
+## The close button of a Win95 window, the [x], hovers at the top right corner of [member target] in
+## the dialogue while they talk. A click sends them away for good ([method Game.dismiss_visitor]).
+
+## The one customer whom the [x] shows over; null shows it over nobody.
+@export var target: Customer
 
 ## Where the middle of the [x] hovers, from the customer's top right corner, in pixels of the UI.
 @export var offset: Vector2 = Vector2(8.0, -8.0)
@@ -22,7 +24,7 @@ func _exit_tree() -> void:
 
 
 func _apply(shown_stage: int) -> void:
-	var talking := Game.visitor != null and Game.visitor.regular and Game.visitor_state == Game.VisitorState.TALKING
+	var talking := target != null and Game.visitor == target and Game.visitor_state == Game.VisitorState.TALKING
 	if shown_stage > 0 and talking and _close.get_parent() == self:
 		var overlay := get_tree().get_first_node_in_group(&"dialogue_overlay") as DialogueOverlay
 		if overlay == null:

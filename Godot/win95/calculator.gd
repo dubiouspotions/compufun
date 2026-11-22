@@ -5,7 +5,7 @@ extends "res://win95/window.gd"
 const DIVIDE_BY_ZERO: String = "Cannot divide by zero."
 
 ## Metadata on the scene tree's root: while set, every result in a computer that runs Cambion
-## (Computer.cambion) is this number (the corruption sign corruption/calc_666.tscn sets it). Not a
+## (Game.runs_cambion) is this number (the corruption sign corruption/calc_666.tscn sets it). Not a
 ## static var: a GDScript static leaks the script's dependencies at exit.
 const CAMBION_RESULT_META: StringName = &"win95_cambion_result"
 
@@ -16,7 +16,7 @@ var _accumulator: float = 0.0
 ## The operator waiting for its right operand, or "".
 var _pending: String = ""
 var _error: bool = false
-var _in_cambion: bool = false
+var _job: Job
 
 @onready var _display: Label = %Display
 
@@ -24,8 +24,7 @@ var _in_cambion: bool = false
 func _ready() -> void:
 	super()
 	var desktop := get_parent() as Win95Desktop
-	var job := desktop.computer.job if desktop != null and desktop.computer != null else null
-	_in_cambion = job != null and job.customer.computer != null and job.customer.computer.cambion
+	_job = desktop.computer.job if desktop != null and desktop.computer != null else null
 	var keys: Array = %Keys.get_children()
 	keys.append(%Equals)
 	for button: Button in keys:
@@ -52,7 +51,7 @@ func press(key: String) -> void:
 		elif _pending == "":
 			_accumulator = _entry.to_float()
 		var cambion_result: String = get_tree().root.get_meta(CAMBION_RESULT_META, "")
-		if (computed or key == "=") and _in_cambion and cambion_result != "":
+		if (computed or key == "=") and _job != null and Game.runs_cambion(_job.customer) and cambion_result != "":
 			_accumulator = cambion_result.to_float()
 		_pending = "" if key == "=" else key
 		_new_entry = true

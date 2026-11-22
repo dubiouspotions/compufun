@@ -16,8 +16,7 @@ func run() -> void:
 	var why := choice("Why?", deep_reply)
 	deep_reply.choices = [choice("What?", reply_of("Cambion."))]
 	talk.choices = [how, why]
-	c.conversations = [talk]
-	game.start_day(make_day(1, [[c, load("res://problems/no_sound.tres")]]))
+	game.start_day(make_day(1, [[c, load("res://problems/no_sound.tres"), [talk]]]))
 	game.open_shop()
 	tick(1.0)
 	game.customer_arrived()

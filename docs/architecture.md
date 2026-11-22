@@ -35,8 +35,7 @@ Godot/               the Godot project: everything the game loads
                      that plays while a thing runs (the storage bulb, a PC's fans, a CRT)
   problems/          one .tres per problem
   corruption/        one scene per corruption sign (<id>.tscn); corruption_sign.gd is their base, corruption_signs.gd loads them all into the shop
-  days/              day_1.tres to day_7.tres, each a list of errands (errand.gd: a customer and a problem)
-  story/             the story files (docs/dialogue.md): story_format.gd reads and writes them, story_files.gd loads the week with a writer's drafts over it
+  story/             the story files (docs/dialogue.md): days/, errands/ and bible/; day.gd and errand.gd, the Day and Errand they load into; story_format.gd reads and writes them, story_files.gd loads the week with a writer's drafts over it, story_check.gd finds its missing links
   endings/           one Ending per way the week can end (ending.gd): finale.tres (the default), pipes.tres (off)
   finale/            the finale, the default ending (and from the F2 World tab): finale.tscn (the corruption, the bluescreen, the credits), host_boot.gd (the player's own computer, faked: its restart and its error), apple_logo.svg, finale_text.tres (all its text)
   ui/                loading screen, dialogue overlay, phone call (whom to call for a pickup), post-it label (the Workview post-it's text), carried printout (the printout that the player carries: low on the left, or raised on the right side of the view and beside the CompuFunDB screen), end of day (the close-the-shop question, in the game's panel or, from day 4's warp, a Win95 message box; the night between two days), window_bluescreen.tscn (the bluescreen over the window, in the finale), screen view, bench screen, CRT screen and tube, debug menu, F9 screen, theme.tres
@@ -48,9 +47,7 @@ Godot/               the Godot project: everything the game loads
   win95/midi/        recordings that .mid files play in Media Player (Godot plays no MIDI)
   win95/solitaire/   Solitaire: the rules (klondike.gd), the window, the table and the card pictures
   compufun_db/       CompuFunDB, the DOS database on the work computer, its VGA font, and the work computer's boot (a 386)
-  addons/dialogue_editor/  the Dialogue tab in the editor; flag_field.gd (a flag field with its menu, and the flag scan); story.gd (the story as text: outlines and missing links)
-  addons/week_board/  the Week tab in the editor: the days, their customers and warp, and the flags
-  dev/               the Dev menu, the Voice Lab and story.gd (prints the story); no export contains it
+  dev/               the Dev menu, the Voice Lab and story.gd (prints the story check); no export contains it
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
 feedback/            the F9 reports (outside Godot, so Godot does not import them)

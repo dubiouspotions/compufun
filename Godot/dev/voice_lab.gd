@@ -572,15 +572,18 @@ func _save_layer() -> void:
 
 
 func _find_lines() -> void:
+	if Game.week == null:
+		push_error("Voice Lab: the story files have errors, so it lists no customer lines: %s" % "; ".join(Game.story_errors))
+	for d: Day in Game.week.days if Game.week != null else []:
+		for errand: Errand in d.errands:
+			if errand.customer == null:
+				continue
+			for conversation: Conversation in errand.conversations:
+				for line: DialogueLine in conversation.all_lines():
+					_lines.append(["%s · %s" % [errand.customer.spoken_name(), line.text.left(50)], line, errand.customer.voice, VoiceEffect.of(line, conversation)])
 	for path: String in _resources(CUSTOMERS):
 		var resource := load(path)
-		var customer := resource as Customer
-		if customer != null:
-			for conversation: Conversation in customer.conversations:
-				if conversation != null:
-					for line: DialogueLine in conversation.all_lines():
-						_lines.append(["%s · %s" % [customer.spoken_name(), line.text.left(50)], line, customer.voice, VoiceEffect.of(line, conversation)])
-		elif resource is Conversation:
+		if resource is Conversation:
 			for line: DialogueLine in resource.lines:
 				_lines.append(["Everyone · %s" % line.text.left(50), line, null, VoiceEffect.of(line, resource)])
 

@@ -2,12 +2,14 @@
 
 [ext_resource type="Script" path="res://corruption/customer_x.gd" id="1_sign"]
 [ext_resource type="Theme" path="res://win95/win95.tres" id="2_win95"]
+[ext_resource type="Resource" path="res://customers/young_entrepreneur.tres" id="3_target"]
 
 [node name="CustomerX" type="Node"]
 script = ExtResource("1_sign")
-title = "An [x] closes a regular customer for good"
+title = "An [x] closes the young entrepreneur for good"
 timing = 2
-hint = "Only a customer with the regular box ticked."
+hint = "Only over its target customer, while they talk."
+target = ExtResource("3_target")
 
 [node name="Close" type="Button" parent="."]
 unique_name_in_owner = true

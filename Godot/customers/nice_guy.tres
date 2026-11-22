@@ -36,10 +36,6 @@
 [ext_resource type="Resource" path="res://win95/theme/palette.tres" id="34_ngtbx"]
 [ext_resource type="Script" path="res://win95/win95_setup.gd" id="35_6ev7n"]
 [ext_resource type="Texture2D" path="res://win95/wallpapers/win95-default.png" id="36_2ksw8"]
-[ext_resource type="Script" path="res://customers/conversation.gd" id="37_b48gl"]
-[ext_resource type="Script" path="res://customers/choice.gd" id="38_e8gcl"]
-[ext_resource type="Script" path="res://customers/reply.gd" id="39_vctlj"]
-[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="40_r0ge7"]
 [ext_resource type="Resource" path="res://people/nice_guy/person.tres" id="41_y3g3k"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="42_awthr"]
 
@@ -226,89 +222,9 @@ hardware = SubResource("Resource_e0hip")
 case_material = ExtResource("2_bfuvp")
 case_front = ExtResource("1_gsltv")
 
-[sub_resource type="Resource" id="Resource_11tyf"]
-script = ExtResource("40_r0ge7")
-text = "Pouring. But the plants are happy, so I'm happy."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_4nqlt"]
-script = ExtResource("39_vctlj")
-lines = Array[ExtResource("40_r0ge7")]([SubResource("Resource_11tyf")])
-
-[sub_resource type="Resource" id="Resource_cvgqf"]
-script = ExtResource("38_e8gcl")
-text = "Wet out there?"
-replies = Array[ExtResource("39_vctlj")]([SubResource("Resource_4nqlt")])
-
-[sub_resource type="Resource" id="Resource_n8tir"]
-script = ExtResource("40_r0ge7")
-text = "Now that you say it, it clicks. Like a little woodpecker inside."
-
-[sub_resource type="Resource" id="Resource_kj8c2"]
-script = ExtResource("39_vctlj")
-lines = Array[ExtResource("40_r0ge7")]([SubResource("Resource_n8tir")])
-
-[sub_resource type="Resource" id="Resource_psbe0"]
-script = ExtResource("38_e8gcl")
-text = "Any strange noises?"
-replies = Array[ExtResource("39_vctlj")]([SubResource("Resource_kj8c2")])
-
-[sub_resource type="Resource" id="Resource_moe6y"]
-script = ExtResource("40_r0ge7")
-text = "Thank you so much. Take your time."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_6npv6"]
-script = ExtResource("39_vctlj")
-lines = Array[ExtResource("40_r0ge7")]([SubResource("Resource_moe6y")])
-
-[sub_resource type="Resource" id="Resource_un81e"]
-script = ExtResource("38_e8gcl")
-text = "OK, leave it with me."
-replies = Array[ExtResource("39_vctlj")]([SubResource("Resource_6npv6")])
-ends = true
-
-[sub_resource type="Resource" id="Resource_87t3j"]
-script = ExtResource("40_r0ge7")
-text = "My computer starts, and then the whole screen goes blue with white text. Then it restarts."
-pose = &"problem"
-
-[sub_resource type="Resource" id="Resource_7t5td"]
-script = ExtResource("39_vctlj")
-lines = Array[ExtResource("40_r0ge7")]([SubResource("Resource_87t3j")])
-choices = Array[ExtResource("38_e8gcl")]([SubResource("Resource_psbe0"), SubResource("Resource_un81e")])
-
-[sub_resource type="Resource" id="Resource_fr5pt"]
-script = ExtResource("38_e8gcl")
-text = "So, what's your problem?"
-replies = Array[ExtResource("39_vctlj")]([SubResource("Resource_7t5td")])
-
-[sub_resource type="Resource" id="Resource_jwnk8"]
-script = ExtResource("40_r0ge7")
-text = "Hi there! No rush at all, I know you're busy."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_4khsu"]
-script = ExtResource("37_b48gl")
-id = &"arrive"
-lines = Array[ExtResource("40_r0ge7")]([SubResource("Resource_jwnk8")])
-choices = Array[ExtResource("38_e8gcl")]([SubResource("Resource_cvgqf"), SubResource("Resource_fr5pt")])
-
-[sub_resource type="Resource" id="Resource_m11f6"]
-script = ExtResource("40_r0ge7")
-text = "No more blue! You're a star."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_qch5b"]
-script = ExtResource("37_b48gl")
-id = &"pickup"
-trigger = 1
-lines = Array[ExtResource("40_r0ge7")]([SubResource("Resource_m11f6")])
-
 [resource]
 script = ExtResource("42_awthr")
 display_name = "Nice guy"
 person = ExtResource("41_y3g3k")
-conversations = Array[ExtResource("37_b48gl")]([SubResource("Resource_4khsu"), SubResource("Resource_qch5b")])
 computer = SubResource("Resource_h3mm7")
 trousers_color = Color(0.32, 0.36, 0.3, 1)

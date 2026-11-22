@@ -14,8 +14,6 @@
 [ext_resource type="Script" path="res://win95/email.gd" id="32_f1bti"]
 [ext_resource type="Resource" path="res://win95/theme/palette.tres" id="33_63h07"]
 [ext_resource type="Texture2D" path="res://win95/wallpapers/win95-default.png" id="35_45agh"]
-[ext_resource type="Script" path="res://customers/choice.gd" id="37_woi2t"]
-[ext_resource type="Script" path="res://customers/reply.gd" id="38_qppgl"]
 [ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="app_calculator"]
 [ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
 [ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="app_inbox"]
@@ -27,8 +25,6 @@
 [ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
 [ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="app_wordpad"]
 [ext_resource type="Material" path="res://materials/charcoal_plastic.tres" id="case_charcoal"]
-[ext_resource type="Script" path="res://customers/conversation.gd" id="cv"]
-[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="dl"]
 [ext_resource type="PackedScene" path="res://props/case_fronts/drive_door.tscn" id="front_drive_door"]
 [ext_resource type="Script" path="res://customers/hardware.gd" id="hardware_script"]
 [ext_resource type="PackedScene" path="res://props/fedora.tscn" id="hat_fedora"]
@@ -215,97 +211,14 @@ volume = 60.0
 [sub_resource type="Resource" id="Resource_xxnas"]
 script = ExtResource("1_2x16c")
 win95_setup = SubResource("Resource_8iaji")
-cambion = true
 hardware = SubResource("Hardware_machine")
 case_material = ExtResource("case_charcoal")
 case_front = ExtResource("front_drive_door")
-
-[sub_resource type="Resource" id="Resource_qbgm8"]
-script = ExtResource("dl")
-text = "Why, thank you. It was my granddad's. Never leave home without it."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_rx2g7"]
-script = ExtResource("38_qppgl")
-lines = Array[ExtResource("dl")]([SubResource("Resource_qbgm8")])
-
-[sub_resource type="Resource" id="Resource_ow0bi"]
-script = ExtResource("37_woi2t")
-text = "Nice hat."
-replies = Array[ExtResource("38_qppgl")]([SubResource("Resource_rx2g7")])
-
-[sub_resource type="Resource" id="Resource_punq3"]
-script = ExtResource("dl")
-text = "Well... I did tidy up a bit. Shortened some of those long program names."
-pose = &"thinking"
-
-[sub_resource type="Resource" id="Resource_gt2dd"]
-script = ExtResource("38_qppgl")
-lines = Array[ExtResource("dl")]([SubResource("Resource_punq3")])
-
-[sub_resource type="Resource" id="Resource_2ebig"]
-script = ExtResource("37_woi2t")
-text = "Did you change anything?"
-replies = Array[ExtResource("38_qppgl")]([SubResource("Resource_gt2dd")])
-
-[sub_resource type="Resource" id="Resource_asixl"]
-script = ExtResource("dl")
-text = "Some box pops up saying it can't find something. I just click it away."
-pose = &"irritated01"
-
-[sub_resource type="Resource" id="Resource_mqqf2"]
-script = ExtResource("38_qppgl")
-lines = Array[ExtResource("dl")]([SubResource("Resource_asixl")])
-
-[sub_resource type="Resource" id="Resource_uhkhg"]
-script = ExtResource("37_woi2t")
-text = "Do you get an error?"
-replies = Array[ExtResource("38_qppgl")]([SubResource("Resource_mqqf2")])
-
-[sub_resource type="Resource" id="Resource_wcjhb"]
-script = ExtResource("dl")
-text = "Much obliged."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_4p4ic"]
-script = ExtResource("38_qppgl")
-lines = Array[ExtResource("dl")]([SubResource("Resource_wcjhb")])
-
-[sub_resource type="Resource" id="Resource_jyd6y"]
-script = ExtResource("37_woi2t")
-text = "OK, leave it with me."
-replies = Array[ExtResource("38_qppgl")]([SubResource("Resource_4p4ic")])
-ends = true
-
-[sub_resource type="Resource" id="DialogueLine_1"]
-script = ExtResource("dl")
-text = "I click on my pictures, and nothing opens. Not a single one."
-
-[sub_resource type="Resource" id="Resource_puvja"]
-script = ExtResource("38_qppgl")
-lines = Array[ExtResource("dl")]([SubResource("DialogueLine_1")])
-choices = Array[ExtResource("37_woi2t")]([SubResource("Resource_2ebig"), SubResource("Resource_uhkhg"), SubResource("Resource_jyd6y")])
-
-[sub_resource type="Resource" id="Resource_suuc8"]
-script = ExtResource("37_woi2t")
-text = "So, what's your problem?"
-replies = Array[ExtResource("38_qppgl")]([SubResource("Resource_puvja")])
-
-[sub_resource type="Resource" id="Resource_77ckp"]
-script = ExtResource("dl")
-text = "Howdy."
-
-[sub_resource type="Resource" id="Conversation_arrive"]
-script = ExtResource("cv")
-id = &"arrive"
-lines = Array[ExtResource("dl")]([SubResource("Resource_77ckp")])
-choices = Array[ExtResource("37_woi2t")]([SubResource("Resource_ow0bi"), SubResource("Resource_suuc8")])
 
 [resource]
 script = ExtResource("3_10hmr")
 display_name = "Hat guy"
 person = ExtResource("1_yvxm1")
-conversations = Array[ExtResource("cv")]([SubResource("Conversation_arrive")])
 computer = SubResource("Resource_xxnas")
 trousers_color = Color(0.3, 0.27, 0.2, 1)
 hat = ExtResource("hat_fedora")

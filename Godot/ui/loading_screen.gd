@@ -33,6 +33,9 @@ var _start_ms: int = -1
 func _ready() -> void:
 	get_window().title = BuildInfo.title()
 	_logo.set_shader_parameter("progress", 0.0)
+	if Game.week == null:
+		_fail("the story files have errors:\n" + "\n".join(Game.story_errors))
+		return
 	var err := ResourceLoader.load_threaded_request(GAME_SCENE)
 	if err != OK:
 		_fail("cannot start to load %s: %s" % [GAME_SCENE, error_string(err)])
@@ -93,4 +96,5 @@ func _reveal(scene: PackedScene) -> void:
 func _fail(message: String) -> void:
 	set_process(false)
 	push_error("Loading screen: " + message)
+	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status.text = "The game could not load: %s" % message

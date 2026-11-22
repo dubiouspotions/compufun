@@ -11,7 +11,7 @@ func run() -> void:
 	var slot_1: Part = load("res://parts/ram_1.tres")
 	var slot_2: Part = load("res://parts/ram_2.tres")
 	var accountant: Customer = load("res://customers/activist_guy.tres")
-	var evening: Errand = (load("res://days/day_1.tres") as Day).errands[2]
+	var evening: Errand = game.day_of(1).alternatives("0104")[0]
 	check("the activist guy brings bad RAM on day 1's evening", [evening.customer, evening.problem], [accountant, bad_ram])
 	check("both slots take RAM", [slot_1.piece_part(), slot_2.piece_part(), ram.fits_computer(), slot_1.fits_computer()], [ram, ram, true, false])
 

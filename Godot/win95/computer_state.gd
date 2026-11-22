@@ -483,7 +483,7 @@ func _sync() -> void:
 ## hangs, then reboots, and does it again after every boot until the hardware is fixed. A desktop
 ## that stays up that long tests the computer (see [member Job.tested]).
 func reached_desktop() -> void:
-	var problem := job.problem
+	var problem := job.problem if job.problem != null else Problem.new()
 	var boot := _boots
 	var hangs := problem.hangs_after > 0.0 and not job.hardware_fixed
 	if problem.hangs_after > 0.0:
@@ -529,5 +529,5 @@ func _changed() -> void:
 
 
 func _report_fixed() -> void:
-	if setup != null and job.problem.software_check != null:
-		Game.set_software_fixed(job, job.problem.software_check.is_fixed(setup))
+	if setup != null and job.software_check() != null:
+		Game.set_software_fixed(job, job.software_check().is_fixed(setup))

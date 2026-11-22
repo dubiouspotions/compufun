@@ -3,7 +3,8 @@ extends Control
 ## The phone: the dialogue box with a red rotary phone in it. A click on the phone
 ## (Shop.phone_requested) calls the customer of the oldest done (fixed and tested) computer: the
 ## phone rings, the customer answers (their PHONE conversation, or [member greeting]), the player
-## says [member you_say], and hangs up; then the customer comes for it. Each line goes on by itself
+## says [member you_say], and hangs up; then the customer comes for it. A PHONE conversation without
+## lines rings out: [member no_answer] shows, and the call ends. Each line goes on by itself
 ## [member auto_advance_seconds] after it ends, or at a click anywhere (or Enter), as in the dialogue. With no computer done, the
 ## click picks up the phone instead, which lists the computers; Esc or "Put down" puts it down.
 ## Game refuses both while the shop is closed or someone is in it.
@@ -17,6 +18,8 @@ extends Control
 @export var greeting: String = "Hello?"
 ## What the player says once the customer has spoken.
 @export var you_say: String = "Your computer is ready now!"
+## What shows when nobody answers (Game.rings_out); then the call ends, and nobody comes.
+@export var no_answer: String = "Nobody answers."
 ## How long the call takes before the customer answers, in seconds: the dialling, one ring and the
 ## far end's click in sounds/phone_receiver.wav, which ends 0.395 s after that click. The sound
 ## starts a few frames after this timer, so the customer answers about 0.15 s after the click.
@@ -122,7 +125,9 @@ func _sync() -> void:
 ## The phone starts to ring for the called customer, whose lines are ready for when they answer.
 func _ring() -> void:
 	var customer := Game.calling.customer
-	if Game.conversation != null and not Game.conversation.lines.is_empty():
+	if Game.rings_out():
+		_lines = []
+	elif Game.conversation != null and not Game.conversation.lines.is_empty():
 		_lines = Game.conversation.lines
 	else:
 		var hello := DialogueLine.new()
@@ -144,6 +149,10 @@ func _show_line() -> void:
 		_name.text = customer.display_name
 		_text.type_out(line.text)
 		_voice.say(line, customer.voice, VoiceEffect.of(line, Game.conversation))
+	elif Game.rings_out():
+		_name.text = number_of(customer)
+		_text.type_out(no_answer)
+		_voice.hush()
 	else:
 		_name.text = "You"
 		_text.type_out(you_say)
@@ -164,7 +173,7 @@ func _show_customers() -> void:
 			push_error("PhoneCall: choice_scene %s is not a Button" % choice_scene)
 			return
 		var status := "" if job.done else "untested" if job.fixed else "unfixed"
-		for part: Array in [["%Name", job.customer.display_name], ["%Number", number_of(job.customer)], ["%Issue", job.problem.perceived_issue], ["%Status", status]]:
+		for part: Array in [["%Name", job.customer.display_name], ["%Number", number_of(job.customer)], ["%Issue", job.perceived_issue()], ["%Status", status]]:
 			(button.get_node(part[0]) as Label).text = part[1]
 		button.disabled = not (job.done and Game.can_call())
 		button.pressed.connect(Game.call_customer.bind(job))

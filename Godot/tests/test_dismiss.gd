@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## Game.dismiss_visitor, the [x] of the corruption sign customer_x: a regular customer vanishes at
-## once with their computers, never comes in again, and the day still ends.
+## Game.dismiss_visitor, the [x] of the corruption sign customer_x: the visitor vanishes at once with
+## their computers, never comes in again, and the day still ends.
 
 const GAME := preload("res://game.gd")
 const SKATER: String = "res://customers/skater_bro.tres"
@@ -12,7 +12,6 @@ func run() -> void:
 	var entrepreneur: Customer = load(ENTREPRENEUR)
 	var dust: Problem = load("res://problems/dust_overheat.tres")
 	var quiet: Problem = load("res://problems/no_sound.tres")
-	skater.regular = true
 
 	# Day 1: the skater talks, and the [x] sends him away.
 	game.start_day(make_day(1, [[skater, dust], [entrepreneur, quiet]]))
@@ -24,11 +23,10 @@ func run() -> void:
 	check("gone for good, by flag", [game.is_gone(skater), game.flag(&"gone_skater_bro")], [true, 1])
 	check("he counts as come in", game.arrivals, 1)
 
-	# A customer that the story needs can't be sent away.
+	game.dismiss_visitor()
+	check("with nobody in, nothing changes", [game.visitor, game.arrivals, game.is_gone(entrepreneur)], [null, 1, false])
 	tick(61.0)
 	game.customer_arrived()
-	game.dismiss_visitor()
-	check("not regular: refused, still talking", [game.visitor == entrepreneur, game.visitor_state, game.is_gone(entrepreneur)], [true, GAME.VisitorState.TALKING, false])
 	game.dialogue_finished()
 	game.customer_left()
 	check("the day can end", game.can_close(), true)

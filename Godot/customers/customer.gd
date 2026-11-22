@@ -1,16 +1,12 @@
 @tool
 class_name Customer
 extends Resource
-## One customer for the whole week: who they are, what they say, and their computer. What is wrong
-## with it on a visit is the day's Errand.
+## One customer for the whole week: who they are and their computer. What they say, and what is
+## wrong with the computer, on a visit is that visit's Errand (a story file).
 
 ## The name dialogue uses while the person's nickname is empty.
 @export var display_name: String = ""
-## True for a customer that the story does not need. Only such a customer gets the [x] of the
-## corruption sign customer_x, which sends them away for good.
-@export var regular: bool = false
 @export var person: Person
-@export var conversations: Array[Conversation] = []
 @export var computer: Computer
 ## The trousers colour of the 3D customer. It tints the denim texture.
 @export var trousers_color: Color = Color(0.46, 0.56, 0.74)
@@ -35,11 +31,3 @@ func spoken_name() -> String:
 	if person != null and person.nickname != "":
 		return person.nickname
 	return display_name
-
-
-## The conversation with [param id], or null if this customer has none.
-func conversation(id: StringName) -> Conversation:
-	for c: Conversation in conversations:
-		if c != null and c.id == id:
-			return c
-	return null

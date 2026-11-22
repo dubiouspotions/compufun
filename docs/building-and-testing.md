@@ -83,7 +83,7 @@ extends "res://tests/test.gd"
 
 
 func run() -> void:
-	game.start_day(load("res://days/day_1.tres"))
+	game.start_day(game.day_of(1))
 	check("the first customer walks in", game.arrivals, 1)
 ```
 
@@ -133,14 +133,15 @@ templates (Editor > Manage Export Templates).
 
 ## The story
 
-`dev/story.gd` prints the story as text: the missing links of the week (flags that nothing sets
-or checks, choices without a reply, errands whose customer has nothing to say that day), or an
-outline of each customer's conversation tree. Read the outline instead of the `.tres` to follow a
-conversation; fix a missing link in the data, then run it again until it lists none.
+`dev/story.gd` runs the story check (`story/story_check.gd`) on the week from the story files and
+prints the missing links: flags that nothing sets or checks, choices without lines, errands without
+a drop-off, errand codes that can come with nobody, moods without a portrait or a voice, problems
+without repair mechanics. Fix a missing link in the story files, then run it again until it lists
+none. `outline` prints errand files in their written layout.
 
 ```sh
 "$GODOT" --headless -s res://dev/story.gd                          # missing links
-"$GODOT" --headless -s res://dev/story.gd -- outline [customer]    # the trees
+"$GODOT" --headless -s res://dev/story.gd -- outline [code]        # the errand files, such as 0102
 ```
 
 ## Voices
@@ -148,7 +149,7 @@ conversation; fix a missing link in the data, then run it again until it lists n
 **Layers.** A line's voice is three layers, each over the one below (`Voices.layer`): the
 `VoicePerson` of the customer's person (`voices/persons/`, one per person), the `VoiceMood` of the line's pose (`voices/moods/`)
 and a `VoiceEffect` (`voices/effects/`) of the line or its conversation. Make all three in the
-Voice Lab (Dev menu, F3 or Cmd+3); pick persons and effects in the Dialogue tab. An effect has a
+Voice Lab (Dev menu, F3 or Cmd+3); a story file gives an effect to a conversation or a line. An effect has a
 base, an alternate and a curve over the line that says how much of the alternate plays at each
 moment. The live voice blends the two as it speaks, with the same Rust code on desktop and in the browser
 (`native/chimera_voice/src/voice_type.rs` and `fx.rs`): speed, pitch, melody, body, intonation and
@@ -188,8 +189,8 @@ body that a customer's person has.
    If the build fails with "error loading known_hosts", your git sends GitHub through SSH. Run
    the build with `CARGO_NET_GIT_FETCH_WITH_CLI=true` in front.
 2. In the editor: set Editor Settings > Humanerror > Voices > Chimera Path to
-   `chimera-vocal-synth/target/release/chimera` (`chimera.exe` on Windows). In the Dialogue tab,
-   pick each customer's voice, and press Play on a line to hear it. Play renders a missing file.
+   `chimera-vocal-synth/target/release/chimera` (`chimera.exe` on Windows). In the Story Lab,
+   press Play on a line to hear it.
 3. Or render every missing file at once, then import:
 
    ```sh

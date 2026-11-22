@@ -1,11 +1,8 @@
 extends Node
-## The game: the world buffer with the room, the UI on top, and the day that starts.
+## The game: the world buffer with the room, the UI on top, and day 1 of the week that Game loaded.
 
 ## The dev tools (F3); the folder is left out of exports, so a shipped game has none.
 const DEV_MENU: String = "res://dev/dev_menu.tscn"
-
-## The day that starts when the game starts.
-@export var first_day: Day
 
 ## The Game.arrival whose conversation started; it starts when the player first faces the visitor.
 var _dialogue_for: int = -1
@@ -52,8 +49,20 @@ func _ready() -> void:
 	_shop.work_computer_running = work_screen.has_picture()
 	_dialogue.finished.connect(Game.dialogue_finished)
 	Game.changed.connect(_sync)
-	Game.start_day(first_day)
+	if Game.week != null:
+		Game.start_day(Game.week.days[0])
+	else:
+		_show_story_errors()
 	_sync()
+
+
+# The loading screen shows them first; this box is for a run of main.tscn alone.
+func _show_story_errors() -> void:
+	var box := AcceptDialog.new()
+	box.title = "The story files have errors"
+	box.dialog_text = "No day can start until they are fixed:\n" + "\n".join(Game.story_errors)
+	add_child(box)
+	box.popup_centered()
 
 
 func _process(_delta: float) -> void:

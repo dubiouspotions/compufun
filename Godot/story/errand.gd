@@ -25,6 +25,10 @@ enum Brings {
 ## The errand code from the file name: the day (2 digits) and the place in it (2 digits), such as
 ## "0503"; "" for an errand that no story file holds.
 @export var code: String = ""
+## The story file that holds the errand, such as "res://story/errands/0101_skater_bro.errand"; ""
+## for an errand that no story file holds. Its name, without the extension, names the errand in a
+## snapshot.
+@export var file: String = ""
 
 
 ## The day of the week in [member code], 1 to 7; 0 without a code.
@@ -35,3 +39,8 @@ func day_number() -> int:
 ## The place in the day in [member code], from 1; 0 without a code.
 func place() -> int:
 	return code.substr(2, 2).to_int() if code.length() == 4 else 0
+
+
+## The name of [member file] without the extension, such as "0101_skater_bro"; "" without a file.
+func file_name() -> String:
+	return file.get_file().get_basename()

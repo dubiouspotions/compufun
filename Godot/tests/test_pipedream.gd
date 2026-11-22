@@ -52,4 +52,4 @@ func run() -> void:
 	check("they grow once it looks away", pipes.shown_segments(), day_3)
 
 func _warp(number: int) -> float:
-	return (load("res://days/day_%d.tres" % number) as Day).warp
+	return game.day_of(number).warp

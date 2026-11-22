@@ -1,6 +1,7 @@
 extends SceneTree
-## Renders the voice file of every customer line that has none, with Chimera's command-line tool,
-## and lists the voice files that no line uses any more. See docs/building-and-testing.md.
+## Renders the voice file of every customer line in the story files and the shared conversations
+## that has none, with Chimera's command-line tool, and lists the voice files that no line uses any
+## more. See docs/building-and-testing.md.
 ## From Godot/: CHIMERA=/path/to/chimera godot --headless --script res://voices/render_voices.gd
 
 const CUSTOMERS: String = "res://customers"
@@ -35,12 +36,19 @@ func _initialize() -> void:
 			errors += 1
 			continue
 		voices[customer.voice.body] = true
-		for conversation: Conversation in customer.conversations:
-			if conversation == null:
-				continue
-			for line: DialogueLine in conversation.all_lines():
-				if line != null and not line.text.strip_edges().is_empty():
-					wanted[Voices.path_of(line, customer.voice.body)] = [line, customer.voice.body, path]
+	var week := StoryFiles.load_week()
+	for error: String in week.errors:
+		push_error("render_voices: " + error)
+		errors += 1
+	for d: Day in week.days:
+		for errand: Errand in d.errands:
+			var voice := errand.customer.voice if errand.customer != null else null
+			if voice == null:
+				continue  # the customer loop above or the parse reported it
+			for conversation: Conversation in errand.conversations:
+				for line: DialogueLine in conversation.all_lines():
+					if not line.text.strip_edges().is_empty():
+						wanted[Voices.path_of(line, voice.body)] = [line, voice.body, errand.file]
 	for conversation in shared:
 		for voice: String in voices:
 			for line: DialogueLine in conversation.all_lines():

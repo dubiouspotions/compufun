@@ -21,8 +21,7 @@ func run() -> void:
 	secret.when.need_flags = [&"knows_cambion"]
 	var empty := choice("Nobody answers this.", [])
 	talk.choices = [installed, secret, empty]
-	c.conversations = [talk]
-	game.start_day(make_day(1, [[c, load("res://problems/no_sound.tres")]]))
+	game.start_day(make_day(1, [[c, load("res://problems/no_sound.tres"), [talk]]]))
 	game.open_shop()
 	tick(1.0)
 	game.customer_arrived()

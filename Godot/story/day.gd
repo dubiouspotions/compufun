@@ -1,7 +1,8 @@
 class_name Day
 extends Resource
 ## One day of the week in the shop: the errands in the order the customers come in, at most
-## Game.MAX_CUSTOMERS, as the timeline on the wiki's Storyline page says. A day may have none.
+## Game.MAX_CUSTOMERS errand codes, as the timeline on the wiki's Storyline page says. A day may
+## have none.
 
 ## The day of the week, 1 to 7.
 @export_range(1, 7) var number: int = 1
@@ -29,3 +30,18 @@ extends Resource
 ## The corruption signs that start when the player closes the shop on this day, by id, such as
 ## &"posters_bounce": their flags go to 1, and back to 0 when the next day starts.
 @export var close_signs: Array[StringName] = []
+
+
+## The errand codes of the day, each once, in the order of [member errands].
+func codes() -> PackedStringArray:
+	var found := PackedStringArray()
+	for errand: Errand in errands:
+		if errand.code not in found:
+			found.append(errand.code)
+	return found
+
+
+## The errands with errand code [param code], in the order of [member errands]: the alternatives,
+## of which the first whose condition matches comes.
+func alternatives(code: String) -> Array[Errand]:
+	return errands.filter(func(errand: Errand) -> bool: return errand.code == code)

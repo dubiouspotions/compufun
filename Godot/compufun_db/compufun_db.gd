@@ -548,7 +548,7 @@ func _finish_typing() -> void:
 
 
 func _record_text(job: Job) -> String:
-	return "%s: %s" % [job.customer.display_name, job.problem.perceived_issue]
+	return "%s: %s" % [job.customer.display_name, job.perceived_issue()]
 
 
 # Moves the cursor [param step] entries, past the headings; 0 settles it on an entry.

@@ -6,8 +6,8 @@ extends Resource
 ## says how much of the alternate plays at each moment; Chimera blends the two live as it speaks,
 ## on every platform (native/chimera_voice/src/voice_type.rs). Speed, pitch, melody, body and
 ## intonation are set once per line from the curve's average; the voice source and the effects
-## follow the curve. The Voice Lab (F3) makes them in voices/effects/, and the Dialogue tab gives
-## one to a conversation or a line.
+## follow the curve. The Voice Lab (F3) makes them in voices/effects/, and a story file gives one to
+## a conversation or a line ([effect name]).
 
 ## Settings by key (the Voice Lab's levers); a key that a side leaves out keeps the layers below.
 @export var base: Dictionary[String, float] = {}

@@ -40,17 +40,16 @@ enum VisitorState {
 	WALKING_IN, ## The visitor walks from the door to the counter.
 	TALKING, ## The visitor talks at the counter.
 	WALKING_OUT, ## The visitor has handed the computer over and walks from the counter to the door.
+	WAITING, ## The visitor's computer stands on the counter while they wait beside it ([constant Errand.Brings.SHOWS]), until [method talk_to_visitor].
 }
 
 ## The places on the counter. A full counter holds back the next drop-off.
 const MAX_JOBS: int = 4
-## The most customers that a Day may have.
-const MAX_CUSTOMERS: int = 3
+## The most errand codes that a Day may have: the most visitors that it brings.
+const MAX_CUSTOMERS: int = 4
 ## The date of day 1, so that day 7 is 6/6/96.
 const FIRST_DATE: String = "1996-05-31"
-## Where [method restore] finds day N.
-const DAY_PATH: String = "res://days/day_%d.tres"
-## Where the problem with a short name lives, as a job in a snapshot names it.
+## Where the problem with a short name lives, as a job in an older snapshot names it.
 const PROBLEM_PATH: String = "res://problems/%s.tres"
 ## The folder of the endings, one Ending per file.
 const ENDINGS_FOLDER: String = "res://endings/"
@@ -62,9 +61,16 @@ const RETIRED_KEYS: Array[String] = ["stored"]
 const THANKS: Conversation = preload("res://customers/conversations/thanks.tres")
 
 var phase: Phase = Phase.IDLE
+## The week that plays, from the story files ([method load_story]); null until a load without
+## errors.
+var week: StoryFiles.Week
+## The errors of the story files at the last [method load_story], one "path:line: what" each;
+## empty when the week loaded.
+var story_errors: PackedStringArray = []
 var day: Day
-## How far down [member Day.errands] today has come, 0 to day.errands.size(): every customer
-## before it came in, or stays away for good ([method is_gone]).
+## How far down the day's errand codes ([method Day.codes]) today has come, 0 to their number:
+## each code before it came in, or stays away for good ([method is_gone], or no alternative
+## matched).
 var arrivals: int = 0
 ## Set by [method start_day], each arrival and [method close_shop]; the Outside shows it.
 var daypart: Daypart = Daypart.NONE
@@ -93,13 +99,16 @@ var printout: PackedStringArray = []
 var printout_ticks: Array[int] = []
 ## The customer in the shop, or null when nobody is in.
 var visitor: Customer
+## The errand that the visitor is in for: on a drop-off the one that came, on a pickup their
+## job's; null when nobody is in, and for a pickup visitor whom a restore sets walking out.
+var errand: Errand
 var visit: Visit = Visit.NONE
 var visitor_state: VisitorState = VisitorState.NONE
 ## The name of the current view marker in the room, for example &"Main".
 var view: StringName = &"Main"
 ## The facts of the story: a name and a number. A flag that is 0 or missing is not set.
 var flags: Dictionary[StringName, int] = {}
-## The conversations that have played, as "<customer file name>/<conversation id>".
+## The conversations that have played, by [member Conversation.id], such as "0102/drop-off/1".
 var seen: Dictionary[String, bool] = {}
 ## The records that the player made in CompuFunDB, oldest first. They last the whole game.
 var records: Array[DbRecord] = []
@@ -107,10 +116,10 @@ var records: Array[DbRecord] = []
 ## up); 0 before its first start-up.
 var db_day: int = 0
 ## What the visitor says while TALKING, or what the called customer says on the phone while
-## CALLING; null when no conversation matches.
+## CALLING (no lines: nobody answers, see [method rings_out]); null when no conversation matches.
 var conversation: Conversation
-## Goes up every time a visitor starts to walk in, also on [method restore]. A scene that
-## remembers it can tell a new visit from a re-read of the same one.
+## Goes up every time a visitor starts to walk in or a waiting visitor starts their pickup, also on
+## [method restore]. A scene that remembers it can tell a new visit from a re-read of the same one.
 var arrival: int = 0
 ## Goes up on every [method start_day] and [method restore]: the state jumped there instead of
 ## changing by a step of play. A scene that remembers it shows the new state at once, without the
@@ -147,6 +156,12 @@ func _init() -> void:
 	changed.connect(_forget_tests)
 
 
+func _ready() -> void:
+	var errors := load_story()
+	for error: String in errors:
+		push_error("Game: " + error)
+
+
 # A computer that stops being fixed needs a new test.
 func _forget_tests() -> void:
 	for job in jobs:
@@ -169,15 +184,15 @@ func _finish_overnight_work() -> void:
 			continue
 		setup.defragmenting = false
 		setup.fragmented = false
-		if job.problem.software_check != null:
-			job.software_fixed = job.problem.software_check.is_fixed(setup)
+		if job.software_check() != null:
+			job.software_fixed = job.software_check().is_fixed(setup)
 
 
 ## Starts [param new_day] in the morning with the shop CLOSED: nobody comes in until
 ## [method open_shop]. Jobs left overnight stay, and those computers that stayed on finish their
 ## Disk Defragmenter run. The player no longer carries a printout. The last day's
-## [member Day.close_signs] stop, and the new day sets its [member Day.set_flags]. Refuses a day that is null, has more than [constant MAX_CUSTOMERS]
-## errands, or has an errand without a customer or a problem, and keeps the current state.
+## [member Day.close_signs] stop, and the new day sets its [member Day.set_flags]. Refuses a day
+## that [method check_day] refuses, and keeps the current state.
 func start_day(new_day: Day) -> void:
 	var invalid := check_day(new_day)
 	if invalid != "":
@@ -219,9 +234,10 @@ func customer_arrived() -> void:
 
 
 ## The dialogue calls this after its last line. A drop-off puts the computer in the first free slot
-## (in focus if nothing is); a pickup takes its job off the counter, clears [member focus] and
-## [member connected] if they pointed at it, and shifts the computers right of it left, so that the
-## counter holds them oldest first from slot 0. Then the visitor walks out (WALKING_OUT).
+## (in focus if nothing is), unless the errand brings none; a pickup takes its job off the counter,
+## clears [member focus] and [member connected] if they pointed at it, and shifts the computers right
+## of it left, so that the counter holds them oldest first from slot 0. Then the visitor walks out
+## (WALKING_OUT), or, when they only show their computer, waits beside it (WAITING).
 func dialogue_finished() -> void:
 	if visitor_state != VisitorState.TALKING:
 		push_error("Game.dialogue_finished: no visitor is talking (visitor state %s)" % VisitorState.find_key(visitor_state))
@@ -229,6 +245,31 @@ func dialogue_finished() -> void:
 	conversation = null
 	_leave()
 	changed.emit()
+
+
+## The player turns to the visitor who waits beside the computer that they show (WAITING): their
+## pickup conversation plays (TALKING, PICKUP), and after it they take the computer and go. False,
+## and nothing changes, unless a visitor waits.
+func talk_to_visitor() -> bool:
+	if visitor_state != VisitorState.WAITING:
+		return false
+	visit = Visit.PICKUP
+	visitor_state = VisitorState.TALKING
+	arrival += 1
+	_start_talk()
+	changed.emit()
+	return true
+
+
+## True while the visitor carries their computer: in on a drop-off that brings one, and out after a
+## pickup.
+func visitor_carries() -> bool:
+	match visitor_state:
+		VisitorState.WALKING_IN, VisitorState.TALKING:
+			return visit == Visit.DROP_OFF and errand != null and errand.brings != Errand.Brings.NOTHING
+		VisitorState.WALKING_OUT:
+			return visit == Visit.PICKUP
+	return false
 
 
 ## The room calls this when the visitor who walks out reaches the door. The visit ends, and the
@@ -242,37 +283,98 @@ func customer_left() -> void:
 
 
 ## Loads the week from the story files with [param drafts] over them (see [method StoryFiles.load_week])
-## and plays it from now on. Returns the week's errors; with any, the week that plays stays as it
-## was.
+## and plays it from now on: a day that plays goes on in the new week, as [method restore] of the
+## [method snapshot] sets it. Returns the errors, one "path:line: what" each, also in
+## [member story_errors]; with any, the week that plays stays as it was. The game loads the week
+## once as it starts.
 func load_story(drafts: Dictionary[String, String] = {}) -> PackedStringArray:
-	push_error("Game.load_story: not built yet (%d drafts)" % drafts.size())
-	return PackedStringArray(["Game.load_story is not built yet"])
+	var loaded := StoryFiles.load_week(drafts)
+	var errors := loaded.errors.duplicate()
+	for d: Day in loaded.days:
+		var invalid := check_day(d) if errors.is_empty() else ""  # a file that didn't parse fails check_day too
+		if invalid != "":
+			errors.append("%sday_%d.day: %s" % [StoryFiles.DAYS_DIR, d.number, invalid])
+	if errors.is_empty():
+		var playing := week
+		week = loaded
+		if day != null:
+			var refused := restore(snapshot())
+			if refused != "":
+				week = playing
+				errors.append("The game can't go on in the new week, so it plays the old one: " + refused)
+	story_errors = errors
+	return errors
 
 
-## Jumps to [param errand]'s day, with the errands before it come and gone, and its customer at the
-## counter playing the conversation for [param trigger] (a pick-up and a phone call with their
-## computer done). For the Story Lab's Play here. Returns why it can't, or "".
-func play_errand(errand: Errand, trigger: Conversation.Trigger = Conversation.Trigger.ARRIVE) -> String:
-	push_error("Game.play_errand: not built yet (%s, %d)" % [errand.code, trigger])
-	return "Game.play_errand is not built yet"
+## Jumps to the day of [param to_play], an errand of the week that plays (by file name, so the
+## Story Lab can pass its own parse of the file after [method load_story]), as [method restore] sets
+## it: the errands before it came and went, with their computers, so the counter is empty; the
+## flags as they are, with the day's [member Day.set_flags] on top and the customer not gone; the
+## errand's conversations not yet seen. Then the conversation for [param trigger] plays:
+## [constant Conversation.Trigger.ARRIVE] with the customer at the counter, PICKUP with them at the
+## counter and their computer fixed and tested on it, PHONE with the call on about that computer.
+## For the Story Lab's Play here. Returns "" or why it can't, and then keeps the state.
+func play_errand(to_play: Errand, trigger: Conversation.Trigger = Conversation.Trigger.ARRIVE) -> String:
+	if to_play == null or to_play.file == "":
+		return _refuse_play("play_errand needs an errand from a story file, not %s" % to_play)
+	var found: Variant = _job_errand({"errand": to_play.file_name()}, to_play.day_number()) if week != null else "the story files didn't load"
+	if found is String:
+		return _refuse_play("%s; load its draft with load_story first" % found)
+	var target: Errand = found
+	var on_day := day_of(target.day_number())
+	var new_flags := flags.duplicate()
+	for flag_name: StringName in on_day.set_flags:
+		new_flags[flag_name] = on_day.set_flags[flag_name]
+	new_flags.erase(gone_flag(target.customer))
+	var state := {
+		"day": on_day.number,
+		"phase": "OPEN",
+		"arrivals": on_day.codes().find(target.code) + 1,
+		"flags": new_flags,
+		"seen": seen.keys().filter(func(key: String) -> bool: return not key.begins_with(target.code + "/")),
+		"view": "Main",
+	}
+	var done := {"errand": target.file_name(), "slot": 0, "hardware_fixed": true, "software_fixed": true, "tested": true}
+	match trigger:
+		Conversation.Trigger.ARRIVE:
+			state.merge({"visitor": target.customer.resource_path, "visit": "DROP_OFF", "visitor_state": "TALKING"})
+		Conversation.Trigger.PICKUP, Conversation.Trigger.PHONE:
+			if target.brings == Errand.Brings.NOTHING:
+				return _refuse_play("%s brings no computer, so there is nothing to pick up or call about" % target.file_name())
+			state.merge({"jobs": [done], "focus_slot": 0})
+			if trigger == Conversation.Trigger.PICKUP:
+				state.merge({"visitor": target.customer.resource_path, "visit": "PICKUP", "visitor_state": "TALKING"})
+			else:
+				state.merge({"phase": "CALLING", "calling_slot": 0}, true)
+	var refused := restore(state)
+	if refused == "" and visitor != null and errand != target:
+		errand = target  # another alternative of the same customer matched first
+		_start_talk()
+		changed.emit()
+	return refused
 
 
-## The day numbers, 1 to 7, that have a day file at [constant DAY_PATH], in order.
+## The day numbers of the week that plays, from 1, in order; none before it loaded.
 func day_numbers() -> Array[int]:
 	var found: Array[int] = []
-	for number: int in range(1, 8):
-		if ResourceLoader.exists(DAY_PATH % number):
-			found.append(number)
+	if week != null:
+		for d: Day in week.days:
+			found.append(d.number)
 	return found
 
 
-## Sends the visitor, a [member Customer.regular] customer, away for good, as the [x] of the
-## corruption sign customer_x does: they vanish at once, with every computer of theirs on the
-## counter, and never come in again, also not on a later day or for a pickup ([method is_gone]).
-## Fails with an error when nobody is in or the visitor is not regular.
+## Day [param number] of the week that plays, or null when there is none.
+func day_of(number: int) -> Day:
+	return week.days[number - 1] if week != null and number >= 1 and number <= week.days.size() else null
+
+
+## Sends the visitor away for good, as the [x] of the corruption sign customer_x does: they vanish
+## at once, with every computer of theirs on the counter, and never come in again, also not on a
+## later day or for a pickup ([method is_gone]); the flag gone_<customer file name> records it.
+## Fails with an error when nobody is in.
 func dismiss_visitor() -> void:
-	if visitor == null or not visitor.regular:
-		push_error("Game.dismiss_visitor: the visitor is not a regular customer: %s" % (_who(visitor) if visitor != null else "nobody is in"))
+	if visitor == null:
+		push_error("Game.dismiss_visitor: nobody is in the shop")
 		return
 	flags[gone_flag(visitor)] = 1
 	for job: Job in jobs.filter(func(j: Job) -> bool: return j.customer == visitor):
@@ -285,6 +387,12 @@ func dismiss_visitor() -> void:
 ## True when [method dismiss_visitor] sent [param who] away for good.
 func is_gone(who: Customer) -> bool:
 	return flag(gone_flag(who)) != 0
+
+
+## True while [param who]'s computer runs Win95 Cambion, the possessed build (wiki: Storyline): the
+## flag <customer file name>_runs_cambion is set. Some corruption signs show only in such a computer.
+func runs_cambion(who: Customer) -> bool:
+	return flag(StringName(_id_of(who) + "_runs_cambion")) != 0
 
 
 ## The flag that records that [param who] is gone for good: gone_<customer file name>.
@@ -357,13 +465,15 @@ func _met(when: Condition) -> bool:
 	return when == null or when.is_met(day_number, flags)
 
 
-## The first conversation of [param who] with [param trigger] whose condition matches now, and
-## that has not played if it plays once. null when none matches.
-func matching_conversation(who: Customer, trigger: Conversation.Trigger) -> Conversation:
-	for c: Conversation in who.conversations:
+## The first conversation of [param from] with [param trigger] whose condition matches now, and
+## that has not played if it plays once. null when none matches, or [param from] is null.
+func matching_conversation(from: Errand, trigger: Conversation.Trigger) -> Conversation:
+	if from == null:
+		return null
+	for c: Conversation in from.conversations:
 		if c == null or c.trigger != trigger:
 			continue
-		if c.once and seen.has(_seen_key(who, c)):
+		if c.once and seen.has(String(c.id)):
 			continue
 		if not _met(c.when):
 			continue
@@ -453,8 +563,8 @@ func setup_for(job: Job) -> Win95Setup:
 		setups[computer] = setup
 	if not job.broken:
 		job.broken = true
-		if job.problem.software_check != null:
-			job.problem.software_check.apply_break(setup)
+		if job.software_check() != null:
+			job.software_check().apply_break(setup)
 	return setup
 
 
@@ -490,8 +600,8 @@ func eject_floppy(job: Job) -> void:
 		return
 	var setup := setup_for(job)
 	setup.floppy_in_a = false
-	if job.problem.software_check != null:
-		job.software_fixed = job.problem.software_check.is_fixed(setup)
+	if job.software_check() != null:
+		job.software_fixed = job.software_check().is_fixed(setup)
 	changed.emit()
 
 
@@ -821,21 +931,30 @@ func call_customer(job: Job) -> void:
 	phase = Phase.CALLING
 	calling = job
 	phone_off_hook = true
-	_play(job.customer, Conversation.Trigger.PHONE)
+	_play(job.errand, Conversation.Trigger.PHONE)
 	changed.emit()
 
 
-## Ends the call: the called customer comes at once for a PICKUP. Fails with an error unless the
-## phone is calling.
+## True while the phone calls a customer who doesn't answer: their errand's matching PHONE
+## conversation has no lines and no choices. The call ends at [method hang_up], and nobody comes.
+func rings_out() -> bool:
+	return phase == Phase.CALLING and conversation != null and conversation.lines.is_empty() and conversation.choices.is_empty()
+
+
+## Ends the call: the called customer comes at once for a PICKUP, unless the call [method rings_out].
+## Fails with an error unless the phone is calling.
 func hang_up() -> void:
 	if phase != Phase.CALLING or calling == null:
 		push_error("Game.hang_up: the phone isn't calling (phase %s)" % Phase.find_key(phase))
 		return
+	var answered := not rings_out()
 	phase = Phase.OPEN
 	phone_off_hook = false
-	_pickup = calling
+	conversation = null
+	if answered:
+		_pickup = calling
+		_set_visitor(_pickup.errand, Visit.PICKUP)
 	calling = null
-	_set_visitor(_pickup.customer, Visit.PICKUP)
 	changed.emit()
 
 
@@ -909,20 +1028,17 @@ func reboot(view_name: StringName = &"Main") -> void:
 		push_error("Game.reboot: " + refused)
 
 
-## True when a day file follows the current day at [constant DAY_PATH]; false after the last day.
+## True when the week has a day after the current one; false after the last day.
 func has_next_day() -> bool:
-	return day != null and ResourceLoader.exists(DAY_PATH % (day_number + 1))
+	return day != null and day_of(day_number + 1) != null
 
 
-## Starts the day after the current one (see [method start_day]), from its file at
-## [constant DAY_PATH]. Jobs left overnight stay. Fails with an error, keeping the state, when that
-## file is missing, isn't a Day or has another day number.
+## Starts the day after the current one in the week (see [method start_day]). Jobs left overnight
+## stay. Fails with an error, keeping the state, when the week has no next day.
 func start_next_day() -> void:
-	var number := day_number + 1
-	var path := DAY_PATH % number
-	var next := load(path) as Day if ResourceLoader.exists(path) else null
-	if next == null or next.number != number:
-		push_error("Game.start_next_day: %s is not day %d: %s" % [path, number, next])
+	var next := day_of(day_number + 1)
+	if next == null:
+		push_error("Game.start_next_day: the week has no day %d (%s)" % [day_number + 1, "loaded %d days" % week.days.size() if week != null else "no week loaded"])
 		return
 	start_day(next)
 
@@ -969,29 +1085,24 @@ func restore(state: Dictionary) -> String:
 		if not key is String or not known.has(key):
 			return _refuse("unknown key %s" % key)
 	var number := int(state.get("day", 1))
-	var path := DAY_PATH % number
-	if not ResourceLoader.exists(path):
-		return _refuse("there is no day %d (%s)" % [number, path])
-	var new_day := load(path) as Day
-	var invalid := check_day(new_day)
-	if invalid != "":
-		return _refuse(invalid)
-	if new_day.number != number:
-		return _refuse("%s says it is day %d" % [path, new_day.number])
+	var new_day := day_of(number)
+	if new_day == null:
+		return _refuse("the week has no day %d (%s)" % [number, "%d days" % week.days.size() if week != null else "the story files didn't load"])
 	var new_phase: Variant = _enum_value(Phase, state.get("phase", "OPEN"), "phase")
 	if new_phase is String:
 		return _refuse(new_phase)
 	if new_phase == Phase.IDLE:
 		return _refuse("the phase IDLE can't be set; start a day instead")
 	var new_arrivals := int(state.get("arrivals", 0))
-	if new_arrivals < 0 or new_arrivals > new_day.errands.size():
-		return _refuse("day %d has %d errands, not %d arrivals" % [number, new_day.errands.size(), new_arrivals])
+	var codes := new_day.codes()
+	if new_arrivals < 0 or new_arrivals > codes.size():
+		return _refuse("day %d has %d errand codes, not %d arrivals" % [number, codes.size(), new_arrivals])
 	if new_phase == Phase.CLOSED and new_arrivals > 0:
 		return _refuse("the shop is CLOSED, but %d customers came in; it opens before the first" % new_arrivals)
-	if new_phase == Phase.ENDED and ResourceLoader.exists(DAY_PATH % (number + 1)):
+	if new_phase == Phase.ENDED and day_of(number + 1) != null:
 		return _refuse("ENDED is only for the last day, and day %d has a next day" % number)
 	var evening: bool = new_phase == Phase.DAY_OVER or new_phase == Phase.ENDED
-	var default_daypart := String(Daypart.find_key(Daypart.EVENING if evening else _daypart_of(new_arrivals)))
+	var default_daypart := String(Daypart.find_key(Daypart.EVENING if evening else _daypart_of(new_day, new_arrivals)))
 	var new_daypart: Variant = _enum_value(Daypart, state.get("daypart", default_daypart), "daypart")
 	if new_daypart is String:
 		return _refuse(new_daypart)
@@ -1010,20 +1121,16 @@ func restore(state: Dictionary) -> String:
 		return _refuse("%d jobs, but the counter holds %d" % [given_jobs.size(), MAX_JOBS])
 	for i: int in given_jobs.size():
 		var data: Dictionary = given_jobs[i]
-		var owner := _customer_at(str(data.get("customer", "")))
-		if owner == null:
-			return _refuse("job %d: no customer at '%s'" % [i, data.get("customer", "")])
-		var job_problem: Problem = null
+		var job_errand: Variant = _job_errand(data, number)
+		if job_errand is String:
+			return _refuse("job %d: %s" % [i, job_errand])
+		var owner: Customer = job_errand.customer
+		var job_problem: Problem = job_errand.problem
 		if data.has("problem"):
 			var problem_path := PROBLEM_PATH % str(data["problem"])
 			job_problem = load(problem_path) as Problem if ResourceLoader.exists(problem_path) else null
 			if job_problem == null:
 				return _refuse("job %d: no problem at '%s'" % [i, problem_path])
-		else:
-			var errand := _errand_of(new_day, owner)
-			if errand == null:
-				return _refuse("job %d: %s has no errand on day %d, so name its problem" % [i, _who(owner), number])
-			job_problem = errand.problem
 		if new_flags.has(gone_flag(owner)):
 			return _refuse("job %d: %s is gone for good (%s)" % [i, _who(owner), gone_flag(owner)])
 		var slot := int(data.get("slot", i))
@@ -1031,6 +1138,7 @@ func restore(state: Dictionary) -> String:
 			return _refuse("job %d: the slot %d is taken or not 0 to %d" % [i, slot, MAX_JOBS - 1])
 		slots.append(slot)
 		var job := Job.new(owner, job_problem, slot, int(data.get("order", i)))
+		job.errand = job_errand
 		job.hardware_fixed = bool(data.get("hardware_fixed", false))
 		job.software_fixed = bool(data.get("software_fixed", false))
 		job.powered = bool(data.get("powered", false))
@@ -1090,16 +1198,29 @@ func restore(state: Dictionary) -> String:
 	if new_visitor != null and new_phase != Phase.OPEN:
 		return _refuse("a visitor can be in the shop only while it is OPEN")
 	var new_pickup: Job = null
-	var handed_over: bool = new_visitor_state == VisitorState.WALKING_OUT
-	if new_visit == Visit.PICKUP and not handed_over:
-		var ready := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.done)
-		if ready.is_empty():
-			return _refuse("%s picks up, but has no fixed and tested computer" % _who(new_visitor))
-		new_pickup = ready[0]
-	if new_visit == Visit.DROP_OFF and (new_arrivals == 0 or new_day.errands[new_arrivals - 1].customer != new_visitor):
-		return _refuse("%s drops off, but the errand that %d arrivals let in is someone else's" % [_who(new_visitor), new_arrivals])
-	if new_visit == Visit.DROP_OFF and not handed_over and new_jobs.size() >= MAX_JOBS:
-		return _refuse("%s drops off, but the counter is full" % _who(new_visitor))
+	var new_errand: Errand = null
+	var handed_over: bool = new_visitor_state in [VisitorState.WALKING_OUT, VisitorState.WAITING]
+	if new_visit == Visit.DROP_OFF:
+		new_errand = _arrived(new_day, new_arrivals, new_visitor, new_flags)
+		if new_errand == null:
+			return _refuse("%s drops off, but the errands that %d arrivals let in are someone else's" % [_who(new_visitor), new_arrivals])
+		if new_visitor_state == VisitorState.WAITING:
+			if new_errand.brings != Errand.Brings.SHOWS:
+				return _refuse("%s waits at the counter, but %s doesn't show a computer" % [_who(new_visitor), new_errand.file_name()])
+			var shown := new_jobs.filter(func(j: Job) -> bool: return j.errand == new_errand)
+			if shown.is_empty():
+				return _refuse("%s waits beside the computer of %s, but it isn't on the counter" % [_who(new_visitor), new_errand.file_name()])
+			new_pickup = shown[0]
+		elif not handed_over and new_errand.brings != Errand.Brings.NOTHING and new_jobs.size() >= MAX_JOBS:
+			return _refuse("%s drops off, but the counter is full" % _who(new_visitor))
+	elif new_visit == Visit.PICKUP and new_visitor_state == VisitorState.WAITING:
+		return _refuse("%s picks up, so they don't wait; WAITING is for a drop-off that shows a computer" % _who(new_visitor))
+	elif new_visit == Visit.PICKUP and not handed_over:
+		var theirs := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and (j.done or j.errand.brings == Errand.Brings.SHOWS))
+		if theirs.is_empty():
+			return _refuse("%s picks up, but has no fixed and tested computer, nor one that they show" % _who(new_visitor))
+		new_pickup = theirs[0]
+		new_errand = new_pickup.errand
 	if (new_phase == Phase.CALLING) != (new_calling != null):
 		return _refuse("calling_slot is set exactly while the phase is CALLING")
 	if new_calling != null and not new_calling.done:
@@ -1146,6 +1267,7 @@ func restore(state: Dictionary) -> String:
 	printout = new_printout[0]
 	printout_ticks.assign(new_printout[1])
 	visitor = new_visitor
+	errand = new_errand
 	visit = new_visit
 	visitor_state = new_visitor_state
 	_pickup = new_pickup
@@ -1162,7 +1284,7 @@ func restore(state: Dictionary) -> String:
 	if visitor_state == VisitorState.TALKING:
 		_start_talk()
 	elif phase == Phase.CALLING:
-		_play(calling.customer, Conversation.Trigger.PHONE)
+		_play(calling.errand, Conversation.Trigger.PHONE)
 	changed.emit()
 	return ""
 
@@ -1170,7 +1292,7 @@ func restore(state: Dictionary) -> String:
 func _process(delta: float) -> void:
 	if phase == Phase.CALLING:
 		return
-	if phase == Phase.OPEN and visitor == null and jobs.size() < MAX_JOBS:
+	if phase == Phase.OPEN and visitor == null and _has_room():
 		_waited += delta
 		if _try_arrival():
 			changed.emit()
@@ -1193,34 +1315,92 @@ func _restart_wait() -> void:
 
 ## Lets the next customer of the day in when one is due and the shop has room. True when one came.
 func _try_arrival() -> bool:
-	if phase != Phase.OPEN or visitor != null or phone_off_hook or jobs.size() >= MAX_JOBS:
+	if phase != Phase.OPEN or visitor != null or phone_off_hook or not _has_room():
 		return false
 	var next := _next_arrival()
 	if next < 0 or not _arrival_due():
 		return false
 	arrivals = next + 1
-	daypart = _daypart_of(arrivals)
-	_set_visitor(day.errands[next].customer, Visit.DROP_OFF)
+	daypart = _daypart_of(day, arrivals)
+	_set_visitor(coming(next), Visit.DROP_OFF)
 	return true
 
 
-## The index in [member Day.errands] of the next customer to come in today, past those who are
-## gone for good; -1 when none is left, or while the next one's computer is still in the shop: a
-## customer has one computer, so they come in after they picked it up, and those after them wait.
+# True when the counter has room for the computer of the next errand to come in, or it brings none.
+func _has_room() -> bool:
+	if jobs.size() < MAX_JOBS:
+		return true
+	var next := _next_arrival()
+	return next >= 0 and coming(next).brings == Errand.Brings.NOTHING
+
+
+## The errand that comes for the errand code at [param index] in today's [method Day.codes], if it
+## came now: the first alternative whose condition matches and whose customer is not gone for good;
+## null when none does.
+func coming(index: int) -> Errand:
+	var codes := day.codes() if day != null else PackedStringArray()
+	if index < 0 or index >= codes.size():
+		return null
+	for each: Errand in day.alternatives(codes[index]):
+		if _met(each.when) and not is_gone(each.customer):
+			return each
+	return null
+
+
+## The index in today's [method Day.codes] of the next errand to come in, past those for which
+## no alternative comes ([method coming]); -1 when none is left, or while the next one brings their
+## computer and it is still in the shop: a customer has one computer, so they bring it after they
+## picked it up, and those after them wait.
 func _next_arrival() -> int:
-	for i: int in range(arrivals, day.errands.size()):
-		var who := day.errands[i].customer
-		if not is_gone(who):
-			return -1 if jobs.any(func(j: Job) -> bool: return j.customer == who) else i
+	for i: int in range(arrivals, day.codes().size()):
+		var next := coming(i)
+		if next != null:
+			var in_shop := jobs.any(func(j: Job) -> bool: return j.customer == next.customer)
+			return -1 if in_shop and next.brings != Errand.Brings.NOTHING else i
 	return -1
 
 
-## The first errand of [param who] on [param on_day], or null when they don't come that day.
-static func _errand_of(on_day: Day, who: Customer) -> Errand:
-	for errand: Errand in on_day.errands:
-		if errand.customer == who:
-			return errand
-	return null
+## The alternative for errand code [param count] - 1 of [param on_day] that [param who] is in for,
+## preferring one whose condition matches [param with_flags]; null when no alternative is theirs.
+static func _arrived(on_day: Day, count: int, who: Customer, with_flags: Dictionary[StringName, int]) -> Errand:
+	var codes := on_day.codes()
+	if count < 1 or count > codes.size():
+		return null
+	var theirs := on_day.alternatives(codes[count - 1]).filter(func(each: Errand) -> bool: return each.customer == who)
+	for each: Errand in theirs:
+		if each.when == null or each.when.is_met(on_day.number, with_flags):
+			return each
+	return theirs[0] if not theirs.is_empty() else null
+
+
+## The errand that a job in a snapshot names (see [method Job.snapshot]), on day [param number] of
+## the week, or a String that says why there is none. Without "errand", it is the last errand of the
+## job's "customer" on that day or before that brings a computer, else their first after it, else,
+## for a job that names its "problem", an errand without a file or conversations.
+func _job_errand(data: Dictionary, number: int) -> Variant:
+	if data.has("errand"):
+		var name := str(data["errand"])
+		for d: Day in week.days:
+			for each: Errand in d.errands:
+				if each.file_name() == name:
+					if data.has("customer") and each.customer.resource_path != str(data["customer"]):
+						return "the errand %s is %s's, not %s's" % [name, _who(each.customer), data["customer"]]
+					return each
+		return "the week has no errand %s" % name
+	var owner := _customer_at(str(data.get("customer", "")))
+	if owner == null:
+		return "no customer at '%s'" % data.get("customer", "")
+	var theirs: Array[Errand] = []
+	for d: Day in week.days:
+		theirs.append_array(d.errands.filter(func(each: Errand) -> bool: return each.customer == owner and each.brings != Errand.Brings.NOTHING))
+	if theirs.is_empty() and data.has("problem"):
+		var stand_in := Errand.new()
+		stand_in.customer = owner
+		return stand_in
+	if theirs.is_empty():
+		return "%s has no errand in the week that brings a computer, so name its problem" % _who(owner)
+	var before := theirs.filter(func(each: Errand) -> bool: return each.day_number() <= number)
+	return before.back() if not before.is_empty() else theirs.front()
 
 
 ## Debug: ends the wait that runs now, so the next event comes at once: the next customer (when
@@ -1231,10 +1411,15 @@ func skip_wait() -> void:
 		hang_up()
 
 
-# The visitor hands the computer over and turns to the door; they stay the visitor until they leave.
+# The visitor hands the computer over and turns to the door, or waits beside it when they only show
+# it; they stay the visitor until they leave.
 func _leave() -> void:
 	if visit == Visit.DROP_OFF:
-		_drop_off(day.errands[arrivals - 1])
+		var job := _drop_off(errand) if errand.brings != Errand.Brings.NOTHING else null
+		if errand.brings == Errand.Brings.SHOWS and job != null:
+			_pickup = job
+			visitor_state = VisitorState.WAITING
+			return
 	elif visit == Visit.PICKUP:
 		_take_off_counter(_pickup)
 		_pickup = null
@@ -1255,20 +1440,27 @@ func _take_off_counter(job: Job) -> void:
 		(by_age[i] as Job).slot = i
 
 
-func _drop_off(errand: Errand) -> void:
+# The computer of [param from] goes in the first free slot; returns its job, or null when the
+# counter is full.
+func _drop_off(from: Errand) -> Job:
 	var taken := jobs.map(func(j: Job) -> int: return j.slot)
 	for slot: int in MAX_JOBS:
 		if slot not in taken:
-			var job := Job.new(errand.customer, errand.problem, slot, _next_order)
+			var job := Job.new(from.customer, from.problem, slot, _next_order)
+			job.errand = from
 			_next_order += 1
 			jobs.append(job)
 			if focus == null:
 				focus = job
-			return
-	push_error("Game: %s dropped off a computer, but the counter is full" % _who(errand.customer))
+			return job
+	push_error("Game: %s dropped off a computer, but the counter is full" % _who(from.customer))
+	return null
 
 
-func _set_visitor(customer: Customer, why: Visit) -> void:
+# [param visiting] is the errand that the visitor is in for, or null for nobody.
+func _set_visitor(visiting: Errand, why: Visit) -> void:
+	errand = visiting
+	var customer := visiting.customer if visiting != null else null
 	visitor = customer
 	visit = why
 	visitor_state = VisitorState.WALKING_IN if customer != null else VisitorState.NONE
@@ -1279,13 +1471,16 @@ func _set_visitor(customer: Customer, why: Visit) -> void:
 
 
 ## Picks what the TALKING visitor says, and remembers that it played. A pickup visitor with no
-## PICKUP conversation says a line of [constant THANKS].
+## PICKUP conversation says a line of [constant THANKS]. A visitor who brings no computer and has
+## nothing to say goes at once.
 func _start_talk() -> void:
-	_play(visitor, Conversation.Trigger.PICKUP if visit == Visit.PICKUP else Conversation.Trigger.ARRIVE)
+	_play(errand, Conversation.Trigger.PICKUP if visit == Visit.PICKUP else Conversation.Trigger.ARRIVE)
 	if conversation == null and visit == Visit.PICKUP:
 		conversation = _thanks(visitor)
 		if conversation == null:
 			_leave()
+	elif conversation == null and errand != null and errand.brings == Errand.Brings.NOTHING:
+		_leave()
 
 
 ## A conversation of one line of [constant THANKS], picked by [param who]'s file name; null, with
@@ -1299,14 +1494,14 @@ static func _thanks(who: Customer) -> Conversation:
 	return thanks
 
 
-# Sets [member conversation] to what [param who] says for [param trigger] now, and remembers that
-# it played.
-func _play(who: Customer, trigger: Conversation.Trigger) -> void:
-	conversation = matching_conversation(who, trigger)
+# Sets [member conversation] to what is said for [param from] and [param trigger] now, and
+# remembers that it played.
+func _play(from: Errand, trigger: Conversation.Trigger) -> void:
+	conversation = matching_conversation(from, trigger)
 	if conversation == null:
 		return
-	seen[_seen_key(who, conversation)] = true
-	_set_flags(conversation.set_flags, "conversation " + _seen_key(who, conversation))
+	seen[String(conversation.id)] = true
+	_set_flags(conversation.set_flags, "conversation " + conversation.id)
 
 
 # Sets each flag of [param sets] (name to number; 0 clears it). [param by] names the setter in an error.
@@ -1318,31 +1513,35 @@ func _set_flags(sets: Dictionary[StringName, int], by: String) -> void:
 		_put_flag(flag_name, sets[flag_name])
 
 
-func _seen_key(who: Customer, c: Conversation) -> String:
-	return "%s/%s" % [_id_of(who), c.id]
-
-
 ## The file name of [param who], which names them in [member seen] and in the flags.
 static func _id_of(who: Customer) -> String:
 	return who.resource_path.get_file().get_basename()
 
 
-## The daypart after [param count] arrivals: morning until the second customer, then midday, then
-## afternoon.
-static func _daypart_of(count: int) -> Daypart:
-	return clampi(count, 1, Daypart.AFTERNOON) as Daypart
+## The daypart of [param on_day] after [param count] arrivals: morning until the second customer
+## who brings a computer, then midday, then afternoon. Errand codes at the start of the day whose
+## alternatives all bring nothing (day 1's tutorial) come in the morning and don't count.
+static func _daypart_of(on_day: Day, count: int) -> Daypart:
+	var visits_first := 0
+	for code: String in on_day.codes():
+		if on_day.alternatives(code).any(func(each: Errand) -> bool: return each.brings != Errand.Brings.NOTHING):
+			break
+		visits_first += 1
+	return clampi(count - visits_first, 1, Daypart.AFTERNOON) as Daypart
 
 
-## Why [param d] can't be played, or "" when it can. The Week tab checks each day with it too.
+## Why [param d] can't be played, or "" when it can: it is null, has more than
+## [constant MAX_CUSTOMERS] errand codes, or an errand without a customer.
 static func check_day(d: Day) -> String:
 	if d == null:
 		return "no day"
-	if d.errands.size() > MAX_CUSTOMERS:
-		return "day %d has %d errands; the most is %d" % [d.number, d.errands.size(), MAX_CUSTOMERS]
+	var codes := d.codes()
+	if codes.size() > MAX_CUSTOMERS:
+		return "day %d has %d errand codes (%s); the most is %d" % [d.number, codes.size(), ", ".join(codes), MAX_CUSTOMERS]
 	for i: int in d.errands.size():
-		var errand := d.errands[i]
-		if errand == null or errand.customer == null or errand.problem == null:
-			return "day %d: errand %d needs a customer and a problem: %s" % [d.number, i, errand]
+		var each := d.errands[i]
+		if each == null or each.customer == null:
+			return "day %d: errand %d (%s) needs a customer" % [d.number, i, each.file if each != null else "null"]
 	return ""
 
 
@@ -1390,6 +1589,11 @@ static func _job_in(in_jobs: Array[Job], slot: int, key: String) -> Variant:
 
 func _refuse(reason: String) -> String:
 	push_error("Game.restore: " + reason)
+	return reason
+
+
+func _refuse_play(reason: String) -> String:
+	push_error("Game.play_errand: " + reason)
 	return reason
 
 

@@ -164,10 +164,10 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Draft**: A writer's edit of a story file, kept in the player's user folder until `main` has it (`user://story_drafts/`). The game plays drafts over the files from `main`; Send turns them into a GitHub issue.
 *Avoid:* local change, patch, overlay.
 
-**Visitor**: The customer who is in the shop now, to drop off or to pick up a computer (`Game.visitor`). Only one at a time.
+**Visitor**: The customer who is in the shop now, to drop off, show or pick up a computer, or with none (`Game.visitor`, in for `Game.errand`). Only one at a time. One who shows a computer waits beside it on the counter until the player clicks them; then they pick it up.
 *Avoid:* current customer.
 
-**Daypart**: The time of day in the game: morning, midday, afternoon or evening (`Game.daypart`). The day starts in the morning, the second and third customers who come in make it midday and afternoon, and closing the shop makes it evening; time does not pass on its own. The Outside shows it.
+**Daypart**: The time of day in the game: morning, midday, afternoon or evening (`Game.daypart`). The day starts in the morning, the second and third customers who come in make it midday and afternoon (a visit without a computer at the start of the day, such as day 1's tutorial, doesn't count), and closing the shop makes it evening; time does not pass on its own. The Outside shows it.
 *Avoid:* hour, time, clock.
 
 **Debug menu**: The F2 panel in debug builds, with three tabs: World (the time of day, the day cycle, the rain), Game (the `Game` state) and Presets.

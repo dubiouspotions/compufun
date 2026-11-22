@@ -12,8 +12,6 @@
 [ext_resource type="Script" path="res://win95/applets/applet.gd" id="8_h6eyj"]
 [ext_resource type="Script" path="res://win95/win95_setup.gd" id="9_86j8n"]
 [ext_resource type="Resource" path="res://win95/theme/palette.tres" id="37_kdkfh"]
-[ext_resource type="Script" path="res://customers/choice.gd" id="41_2kq3l"]
-[ext_resource type="Script" path="res://customers/reply.gd" id="42_ye7e1"]
 [ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="app_calculator"]
 [ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="app_defrag"]
 [ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="app_inbox"]
@@ -25,8 +23,6 @@
 [ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
 [ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="app_wordpad"]
 [ext_resource type="Material" path="res://materials/slate_plastic.tres" id="case_slate"]
-[ext_resource type="Script" path="res://customers/conversation.gd" id="cv"]
-[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="dl"]
 [ext_resource type="PackedScene" path="res://props/case_fronts/multimedia.tscn" id="front_multimedia"]
 [ext_resource type="Script" path="res://customers/hardware.gd" id="hardware_script"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/calculator_spreadsheet_32.png" id="icon_calculator_spreadsheet"]
@@ -302,83 +298,14 @@ volume = 60.0
 [sub_resource type="Resource" id="Resource_xxnas"]
 script = ExtResource("1_2x16c")
 win95_setup = SubResource("Resource_8iaji")
-cambion = true
 hardware = SubResource("Hardware_machine")
 case_material = ExtResource("case_slate")
 case_front = ExtResource("front_multimedia")
 stickers = Array[ExtResource("sticker_script")]([SubResource("Sticker_multimedia")])
 
-[sub_resource type="Resource" id="Resource_oy4hn"]
-script = ExtResource("dl")
-text = "Import and export. Mostly import. Okay, mostly ideas, so far."
-pose = &"happy"
-
-[sub_resource type="Resource" id="Resource_ifphd"]
-script = ExtResource("42_ye7e1")
-lines = Array[ExtResource("dl")]([SubResource("Resource_oy4hn")])
-
-[sub_resource type="Resource" id="Resource_6h1jx"]
-script = ExtResource("41_2kq3l")
-text = "What's your business?"
-replies = Array[ExtResource("42_ye7e1")]([SubResource("Resource_ifphd")])
-
-[sub_resource type="Resource" id="Resource_h6eyj"]
-script = ExtResource("dl")
-text = "Just some software a guy gave me. Business stuff. Very cutting edge."
-pose = &"thinking"
-
-[sub_resource type="Resource" id="Resource_kdkfh"]
-script = ExtResource("42_ye7e1")
-lines = Array[ExtResource("dl")]([SubResource("Resource_h6eyj")])
-
-[sub_resource type="Resource" id="Resource_2kq3l"]
-script = ExtResource("41_2kq3l")
-text = "Did you put a floppy in?"
-replies = Array[ExtResource("42_ye7e1")]([SubResource("Resource_kdkfh")])
-
-[sub_resource type="Resource" id="Resource_cbajk"]
-script = ExtResource("dl")
-text = "Great. Time is money, you know."
-
-[sub_resource type="Resource" id="Resource_yty0o"]
-script = ExtResource("42_ye7e1")
-lines = Array[ExtResource("dl")]([SubResource("Resource_cbajk")])
-
-[sub_resource type="Resource" id="Resource_1hbtb"]
-script = ExtResource("41_2kq3l")
-text = "OK, leave it with me."
-replies = Array[ExtResource("42_ye7e1")]([SubResource("Resource_yty0o")])
-ends = true
-
-[sub_resource type="Resource" id="Resource_ye7e1"]
-script = ExtResource("dl")
-text = "My computer won't start. It just shows a bunch of text, something about a disk."
-pose = &"problem"
-
-[sub_resource type="Resource" id="Resource_4twxc"]
-script = ExtResource("42_ye7e1")
-lines = Array[ExtResource("dl")]([SubResource("Resource_ye7e1")])
-choices = Array[ExtResource("41_2kq3l")]([SubResource("Resource_2kq3l"), SubResource("Resource_1hbtb")])
-
-[sub_resource type="Resource" id="Resource_d32my"]
-script = ExtResource("41_2kq3l")
-text = "So, what's your problem?"
-replies = Array[ExtResource("42_ye7e1")]([SubResource("Resource_4twxc")])
-
-[sub_resource type="Resource" id="Resource_t3a1o"]
-script = ExtResource("dl")
-text = "Hello. Do you do business computers?"
-
-[sub_resource type="Resource" id="Conversation_arrive"]
-script = ExtResource("cv")
-id = &"arrive"
-lines = Array[ExtResource("dl")]([SubResource("Resource_t3a1o")])
-choices = Array[ExtResource("41_2kq3l")]([SubResource("Resource_6h1jx"), SubResource("Resource_d32my")])
-
 [resource]
 script = ExtResource("3_10hmr")
 display_name = "Young entrepreneur"
 person = ExtResource("1_yvxm1")
-conversations = Array[ExtResource("cv")]([SubResource("Conversation_arrive")])
 computer = SubResource("Resource_xxnas")
 trousers_color = Color(0.22, 0.22, 0.25, 1)

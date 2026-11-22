@@ -352,7 +352,7 @@ func _on_hanging(_seconds: float) -> void:
 	_hangs += 1
 	var hang := _hangs
 	process_mode = Node.PROCESS_MODE_DISABLED
-	var message := _state.job.problem.hang_message if _state.job != null else ""
+	var message := _state.job.problem.hang_message if _state.job != null and _state.job.problem != null else ""
 	if message != "":
 		for player: AudioStreamPlayer in _sounds():
 			player.stop()

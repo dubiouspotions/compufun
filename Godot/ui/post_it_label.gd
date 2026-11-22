@@ -100,7 +100,7 @@ func _break_lines(issue: String) -> void:
 
 
 func _sync() -> void:
-	_break_lines(job.problem.perceived_issue if job != null else "")
+	_break_lines(job.perceived_issue() if job != null else "")
 	_pickup.visible = job != null and job.done
 	_testing.visible = job != null and job.fixed and not job.tested
 

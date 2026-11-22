@@ -5,6 +5,9 @@ extends RefCounted
 
 ## The customer who brought the computer. Never null.
 var customer: Customer
+## The visit that brought the computer: its pickup and phone conversations play from it, on any
+## later day. Game sets it on every job that it creates; null only on a job built outside Game.
+var errand: Errand
 ## The place on the counter, 0 to Game.MAX_JOBS - 1. No two jobs on the counter share a slot. Game
 ## changes it when a computer left of this one leaves the counter: the computers fill the slots from
 ## 0 up, oldest first.
@@ -45,12 +48,16 @@ var powered: bool = false
 ## Game.setup_for has broken the computer's running copy as the problem says.
 var broken: bool = false
 
-## What is wrong with the computer on this visit (the day's Errand). Never null.
+## What is wrong with the computer on this visit (the Errand's); null for a visit that needs no
+## repair: such a computer is never fixed or tested, and nobody calls about it.
 var problem: Problem
 
-## True when every part that the problem needs (hardware, software or both) is fixed.
+## True when every part that the problem needs (hardware, software or both) is fixed. Always false
+## without a problem.
 var fixed: bool:
 	get:
+		if problem == null:
+			return false
 		match problem.location:
 			Problem.Location.HARDWARE:
 				return hardware_fixed
@@ -70,12 +77,24 @@ var done: bool:
 		return fixed and tested
 
 
+## [param job_problem] may be null.
 func _init(job_customer: Customer, job_problem: Problem, job_slot: int, job_order: int) -> void:
 	customer = job_customer
 	problem = job_problem
 	slot = job_slot
 	order = job_order
 	_fill(true)
+
+
+## How the problem breaks the computer's Win95 setup and when that is fixed; null without a problem
+## or a software check.
+func software_check() -> SoftwareCheck:
+	return problem.software_check if problem != null else null
+
+
+## What the post-it says: the problem's perceived issue, or "" without a problem.
+func perceived_issue() -> String:
+	return problem.perceived_issue if problem != null else ""
 
 
 ## The piece in the place [param part], or null when that place is empty.
@@ -117,13 +136,14 @@ static func all_in(count: int) -> Array[bool]:
 	return screwed
 
 
-## The job as plain data, for the F9 report.
+## The job as plain data, for the F9 report and Game.restore: its errand by file name ("errand",
+## such as "0102_skater_bro", when a story file holds it), its customer, and its problem by short
+## name ("problem") when it is not that errand's.
 func snapshot() -> Dictionary:
-	return {
+	var data := {
 		"slot": slot,
 		"order": order,
 		"customer": customer.resource_path,
-		"problem": String(problem.short_name),
 		"hardware_fixed": hardware_fixed,
 		"software_fixed": software_fixed,
 		"tested": tested,
@@ -133,6 +153,11 @@ func snapshot() -> Dictionary:
 		"panel_screws": panel_screws.duplicate(),
 		"parts": places_data(),
 	}
+	if errand != null and errand.file != "":
+		data["errand"] = errand.file_name()
+	if problem != null and (errand == null or errand.file == "" or problem != errand.problem):
+		data["problem"] = String(problem.short_name)
+	return data
 
 
 ## The pieces in their places as plain data: place id to piece (see [method pieces_data]).
