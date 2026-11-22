@@ -2,7 +2,8 @@ extends "res://tests/test.gd"
 ## Start > Shut Down leaves "It's now safe to turn off your computer" until the computer's power
 ## button turns it off: clicks and keys do nothing, a hang no longer comes, and the power stays on.
 ## Off and on again, Windows boots as usual, with the running copy as the player left it, and a
-## fixed computer is tested once that boot reaches the desktop.
+## fixed computer is tested once that boot reaches the desktop. Restart switches the power off and on
+## by itself.
 
 const SHUT_DOWN := "res://win95/shut_down.tscn"
 
@@ -53,6 +54,23 @@ func run() -> void:
 	game.set_powered(job, false)
 	game.set_powered(job, true)
 	check("a shut-down computer stays tested", job.tested, true)
+
+	# Restart: the screen says so, then the power goes off and on again, and Windows boots.
+	(win95.get("_boot") as Node).finished.emit()
+	dialog = desktop.call("open", load(SHUT_DOWN), false)
+	dialog.set(&"restart_wait_seconds", 0.2)
+	dialog.set(&"restart_off_seconds", 0.4)
+	(dialog.get_node("%Restart") as BaseButton).button_pressed = true
+	dialog.get_node("%Yes").pressed.emit()
+	await process_frame
+	cover = win95.get_child(win95.get_child_count() - 1) as Control
+	check("restart: the screen says it restarts, the power stays on", [cover.get_node("Message").text, job.powered], ["Please wait while your computer\nrestarts...", true])
+	await create_timer(0.3).timeout
+	check("then the power goes off: NO SIGNAL", [job.powered, is_instance_valid(cover), (win95.get_node("%NoSignal") as Control).visible], [false, false, true])
+	await create_timer(0.5).timeout
+	boot = win95.get("_boot")
+	check("then on, and Windows boots", [job.powered, is_instance_valid(boot) and boot.is_inside_tree()], [true, true])
+	check("the running copy still has the player's change", state.get("setup").volume, 33.0)
 	game.jobs = [] as Array[Job]
 	bench.free()
 

@@ -442,6 +442,24 @@ func shut_down() -> void:
 	shut_down_done.emit()
 
 
+## Restarts the computer: Windows shuts down, and [param wait_seconds] later the power goes off,
+## then [param off_seconds] later on again, through Game.set_powered as the power button does. It
+## stops where the player switches the power or takes the job off the counter meanwhile. Does
+## nothing while it is off.
+func restart(wait_seconds: float, off_seconds: float) -> void:
+	if not is_on:
+		return
+	shut_down()
+	var boot := _boots
+	await get_tree().create_timer(wait_seconds).timeout
+	if not _still_on(boot):
+		return
+	Game.set_powered(job, false)
+	await get_tree().create_timer(off_seconds).timeout
+	if boot == _boots and not job.powered and job in Game.jobs:
+		Game.set_powered(job, true)
+
+
 func _sync() -> void:
 	var on := setup != null and job.powered
 	if on == is_on:
