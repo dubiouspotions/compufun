@@ -7,6 +7,8 @@ extends BoxContainer
 ## The player clicked the icon once. [param additive]: Ctrl (Cmd on a Mac) was held;
 ## [param extend]: Shift was held; [param on_name]: the click hit the name, not the picture.
 signal clicked(additive: bool, extend: bool, on_name: bool)
+## The player let go of the left button over the icon, without dragging it.
+signal released
 ## The player double-clicked the icon.
 signal opened
 ## The player right-clicked the icon at [param at], in canvas coordinates.
@@ -119,6 +121,8 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 		if not button.pressed:
 			context_clicked.emit(button.global_position)
+	elif button and not button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
+		released.emit()
 	elif button and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
 		accept_event()
 		if button.double_click:

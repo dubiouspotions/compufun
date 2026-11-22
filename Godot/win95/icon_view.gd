@@ -67,6 +67,9 @@ var _band_button := MOUSE_BUTTON_NONE
 var _flows_down := false
 ## The selection when a Ctrl-drag started; the rectangle toggles icons against it.
 var _before_band: Array[FileIcon] = []
+## A plain press on an icon that was already selected: the selection stays for a drag, and the
+## release without one selects that icon alone, as in Win95.
+var _press_on_selected: FileIcon
 
 
 func _ready() -> void:
@@ -136,6 +139,7 @@ func add_item(text: String, icon: Texture2D) -> FileIcon:
 
 # Dragging an icon drags the whole selection, shown as faded icons under the pointer.
 func _drag_from(at: Vector2, item: FileIcon) -> Variant:
+	_press_on_selected = null
 	if not item.selected:
 		_select(item)
 	var items := selected_items()
@@ -287,6 +291,10 @@ func _wire(child: Node) -> void:
 	item.on_desktop = on_desktop
 	_lay_out(item)
 	item.clicked.connect(_on_clicked.bind(item))
+	item.released.connect(func() -> void:
+		if _press_on_selected == item:
+			_press_on_selected = null
+			_select(item))
 	item.opened.connect(func() -> void:
 		_select(item)
 		open_item(item))
@@ -343,6 +351,9 @@ func _on_clicked(additive: bool, extend: bool, on_name: bool, item: FileIcon) ->
 			items[i].selected = i >= mini(from, to) and i <= maxi(from, to)
 	elif on_name and item.selected and item.renamable and selected_items().size() == 1:
 		item.start_rename()
+	elif item.selected:
+		_press_on_selected = item
+		set_focus_item(item)
 	else:
 		_select(item)
 
