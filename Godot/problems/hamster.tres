@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Problem" format=3]
+
+[ext_resource type="Script" path="res://problems/problem.gd" id="1_problem"]
+
+[resource]
+script = ExtResource("1_problem")
+short_name = &"hamster"
+perceived_issue = "Computer smells weird and does not start"
+symptoms = PackedStringArray("Hangs and reboots at startup", "Computer overheating")
+hardware_steps = PackedStringArray("Remove the computer shell", "Take out the hamster, throw it in the trash", "Remount the shell")
+software_steps = PackedStringArray()
