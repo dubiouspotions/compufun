@@ -73,10 +73,10 @@ var _driver_materials: Array[StandardMaterial3D] = []
 
 
 func _ready() -> void:
-	_outline = _outline_material(usable_color)
-	_outline_hover = _outline_material(hover_color)
-	_ghost = _ghost_material(usable_color)
-	_ghost_hover = _ghost_material(hover_color)
+	_outline = outline_material(usable_color, outline_width)
+	_outline_hover = outline_material(hover_color, outline_width)
+	_ghost = ghost_material(usable_color)
+	_ghost_hover = ghost_material(hover_color)
 	_screw_ring = ShaderMaterial.new()
 	_screw_ring.shader = PULSE_RING
 	_screw_ring.set_shader_parameter(&"color", usable_color)
@@ -222,18 +222,20 @@ func _turn(index: int, at: Vector3) -> void:
 
 # --- Highlights ----------------------------------------------------------------------------------
 
-# An inverted hull on top of a mesh: its front faces culled, grown along the normals.
-func _outline_material(color: Color) -> StandardMaterial3D:
+## An outline in [param color] for a mesh's [member GeometryInstance3D.material_overlay]: an
+## inverted hull, its front faces culled, grown [param width] metres along the normals.
+static func outline_material(color: Color, width: float) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.cull_mode = BaseMaterial3D.CULL_FRONT
 	material.grow = true
-	material.grow_amount = outline_width
+	material.grow_amount = width
 	material.albedo_color = color
 	return material
 
 
-func _ghost_material(color: Color) -> StandardMaterial3D:
+## A see-through ghost material in [param color], for a mesh's material_override: where a thing can go.
+static func ghost_material(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA

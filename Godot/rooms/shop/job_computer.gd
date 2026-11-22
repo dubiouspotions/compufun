@@ -2,7 +2,8 @@ class_name JobComputer
 extends Node3D
 ## The computer of one job on the counter. JobSlots places one at each job's slot. It outlines
 ## itself while the mouse or the cable's plug that the player drags is over it. Its power button
-## reports clicks, and its power light shows whether the job is on.
+## reports clicks, and its power light shows whether the job is on. In the Workview the screwdriver
+## beside it takes the open case's hover outline, and its dashed outline a ghost of it, under the mouse.
 
 ## The player clicked the computer.
 signal clicked(computer: JobComputer)
@@ -44,6 +45,10 @@ var powered: bool = false:
 			_sync_power()
 
 var _hovered: bool = false
+var _screwdriver_hovered: bool = false
+var _screwdriver_materials: Dictionary[MeshInstance3D, Material] = {}
+var _screwdriver_hover_outline: StandardMaterial3D
+var _screwdriver_ghost: StandardMaterial3D
 ## 0 standing, 1 lying; between the two while the case tips.
 var _pose: float = 0.0
 var _tip: Tween
@@ -74,6 +79,12 @@ func _ready() -> void:
 	_hotspot.mouse_exited.connect(_set_hovered.bind(false))
 	_power_hotspot.clicked.connect(func(_h: Hotspot) -> void: power_clicked.emit(self))
 	_screwdriver_hotspot.clicked.connect(func(_h: Hotspot) -> void: screwdriver_clicked.emit(self))
+	_screwdriver_hotspot.mouse_entered.connect(_set_screwdriver_hovered.bind(true))
+	_screwdriver_hotspot.mouse_exited.connect(_set_screwdriver_hovered.bind(false))
+	for mesh: MeshInstance3D in _screwdriver.find_children("*", "MeshInstance3D"):
+		_screwdriver_materials[mesh] = mesh.material_override
+	_screwdriver_hover_outline = OpenCase.outline_material(_open_case.hover_color, _open_case.outline_width)
+	_screwdriver_ghost = OpenCase.ghost_material(_open_case.hover_color)
 	_tower.dress(job.customer.computer)
 	_open_case.dress(job.customer.computer)
 	_post_it.job = job
@@ -122,6 +133,11 @@ func _set_hovered(on: bool) -> void:
 	_sync_outline()
 
 
+func _set_screwdriver_hovered(on: bool) -> void:
+	_screwdriver_hovered = on
+	_sync_screwdriver()
+
+
 func _working() -> bool:
 	return Game.focus == job and Game.view == &"Workview"
 
@@ -140,9 +156,7 @@ func _sync_case() -> void:
 		_tip.tween_method(_set_pose, _pose, target, tip_seconds * absf(target - _pose))
 	else:
 		_set_pose(target)
-	_screwdriver.visible = working and not lying
-	_screwdriver_outline.visible = working and lying
-	_screwdriver_hotspot.set_enabled(working and (not lying or Game.can_stand_up(job)))
+	_sync_screwdriver()
 	_hotspot.set_enabled(not working)  # in the Workview the screwdriver, the screws and the panel take the clicks
 	_front.input_ray_pickable = working and not lying  # swallows clicks on the front, so they don't lay it down
 	_sync_outline()
@@ -188,6 +202,19 @@ func _visible_bounds() -> AABB:
 		bounds = box if first else bounds.merge(box)
 		first = false
 	return bounds
+
+
+# Standing, the screwdriver rests beside the computer; lying, its dashed outline marks the spot, and a click there stands it up.
+func _sync_screwdriver() -> void:
+	var working := _working()
+	var lying := job.lying
+	_screwdriver_hotspot.set_enabled(working and (not lying or Game.can_stand_up(job)))
+	var hovered := _screwdriver_hovered and _screwdriver_hotspot.input_ray_pickable
+	_screwdriver.visible = working and (not lying or hovered)
+	_screwdriver_outline.visible = working and lying
+	for mesh: MeshInstance3D in _screwdriver_materials:
+		mesh.material_override = _screwdriver_ghost if lying else _screwdriver_materials[mesh]
+		mesh.material_overlay = _screwdriver_hover_outline if hovered and not lying else null
 
 
 func _sync_outline() -> void:
