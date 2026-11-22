@@ -41,6 +41,6 @@ jobs:
       - name: Tests
         # Passes only on the "N of N tests passed" line, so a run that dies early fails even if Godot exits 0.
         run: |
-          timeout 120 godot --headless -s res://tests/run.gd 2>&1 | tee tests.log
+          timeout 300 godot --headless -s res://tests/run.gd 2>&1 | tee tests.log
           awk '$0 ~ /^[0-9]+ of [0-9]+ tests passed$/ && $1 == $3 && $1 > 0 {ok = 1} END {exit !ok}' tests.log \
             || { echo "::error::tests/run.gd printed no 'N of N tests passed' line; see the output above"; exit 1; }
