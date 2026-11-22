@@ -111,9 +111,6 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Storage View**: The close-up of the parts desk in the storage room, with one plastic tray of new parts per part, labelled with its name. The storage door in the Left View leads there, and so do Up and W in the Left View.
 *Avoid:* shelf view, parts screen.
 
-**Storage bin**: The blue bin on the wall of the storage room where the player puts parts away and takes them back (`Game.stored`, `rooms/shop/storage_bin.tscn`).
-*Avoid:* lost and found, shelf, drawer.
-
 **Computer mouse**: The part that the ceiling mouse drops (`parts/mouse.tres`). No computer has a place for it. Always say *computer mouse* for the part, so it never means the animal.
 *Avoid:* mouse (alone), peripheral.
 

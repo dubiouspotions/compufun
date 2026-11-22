@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## The computer mouse that the ceiling mouse drops, and the storage bin (wiki: Hardware Repair): a
-## part with no place in a computer, put away and taken back, kept by a snapshot and a restore.
+## The computer mouse that the ceiling mouse drops: a part with no place in a computer. An old
+## snapshot with the retired storage bin's parts still restores.
 
 
 func run() -> void:
@@ -18,24 +18,11 @@ func run() -> void:
 	game.dialogue_finished()
 	game.customer_left()
 
-	check("nothing to put away", game.put_in_storage(), false)
-	check("nothing to take back", game.take_from_storage(), false)
 	check("the computer mouse in the hand", [game.take_new_part(mouse), game.hand.part], [true, mouse])
-	check("put away", [game.put_in_storage(), game.hand, game.stored.size()], [true, null, 1])
-	game.take_new_part(fan)
-	game.put_in_storage()
-	check("the last part comes back first", [game.take_from_storage(), game.hand.part, game.stored.size()], [true, fan, 1])
-	check("a full hand takes nothing back", game.take_from_storage(), false)
-
 	var saved: Dictionary = game.snapshot()
-	check("the snapshot names the bin", saved["stored"], ["mouse+"])
-	game.trash_part()
-	game.take_from_storage()
-	game.trash_part()
-	check("restore", game.restore(saved), "")
-	check("restored", [game.stored.size(), game.stored[0].part, game.hand.part], [1, mouse, fan])
-	saved["stored"] = ["toaster"]
-	check("an unknown part: refused", game.restore(saved).contains("no part 'toaster'"), true)
+	check("the snapshot has no storage bin", saved.has("stored"), false)
+	saved["stored"] = ["fan", "toaster"]
+	check("an old report with bin contents restores without them", [game.restore(saved), game.hand.part], ["", mouse])
 
 	# A computer has no place for the computer mouse, open or not.
 	game.trash_part()
