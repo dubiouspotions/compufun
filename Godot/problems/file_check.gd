@@ -35,6 +35,33 @@ func apply_break(setup: Win95Setup) -> void:
 		file.name = broken_name
 
 
+## Renames the file back and puts [member healthy_line] back in place of [member broken_line], or
+## at the end when no broken line is there.
+func apply_fix(setup: Win95Setup) -> void:
+	var folder := path.substr(0, path.rfind("\\") + 1)
+	var file := setup.file_at(path)
+	if file == null and broken_name != "":
+		file = setup.file_at(folder + broken_name)
+		if file != null:
+			file.name = path.substr(folder.length())
+	if file == null:
+		push_error("FileCheck: %s is not on the computer, also not as %s, so the fix has nothing to fix" % [path, broken_name])
+		return
+	if healthy_line == "" or is_fixed(setup):
+		return
+	var lines := PackedStringArray()
+	var replaced := false
+	for line in file.contents.split("\n"):
+		if broken_line != "" and line.strip_edges().nocasecmp_to(broken_line.strip_edges()) == 0:
+			lines.append(healthy_line)
+			replaced = true
+		else:
+			lines.append(line)
+	if not replaced:
+		lines.append(healthy_line)
+	file.contents = "\n".join(lines)
+
+
 func is_fixed(setup: Win95Setup) -> bool:
 	var file := setup.file_at(path)
 	if file == null:
