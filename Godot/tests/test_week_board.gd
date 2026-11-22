@@ -1,5 +1,5 @@
 extends "res://tests/test.gd"
-## The Week tab draws a column per day file and a row per flag, and a drop moves a customer from one
+## The Week tab draws a column per day file and a row per flag, and a drop moves an errand from one
 ## day to another. Nothing is saved.
 
 const WeekBoard := preload("res://addons/week_board/week_board.gd")
@@ -33,13 +33,14 @@ func run() -> void:
 
 	var day_1: Day = board._days[0]
 	var day_2: Day = board._days[1]
-	var moved: Customer = day_1.customers[0]
-	var size_1 := day_1.customers.size()
-	var size_2 := day_2.customers.size()
+	var moved: Errand = day_1.errands[0]
+	var size_1: int = day_1.errands.size()
+	var size_2: int = day_2.errands.size()
 	var list_2: ItemList = _list(columns[1])
-	check("day 2 has room", board._can_drop(day_2, {"week_day": day_1, "index": 0}), size_2 < Day.MAX_CUSTOMERS)
+	check("day 2 has room", board._can_drop(day_2, {"week_day": day_1, "index": 0}), size_2 < game.MAX_CUSTOMERS)
 	board._drop(list_2, day_2, Vector2(-1, -1), {"week_day": day_1, "index": 0})
-	check("dropped at the end of day 2", [day_1.customers.size(), day_2.customers.size(), day_2.customers[-1]], [size_1 - 1, size_2 + 1, moved])
+	var landed: Errand = day_2.errands[-1]
+	check("dropped at the end of day 2, the same customer and problem", [day_1.errands.size(), day_2.errands.size(), landed.customer, landed.problem], [size_1 - 1, size_2 + 1, moved.customer, moved.problem])
 	check("both days unsaved", board.unsaved_status().contains("day_1") and board.unsaved_status().contains("day_2"), true)
 
 

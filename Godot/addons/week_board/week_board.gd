@@ -1,11 +1,12 @@
 @tool
 extends VBoxContainer
-## The Week tab: a column per Day with its warp, the flags it sets and its drop-offs in order, and below, every flag
+## The Week tab: a column per Day with its warp, the flags it sets and its errands in order, and below, every flag
 ## with the conversations that set it and the conversations and corruption signs that check it.
 ## Edits change the loaded Day resources; Save (or Ctrl+S) writes them back. It stores nothing of
-## its own: the days, customers and signs are the data.
+## its own: the days, errands, customers and signs are the data.
 
 const DialogueEditor := preload("res://addons/dialogue_editor/dialogue_editor.gd")
+const GAME := preload("res://game.gd")
 const PROBLEMS_DIR := "res://problems/"
 const ERROR_COLOR := Color(1.0, 0.45, 0.45)
 const WARN_COLOR := Color(1.0, 0.8, 0.4)
@@ -29,7 +30,7 @@ func _ready() -> void:
 	bar.add_child(_button("Save", save_all))
 	bar.add_child(_button("Reload", refresh))
 	var help := Label.new()
-	help.text = "Drag customers to reorder them or move them to another day. Double-click one to open it in the Dialogue tab."
+	help.text = "Drag errands to reorder them or move them to another day. Double-click one to open it in the Dialogue tab."
 	help.add_theme_color_override(&"font_color", DIM_COLOR)
 	bar.add_child(help)
 	_status = Label.new()
@@ -138,9 +139,9 @@ func _day_column(d: Day) -> Control:
 	list.size_flags_vertical = SIZE_EXPAND_FILL
 	list.max_text_lines = 2
 	list.auto_height = false
-	for each: DropOff in d.drop_offs:
-		_add_drop_off_item(list, each)
-	list.item_activated.connect(func(index: int) -> void: _open_in_dialogue(d.drop_offs[index].customer if d.drop_offs[index] != null else null))
+	for each: Errand in d.errands:
+		_add_errand_item(list, each)
+	list.item_activated.connect(func(index: int) -> void: _open_in_dialogue(d.errands[index].customer if d.errands[index] != null else null))
 	list.set_drag_forwarding(
 		func(at: Vector2) -> Variant: return _drag_data(list, d, at),
 		func(_at: Vector2, data: Variant) -> bool: return _can_drop(d, data),
@@ -153,13 +154,13 @@ func _day_column(d: Day) -> Control:
 		problem.add_item(String(each.short_name))
 	problem.disabled = true
 	list.item_selected.connect(func(index: int) -> void:
-		var picked := d.drop_offs[index]
+		var picked := d.errands[index]
 		problem.disabled = picked == null
 		problem.select(_problems.find(picked.problem) + 1 if picked != null else 0))
 	problem.item_selected.connect(func(index: int) -> void:
 		var picked := list.get_selected_items()
-		if index > 0 and not picked.is_empty() and d.drop_offs[picked[0]] != null:
-			d.drop_offs[picked[0]].problem = _problems[index - 1]
+		if index > 0 and not picked.is_empty() and d.errands[picked[0]] != null:
+			d.errands[picked[0]].problem = _problems[index - 1]
 			_touch(d, true))
 	column.add_child(problem)
 
@@ -167,22 +168,22 @@ func _day_column(d: Day) -> Control:
 	add.add_item("Add customer...")
 	for c: Customer in _customers:
 		add.add_item(_customer_name(c))
-	add.disabled = d.drop_offs.size() >= Day.MAX_CUSTOMERS
+	add.disabled = d.errands.size() >= GAME.MAX_CUSTOMERS
 	add.item_selected.connect(func(index: int) -> void:
 		if index > 0:
-			var each := DropOff.new()
+			var each := Errand.new()
 			each.customer = _customers[index - 1]
-			d.drop_offs.append(each)
+			d.errands.append(each)
 			_touch(d, true))
 	column.add_child(add)
 	column.add_child(_button("Remove selected", func() -> void:
 		var picked := list.get_selected_items()
 		if picked.is_empty():
 			return
-		d.drop_offs.remove_at(picked[0])
+		d.errands.remove_at(picked[0])
 		_touch(d, true)))
 
-	var invalid := Day.why_unplayable(d)
+	var invalid := GAME.check_day(d)
 	if invalid != "":
 		var warning := _label(invalid)
 		warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -191,7 +192,7 @@ func _day_column(d: Day) -> Control:
 	return column
 
 
-func _add_drop_off_item(list: ItemList, each: DropOff) -> void:
+func _add_errand_item(list: ItemList, each: Errand) -> void:
 	if each == null or each.customer == null:
 		var empty := list.add_item("(no customer)")
 		list.set_item_custom_fg_color(empty, ERROR_COLOR)
@@ -221,28 +222,28 @@ func _drag_data(list: ItemList, d: Day, at: Vector2) -> Variant:
 func _can_drop(d: Day, data: Variant) -> bool:
 	if not data is Dictionary or not data.has("week_day"):
 		return false
-	return data["week_day"] == d or d.drop_offs.size() < Day.MAX_CUSTOMERS
+	return data["week_day"] == d or d.errands.size() < GAME.MAX_CUSTOMERS
 
 
 func _drop(list: ItemList, d: Day, at: Vector2, data: Variant) -> void:
 	var from: Day = data["week_day"]
 	var index: int = data["index"]
-	var moved: DropOff = from.drop_offs[index]
-	from.drop_offs.remove_at(index)
+	var moved: Errand = from.errands[index]
+	from.errands.remove_at(index)
 	if from != d:
 		# A copy: the original belongs to the other day's file.
 		moved = moved.duplicate()
 	var to := list.get_item_at_position(at, true)
 	if from == d and to > index:
 		to -= 1
-	if to < 0 or to > d.drop_offs.size():
-		to = d.drop_offs.size()
-	d.drop_offs.insert(to, moved)
+	if to < 0 or to > d.errands.size():
+		to = d.errands.size()
+	d.errands.insert(to, moved)
 	_dirty[from.resource_path] = true
 	_touch(d, true)
 
 
-## Marks [param d] unsaved; [param redraw] draws the board again for a change to its customers.
+## Marks [param d] unsaved; [param redraw] draws the board again for a change to its errands.
 func _touch(d: Day, redraw: bool) -> void:
 	_dirty[d.resource_path] = true
 	_show_status("Unsaved: " + ", ".join(PackedStringArray(_dirty.keys())))
@@ -321,7 +322,7 @@ func _offers() -> Dictionary:
 
 
 func _summary(d: Day) -> String:
-	return var_to_str([d.number, d.warp, d.set_flags, d.drop_offs.map(func(each: DropOff) -> Array:
+	return var_to_str([d.number, d.warp, d.set_flags, d.errands.map(func(each: Errand) -> Array:
 		return [each.customer.resource_path if each.customer != null else "", each.problem.resource_path if each.problem != null else ""] if each != null else [])])
 
 

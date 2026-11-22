@@ -5,16 +5,17 @@ extends "res://tests/test.gd"
 
 func run() -> void:
 	var problem: Problem = load("res://problems/no_sound.tres")
-	var a := customer("A", problem, {&"met_a": 1, &"sign_test": 2}, [], [&"met_a"])
-	var b := customer("B", problem, {&"met_a": 0}, [&"met_a"], [])
-	var d := Day.new()
-	d.customers = [a, b]
-	d.first_wait_seconds = Vector2.ZERO
+	var a := customer("A", {&"met_a": 1, &"sign_test": 2}, [], [&"met_a"])
+	var b := customer("B", {&"met_a": 0}, [&"met_a"], [])
+	var d := make_day(1, [[a, problem], [b, problem]])
 	d.set_flags = {&"sign_day": 1, &"cleared_by_day": 0}
 	game.set_flag(&"cleared_by_day")
 	game.start_day(d)
 	check("the day set its flags as it started", [game.flag(&"sign_day"), game.flags.has(&"cleared_by_day")], [1, false])
+	game.open_shop()
+	tick(1.0)
 
+	check("A is in", game.visitor, a)
 	game.customer_arrived()
 	check("A's conversation set its flags", [game.flag(&"met_a"), game.flag(&"sign_test")], [1, 2])
 	game.dialogue_finished()
@@ -26,10 +27,9 @@ func run() -> void:
 	check("and clears met_a; sign_test stays", [game.flags.has(&"met_a"), game.flag(&"sign_test")], [false, 2])
 
 
-func customer(display_name: String, problem: Problem, sets: Dictionary[StringName, int], needs: Array[StringName], not_with: Array[StringName]) -> Customer:
+func customer(display_name: String, sets: Dictionary[StringName, int], needs: Array[StringName], not_with: Array[StringName]) -> Customer:
 	var c := Customer.new()
 	c.display_name = display_name
-	c.problem = problem
 	var conversation := Conversation.new()
 	conversation.id = &"arrive"
 	conversation.set_flags = sets

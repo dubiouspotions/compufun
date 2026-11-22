@@ -177,7 +177,7 @@ func _finish_overnight_work() -> void:
 ## [member Day.close_signs] stop, and the new day sets its [member Day.set_flags]. Refuses a day that is null, has more than [constant MAX_CUSTOMERS]
 ## errands, or has an errand without a customer or a problem, and keeps the current state.
 func start_day(new_day: Day) -> void:
-	var invalid := _check_day(new_day)
+	var invalid := check_day(new_day)
 	if invalid != "":
 		push_error("Game.start_day: " + invalid)
 		return
@@ -886,7 +886,7 @@ func restore(state: Dictionary) -> String:
 	if not ResourceLoader.exists(path):
 		return _refuse("there is no day %d (%s)" % [number, path])
 	var new_day := load(path) as Day
-	var invalid := _check_day(new_day)
+	var invalid := check_day(new_day)
 	if invalid != "":
 		return _refuse(invalid)
 	if new_day.number != number:
@@ -1240,8 +1240,8 @@ static func _daypart_of(count: int) -> Daypart:
 	return clampi(count, 1, Daypart.AFTERNOON) as Daypart
 
 
-## Why [param d] can't be played, or "".
-func _check_day(d: Day) -> String:
+## Why [param d] can't be played, or "" when it can. The Week tab checks each day with it too.
+static func check_day(d: Day) -> String:
 	if d == null:
 		return "no day"
 	if d.errands.size() > MAX_CUSTOMERS:
