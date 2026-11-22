@@ -11,8 +11,9 @@ func run() -> void:
 	await process_frame
 	var skater: Customer = load("res://customers/skater_bro.tres")
 	var entrepreneur: Customer = load("res://customers/young_entrepreneur.tres")
+	var hat_guy: Customer = load("res://customers/hat_guy.tres")
 	var dust: Problem = load("res://problems/dust_overheat.tres")
-	var day := make_day(1, [[skater, dust], [entrepreneur, dust], [skater, dust]])
+	var day := make_day(1, [[skater, dust], [entrepreneur, dust], [hat_guy, dust]])
 	day.first_wait_seconds = Vector2(5.0, 8.0)
 	day.gap_seconds = Vector2(20.0, 40.0)
 

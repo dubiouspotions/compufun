@@ -781,8 +781,9 @@ func open_shop() -> void:
 	changed.emit()
 
 
-## True when the shop can close: it is open, every customer of the day has come in or is gone for
-## good, and nobody is in it.
+## True when the shop can close: it is open, nobody is in it, and nobody else comes in today without
+## a pickup first: every customer of the day came in or is gone for good, or the next one's computer
+## is still in the shop. Closing then sends the rest of the day's customers away for today.
 func can_close() -> bool:
 	return phase == Phase.OPEN and day != null and _next_arrival() < 0 and visitor == null
 
@@ -1102,11 +1103,13 @@ func _try_arrival() -> bool:
 
 
 ## The index in [member Day.errands] of the next customer to come in today, past those who are
-## gone for good; -1 when none is left.
+## gone for good; -1 when none is left, or while the next one's computer is still in the shop: a
+## customer has one computer, so they come in after they picked it up, and those after them wait.
 func _next_arrival() -> int:
 	for i: int in range(arrivals, day.errands.size()):
-		if not is_gone(day.errands[i].customer):
-			return i
+		var who := day.errands[i].customer
+		if not is_gone(who):
+			return -1 if jobs.any(func(j: Job) -> bool: return j.customer == who) else i
 	return -1
 
 

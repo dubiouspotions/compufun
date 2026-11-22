@@ -34,15 +34,17 @@ func run() -> void:
 	check("the day can end", game.can_close(), true)
 	game.close_shop()
 
-	# Day 2: he is skipped, first and last.
-	game.start_day(make_day(2, [[skater, dust], [entrepreneur, quiet]]))
+	# Day 2: he is skipped, first and last. The entrepreneur's computer is still in, so others come.
+	var accountant: Customer = load("res://customers/retired_accountant.tres")
+	var hat_guy: Customer = load("res://customers/hat_guy.tres")
+	game.start_day(make_day(2, [[skater, dust], [accountant, quiet]]))
 	game.open_shop()
-	check("the skater is skipped: the entrepreneur comes", [game.visitor == entrepreneur, game.arrivals], [true, 2])
+	check("the skater is skipped: the accountant comes", [game.visitor == accountant, game.arrivals], [true, 2])
 	game.customer_arrived()
 	game.dialogue_finished()
 	game.customer_left()
 	check("the day can end", game.can_close(), true)
-	game.start_day(make_day(3, [[entrepreneur, quiet], [skater, dust]]))
+	game.start_day(make_day(3, [[hat_guy, quiet], [skater, dust]]))
 	game.open_shop()
 	game.customer_arrived()
 	game.dialogue_finished()
