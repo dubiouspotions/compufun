@@ -391,15 +391,15 @@ light_energy = 1.4
 
 [node name="Rain" type="CPUParticles3D" parent="." unique_id=488361773]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 7.5, -9.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 7.5, -9.55)
 material_override = SubResource("StandardMaterial3D_njpws")
 emitting = false
-amount = 1400
+amount = 1260
 lifetime = 0.7
 preprocess = 0.7
 mesh = SubResource("BoxMesh_pxpjw")
 emission_shape = 3
-emission_box_extents = Vector3(13, 0.3, 3.6)
+emission_box_extents = Vector3(13, 0.3, 3.25)
 particle_flag_align_y = true
 direction = Vector3(0, -1, 0)
 spread = 4.0
