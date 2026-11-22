@@ -42,6 +42,7 @@ func _ready() -> void:
 	RenderingServer.frame_pre_draw.connect(_follow_camera)
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
+	_nav.focus_requested.connect(Game.focus_job)
 	_shop.back_strip_hovered.connect(func(on: bool) -> void: _nav.show_back_strip(on, _shop.back_strip_height))
 	_shop.close_requested.connect(_end_of_day.ask)
 	_shop.crashed.connect(func() -> void: Finale.start(get_tree()))  # the pipes end in the finale
@@ -114,11 +115,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if marker == null:
 		return
 	if event.is_action_pressed(&"turn_left"):
-		_nav.press(&"left")
-		Game.go_to_view(marker.left)
+		_nav.turn(&"left")
 	elif event.is_action_pressed(&"turn_right"):
-		_nav.press(&"right")
-		Game.go_to_view(marker.right)
+		_nav.turn(&"right")
 	elif event.is_action_pressed(&"look_up") and marker.up != &"":
 		Game.go_to_view(marker.up)
 	elif event.is_action_pressed(&"go_back"):

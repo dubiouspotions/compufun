@@ -26,6 +26,7 @@ func run() -> void:
 	_press(&"look_up")
 	check("Up in the Main View still looks up at the ceiling", game.view, &"Up")
 	await _check_press()
+	await _check_workview_computers()
 	await _check_db_start_up()
 	_main.queue_free()
 
@@ -42,6 +43,34 @@ func _check_press() -> void:
 	check("Right comes back up", nav.call("is_pressed_down", &"right"), false)
 	(nav.get_node("%LeftButton") as Button).pressed.emit()
 	check("a click on Left turns and presses it down", [game.view, nav.call("is_pressed_down", &"left")], [&"Left", true])
+
+
+# In the Workview, Left and Right move the focus to the computer beside it, in slot order, and stop
+# at either end; the part in the hand stays there. With one computer they don't show.
+func _check_workview_computers() -> void:
+	var nav: Control = _main.get_node("%ViewNav")
+	var jobs: Array = []
+	for i: int in 3:
+		jobs.append({"customer": ["res://customers/skater_bro.tres", "res://customers/retired_accountant.tres", "res://customers/activist_guy.tres"][i],
+				"problem": "dust_overheat", "slot": i, "order": i})
+	jobs[0]["lying"] = true
+	check("restore three computers, the left one in focus and lying", game.restore({"jobs": jobs, "focus_slot": 0, "view": "Workview", "hand": ["ram"]}), "")
+	await process_frame
+	var left: Button = nav.get_node("%LeftButton")
+	var right: Button = nav.get_node("%RightButton")
+	check("at the left end only Right shows", [left.visible, right.visible], [false, true])
+	var path: Array[int] = []
+	for action: StringName in [&"turn_right", &"turn_right", &"turn_right", &"turn_left", &"turn_left", &"turn_left"]:
+		_press(action)
+		path.append(game.focus.slot)
+	check("Right goes 0 to 1 to 2 and stops, Left goes back to 0 and stops", path, [1, 2, 2, 1, 0, 0])
+	check("still in the Workview, the part still in the hand", [game.view, game.hand != null], [&"Workview", true])
+	right.pressed.emit()
+	check("the Right button moves the focus too", [game.focus.slot, left.visible, right.visible], [1, true, true])
+	jobs.resize(1)
+	check("restore one computer", game.restore({"jobs": jobs, "focus_slot": 0, "view": "Workview"}), "")
+	await process_frame
+	check("with one computer neither shows", [left.visible, right.visible], [false, false])
 
 
 func _check_db_start_up() -> void:

@@ -394,6 +394,17 @@ func focus_job(job: Job) -> void:
 	changed.emit()
 
 
+## The job on the counter next to [param job] in slot order: the one left of it for [param step] -1,
+## right of it for 1. null when none is there, or when [param job] is null or not on the counter.
+func job_beside(job: Job, step: int) -> Job:
+	var by_slot := jobs.duplicate()
+	by_slot.sort_custom(func(a: Job, b: Job) -> bool: return a.slot < b.slot)
+	var at := by_slot.find(job)
+	if at == -1 or at + step < 0 or at + step >= by_slot.size():
+		return null
+	return by_slot[at + step]
+
+
 ## Connects the VGA cable to [param job]: the bench screen shows that computer as the cable left
 ## it. null disconnects. The job must be on the counter.
 func connect_cable(job: Job) -> void:
