@@ -1,5 +1,8 @@
 [gd_resource type="AudioBusLayout" format=3]
 
+[sub_resource type="AudioEffectPanner" id="AudioEffectPanner_shop"]
+resource_name = "Panner"
+
 [sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_street"]
 resource_name = "LowPassFilter"
 cutoff_hz = 500.0
@@ -15,6 +18,17 @@ hipass = 0.04
 dry = 0.0
 wet = 0.8
 
+[sub_resource type="AudioEffectReverb" id="AudioEffectReverb_storage"]
+resource_name = "Reverb"
+predelay_msec = 2.0
+predelay_feedback = 0.0
+room_size = 0.0
+damping = 0.0
+spread = 0.3
+hipass = 0.08
+dry = 0.0
+wet = 0.5
+
 [resource]
 bus/1/name = &"Shop"
 bus/1/solo = false
@@ -22,24 +36,26 @@ bus/1/mute = false
 bus/1/bypass_fx = false
 bus/1/volume_db = 0.0
 bus/1/send = &"Master"
+bus/1/effect/0/effect = SubResource("AudioEffectPanner_shop")
+bus/1/effect/0/enabled = true
 bus/2/name = &"Voice"
 bus/2/solo = false
 bus/2/mute = false
 bus/2/bypass_fx = false
 bus/2/volume_db = 0.0
-bus/2/send = &"Master"
+bus/2/send = &"Shop"
 bus/3/name = &"Win95"
 bus/3/solo = false
 bus/3/mute = false
 bus/3/bypass_fx = false
 bus/3/volume_db = 0.0
-bus/3/send = &"Master"
+bus/3/send = &"Shop"
 bus/4/name = &"Street"
 bus/4/solo = false
 bus/4/mute = false
 bus/4/bypass_fx = false
 bus/4/volume_db = -20.0
-bus/4/send = &"Master"
+bus/4/send = &"Shop"
 bus/4/effect/0/effect = SubResource("AudioEffectLowPassFilter_street")
 bus/4/effect/0/enabled = true
 bus/5/name = &"Room"
@@ -50,3 +66,11 @@ bus/5/volume_db = 0.0
 bus/5/send = &"Shop"
 bus/5/effect/0/effect = SubResource("AudioEffectReverb_room")
 bus/5/effect/0/enabled = true
+bus/6/name = &"Storage"
+bus/6/solo = false
+bus/6/mute = false
+bus/6/bypass_fx = false
+bus/6/volume_db = 0.0
+bus/6/send = &"Master"
+bus/6/effect/0/effect = SubResource("AudioEffectReverb_storage")
+bus/6/effect/0/enabled = true
