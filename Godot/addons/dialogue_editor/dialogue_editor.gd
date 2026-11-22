@@ -32,7 +32,7 @@ var _new_conversation: LineEdit
 var _tree: Tree
 ## The node of the tree that the editor below it shows: the conversation, a Choice or a Reply.
 var _node: Resource
-## Where the editor of [member _node] draws, beside the tree.
+## Where the editor of [member _node] draws, under the tree.
 var _node_box: VBoxContainer
 
 
@@ -79,13 +79,14 @@ func _ready() -> void:
 	order.add_child(_button("Down", _move_conversation.bind(1)))
 	order.add_child(_button("Delete", _delete_conversation))
 
-	var right := HSplitContainer.new()
+	# The tree above the editor of its picked node; the bar between them drags.
+	var right := VSplitContainer.new()
 	right.size_flags_horizontal = SIZE_EXPAND_FILL
 	split.add_child(right)
-	var tree_column := _column(right, 360)
-	var tree_help := _label("The conversation, the player's choices (>) and the customer's replies (-). Pick one to edit it.")
-	tree_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	tree_column.add_child(tree_help)
+	var tree_column := VBoxContainer.new()
+	tree_column.size_flags_vertical = SIZE_EXPAND_FILL
+	right.add_child(tree_column)
+	tree_column.add_child(_label("The conversation, the player's choices (>) and the customer's replies (-). Pick one to edit it."))
 	_tree = Tree.new()
 	_tree.size_flags_vertical = SIZE_EXPAND_FILL
 	_tree.item_selected.connect(func() -> void:
@@ -93,7 +94,7 @@ func _ready() -> void:
 		_render_node())
 	tree_column.add_child(_tree)
 	var scroll := ScrollContainer.new()
-	scroll.size_flags_horizontal = SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	right.add_child(scroll)
 	_node_box = VBoxContainer.new()
