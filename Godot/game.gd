@@ -306,12 +306,52 @@ func load_story(drafts: Dictionary[String, String] = {}) -> PackedStringArray:
 	return errors
 
 
-## Jumps to [param errand]'s day, with the errands before it come and gone, and its customer at the
-## counter playing the conversation for [param trigger] (a pick-up and a phone call with their
-## computer done). For the Story Lab's Play here. Returns why it can't, or "".
-func play_errand(errand: Errand, trigger: Conversation.Trigger = Conversation.Trigger.ARRIVE) -> String:
-	push_error("Game.play_errand: not built yet (%s, %d)" % [errand.code, trigger])
-	return "Game.play_errand is not built yet"
+## Jumps to the day of [param to_play], an errand of the week that plays (by file name, so the
+## Story Lab can pass its own parse of the file after [method load_story]), as [method restore] sets
+## it: the errands before it came and went, with their computers, so the counter is empty; the
+## flags as they are, with the day's [member Day.set_flags] on top and the customer not gone; the
+## errand's conversations not yet seen. Then the conversation for [param trigger] plays:
+## [constant Conversation.Trigger.ARRIVE] with the customer at the counter, PICKUP with them at the
+## counter and their computer fixed and tested on it, PHONE with the call on about that computer.
+## For the Story Lab's Play here. Returns "" or why it can't, and then keeps the state.
+func play_errand(to_play: Errand, trigger: Conversation.Trigger = Conversation.Trigger.ARRIVE) -> String:
+	if to_play == null or to_play.file == "":
+		return _refuse_play("play_errand needs an errand from a story file, not %s" % to_play)
+	var found: Variant = _job_errand({"errand": to_play.file_name()}, to_play.day_number()) if week != null else "the story files didn't load"
+	if found is String:
+		return _refuse_play("%s; load its draft with load_story first" % found)
+	var target: Errand = found
+	var on_day := day_of(target.day_number())
+	var new_flags := flags.duplicate()
+	for flag_name: StringName in on_day.set_flags:
+		new_flags[flag_name] = on_day.set_flags[flag_name]
+	new_flags.erase(gone_flag(target.customer))
+	var state := {
+		"day": on_day.number,
+		"phase": "OPEN",
+		"arrivals": on_day.codes().find(target.code) + 1,
+		"flags": new_flags,
+		"seen": seen.keys().filter(func(key: String) -> bool: return not key.begins_with(target.code + "/")),
+		"view": "Main",
+	}
+	var done := {"errand": target.file_name(), "slot": 0, "hardware_fixed": true, "software_fixed": true, "tested": true}
+	match trigger:
+		Conversation.Trigger.ARRIVE:
+			state.merge({"visitor": target.customer.resource_path, "visit": "DROP_OFF", "visitor_state": "TALKING"})
+		Conversation.Trigger.PICKUP, Conversation.Trigger.PHONE:
+			if target.brings == Errand.Brings.NOTHING:
+				return _refuse_play("%s brings no computer, so there is nothing to pick up or call about" % target.file_name())
+			state.merge({"jobs": [done], "focus_slot": 0})
+			if trigger == Conversation.Trigger.PICKUP:
+				state.merge({"visitor": target.customer.resource_path, "visit": "PICKUP", "visitor_state": "TALKING"})
+			else:
+				state.merge({"phase": "CALLING", "calling_slot": 0}, true)
+	var refused := restore(state)
+	if refused == "" and visitor != null and errand != target:
+		errand = target  # another alternative of the same customer matched first
+		_start_talk()
+		changed.emit()
+	return refused
 
 
 ## The day numbers of the week that plays, from 1, in order; none before it loaded.
@@ -1548,6 +1588,11 @@ static func _job_in(in_jobs: Array[Job], slot: int, key: String) -> Variant:
 
 func _refuse(reason: String) -> String:
 	push_error("Game.restore: " + reason)
+	return reason
+
+
+func _refuse_play(reason: String) -> String:
+	push_error("Game.play_errand: " + reason)
 	return reason
 
 
