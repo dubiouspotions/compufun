@@ -1348,14 +1348,15 @@ func coming(index: int) -> Errand:
 
 
 ## The index in today's [method Day.codes] of the next errand to come in, past those for which
-## no alternative comes ([method coming]); -1 when none is left, or while the next one's computer is
-## still in the shop: a customer has one computer, so they come in after they picked it up, and
-## those after them wait.
+## no alternative comes ([method coming]); -1 when none is left, or while the next one brings their
+## computer and it is still in the shop: a customer has one computer, so they bring it after they
+## picked it up, and those after them wait.
 func _next_arrival() -> int:
 	for i: int in range(arrivals, day.codes().size()):
 		var next := coming(i)
 		if next != null:
-			return -1 if jobs.any(func(j: Job) -> bool: return j.customer == next.customer) else i
+			var in_shop := jobs.any(func(j: Job) -> bool: return j.customer == next.customer)
+			return -1 if in_shop and next.brings != Errand.Brings.NOTHING else i
 	return -1
 
 

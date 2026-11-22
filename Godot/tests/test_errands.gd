@@ -101,6 +101,17 @@ func _brings_nothing() -> void:
 	check("walks out after the drop-off, with no computer left", [game.visitor_state, game.visitor_carries(), game.jobs.size()], [GAME.VisitorState.WALKING_OUT, false, 0])
 	game.customer_left()
 
+	var leaves := errand("0201_office_girl", "customer: office_girl\nproblem: dust_overheat\n\n== drop-off\n(neutral) Fix it.\n")
+	var visits := errand("0202_office_girl", "customer: office_girl\ncomputer: none\n\n== drop-off\n(neutral) Is it done?\n")
+	game.restore({"day": 2, "phase": "CLOSED"})
+	game.start_day(day_of(2, [leaves, visits]))
+	game.open_shop()
+	game.customer_arrived()
+	see_out()
+	next_visitor()
+	check("she comes without a computer while hers is in the shop", [game.errand, game.jobs.size()], [visits, 1])
+	see_out()
+
 
 func _shows() -> void:
 	var shows := errand("0201_hat_guy", "customer: hat_guy\nproblem: dust_overheat\ncomputer: shows\n\n== drop-off\n(neutral) Look at this.\n\n== pick-up\n(happy) I'll take it back.\n")
@@ -149,6 +160,9 @@ func _later_pickup_and_phone() -> void:
 	game.close_shop()
 	game.start_day(day_of(2, [later]))
 	game.open_shop()
+	game.customer_arrived()
+	check("on day 2 he visits without his computer", [game.errand, game.conversation.lines[0].text], [later, "Just me."])
+	see_out()
 	var job: Job = game.jobs[0]
 	check("the job keeps its errand overnight", job.errand, first)
 	job.hardware_fixed = true
