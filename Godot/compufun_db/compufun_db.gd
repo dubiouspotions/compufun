@@ -1,7 +1,8 @@
 class_name CompuFunDB
 extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
-## the customers (Game.records; New record makes the character type up the next computer on the
+## the customers (the Game.records of the computers on the counter: a record leaves the list when its
+## computer leaves the counter; New record makes the character type up the next computer on the
 ## counter, key by key), what to check (every symptom of every Problem; the player marks what is
 ## wrong on the selected record), and what to fix (the repair steps of each problem whose symptoms
 ## are all marked, numbered and ending in [member test_step]; the player ticks them off). Marking
@@ -71,6 +72,9 @@ var _symptoms: PackedStringArray = []
 var _column: Column = Column.RECORDS
 var _selected: Array[int] = [0, 0, 0]
 var _scroll: Array[int] = [0, 0, 0]
+## The Job.order of each record in the first column at the last [method _reconcile], so that the
+## cursor follows its record when the list changes.
+var _listed: Array[int] = []
 var _mouse_cell: Vector2i = Vector2i(-1, -1)
 ## The record that the character is typing up, or null; [member _shown] of its characters show.
 var _typing: DbRecord
@@ -107,6 +111,7 @@ func _ready() -> void:
 	set_process(false)
 	Game.changed.connect(queue_redraw)
 	Game.changed.connect(_check_day)
+	Game.changed.connect(_reconcile)
 
 
 func _on_mouse_exited() -> void:
@@ -135,7 +140,7 @@ func _entries(column: Column) -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
 	match column:
 		Column.RECORDS:
-			for record: DbRecord in Game.records:
+			for record: DbRecord in _records():
 				var text := record.text.left(_shown) + "_" if record == _typing else record.text
 				entries.append({text = text, check = null, pick = true})
 			if _waiting_job() != null and _typing == null:
@@ -168,9 +173,22 @@ func _add_steps(entries: Array[Dictionary], record: DbRecord, title: String, ste
 
 # The record under the first column's cursor, or null on <New record> or while it is typed up.
 func _record() -> DbRecord:
+	var records := _records()
 	var index := _selected[Column.RECORDS]
-	var record: DbRecord = Game.records[index] if index < Game.records.size() else null
+	var record: DbRecord = records[index] if index < records.size() else null
 	return record if record != _typing else null
+
+
+# The records of the computers on the counter, oldest first.
+func _records() -> Array[DbRecord]:
+	var on_counter: Array[int] = []
+	for job: Job in Game.jobs:
+		on_counter.append(job.order)
+	var listed: Array[DbRecord] = []
+	for record: DbRecord in Game.records:
+		if record.job_order in on_counter:
+			listed.append(record)
+	return listed
 
 
 # The oldest computer on the counter without a record, or null.
@@ -501,7 +519,7 @@ func _act() -> void:
 	var entry := entries[index]
 	match _column:
 		Column.RECORDS:
-			if index == Game.records.size():
+			if index == _records().size():
 				_type_up(_waiting_job())
 			else:
 				_change_column(1)
@@ -518,7 +536,7 @@ func _type_up(job: Job) -> void:
 		return
 	_shown = 0
 	_next_key = 0.0
-	_selected[Column.RECORDS] = Game.records.size() - 1
+	_selected[Column.RECORDS] = _records().size() - 1
 	set_process(true)
 
 
@@ -532,7 +550,7 @@ func _finish_typing() -> void:
 	var job := _waiting_job()
 	while job != null and Game.enter_job(job, _record_text(job)) != null:
 		job = _waiting_job()
-	_selected[Column.RECORDS] = Game.records.size() - 1
+	_selected[Column.RECORDS] = _records().size() - 1
 
 
 func _record_text(job: Job) -> String:
@@ -562,9 +580,7 @@ func _change_column(step: int) -> void:
 # Selects entry [param index] of the current column and scrolls it into view.
 func _select(index: int) -> void:
 	if _column == Column.RECORDS and index != _selected[_column]:
-		for column: Column in [Column.CHECKS, Column.FIXES]:
-			_selected[column] = 0
-			_scroll[column] = 0
+		_reset_record_columns()
 	_selected[_column] = index
 	var lines := _lines(_column, _entries(_column))
 	var height := LIST_BOTTOM - LIST_TOP + 1
@@ -583,8 +599,28 @@ func _select(index: int) -> void:
 		_scroll[_column] = last - height + 1
 
 
-# Keeps the cursors on entries that exist, and in the first column while no record is picked.
+func _reset_record_columns() -> void:
+	for column: Column in [Column.CHECKS, Column.FIXES]:
+		_selected[column] = 0
+		_scroll[column] = 0
+
+
+# Keeps the cursors on entries that exist, and in the first column while no record is picked. When
+# the list changes, the cursor follows its record; when that record left, the cursor goes back to
+# the first column, on the record that took its place.
 func _reconcile() -> void:
+	var listed: Array[int] = []
+	for record: DbRecord in _records():
+		listed.append(record.job_order)
+	if listed != _listed:
+		var index := _selected[Column.RECORDS]
+		var was := _listed[index] if index < _listed.size() else -1
+		if was in listed:
+			_selected[Column.RECORDS] = listed.find(was)
+		elif was >= 0:
+			_column = Column.RECORDS
+			_reset_record_columns()
+		_listed = listed
 	_selected[Column.RECORDS] = clampi(_selected[Column.RECORDS], 0, maxi(_entries(Column.RECORDS).size() - 1, 0))
 	if _record() == null:
 		_column = Column.RECORDS
@@ -650,7 +686,7 @@ func _paint() -> void:
 	var record := _record()
 	for column: int in Column.size():
 		_paint_column(column as Column)
-	var count := "Rec %d/%d " % [_selected[Column.RECORDS] + 1, Game.records.size()] if record != null else "Rec None "
+	var count := "Rec %d/%d " % [_selected[Column.RECORDS] + 1, _records().size()] if record != null else "Rec None "
 	var buttons := _buttons()
 	for text: String in buttons:
 		_put(_button_x(buttons[text], text), FRAME_ROWS[-1], text, bright_color, bar_color)

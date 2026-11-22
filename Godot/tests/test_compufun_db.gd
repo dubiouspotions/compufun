@@ -1,8 +1,13 @@
 extends "res://tests/test.gd"
 ## A computer on the counter gets one CompuFunDB record; the record, with its marked symptoms and
-## ticked repairs, survives a snapshot and a restore, and a malformed record is refused.
+## ticked repairs, survives a snapshot and a restore, and a malformed record is refused. The list
+## shows only the records of the computers on the counter, and the cursor follows its record.
 
 const CUSTOMER: String = "res://customers/skater_bro.tres"
+## CompuFunDB.Column, which a test can't name: CompuFunDB names the Game autoload.
+const RECORDS: int = 0
+const CHECKS: int = 1
+const OTHERS: Array[String] = ["res://customers/retired_accountant.tres", "res://customers/activist_guy.tres"]
 
 
 func run() -> void:
@@ -37,3 +42,50 @@ func run() -> void:
 	check("a restore without records starts empty", game.restore({}), "")
 	check("no records", game.records.size(), 0)
 	check("and no start-up", game.db_day, 0)
+	await _check_picked_up()
+
+
+# A computer that leaves the counter takes its record off the list; Game keeps the record.
+func _check_picked_up() -> void:
+	var jobs: Array = []
+	for i: int in 3:
+		jobs.append({"customer": ([CUSTOMER] + OTHERS)[i], "order": i})
+	check("three jobs", game.restore({"day": 1, "arrivals": 3, "jobs": jobs}), "")
+	for i: int in 3:
+		game.enter_job(game.jobs[i], "record %d" % i)
+	game.start_db()
+	var db: Control = load("res://compufun_db/compufun_db.tscn").instantiate()  # untyped: CompuFunDB names Game
+	root.add_child(db)
+	await process_frame
+	check("all three listed", _texts(db), ["record 0", "record 1", "record 2"])
+	for key: Key in [KEY_DOWN, KEY_DOWN, KEY_RIGHT]:
+		_press(db, key)
+	check("on the last record's checks", [db.call("_record").text, db.get("_column")], ["record 2", CHECKS])
+
+	_leave(0)
+	check("the first record left the list", _texts(db), ["record 1", "record 2"])
+	check("Game keeps it", game.records.size(), 3)
+	check("the cursor stays on its record and column", [db.call("_record").text, db.get("_column")], ["record 2", CHECKS])
+
+	_leave(2)
+	check("the selected record left", _texts(db), ["record 1"])
+	check("the cursor goes back to the list, on the record left", [db.call("_record").text, db.get("_column")], ["record 1", RECORDS])
+	db.queue_free()
+
+
+# The computer of job [param order] leaves the counter; its record stays in Game.
+func _leave(order: int) -> void:
+	var state: Dictionary = game.snapshot()
+	state.jobs = state.jobs.filter(func(job: Dictionary) -> bool: return job.order != order)
+	check("job %d leaves" % order, game.restore(state), "")
+
+
+func _texts(db: Control) -> Array:
+	return db.call("_entries", RECORDS).map(func(entry: Dictionary) -> String: return entry.text)
+
+
+func _press(db: Control, key: Key) -> void:
+	var event := InputEventKey.new()
+	event.keycode = key
+	event.pressed = true
+	db.call("_on_key", event)
