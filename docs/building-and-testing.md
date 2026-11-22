@@ -40,6 +40,19 @@ project open (see the gotcha about two Godot processes).
 A headless `--script` that extends `SceneTree` can drive a scene for a quick test. Add the scene in
 `_initialize()` and `await process_frame` before you touch it: until then its `_ready()` has not run.
 
+To show a visual change, film it. Such a script, run with Movie Maker, sets up the moment (for
+example `Game.restore({"day": 5, "arrivals": 2, "phase": "OPEN"})`, then `close_shop()`), waits on
+`create_timer` and quits. It needs a real window, so park it off-screen:
+
+```sh
+"$GODOT" --path . --position 10000,10000 --resolution 1920x1080 \
+  --write-movie /tmp/clip.avi --fixed-fps 30 -s res://tests/_film.gd
+ffmpeg -i /tmp/clip.avi -vf scale=1280:-2 -c:v libx264 -pix_fmt yuv420p -crf 20 -c:a aac clip.mp4
+```
+
+Movie Maker renders every frame at the fixed rate, however slowly, so the clip never stutters.
+Delete the script afterwards: `run.gd` runs only `test_*.gd`, but it should not be committed.
+
 ## Tests
 
 `Godot/tests/` holds headless tests that play the game through the `Game` API and check its state.
