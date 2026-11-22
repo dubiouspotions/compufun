@@ -1,0 +1,63 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://materials/paper.tres" id="1_paper"]
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tape"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo_color = Color(0.86, 0.8, 0.62, 1)
+shader_parameter/world_uv = false
+shader_parameter/uv_scale = 1.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_paper"]
+size = Vector2(0.66, 0.34)
+subdivide_width = 1
+subdivide_depth = 1
+
+[sub_resource type="QuadMesh" id="QuadMesh_tape"]
+size = Vector2(0.09, 0.03)
+
+[node name="TapedNote" type="Node3D"]
+
+[node name="Paper" type="MeshInstance3D" parent="."]
+material_override = ExtResource("1_paper")
+mesh = SubResource("QuadMesh_paper")
+
+[node name="TapeTL" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 0, 0, 1, -0.32, 0.16, 0.003)
+material_override = SubResource("ShaderMaterial_tape")
+mesh = SubResource("QuadMesh_tape")
+
+[node name="TapeTR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.70710677, -0.70710677, 0, 0.70710677, 0.70710677, 0, 0, 0, 1, 0.32, 0.16, 0.003)
+material_override = SubResource("ShaderMaterial_tape")
+mesh = SubResource("QuadMesh_tape")
+
+[node name="TapeBL" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.70710677, -0.70710677, 0, 0.70710677, 0.70710677, 0, 0, 0, 1, -0.32, -0.16, 0.003)
+material_override = SubResource("ShaderMaterial_tape")
+mesh = SubResource("QuadMesh_tape")
+
+[node name="TapeBR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 0, 0, 1, 0.32, -0.16, 0.003)
+material_override = SubResource("ShaderMaterial_tape")
+mesh = SubResource("QuadMesh_tape")
+
+[node name="Text" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.31, 0.145, 0.005)
+pixel_size = 0.001
+shaded = true
+modulate = Color(0.06, 0.06, 0.12, 1)
+text = "Instructions:
+Opening the shop in the morning:
+1. Start up the CompuFun Database computer by the desk.
+2. Flip open sign and unlock door"
+font_size = 36
+outline_modulate = Color(0.06, 0.06, 0.12, 1)
+outline_size = 5
+horizontal_alignment = 0
+vertical_alignment = 0
+autowrap_mode = 3
+width = 620.0
+line_spacing = 8.0
