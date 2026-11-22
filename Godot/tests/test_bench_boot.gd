@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
 ## A computer that is switched on boots even while the cable is on another one, and connecting the
-## cable later shows it as it got, without a new boot.
+## cable later shows it as it got, without a new boot. The desktop then appears part by part.
 
 
 func run() -> void:
@@ -22,5 +22,16 @@ func run() -> void:
 	await process_frame
 	check("the cable shows the same desktop", [desktop.get_parent() == bench, bench._desktops.get(job) == desktop], [true, true])
 	check("without a new boot", desktop.get("_boot") == boot, true)
+
+	boot.set(&"_skipped", true)
+	while is_instance_valid(boot) and boot.self_modulate.a > 0.0:
+		await process_frame
+	var taskbar: Control = desktop.get_node("TaskBar")
+	var icons: Array = desktop.get_node("Desktop/DesktopIcons").get_children()
+	check("a skip lands on the bare desktop: the taskbar and pointer come last", [taskbar.modulate.a, desktop.get("pointer_visible")], [0.0, false])
+	check("the clear boot still takes the input", [boot.visible, boot.mouse_filter, boot.has_focus()], [true, Control.MOUSE_FILTER_STOP, true])
+	await boot.finished
+	await process_frame
+	check("then the whole desktop and the pointer show", [taskbar.modulate.a, icons.all(func(icon: Control) -> bool: return icon.modulate.a == 1.0), desktop.get("pointer_visible")], [1.0, true, true])
 	game.jobs = [] as Array[Job]
 	bench.free()

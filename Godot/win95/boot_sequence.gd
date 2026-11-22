@@ -1,10 +1,11 @@
 extends Control
 ## A 1995 PC booting: a black screen while the monitor warms up, the BIOS power-on self test, the
-## system summary, "Starting Windows 95...", the splash screen, then the desktop beneath, over one
-## recording of the machine. Any key or click skips to the desktop, unless [member skippable] is off.
-## Frees itself when the startup sound has played.
+## system summary, the splash screen, "Starting Windows 95..." with a blinking cursor, then the
+## desktop beneath, part by part over its bare background, over one recording of the machine. Any key
+## or click skips to the bare desktop, unless [member skippable] is off. Until the desktop is whole it
+## takes every key and click. Frees itself when the startup sound has played.
 
-## The boot reached the desktop, or the player skipped it.
+## The whole desktop shows.
 signal finished
 signal _any_key
 
@@ -21,7 +22,8 @@ signal _any_key
 ## What the BIOS finds: the CPU, the memory, the drives, the PCI devices. null boots the defaults
 ## of Hardware. win95.gd sets it from the computer.
 @export var hardware: Hardware
-## What the BIOS says as it hands over to Windows.
+## What the black screen between the splash screen and the desktop says, and what the BIOS says
+## before [member windows_memory_text].
 @export var starting_text: String = "Starting Windows 95..."
 ## False stops after the BIOS, for a computer that runs a DOS program instead: no "Starting
 ## Windows 95...", no splash, no startup sound.
@@ -52,8 +54,14 @@ signal _any_key
 @export var detect_seconds: float = 0.8
 @export var post_hold_seconds: float = 0.5
 @export var verify_seconds: float = 1.2
-@export var starting_seconds: float = 1.5
 @export var splash_seconds: float = 3.0
+## How long [member starting_text] shows after the splash screen, in seconds.
+@export var starting_seconds: float = 1.5
+## How long the DOS cursor under [member starting_text] stays on, and then off, in seconds.
+@export var cursor_blink_seconds: float = 0.25
+## Each part of the desktop appears a random time after the one before, between these, in seconds.
+@export var part_seconds_min: float = 0.05
+@export var part_seconds_max: float = 0.15
 @export_group("Sounds")
 ## Plays from the power switch until the desktop: the fan, the POST beep, the drive; a looping
 ## stream keeps humming through a long wait.
@@ -79,6 +87,12 @@ var _awaiting_key: bool = false
 var _playing: bool = false
 var _bar_offset: float = 0.0
 var _players: Array[AudioStreamPlayer] = []
+## The desktop parts not shown yet, with the modulate that each one gets back.
+var _unshown: Dictionary[CanvasItem, Color] = {}
+
+## Returns the Array of CanvasItems that appear one by one after the boot, in that order; win95.gd
+## sets it. Unset, or for a boot that doesn't start Windows, nothing is hidden.
+var desktop_parts: Callable
 
 @onready var _post: RichTextLabel = %Post
 @onready var _footer: RichTextLabel = %Footer
@@ -134,8 +148,10 @@ func play() -> void:
 		_post.show()
 		_print(starting_text + "\n\n" + windows_memory_text)
 		return
-	if not _skipped and boots_windows:
-		await _run_windows()
+	if boots_windows:
+		if not _skipped:
+			await _run_windows()
+		await _show_desktop()
 	for player in _players:
 		player.stop()
 	hide()
@@ -198,12 +214,54 @@ func _disk_error() -> void:
 
 
 func _run_windows() -> void:
-	_print(starting_text)
-	if not await _wait(starting_seconds):
-		return
 	_show_stage(_splash)
 	set_process(true)
-	await _wait(splash_seconds)
+	if not await _wait(splash_seconds):
+		return
+	set_process(false)
+	_show_stage(_post)
+	_footer.hide()
+	_energy_star.hide()
+	_post.text = starting_text + "\n_"
+	var shown := 0.0
+	while shown < starting_seconds:
+		var step := minf(maxf(cursor_blink_seconds, 0.01), starting_seconds - shown)
+		if not await _wait(step):
+			return
+		shown += step
+		_post.text = starting_text + ("\n" if _post.text.ends_with("_") else "\n_")
+
+
+# The bare background, then each part of the desktop; this node stays on top, clear, and takes the
+# input meanwhile. A skip doesn't shorten it.
+func _show_desktop() -> void:
+	_show_stage(null)
+	set_process(false)
+	self_modulate = Color.TRANSPARENT
+	if not desktop_parts.is_valid():
+		return
+	var parts: Array[CanvasItem] = []
+	parts.assign(desktop_parts.call())
+	for part in parts:
+		_unshown[part] = part.modulate
+		part.modulate.a = 0.0
+	for part: Variant in parts:  # Variant: win95.gd frees and remakes the desktop icons on every change
+		await _pause(randf_range(part_seconds_min, part_seconds_max))
+		_show_part(part)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_ENTER_TREE and _playing and visible:
+		grab_focus.call_deferred()  # the cable moved the screen, which drops the focus
+	elif what == NOTIFICATION_PREDELETE:
+		for part: Variant in _unshown.keys():
+			_show_part(part)
+
+
+func _show_part(part: Variant) -> void:
+	if is_instance_valid(part):
+		(part as CanvasItem).modulate = _unshown[part]
+	_unshown.erase(part)
 
 
 ## Counts the memory test up on the last line; false when the player skipped, or when the test
@@ -229,10 +287,14 @@ func _count_memory() -> bool:
 func _wait(seconds: float) -> bool:
 	if _skipped:
 		return false
+	await _pause(seconds)
+	return not _skipped
+
+
+func _pause(seconds: float) -> void:
 	await get_tree().create_timer(seconds).timeout
 	if not is_inside_tree():
 		await tree_entered
-	return not _skipped
 
 
 # Adds [param text] as lines at the bottom of the screen, scrolling the top off as the BIOS does.

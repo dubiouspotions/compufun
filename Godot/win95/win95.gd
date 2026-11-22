@@ -105,6 +105,9 @@ var _buzz: AudioStreamPlayer
 @onready var _background: TextureRect = $Desktop/DesktopBackground
 @onready var _icons: IconView = $Desktop/DesktopIcons
 @onready var _systray: Node = %Systray
+@onready var _taskbar: Control = $TaskBar
+@onready var _start_button: Control = $TaskBar/HBoxContainer/StartButton
+@onready var _task_buttons: Control = %TaskButtons
 @onready var _no_signal: Control = %NoSignal
 
 
@@ -211,6 +214,7 @@ func _on_booted() -> void:
 		_boot.hardware = hardware
 		_boot.memory_fails = _state.job.memory_fails()
 	_floppy_heard = setup.floppy_in_a
+	_boot.desktop_parts = _desktop_parts
 	pointer_visible = false
 	_boot.finished.connect(func() -> void:
 		pointer_visible = true
@@ -219,6 +223,22 @@ func _on_booted() -> void:
 		_boot.splash_seconds *= 3.0  # a fragmented disk loads Windows slowly
 	add_child(_boot)
 	move_child(_boot, _no_signal.get_index())
+
+
+# The parts that appear one by one after the boot: the wallpaper, each desktop icon, the windows,
+# the taskbar, then its Start button, task buttons and tray.
+func _desktop_parts() -> Array[CanvasItem]:
+	var parts: Array[CanvasItem] = []
+	if _background.texture != null:
+		parts.append(_background)
+	for item: Node in _icons.get_children():
+		if item is CanvasItem and (item as CanvasItem).visible and not item.is_queued_for_deletion():
+			parts.append(item)
+	parts.append_array(_desktop.windows().filter(func(window: Control) -> bool: return window.visible))
+	parts.append_array([_taskbar, _start_button])
+	parts.append_array(_task_buttons.get_children())
+	parts.append(_systray)
+	return parts
 
 
 func _on_powered_off() -> void:
