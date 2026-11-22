@@ -3,7 +3,7 @@ extends "res://tests/test.gd"
 ## restore and not when a new day starts. The street ambience, the rain and the hums are loops, not changes.
 
 const LOOPS: Array[String] = ["res://sounds/city_ambience.ogg", "res://sounds/rain_open.wav", "res://sounds/rain_shut.wav",
-	"res://sounds/light_hum.wav", "res://sounds/pc_fan.wav", "res://sounds/crt_whine.wav"]
+	"res://sounds/light_hum.wav", "res://sounds/pc_fan.wav", "res://sounds/crt_hum.wav"]
 
 var _players := {}  # every audio player, and whether it played on the last frame
 var _started: Array[String] = []

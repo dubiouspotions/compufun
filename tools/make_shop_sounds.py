@@ -438,53 +438,51 @@ def rain(seconds):
 
 def light_hum(seconds):
     """The storage room's bare bulb buzzing on the 50 Hz mains, as a seamless loop of `seconds` (a
-    multiple of 0.25 s): a 100 Hz buzz whose harmonics ring up around 1.5 kHz in the loose filament,
-    swelling a little now and then."""
+    multiple of 0.25 s): a soft 100 Hz buzz whose harmonics ring up a little around 1 kHz in the
+    filament, swelling a little now and then."""
     random.seed(150)
     n = int(seconds * RATE)
     out = [random.gauss(0.0, 0.004) for _ in range(n)]
     for k in range(1, 31):
         f = 100.0 * k
-        gain = (0.5 if k == 1 else 1.0 / k ** 1.1) * (1.0 + 2.5 * math.exp(-((f - 1500.0) / 450.0) ** 2))
+        gain = (0.6 if k == 1 else 1.0 / k ** 1.5) * (1.0 + 0.8 * math.exp(-((f - 1000.0) / 400.0) ** 2))
         phase = random.uniform(0, 2 * math.pi)
         for i in range(n):
             out[i] += gain * math.sin(2 * math.pi * f * i / RATE + phase)
     for i in range(n):
         t = i / RATE
         out[i] *= 1.0 + 0.12 * math.sin(2 * math.pi * 0.25 * t) + 0.06 * math.sin(2 * math.pi * 1.75 * t)
-    return looped(out, [lambda x: biquad(x, "high", 70), lambda x: biquad(x, "low", 5000)])
+    return looped(out, [lambda x: biquad(x, "high", 70), lambda x: biquad(x, "low", 2500)])
 
 
 def pc_fan(seconds):
-    """A 90s PC running, as a seamless loop of `seconds` (a multiple of 0.25 s): the air of its CPU
-    and power-supply fans, and their blades, two 7-blade fans at about 2000 rpm (233.25 and 236.5 Hz)
-    that beat 3.25 times a second."""
+    """A 90s PC running, as a seamless loop of `seconds` (a multiple of 0.25 s): the soft, dull whoosh
+    of its CPU and power-supply fans, a faint drone of their blades (two 7-blade fans at about
+    2000 rpm, 233.25 and 236.5 Hz, beating 3.25 times a second) and the 100 Hz hum of the supply."""
     random.seed(151)
     n = int(seconds * RATE)
     air = looped([random.gauss(0.0, 1.0) for _ in range(n)],
-                 [lambda x: biquad(x, "high", 120), lambda x: biquad(x, "low", 1100), lambda x: biquad(x, "low", 2500)])
-    air = [a + 0.8 * b for a, b in zip(air, looped(air, [lambda x: biquad(x, "band", 450, 1.2)]))]
+                 [lambda x: biquad(x, "high", 90), lambda x: biquad(x, "low", 700), lambda x: biquad(x, "low", 1400)])
+    air = [a + 0.5 * b for a, b in zip(air, looped(air, [lambda x: biquad(x, "band", 300, 1.0)]))]
     rms = math.sqrt(sum(a * a for a in air) / n)
     out = [a / rms for a in air]
-    for f, gain in [(233.25, 0.45), (466.5, 0.15), (236.5, 0.3), (473.0, 0.1)]:
+    for f, gain in [(233.25, 0.1), (236.5, 0.07), (100.0, 0.12), (200.0, 0.04)]:
         for i in range(n):
             out[i] += gain * math.sin(2 * math.pi * f * i / RATE)
     return out
 
 
-def crt_whine(seconds):
-    """A CRT monitor switched on, as a seamless loop of `seconds` (a multiple of 2 s): the soft,
-    wavering whine of its line transformer at 7.867 kHz (half a TV's 15.73 kHz, which a 22050 Hz file
-    can't hold and many ears don't hear) over the faint 100 Hz hum of its power supply."""
+def crt_hum(seconds):
+    """A CRT monitor switched on, as a seamless loop of `seconds` (a multiple of 0.25 s): the low hum
+    of its power supply and deflection coils at 100 Hz and its harmonics, and a faint fizz of high
+    voltage, all under 2 kHz; the line transformer's whine is left out, as it is a piercing tone."""
     random.seed(152)
     n = int(seconds * RATE)
     out = []
     for i in range(n):
         t = i / RATE
-        whine = (1.0 + 0.15 * math.sin(2 * math.pi * 0.75 * t)) * math.sin(2 * math.pi * 7867.0 * t + 12.0 * math.sin(2 * math.pi * 0.5 * t))
-        hum = sum(math.sin(2 * math.pi * 100.0 * k * t + k) / k ** 1.5 for k in range(1, 7))
-        out.append(0.35 * whine + 0.5 * hum + random.gauss(0.0, 0.01))
-    return out
+        out.append(sum(math.sin(2 * math.pi * 100.0 * k * t + k) / k ** 1.5 for k in range(1, 9)) + random.gauss(0.0, 0.08))
+    return looped(out, [lambda x: biquad(x, "high", 70), lambda x: biquad(x, "low", 1800)])
 
 
 def write(path, samples, level=0.7, fade_out=True):
@@ -526,4 +524,4 @@ write(sys.argv[1] + "/rain_open.wav", rain_open, fade_out=False)
 write(sys.argv[1] + "/rain_shut.wav", rain_shut, fade_out=False)
 write(sys.argv[1] + "/light_hum.wav", light_hum(4.0), fade_out=False)
 write(sys.argv[1] + "/pc_fan.wav", pc_fan(4.0), fade_out=False)
-write(sys.argv[1] + "/crt_whine.wav", crt_whine(4.0), fade_out=False)
+write(sys.argv[1] + "/crt_hum.wav", crt_hum(4.0), fade_out=False)

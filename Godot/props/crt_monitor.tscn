@@ -5,7 +5,7 @@
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="3_wbfy6"]
 [ext_resource type="Material" path="res://materials/screen_off.tres" id="4_rttwc"]
 [ext_resource type="Script" path="res://sounds/hum.gd" id="hum"]
-[ext_resource type="AudioStream" path="res://sounds/crt_whine.wav" id="crt_whine"]
+[ext_resource type="AudioStream" path="res://sounds/crt_hum.wav" id="crt_hum"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_jbdi3"]
 size = Vector3(0.24, 0.03, 0.22)
@@ -85,11 +85,11 @@ light_specular = 0.2
 spot_range = 1.4
 spot_angle = 70.0
 
-[node name="Whine" type="AudioStreamPlayer3D" parent="."]
+[node name="Hum" type="AudioStreamPlayer3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, -0.13)
 script = ExtResource("hum")
-stream = ExtResource("crt_whine")
-volume_db = -36.0
+stream = ExtResource("crt_hum")
+volume_db = -46.0
 unit_size = 1.0
 attenuation_filter_cutoff_hz = 20500.0

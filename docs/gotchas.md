@@ -56,7 +56,7 @@ layer (`SoundSet.SOUND_ZONES`, 1) on every 3D player that should sound like its 
 that `SoundSet.play_at` makes gets it. — 2026-11-22
 
 **A quiet 3D sound in the shop is loud on the Room bus, whatever its `volume_db`.** The Room zone's
-reverb send does not follow the player's `volume_db`. Measured 2026-11-22: a CRT whine at -39 dB and
+reverb send does not follow the player's `volume_db`. Measured 2026-11-22: a CRT hum at -39 dB and
 at -80 dB both peaked at -18 dBFS on the Room bus, 2 m from the camera. Keep a quiet loop out of
 the sound zones (`area_mask = 0`, as `Hum` does). — 2026-11-22
 

@@ -56,6 +56,6 @@ omni_attenuation = 1.5
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.05, 0)
 script = ExtResource("hum")
 stream = ExtResource("light_hum")
-volume_db = -25.0
+volume_db = -42.0
 unit_size = 1.5
 attenuation_filter_cutoff_hz = 20500.0
