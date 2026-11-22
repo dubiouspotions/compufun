@@ -86,14 +86,25 @@ func run() -> void:
 	var passing := await boot(false)
 	check("a passing test goes on to Windows", [passing.contains("Starting Windows"), passing.contains("fail")], [true, false])
 
+	# The activist guy's Windows needs both modules; the retired accountant's starts on one.
+	var hardware: Hardware = accountant.computer.hardware.duplicate()
+	var retired: Customer = load("res://customers/retired_accountant.tres")
+	check("only the activist guy's Windows needs more than one module", [hardware.windows_needs_kb > hardware.memory_kb / 2,
+		hardware.windows_needs_kb <= hardware.memory_kb, retired.computer.hardware.windows_needs_kb], [true, true, 0])
+	hardware.memory_kb /= 2
+	var short := await boot(false, hardware)
+	check("one module: the memory test passes, Windows doesn't start", [short.contains("fail"), short.contains("Not enough memory")], [false, true])
 
-# Plays the boot with [param fails], and returns the POST's text once it halted or finished.
-func boot(fails: bool) -> String:
+
+# Plays the boot of [param hardware] (null: the defaults) with [param fails], and returns the POST's
+# text once it halted or finished.
+func boot(fails: bool, hardware: Hardware = null) -> String:
 	var sequence: Node = (load(BOOT) as PackedScene).instantiate()
 	sequence.play_on_start = false
 	for seconds: StringName in [&"warm_up_seconds", &"memory_test_seconds", &"line_seconds", &"detect_seconds", &"post_hold_seconds", &"verify_seconds", &"starting_seconds", &"splash_seconds"]:
 		sequence.set(seconds, 0.0)
 	sequence.set(&"memory_fails", fails)
+	sequence.set(&"hardware", hardware)
 	sequence.set(&"startup_sound", null)
 	root.add_child(sequence)
 	var post := sequence.get_node("%Post") as RichTextLabel
@@ -102,8 +113,9 @@ func boot(fails: bool) -> String:
 	sequence.play()
 	for i in 120:
 		await process_frame
-	check("finished only when the test passes", seen[0], not fails)
-	if fails:
+	var halts := fails or (hardware != null and hardware.memory_kb < hardware.windows_needs_kb)
+	check("finished only when it doesn't halt", seen[0], not halts)
+	if halts:
 		seen[1] = post.text
 		sequence.queue_free()
 	return seen[1]

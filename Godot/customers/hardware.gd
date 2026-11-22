@@ -15,6 +15,9 @@ extends Resource
 @export var cpu_mhz: int = 100
 ## Kilobytes of memory: the first 640K are base memory, the rest extended.
 @export var memory_kb: int = 16384
+## Kilobytes of memory that Windows needs to start: with less, as with one of two RAM modules
+## out, the boot halts on BootSequence.windows_memory_text. 0 starts it with any.
+@export var windows_needs_kb: int = 0
 ## Kilobytes of L2 cache; 0 is none.
 @export var cache_kb: int = 256
 ## True for EDO memory, false for the older fast page mode.
