@@ -24,3 +24,7 @@ shader_parameter/brightness = 1.12
 shader_parameter/flicker = 0.01
 shader_parameter/hum_bar = 0.03
 shader_parameter/hum_bar_speed = 0.08
+shader_parameter/edge_focus = 0.6
+shader_parameter/reflection = 0.05
+shader_parameter/ghosting = 0.06
+shader_parameter/noise = 0.012

@@ -18,6 +18,10 @@ uniform float underscan : hint_range(0.0, 0.15, 0.005) = 0.0;
 uniform float corner_radius : hint_range(0.0, 0.2, 0.005) = 0.03;
 /** The darkening toward the edges and corners. 0 turns it off. */
 uniform float vignette : hint_range(0.0, 1.0, 0.01) = 0.2;
+/** The room's light reflected on the glass: a soft sheen high on the left, there even with the tube off. */
+uniform float reflection : hint_range(0.0, 0.2, 0.005) = 0.0;
+/** The colour of the room's light on the glass. */
+uniform vec3 reflection_color : source_color = vec3(1.0, 0.95, 0.85);
 
 group_uniforms beam;
 /** How dark the gap between two lines of the picture is. VGA at 480 lines barely shows one. */
@@ -28,6 +32,8 @@ uniform float beam_bloom : hint_range(0.0, 1.0, 0.01) = 0.6;
 uniform float convergence : hint_range(0.0, 2.0, 0.05) = 0.4;
 /** Red lands this many VGA pixels right of green everywhere, and blue as far left. */
 uniform float static_convergence : hint_range(-1.0, 1.0, 0.05) = 0.1;
+/** How much the beam's focus softens toward the corners. The centre stays pixel-sharp. */
+uniform float edge_focus : hint_range(0.0, 1.0, 0.01) = 0.0;
 
 group_uniforms phosphor;
 /** 0: no mask. 1: aperture grille (Trinitron stripes). 2: shadow mask (dot triads). */
@@ -54,6 +60,12 @@ uniform float flicker : hint_range(0.0, 0.1, 0.005) = 0.0;
 uniform float hum_bar : hint_range(0.0, 0.1, 0.005) = 0.0;
 /** How many times a second the hum bar crosses the screen. */
 uniform float hum_bar_speed : hint_range(0.0, 1.0, 0.01) = 0.08;
+/** A faint echo of the picture to the right of each edge: reflections in a long or cheap VGA cable. */
+uniform float ghosting : hint_range(0.0, 0.3, 0.005) = 0.0;
+/** How far right the echo lands, in VGA pixels. */
+uniform float ghost_offset : hint_range(1.0, 8.0, 0.5) = 3.0;
+/** Faint snow in the analog signal, new every frame. */
+uniform float noise : hint_range(0.0, 0.1, 0.002) = 0.0;
 
 group_uniforms;
 
@@ -104,6 +116,8 @@ void fragment() {
 	vec2 uv = crt_bend(crt_beam(UV, TIME), vec2(curvature_x, curvature_y), underscan);
 	vec2 centered = uv * 2.0 - 1.0;
 	vec2 misconverge = (centered * convergence * length(centered) / 1.41421 + vec2(static_convergence, 0.0)) / size;
+	// A softer beam is the sharp sample at a lower scale: at 1 it is plain bilinear.
+	scale = mix(scale, 1.0, edge_focus * clamp(dot(centered, centered) * 0.5, 0.0, 1.0));
 	vec3 color;
 	if (misconverge == vec2(0.0)) {
 		color = to_linear(sharp_sample(screen_texture, uv, size, scale));
@@ -122,6 +136,13 @@ void fragment() {
 			sum += fetch_linear(screen_texture, px + r * vec2(cos(angle), sin(angle)), size);
 		}
 		color += sum / 12.0 * glow;
+	}
+
+	if (ghosting > 0.0) {
+		color += fetch_linear(screen_texture, uv * size - vec2(ghost_offset, 0.0), size) * ghosting;
+	}
+	if (noise > 0.0) {
+		color = max(color + noise * (hash(floor(uv * size) + fract(TIME * 7.13)) - 0.5), vec3(0.0));
 	}
 
 	float luma = dot(color, vec3(0.299, 0.587, 0.114));
@@ -149,6 +170,9 @@ void fragment() {
 	color = crt_tube_light(color, uv, TIME);
 
 	color *= crt_picture_edge(uv, fwidth(uv.y));
-	color = max(color, to_linear(black_level)) * crt_tube_face(UV, corner_radius, fwidth(UV.y));
+	color = max(color, to_linear(black_level));
+	vec2 sheen = (UV - vec2(0.3, 0.18)) * vec2(1.6, 2.4);
+	color += reflection * to_linear(reflection_color) * (exp(-dot(sheen, sheen) * 2.0) + 0.3 * (1.0 - UV.y));
+	color *= crt_tube_face(UV, corner_radius, fwidth(UV.y));
 	COLOR = vec4(to_display(color), 1.0) * modulate;
 }
