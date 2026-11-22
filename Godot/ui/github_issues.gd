@@ -1,0 +1,154 @@
+class_name GitHubIssues
+extends RefCounted
+## Makes GitHub issues for the dev tools (F9, the Story Lab) with the team's fine-grained token, and
+## puts each new issue on the project board. Works in a run from the checkout: it reads the token
+## and the repo from there.
+
+## The environment variable that holds the token; without it, [constant TOKEN_FILE] does.
+const TOKEN_ENV: String = "HUMANERROR_ISSUES_TOKEN"
+## The token file in the repo root (docs/working-together.md).
+const TOKEN_FILE: String = "issues-token.txt"
+
+var _host: Node
+var _token: String
+var _repo: String
+var _project: int
+var _agent: String
+
+
+## Sends with [param token] (from [method read_token]) to [param repo] (owner/name; "" reads it
+## from git's remote origin). A new issue joins board [param project] of the repo's owner; 0 joins
+## none. Each request runs on an HTTPRequest under [param host], which must be in the tree, and
+## says [param agent] as its User-Agent.
+func _init(host: Node, token: String, repo: String, project: int, agent: String) -> void:
+	_host = host
+	_token = token
+	_repo = repo if repo != "" else repo_slug()
+	_project = project
+	_agent = agent
+
+
+## {"token"} from [constant TOKEN_ENV] or [constant TOKEN_FILE] in the repo, or {"error"} that says
+## where to put one.
+static func read_token() -> Dictionary:
+	var token := OS.get_environment(TOKEN_ENV).strip_edges()
+	if token != "":
+		return {"token": token}
+	var path := repo_dir().path_join(TOKEN_FILE)
+	if not FileAccess.file_exists(path):
+		return {"error": "no token: put one in %s (see docs/working-together.md)" % path}
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return {"error": "cannot read %s: %s" % [path, error_string(FileAccess.get_open_error())]}
+	token = file.get_line().replace("﻿", "").strip_edges()
+	if token == "":
+		return {"error": "%s is empty" % path}
+	return {"token": token}
+
+
+## The repo root: the folder above the Godot project.
+static func repo_dir() -> String:
+	return ProjectSettings.globalize_path("res://").path_join("..").simplify_path()
+
+
+## The trimmed output of git with [param arguments] in the repo, or "unknown" when git is missing
+## or fails.
+static func git(arguments: PackedStringArray) -> String:
+	var output: Array = []
+	var args := PackedStringArray(["-C", repo_dir()])
+	args.append_array(arguments)
+	var code := OS.execute("git", args, output, true)
+	if code != 0 or output.is_empty():
+		return "unknown"
+	return String(output[0]).strip_edges()
+
+
+## owner/name from git's remote "origin", or "" when it is not a GitHub URL.
+static func repo_slug() -> String:
+	var regex := RegEx.create_from_string("github\\.com[:/]([^/]+)/([^/]+?)(?:\\.git)?$")
+	var found := regex.search(git(["remote", "get-url", "origin"]))
+	return "%s/%s" % [found.get_string(1), found.get_string(2)] if found != null else ""
+
+
+## The repo as owner/name, or "" when it is unknown.
+func repo() -> String:
+	return _repo
+
+
+## Makes the issue with [param title] and [param body] (Markdown), labelled with [param label]
+## ({"name", "color", "description"}; made when the repo lacks it), and puts it on the board.
+## Returns {"url", "board_error"} with board_error "" when it joined the board (or there is none),
+## or {"error"} when there is no issue.
+func create_issue(title: String, body: String, label: Dictionary) -> Dictionary:
+	if _repo == "":
+		return {"error": "cannot find the GitHub repo: set it, or check git's remote origin"}
+	var made := await api(HTTPClient.METHOD_POST, "/repos/%s/labels" % _repo, label)
+	if made["code"] != 422 and made.has("error"):  # 422: the label exists.
+		return {"error": "cannot make the label %s: %s" % [label["name"], made["error"]]}
+	var created := await api(HTTPClient.METHOD_POST, "/repos/%s/issues" % _repo, {"title": title, "body": body, "labels": [label["name"]]})
+	if created.has("error"):
+		return {"error": "cannot create the issue: %s" % created["error"]}
+	var result := {"url": String(created["data"]["html_url"]), "board_error": ""}
+	if _project > 0:
+		var added := await _add_to_board(_repo.get_slice("/", 0), String(created["data"]["node_id"]))
+		if added.has("error"):
+			result["board_error"] = added["error"]
+	return result
+
+
+## One request to the GitHub REST API at [param path] (such as "/repos/o/n/issues"). Returns
+## {"code", "data"} (the parsed JSON reply), with "error" too when there is no reply or the status
+## is not 2xx. [param body] null: no body.
+func api(method: HTTPClient.Method, path: String, body: Variant = null) -> Dictionary:
+	var url := "https://api.github.com" + path
+	var http := HTTPRequest.new()
+	http.process_mode = Node.PROCESS_MODE_ALWAYS
+	_host.add_child(http)
+	var headers := PackedStringArray([
+		"Authorization: Bearer " + _token,
+		"Accept: application/vnd.github+json",
+		"X-GitHub-Api-Version: 2022-11-28",
+		"Content-Type: application/json",
+		"User-Agent: " + _agent,
+	])
+	var err := http.request(url, headers, method, JSON.stringify(body) if body != null else "")
+	if err != OK:
+		http.queue_free()
+		return {"code": 0, "error": "cannot send the request to %s: %s" % [url, error_string(err)]}
+	var reply: Array = await http.request_completed
+	http.queue_free()
+	if reply[0] != HTTPRequest.RESULT_SUCCESS:
+		return {"code": 0, "error": "no reply from %s (HTTPRequest result %d)" % [url, reply[0]]}
+	var code: int = reply[1]
+	var text := (reply[3] as PackedByteArray).get_string_from_utf8()
+	var data: Variant = JSON.parse_string(text) if text != "" else null
+	var result := {"code": code, "data": data}
+	if code < 200 or code >= 300:
+		var message := String(data.get("message", "")) if data is Dictionary else text.left(200)
+		result["error"] = "HTTP %d from %s: %s" % [code, path, message]
+	return result
+
+
+## Adds the issue [param item] (a GraphQL node id) to the board of [param owner]. Returns {} or
+## {"error"}.
+func _add_to_board(owner: String, item: String) -> Dictionary:
+	var found := await _graphql("query($o: String!, $n: Int!) { organization(login: $o) { projectV2(number: $n) { id } } }", {"o": owner, "n": _project})
+	if found.has("error"):
+		return found
+	var project: Variant = found["data"]["organization"]["projectV2"] if found["data"].get("organization") != null else null
+	if project == null:
+		return {"error": "cannot see project %d of %s" % [_project, owner]}
+	return await _graphql("mutation($p: ID!, $i: ID!) { addProjectV2ItemById(input: {projectId: $p, contentId: $i}) { item { id } } }", {"p": project["id"], "i": item})
+
+
+## {"data"} of a GitHub GraphQL query, or {"error"}.
+func _graphql(query: String, variables: Dictionary) -> Dictionary:
+	var reply := await api(HTTPClient.METHOD_POST, "/graphql", {"query": query, "variables": variables})
+	if reply.has("error"):
+		return reply
+	if not reply["data"] is Dictionary:
+		return {"error": "GraphQL: the reply is not JSON"}
+	var data: Dictionary = reply["data"]
+	if data.has("errors"):
+		return {"error": "GraphQL: %s" % data["errors"][0].get("message", JSON.stringify(data["errors"]))}
+	return {"data": data["data"]}
