@@ -27,10 +27,10 @@ func dress(computer: Computer) -> void:
 	Sticker.stick(computer.stickers if computer != null else ([] as Array[Sticker]), _sticker_faces)
 
 
-## The 3.5" floppy drive on the case front, the front's node named Floppy; null for a front without one.
-func floppy_drive() -> MeshInstance3D:
+## The 3.5" floppy drive on the case front, the front's FloppyDrive named Floppy; null for a front without one.
+func floppy_drive() -> FloppyDrive:
 	for front: Node in _front.get_children():
-		var drive := front.get_node_or_null(^"Floppy") as MeshInstance3D
+		var drive := front.get_node_or_null(^"Floppy") as FloppyDrive
 		if drive != null:
 			return drive
 	return null

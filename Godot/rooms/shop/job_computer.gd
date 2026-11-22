@@ -12,7 +12,7 @@ signal power_clicked(computer: JobComputer)
 ## The player clicked the screwdriver beside the computer in the Workview, or its dashed outline
 ## once the computer lies and is closed with its screws.
 signal screwdriver_clicked(computer: JobComputer)
-## The player clicked the case's floppy drive while a floppy is in it.
+## The player clicked the eject button of the case's floppy drive while a floppy is in it.
 signal floppy_clicked(computer: JobComputer)
 
 ## The outline colour while the mouse or the dragged plug is over the computer.
@@ -58,8 +58,10 @@ var _screwdriver_ghost: StandardMaterial3D
 var _pose: float = 0.0
 var _tip: Tween
 var _upright: Dictionary[Node3D, Transform3D] = {}
-## Over the case front's floppy drive; null for a front without one.
+## Over the eject button of the case front's floppy drive; null for a front without one.
 var _floppy_hotspot: Hotspot
+## The upright case front's floppy drive and the lying case's; empty for a front without one.
+var _floppy_drives: Array[Node] = []
 
 @onready var _tower: PcTower = $Tower
 @onready var _hotspot: Hotspot = %Hotspot
@@ -97,6 +99,7 @@ func _ready() -> void:
 	_post_it.job = job
 	_open_case.job = job
 	_floppy_hotspot = _make_floppy_hotspot()
+	_floppy_drives = find_children("*", "FloppyDrive", true, false)
 	for node: Node3D in [_tower, _power_light, _power_hotspot, _cable_socket, _hotspot, _post_it_anchor, _floppy_hotspot]:
 		if node != null:
 			_upright[node] = node.transform
@@ -107,21 +110,24 @@ func _ready() -> void:
 	_sync_power()
 
 
-# A hotspot over the case front's floppy drive, a little proud of the front so it wins the click.
+# A hotspot over the floppy drive's eject button, standing out in front of the Front area so it wins the click.
 func _make_floppy_hotspot() -> Hotspot:
 	var drive := _tower.floppy_drive()
-	var box := drive.mesh as BoxMesh if drive != null else null
+	var box := drive.eject_button.mesh as BoxMesh if drive != null else null
 	if box == null:
 		if Game.has_floppy(job):
-			push_error("JobComputer: %s has a floppy in A: but its case front has no Floppy box to eject it from" % job.customer.resource_path)
+			push_error("JobComputer: %s has a floppy in A: but its case front has no FloppyDrive named Floppy, with a box EjectButton, to eject it from" % job.customer.resource_path)
 		return null
-	var local := global_transform.affine_inverse() * drive.global_transform
+	var local := global_transform.affine_inverse() * drive.eject_button.global_transform
 	var hotspot := _HOTSPOT.instantiate() as Hotspot
-	hotspot.size = box.size * local.basis.get_scale() + Vector3(0.01, 0.01, 0.04)
-	hotspot.transform = Transform3D(local.basis.orthonormalized(), local.origin)
+	hotspot.size = box.size * local.basis.get_scale() + Vector3(0.016, 0.024, 0.0)
+	hotspot.size.z = 0.05
+	var basis := local.basis.orthonormalized()
+	hotspot.transform = Transform3D(basis, local.origin + basis.z * hotspot.size.z / 2.0)
 	add_child(hotspot)
 	hotspot.clicked.connect(func(_h: Hotspot) -> void: floppy_clicked.emit(self))
-	hotspot.highlight_on_hover(drive, button_hover_color)
+	hotspot.mouse_entered.connect(func() -> void: drive.hovered = true)
+	hotspot.mouse_exited.connect(func() -> void: drive.hovered = false)
 	return hotspot
 
 
@@ -188,9 +194,23 @@ func _sync_case() -> void:
 	_sync_screwdriver()
 	_hotspot.set_enabled(not working)  # in the Workview the screwdriver, the screws and the panel take the clicks
 	_front.input_ray_pickable = working and not lying  # swallows clicks on the front, so they don't lay it down
-	if _floppy_hotspot != null:
-		_floppy_hotspot.set_enabled(not lying and Game.has_floppy(job))
+	_sync_floppy(working, lying)
 	_sync_outline()
+
+
+# The eject button sticks out while a floppy is in, and pulses where the player works and can eject.
+func _sync_floppy(working: bool, lying: bool) -> void:
+	var floppy_in := Game.has_floppy(job)
+	for drive: FloppyDrive in _floppy_drives:
+		drive.floppy_in = floppy_in
+	if _floppy_hotspot == null:
+		return
+	var can_eject := floppy_in and not lying
+	_floppy_hotspot.set_enabled(can_eject)
+	var upright := _tower.floppy_drive()
+	upright.usable = can_eject and working
+	if not can_eject:
+		upright.hovered = false
 
 
 # Tips the case between standing (0) and lying on its side (1). The tower turns; the open case,
