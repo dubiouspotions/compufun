@@ -135,7 +135,7 @@ leave buttons). After a choice: `[if ...]` and `[end]`.
 ## Flags and signs
 
 Flags are the facts of the story: a name and a number. `sign_<id>` starts the corruption sign
-`corruption/<id>.tscn`. `<customer>_cambion` makes that customer's computer run Win95 Cambion;
+`corruption/<id>.tscn`. `<customer>_runs_cambion` (the customer file name) makes that customer's computer run Win95 Cambion;
 a day or a conversation sets it, and clearing it uninstalls Cambion.
 
 ## Read and check it
