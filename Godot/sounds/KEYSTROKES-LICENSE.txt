@@ -1,0 +1,10 @@
+keystroke_1.wav to keystroke_6.wav and keystroke_space.wav
+
+Source: "Mechanical-Keyboard: Typing" by M4taiori
+https://freesound.org/people/m4taiori/sounds/331428/
+Licence: Creative Commons Attribution 3.0 Unported (CC BY 3.0)
+https://creativecommons.org/licenses/by/3.0/
+
+Changes: single key presses cut from the recording (starts at 1.030, 1.858,
+2.498, 6.493, 1.319, 2.747 and, for the space bar, 12.484 s), mixed to mono,
+high-passed at 120 Hz, faded out over the last 10 ms and normalised.

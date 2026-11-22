@@ -42,6 +42,7 @@ Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actio
 - `Godot/sounds/cable_plug_out.ogg`: trimmed from "Power Cord Plug 1_1" by Joao_Janz on Freesound (https://freesound.org/people/Joao_Janz/sounds/477628/), CC0.
 - `Godot/sounds/floppy_insert.ogg`: cut from "Inserting 3.5 inch floppy-disk into floppy disk drive" by micropolis on Freesound (https://freesound.org/people/micropolis/sounds/637057/), CC0.
 - `Godot/sounds/floppy_eject.ogg`: cut from "Taking 3.5-inch floppy-disk from floppy disk drive" by micropolis on Freesound (https://freesound.org/people/micropolis/sounds/637058/), CC0.
+- `Godot/sounds/keystroke_1.wav` to `keystroke_6.wav` and `keystroke_space.wav`: key presses cut from "Mechanical-Keyboard: Typing" by M4taiori on Freesound (https://freesound.org/people/m4taiori/sounds/331428/), CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/); the cuts are listed in `Godot/sounds/KEYSTROKES-LICENSE.txt`.
 - `Godot/win95/theme/boot_logo.png`: the Windows 95 startup screen, (C) Microsoft, not licensed to us. Taken from the Windows Wallpaper Wiki (https://windowswallpaper.miraheze.org/wiki/Windows_95).
 - `Godot/win95/wallpapers/` (all but `win95-default.png`): the wallpapers that shipped with Windows 95, (C) Microsoft, not licensed to us. Taken from the Windows Wallpaper Wiki (https://windowswallpaper.miraheze.org/wiki/Windows_95).
 - `Godot/sounds/end_groan_1.wav`, `end_groan_2.wav`: groans recorded for the game by the team.
