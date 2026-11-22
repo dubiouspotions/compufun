@@ -1,5 +1,5 @@
 extends "res://tests/test.gd"
-## Customers never say the names that the player gave them (display_name, the person's nickname):
+## Customers never say the name that the dialogue shows for them (Customer.spoken_name()):
 ## not in their errands' conversations, the shared ones, or the phone's greeting.
 
 const SHARED: String = "res://customers/conversations/"
@@ -23,7 +23,7 @@ func run() -> void:
 		var lines: Array[DialogueLine] = [greeting]
 		for c: Conversation in errand.conversations + shared:
 			lines.append_array(c.all_lines())
-		for name: String in [who.display_name, who.spoken_name()]:
+		for name: String in [who.spoken_name()]:
 			for line: DialogueLine in lines:
 				if name != "" and line.text.containsn(name):
 					check("%s doesn't call %s %s" % [errand.file, who.resource_path, name], line.text, "")

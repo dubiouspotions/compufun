@@ -4,16 +4,31 @@ brief:
 	Her child's hamster crept into the computer and lies on the fan. The symptoms are the Skater's (Dust Overheat) on purpose: the player finds the difference by opening it. The fan is fine; swapping it changes nothing.
 
 == drop-off
-(happy) Oh, hello dear. Isn't this rain something?
-+ Did you get wet?
-	(happy) Only a little. I had the computer under my coat.
-+ So, what's your problem?
-	(problem) It starts, and then it just switches itself off again.
-	(neutral) And it smells a bit funny. Like a pet shop.
-	+ Any pets at home?
-		(happy) Only the children's hamster, Nibbles. He got out on Sunday, the little rascal.
-	- OK, leave it with me. [end]
-		(happy) Thank you, dear. No rush.
+(neutral) Hello, sir.
+- Welcome to Compufun! How can I help you?
+	(problem) I'm not sure you can help me, but I have an odd problem with my computer. As you can probably tell, it has started to smell terribly.
+- Woha! What is that smell?
+	(problem) I was hoping you could tell me!
+
+- I'll [cough] take a [cough] look.
+	(happy) Lovely! I'll check back later, I have some family issues to take care of for now.
+	- [Cough] I'll call you when it's ready for pickup!
+		(neutral) Thank you, sir. Goodbye!
 
 == pick-up
-(happy) It works! Oh, and you didn't see a hamster anywhere, did you?
+(neutral) Hello, sir! That was quick!
+- I have indeed found the issue and fixed it.
+	(happy) That's just lovely!
+- I have both good and bad news for you.
+	(problem) Oh, no. That doesn't sound good. I'm still struggling with our family issues and now this.
+	- I'm sorry to hear that...
+	- I'll start with the good news then.
+	- I'll start with the bad news then.
+	(problem) Oh, god. Just tell me already.
+
+- Just one little detail... There seems to have been a dead hamster in your chassi.
+- Well... About that smell...
+	(problem) Don't tell me something crawled up and died inside my computer because that's what it smelled like!
+	- ...
+(problem) Oh, no! Poor Mr Nibbles! So THAT'S where he went.
+(neutral) Well, I guess I have two problems less to worry about. Thank you for your help. Goodbye sir.

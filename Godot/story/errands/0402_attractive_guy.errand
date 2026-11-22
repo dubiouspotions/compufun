@@ -4,16 +4,25 @@ brief:
 	A jock who doesn't care about computers, but his colleague at work has a cool screensaver, and he wants it too. The fix is the Pipes. No Cambion.
 
 == drop-off
-(neutral) Hey. Quick one, I've got the gym at six.
-+ Big workout?
-	(happy) Legs. Always legs on a Tuesday.
-+ So, what's your problem?
-	(problem) Look, I don't care about computers. But a guy at work has these pipes on his screen.
-	(happy) A good-looking guy like me needs a good-looking screensaver.
-	+ What do they look like?
-		(neutral) Pipes. Coloured ones. They grow all over the screen. Sick.
-	- OK, leave it with me. [end]
-		(happy) Make it look good.
+(neutral) Well hello there! I was hoping you could help me with kind of an urgent matter.
+- Welcome to Compufun! I'll do my best to help. Tell me more.
+- Urgent, huh? Haven't heard that in awhile.
+(problem) You see, an attractive guy like me needs a matching screensaver.
+- You want me to... change your screensaver..?
+	(happy) Exactly! To something suiting my formidable person.
+	- Sure! I know just the perfect one.
+	- It's one of my most expensive services and I'm actually fully booked but for an extra fee I'll make an exception for you and let you skip the line.
+	- What the actual...
+	(happy) Excellent!
+	(neutral) I'll be back to pick it up soon!
 
 == pick-up
-(happy) Pipes? Nice. Now we're talking.
+(neutral) Finally! I'm so excited to see my new screensaver!
+- It was a tedious process but after thorough analysis I have managed to find the perfect fit.
+- I truly hope it will meet your expectations.
+- It was a tight game between the aquarium, the 3D pipes, the maze and the other "attractive" options...
+(happy) Let me see it this instant!
+- Behold! The most attractive screensaver there is!
+- Here we go...
+(happy) WOW! It's even better than I could've imagined! So cool! So futuristic! And formidable! Attractive!
+(neutral) I will definitely recommend your se
