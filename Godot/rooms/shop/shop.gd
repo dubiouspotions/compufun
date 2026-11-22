@@ -416,6 +416,7 @@ func _move_camera(view_name: StringName) -> void:
 	if marker == null:
 		return
 	var first := _shown_view == &""
+	var from: ViewMarker = null if first else view_marker(_shown_view)
 	_shown_view = view_name
 	if _camera_tween != null:
 		_camera_tween.kill()
@@ -424,10 +425,42 @@ func _move_camera(view_name: StringName) -> void:
 		_camera.fov = marker.fov
 		return
 	var seconds := marker.turn_seconds if marker.turn_seconds > 0.0 else turn_seconds
+	var doorway := marker.doorway
+	if doorway == null and from != null:
+		doorway = from.doorway
 	_camera_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_parallel()
-	_camera_tween.tween_property(_camera, "global_position", marker.global_position, seconds)
-	_camera_tween.tween_property(_camera, "quaternion", marker.global_basis.get_rotation_quaternion(), seconds)
+	if doorway != null:
+		_camera_tween.tween_method(_through_doorway(doorway, marker), 0.0, 1.0, seconds)
+	else:
+		_camera_tween.tween_property(_camera, "global_position", marker.global_position, seconds)
+		_camera_tween.tween_property(_camera, "quaternion", marker.global_basis.get_rotation_quaternion(), seconds)
 	_camera_tween.tween_property(_camera, "fov", marker.fov, seconds)
+
+
+# The camera's move from where it is now to [param marker] through [param doorway], as a function of
+# the progress from 0 to 1: straight through the doorway along its Z axis, turned as the doorway is
+# there, so it never cuts through the wall beside it.
+func _through_doorway(doorway: Node3D, marker: ViewMarker) -> Callable:
+	var start := _camera.global_position
+	var door := doorway.global_position
+	var end := marker.global_position
+	var axis := doorway.global_basis.z.normalized()
+	var handle := axis * signf((start - door).dot(axis)) * minf(start.distance_to(door), door.distance_to(end)) * 0.5
+	var path := Curve3D.new()
+	path.add_point(start)
+	path.add_point(door, handle, -handle)
+	path.add_point(end)
+	var length := path.get_baked_length()
+	var door_at := path.get_closest_offset(door) / length
+	var turned_from := _camera.quaternion
+	var turned_at_door := doorway.global_basis.get_rotation_quaternion()
+	var turned_to := marker.global_basis.get_rotation_quaternion()
+	return func(progress: float) -> void:
+		_camera.global_position = path.sample_baked(progress * length)
+		if progress < door_at:
+			_camera.quaternion = turned_from.slerp(turned_at_door, smoothstep(0.0, door_at, progress))
+		else:
+			_camera.quaternion = turned_at_door.slerp(turned_to, smoothstep(door_at, 1.0, progress))
 
 
 ## Moves the Workview marker to the eye of the computer in focus, standing or lying. True when it

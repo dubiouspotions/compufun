@@ -21,3 +21,6 @@ enum Screen { NONE, COMPUFUN_DB, WIN95, WORKVIEW }
 @export_range(20.0, 100.0) var fov: float = 50.0
 ## How long the camera takes to turn to this view, in seconds; 0 uses the room's turn_seconds.
 @export_range(0.0, 10.0, 0.05, "suffix:s") var turn_seconds: float = 0.0
+## A point that the camera passes through on its way to and from this view, such as a doorway. The
+## camera goes through it along its Z axis, turned as it is. Empty: the camera moves straight.
+@export var doorway: Node3D
