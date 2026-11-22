@@ -10,7 +10,7 @@ extends Node3D
 ## and opens up with it.
 
 ## The group of every customer body that walks through the door.
-const WALKERS: StringName = &"customer_bodies"
+const WALKERS: StringName = CustomerBody.GROUP
 
 ## How far a push swings the door, in degrees.
 @export var open_degrees: float = 85.0

@@ -11,6 +11,8 @@ extends Node3D
 const SHIRT_PARAMETERS: Array[StringName] = [&"albedo_texture", &"albedo_color", &"uv_rect", &"tint_texture",
 	&"tint_rect", &"fill_transparent"]
 
+## The group of every customer body: the door watches them, and the F2 menu switches their relief.
+const GROUP: StringName = &"customer_bodies"
 ## The modelled parts that the photo relief replaces; a hat hangs from the head, so it goes too.
 const MODELLED_UPPER_BODY: Array[StringName] = [&"Torso", &"Neck", &"Head", &"Face", &"ShoulderL", &"ShoulderR"]
 
@@ -34,7 +36,11 @@ const MODELLED_UPPER_BODY: Array[StringName] = [&"Torso", &"Neck", &"Head", &"Fa
 ## Shows the upper body as a relief of the person's neutral portrait (PhotoRelief) in place of the
 ## modelled head, torso, arms and hat; the arms are the photo's, so they hang stiff. Off, or for a
 ## person with no neutral portrait: the modelled upper body.
-@export var photo_relief: bool = true
+@export var photo_relief: bool = true:
+	set(value):
+		photo_relief = value
+		if is_node_ready() and _has_shown:
+			_show_relief(_shown.person if _shown != null else null)
 ## The relief's scale: how wide a head is and how high its top is, in metres, and how far the
 ## middle of the relief bulges each way.
 @export var relief_head_width: float = 0.18
@@ -98,7 +104,7 @@ var carrying: bool = false:
 
 
 func _ready() -> void:
-	add_to_group(ShopDoor.WALKERS)
+	add_to_group(GROUP)
 	_face = _own_copy(face_material)
 	_face.set_shader_parameter("uv_rect", _face_rect())
 	_skin = _own_copy(skin_material)
