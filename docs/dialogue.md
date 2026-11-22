@@ -36,6 +36,7 @@ on close: sign_logo_blue
 close signs: posters_bounce
 first customer: 5-8
 between customers: 20-40
+empty counter wait: 4
 notes:
 	Early corruption signs start: small and flashy, never obvious.
 ```
@@ -43,7 +44,8 @@ notes:
 Every key is optional. `weather` is `clear` (the default) or `rain`. `on start` sets flags as the
 day starts; `on close` sets flags at closing that stay; `close signs` start at closing and stop the
 next morning. Flags are `name` (1), `name=2`, or `name=0` (clears it). The waits are seconds, a
-random time from the first to the second number. `notes` is for people only.
+random time from the first to the second number; `empty counter wait` caps the wait for the next
+customer while the counter is empty. `notes` is for people only.
 
 ## An errand: `story/errands/<code>_<customer>.errand`
 

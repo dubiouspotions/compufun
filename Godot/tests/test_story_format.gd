@@ -48,6 +48,7 @@ on start: sign_pipedream
 on close: sign_logo_blue, logo_stage=2
 close signs: posters_bounce
 between customers: 10-20
+empty counter wait: 2.5
 notes:
 	Early corruption signs start.
 	Never obvious.

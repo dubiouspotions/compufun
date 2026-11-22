@@ -26,6 +26,7 @@ const PROBLEMS_DIR: String = "res://problems/"
 const EFFECTS_DIR: String = "res://voices/effects/"
 const _DEFAULT_FIRST_WAIT: Vector2 = Vector2(5.0, 8.0)
 const _DEFAULT_GAP: Vector2 = Vector2(20.0, 40.0)
+const _DEFAULT_IDLE_WAIT: float = 4.0
 
 
 ## The errand in [param text], read from [param path], whose file name gives its errand code.
@@ -107,6 +108,8 @@ static func write_day(day: Day) -> String:
 		out.append("first customer: " + _range(day.first_wait_seconds))
 	if day.gap_seconds != _DEFAULT_GAP:
 		out.append("between customers: " + _range(day.gap_seconds))
+	if not is_equal_approx(day.idle_wait_seconds, _DEFAULT_IDLE_WAIT):
+		out.append("empty counter wait: " + _number(day.idle_wait_seconds))
 	_write_text_block(out, "notes", day.notes)
 	return "\n".join(out) + "\n"
 
@@ -253,7 +256,7 @@ class _Reader:
 			_error(0, "the file name must be day_1 to day_7, not '%s'" % stem)
 		else:
 			d.number = stem.substr(4).to_int()
-		var keys := ["weather", "warp", "on start", "on close", "close signs", "first customer", "between customers", "notes"]
+		var keys := ["weather", "warp", "on start", "on close", "close signs", "first customer", "between customers", "empty counter wait", "notes"]
 		var fields := _read_fields(0, _lines.size(), keys)
 		if fields.has("weather"):
 			if fields.weather in ["clear", "rain"]:
@@ -279,6 +282,12 @@ class _Reader:
 			d.first_wait_seconds = _seconds(fields["first customer"], fields["first customer_line"])
 		if fields.has("between customers"):
 			d.gap_seconds = _seconds(fields["between customers"], fields["between customers_line"])
+		if fields.has("empty counter wait"):
+			var idle: String = fields["empty counter wait"]
+			if idle.is_valid_float() and idle.to_float() >= 0.0:
+				d.idle_wait_seconds = idle.to_float()
+			else:
+				_error(fields["empty counter wait_line"], "empty counter wait: '%s' is not a number of seconds" % idle)
 		d.notes = fields.get("notes", "")
 		result.errors = _sorted_errors()
 		return result

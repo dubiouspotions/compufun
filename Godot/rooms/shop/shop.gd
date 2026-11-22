@@ -285,6 +285,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		view_requested.emit(view_marker(Game.view).back)
 		return
+	if press != null and press.pressed and press.button_index == MOUSE_BUTTON_LEFT and Game.focus != null \
+			and Game.can_stand_up(Game.focus) and _empty_workview_at(press.position):
+		get_viewport().set_input_as_handled()  # the standing case must not take this click in picking
+		Game.stand_up(Game.focus)  # as a click on the screwdriver's outline does
+		return
 	var mouse := event as InputEventMouse
 	if not _bench.dragging or mouse == null:
 		return
@@ -311,6 +316,14 @@ func _back_strip_at(at: Vector2) -> bool:
 	if _read_open or _bench.dragging or _hand.is_dragging() or _hand.covers(at):
 		return false
 	return _clickable_at(at) == null and not _post_it_at(at)
+
+
+# True when [param at], in pixels of the world buffer, is in the Workview, off every computer, with
+# nothing clickable there, and nothing is being dragged.
+func _empty_workview_at(at: Vector2) -> bool:
+	if Game.view != WORKVIEW or _read_open or _bench.dragging or _hand.is_dragging() or _hand.covers(at):
+		return false
+	return _clickable_at(at) == null and not _post_it_at(at) and _job_at(at) == null
 
 
 # True when [param at], in pixels of the world buffer, is on the pinned post-it, which a click brings
