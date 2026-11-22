@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://dev/story_lab/conversation_graph.gd" id="1_graph"]
+[ext_resource type="Script" path="res://voices/voice_player.gd" id="2_voice"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_paper"]
 bg_color = Color(0.945, 0.945, 0.94, 1)
@@ -39,6 +40,17 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="Voice" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_voice")
+
+[node name="MoodPicker" type="PopupPanel" parent="."]
+unique_name_in_owner = true
+
+[node name="Moods" type="GridContainer" parent="MoodPicker"]
+unique_name_in_owner = true
+columns = 4
 
 [node name="ConfirmDelete" type="ConfirmationDialog" parent="."]
 unique_name_in_owner = true

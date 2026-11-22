@@ -44,6 +44,9 @@ var _pending_delete: Resource
 var _status: Label
 
 @onready var _overlay: Control = %Returns
+@onready var _voice: VoicePlayer = %Voice
+@onready var _mood_picker: PopupPanel = %MoodPicker
+@onready var _moods_grid: GridContainer = %Moods
 @onready var _confirm: ConfirmationDialog = %ConfirmDelete
 
 
@@ -567,6 +570,8 @@ func _line_row(reply: Reply, index: int) -> Control:
 		mood.text = "?"
 		mood.add_theme_color_override(&"font_color", error_color)
 	mood.tooltip_text = _mood_tip(line.pose)
+	if not _read_only:
+		mood.pressed.connect(_pick_mood.bind(line, mood))
 	row.add_child(mood)
 	var words := VBoxContainer.new()
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -578,6 +583,13 @@ func _line_row(reply: Reply, index: int) -> Control:
 	var text := _label(line.text, 14, ink)
 	_spot(words, text, line, &"text", line.text, func(said: String) -> String: return edit_text(line, said))
 	row.add_child(words)
+	var play := Button.new()
+	play.text = ">"
+	play.flat = true
+	play.tooltip_text = "Play this line in its mood"
+	play.add_theme_font_size_override(&"font_size", 12)
+	play.pressed.connect(_play.bind(line))
+	row.add_child(play)
 	if not _read_only:
 		var cut := Button.new()
 		cut.text = "x"
@@ -869,7 +881,20 @@ func _on_node_selected(node: Node) -> void:
 			_selected = part
 
 
-# --- Moods ---
+# --- Moods and voice ---
+
+
+# The customer's person's moods: the ones it has portraits for.
+func _moods() -> Array[StringName]:
+	var person := _customer.person if _customer != null else null
+	var found: Array[StringName] = []
+	if person == null:
+		return found
+	if person.has_method(&"moods"):
+		found.assign(person.call(&"moods"))
+		return found
+	found.assign(person.portraits.keys())
+	return found
 
 
 func _portrait(mood: StringName) -> Texture2D:
@@ -889,3 +914,44 @@ func _mood_tip(mood: StringName) -> String:
 	if not _has_voice_mood(mood):
 		tip += "\nNo voices/moods/%s.tres: it speaks as neutral." % mood
 	return tip
+
+
+func _pick_mood(line: DialogueLine, near: Control) -> void:
+	for child: Node in _moods_grid.get_children():
+		_moods_grid.remove_child(child)
+		child.queue_free()
+	var moods := _moods()
+	if moods.is_empty():
+		_status.text = "%s has no portraits, so no moods to pick." % (_customer.display_name if _customer != null else "This customer")
+		return
+	for mood: StringName in moods:
+		var button := Button.new()
+		button.icon = _portrait(mood)
+		button.expand_icon = true
+		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+		button.custom_minimum_size = Vector2(88, 118)
+		button.text = String(mood) if _has_voice_mood(mood) else "%s (no voice)" % mood
+		button.tooltip_text = _mood_tip(mood)
+		button.toggle_mode = true
+		button.button_pressed = mood == line.pose
+		if not _has_voice_mood(mood):
+			button.add_theme_color_override(&"font_color", error_color)
+		button.pressed.connect(func() -> void:
+			_mood_picker.hide()
+			set_mood(line, mood))
+		_moods_grid.add_child(button)
+	_mood_picker.reset_size()
+	var at := near.get_global_transform_with_canvas() * Vector2(0, near.size.y)
+	_mood_picker.popup(Rect2i(Vector2i(at), Vector2i.ZERO))
+
+
+func _play(line: DialogueLine) -> void:
+	if _customer == null or _customer.voice == null:
+		_status.text = "%s has no voice person (voices/persons/); nothing to play." % (_customer.display_name if _customer != null else "This customer")
+		return
+	var seconds := _voice.say(line, _customer.voice, line.effect if line.effect != null else _conversation.effect)
+	if seconds > 0.0 or OS.has_feature("web"):
+		_status.text = "Playing \"%s\" (%s)" % [line.text, line.pose]
+	else:
+		_status.text = "Nothing to play for \"%s\": this build has no live voice and the line has no rendered file (docs/building-and-testing.md, Voices)." % line.text
