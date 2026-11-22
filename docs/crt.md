@@ -58,12 +58,14 @@ running computer is connected; CompuFunDB: always):
   as wide, so the gap between lines barely shows. Bright pixels widen the beam and close it
   (`beam_bloom`). Heavy scanlines are a TV or arcade look (15 kHz, 240 lines).
 - **A fine mask.** A 0.28 mm shadow mask puts about 1.4 phosphor triads under each pixel, finer
-  than our 2 x 2 screen pixels per VGA pixel can draw. The mask is a magenta/green pattern one
-  VGA pixel wide, which lines up with the screen pixels at 2x and 4x. A 14-15" Trinitron has
+  than our 2 x 2 screen pixels per VGA pixel can draw. The mask is fixed to the screen's pixels:
+  magenta/green pairs up to 2.75x, red/green/blue triads above. A 14-15" Trinitron has
   stripes instead and one faint horizontal damper wire two thirds of the way down.
 - **9300 K white.** Monitors shipped with a bluish white (`white_point`).
 - **Gentle curvature** with rounded tube corners; a Trinitron curves only from left to right.
 - **Convergence** error grows toward the corners (0.3-0.4 mm in period specs).
+- **A soft beam.** The video bandwidth smears each pixel sideways (`softness`), so text loses
+  its digital edge; the lines stay sharp top to bottom.
 - **Short persistence.** P22 phosphors decay well within a frame at 60 Hz, so there is no
   ghosting effect.
 - **Focus softens toward the corners.** One focus voltage can't keep the spot small across a
@@ -78,13 +80,13 @@ running computer is connected; CompuFunDB: always):
 
 ## Rules the shaders keep
 
-- **Patterns live on the glass, the picture bends.** The mask and the scanlines follow the screen
-  pixels, not the curved picture: curved lines sampled at 2 screen pixels per line beat into
-  moire bands.
-- **Patterns only at whole scales from 2x.** Elsewhere (during the zoom, in a smaller window)
-  they fade out; `fine` in the shader decides.
-- **Sharp bilinear sampling.** At 2x the picture is pixel-exact; where the curve stretches it,
-  only the pixel edges blend, so text stays crisp.
+- **The mask lives on the screen's pixels,** so it never moires, at any scale. It fades out below
+  2x, during the zoom.
+- **The scanlines follow the scale.** At a whole 2x they sit on the glass: curved lines sampled
+  at 2 screen pixels per line beat into moire bands. From 2.5x (a Retina laptop shows about 3.5x)
+  they follow the picture's rows with a smooth profile (`picture_lines`). In between they fade out.
+- **Sharp bilinear sampling.** At `softness` 0 and 2x the picture is pixel-exact; where the curve
+  stretches it, only the pixel edges blend.
 - **The mouse follows the curve.** `CrtScreen.bend()` is the GDScript twin of `crt_bend()`; change
   both together. Both read the same uniforms, so a look can't make them disagree.
 - **The buffer is not in a SubViewportContainer.** Godot works out the hover inside a container's

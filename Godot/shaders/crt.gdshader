@@ -34,6 +34,8 @@ uniform float convergence : hint_range(0.0, 2.0, 0.05) = 0.4;
 uniform float static_convergence : hint_range(-1.0, 1.0, 0.05) = 0.1;
 /** How much the beam's focus softens toward the corners. The centre stays pixel-sharp. */
 uniform float edge_focus : hint_range(0.0, 1.0, 0.01) = 0.0;
+/** How soft the beam draws each pixel from left to right: the video bandwidth smears edges sideways. 0 is pixel-sharp. */
+uniform float softness : hint_range(0.0, 1.0, 0.01) = 0.0;
 
 group_uniforms phosphor;
 /** 0: no mask. 1: aperture grille (Trinitron stripes). 2: shadow mask (dot triads). */
@@ -78,8 +80,8 @@ vec3 to_display(vec3 c) {
 }
 
 // Bilinear that stays sharp at whole scales: blends only across the pixel's edge, over the width
-// of one screen pixel. scale = screen pixels per VGA pixel.
-vec3 sharp_sample(sampler2D tex, vec2 uv, vec2 size, float scale) {
+// of one screen pixel. scale = screen pixels per VGA pixel; 1 is plain bilinear.
+vec3 sharp_sample(sampler2D tex, vec2 uv, vec2 size, vec2 scale) {
 	vec2 p = uv * size - 0.5;
 	vec2 i = floor(p);
 	vec2 f = clamp((p - i - 0.5) * scale + 0.5, 0.0, 1.0);
@@ -108,23 +110,26 @@ void vertex() {
 
 void fragment() {
 	vec2 size = vec2(textureSize(screen_texture, 0));
-	// Screen pixels per VGA pixel: 2 in the 1080p Screen View, less during the zoom.
+	// Screen pixels per VGA pixel: 2 in the 1080p Screen View, about 3.5 on a Retina laptop, less during the zoom.
 	float scale = 1.0 / max(fwidth(UV.y) * size.y, 1.0e-4);
-	// The patterns line up with the screen pixels only at whole scales from 2x; elsewhere they moire.
+	// Glass scanlines line up with the screen pixels only at whole scales from 2x; elsewhere they moire.
 	float fine = smoothstep(1.9, 2.0, scale) * (1.0 - smoothstep(0.02, 0.08, abs(scale - round(scale))));
+	// From 2.5 screen pixels per line, a smooth line in the picture is fine enough not to moire.
+	float picture_lines = smoothstep(2.4, 2.8, scale);
 
 	vec2 uv = crt_bend(crt_beam(UV, TIME), vec2(curvature_x, curvature_y), underscan);
 	vec2 centered = uv * 2.0 - 1.0;
 	vec2 misconverge = (centered * convergence * length(centered) / 1.41421 + vec2(static_convergence, 0.0)) / size;
-	// A softer beam is the sharp sample at a lower scale: at 1 it is plain bilinear.
-	scale = mix(scale, 1.0, edge_focus * clamp(dot(centered, centered) * 0.5, 0.0, 1.0));
+	// A softer beam is the sharp sample at a lower scale.
+	vec2 beam = vec2(mix(scale, 0.5, softness), scale);  // 0.5 blends across two VGA pixels
+	beam = mix(beam, vec2(1.0), edge_focus * clamp(dot(centered, centered) * 0.5, 0.0, 1.0));
 	vec3 color;
 	if (misconverge == vec2(0.0)) {
-		color = to_linear(sharp_sample(screen_texture, uv, size, scale));
+		color = to_linear(sharp_sample(screen_texture, uv, size, beam));
 	} else {
-		color.r = to_linear(sharp_sample(screen_texture, uv - misconverge, size, scale)).r;
-		color.g = to_linear(sharp_sample(screen_texture, uv, size, scale)).g;
-		color.b = to_linear(sharp_sample(screen_texture, uv + misconverge, size, scale)).b;
+		color.r = to_linear(sharp_sample(screen_texture, uv - misconverge, size, beam)).r;
+		color.g = to_linear(sharp_sample(screen_texture, uv, size, beam)).g;
+		color.b = to_linear(sharp_sample(screen_texture, uv + misconverge, size, beam)).b;
 	}
 
 	if (glow > 0.0) {
@@ -146,18 +151,25 @@ void fragment() {
 	}
 
 	float luma = dot(color, vec3(0.299, 0.587, 0.114));
-	// Scanlines sit on the glass, not in the bent picture: bent lines would beat against the
-	// screen pixels. At 2x the upper screen row of each VGA line is the beam's centre.
-	float line = fract(UV.y * size.y);
-	float gap = smoothstep(0.0, 1.0, abs(line - 0.25) * 2.0);
-	color *= 1.0 - scanlines * fine * gap * (1.0 - beam_bloom * clamp(luma, 0.0, 1.0));
+	// At 2x the scanlines sit on the glass: bent lines would beat against the screen pixels, and
+	// the upper screen row of each VGA line is the beam's centre. From 2.5x they follow the picture.
+	float glass_gap = smoothstep(0.0, 1.0, abs(fract(UV.y * size.y) - 0.25) * 2.0) * fine;
+	float picture_gap = 1.0 - pow(sin(3.14159 * fract(uv.y * size.y)), 2.0);
+	float gap = mix(glass_gap, picture_gap, picture_lines);
+	color *= 1.0 - scanlines * gap * (1.0 - beam_bloom * clamp(luma, 0.0, 1.0));
 
-	vec2 cell = UV * size;
+	// The mask is fixed to the screen's pixels, like phosphor to the glass, so it never moires:
+	// magenta/green pairs up to 2.75x, red/green/blue triads above.
 	if (mask_type > 0) {
-		float shift = mask_type == 2 ? 0.5 * mod(floor(cell.y), 2.0) : 0.0;
-		float dark = 1.0 - mask_strength * fine;
-		color *= fract(cell.x + shift) < 0.5 ? vec3(1.0, dark, 1.0) : vec3(dark, 1.0, dark);
+		float period = scale >= 2.75 ? 3.0 : 2.0;
+		float shift = mask_type == 2 ? mod(floor(FRAGCOORD.y / 2.0), 2.0) : 0.0;
+		float k = mod(floor(FRAGCOORD.x) + shift, period);
+		float dark = 1.0 - mask_strength * smoothstep(1.5, 2.0, scale);
+		vec3 lit = period == 2.0 ? (k < 1.0 ? vec3(1.0, dark, 1.0) : vec3(dark, 1.0, dark))
+				: (k < 1.0 ? vec3(1.0, dark, dark) : k < 2.0 ? vec3(dark, 1.0, dark) : vec3(dark, dark, 1.0));
+		color *= lit;
 	}
+	vec2 cell = UV * size;
 	if (damper_wire > 0.0 && floor(cell.y) == floor(size.y * 2.0 / 3.0)) {
 		color *= 1.0 - damper_wire * fine;
 	}
