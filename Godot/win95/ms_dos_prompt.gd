@@ -28,6 +28,8 @@ func _ready() -> void:
 	super()
 	_log = BANNER
 	_command.text_submitted.connect(_on_submitted)
+	# The range changes once the new text is laid out, which can be a frame or more after _sync.
+	_scroll.get_v_scroll_bar().changed.connect(_scroll_to_end)
 	# Tab would move the focus out of the prompt.
 	_command.focus_next = NodePath(".")
 	_command.focus_previous = NodePath(".")
@@ -244,5 +246,7 @@ func _sync() -> void:
 	_output.text = _log.trim_suffix("\n")
 	_output.visible = _output.text != ""
 	_prompt.text = _where() + ">"
-	await get_tree().process_frame
+
+
+func _scroll_to_end() -> void:
 	_scroll.scroll_vertical = int(_scroll.get_v_scroll_bar().max_value)
