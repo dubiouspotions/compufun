@@ -90,6 +90,10 @@ var details: PackedStringArray = []:
 		details = value
 		queue_redraw()
 
+## Where the icon stands in its IconView, from the view's top left; ZERO flows with the others.
+## IconView.place sets it.
+var placed_at := Vector2.ZERO
+
 var _large_minimum := Vector2.ZERO
 var _large_separation := 0
 

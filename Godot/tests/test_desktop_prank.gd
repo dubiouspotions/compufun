@@ -41,6 +41,14 @@ func run() -> void:
 	check("a new wallpaper fixes it", job.software_fixed, true)
 	state.move_files([todo] as Array[Win95File], hidden.children)
 	check("hiding an icon again un-fixes it", job.software_fixed, false)
+	var places: Array[Vector2] = [Vector2(300, 200)]
+	state.move_files([todo] as Array[Win95File], setup.desktop, places)
+	check("a drop onto the desktop stands it there", [setup.desktop.has(todo), todo.desktop_position], [true, Vector2(300, 200)])
+	places = [Vector2(40, 40)]
+	state.move_files([todo] as Array[Win95File], setup.desktop, places)
+	check("a drag on the desktop moves it", todo.desktop_position, Vector2(40, 40))
+	state.move_files([todo] as Array[Win95File], hidden.children)
+	check("moved into a folder, it lines up", todo.desktop_position, Vector2.ZERO)
 	state.free()
 	game.jobs = [] as Array[Job]
 

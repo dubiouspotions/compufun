@@ -245,17 +245,23 @@ func empty_recycle_bin() -> void:
 
 
 ## Moves [param files] into [param container] (the desktop, drive_c or a folder's children), as
-## Cut and Paste do. Returns why a file stayed where it was, as Win95 says it, or "" when all moved.
-func move_files(files: Array[Win95File], container: Array) -> String:
+## Cut and Paste or a drag do. [param places] says where each one stands on the desktop
+## (Win95File.desktop_position); without it, a moved file lines up with the others. Returns why a
+## file stayed where it was, as Win95 says it, or "" when all moved.
+func move_files(files: Array[Win95File], container: Array, places: Array[Vector2] = []) -> String:
 	if setup == null:
 		return "Cannot move files: the computer is off."
 	var refused := ""
-	for file in files:
+	for i in files.size():
+		var file := files[i]
 		var from: Variant = _container_of(file)
 		var why := ""
+		var place := places[i] if i < places.size() else Vector2.ZERO
 		if from == null:
 			why = "Cannot move %s: Cannot find the specified file. Make sure you specify the correct path and filename." % file.name
 		elif is_same(from, container):
+			if i < places.size():
+				file.desktop_position = place
 			continue
 		elif file.is_folder and _holds(file.children, container):
 			why = "Cannot move %s: The destination folder is a subfolder of the source folder." % file.name
@@ -267,6 +273,7 @@ func move_files(files: Array[Win95File], container: Array) -> String:
 			continue
 		(from as Array).erase(file)
 		container.append(file)
+		file.desktop_position = place
 	_changed()
 	return refused
 

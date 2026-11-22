@@ -7,9 +7,9 @@ extends SoftwareCheck
 const _FOLDER_ICON := preload("res://win95/theme/icons/folder_closed_32.png")
 
 @export var folder_name := "New Folder"
-## Where the folder stands, in pixels from the top left of the desktop. The default is the bottom
-## right corner, above the taskbar.
-@export var folder_position := Vector2(566, 378)
+## Where the folder stands, in pixels from the top left of the desktop. The default hides it in
+## the bottom right corner: a corner of the folder peeks out, its name behind the taskbar.
+@export var folder_position := Vector2(612, 428)
 
 
 func apply_break(setup: Win95Setup) -> void:

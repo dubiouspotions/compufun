@@ -396,11 +396,9 @@ func _fill(view: IconView) -> void:
 		(_icons.get_node("RecycleBin") as FileIcon).icon = _BIN_EMPTY if _state.setup.recycle_bin.is_empty() else _BIN_FULL
 
 
-# A file with a desktop_position stands there, out of the columns.
 static func _place(item: FileIcon, file: Win95File, view: IconView) -> void:
 	if file != null and file.desktop_position != Vector2.ZERO:
-		item.top_level = true
-		item.position = view.global_position + file.desktop_position
+		view.place(item, file.desktop_position)
 
 
 func _folder(folder_name: String, icon_file: String) -> Win95File:
@@ -423,6 +421,11 @@ func _wire_view(view: IconView) -> void:
 	view.item_opened.connect(_open_item)
 	view.context_requested.connect(func(item: FileIcon, at: Vector2) -> void: _open_context(view, item, at))
 	view.delete_requested.connect(func(items: Array[FileIcon]) -> void: _delete(view, items))
+	view.items_dropped.connect(_on_dropped.bind(view))
+	view.clipboard_requested.connect(func(action: StringName) -> void:
+		_context_view = view
+		_context_item = null
+		_on_action(action))
 
 
 func _open_item(item: FileIcon) -> void:
@@ -639,12 +642,12 @@ func _on_action(id: StringName) -> void:
 		&"restore":
 			_state.restore_files(files)
 		&"cut":
-			_cut = files
+			if listing.creatable:
+				_cut = files
 		&"paste":
-			var refused := _state.move_files(_cut, listing.files.call())
-			_cut.clear()
-			if refused != "":
-				_message("Error Moving File", refused)
+			if listing.creatable and not _cut.is_empty():
+				_report_move(_state.move_files(_cut, listing.files.call()))
+				_cut.clear()
 		&"empty_bin":
 			_state.empty_recycle_bin()
 			Win95Desktop.play_sound(empty_bin_sound, self)
@@ -658,6 +661,38 @@ func _on_action(id: StringName) -> void:
 				window.show_file(file, _state.location_of(file))
 		_:
 			push_error("Win95: no action for the menu id %s" % id)
+
+
+# Drag and drop, as in Win95: onto a folder moves the files into it, onto the Recycle Bin deletes
+# them, and onto empty space or a file moves them into the view's folder; on the desktop they stand
+# where they were let go. The system icons stay where they are.
+func _on_dropped(items: Array[FileIcon], onto: FileIcon, places: Array[Vector2], view: IconView) -> void:
+	var files: Array[Win95File] = []
+	var at: Array[Vector2] = []
+	for i in items.size():
+		var file := _file_of(items[i])
+		var from := _listing_of_item(items[i])
+		if file != null and from != null and from.creatable:
+			files.append(file)
+			at.append(places[i].clamp(Vector2.ONE, view.size - Vector2(16, 16)))
+	if files.is_empty():
+		return
+	if onto != null and onto not in items:
+		var target := _file_of(onto)
+		if onto.name == &"RecycleBin":
+			_state.delete_files(files)
+			return
+		if target != null and target.is_folder and not _drives.has(target):
+			_report_move(_state.move_files(files, target.children))
+			return
+	var listing: Listing = _listings[view]
+	if listing.creatable:
+		_report_move(_state.move_files(files, listing.files.call(), at if view == _icons else [] as Array[Vector2]))
+
+
+func _report_move(refused: String) -> void:
+	if refused != "":
+		_message("Error Moving File", refused)
 
 
 func _delete(view: IconView, items: Array[FileIcon]) -> void:
