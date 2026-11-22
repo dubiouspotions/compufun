@@ -9,6 +9,8 @@ extends Resource
 @export var mood: StringName = &"neutral"
 ## The voice effect of this line; null takes its conversation's.
 @export var effect: VoiceEffect
+## The customer calls it out while walking out, outside the dialogue box ([leaving] in a story file).
+@export var leaving: bool = false
 
 
 func _validate_property(property: Dictionary) -> void:

@@ -110,7 +110,8 @@ brief: He arrives cheerful; the problem comes out only when asked.
 ```
 
 - `(mood) text` is a customer line. Without a mood it is neutral. `[effect name]` at the end
-  gives it its own voice effect (`voices/effects/<name>.tres`).
+  gives it its own voice effect (`voices/effects/<name>.tres`). `[leaving]` makes it a call-out:
+  the customer says it while walking out, outside the dialogue box, as at the end of a visit.
 - `- text` and `+ text` are the player's choices. Choices in a row make one list; an empty
   line between two choices starts a new list.
   - After a `-` choice's lines, the conversation goes on **below the list**: two branches meet

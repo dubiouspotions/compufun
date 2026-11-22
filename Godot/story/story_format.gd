@@ -141,6 +141,8 @@ static func _write_block(out: PackedStringArray, reply: Reply, depth: int) -> vo
 		var said: String = "%s(%s) %s" % [tabs, line.mood, line.text]
 		if line.effect != null:
 			said += " [effect %s]" % _stem(line.effect)
+		if line.leaving:
+			said += " [leaving]"
 		out.append(said)
 	for choice: Choice in reply.choices:
 		var said: String = "%s%s %s" % [tabs, "+" if choice.returns else "-", choice.text]
@@ -466,10 +468,15 @@ class _Reader:
 		if mood != null:
 			line.mood = StringName(mood.get_string(1))
 			text = text.substr(mood.get_end())
-		var effect := RegEx.create_from_string("\\s*\\[effect ([a-z0-9_]+)\\]$").search(text)
-		if effect != null:
-			line.effect = _load(EFFECTS_DIR, effect.get_string(1), token.line, "voice effect") as VoiceEffect
-			text = text.substr(0, effect.get_start())
+		var tag := RegEx.create_from_string("\\s*\\[(effect [a-z0-9_]+|leaving)\\]$")
+		var found := tag.search(text)
+		while found != null:
+			if found.get_string(1) == "leaving":
+				line.leaving = true
+			else:
+				line.effect = _load(EFFECTS_DIR, found.get_string(1).substr(7), token.line, "voice effect") as VoiceEffect
+			text = text.substr(0, found.get_start())
+			found = tag.search(text)
 		line.text = text
 		if text == "":
 			_error(token.line, "a line without text")
