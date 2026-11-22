@@ -1,8 +1,9 @@
 class_name PostItLabel
 extends Control
 ## The post-it that the player reads in the Workview, written in sharp UI text over the 3D paper (a
-## PostIt3D with text_3d off) and following it as the camera moves: the perceived issue and, once the
-## computer is fixed and tested, the prompt to call the customer next to the 3D check.
+## PostIt3D with text_3d off) and following it as the camera moves: the perceived issue; "Needs
+## testing" next to the 3D exclamation mark while the computer is fixed but not tested; then the
+## prompt to call the customer next to the 3D check.
 
 # The paper's width in pixels at which the lines break, once per text: large, so that whole font
 # sizes don't move a break. Every size shows those lines, and only the font size changes.
@@ -26,6 +27,8 @@ var job: Job:
 @onready var _issue: Label = %Issue
 @onready var _pickup: Label = %Pickup
 @onready var _pickup_text: String = _pickup.text  # before it is broken into lines
+@onready var _testing: Label = %Testing
+@onready var _testing_text: String = _testing.text
 
 
 func _ready() -> void:
@@ -35,7 +38,7 @@ func _ready() -> void:
 
 ## Lays the text over [param rect]: the paper as the camera sees it, in canvas coordinates, with the
 ## text turned [param quarter_turns] quarter turns clockwise, as on a computer lying on its side (see
-## [method Shop.post_it_quarter_turns]). Both texts get the same font size, the largest at which
+## [method Shop.post_it_quarter_turns]). All texts get the same font size, the largest at which
 ## each fits its part of the paper.
 func follow(rect: Rect2, quarter_turns: int = 0) -> void:
 	size = (Vector2(rect.size.y, rect.size.x) if quarter_turns % 2 != 0 else rect.size).round()
@@ -43,24 +46,24 @@ func follow(rect: Rect2, quarter_turns: int = 0) -> void:
 	position = (rect.get_center() - pivot_offset).round()
 	rotation = quarter_turns * PI * 0.5
 	var font_size := fitting_font_size()
-	for label: Label in [_issue, _pickup]:
+	for label: Label in _labels():
 		label.add_theme_font_size_override(&"font_size", font_size)
 
 
-## The largest font size, 1 to [member max_font_size], at which both texts fit their parts of the
+## The largest font size, 1 to [member max_font_size], at which all texts fit their parts of the
 ## paper at the current [member Control.size], in their lines; 1 when none fits. Measures at most 8
 ## sizes.
 func fitting_font_size() -> int:
 	return _largest_fitting(size, false, clampi(roundi(size.x * font_fraction), 1, max_font_size))
 
 
-# The largest font size, 1 to [param high], at which both texts fit a paper of [param paper] pixels,
+# The largest font size, 1 to [param high], at which all texts fit a paper of [param paper] pixels,
 # wrapped to their boxes ([param wrap]) or in their lines.
 func _largest_fitting(paper: Vector2, wrap: bool, high: int) -> int:
 	var low := 1
 	while low < high:
 		var mid := (low + high + 1) / 2
-		if _fits(_issue, mid, paper, wrap) and _fits(_pickup, mid, paper, wrap):
+		if _labels().all(func(label: Label) -> bool: return _fits(label, mid, paper, wrap)):
 			low = mid
 		else:
 			high = mid - 1
@@ -77,14 +80,15 @@ func _fits(label: Label, font_size: int, paper: Vector2, wrap: bool) -> bool:
 	return text.x <= box.x and text.y + spacing <= box.y
 
 
-# Breaks both texts into the lines that they wrap to on a square paper LAYOUT_WIDTH pixels wide, at
+# Breaks all texts into the lines that they wrap to on a square paper LAYOUT_WIDTH pixels wide, at
 # the largest font size that fits it. Every size of paper shows these lines.
 func _break_lines(issue: String) -> void:
 	_issue.text = issue
 	_pickup.text = _pickup_text
+	_testing.text = _testing_text
 	var paper := Vector2(LAYOUT_WIDTH, LAYOUT_WIDTH)
 	var font_size := _largest_fitting(paper, true, roundi(LAYOUT_WIDTH * font_fraction))
-	for label: Label in [_issue, _pickup]:
+	for label: Label in _labels():
 		var paragraph := TextParagraph.new()
 		paragraph.width = (label.anchor_right - label.anchor_left) * paper.x
 		paragraph.add_string(label.text, label.get_theme_font(&"font"), font_size)
@@ -98,3 +102,8 @@ func _break_lines(issue: String) -> void:
 func _sync() -> void:
 	_break_lines(job.problem.perceived_issue if job != null else "")
 	_pickup.visible = job != null and job.done
+	_testing.visible = job != null and job.fixed and not job.tested
+
+
+func _labels() -> Array[Label]:
+	return [_issue, _pickup, _testing]

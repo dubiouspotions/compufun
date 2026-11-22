@@ -21,6 +21,15 @@ shader_parameter/affine = 0.0
 shader_parameter/world_uv = false
 shader_parameter/uv_scale = 1.0
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mark"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo_color = Color(0.6, 0.2, 0, 1)
+shader_parameter/snap = 0.0
+shader_parameter/affine = 0.0
+shader_parameter/world_uv = false
+shader_parameter/uv_scale = 1.0
+
 [sub_resource type="QuadMesh" id="QuadMesh_paper"]
 size = Vector2(0.12, 0.12)
 
@@ -29,6 +38,12 @@ size = Vector3(0.004, 0.012, 0.001)
 
 [sub_resource type="BoxMesh" id="BoxMesh_long"]
 size = Vector3(0.004, 0.024, 0.001)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bar"]
+size = Vector3(0.005, 0.017, 0.001)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dot"]
+size = Vector3(0.005, 0.005, 0.001)
 
 [node name="PostIt3D" type="Node3D"]
 script = ExtResource("1_script")
@@ -72,6 +87,32 @@ pixel_size = 0.0004
 texture_filter = 0
 modulate = Color(0.05, 0.4, 0.12, 1)
 text = "Call customer for pickup"
+font_size = 32
+outline_size = 0
+autowrap_mode = 3
+width = 212.0
+
+[node name="Testing" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.03, 0.001)
+
+[node name="MarkBar" type="MeshInstance3D" parent="Testing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.04, 0.0055, 0)
+material_override = SubResource("ShaderMaterial_mark")
+mesh = SubResource("BoxMesh_bar")
+
+[node name="MarkDot" type="MeshInstance3D" parent="Testing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.04, -0.008, 0)
+material_override = SubResource("ShaderMaterial_mark")
+mesh = SubResource("BoxMesh_dot")
+
+[node name="TestingText" type="Label3D" parent="Testing"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0175, 0, 0)
+pixel_size = 0.0004
+texture_filter = 0
+modulate = Color(0.74, 0.28, 0, 1)
+text = "Needs testing"
 font_size = 32
 outline_size = 0
 autowrap_mode = 3
