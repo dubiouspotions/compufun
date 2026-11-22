@@ -1,5 +1,5 @@
 set -x
-EXPORT_NAME=HumanError
+EXPORT_NAME=CompuFun
 
 godot="Godot"
 # Check if --godotapp argument is supplied
