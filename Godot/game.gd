@@ -71,6 +71,8 @@ var phone_off_hook: bool = false
 var hand: Piece
 ## The pieces that the player put away in the storage bin, the last one last.
 var stored: Array[Piece] = []
+## The pieces that the player threw in the trash can, the last one last. Never emptied.
+var trashed: Array[Piece] = []
 ## The customer in the shop, or null when nobody is in.
 var visitor: Customer
 var visit: Visit = Visit.NONE
@@ -510,28 +512,37 @@ func return_part(part: Part) -> bool:
 
 ## Puts the piece in the hand away in the storage bin.
 func put_in_storage() -> bool:
-	if hand == null:
-		return false
-	stored.append(hand)
-	hand = null
-	changed.emit()
-	return true
+	return _put_in(stored)
 
 
 ## Takes the piece that went into the storage bin last back into the empty hand.
 func take_from_storage() -> bool:
-	if hand != null or stored.is_empty():
+	return _take_from(stored)
+
+
+## Throws the piece in the hand in the trash can, on top of what is in it.
+func trash_part() -> bool:
+	return _put_in(trashed)
+
+
+## Takes the piece on top of the trash back into the empty hand.
+func take_from_trash() -> bool:
+	return _take_from(trashed)
+
+
+func _put_in(pile: Array[Piece]) -> bool:
+	if hand == null:
 		return false
-	hand = stored.pop_back()
+	pile.append(hand)
+	hand = null
 	changed.emit()
 	return true
 
 
-## Throws the piece in the hand in the trash. It is gone.
-func trash_part() -> bool:
-	if hand == null:
+func _take_from(pile: Array[Piece]) -> bool:
+	if hand != null or pile.is_empty():
 		return false
-	hand = null
+	hand = pile.pop_back()
 	changed.emit()
 	return true
 
@@ -766,6 +777,7 @@ func snapshot() -> Dictionary:
 		"phone_off_hook": phone_off_hook,
 		"hand": Job.pieces_data([hand] if hand != null else []),
 		"stored": Job.pieces_data(stored),
+		"trashed": Job.pieces_data(trashed),
 		"view": String(view),
 		"conversation": String(conversation.id) if conversation != null else "",
 		"flags": flags.duplicate(),
@@ -777,9 +789,9 @@ func snapshot() -> Dictionary:
 
 ## Sets the state from [param state], in the format of [method snapshot]. A missing key takes its
 ## value at the start of a day, except that the shop is OPEN: day 1, nobody in the shop, no
-## arrivals, an empty counter, an empty hand and storage bin, no flags, nothing seen, no CompuFunDB
-## records or start-up, the daypart of the arrivals; a missing view keeps the current one. The
-## conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
+## arrivals, an empty counter, an empty hand, storage bin and trash, no flags, nothing seen, no
+## CompuFunDB records or start-up, the daypart of the arrivals; a missing view keeps the current one.
+## The conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
 func restore(state: Dictionary) -> String:
 	var known := snapshot()
 	for key: Variant in state:
@@ -919,6 +931,9 @@ func restore(state: Dictionary) -> String:
 	var stored_pieces: Variant = Job.pieces_from(state.get("stored", []))
 	if stored_pieces is String:
 		return _refuse("the storage bin: %s" % stored_pieces)
+	var trashed_pieces: Variant = Job.pieces_from(state.get("trashed", []))
+	if trashed_pieces is String:
+		return _refuse("the trash: %s" % trashed_pieces)
 	var new_seen: Dictionary[String, bool] = {}
 	for key: Variant in state.get("seen", []):
 		new_seen[str(key)] = true
@@ -943,6 +958,7 @@ func restore(state: Dictionary) -> String:
 	phone_off_hook = new_off_hook
 	hand = hand_pieces[0] if not hand_pieces.is_empty() else null
 	stored.assign(stored_pieces)
+	trashed.assign(trashed_pieces)
 	visitor = new_visitor
 	visit = new_visit
 	visitor_state = new_visitor_state

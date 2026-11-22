@@ -55,7 +55,6 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
 @onready var _the_end: TheEnd = %TheEnd
 @onready var _hand: Hand = %Hand
-@onready var _trash_can: TrashCan = %TrashCan
 
 ## Plays when a part comes into the player's hand, and when it leaves it (put in, on the mat, away).
 @export var part_take_sound: SoundSet = preload("res://sounds/part_take.tres")
@@ -104,7 +103,6 @@ func _ready() -> void:
 	_the_end.view_requested.connect(view_requested.emit)
 	_the_end.crashed.connect(crashed.emit)
 	_bench.degauss_pressed.connect(degauss_requested.emit)
-	_trash_can.trash_requested.connect(Game.trash_part)
 	_open_sign.open_requested.connect(Game.open_shop)
 	_open_sign.close_requested.connect(close_requested.emit)
 	_bench.power_pressed.connect(monitor_power_requested.emit)
