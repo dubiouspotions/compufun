@@ -1176,6 +1176,8 @@ func _process(delta: float) -> void:
 	if phase == Phase.CALLING:
 		return
 	if phase == Phase.OPEN and visitor == null and jobs.size() < MAX_JOBS:
+		if jobs.is_empty() and arrivals > 0:
+			_wait = minf(_wait, _waited + day.idle_wait_seconds)
 		_waited += delta
 		if _try_arrival():
 			changed.emit()
@@ -1183,7 +1185,8 @@ func _process(delta: float) -> void:
 
 ## The first customer comes in [member Day.first_wait_seconds] after the shop opens; each next one
 ## [member Day.gap_seconds] of open shop after the last visitor left. The wait pauses while the
-## counter is full.
+## counter is full. With an empty counter and nobody in, at most [member Day.idle_wait_seconds] of a
+## gap is left.
 func _arrival_due() -> bool:
 	return _waited >= _wait
 
