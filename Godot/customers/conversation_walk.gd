@@ -17,6 +17,9 @@ extends RefCounted
 ##         walk.pick(walk.choices()[0])
 ## [/codeblock]
 ## At any moment the walk is at exactly one of: lines to say, choices to pick from, or the end.
+## Leaving lines ([member DialogueLine.leaving]) after which the conversation ends are not among
+## [method lines]: the walk ends before them, and [method leaving_lines] holds them. A leaving line
+## that something follows plays among [method lines].
 
 # A list of choices that the walk is in: the reply that offers it, and the choice last picked from it.
 class _Frame:
@@ -33,8 +36,13 @@ var conversation: Conversation
 
 # The lists that the walk is in, the outermost first.
 var _stack: Array[_Frame] = []
-# The reply whose lines play now; null while choices show or at the end.
+# The reply whose lines play now; null while choices show, at the end, and while leaving lines
+# play before a list.
 var _reply: Reply
+# The lines that play now.
+var _lines: Array[DialogueLine] = []
+# Leaving lines held back: called out if the walk ends after them, else shown with what follows.
+var _leaving: Array[DialogueLine] = []
 var _choices: Array[Choice] = []
 var _picked: Dictionary[Choice, bool] = {}
 # The last pick ends the conversation after its reply's lines.
@@ -55,16 +63,25 @@ func _init(of: Conversation) -> void:
 
 ## The lines that the customer says now, in order; empty while choices show and at the end.
 func lines() -> Array[DialogueLine]:
-	return _reply.lines if _reply != null else ([] as Array[DialogueLine])
+	return _lines
+
+
+## The leaving lines that the customer calls out as they go, in order, once the walk is over;
+## empty before that, or when the conversation ends with a line in the box.
+func leaving_lines() -> Array[DialogueLine]:
+	return _leaving if _over else ([] as Array[DialogueLine])
 
 
 ## The player has seen every line of [method lines]: the walk goes on to the reply's choices, to the
 ## lines below the list, or to the end. Sets the flags of the lines below a list (Game.go_on) as
 ## it reaches them.
 func said() -> void:
-	if _reply == null:
+	if _lines.is_empty():
 		push_error("ConversationWalk.said: no lines play in '%s'" % conversation.id)
 		return
+	_lines = []
+	if _reply == null:
+		return  # the leaving lines before a list
 	var reply := _reply
 	_reply = null
 	_after(reply)
@@ -73,7 +90,7 @@ func said() -> void:
 ## The choices that the player can pick now, as Game offered them when the walk reached the list;
 ## empty while lines play and at the end.
 func choices() -> Array[Choice]:
-	return _choices
+	return _choices if _lines.is_empty() else ([] as Array[Choice])
 
 
 ## True when the player picked [param choice] earlier in this walk; the overlay greys it.
@@ -85,7 +102,8 @@ func was_picked(choice: Choice) -> bool:
 ## with a choice that goes on below it (a -) or that ends the conversation has none. The outermost
 ## list says the conversation's leave_text, a deeper one its back_text.
 func leave_text() -> String:
-	if _choices.is_empty() or _choices.any(func(c: Choice) -> bool: return c.ends or not c.returns):
+	var offered := choices()
+	if offered.is_empty() or offered.any(func(c: Choice) -> bool: return c.ends or not c.returns):
 		return ""
 	return conversation.leave_text if _stack.size() == 1 else conversation.back_text
 
@@ -94,7 +112,7 @@ func leave_text() -> String:
 ## flags). Returns false, with an error, when the choice is not offered or no reply can play; then
 ## the choices stay.
 func pick(choice: Choice) -> bool:
-	if not _choices.has(choice):
+	if not choices().has(choice):
 		push_error("ConversationWalk.pick: '%s' is not offered in '%s'" % [choice.text if choice != null else "null", conversation.id])
 		return false
 	var reply := Game.choose(choice)
@@ -124,12 +142,27 @@ func is_over() -> bool:
 	return _over
 
 
-# [param reply]'s lines start; with none, what follows them.
+# [param reply]'s lines start, the held leaving lines before them; with none but leaving lines,
+# those are held and what follows them starts.
 func _play(reply: Reply) -> void:
-	if reply.lines.is_empty():
+	var cut := reply.lines.size()
+	while cut > 0 and reply.lines[cut - 1].leaving:
+		cut -= 1
+	if cut == 0:
+		_leaving.append_array(reply.lines)
 		_after(reply)
-	else:
-		_reply = reply
+		return
+	_lines = _leaving.duplicate()
+	_lines.append_array(reply.lines.slice(0, cut))
+	_leaving.assign(reply.lines.slice(cut))
+	_reply = reply
+
+
+# The list [param offered] shows, after the leaving lines held back, which play first.
+func _offer(offered: Array[Choice]) -> void:
+	_choices = offered
+	_lines = _leaving
+	_leaving = []
 
 
 # [param reply]'s lines are said: its own choices, or on below them.
@@ -142,7 +175,7 @@ func _after(reply: Reply) -> void:
 		_below(reply)
 		return
 	_stack.push_back(_Frame.new(reply))
-	_choices = offered
+	_offer(offered)
 
 
 # The list of [param owner] is left: on to its then, or up.
@@ -162,8 +195,9 @@ func _up() -> void:
 		return
 	var frame: _Frame = _stack.back()
 	if frame.picked.returns:
-		_choices = Game.offered(frame.owner)
-		if not _choices.is_empty():
+		var offered := Game.offered(frame.owner)
+		if not offered.is_empty():
+			_offer(offered)
 			return
 	_stack.pop_back()
 	_below(frame.owner)

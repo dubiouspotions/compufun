@@ -1,8 +1,9 @@
 extends "res://tests/test.gd"
 ## ConversationWalk plays a conversation from a story file as docs/dialogue.md says: - branches meet
 ## below their list, a + list comes back with its picks greyed and its leave button goes on below it,
-## a deeper list's back button returns to the list above, [end] stops, if/else answers by flag, and
-## lines below a list play after it.
+## a deeper list's back button returns to the list above, [end] stops, if/else answers by flag,
+## lines below a list play after it, and leaving lines at the end wait for the box to close while
+## those that something follows play in it.
 
 const ERRAND := """customer: skater_bro
 
@@ -38,6 +39,20 @@ set told
 + Bye. [end]
 	(happy) Bye!
 (neutral) Never said.
+
+== pick-up
+(neutral) Done?
+- Yes.
+	(happy) Dope!
+	(neutral) Later! [leaving]
+	(neutral) Peace! [leaving]
+
+== phone
+(neutral) Hi. [leaving]
+(neutral) Still here.
++ Q?
+	(neutral) Bye. [leaving]
+- Go.
 """
 
 
@@ -93,6 +108,25 @@ func run() -> void:
 	check("[end]: its reply plays", texts(walk.lines()), ["Bye!"])
 	walk.said()
 	check("then the conversation is over, the lines below unsaid", walk.is_over(), true)
+
+	game.conversation = talks[2]
+	walk = walk_script.new(talks[2])
+	walk.said()
+	walk.pick(walk.choices()[0])
+	check("the leaving lines that end the conversation are not in the box", [texts(walk.lines()), walk.leaving_lines()], [["Dope!"], []])
+	walk.said()
+	check("the walk is over before them, and holds them", [walk.is_over(), texts(walk.leaving_lines())], [true, ["Later!", "Peace!"]])
+
+	game.conversation = talks[3]
+	walk = walk_script.new(talks[3])
+	check("a leaving line that a line follows plays in the box", texts(walk.lines()), ["Hi.", "Still here."])
+	walk.said()
+	walk.pick(walk.choices()[0])
+	check("a leaving line that its list follows plays in the box first", [texts(walk.lines()), walk.choices()], [["Bye."], []])
+	walk.said()
+	check("then the list", texts(walk.choices()), ["Q?", "Go."])
+	walk.pick(walk.choices()[1])
+	check("over, with nothing to call out", [walk.is_over(), walk.leaving_lines()], [true, []])
 
 
 func texts(of: Array) -> Array:
