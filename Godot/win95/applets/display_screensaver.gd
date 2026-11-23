@@ -10,6 +10,7 @@ const SAVERS: Dictionary[String, Script] = {
 	"Blank Screen": preload("res://win95/savers/blank_screen.gd"),
 	"Curves and Colors": preload("res://win95/savers/curves_and_colors.gd"),
 	"Flying Through Space": preload("res://win95/savers/flying_through_space.gd"),
+	"Flying Windows": preload("res://win95/savers/flying_windows.gd"),
 	"Mystify Your Mind": preload("res://win95/savers/mystify_your_mind.gd"),
 }
 const _COVER := preload("res://win95/cover_screen.gd")
