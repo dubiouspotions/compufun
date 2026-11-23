@@ -4,7 +4,8 @@ extends PanelContainer
 ## time, spoken in the customer's voice. The lines are grouped by mood, calmest first, in the order
 ## each mood first appears; the customer says [member lines_per_mood] random lines of a group
 ## (never the one just said) before the next, so they get more annoyed, and once at the end they
-## stay annoyed, going round from group [member loop_from_mood] on.
+## stay annoyed, going round from group [member loop_from_mood] on. A customer who goes calls out
+## their leaving lines instead, each once.
 
 ## What every customer says while waiting.
 @export var lines: Conversation = preload("res://customers/conversations/waiting.tres")
@@ -16,6 +17,8 @@ extends PanelContainer
 @export var first_delay: float = 2.0
 ## The silence between one line and the next, in seconds.
 @export var gap: float = 3.0
+## The silence between one leaving line and the next, in seconds.
+@export var leaving_gap: float = 0.4
 ## The shortest time a line stays on screen, in seconds; a longer voice keeps it up longer.
 @export var show_seconds: float = 2.5
 ## The gap between the box and the edge of the screen, in pixels.
@@ -30,6 +33,8 @@ var _moods: Array[Array] = []
 var _step: int = 0
 var _last: DialogueLine
 var _calling: bool = false
+# The leaving lines to call out, each once; empty while waiting.
+var _leaving: Array[DialogueLine] = []
 ## The side of the box that the arrow sticks out of: a unit vector, or zero for no arrow.
 var _side: Vector2 = Vector2.ZERO
 
@@ -50,8 +55,9 @@ func call_out(customer: Customer) -> void:
 	if customer == null:
 		push_error("CustomerCalling.call_out: no customer")
 		return
-	if _calling and customer == _customer:
+	if _calling and customer == _customer and _leaving.is_empty():
 		return
+	_leaving = []
 	var conversation := lines
 	_conversation = conversation
 	if conversation == null or conversation.lines.is_empty():
@@ -65,9 +71,27 @@ func call_out(customer: Customer) -> void:
 	_timer.start(first_delay)
 
 
+## [param customer] calls out [param leaving] as they go, at once, each line once and in order,
+## then hides. Calling again with the same lines carries on, or stays quiet once they are said.
+func call_out_leaving(customer: Customer, leaving: Array[DialogueLine]) -> void:
+	if customer == null or leaving.is_empty():
+		push_error("CustomerCalling.call_out_leaving: no customer (%s) or no lines (%d)" % [customer, leaving.size()])
+		return
+	if customer == _customer and leaving == _leaving:
+		return
+	_customer = customer
+	_conversation = null
+	_leaving = leaving.duplicate()
+	_step = 0
+	_calling = true
+	hide()
+	_on_timer()
+
+
 ## Stops calling, the voice too, and hides the line.
 func stop() -> void:
 	_calling = false
+	_leaving = []
 	_timer.stop()
 	_voice.hush()
 	hide()
@@ -127,19 +151,26 @@ func _on_timer() -> void:
 		return
 	if visible:
 		hide()
-		_timer.start(gap)
+		if not _leaving.is_empty() and _step >= _leaving.size():
+			_calling = false
+			return
+		_timer.start(leaving_gap if not _leaving.is_empty() else gap)
 		return
-	var mood: Array = _moods[_mood_of(_step)]
-	var choices: Array = mood.filter(func(l: DialogueLine) -> bool: return l != _last)
-	if choices.is_empty():
-		choices = mood
-	var line: DialogueLine = choices.pick_random()
+	var line := _leaving[_step] if not _leaving.is_empty() else _waiting_line()
 	_step += 1
 	_last = line
 	_name.text = _customer.spoken_name()
 	_label.text = line.text
 	show()
 	_timer.start(maxf(show_seconds, _voice.say(line, _customer.voice, VoiceEffect.of(line, _conversation))))
+
+
+func _waiting_line() -> DialogueLine:
+	var mood: Array = _moods[_mood_of(_step)]
+	var choices: Array = mood.filter(func(l: DialogueLine) -> bool: return l != _last)
+	if choices.is_empty():
+		choices = mood
+	return choices.pick_random()
 
 
 # The mood group of the line at [param step]: up through the groups, then round the angriest ones.

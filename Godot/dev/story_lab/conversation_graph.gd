@@ -26,6 +26,9 @@ signal edited
 @export var editor_lines: int = 5
 ## How long boxes take to move to their new places after an edit, in seconds; 0 moves them at once.
 @export var motion_seconds: float = 0.2
+## The room, in pixels on screen, that the view leaves around the editor of a new item when it
+## scrolls to show it.
+@export var reveal_margin: float = 16.0
 ## How long a new box's outline flashes, in seconds; 0 for no flash.
 @export var flash_seconds: float = 0.6
 ## The least zoom that a new conversation shows at, to fit it in the view.
@@ -62,6 +65,9 @@ var _anchor_spots: Array[Vector2] = []
 # The scroll that this script set last, to tell it apart from the writer's scrolling.
 var _own_scroll: Vector2 = Vector2.INF
 var _moves: Tween
+var _pan: Tween
+# Where the last placing put each box, in graph units.
+var _targets: Dictionary[GraphElement, Vector2] = {}
 # Outline flashes of new boxes: part to strength, 1 to 0.
 var _flashes: Dictionary[Resource, float] = {}
 
@@ -442,6 +448,7 @@ func _place() -> void:
 		x += width + column_gap
 	var targets: Dictionary[GraphElement, Vector2] = {}
 	var bottom := _place_reply(_conversation, 0.0, xs, targets)
+	_targets = targets
 	var opening := _fit_pending and size.x > 0.0
 	if opening:
 		_fit_pending = false
@@ -914,7 +921,9 @@ func _spot(parent: Control, shown: Control, part: Resource, field: StringName, t
 				_open_spot(part, field))
 
 
-func _open_spot(part: Resource, field: StringName) -> void:
+# Opens an editor of [param field] of [param part] in place. With [param reveal], as for a new item,
+# the view scrolls the least that shows the whole editor, if it isn't in view.
+func _open_spot(part: Resource, field: StringName, reveal: bool = false) -> void:
 	var spot: Array = _spots.get(_spot_key(part, field), [])
 	if spot.is_empty() or _read_only:
 		return
@@ -969,6 +978,41 @@ func _open_spot(part: Resource, field: StringName) -> void:
 	anchor.hide()
 	editor.grab_focus.call_deferred()
 	_selected = part if part is Choice or part is Reply else _owner_of(part)
+	if reveal:
+		_reveal(editor)
+
+
+# Once [param editor]'s box is laid out, scrolls over [member motion_seconds] by the least that
+# brings the editor and [member reveal_margin] around it inside the view; nothing when it is in view.
+func _reveal(editor: Control) -> void:
+	await get_tree().process_frame
+	if not editor.is_inside_tree():
+		return
+	var up: Node = editor.get_parent()
+	while up != null and not (up is GraphNode):
+		up = up.get_parent()
+	var box := up as GraphNode
+	if box == null or not _targets.has(box):
+		return
+	var inside := box.get_global_transform().affine_inverse() * editor.get_global_rect()
+	var spot := Rect2((_targets[box] + inside.position) * zoom - scroll_offset, inside.size * zoom)
+	var room := Rect2(Vector2.ONE * reveal_margin, size - Vector2.ONE * reveal_margin * 2.0)
+	var need := Vector2.ZERO
+	for axis: int in 2:
+		if spot.position[axis] < room.position[axis] or spot.size[axis] > room.size[axis]:
+			need[axis] = spot.position[axis] - room.position[axis]
+		elif spot.end[axis] > room.end[axis]:
+			need[axis] = spot.end[axis] - room.end[axis]
+	if need == Vector2.ZERO:
+		return
+	_anchors.clear()
+	if _pan != null:
+		_pan.kill()
+	if motion_seconds <= 0.0:
+		_scroll_to(scroll_offset + need)
+		return
+	_pan = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	_pan.tween_method(_scroll_to, scroll_offset, scroll_offset + need, motion_seconds)
 
 
 # A word-wrapping editor of [param said], at least [member editor_lines] tall, that grows with its
@@ -1016,9 +1060,10 @@ func _paper(field: Control) -> void:
 	field.add_theme_color_override(&"font_selected_color", ink)
 
 
-# Opens the editor of [param field] of [param part] once the rebuild that its edit queued is done.
+# Opens the editor of [param field] of a new [param part] once the rebuild that its edit queued is
+# done, and brings it into view.
 func _open_spot_later(part: Resource, field: StringName) -> void:
-	_open_spot.call_deferred(part, field)
+	_open_spot.call_deferred(part, field, true)
 
 
 func _menu(box: GraphNode, items: Array[Array]) -> void:

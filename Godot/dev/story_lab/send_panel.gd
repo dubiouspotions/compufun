@@ -58,7 +58,7 @@ func _send_now() -> void:
 	_sending = true
 	_send.disabled = true
 	_status.text = "Sending to GitHub..."
-	var result := await github.create_issue(StoryIssue.title(files, _note.text), StoryIssue.body(files, _note.text, writer()), StoryIssue.LABEL)
+	var result := await github.create_issue(StoryIssue.title(files, _note.text), StoryIssue.body(files, _note.text, writer()), StoryIssue.labels(_note.text))
 	_sending = false
 	_send.disabled = false
 	if result.has("error"):
@@ -106,7 +106,7 @@ func _build() -> void:
 	_files = LabUI.label("", 14)
 	box.add_child(_files)
 	_note = LineEdit.new()
-	_note.placeholder_text = "One line: what you changed and why"
+	_note.placeholder_text = "One line: what you changed and why. Start with [test] for a trial send."
 	_note.text_submitted.connect(func(_t: String) -> void: _send_now())
 	box.add_child(_note)
 	var row := HBoxContainer.new()

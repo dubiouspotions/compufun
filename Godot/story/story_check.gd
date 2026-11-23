@@ -47,8 +47,8 @@ static func flag_index(week: StoryFiles.Week) -> Dictionary:
 ## nothing sets or nothing checks, a + choice without lines, an errand without a drop-off (unless it
 ## brings no computer and has no lines at all), an errand code whose alternatives can all fail on
 ## its day, a line's mood that the customer's person has no portrait for or that has no
-## voices/moods/<mood>.tres, and a problem without repair mechanics (no broken_part and no
-## software_check).
+## voices/moods/<mood>.tres, a [leaving] line that the conversation can go on after (it plays in the
+## dialogue box), and a problem without repair mechanics (no broken_part and no software_check).
 static func missing_links(week: StoryFiles.Week) -> PackedStringArray:
 	var found := PackedStringArray()
 	var index := flag_index(week)
@@ -96,6 +96,7 @@ static func _check_errand(errand: Errand, found: PackedStringArray) -> void:
 	for c: Conversation in errand.conversations:
 		lines += c.all_lines().size()
 		_check_choices(c, "%s (%s)" % [errand.file, c.id], found)
+		_check_leaving(c, false, "%s (%s)" % [errand.file, c.id], found)
 		var person := errand.customer.person if errand.customer != null else null
 		for line: DialogueLine in c.all_lines():
 			var mood := line.mood
@@ -120,6 +121,35 @@ static func _check_choices(reply: Reply, where: String, found: PackedStringArray
 			_check_choices(answer, asked, found)
 	if reply.then != null:
 		_check_choices(reply.then, where, found)
+
+
+# Lists each leaving line in the block of [param reply] that a line or a list of choices can follow;
+# [param more] is true when one can follow the block.
+static func _check_leaving(reply: Reply, more: bool, where: String, found: PackedStringArray) -> void:
+	var below := _shows(reply.then, more) if reply.then != null else more
+	var after_lines := not reply.choices.is_empty() or below
+	for i: int in reply.lines.size():
+		var line := reply.lines[i]
+		if not line.leaving:
+			continue
+		var line_follows := reply.lines.slice(i + 1).any(func(l: DialogueLine) -> bool: return not l.leaving)
+		if line_follows or after_lines:
+			found.append("%s: \"%s\" is [leaving], but the conversation can go on after it, so it plays in the dialogue box." % [where, line.text.left(40)])
+	for choice: Choice in reply.choices:
+		var asked := "%s > \"%s\"" % [where.trim_suffix(")"), choice.text.left(30)] + ")"
+		var after := false if choice.ends else (true if choice.returns else below)
+		for answer: Reply in choice.replies:
+			_check_leaving(answer, after, asked, found)
+	if reply.then != null:
+		_check_leaving(reply.then, more, where, found)
+
+
+# True when the block of [param reply] shows a line in the box or a list of choices; [param more]
+# says whether one can follow it.
+static func _shows(reply: Reply, more: bool) -> bool:
+	if not reply.choices.is_empty() or reply.lines.any(func(l: DialogueLine) -> bool: return not l.leaving):
+		return true
+	return _shows(reply.then, more) if reply.then != null else more
 
 
 # Every line of [param reply], its choices' replies and what follows its list.

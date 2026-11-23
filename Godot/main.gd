@@ -199,5 +199,7 @@ func _sync() -> void:
 	_dialogue.visible = facing
 	if talking and not facing:
 		_calling.call_out(Game.visitor)
+	elif not Game.leaving_lines.is_empty():
+		_calling.call_out_leaving(Game.visitor, Game.leaving_lines)
 	else:
 		_calling.stop()

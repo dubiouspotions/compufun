@@ -34,7 +34,7 @@ func run() -> void:
 	await process_frame
 	box.set(&"choice_fade_seconds", 0.0)  # the steps below follow the logic, not the fades
 	var ended := [false]
-	box.connect(&"finished", func() -> void: ended[0] = true)
+	box.connect(&"finished", func(_leaving: Array[DialogueLine]) -> void: ended[0] = true)
 	box.call(&"start", c, talk)
 	await process_frame
 	check("no choices while the customer talks", buttons(box), [])

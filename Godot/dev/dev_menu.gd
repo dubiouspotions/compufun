@@ -26,6 +26,20 @@ func _ready() -> void:
 	checkout.button_pressed = StoryDrafts.saves_to_checkout()
 	checkout.toggled.connect(_save_to_checkout)
 	_list.add_child(checkout)
+	_play_drafts()
+
+
+# A writer's drafts play from the start, not only once the Story Lab opens.
+func _play_drafts() -> void:
+	if StoryDrafts.saves_to_checkout() or get_tree().get_script() != null:  # a test's SceneTree plays the files as they are
+		return
+	var drafts := StoryDrafts.new()
+	for error: String in drafts.load_drafts():
+		push_error("Dev menu: a Story Lab draft doesn't read: " + error)
+	if drafts.texts().is_empty():
+		return
+	for error: String in Game.load_story(drafts.texts()):
+		push_error("Dev menu: the game can't play the Story Lab drafts: " + error)
 
 
 func _input(event: InputEvent) -> void:

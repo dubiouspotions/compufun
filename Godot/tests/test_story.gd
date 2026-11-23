@@ -31,6 +31,19 @@ problem: dust_overheat
 	bare.take_over_path("res://problems/test_bare.tres")
 	var bare_errand: Errand = add(week, "0301_hat_guy", "customer: hat_guy\n\n== drop-off\n(neutral) Hm.\n")
 	bare_errand.problem = bare
+	add(week, "0302_hat_guy", """customer: hat_guy
+computer: none
+
+== drop-off
+(neutral) Bye now. [leaving]
+(neutral) Still here.
++ Anything else?
+	(neutral) See you. [leaving]
+- No.
+	(neutral) Fine.
+	(neutral) Later! [leaving]
+	(neutral) Really later! [leaving]
+""")
 
 	var links := StoryCheck.missing_links(week)
 	var text := "\n".join(links)
@@ -46,7 +59,11 @@ problem: dust_overheat
 	check("an errand code that can come with nobody", text.contains("res://story/errands/0202_hat_guy.errand: errand code 0202 can come with nobody on day 2: with no flags set, no alternative's 'when' holds."), true)
 	check("a problem without repair mechanics", text.contains("0301_hat_guy.errand names the problem res://problems/test_bare.tres, which has no repair mechanics"), true)
 	check("signs, Cambion and the [x] link their flags", [text.contains("sign_pipedream"), text.contains("runs_cambion"), text.contains("gone_young_entrepreneur")], [false, false, false])
-	check("no other links", links.size(), 8)
+	var leaving := "res://story/errands/0302_hat_guy.errand (0302/drop-off/1"
+	check("a leaving line that a line follows", text.contains(leaving + "): \"Bye now.\" is [leaving], but the conversation can go on after it, so it plays in the dialogue box."), true)
+	check("a leaving line that its + list follows", text.contains(leaving + " > \"Anything else?\"): \"See you.\" is [leaving]"), true)
+	check("but not the leaving lines that end the conversation", [text.contains("\"Later!\""), text.contains("Really later!")], [false, false])
+	check("no other links", links.size(), 10)
 
 	var index := StoryCheck.flag_index(week)
 	check("who sets pat_told", index[&"pat_told"]["set_by"], PackedStringArray([drop_off + " > \"Did you install anything?\")"]))

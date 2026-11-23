@@ -44,4 +44,11 @@ func run() -> void:
 	var body: String = screen.call("_issue_body", REPORT)
 	check("the body starts with the note, the screenshot and the table", body.begins_with(BODY_HEAD), true)
 	check("the body ends with the report as JSON", body.ends_with(JSON.stringify(REPORT, "  ") + "\n```\n\n</details>"), true)
+	var drafted := REPORT.duplicate(true)
+	drafted["game"]["jobs"] = [{"errand": "0102_skater_bro", "slot": 0}]
+	drafted["story_drafts"] = {"res://story/errands/0102_skater_bro.errand": "customer: skater_bro\n\n== drop-off\n(happy) Yo ```!\n", "res://story/errands/0101_middle_manager.errand": ""}
+	var with_drafts: String = screen.call("_issue_body", drafted)
+	check("a job names its errand", with_drafts.contains("| Jobs | 0102_skater_bro (slot 0) |"), true)
+	check("the drafts that the game played are in the issue", [with_drafts.contains("**The game played the writer's Story Lab drafts.**"), with_drafts.contains("<code>res://story/errands/0102_skater_bro.errand</code>"), with_drafts.contains("````\ncustomer: skater_bro"), with_drafts.contains("- `res://story/errands/0101_middle_manager.errand`: removed")], [true, true, true, true])
+	check("no drafts, no drafts section", body.contains("Story Lab drafts"), false)
 	screen.free()

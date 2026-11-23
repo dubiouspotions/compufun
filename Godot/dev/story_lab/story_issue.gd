@@ -5,6 +5,18 @@ extends RefCounted
 ## that each draft started from, and the writer.
 
 const LABEL: Dictionary = {"name": "story", "color": "5319E7", "description": "A writer's drafts from the Story Lab"}
+const TEST_LABEL: Dictionary = {"name": "test", "color": "C5DEF5", "description": "A trial send: the issue builder leaves it"}
+## A note that starts with this marks a trial send.
+const TEST_MARK: String = "[test]"
+
+
+## The labels of a Send with [param note]: story, and feedback so that the issue builder builds it;
+## test too when the note starts with [constant TEST_MARK].
+static func labels(note: String) -> Array[Dictionary]:
+	var found: Array[Dictionary] = [LABEL, GitHubIssues.FEEDBACK_LABEL]
+	if note.strip_edges().to_lower().begins_with(TEST_MARK):
+		found.append(TEST_LABEL)
+	return found
 ## The unchanged lines around each change in a diff.
 const CONTEXT: int = 3
 const TITLE_LENGTH: int = 110

@@ -7,7 +7,9 @@ extends Control
 ## with the voice.
 
 ## The conversation is over: the walk ended, after its last line is read or a leave button.
-signal finished
+## [param leaving] are the leaving lines that the customer calls out as they go, outside the box
+## (ConversationWalk.leaving_lines), each with its effect; empty for none.
+signal finished(leaving: Array[DialogueLine])
 
 const _NEUTRAL := &"neutral"
 ## Source pixels either side of the torso center that still count as the head.
@@ -168,6 +170,10 @@ func start(customer: Customer, conversation: Conversation) -> void:
 		_lines = _walk.lines()
 		_voiced = true
 	_rise_portrait()
+	if _lines.is_empty():
+		_text.type_out("")
+		_go_on.call_deferred()  # only leaving lines; deferred out of the Game.changed that started it
+		return
 	_show_line()
 
 
@@ -411,7 +417,20 @@ func _go_on() -> void:
 	else:
 		_show_choices([])
 		_voice.hush()
-		finished.emit()
+		finished.emit(_leaving_lines())
+
+
+# The walk's leaving lines, each a copy that carries the conversation's effect if it has none of its
+# own, because the call-out box plays them after the conversation is gone.
+func _leaving_lines() -> Array[DialogueLine]:
+	var found: Array[DialogueLine] = []
+	if _walk == null:
+		return found
+	for line: DialogueLine in _walk.leaving_lines():
+		var copy := line.duplicate() as DialogueLine
+		copy.effect = VoiceEffect.of(line, _conversation)
+		found.append(copy)
+	return found
 
 
 func _show_choices(offered: Array[Choice]) -> void:

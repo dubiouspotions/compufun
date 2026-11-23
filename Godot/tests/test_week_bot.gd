@@ -63,7 +63,7 @@ const KNOWN_GAME_METHODS: Array[String] = [
 	"ending", "reboot",
 	# state, flags and tools that a week doesn't need to play
 	"snapshot", "restore", "load_story", "play_errand", "day_numbers", "day_of", "date_of", "check_day",
-	"flag", "set_flag", "sign_flag", "gone_flag", "is_gone", "runs_cambion", "dismiss_visitor", "fix", "skip_wait",
+	"flag", "set_flag", "put_flag", "sign_flag", "gone_flag", "is_gone", "runs_cambion", "dismiss_visitor", "fix", "skip_wait",
 ]
 
 var _rng := RandomNumberGenerator.new()
