@@ -1,9 +1,10 @@
 class_name CdDrive
 extends Node3D
-## A CD-ROM drive on a case front: the bay, its tray, the eject button and the busy light. A press
-## on a powered drive opens or closes the tray: the button dips, the tray starts after a moment,
-## travels to its stop and knocks against it, and a closed tray spins the disc up with the light
-## blinking. A press while the tray moves stops it, and after [member reverse_pause] it goes back. The default timing follows the sounds that tools/make_cd_sounds.py cuts from a real
+## A CD-ROM drive on a case front: the bay, its tray, the eject button and the busy light. It shows
+## whether the tray is open (Job.cd_tray_open, which Game.toggle_cd_tray flips): the tray starts
+## after a moment, travels to its stop and knocks against it, and a closed tray spins the disc up
+## with the light blinking. A change while the tray moves stops it, and after [member reverse_pause]
+## it goes back. The default timing follows the sounds that tools/make_cd_sounds.py cuts from a real
 ## drive. A case front names its drive CdRom (see PcTower.cd_drive).
 
 ## How far the open tray stands out of the bay, in metres.
@@ -52,22 +53,31 @@ func _ready() -> void:
 	add_child(_tray_sound)
 
 
-## Presses the eject button. With [param powered], the tray opens or closes, or turns around if
-## it is moving; without, only the button clicks, as on a real drive.
-func press(powered: bool) -> void:
-	var dip := create_tween()
-	dip.tween_property(eject_button, ^"position", _button_out - Vector3(0, 0, button_travel), 0.05)
-	dip.tween_property(eject_button, ^"position", _button_out, 0.08)
-	if not powered:
+## Dips the eject button in and out. With [param click], the button's click plays, as on a drive
+## that is off; a running drive's tray sounds include the click.
+func dip(click: bool) -> void:
+	var tween := create_tween()
+	tween.tween_property(eject_button, ^"position", _button_out - Vector3(0, 0, button_travel), 0.05)
+	tween.tween_property(eject_button, ^"position", _button_out, 0.08)
+	if click:
 		button_sound.play_at(self)
+
+
+## Opens or closes the tray. With [param animate], it travels from where it stands, or turns around
+## if it is moving; without, it stands at the end at once, silent, as for a freshly built drive.
+## Nothing happens when the tray is already [param open] or on its way there.
+func set_open(open: bool, animate := true) -> void:
+	if open == is_open:
 		return
-	_move(not is_open)
-
-
-## Opens or closes the tray from where it stands, as a press does but without the button.
-func set_open(open: bool) -> void:
-	if open != is_open:
+	if animate:
 		_move(open)
+		return
+	for tween: Tween in [_motion, _blink]:
+		if tween != null:
+			tween.kill()
+	is_open = open
+	_tray.position = _tray_in + Vector3(0, 0, tray_travel if open else 0.0)
+	_set_light(false)
 
 
 func _move(open: bool) -> void:

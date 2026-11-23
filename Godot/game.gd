@@ -625,6 +625,16 @@ func set_powered(job: Job, on: bool) -> void:
 	changed.emit()
 
 
+## Opens the CD-ROM drive's tray of [param job]'s computer, or closes it ([member Job.cd_tray_open]),
+## as its eject button does. Does nothing while the computer is off: a drive without power doesn't
+## move. The job must be on the counter.
+func toggle_cd_tray(job: Job) -> void:
+	if not _on_counter(job, "toggle_cd_tray") or not job.powered:
+		return
+	job.cd_tray_open = not job.cd_tray_open
+	changed.emit()
+
+
 ## True when a floppy is in drive A: of [param job]'s computer (Win95Setup.floppy_in_a of its running
 ## copy); false for a job without a Win95 setup.
 func has_floppy(job: Job) -> bool:
@@ -1263,6 +1273,7 @@ func restore(state: Dictionary) -> String:
 		# The same visit as before keeps its broken running copy, which the player may have fixed since.
 		job.broken = jobs.any(func(j: Job) -> bool: return j.order == job.order and j.customer == owner and j.broken)
 		job.powered = bool(data.get("powered", false))
+		job.cd_tray_open = bool(data.get("cd_tray_open", false))
 		if data.has("parts"):
 			var given_places: Variant = data["parts"]
 			if given_places is not Dictionary:

@@ -71,6 +71,8 @@ var _floppy_hotspot: Hotspot
 var _cd_hotspot: Hotspot
 ## The upright case front's floppy drive and the lying case's; empty for a front without one.
 var _floppy_drives: Array[Node] = []
+## The upright case front's CD-ROM drive and the lying case's; empty for a front without one.
+var _cd_drives: Array[Node] = []
 
 @onready var _tower: PcTower = $Tower
 @onready var _hotspot: Hotspot = %Hotspot
@@ -115,6 +117,9 @@ func _ready() -> void:
 	_floppy_hotspot = _make_floppy_hotspot()
 	_cd_hotspot = _make_cd_hotspot()
 	_floppy_drives = find_children("*", "FloppyDrive", true, false)
+	_cd_drives = find_children("*", "CdDrive", true, false)
+	for drive: CdDrive in _cd_drives:
+		drive.set_open(job.cd_tray_open, false)
 	for node: Node3D in [_tower, _power_light, _power_hotspot, _cable_socket, _hotspot, _post_it_anchor, _floppy_hotspot, _cd_hotspot]:
 		if node != null:
 			_upright[node] = node.transform
@@ -144,7 +149,9 @@ func _make_cd_hotspot() -> Hotspot:
 	if drive == null:
 		return null
 	var hotspot := _button_hotspot(drive.eject_button)
-	hotspot.clicked.connect(func(_h: Hotspot) -> void: drive.press(job.powered))
+	hotspot.clicked.connect(func(_h: Hotspot) -> void:
+		drive.dip(not job.powered)
+		Game.toggle_cd_tray(job))
 	hotspot.highlight_on_hover(drive.eject_button, button_hover_color)
 	return hotspot
 
@@ -230,6 +237,8 @@ func _sync_case() -> void:
 	_sync_floppy(working, lying)
 	if _cd_hotspot != null:
 		_cd_hotspot.set_enabled(not lying)
+	for drive: CdDrive in _cd_drives:
+		drive.set_open(job.cd_tray_open)
 	_sync_outline()
 	_sync_part_sound()
 

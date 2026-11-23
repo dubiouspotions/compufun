@@ -60,6 +60,9 @@ var powered: bool = false
 ## The seconds that the computer has run with a CPU but no fan on it; Game switches it off at
 ## Game.OVERHEAT_SECONDS. 0 while it is off.
 var heat_seconds: float = 0.0
+## The CD-ROM drive's tray is out. Only Game.toggle_cd_tray changes it in play, and only while the
+## computer is on; switching off leaves it where it is. Meaningless for a case front without a drive.
+var cd_tray_open: bool = false
 ## Game.setup_for has broken the computer's running copy as the problem says.
 var broken: bool = false
 
@@ -218,6 +221,7 @@ func snapshot() -> Dictionary:
 		"software_fixed": software_fixed,
 		"tested": tested,
 		"powered": powered,
+		"cd_tray_open": cd_tray_open,
 		"lying": lying,
 		"case_open": case_open,
 		"panel_screws": panel_screws.duplicate(),
