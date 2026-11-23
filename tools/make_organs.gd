@@ -35,6 +35,7 @@ const TISSUES := {
 	"spleen": [Color8(92, 34, 62), Color8(46, 12, 32), Color8(210, 150, 190), 0.1],
 	"cartilage": [Color8(222, 150, 160), Color8(150, 80, 96), Color8(255, 225, 230), 0.1],
 	"blood": [Color8(84, 4, 8), Color8(40, 0, 4), Color8(200, 70, 70), 0.05],
+	"stain": [Color8(122, 34, 36), Color8(62, 10, 14), Color8(190, 90, 90), 0.0],
 }
 
 const MATERIAL_TEXT := """[gd_resource type="ShaderMaterial" format=3]
@@ -133,9 +134,14 @@ func _tissue(tissue: String) -> ShaderMaterial:
 	veins.seed = _rng.randi()
 	veins.frequency = 0.08
 	veins.fractal_type = FastNoiseLite.FRACTAL_RIDGED
+	if tissue == "stain":
+		noise.frequency = 0.09
+		noise.fractal_octaves = 3
 	for y: int in TEXTURE_SIZE:
 		for x: int in TEXTURE_SIZE:
 			var mottle := noise.get_noise_2d(x, y) * 0.5 + 0.5
+			if tissue == "stain":
+				mottle = 0.5 + (mottle - 0.5) * 2.2  # splotches with hard-ish edges
 			var color := base.lerp(dark, clampf(0.55 - mottle, 0.0, 1.0)).lerp(base.lightened(0.12), clampf(mottle - 0.6, 0.0, 1.0))
 			if veins.get_noise_2d(x, y) > 0.8 - lines * 0.6:
 				color = color.lerp(dark, 0.8)
@@ -443,6 +449,7 @@ func _save_case_blood(organs: Dictionary) -> bool:
 	for i: int in 6:
 		_pool("blood", Vector3(_rng.randf_range(-0.05, 0.17), FLOOR + lift, _rng.randf_range(-0.17, 0.16)), _rng.randf_range(0.025, 0.05))
 		lift += 0.0002
+	_stain_case()
 	var root := Node3D.new()
 	root.name = "CaseBlood"
 	root.set_script(load(MOTION))
@@ -457,6 +464,47 @@ func _save_case_blood(organs: Dictionary) -> bool:
 	root.add_child(body)
 	body.owner = root
 	return _save(root, "res://props/parts/case_blood.tscn")
+
+
+# Stains the inside of the case: the floor, the inner faces of its walls, the power supply and the
+# drive bay, each a hair in front of the surface, seen from both sides.
+func _stain_case() -> void:
+	var lift := 0.0008
+	var wall := 0.008  # the walls face the camera at a slant: nearer, the depth buffer loses them
+	var top := 0.19
+	_quad(Vector3(-0.2, FLOOR + lift, -0.2), Vector3(0.4, 0, 0), Vector3(0, 0, 0.39))
+	_quad(Vector3(-0.06, FLOOR, -0.2 + wall * 2.5), Vector3(0.26, 0, 0), Vector3(0, top - FLOOR, 0))  # the camera faces the back head-on: it needs more; beside the power supply
+	_quad(Vector3(-0.2, FLOOR, 0.19 - wall), Vector3(0.4, 0, 0), Vector3(0, top - FLOOR, 0))
+	_quad(Vector3(-0.2 + wall, FLOOR, -0.2), Vector3(0, 0, 0.39), Vector3(0, top - FLOOR, 0))
+	_quad(Vector3(0.2 - wall, FLOOR, -0.2), Vector3(0, 0, 0.39), Vector3(0, top - FLOOR, 0))
+	# The boxes in the case, as open_case.tscn has them: centre and size.
+	for box: Array in [[Vector3(-0.13, 0.075, -0.12), Vector3(0.14, 0.13, 0.15)], [Vector3(-0.15, 0.085, 0.115), Vector3(0.05, 0.15, 0.17)]]:
+		var size: Vector3 = box[1] + Vector3.ONE * lift * 2.0
+		var low: Vector3 = box[0] - size / 2.0
+		_quad(low + Vector3(0, size.y, 0), Vector3(size.x, 0, 0), Vector3(0, 0, size.z))
+		_quad(low, Vector3(size.x, 0, 0), Vector3(0, size.y, 0))
+		_quad(low + Vector3(0, 0, size.z), Vector3(size.x, 0, 0), Vector3(0, size.y, 0))
+		_quad(low, Vector3(0, 0, size.z), Vector3(0, size.y, 0))
+		_quad(low + Vector3(size.x, 0, 0), Vector3(0, 0, size.z), Vector3(0, size.y, 0))
+
+
+# A stained rectangle from [param corner] along [param u] and [param v], both sides, its texture
+# repeating every few centimetres.
+func _quad(corner: Vector3, u: Vector3, v: Vector3) -> void:
+	var st := _st("stain")
+	var a := corner
+	var b := corner + u
+	var c := corner + u + v
+	var d := corner + v
+	var tiles := Vector2(u.length(), v.length()) * 9.0
+	var ua := Vector2.ZERO
+	var ub := Vector2(tiles.x, 0)
+	var uc := tiles
+	var ud := Vector2(0, tiles.y)
+	_tri(st, a, b, c, ua, ub, uc)
+	_tri(st, a, c, d, ua, uc, ud)
+	_tri(st, a, c, b, ua, uc, ub)
+	_tri(st, a, d, c, ua, ud, uc)
 
 
 func _save(root: Node, path: String) -> bool:
