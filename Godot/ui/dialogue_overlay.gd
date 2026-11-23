@@ -49,6 +49,10 @@ const _MATCH_NEUTRAL_HEIGHT := "young_entrepreneur/portrait_irritated03.png"
 @export_range(1.0, 60.0) var talk_follow: float = 25.0
 ## The portrait's crown moves in steps of this many screen pixels (at 1080p); 0 moves smoothly.
 @export_range(0.0, 4.0) var motion_step: float = 1.0
+## The least room between the end of the box's text and the customer in the portrait, in pixels at
+## 1080p. A pose that reaches over the box wraps the text sooner; the box's own right margin is the
+## least the text keeps clear.
+@export_range(0.0, 200.0) var portrait_gap: float = 32.0
 ## Seconds of quiet, once a line is typed out and its voice has ended, before the next line comes on
 ## its own; 0 waits for a click. Choices always wait for the player.
 @export_range(0.0, 10.0, 0.1) var auto_advance_seconds: float = 1.5
@@ -88,11 +92,19 @@ var _slot_top: float
 var _slot_bottom: float
 # The pixels of the portrait's texture that are not transparent.
 var _figure: Rect2i
+# The shown portrait's pixels; null while none shows.
+var _image: Image
+# The Box's own copy of its panel style, whose right margin keeps the text clear of the portrait.
+var _box_style: StyleBox
+# The right margin that the scene gives the box.
+var _box_margin: float
 # The drawn height from the hem to the crown.
 var _reach: float = 0.0
 
 @onready var _name: Label = %NameLabel
 @onready var _text: TypedLabel = %LineLabel
+@onready var _box: PanelContainer = $Box
+@onready var _portrait_clip: Control = $PortraitClip
 @onready var _portrait_slot: Panel = %Portrait
 @onready var _portrait: TextureRect = %PortraitTexture
 @onready var _choices: VBoxContainer = %Choices
@@ -100,7 +112,11 @@ var _reach: float = 0.0
 
 
 func _ready() -> void:
-	($Box as Control).gui_input.connect(_on_click)
+	_box.gui_input.connect(_on_click)
+	_box_style = _box.get_theme_stylebox(&"panel").duplicate()
+	_box.add_theme_stylebox_override(&"panel", _box_style)
+	_box_margin = _box_style.content_margin_right
+	_box.resized.connect(_keep_text_clear)
 	_portrait_slot.resized.connect(_fit_portrait)
 	_slot_top = _portrait_slot.offset_top
 	_slot_bottom = _portrait_slot.offset_bottom
@@ -214,6 +230,8 @@ func _rise_portrait() -> void:
 func _show_portrait(mood: StringName) -> void:
 	_portrait.texture = null
 	_figure = Rect2i()
+	_image = null
+	_keep_text_clear()
 	var person := _customer.person
 	if person == null:
 		push_error("DialogueOverlay: %s has no person" % _customer.resource_path)
@@ -266,6 +284,27 @@ func _fit_portrait() -> void:
 	_reach = (hem - crown) * scale
 	# Sway, breathe and talk from the hem at the bottom centre of the slot.
 	_portrait.pivot_offset = Vector2(_portrait_slot.size.x * 0.5 - left, -top)
+	_image = image
+	_keep_text_clear()
+
+
+## Wraps the box's text short of the customer's figure in the rows that the box covers, where the
+## portrait stands once risen; [member portrait_gap] leaves room for its sway.
+func _keep_text_clear() -> void:
+	var margin := _box_margin
+	if _image != null:
+		var texel := _portrait.size / Vector2(_image.get_size())
+		var origin := _portrait_clip.position + _portrait.position + Vector2(
+				_portrait_slot.position.x, _portrait_clip.size.y + _slot_top)
+		var row := clampi(floori((_box.position.y - origin.y) / texel.y), 0, _image.get_height())
+		var covered := Rect2i()
+		if row < _image.get_height():
+			covered = _image.get_region(Rect2i(0, row, _image.get_width(), _image.get_height() - row)).get_used_rect()
+		if covered.has_area():
+			var reach := origin.x + covered.position.x * texel.x - portrait_gap
+			margin = maxf(margin, _box.position.x + _box.size.x - reach)
+	if not is_equal_approx(_box_style.content_margin_right, margin):
+		_box_style.content_margin_right = margin
 
 
 ## Drawn height of the neutral portrait next to [param path], in pixels. Negative when it cannot be measured.
