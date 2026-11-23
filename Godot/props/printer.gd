@@ -21,9 +21,19 @@ const GROUP: StringName = &"printer"
 @export var feed_sound: SoundSet = preload("res://sounds/printer_feed.tres")
 ## The sound of the page taken out of the printer.
 @export var take_sound: SoundSet = preload("res://sounds/paper_handle.tres")
+## The finished page's outline while a click takes it: pulsing, or the hover colour under the mouse;
+## and how far it stands out around the page, in metres.
+@export var outline: ClickableOutline = preload("res://rooms/clickable_outline.tres")
+@export var outline_width: float = 0.012
 
 var _tween: Tween
 var _lines: PackedStringArray = []
+var _hovered: bool = false
+var _pulse_material: StandardMaterial3D
+var _hover_material: StandardMaterial3D
+var _pulse: Tween
+# A card behind the page, a little larger: an outline grown from so thin a sheet hardly shows.
+var _outline: MeshInstance3D
 
 @onready var _sheet: MeshInstance3D = %Sheet
 @onready var _text: Label3D = %Text
@@ -32,8 +42,17 @@ var _lines: PackedStringArray = []
 
 
 func _ready() -> void:
+	_pulse_material = Hotspot.ghost_material(outline.pulse_color)
+	_hover_material = Hotspot.ghost_material(outline.hover_color)
+	_hover_material.albedo_color.a = 1.0
+	_outline = MeshInstance3D.new()
+	_outline.mesh = BoxMesh.new()
+	_outline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_sheet.get_parent().add_child.call_deferred(_outline)
 	_hotspot.clicked.connect(func(_clicked: Hotspot) -> void: take_page())
-	_hotspot.set_enabled(false)
+	_hotspot.mouse_entered.connect(_set_hovered.bind(true))
+	_hotspot.mouse_exited.connect(_set_hovered.bind(false))
+	_set_takeable(false)
 
 
 ## Prints [param lines] on a new page: the old page goes, and the new one feeds out line by line
@@ -42,7 +61,7 @@ func print_page(lines: PackedStringArray) -> void:
 	if _tween != null:
 		_tween.kill()
 	_lines = lines.duplicate()
-	_hotspot.set_enabled(false)
+	_set_takeable(false)
 	_text.text = "\n".join(lines)
 	_set_feed(0.0)
 	_tween = create_tween()
@@ -53,7 +72,7 @@ func print_page(lines: PackedStringArray) -> void:
 	var page := _sheet.get_aabb().size.y
 	_tween.tween_callback(feed_sound.play_on.bind(_speaker))
 	_tween.tween_method(_set_feed, done, clampf(done + line_pitch, shown_length, page), feed_seconds)
-	_tween.tween_callback(_hotspot.set_enabled.bind(not _lines.is_empty()))
+	_tween.tween_callback(_set_takeable.bind(not _lines.is_empty()))
 
 
 ## How far the page that prints is, 0 to 1, its form feed included; -1 while the printer is idle.
@@ -71,9 +90,36 @@ func take_page() -> bool:
 	_lines = []
 	_text.text = ""
 	_set_feed(0.0)
-	_hotspot.set_enabled(false)
+	_set_takeable(false)
 	take_sound.play_at(self)
 	return true
+
+
+# The finished page takes clicks, and its outline pulses, while [param on].
+func _set_takeable(on: bool) -> void:
+	_hotspot.set_enabled(on)
+	if not on:
+		_hovered = false
+	if _pulse != null:
+		_pulse.kill()
+		_pulse = null
+	if on:
+		_pulse = outline.pulse(_pulse_material, self)
+	_show_outline()
+
+
+func _set_hovered(on: bool) -> void:
+	_hovered = on
+	_show_outline()
+
+
+func _show_outline() -> void:
+	_outline.visible = _pulse != null
+	_outline.material_override = _hover_material if _hovered else _pulse_material
+	var page := _sheet.get_aabb()
+	var shown := _sheet.position.y + outline_width
+	(_outline.mesh as BoxMesh).size = Vector3(page.size.x + outline_width * 2.0, shown + outline_width, page.size.z)
+	_outline.position = Vector3(_sheet.position.x, (shown - outline_width) / 2.0, _sheet.position.z - page.size.z * 2.0)
 
 
 # Sticks the top of the page [param length] metres out of the slot; the rest is inside the printer.
