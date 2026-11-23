@@ -46,6 +46,8 @@
 [ext_resource type="Script" path="res://customers/sticker.gd" id="sticker_script"]
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_smiley.png" id="sticker_smiley"]
 [ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
+[ext_resource type="PackedScene" path="res://win95/web_browser.tscn" id="app_netscape"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/globe_small_32.png" id="icon_netscape"]
 
 [sub_resource type="Resource" id="Hardware_486"]
 script = ExtResource("hardware_script")
@@ -277,9 +279,37 @@ icon = ExtResource("5_lymrw")
 is_folder = true
 children = Array[Resource]([SubResource("Resource_letter")])
 
+[sub_resource type="Resource" id="Program_netscape"]
+script = ExtResource("2_egn44")
+name = "NETSCAPE.EXE"
+icon = ExtResource("icon_netscape")
+program = ExtResource("app_netscape")
+modified = "Monday, March 18, 1996 12:00:00 PM"
+
+[sub_resource type="Resource" id="Folder_netscape"]
+script = ExtResource("2_egn44")
+name = "Netscape"
+icon = ExtResource("5_lymrw")
+is_folder = true
+children = Array[Resource]([SubResource("Program_netscape")])
+
+[sub_resource type="Resource" id="Folder_program_files"]
+script = ExtResource("2_egn44")
+name = "Program Files"
+icon = ExtResource("5_lymrw")
+is_folder = true
+children = Array[Resource]([SubResource("Folder_netscape")])
+
+[sub_resource type="Resource" id="Shortcut_netscape"]
+script = ExtResource("2_egn44")
+name = "Netscape Navigator"
+icon = ExtResource("icon_netscape")
+target = "C:\\Program Files\\Netscape\\NETSCAPE.EXE"
+
 [sub_resource type="Resource" id="Setup_accountant"]
 script = ExtResource("9_86j8n")
-drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResource("Resource_docs")])
+drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResource("Resource_docs"), SubResource("Folder_program_files")])
+desktop = Array[ExtResource("2_egn44")]([SubResource("Shortcut_netscape")])
 installed_apps = PackedStringArray("Calculator", "Notepad")
 registered_owner = "Craig"
 

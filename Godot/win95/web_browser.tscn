@@ -1,0 +1,93 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/web_browser.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/globe_small_32.png" id="icon"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_regular.ttf" id="font_regular"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="font_bold"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/px437_ibm_vga_8x16.ttf" id="font_mono"]
+
+[sub_resource type="FontVariation" id="italic"]
+base_font = ExtResource("font_regular")
+variation_transform = Transform2D(1, 0, 0.25, 1, 0, 0)
+
+[sub_resource type="FontVariation" id="bold_italic"]
+base_font = ExtResource("font_bold")
+variation_transform = Transform2D(1, 0, 0.25, 1, 0, 0)
+
+[node name="WebBrowser" type="PanelContainer"]
+custom_minimum_size = Vector2(520, 380)
+theme = ExtResource("theme")
+script = ExtResource("script")
+resizable = true
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Netscape"
+icon = ExtResource("icon")
+show_minimize = true
+show_maximize = true
+
+[node name="MenuBar" type="MenuBar" parent="VBox"]
+layout_mode = 2
+prefer_global_menu = false
+
+[node name="File" type="PopupMenu" parent="VBox/MenuBar"]
+unique_name_in_owner = true
+item_count = 1
+item_0/text = "Close"
+item_0/id = 0
+
+[node name="Toolbar" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="Back" type="Button" parent="VBox/Toolbar"]
+unique_name_in_owner = true
+layout_mode = 2
+disabled = true
+text = "Back"
+
+[node name="Forward" type="Button" parent="VBox/Toolbar"]
+unique_name_in_owner = true
+layout_mode = 2
+disabled = true
+text = "Forward"
+
+[node name="Home" type="Button" parent="VBox/Toolbar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Home"
+
+[node name="LocationLabel" type="Label" parent="VBox/Toolbar"]
+layout_mode = 2
+text = "Location:"
+
+[node name="Address" type="LineEdit" parent="VBox/Toolbar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Page" type="RichTextLabel" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 2
+theme_override_fonts/normal_font = ExtResource("font_regular")
+theme_override_fonts/bold_font = ExtResource("font_bold")
+theme_override_fonts/italics_font = SubResource("italic")
+theme_override_fonts/bold_italics_font = SubResource("bold_italic")
+theme_override_fonts/mono_font = ExtResource("font_mono")
+theme_override_font_sizes/mono_font_size = 16
+bbcode_enabled = true
+selection_enabled = true
+
+[node name="Status" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Done"

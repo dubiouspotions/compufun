@@ -47,6 +47,7 @@ Godot/               the Godot project: everything the game loads
   win95/theme/icons_extracted/  every icon in a Windows 95 install, named, with manifest.json (docs/win95-icons.md)
   win95/midi/        recordings that .mid files play in Media Player (Godot plays no MIDI)
   win95/solitaire/   Solitaire: the rules (klondike.gd), the window, the table and the card pictures
+  win95/web/         the web pages that Netscape (web_browser.tscn) shows: <host>/<path>.htm, and their pictures
   compufun_db/       CompuFunDB, the DOS database on the work computer, its VGA font, and the work computer's boot (a 386)
   dev/               the Dev menu, the Voice Lab, story.gd (prints the story check) and story_week_page.gd (the wiki's "The Week"); no export contains it
   dev/story_lab/     the Story Lab (F4): story_lab.tscn, the week board, the problems (problem_panel.gd), the corruption signs and where the week starts them (sign_panel.gd), the drafts (story_drafts.gd), the issue that Send makes
