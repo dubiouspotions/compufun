@@ -5,4 +5,5 @@
 [node name="NoClippy" type="Node"]
 script = ExtResource("1_script")
 title = "Clippy is gone from every computer"
+description = "Every computer's WordPad shows the assistant's frame empty."
 hint = "Open WordPad on a computer."

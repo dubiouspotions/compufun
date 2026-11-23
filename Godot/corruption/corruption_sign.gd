@@ -24,6 +24,8 @@ const GROUP: StringName = &"corruption_signs"
 @export var title: String = ""
 ## When in the week the sign belongs, as the wiki page groups it.
 @export var timing: Timing = Timing.EARLY
+## How the sign looks in the game, for people: the Story Lab's Signs section shows it.
+@export_multiline var description: String = ""
 ## What the player must do to see the sign, for the F2 Signs tab, such as "Go to the Storage View."
 ## Empty when the sign shows at once.
 @export var hint: String = ""

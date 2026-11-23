@@ -20,6 +20,7 @@ size = Vector2(1.2, 0.7)
 script = ExtResource("1_script")
 title = "A folder window pops up in the shop"
 timing = 1
+description = "A Win95 folder window floats in the Main View; its [X], or a while, closes it for good (2)."
 hint = "Face the Main View; its [X] closes it (stage 2)."
 stages = 2
 

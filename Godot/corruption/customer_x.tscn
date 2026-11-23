@@ -8,6 +8,7 @@
 script = ExtResource("1_sign")
 title = "An [x] closes the young entrepreneur for good"
 timing = 2
+description = "While the young entrepreneur talks at the counter, a Win95 [x] hovers at the top right corner of his portrait; a click sends him and his computer away for good."
 hint = "Only over its target customer, while they talk."
 target = ExtResource("3_target")
 

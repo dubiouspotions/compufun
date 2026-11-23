@@ -7,6 +7,7 @@
 script = ExtResource("1_script")
 title = "Clippy in the dark storage room"
 timing = 1
+description = "On the next visit to the Storage View the lights go out, blinks on with a life-size silhouette of Clippy and off and then turns back on; then done (2)."
 hint = "Go to the Storage View. Then stage 2 (done)."
 stages = 2
 

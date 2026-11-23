@@ -7,6 +7,7 @@
 script = ExtResource("1_sign")
 title = "The bench's mouse becomes the Mouse icon"
 timing = 2
+description = "The mouse on the bench becomes the Win95 Mouse icon, standing like a cut-out. LOOKS BAD - DON'T USE"
 hint = "The mouse on the bench, right of the keyboard."
 applet = ExtResource("2_applet")
 
