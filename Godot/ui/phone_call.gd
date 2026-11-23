@@ -5,9 +5,9 @@ extends Control
 ## phone rings, the customer answers (their PHONE conversation, or [member greeting]), the player
 ## says [member you_say], and hangs up; then the customer comes for it. A PHONE conversation without
 ## lines rings out: [member no_answer] shows, and the call ends. Each line goes on by itself
-## [member auto_advance_seconds] after it ends, or at a click anywhere (or Enter), as in the dialogue. With no computer done, the
-## click picks up the phone instead, which lists the computers; Esc or "Put down" puts it down.
-## Game refuses both while the shop is closed or someone is in it.
+## [member auto_advance_seconds] after it ends, or at a click anywhere (or Enter), as in the dialogue. The shop's
+## phone takes clicks only while a computer is done. Off the hook without a call (Game.pick_up_phone), it lists
+## the computers; Esc or "Put down" puts it down. Game refuses both while the shop is closed or someone is in it.
 
 ## The heading over the customers to call.
 @export var pick_title: String = "Call a customer"

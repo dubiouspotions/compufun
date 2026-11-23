@@ -8,8 +8,9 @@ signal view_requested(view: StringName)
 signal close_requested
 ## The end has played in the room: time for the bluescreen.
 signal crashed
-## The player picked up the phone, to call a customer. While the shop is closed and a computer is
-## done, a click on the phone shakes the Open sign instead.
+## The player clicked the phone while [method Game.can_call] is true, to call a customer. While the
+## shop is closed and a computer is done, a click on the phone shakes the Open sign instead. With no
+## computer done, the phone takes no clicks.
 signal phone_requested
 ## The player pressed the Degauss button of the bench screen.
 signal degauss_requested
@@ -37,7 +38,7 @@ const WORKVIEW: StringName = &"Workview"
 @export var post_it_read_distance: float = 0.2
 ## The seconds that the post-it takes to come up close, and to go back onto the computer.
 @export var post_it_read_seconds: float = 0.3
-## The phone's outline while the mouse is over it and a click picks it up (Game.can_pick_up_phone), and how far
+## The phone's outline while the mouse is over it and a click calls (Game.can_call), and how far
 ## the outline stands out from it, in metres.
 @export var phone_hover_color: Color = Color(0.75, 0.9, 1.0)
 @export var phone_outline_width: float = 0.01
@@ -446,6 +447,7 @@ func _sync() -> void:
 		Game.VisitorState.WALKING_OUT, Game.VisitorState.OUTSIDE:
 			if _walk_out_arrival != Game.arrival:
 				_walk_out(Game.visitor_state == Game.VisitorState.OUTSIDE)
+	_phone_hotspot.set_enabled(Game.can_call() or (Game.can_open() and Game.next_to_call() != null))
 	_sync_phone()
 	var calling := Game.phase == Game.Phase.CALLING
 	if calling and not _calling:
@@ -539,7 +541,7 @@ func _set_phone_hovered(on: bool) -> void:
 
 
 func _sync_phone() -> void:
-	_phone_body.material_overlay = _phone_outline if _phone_hovered and not Game.phone_off_hook and Game.can_pick_up_phone() else null
+	_phone_body.material_overlay = _phone_outline if _phone_hovered and not Game.phone_off_hook and Game.can_call() else null
 
 
 ## The progress ratio of the customer path where it passes under the door bell.
@@ -553,10 +555,10 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 		Hotspot.Action.GO_TO_VIEW:
 			view_requested.emit(hotspot.view)
 		Hotspot.Action.CALL_CUSTOMER:
-			if Game.can_open() and Game.next_to_call() != null:
-				_open_sign.shake()  # the phone can't call before the shop opens: point at the sign
-			else:
+			if Game.can_call():
 				phone_requested.emit()
+			elif Game.can_open() and Game.next_to_call() != null:
+				_open_sign.shake()  # the phone can't call before the shop opens: point at the sign
 		Hotspot.Action.TALK_TO_VISITOR:
 			Game.talk_to_visitor()
 		Hotspot.Action.TAKE_PART:

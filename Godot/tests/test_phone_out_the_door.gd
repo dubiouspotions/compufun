@@ -26,11 +26,11 @@ func run() -> void:
 	job.software_fixed = true
 	game.set_tested(job)
 	phone.mouse_entered.emit()
-	check("walking out, the phone doesn't work", [game.visitor_state, game.can_call(), body.material_overlay == null], [GAME.VisitorState.WALKING_OUT, false, true])
+	check("walking out, the phone doesn't work", [game.visitor_state, game.can_call(), phone.input_ray_pickable, body.material_overlay == null], [GAME.VisitorState.WALKING_OUT, false, false, true])
 
 	while game.visitor_state == GAME.VisitorState.WALKING_OUT and now() < WALK_SECONDS * 4.0:
 		await process_frame
-	check("out the door, the phone works and the hovered phone is outlined", [game.visitor_state, game.visitor != null, game.can_call(), body.material_overlay != null], [GAME.VisitorState.OUTSIDE, true, true, true])
+	check("out the door, the phone works and the hovered phone is outlined", [game.visitor_state, game.visitor != null, game.can_call(), phone.input_ray_pickable, body.material_overlay != null], [GAME.VisitorState.OUTSIDE, true, true, true, true])
 	phone.mouse_exited.emit()
 	check("the outline goes with the mouse", body.material_overlay == null, true)
 	phone.mouse_entered.emit()

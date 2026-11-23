@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
 ## A click on the phone while the shop is closed and a computer is done shakes the Open sign instead
-## of calling, with a rattle; with nothing done, or with the shop open, the sign stays still.
+## of calling, with a rattle; with the shop open, the sign stays still. With nothing done, the phone
+## takes no clicks and shows no outline.
 
 const SKATER: String = "res://customers/skater_bro.tres"
 
@@ -17,11 +18,18 @@ func run() -> void:
 
 	check("restore closed, nothing done", game.restore({"day": 2, "phase": "CLOSED", "jobs": [{"customer": SKATER, "problem": "dust_overheat", "slot": 0}]}), "")
 	phone.emit_signal("clicked", phone)
-	check("nothing done: no shake, the phone as before", [sign.call("is_shaking"), requested[0]], [false, 1])
+	check("closed, nothing done: no clicks, no shake, no call", [phone.input_ray_pickable, sign.call("is_shaking"), requested[0]], [false, false, 0])
+
+	var body: MeshInstance3D = shop.get_node("Room/PhoneProp/Body")
+	check("restore open, nothing done", game.restore({"day": 2, "phase": "OPEN", "jobs": [{"customer": SKATER, "problem": "dust_overheat", "slot": 0}]}), "")
+	phone.mouse_entered.emit()
+	phone.emit_signal("clicked", phone)
+	check("open, nothing done: no clicks, no outline, no call", [phone.input_ray_pickable, body.material_overlay == null, requested[0], game.phone_off_hook], [false, true, 0, false])
+	phone.mouse_exited.emit()
 
 	check("restore closed, one done", game.restore({"day": 2, "phase": "CLOSED", "jobs": [done_job]}), "")
 	phone.emit_signal("clicked", phone)
-	check("closed with a done computer: the sign shakes, no call", [sign.call("is_shaking"), requested[0], game.phase], [true, 1, game.Phase.CLOSED])
+	check("closed with a done computer: the sign shakes, no call", [phone.input_ray_pickable, sign.call("is_shaking"), requested[0], game.phase], [true, true, 0, game.Phase.CLOSED])
 	var rattle: SoundSet = sign.get("rattle_sound")
 	check("it rattles", sign.get_children().filter(func(n: Node) -> bool: return n is AudioStreamPlayer3D and n.stream in rattle.sounds).size(), 1)
 	await create_timer(float(sign.get("shake_seconds")) / 2.0).timeout
@@ -34,6 +42,6 @@ func run() -> void:
 
 	check("restore open, one done", game.restore({"day": 2, "phase": "OPEN", "jobs": [done_job]}), "")
 	phone.emit_signal("clicked", phone)
-	check("open: the phone calls, no shake", [sign.call("is_shaking"), requested[0]], [false, 2])
+	check("open: the phone calls, no shake", [phone.input_ray_pickable, sign.call("is_shaking"), requested[0]], [true, false, 1])
 	shop.queue_free()
 	await process_frame
