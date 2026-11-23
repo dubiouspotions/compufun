@@ -5,6 +5,7 @@ symptoms:
 	Error text at startup
 	Restarts by itself
 	Blue screen
+	No picture at all
 checks:
 	yes: Memory test fails at startup
 		shows: "Memory test fail", then "System halted"

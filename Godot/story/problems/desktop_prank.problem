@@ -1,7 +1,11 @@
 post-it: Icons don't open
 cause: Screenshot set as wallpaper
 symptoms:
-	Icons don't open
+	Screen looks wrong
+	Acts strangely
+	Programs won't start
+	Something stopped working
+	Settings changed
 checks:
 	yes: Desktop icons don't open
 		shows: they are part of the wallpaper; My Computer and the Recycle Bin still work

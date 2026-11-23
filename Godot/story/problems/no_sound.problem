@@ -1,7 +1,8 @@
 post-it: Can't hear sounds
 cause: Sound muted
 symptoms:
-	No sound
+	Something stopped working
+	Settings changed
 checks:
 	yes: Sound is muted
 		shows: the speaker in the taskbar is crossed out

@@ -1,8 +1,9 @@
 post-it: Visual artifacting
 cause: Overheated GPU
 symptoms:
-	Garbled picture
-	Colours look wrong
+	No picture at all
+	Screen looks wrong
+	Acts strangely
 checks:
 	yes: Coloured blocks and torn lines on screen
 		shows: from power-on

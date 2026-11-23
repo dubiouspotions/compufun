@@ -2,6 +2,7 @@ post-it: Windows starts and turns off
 cause: Clogged CPU fan
 symptoms:
 	Restarts by itself
+	Blue screen
 	Slow computer
 checks:
 	yes: Freezes with a buzz after the desktop appears

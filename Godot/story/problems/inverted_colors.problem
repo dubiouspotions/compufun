@@ -1,7 +1,9 @@
 post-it: Computer's colours have changed
 cause: Wrong colour scheme
 symptoms:
-	Colours look wrong
+	Screen looks wrong
+	Acts strangely
+	Settings changed
 checks:
 	yes: High contrast colour scheme
 		shows: Display Properties, Appearance: High Contrast Black
