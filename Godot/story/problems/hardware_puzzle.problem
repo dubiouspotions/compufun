@@ -1,0 +1,11 @@
+post-it: Computer doesn't start
+symptoms:
+	Computer doesn't start at all when clicking start button
+	User has tampered with the hardware
+hardware steps:
+	Remove the computer shell
+	Re-arrange the hardware in their correct spots
+	Replace missing hardware
+	Remount the shell
+notes:
+	Broken part: All hardware are in the wrong places

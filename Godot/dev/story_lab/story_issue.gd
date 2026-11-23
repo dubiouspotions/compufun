@@ -31,7 +31,7 @@ static func files(drafts: StoryDrafts) -> Array[Dictionary]:
 	return found
 
 
-## "Story: " and what changed (errand codes, "day 3", other file names), then the writer's
+## "Story: " and what changed (errand codes, "day 3", "problem no_sound", other file names), then the writer's
 ## [param note].
 static func title(changed: Array[Dictionary], note: String) -> String:
 	var names := PackedStringArray()
@@ -42,6 +42,8 @@ static func title(changed: Array[Dictionary], note: String) -> String:
 			name = StoryLabBoard.code_of(path)
 		elif path.begins_with(StoryFiles.DAYS_DIR):
 			name = path.get_file().get_basename().replace("_", " ")
+		elif path.begins_with(StoryFiles.PROBLEMS_DIR):
+			name = "problem " + path.get_file().get_basename()
 		if name not in names:
 			names.append(name)
 	var text := "Story: " + ", ".join(names)

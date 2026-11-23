@@ -12,9 +12,5 @@ broken_value = ExtResource("2_tta4a")
 [resource]
 script = ExtResource("1_fynx8")
 short_name = &"inverted_colors"
-perceived_issue = "Computer's colours have changed"
 location = 1
-symptoms = PackedStringArray("Window colours changed drastically")
-hardware_steps = PackedStringArray()
-software_steps = PackedStringArray("Right-click the desktop and pick Properties", "Open the Appearance tab", "Switch the Scheme from High Contrast Black back to Windows Standard", "Click Apply or OK")
 software_check = SubResource("Resource_6pxgh")

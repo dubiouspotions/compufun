@@ -57,9 +57,5 @@ checks = Array[ExtResource("2_vf5b8")]([SubResource("Resource_25qj5"), SubResour
 [resource]
 script = ExtResource("problem")
 short_name = &"noimages"
-perceived_issue = "Can't open images"
 location = 1
-symptoms = PackedStringArray("Image program not found", "Programs won\'t start", "Customer changed something", "Start menu shortcut broken")
-hardware_steps = PackedStringArray()
-software_steps = PackedStringArray("Open the Windows folder", "Add \".exe\" back to every program")
 software_check = SubResource("Resource_26jf0")

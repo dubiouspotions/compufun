@@ -6,9 +6,5 @@
 [resource]
 script = ExtResource("2_t3qkj")
 short_name = &"gpu_overheating"
-perceived_issue = "Visual artifacting"
-symptoms = PackedStringArray("Visual artifacting on screen", "GPU overheating")
 broken_part = ExtResource("1_1gukq")
-hardware_steps = PackedStringArray("Remove the computer shell", "Remove the GPU, throw it in the trash", "Get a new GPU from storage", "Install the GPU", "Remount the shell")
-software_steps = PackedStringArray()
 screen_artifacts = 0.6

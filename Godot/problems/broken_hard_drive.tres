@@ -6,11 +6,7 @@
 [resource]
 script = ExtResource("2_3hlja")
 short_name = &"broken_hard_drive"
-perceived_issue = "Blue screen of death"
-symptoms = PackedStringArray("Blue screen at startup", "Hard drive clicks")
 broken_part = ExtResource("1_ccq5v")
-hardware_steps = PackedStringArray("Remove the computer shell", "Remove the hard drive, throw it in the trash", "Get a new hard drive from storage", "Install the hard drive", "Remount the shell")
-software_steps = PackedStringArray()
 hangs_after = 2.0
 hang_seconds = 6.0
 hang_message = "A fatal exception 0E has occurred at 0028:C0002B6F in VXD IOS(01) +

@@ -6,9 +6,5 @@
 [resource]
 script = ExtResource("2_x3mkq")
 short_name = &"hamster"
-perceived_issue = "Computer smells weird and won't start"
-symptoms = PackedStringArray("Hangs and reboots at startup", "Computer overheating")
 blocker = ExtResource("1_ijkwt")
-hardware_steps = PackedStringArray("Remove the computer shell", "Take out the hamster, throw it in the trash", "Remount the shell")
-software_steps = PackedStringArray()
 hangs_after = 1.0

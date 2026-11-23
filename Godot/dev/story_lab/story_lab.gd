@@ -49,6 +49,7 @@ var _send_button: Button
 var _checkout_chip: Label
 var _week_view: Control
 var _bible: StoryBiblePanel
+var _problem_panel: StoryProblemPanel
 var _sections: ButtonGroup
 var _send_panel: StorySendPanel
 var _customers: PopupMenu
@@ -106,7 +107,7 @@ func refresh() -> void:
 	var links := _missing_links()
 	_cards.clear()
 	for path: String in StoryFiles.files(StoryFiles.ERRANDS_DIR, ".errand", texts):
-		var parsed := StoryFormat.parse_errand(drafts.text(path), path)
+		var parsed := StoryFormat.parse_errand(drafts.text(path), path, _week.problems)
 		var problems := parsed.errors.duplicate()
 		for link: String in links:
 			if link.begins_with(path) or link.begins_with(StoryDrafts.repo_path(path)):
@@ -123,6 +124,9 @@ func refresh() -> void:
 	_problems.tooltip_text = "\n".join(_week.errors)
 	_errand_panel.flags = flag_names()
 	_day_panel.facts = _errand_panel.flags
+	_errand_panel.problems = _week.problems
+	if _problem_panel.visible:
+		_problem_panel.show_problems(_week.problems, drafts)
 	_drafts_button.text = "Drafts (%d)" % drafts.paths().size()
 	_send_button.disabled = drafts.paths().is_empty()
 	_send_button.tooltip_text = "Make a GitHub issue of your drafts" if not drafts.to_checkout else "Save to checkout is on: commit the files with git instead"
@@ -176,14 +180,28 @@ func play(errand: Errand, trigger: Conversation.Trigger) -> String:
 	return ""
 
 
-## Shows the "Week" (the board and the picked errand or day) or the "Bible".
+## Shows the "Week" (the board and the picked errand or day), the "Problems" or the "Bible".
 func show_section(section: String) -> void:
 	for button: BaseButton in _sections.get_buttons():
 		button.set_pressed_no_signal((button as Button).text == section)
 	_week_view.visible = section == "Week"
+	_problem_panel.visible = section == "Problems"
 	_bible.visible = section == "Bible"
-	if section == "Bible":
+	if section == "Problems":
+		_problem_panel.show_problems(_week.problems, drafts)
+	elif section == "Bible":
 		_bible.show_pages(drafts)
+
+
+## Opens the problem [param id] in the Problems section.
+func open_problem(id: StringName) -> void:
+	show_section("Problems")
+	_problem_panel.open_problem(id)
+
+
+## The Problems section (for its edits).
+func problem_panel() -> StoryProblemPanel:
+	return _problem_panel
 
 
 ## Opens the errand file [param path] below the board.
@@ -272,6 +290,8 @@ func _drafts_changed() -> void:
 	_after_store()
 	if _selected != "":
 		open_errand(_selected)
+	if _problem_panel.visible and _problem_panel.problem_id() != &"":
+		_problem_panel.open_problem(_problem_panel.problem_id())
 
 
 func _store_page(path: String, text: String) -> void:
@@ -358,6 +378,10 @@ func _build() -> void:
 	_week_view.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_week_view.add_theme_constant_override("separation", 12)
 	page.add_child(_week_view)
+	_problem_panel = StoryProblemPanel.new()
+	_problem_panel.saved.connect(_store_edit)
+	_problem_panel.hide()
+	page.add_child(_problem_panel)
 	_bible = StoryBiblePanel.new()
 	_bible.saved.connect(_store_page)
 	_bible.hide()
@@ -379,6 +403,7 @@ func _build() -> void:
 	_errand_panel.saved.connect(_store_edit)
 	_errand_panel.remove_requested.connect(_remove_errand)
 	_errand_panel.play_requested.connect(play)
+	_errand_panel.edit_problem_requested.connect(open_problem)
 	_day_panel = StoryDayPanel.new()
 	_day_panel.saved.connect(_store_edit)
 	for shown: Control in [_hint, _errand_panel, _day_panel]:
@@ -404,7 +429,7 @@ func _top_bar() -> Control:
 	row.add_child(LabUI.label("Story Lab", 26))
 	row.add_child(LabUI.chip("Game paused", LabUI.ACCENT, 13))
 	_sections = ButtonGroup.new()
-	var sections := LabUI.segmented(PackedStringArray(["Week", "Bible"]), _sections)
+	var sections := LabUI.segmented(PackedStringArray(["Week", "Problems", "Bible"]), _sections)
 	for button: BaseButton in _sections.get_buttons():
 		button.custom_minimum_size.x = 90
 		button.toggled.connect(func(on: bool) -> void:

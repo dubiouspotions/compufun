@@ -1,0 +1,14 @@
+post-it: None
+symptoms:
+	Blood comes out of the chassi
+	Sound of heartbeat from computer
+hardware steps:
+	Remove the computer shell
+	Remove the faulty parts, throw them in the trash
+	Get new parts from storage
+	Install the parts
+	Remount the shell
+notes:
+	Broken part: Motherboard, CPU, Fan, GPU and Hard drive
+	Blood comes out of the chassi (discreet)
+	Hardware replaced with customers organs (kidneys (RAM), heart (motherboard), lungs (fan), liver (GPU), brain (hard drive), spleen (CPU)). Note: Don't show the corrupted symptoms in CompuFun db. Treat likemissing/broken hardware with the symptoms.

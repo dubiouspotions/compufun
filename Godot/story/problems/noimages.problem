@@ -1,0 +1,13 @@
+post-it: Can't open images
+symptoms:
+	Image program not found
+		shows: an error message when opening an image (can't find the .exe)
+	Programs won't start
+		shows: every program in the Windows folder lost its ".exe" and won't run
+	Customer changed something
+		shows: if asked, the customer says the problem appeared after something they did
+	Start menu shortcut broken
+		shows: an error message, or a corrupted link, when following the Start menu link to the image program
+software steps:
+	Open the Windows folder
+	Add ".exe" back to every program

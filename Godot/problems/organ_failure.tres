@@ -5,8 +5,4 @@
 [resource]
 script = ExtResource("1_problem")
 short_name = &"organ_failure"
-perceived_issue = "None"
 location = 2
-symptoms = PackedStringArray("Blood comes out of the chassi", "Sound of heartbeat from computer")
-hardware_steps = PackedStringArray("Remove the computer shell", "Remove the faulty parts, throw them in the trash", "Get new parts from storage", "Install the parts", "Remount the shell")
-software_steps = PackedStringArray()

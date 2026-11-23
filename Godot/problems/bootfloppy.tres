@@ -11,9 +11,5 @@ broken_value = true
 [resource]
 script = ExtResource("1_u4sk2")
 short_name = &"bootfloppy"
-perceived_issue = "Computer doesn't start - just a bunch of text"
 location = 1
-symptoms = PackedStringArray("Non-System disk error at startup", "Floppy in drive A:")
-hardware_steps = PackedStringArray()
-software_steps = PackedStringArray("Eject the floppy from drive A:", "Press a key, or restart, with no floppy in A:")
 software_check = SubResource("Resource_76u48")

@@ -1,4 +1,4 @@
-# The story files: days, errands and what customers say
+# The story files: days, errands, problems and what customers say
 
 How the week is stored in story files, and how conversations are written in them. The design is on the
 wiki page [Architecture](../wiki/Architecture.md) ("Content data"). Writers edit these files in the
@@ -11,6 +11,7 @@ Everything that writers edit is plain text under `Godot/story/`. One thing is on
 ```
 story/days/day_1.day ... day_7.day    each day's settings: weather, warp, flags, signs, notes
 story/errands/0101_skater_bro.errand  one visit: who, which problem, the brief, the conversations
+story/problems/dust_overheat.problem  one computer problem's text: the post-it, symptoms, steps, notes
 story/bible/storyline.md              prose that the game doesn't read: the lore, the end, the cast
 story/bible/customers.md
 ```
@@ -19,9 +20,9 @@ story/bible/customers.md
   (morning); `0503` is day 5, the third (evening). The name after it is the customer. Two errands
   with the same code are alternatives: the first, by name, whose `when` matches comes (day 7
   evening). Moving an errand to another day or place renames its file.
-- **Problems, customers, persons and computers stay resources** (`problems/*.tres`,
-  `customers/*.tres`, `people/<name>/person.tres`). Their mechanics are code; the Story Lab shows
-  their text.
+- **Customers, persons and computers stay resources** (`customers/*.tres`,
+  `people/<name>/person.tres`). Their mechanics are code; the Story Lab shows their text. A
+  problem's mechanics stay in `problems/<id>.tres`, and its text is in its problem file.
 - **Moods:** a line picks a mood, which picks the portrait (`Person.portraits`) and the voice
   (`voices/moods/<mood>.tres`). A person has the moods that it has portraits for. A mood without
   a voice mood file speaks as neutral, and the story check lists it.
@@ -66,8 +67,8 @@ brief:
 ...
 ```
 
-- `customer`, `problem`: file names without `.tres`. An errand without a problem is a visit
-  that needs no repair.
+- `customer`, `problem`: file names without `.tres` or `.problem`. An errand without a problem is
+  a visit that needs no repair.
 - `computer`: `leaves` (the default: it stays on the counter), `none` (the customer comes without
   one and leaves when the conversation ends), or `shows` (it stands on the counter while they
   visit, and goes with them).
@@ -78,6 +79,36 @@ brief:
   A trigger can have several; the first whose condition matches plays. Without a match, a pick-up
   is a short thanks and a phone call a "Hello?". A `phone` without lines rings out: nobody
   answers.
+
+## A problem: `story/problems/<id>.problem`
+
+```
+post-it: Windows starts and turns off
+symptoms:
+	Hangs and reboots at startup
+		shows: a second into the Windows startup sound, the computer stops answering...
+	Computer overheating
+		shows: the fan is full of dust in the Workview
+hardware steps:
+	Remove the computer shell
+	Remove the fan, throw it in the trash
+software steps:
+	Unmute
+notes:
+	Free text for people: the story behind it, open questions.
+```
+
+The file name is the problem's id, the name of its `problems/<id>.tres`, which holds the mechanics
+(where it is, the broken part, the check that fixes it). Every key but `post-it` is optional.
+
+- `post-it`: what the customer says is wrong; the post-it shows it.
+- `symptoms`: one per line, as CompuFunDB lists them and its records mark them. Changing one
+  changes what the player marks. `shows:` under a symptom says how it shows in the game, for people.
+- `hardware steps`, `software steps`: one per line, as CompuFunDB prints them.
+- `notes`: for people; the game doesn't read them.
+
+A problem file without a `.tres` is a problem that a writer named before a developer built it: an
+errand can name it, and the story check lists it as a problem without mechanics.
 
 ## Conversations
 
@@ -148,7 +179,8 @@ a day or a conversation sets it, and clearing it uninstalls Cambion.
 The files are the outline. The story check lists the missing links: a flag that nothing sets or
 checks, a `+` choice without a line, an errand without a `drop-off`, an errand code whose alternatives can
 all fail, a mood that the person has no portrait for or no voice for, a `[leaving]` line that the
-conversation can go on after, a problem without repair mechanics:
+conversation can go on after, a problem without repair mechanics, a problem file that no errand
+names:
 
 ```sh
 "$GODOT" --headless -s res://dev/story.gd

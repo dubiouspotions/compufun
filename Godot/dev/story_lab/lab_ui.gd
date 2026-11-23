@@ -58,6 +58,27 @@ static func button(text: String, pressed: Callable, variation: StringName = &"")
 	return made
 
 
+## A small square button that draws [param kind] ("up", "down" or "remove") and runs [param pressed].
+static func icon_button(kind: String, tooltip: String, pressed: Callable) -> Button:
+	var made := Button.new()
+	made.custom_minimum_size = Vector2(30, 30)
+	made.theme_type_variation = &"FlatButton"
+	made.tooltip_text = tooltip
+	made.focus_mode = Control.FOCUS_NONE
+	made.pressed.connect(pressed)
+	made.draw.connect(func() -> void:
+		var c := made.size / 2.0
+		var color := TEXT if made.is_hovered() else DIM
+		if kind == "up":
+			made.draw_colored_polygon(PackedVector2Array([c + Vector2(-6, 4), c + Vector2(6, 4), c + Vector2(0, -5)]), color)
+		elif kind == "down":
+			made.draw_colored_polygon(PackedVector2Array([c + Vector2(-6, -4), c + Vector2(6, -4), c + Vector2(0, 5)]), color)
+		else:
+			made.draw_line(c + Vector2(-5, -5), c + Vector2(5, 5), color, 2.0, true)
+			made.draw_line(c + Vector2(5, -5), c + Vector2(-5, 5), color, 2.0, true))
+	return made
+
+
 ## Buttons in a row of which one is pressed, in [param group].
 static func segmented(options: PackedStringArray, group: ButtonGroup) -> HBoxContainer:
 	var row := HBoxContainer.new()

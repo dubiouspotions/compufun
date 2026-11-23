@@ -1,0 +1,13 @@
+post-it: Computer smells weird and won't start
+symptoms:
+	Hangs and reboots at startup
+		shows: a second into the Windows startup sound, the computer stops answering and the sound sags, then it freezes in a buzz, and a few seconds later it reboots
+	Computer overheating
+		shows: the fan is covered by a dead hamster
+hardware steps:
+	Remove the computer shell
+	Take out the hamster, throw it in the trash
+	Remount the shell
+notes:
+	Broken part: None. A hamster lies on the fan; the fan itself is fine. Take the hamster out to fix it.
+	One exception on purpose: Hamster has the symptoms of Dust Overheat, and the player tells them apart by opening the computer.

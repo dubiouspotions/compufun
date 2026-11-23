@@ -1,6 +1,6 @@
 class_name StoryFormat
 extends RefCounted
-## Reads and writes the story files: a day (.day) and an errand (.errand). The format is in
+## Reads and writes the story files: a day (.day), an errand (.errand) and a problem (.problem). The format is in
 ## docs/dialogue.md. Writing a parsed file gives the same text when the file is in the written
 ## layout, so the Story Lab can edit the text and the graph of one file.
 
@@ -23,15 +23,28 @@ const BRINGS: Dictionary[String, Errand.Brings] = {
 }
 const CUSTOMERS_DIR: String = "res://customers/"
 const PROBLEMS_DIR: String = "res://problems/"
+## The problem files: the text of each problem in PROBLEMS_DIR.
+const PROBLEM_FILES_DIR: String = "res://story/problems/"
 const EFFECTS_DIR: String = "res://voices/effects/"
 const _DEFAULT_FIRST_WAIT: Vector2 = Vector2(5.0, 8.0)
 const _DEFAULT_GAP: Vector2 = Vector2(20.0, 40.0)
 const _DEFAULT_IDLE_WAIT: float = 4.0
 
 
-## The errand in [param text], read from [param path], whose file name gives its errand code.
-static func parse_errand(text: String, path: String) -> Parsed:
-	return _Reader.new(text, path).errand()
+## The errand in [param text], read from [param path], whose file name gives its errand code. Its
+## problem is the one in [param problems] by id, else the cached res://problems/<id>.tres, else a
+## Problem made in memory from story/problems/<id>.problem.
+static func parse_errand(text: String, path: String, problems: Dictionary[StringName, Problem] = {}) -> Parsed:
+	var reader := _Reader.new(text, path)
+	reader._problems = problems
+	return reader.errand()
+
+
+## The problem file in [param text], read from [param path] (story/problems/<id>.problem): a Problem
+## made in memory with the text only, [member Problem.short_name] the id from the file name and
+## [member Resource.resource_path] [param path].
+static func parse_problem(text: String, path: String) -> Parsed:
+	return _Reader.new(text, path).problem()
 
 
 ## The day in [param text], read from [param path] (story/days/day_<n>.day).
@@ -90,6 +103,26 @@ static func write_errand(errand: Errand) -> String:
 		if c.brief != "":
 			out.append("brief: " + c.brief)
 		_write_block(out, c, 0)
+	return "\n".join(out) + "\n"
+
+
+## The problem file of [param problem]'s text.
+static func write_problem(problem: Problem) -> String:
+	var out := PackedStringArray()
+	out.append("post-it: " + problem.perceived_issue)
+	if not problem.symptoms.is_empty():
+		out.append("symptoms:")
+		for symptom: String in problem.symptoms:
+			out.append("\t" + symptom)
+			if problem.symptom_shows.has(symptom):
+				out.append("\t\tshows: " + problem.symptom_shows[symptom])
+	for key: String in ["hardware steps", "software steps"]:
+		var steps: PackedStringArray = problem.hardware_steps if key == "hardware steps" else problem.software_steps
+		if not steps.is_empty():
+			out.append(key + ":")
+			for step: String in steps:
+				out.append("\t" + step)
+	_write_text_block(out, "notes", problem.notes)
 	return "\n".join(out) + "\n"
 
 
@@ -200,6 +233,7 @@ class _Reader:
 	# line before it.
 	var _tokens: Array[Dictionary] = []
 	var _at: int = 0
+	var _problems: Dictionary[StringName, Problem] = {}
 
 	func _init(text: String, path: String) -> void:
 		_path = path
@@ -225,7 +259,7 @@ class _Reader:
 		else:
 			errand.customer = _load(CUSTOMERS_DIR, fields.customer, fields.customer_line, "customer") as Customer
 		if fields.has("problem"):
-			errand.problem = _load(PROBLEMS_DIR, fields.problem, fields.problem_line, "problem") as Problem
+			errand.problem = _problem(fields.problem, fields.problem_line)
 		if fields.has("computer"):
 			if BRINGS.has(fields.computer):
 				errand.brings = BRINGS[fields.computer]
@@ -291,6 +325,81 @@ class _Reader:
 		d.notes = fields.get("notes", "")
 		result.errors = _sorted_errors()
 		return result
+
+	func problem() -> Parsed:
+		var result := Parsed.new()
+		var p := Problem.new()
+		result.value = p
+		p.set_path_cache(_path)
+		var stem := _path.get_file().get_basename()
+		if not _is_name(stem):
+			_error(0, "the file name must be the problem's id, in lower case, digits and _, not '%s'" % stem)
+		p.short_name = StringName(stem)
+		var fields := _read_fields(0, _lines.size(), ["post-it", "symptoms", "hardware steps", "software steps", "notes"])
+		if fields.get("post-it", "") == "":
+			_error(fields.get("post-it_line", 0), "no 'post-it:' text, which the post-it shows")
+		elif fields["post-it"].contains("\n"):
+			_error(fields["post-it_line"], "'post-it:' is one line, after the colon")
+		else:
+			p.perceived_issue = fields["post-it"]
+		for row: Array in _rows(fields, "symptoms"):
+			var text: String = row[1]
+			if not text.begins_with("\t"):
+				if text in p.symptoms:
+					_error(row[0], "the symptom '%s' a second time" % text)
+				else:
+					p.symptoms.append(text)
+			elif not text.substr(1).begins_with("shows:"):
+				_error(row[0], "under a symptom goes only 'shows:' and how it shows in the game")
+			elif p.symptoms.is_empty():
+				_error(row[0], "'shows:' before any symptom")
+			elif p.symptom_shows.has(p.symptoms[-1]):
+				_error(row[0], "a second 'shows:' for the symptom '%s'" % p.symptoms[-1])
+			else:
+				p.symptom_shows[p.symptoms[-1]] = text.substr(7).strip_edges()
+		for key: String in ["hardware steps", "software steps"]:
+			var steps := PackedStringArray()
+			for row: Array in _rows(fields, key):
+				if (row[1] as String).begins_with("\t"):
+					_error(row[0], "a step is one line, with nothing under it")
+				else:
+					steps.append(row[1])
+			if key == "hardware steps":
+				p.hardware_steps = steps
+			else:
+				p.software_steps = steps
+		p.notes = fields.get("notes", "")
+		result.errors = _sorted_errors()
+		return result
+
+	# The lines under the block key [param key] of [param fields], as [line index, text], blank ones
+	# left out; a value on the key's own line is an error.
+	func _rows(fields: Dictionary, key: String) -> Array[Array]:
+		var rows: Array[Array] = []
+		if not fields.has(key):
+			return rows
+		var at: int = fields[key + "_line"]
+		if _lines[at].substr(_lines[at].find(":") + 1).strip_edges() != "":
+			_error(at, "'%s:' takes one entry per line, under it" % key)
+			return rows
+		var text: String = fields[key]
+		var block := text.split("\n") if text != "" else PackedStringArray()
+		for i: int in block.size():
+			if block[i].strip_edges() != "":
+				rows.append([at + 1 + i, block[i].strip_edges(false, true)])
+		return rows
+
+	# The problem named [param name]: the week's, the cached .tres, or one made from its problem file.
+	func _problem(name: String, line: int) -> Problem:
+		if _problems.has(StringName(name)):
+			return _problems[StringName(name)]
+		var file := PROBLEM_FILES_DIR + name + ".problem"
+		if _is_name(name) and not ResourceLoader.exists(PROBLEMS_DIR + name + ".tres") and FileAccess.file_exists(file):
+			var parsed := StoryFormat.parse_problem(FileAccess.get_file_as_string(file), file)
+			for error: String in parsed.errors:
+				_error(line, "the problem file has an error: " + error)
+			return parsed.value
+		return _load(PROBLEMS_DIR, name, line, "problem") as Problem
 
 	# The line indices of the "==" lines.
 	func _section_starts() -> Array[int]:

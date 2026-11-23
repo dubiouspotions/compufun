@@ -1,0 +1,8 @@
+post-it: Computer's colours have changed
+symptoms:
+	Window colours changed drastically
+software steps:
+	Right-click the desktop and pick Properties
+	Open the Appearance tab
+	Switch the Scheme from High Contrast Black back to Windows Standard
+	Click Apply or OK
