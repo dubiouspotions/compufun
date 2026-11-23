@@ -1,7 +1,7 @@
 [gd_resource type="ShaderMaterial" format=3]
 
 [ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="1_shader"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/keys_windows_flag_48.png" id="2_flag"]
+[ext_resource type="Texture2D" path="res://materials/textures/floppy_label.png" id="2_flag"]
 
 [resource]
 render_priority = 0

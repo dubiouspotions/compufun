@@ -39,11 +39,11 @@ a `uid=` on the bus layout, and drops a reverb's `wet = 0.5` (also the default).
 once. Putting the old text back makes the same diff return the next time the editor saves.
 — 2026-11-22
 
-**One icon's `.import` switches to VRAM compression and mipmaps.** `keys_windows_flag_48.png` is
-the floppy label, so the editor treats it as a 3D texture. Detect 3D was still "VRAM Compressed",
-the default on the extracted icons, and that setting reimports the picture the first time it is
-used on a 3D surface. Set `detect_3d/compress_to=0` (Disabled), as the other textures on a 3D
-surface do, and leave the compression lossless. — 2026-11-22
+**An icon's `.import` switches to VRAM compression and mipmaps.** The editor treats an icon on a
+3D surface as a 3D texture (`keys_windows_flag_48.png` was once the floppy label). Detect 3D was
+still "VRAM Compressed", the default on the extracted icons, and that setting reimports the picture
+the first time it is used on a 3D surface. Set `detect_3d/compress_to=0` (Disabled), as the other
+textures on a 3D surface do, and leave the compression lossless. — 2026-11-22
 
 **A data file saved from a headless script loses its `uid=` references.** `ResourceSaver.save`
 drops them. Write them back from each referenced file's header or `.import`, so the file
