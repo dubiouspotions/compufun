@@ -1,6 +1,7 @@
 post-it: Wants a good-looking screensaver
 symptoms:
 	No screensaver set
+		category: In Windows
 software steps:
 	Right-click the desktop and pick Properties
 	Open the Screen Saver tab

@@ -77,7 +77,7 @@ func open_problem(id: StringName) -> void:
 	_post_it.text = problem.perceived_issue
 	_clear(_symptoms)
 	for symptom: String in problem.symptoms:
-		_add_symptom(symptom, problem.symptom_shows.get(symptom, ""))
+		_add_symptom(symptom, problem.symptom_shows.get(symptom, ""), problem.symptom_categories.get(symptom, ""))
 	for list: VBoxContainer in [_hardware, _software]:
 		_clear(list)
 		for step: String in (problem.hardware_steps if list == _hardware else problem.software_steps):
@@ -131,10 +131,13 @@ func text() -> String:
 	for row: Node in _symptoms.get_children():
 		var symptom := (row.get_child(0) as LineEdit).text.strip_edges()
 		var shows := (row.get_child(1) as LineEdit).text.strip_edges()
+		var category := (row.get_child(2) as LineEdit).text.strip_edges()
 		if symptom != "":
 			problem.symptoms.append(symptom)
 			if shows != "":
 				problem.symptom_shows[symptom] = shows
+			if category != "":
+				problem.symptom_categories[symptom] = category
 	problem.hardware_steps = _steps(_hardware)
 	problem.software_steps = _steps(_software)
 	problem.notes = _notes.text.strip_edges(false, true)
@@ -291,7 +294,7 @@ func _arm_remove() -> void:
 
 # --- The form's rows
 
-func _add_symptom(symptom: String = "", shows: String = "") -> void:
+func _add_symptom(symptom: String = "", shows: String = "", category: String = "") -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	var what := LineEdit.new()
@@ -307,6 +310,14 @@ func _add_symptom(symptom: String = "", shows: String = "") -> void:
 	how.size_flags_stretch_ratio = 1.6
 	how.text_changed.connect(func(_t: String) -> void: _changed())
 	row.add_child(how)
+	var heading := LineEdit.new()
+	heading.text = category
+	heading.placeholder_text = "Its heading in CompuFunDB"
+	heading.tooltip_text = "Where the player meets it, such as At startup or In Windows; CompuFunDB lists the symptom under this heading."
+	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	heading.size_flags_stretch_ratio = 0.6
+	heading.text_changed.connect(func(_t: String) -> void: _changed())
+	row.add_child(heading)
 	_add_row_buttons(row)
 	_symptoms.add_child(row)
 
@@ -434,6 +445,10 @@ func _right() -> Control:
 	how.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	how.size_flags_stretch_ratio = 1.6
 	columns.add_child(how)
+	var heading := LabUI.label("Heading in CompuFunDB", 13, LabUI.DIM)
+	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	heading.size_flags_stretch_ratio = 0.6
+	columns.add_child(heading)
 	var room := Control.new()
 	room.custom_minimum_size.x = 102
 	columns.add_child(room)

@@ -1,7 +1,9 @@
 post-it: Blue screen of death
 symptoms:
 	Blue screen at startup
+		category: At startup
 	Hard drive clicks
+		category: On the computer
 hardware steps:
 	Remove the computer shell
 	Remove the hard drive, throw it in the trash

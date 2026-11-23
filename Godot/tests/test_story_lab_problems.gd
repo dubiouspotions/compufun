@@ -52,7 +52,7 @@ func _the_form_edits_a_draft(panel: StoryProblemPanel, drafts: StoryDrafts) -> v
 	panel.call("_save")
 	var after := StoryFormat.parse_problem(drafts.text(DUST), DUST).value as Problem
 	check("the post-it is a draft", after.perceived_issue, "Runs hot, then dies")
-	check("the rest of the file stays", [after.symptoms, after.hardware_steps, after.symptom_shows], [before.symptoms, before.hardware_steps, before.symptom_shows])
+	check("the rest of the file stays", [after.symptoms, after.hardware_steps, after.symptom_shows, after.symptom_categories], [before.symptoms, before.hardware_steps, before.symptom_shows, before.symptom_categories])
 	check("the game plays the draft", (game.get("story_drafts") as Dictionary).get(DUST, ""), drafts.text(DUST))
 	var hardware: VBoxContainer = panel.get("_hardware")
 	panel.call("_move", hardware.get_child(0), 1)

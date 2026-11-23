@@ -1,7 +1,9 @@
 post-it: Computer doesn't start - just a bunch of text
 symptoms:
 	Non-System disk error at startup
+		category: At startup
 	Floppy in drive A:
+		category: On the computer
 software steps:
 	Eject the floppy from drive A:
 	Press a key, or restart, with no floppy in A:

@@ -2,8 +2,10 @@ post-it: Visual artifacting
 symptoms:
 	Visual artifacting on screen
 		shows: from the moment the computer starts, coloured blocks and torn lines flicker over the picture
+		category: At startup
 	GPU overheating
 		shows: the GPU's heatsink is scorched in the Workview
+		category: On the computer
 hardware steps:
 	Remove the computer shell
 	Remove the GPU, throw it in the trash

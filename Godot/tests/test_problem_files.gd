@@ -44,6 +44,15 @@ func _round_trip() -> void:
 		check("%s writes back the same text" % path, StoryFormat.write_problem(parsed.value), text)
 	var dust := StoryFormat.parse_problem(FileAccess.get_file_as_string(PROBLEM_FILE % "dust_overheat"), PROBLEM_FILE % "dust_overheat").value as Problem
 	check("a symptom shows", dust.symptom_shows["Computer overheating"], "the fan is full of dust in the Workview")
+	check("and has a category", dust.symptom_categories["Computer overheating"], "On the computer")
+	var categories: Dictionary[String, String] = {}
+	for path: String in files:
+		var problem := StoryFormat.parse_problem(FileAccess.get_file_as_string(path), path).value as Problem
+		for symptom: String in problem.symptoms:
+			var category: String = problem.symptom_categories.get(symptom, "")
+			check("%s: '%s' has a category" % [path, symptom], category != "", true)
+			check("%s: '%s' is in the category that the other problems give it" % [path, symptom], categories.get(symptom, category), category)
+			categories[symptom] = category
 	check("the steps", [dust.hardware_steps.size(), dust.hardware_steps[0], dust.software_steps], [5, "Remove the computer shell", PackedStringArray()])
 	check("text only, named by its file", [dust.short_name, dust.resource_path, dust.broken_part], [&"dust_overheat", PROBLEM_FILE % "dust_overheat", null])
 
@@ -55,7 +64,7 @@ func _errors() -> void:
 		path + ":1: no 'post-it:' text, which the post-it shows",
 		path + ":2: 'shows:' before any symptom",
 		path + ":4: the symptom 'One' a second time",
-		path + ":5: under a symptom goes only 'shows:' and how it shows in the game",
+		path + ":5: under a symptom go only 'shows:', how it shows in the game, and 'category:', its heading in CompuFunDB",
 		path + ":8: a step is one line, with nothing under it",
 		path + ":9: 'software steps:' takes one entry per line, under it",
 		path + ":10: 'colour: red' is not a key here; the keys are post-it, symptoms, hardware steps, software steps, notes",

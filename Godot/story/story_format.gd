@@ -123,6 +123,8 @@ static func write_problem(problem: Problem) -> String:
 			out.append("\t" + symptom)
 			if problem.symptom_shows.has(symptom):
 				out.append("\t\tshows: " + problem.symptom_shows[symptom])
+			if problem.symptom_categories.has(symptom):
+				out.append("\t\tcategory: " + problem.symptom_categories[symptom])
 	for key: String in ["hardware steps", "software steps"]:
 		var steps: PackedStringArray = problem.hardware_steps if key == "hardware steps" else problem.software_steps
 		if not steps.is_empty():
@@ -367,14 +369,17 @@ class _Reader:
 					_error(row[0], "the symptom '%s' a second time" % text)
 				else:
 					p.symptoms.append(text)
-			elif not text.substr(1).begins_with("shows:"):
-				_error(row[0], "under a symptom goes only 'shows:' and how it shows in the game")
-			elif p.symptoms.is_empty():
-				_error(row[0], "'shows:' before any symptom")
-			elif p.symptom_shows.has(p.symptoms[-1]):
-				_error(row[0], "a second 'shows:' for the symptom '%s'" % p.symptoms[-1])
 			else:
-				p.symptom_shows[p.symptoms[-1]] = text.substr(7).strip_edges()
+				var key := text.substr(1).get_slice(":", 0)
+				var under: Dictionary[String, String] = p.symptom_shows if key == "shows" else p.symptom_categories
+				if key not in ["shows", "category"] or not text.contains(":"):
+					_error(row[0], "under a symptom go only 'shows:', how it shows in the game, and 'category:', its heading in CompuFunDB")
+				elif p.symptoms.is_empty():
+					_error(row[0], "'%s:' before any symptom" % key)
+				elif under.has(p.symptoms[-1]):
+					_error(row[0], "a second '%s:' for the symptom '%s'" % [key, p.symptoms[-1]])
+				else:
+					under[p.symptoms[-1]] = text.substr(text.find(":") + 1).strip_edges()
 		for key: String in ["hardware steps", "software steps"]:
 			var steps := PackedStringArray()
 			for row: Array in _rows(fields, key):

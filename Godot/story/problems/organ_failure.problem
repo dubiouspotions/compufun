@@ -2,8 +2,10 @@ post-it: None
 symptoms:
 	Blood comes out of the chassi
 		shows: as he sets the computer down, blood seeps out under it, and stays on the counter for the rest of the game
+		category: On the computer
 	Sound of heartbeat from computer
 		shows: a heartbeat sounds from the computer while the heart is in it
+		category: On the computer
 hardware steps:
 	Remove the computer shell
 	Remove the faulty parts, throw them in the trash

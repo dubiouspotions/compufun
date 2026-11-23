@@ -2,10 +2,13 @@ post-it: Icons don't open
 symptoms:
 	Desktop icons don't respond
 		shows: someone took a screenshot of the desktop and set it as the wallpaper, so every icon on it, My Computer and the Recycle Bin too, is only a picture
+		category: In Windows
 	Wallpaper is a picture of the desktop
 		shows: the picture has fewer colours than the screen, and Display Properties lists the wallpaper as "prank"
+		category: In Windows
 	Icons are in a folder hidden in a corner
 		shows: a "New Folder" holds every icon; it is hidden mostly off the screen in the bottom right corner, its name behind the taskbar
+		category: In Windows
 software steps:
 	Open the folder hidden in the corner
 	Drag every icon in it onto the desktop

@@ -2,6 +2,7 @@ post-it: Can't hear sounds
 symptoms:
 	Sound is muted
 		shows: the volume is muted in Windows
+		category: In Windows
 software steps:
 	Unmute
 notes:

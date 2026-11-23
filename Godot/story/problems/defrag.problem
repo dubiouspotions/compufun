@@ -2,10 +2,13 @@ post-it: Mouse glitches
 symptoms:
 	Slow to boot
 		shows: Windows boots slower than a healthy computer
+		category: At startup
 	Mouse pointer jumps
 		shows: the mouse skips when moved
+		category: In Windows
 	Folders open slowly
 		shows: a folder takes about 2 seconds to open
+		category: In Windows
 software steps:
 	Go to settings
 	Start defrag

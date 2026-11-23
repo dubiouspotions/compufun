@@ -2,8 +2,10 @@ post-it: Stops before Windows starts
 symptoms:
 	Memory test fails at startup
 		shows: the BIOS memory test counts up, stops at the same point whichever module is bad, and says "Memory Test Fail"
+		category: At startup
 	Halts before Windows
 		shows: "System Halted", until the computer is switched off
+		category: At startup
 hardware steps:
 	Remove the computer shell
 	Swap one RAM module for a new one from storage

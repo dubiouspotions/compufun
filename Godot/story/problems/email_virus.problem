@@ -1,7 +1,9 @@
 post-it: CD-tray keeps on opening and closing
 symptoms:
 	CD-tray keeps on opening and closing
+		category: On the computer
 	If connected to the internet the mouse moves on its own
+		category: In Windows
 software steps:
 	Run antivirus
 notes:

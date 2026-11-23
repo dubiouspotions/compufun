@@ -2,8 +2,10 @@ post-it: Computer smells weird and won't start
 symptoms:
 	Hangs and reboots at startup
 		shows: a second into the Windows startup sound, the computer stops answering and the sound sags, then it freezes in a buzz, and a few seconds later it reboots
+		category: At startup
 	Computer overheating
 		shows: the fan is covered by a dead hamster
+		category: On the computer
 hardware steps:
 	Remove the computer shell
 	Take out the hamster, throw it in the trash

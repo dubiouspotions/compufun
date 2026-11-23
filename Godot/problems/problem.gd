@@ -70,6 +70,9 @@ var symptoms: PackedStringArray = []
 ## How each symptom shows in the game, for people: symptom to text; a symptom without one is
 ## missing. From the problem file.
 var symptom_shows: Dictionary[String, String] = {}
+## The heading that CompuFunDB's CHECK column lists each symptom under, such as "At startup":
+## symptom to category; a symptom without one is missing. From the problem file.
+var symptom_categories: Dictionary[String, String] = {}
 ## The repair steps that CompuFunDB prints, hardware first. From the problem file.
 var hardware_steps: PackedStringArray = []
 var software_steps: PackedStringArray = []
@@ -78,12 +81,13 @@ var software_steps: PackedStringArray = []
 var notes: String = ""
 
 
-## Replaces the text of this problem (the post-it, the symptoms, how they show, the steps and the
-## notes) with the text of [param from]. The mechanics stay.
+## Replaces the text of this problem (the post-it, the symptoms, how they show and their categories,
+## the steps and the notes) with the text of [param from]. The mechanics stay.
 func take_text(from: Problem) -> void:
 	perceived_issue = from.perceived_issue
 	symptoms = from.symptoms.duplicate()
 	symptom_shows = from.symptom_shows.duplicate()
+	symptom_categories = from.symptom_categories.duplicate()
 	hardware_steps = from.hardware_steps.duplicate()
 	software_steps = from.software_steps.duplicate()
 	notes = from.notes
