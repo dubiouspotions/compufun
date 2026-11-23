@@ -1,7 +1,7 @@
 class_name StoryProblemPanel
 extends HBoxContainer
 ## The Story Lab's Problems: every computer problem of the week, with its post-it and whether the
-## game can repair it yet, and a form for the open one (the post-it, the symptoms and the checks and
+## game can repair it yet, and a form for the open one (the post-it, the cause, the symptoms and the checks and
 ## how each shows, the repair steps and notes). Each edit that is complete is a new text of the problem file
 ## (story/problems/<id>.problem), which [signal saved] hands up.
 
@@ -25,6 +25,7 @@ var _title: Label
 var _built_slot: HBoxContainer
 var _remove: Button
 var _post_it: LineEdit
+var _cause: LineEdit
 var _symptoms: VBoxContainer
 var _checks: VBoxContainer
 var _hardware: VBoxContainer
@@ -74,6 +75,7 @@ func open_problem(id: StringName) -> void:
 	_remove.visible = not built
 	_remove.text = "Remove problem"
 	_post_it.text = problem.perceived_issue
+	_cause.text = problem.cause
 	_clear(_symptoms)
 	for symptom: String in problem.symptoms:
 		_add_symptom(symptom, problem.symptom_shows.get(symptom, ""))
@@ -129,6 +131,7 @@ func add_problem(name: String) -> String:
 func text() -> String:
 	var problem := Problem.new()
 	problem.perceived_issue = _post_it.text.strip_edges()
+	problem.cause = _cause.text.strip_edges()
 	problem.symptoms = _shown(_symptoms, problem.symptom_shows)
 	problem.checks = _shown(_checks, problem.check_shows)
 	problem.hardware_steps = _steps(_hardware)
@@ -435,6 +438,11 @@ func _right() -> Control:
 	_post_it.placeholder_text = "Such as: Windows starts and turns off"
 	_post_it.text_changed.connect(func(_t: String) -> void: _changed())
 	box.add_child(_post_it)
+	box.add_child(_heading("Cause", "What CompuFunDB calls this cause in its CAUSES column and on the fix it prints, as a service manual would."))
+	_cause = LineEdit.new()
+	_cause.placeholder_text = "Such as: Clogged CPU fan"
+	_cause.text_changed.connect(func(_t: String) -> void: _changed())
+	box.add_child(_cause)
 	box.add_child(_heading("Symptoms", "What a customer would complain of: every complaint this cause can bring, worded as other problems word it, so a search offers every likely cause. The player searches CompuFunDB for these words."))
 	box.add_child(_columns("The symptom", "How it shows in the game"))
 	_symptoms = _rows(box)

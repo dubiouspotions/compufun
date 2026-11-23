@@ -117,6 +117,8 @@ static func write_errand(errand: Errand) -> String:
 static func write_problem(problem: Problem) -> String:
 	var out := PackedStringArray()
 	out.append("post-it: " + problem.perceived_issue)
+	if problem.cause != "":
+		out.append("cause: " + problem.cause)
 	_write_shown(out, "symptoms", problem.symptoms, problem.symptom_shows)
 	_write_shown(out, "checks", problem.checks, problem.check_shows)
 	for key: String in ["hardware steps", "software steps"]:
@@ -360,13 +362,17 @@ class _Reader:
 		if not _is_name(stem):
 			_error(0, "the file name must be the problem's id, in lower case, digits and _, not '%s'" % stem)
 		p.short_name = StringName(stem)
-		var fields := _read_fields(0, _lines.size(), ["post-it", "symptoms", "checks", "hardware steps", "software steps", "notes"])
+		var fields := _read_fields(0, _lines.size(), ["post-it", "cause", "symptoms", "checks", "hardware steps", "software steps", "notes"])
 		if fields.get("post-it", "") == "":
 			_error(fields.get("post-it_line", 0), "no 'post-it:' text, which the post-it shows")
 		elif fields["post-it"].contains("\n"):
 			_error(fields["post-it_line"], "'post-it:' is one line, after the colon")
 		else:
 			p.perceived_issue = fields["post-it"]
+		if fields.get("cause", "").contains("\n"):
+			_error(fields["cause_line"], "'cause:' is one line, after the colon")
+		else:
+			p.cause = fields.get("cause", "")
 		p.symptoms = _read_shown(fields, "symptoms", "symptom", p.symptom_shows)
 		p.checks = _read_shown(fields, "checks", "check", p.check_shows)
 		for key: String in ["hardware steps", "software steps"]:

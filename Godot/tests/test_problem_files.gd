@@ -53,7 +53,7 @@ func _errors() -> void:
 		path + ":5: under a symptom go only 'shows:', how it shows in the game, and 'category:', its heading in CompuFunDB",
 		path + ":8: a step is one line, with nothing under it",
 		path + ":9: 'software steps:' takes one entry per line, under it",
-		path + ":10: 'colour: red' is not a key here; the keys are post-it, symptoms, checks, hardware steps, software steps, notes",
+		path + ":10: 'colour: red' is not a key here; the keys are post-it, cause, symptoms, checks, hardware steps, software steps, notes",
 	]))
 	var removed: Dictionary[String, String] = {PROBLEM_FILE % "no_sound": ""}
 	check("a .tres without a problem file is an error", Array(StoryFiles.load_week(removed).errors).has("res://problems/no_sound.tres: no problem file res://story/problems/no_sound.problem holds its text"), true)

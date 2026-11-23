@@ -1,4 +1,5 @@
 post-it: Can't hear sounds
+cause: Sound muted
 symptoms:
 	No sound
 checks:

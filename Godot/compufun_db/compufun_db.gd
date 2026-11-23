@@ -1,23 +1,22 @@
 class_name CompuFunDB
 extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
-## SEARCH (the player types words and presses Enter; the work computer is slow, so the symptoms of
-## every Problem that hold them all come in one at a time, each after a seek of the hard drive, and
-## so do the entries of the other two columns whenever what they show changes),
-## what to check (the checks of every problem with the symptom picked, among a few checks of
-## other problems in the same place: the Game.db_search; the player marks those that fail) and what
-## to fix (the repair steps of each of those problems whose checks are all marked, while no other is,
-## numbered and ending in [member test_step]; the player ticks them off). This screen keeps only its
-## cursor and the typed
-## words. It reads every Problem file, so its text is never a second copy of the problems.
+## SEARCH (the player types words and presses Enter: the symptoms of every Problem that hold them
+## all), CHECK (what a working computer does, from every cause of the symptom picked among a few
+## checks of other problems in the same place: the Game.db_search; the player ticks those that pass)
+## and CAUSES (every Problem with that symptom, by its cause; one that needs a ticked check to fail
+## is ruled out). F prints the selected cause's fix, its steps ending in [member test_step], on the
+## shop's Printer; P prints the checklist. The work computer is slow: a column's entries come in one
+## at a time, each after a seek of the hard drive, whenever what it shows changes. This screen keeps
+## only its cursor and the typed words. It reads every Problem file, so its text is never a second
+## copy of the problems.
 ## The first time the player opens it on a day, the work computer boots, the character starts the
 ## program at the DOS prompt and the modem dials up; until then the computer is off. Nothing skips
 ## the start-up; the player can leave meanwhile, and it goes on.
 ## Keys: in SEARCH, letters type, Backspace erases, and Enter searches, or picks a symptom found for
-## the words as typed; arrows and Tab move, Enter acts (Space too
-## outside SEARCH), and outside SEARCH, P prints the checklist on the shop's Printer, F only its FIX
-## steps, and the go_back keys but Down leave the view, as the Back button does; Esc always does.
-## The mouse clicks and scrolls.
+## the words as typed; arrows and Tab move; Enter and Space tick a check or print the cause under the
+## cursor; outside SEARCH, P and F print, and the go_back keys but Down leave the view, as the Back
+## button does; Esc always does. The mouse clicks and scrolls.
 
 const PROBLEMS_DIR: String = "res://problems/"
 const COLUMNS: int = 80
@@ -28,13 +27,13 @@ const FRAME_ROWS: Array[int] = [1, 3, 27]
 ## The first and last row of the lists, between the headers and the bottom frame.
 const LIST_TOP: int = 4
 const LIST_BOTTOM: int = 26
-## The buttons in the bottom frame, under the CHECK and the FIX column,, that do what P and F do.
+## The buttons in the bottom frame, under the CHECK and the CAUSES column, that do what P and F do.
 const PRINT_BUTTON: String = "[ PRINT CHECKLIST ]"
 const PRINT_FIX_BUTTON: String = "[ PRINT FIX ]"
 
-enum Column { SEARCH, CHECKS, FIXES }
+enum Column { SEARCH, CHECKS, CAUSES }
 
-const HEADERS: Array[String] = ["SEARCH", "CHECK", "FIX"]
+const HEADERS: Array[String] = ["SEARCH", "CHECK", "CAUSES"]
 ## The most characters that the player can type into SEARCH.
 const SEARCH_LENGTH: int = 40
 
@@ -46,8 +45,7 @@ const SEARCH_LENGTH: int = 40
 @export var dim_color: Color = Color(0.333, 0.333, 0.333)
 ## The CompuFun red of the bars, the headers and the selection.
 @export var bar_color: Color = Color(0.89, 0, 0)
-## The last repair step of every problem but a software-only one, after its hardware and software
-## steps (see Job.tested). A software fix lands on a running Windows, which tests it at once.
+## The last repair step of every fix, after its hardware and software steps (see Job.tested).
 @export var test_step: String = "Test the computer"
 ## How many checks of other problems CompuFunDB mixes into what to check: between x and y.
 @export var decoys: Vector2i = Vector2i(2, 5)
@@ -107,9 +105,8 @@ var _typed: String = ""
 var _searched: String = ""
 var _hits: PackedStringArray = []
 var _searching: bool = false
-## How many entries of each column the slow computer has read in so far, for CHECK and FIX, and what
-## it read them for (the symptom and the checks offered; the problems whose fix shows): a change
-## reads the column in again, one entry at a time.
+## How many entries of CHECK and CAUSES the slow computer has read in so far, and the search it read
+## them for: a new search reads them in again, one entry at a time.
 var _loaded: Array[int] = [0, 0, 0]
 var _loaded_key: Array[String] = ["", "", ""]
 ## Counts up with each search, so that a search that a new one replaced stops.
@@ -183,13 +180,14 @@ func _category_rank(category: String) -> int:
 	return rank if rank >= 0 else check_categories.size()
 
 
-# The entries of a column that show: CHECK and FIX only as far as the computer has read them in.
+# The entries of a column that show: CHECK and CAUSES only as far as the computer has read them in.
 func _entries(column: Column) -> Array[Dictionary]:
 	var entries := _all_entries(column)
 	return entries if column == Column.SEARCH else entries.slice(0, _loaded[column])
 
 
-# An entry of a column: its text, its check box (null: none) and whether the player can pick it.
+# An entry of a column: its text, its check box (null: none), whether the player can pick it, and for
+# a cause, its problem.
 func _all_entries(column: Column) -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
 	var search := Game.db_search
@@ -200,12 +198,10 @@ func _all_entries(column: Column) -> Array[Dictionary]:
 		Column.CHECKS:
 			if search != null:
 				for check: String in search.offered:
-					entries.append({text = check, check = check in search.marked_checks, pick = true})
-		Column.FIXES:
-			for problem: Problem in _matches():
-				var number := _add_steps(entries, "Hardware", problem.hardware_steps, 1)
-				number = _add_steps(entries, "Software", problem.software_steps, number)
-				_add_steps(entries, "Test", PackedStringArray([test_step]), number)
+					entries.append({text = check, check = check in search.passed_checks, pick = true})
+		Column.CAUSES:
+			for problem: Problem in _causes():
+				entries.append({text = problem.cause_name(), check = null, pick = _possible(problem), problem = problem})
 	return entries
 
 
@@ -215,7 +211,7 @@ func _add_steps(entries: Array[Dictionary], title: String, steps: PackedStringAr
 		return number
 	entries.append({text = "-- %s --" % title, check = null, pick = false})
 	for step: String in steps:
-		entries.append({text = step, check = step in Game.db_search.ticked_repairs, pick = true, number = number})
+		entries.append({text = step, check = false, pick = true, number = number})
 		number += 1
 	return number
 
@@ -233,21 +229,15 @@ func _found(text: String) -> PackedStringArray:
 	return found
 
 
-# The problems with the symptom searched for whose checks are all marked, while no other check is: a
-# wrong mark shows no fix.
-func _matches() -> Array[Problem]:
-	var found: Array[Problem] = []
+# The problems with the symptom searched for, in the order of the problems.
+func _causes() -> Array[Problem]:
 	var search := Game.db_search
-	if search == null:
-		return found
-	var covered: Array[String] = []
-	for problem: Problem in _problems:
-		if search.query in problem.symptoms and Array(problem.checks).all(func(c: String) -> bool: return c in search.marked_checks):
-			found.append(problem)
-			covered.append_array(problem.checks)
-	if search.marked_checks.any(func(c: String) -> bool: return c not in covered):
-		found.clear()
-	return found
+	return _problems.filter(func(p: Problem) -> bool: return search != null and search.query in p.symptoms)
+
+
+# False once a check that [param problem] needs to fail is ticked as passing.
+func _possible(problem: Problem) -> bool:
+	return not Array(problem.checks).any(func(c: String) -> bool: return c in Game.db_search.passed_checks)
 
 
 # Starts the search for [param query]: what to check is the checks of every problem that has it,
@@ -275,7 +265,7 @@ func _search(query: String) -> void:
 	if Game.search_db(query, offered) == null:
 		return
 	_column = Column.CHECKS
-	for column: Column in [Column.CHECKS, Column.FIXES]:
+	for column: Column in [Column.CHECKS, Column.CAUSES]:
 		_selected[column] = 0
 		_scroll[column] = 0
 	_move(0)
@@ -552,15 +542,14 @@ func _run_search() -> void:
 	queue_redraw()
 
 
-# Reads CHECK and FIX in again, one entry at a time, when what they show changed: a new search, or
-# marks that show another fix.
+# Reads CHECK and CAUSES in again, one entry at a time, when what they show changed: a new search.
 func _reload() -> void:
 	var search := Game.db_search
 	var keys := ["", "", ""]
 	if search != null:
-		keys[Column.CHECKS] = search.query + "\n" + "\n".join(search.offered)
-		keys[Column.FIXES] = ",".join(_matches().map(func(p: Problem) -> String: return p.short_name))
-	for column: Column in [Column.CHECKS, Column.FIXES]:
+		keys[Column.CHECKS] = str(search.get_instance_id())  # a new search, even for the same symptom
+		keys[Column.CAUSES] = keys[Column.CHECKS]
+	for column: Column in [Column.CHECKS, Column.CAUSES]:
 		if keys[column] != _loaded_key[column]:
 			_loaded_key[column] = keys[column]
 			_loaded[column] = 0
@@ -577,9 +566,9 @@ func _load(column: Column, key: String) -> void:
 		queue_redraw()
 
 
-# True while the computer reads CHECK or FIX in.
+# True while the computer reads CHECK or CAUSES in.
 func _loading() -> bool:
-	return [Column.CHECKS, Column.FIXES].any(func(c: Column) -> bool: return _loaded[c] < _all_entries(c).size())
+	return [Column.CHECKS, Column.CAUSES].any(func(c: Column) -> bool: return _loaded[c] < _all_entries(c).size())
 
 
 # The hard drive seeks for [param seconds]; false when [param still] stops holding meanwhile (another
@@ -603,10 +592,23 @@ func _print() -> void:
 		_print_page(_page())
 
 
-# Prints the search's FIX steps alone on the shop's Printer; nothing while it has none.
+# Prints the fix of the cause under the CAUSES cursor on the shop's Printer; nothing while it is ruled
+# out or not read in yet.
 func _print_fix() -> void:
-	if not _all_entries(Column.FIXES).is_empty():
-		_print_page(_page("FIX", [Column.FIXES]))
+	var cause := _selected_cause()
+	if cause == null:
+		_status = "Pick a possible cause"
+		return
+	_print_page(_fix_page(cause))
+
+
+# The cause under the CAUSES cursor, while it shows and is possible; null otherwise.
+func _selected_cause() -> Problem:
+	var entries := _entries(Column.CAUSES)
+	var index := _selected[Column.CAUSES]
+	if index >= entries.size() or not entries[index].pick:
+		return null
+	return entries[index].problem
 
 
 func _print_page(page: PackedStringArray) -> void:
@@ -619,19 +621,43 @@ func _print_page(page: PackedStringArray) -> void:
 	_status = "Printing on LPT1"
 
 
-# A printout of the search: a heading with [param title], the symptom searched for, and [param columns]
-# as on screen; a column without lines is left out.
-func _page(title: String = "CHECKLIST", columns: Array[Column] = [Column.CHECKS, Column.FIXES]) -> PackedStringArray:
-	var page := PackedStringArray(["CompuFunDB 1.0  %s  %s" % [title, _date_text()], ""])
-	page.append_array(_wrap("SEARCH: " + Game.db_search.query, _spans[Column.CHECKS].y - _spans[Column.CHECKS].x + 1))
-	for column: Column in columns:
-		var lines := _lines(column, _all_entries(column))
+# The checklist: the symptom searched for, the checks with their ticks, and the causes still possible.
+func _page() -> PackedStringArray:
+	var page := _heading("CHECKLIST")
+	for column: Column in [Column.CHECKS, Column.CAUSES]:
+		var entries := _all_entries(column).filter(func(e: Dictionary) -> bool: return e.pick)
+		var lines := _lines(column, entries)
 		if lines.is_empty():
 			continue
-		page.append_array(PackedStringArray(["", HEADERS[column]]))
+		page.append_array(PackedStringArray(["", HEADERS[column] if column != Column.CAUSES else "POSSIBLE CAUSES"]))
 		for line: Array in lines:
 			page.append((line[1] as String).strip_edges(false, true))
 	return page
+
+
+# The fix of [param cause]: its name, then its steps, numbered, each with a check box.
+func _fix_page(cause: Problem) -> PackedStringArray:
+	var page := _heading("FIX")
+	page.append_array(PackedStringArray(["", "CAUSE"]))
+	page.append_array(_wrap(cause.cause_name(), _width(Column.CAUSES)))
+	var entries: Array[Dictionary] = []
+	var number := _add_steps(entries, "Hardware", cause.hardware_steps, 1)
+	number = _add_steps(entries, "Software", cause.software_steps, number)
+	_add_steps(entries, "Test", PackedStringArray([test_step]), number)
+	page.append("")
+	for line: Array in _lines(Column.CAUSES, entries):
+		page.append((line[1] as String).strip_edges(false, true))
+	return page
+
+
+func _heading(title: String) -> PackedStringArray:
+	var page := PackedStringArray(["CompuFunDB 1.0  %s  %s" % [title, _date_text()], ""])
+	page.append_array(_wrap("SEARCH: " + Game.db_search.query, _width(Column.CHECKS)))
+	return page
+
+
+func _width(column: Column) -> int:
+	return _spans[column].y - _spans[column].x + 1
 
 
 func _date_text() -> String:
@@ -644,8 +670,8 @@ func _buttons() -> Dictionary[String, Column]:
 	var buttons: Dictionary[String, Column] = {}
 	if Game.db_search != null:
 		buttons[PRINT_BUTTON] = Column.CHECKS
-		if not _entries(Column.FIXES).is_empty():
-			buttons[PRINT_FIX_BUTTON] = Column.FIXES
+		if _selected_cause() != null:
+			buttons[PRINT_FIX_BUTTON] = Column.CAUSES
 	return buttons
 
 
@@ -655,8 +681,8 @@ func _button_x(column: Column, text: String) -> int:
 	return span.x + (span.y - span.x + 1 - text.length()) / 2
 
 
-# Acts on the entry under the cursor: a symptom found picks it for the search, a symptom to check or
-# a step toggles.
+# Acts on the entry under the cursor: a symptom found picks it for the search, a check toggles, a
+# cause prints its fix.
 func _act() -> void:
 	var entries := _entries(_column)
 	var index := _selected[_column]
@@ -668,8 +694,8 @@ func _act() -> void:
 			_search(entry.text)
 		Column.CHECKS:
 			Game.mark_check(entry.text, not entry.check)
-		Column.FIXES:
-			Game.tick_repair(entry.text, not entry.check)
+		Column.CAUSES:
+			_print_fix()
 	queue_redraw()
 
 
@@ -788,7 +814,7 @@ func _paint() -> void:
 		_put(_button_x(buttons[text], text), FRAME_ROWS[-1], text, bright_color, bar_color)
 	var status := _status if not _status.is_empty() else ("Searching..." if _searching else ("Reading..." if _loading() else HEADERS[_column]))
 	_bar(28, " %s" % status, count, bar_color)
-	_put(1, 29, "Type Search  \u2191\u2193 Move  \u2190\u2192 Column  Enter Pick  P Print  F Print fix  Esc Leave", text_color)
+	_put(1, 29, "Type Search  \u2191\u2193 Move  \u2190\u2192 Column  Enter Pick  P Checklist  F Fix  Esc Leave", text_color)
 
 
 # What the player typed, after the SEARCH header: its end, if it is longer than the column.

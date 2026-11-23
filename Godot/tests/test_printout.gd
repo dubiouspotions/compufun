@@ -232,23 +232,24 @@ func _check_print_fix() -> void:
 	printer.add_to_group(&"printer")
 	root.add_child(printer)
 	var db: Control = load("res://compufun_db/compufun_db.tscn").instantiate()  # untyped: CompuFunDB names Game
+	db.set("hdd_seek", null)
+	db.set("hit_seconds", Vector2.ZERO)
 	root.add_child(db)
 	game.restore({"day": 1, "phase": "OPEN", "arrivals": 1, "jobs": [{"customer": "res://customers/skater_bro.tres", "problem": "dust_overheat", "slot": 0}]})
 	game.db_day = game.day_number
-	load("res://problems/dust_overheat.tres").checks = ["Windows stays up", "CPU fan is clean"]
-	load("res://problems/hamster.tres").checks = ["Windows stays up", "Nothing blocks the CPU fan"]
-	game.search_db("Restarts by itself", ["Windows stays up", "CPU fan is clean", "Nothing blocks the CPU fan"])
 	await process_frame
-	db.set("_column", 1)  # CHECK: in SEARCH, F types
+	db.call("_search", "Restarts by itself")
+	for passing: String in ["Passes the BIOS memory test", "Runs without a bluescreen", "CPU fan is clean and spins freely"]:
+		game.mark_check(passing, true)
 	var key := InputEventKey.new()
 	key.keycode = KEY_F
 	key.pressed = true
-	check("no FIX steps, nothing to print", [db.call("_on_key", key), printer.get("_lines")], [true, PackedStringArray()])
-	game.mark_check("Windows stays up", true)
-	game.mark_check("CPU fan is clean", true)
+	check("every cause ruled out, nothing to print", [db.call("_on_key", key), printer.get("_lines")], [true, PackedStringArray()])
+	game.mark_check("CPU fan is clean and spins freely", false)
+	db.call("_change_column", 1)
 	db.call("_on_key", key)
 	var page: PackedStringArray = printer.get("_lines")
-	check("F prints a FIX page", [page[0].begins_with("CompuFunDB 1.0  FIX  "), "FIX" in page, "CHECK" in page], [true, true, false])
+	check("F prints the fix of the cause under the cursor", [page[0].begins_with("CompuFunDB 1.0  FIX  "), page[5], "CHECK" in page], [true, "Clogged CPU fan", false])
 	check("with the steps and their boxes", page[-1].ends_with("[ ]"), true)
 	db.queue_free()
 	printer.queue_free()

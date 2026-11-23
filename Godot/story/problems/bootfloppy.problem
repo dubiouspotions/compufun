@@ -1,4 +1,5 @@
 post-it: Computer doesn't start - just a bunch of text
+cause: Floppy left in drive A:
 symptoms:
 	Stops before Windows starts
 	Error text at startup

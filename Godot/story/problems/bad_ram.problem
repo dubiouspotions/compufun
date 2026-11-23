@@ -1,4 +1,5 @@
 post-it: Stops before Windows starts
+cause: Bad RAM module
 symptoms:
 	Stops before Windows starts
 	Error text at startup

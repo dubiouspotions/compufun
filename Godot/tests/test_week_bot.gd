@@ -58,7 +58,7 @@ const KNOWN_GAME_METHODS: Array[String] = [
 	"can_return_part", "return_part", "trash_part", "take_from_trash", "connect_cable", "set_powered",
 	"can_power_on", "alarms", "setup_for", "has_floppy", "can_eject", "eject_floppy", "can_insert_floppy", "insert_floppy", "toggle_cd_tray", "set_software_fixed", "set_tested",
 	# CompuFunDB and the printout
-	"search_db", "start_db", "mark_check", "tick_repair", "carry_printout", "tick_printout",
+	"search_db", "start_db", "mark_check", "carry_printout", "tick_printout",
 	"trash_printout", "printout_box",
 	# the phone and the end
 	"can_pick_up_phone", "pick_up_phone", "put_down_phone", "can_call", "next_to_call", "call_customer", "rings_out", "hang_up",
@@ -326,7 +326,7 @@ func _cannot_repair(job: Job) -> String:
 
 
 # Looks [param job] up in CompuFunDB as a player does, one step per call: opens it (it starts up once
-# a day), types the problem's first symptom into SEARCH and picks it, marks its checks, prints the FIX
+# a day), types the problem's first symptom into SEARCH and picks it, picks its cause, prints the FIX
 # page with F and takes it from the printer.
 func _look_up(job: Job) -> bool:
 	if _printing_since >= 0.0:
@@ -335,7 +335,7 @@ func _look_up(job: Job) -> bool:
 			_check_printout(job)
 			return true
 		if now() - _printing_since > PRINT_SECONDS:
-			_gaps.append("%s: CompuFunDB printed no FIX page for %s with its checks marked" % [_where(), job.problem.short_name])
+			_gaps.append("%s: CompuFunDB printed no FIX page for the cause of %s" % [_where(), job.problem.short_name])
 			_printing_since = -1.0
 			_looked_up[job.order] = true
 			return true
@@ -371,9 +371,14 @@ func _look_up(job: Job) -> bool:
 		_gaps.append("%s: CompuFunDB's SEARCH for '%s' didn't pick it" % [_where(), query])
 		_looked_up[job.order] = true
 		return true
-	for check: String in job.problem.checks:
-		game.mark_check(check, true)
+	waited = now()
+	while db.call("_loading") and now() - waited < SEARCH_SECONDS:
+		await process_frame
+	var causes: Array = db.call("_entries", 2).map(func(e: Dictionary) -> Problem: return e.problem)  # CompuFunDB.Column.CAUSES
 	await _press(KEY_RIGHT)
+	await _press(KEY_RIGHT)
+	for i: int in causes.find(job.problem):
+		await _press(KEY_DOWN)
 	await _press(KEY_F)
 	_printing_since = now()
 	return true

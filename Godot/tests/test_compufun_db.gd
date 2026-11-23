@@ -1,14 +1,14 @@
 extends "res://tests/test.gd"
 ## CompuFunDB's search: Enter lists the symptoms that hold the typed words, one at a time; picking
-## one offers the checks of every problem with it among checks of other problems in the same place;
-## only one problem's checks marked show its fix. The search, with its marks and ticks, survives a
-## snapshot and a restore, and a malformed one
-## is refused.
+## one offers the checks of every cause of it among checks of other problems in the same place, and
+## lists those causes; a check ticked as passing rules out the causes that need it to fail, and F
+## prints the selected cause's fix. The search, with its ticks, survives a snapshot and a restore,
+## and a malformed one is refused.
 
 ## CompuFunDB.Column, which a test can't name: CompuFunDB names the Game autoload.
 const SEARCH: int = 0
 const CHECKS: int = 1
-const FIXES: int = 2
+const CAUSES: int = 2
 
 
 func run() -> void:
@@ -20,31 +20,30 @@ func _check_game() -> void:
 	check("a fresh day", game.restore({"day": 1}), "")
 	check("no search yet", game.db_search, null)
 	var search: DbSearch = game.search_db("Sound is muted", ["Volume is on", "Colour scheme is the usual"])
-	check("nothing marked", [search.query, search.marked_checks], ["Sound is muted", []])
+	check("nothing ticked", [search.query, search.passed_checks], ["Sound is muted", []])
 	game.mark_check("Volume is on", true)
 	game.mark_check("Volume is on", true)
-	check("a check is marked once", search.marked_checks, ["Volume is on"])
-	game.tick_repair("Unmute", true)
-	game.tick_repair("Unmute", false)
-	check("a repair unticks", search.ticked_repairs, [])
-	game.tick_repair("Unmute", true)
+	check("a check is ticked once", search.passed_checks, ["Volume is on"])
+	game.mark_check("Colour scheme is the usual", true)
+	game.mark_check("Colour scheme is the usual", false)
+	check("and unticks", search.passed_checks, ["Volume is on"])
 
 	game.start_db()
 	check("restore the snapshot", game.restore(game.snapshot()), "")
 	check("the start-up day survives", game.db_day, 1)
 	var restored: DbSearch = game.db_search
 	check("the search survives", [restored.query, restored.offered], ["Sound is muted", ["Volume is on", "Colour scheme is the usual"]])
-	check("the marks and ticks survive", [restored.marked_checks, restored.ticked_repairs], [["Volume is on"], ["Unmute"]])
+	check("the ticks survive", restored.passed_checks, ["Volume is on"])
 
-	var refused: String = game.restore({"db_search": {"query": "x", "marked_checks": "oops"}})
-	check("a list that is not a list is refused", refused.contains("marked_checks of the CompuFunDB search 'x' is not a list"), true)
+	var refused: String = game.restore({"db_search": {"query": "x", "passed_checks": "oops"}})
+	check("a list that is not a list is refused", refused.contains("passed_checks of the CompuFunDB search 'x' is not a list"), true)
 	check("the refusal keeps the search", game.db_search, restored)
 	check("the old records are ignored", game.restore({"records": [{"text": "x"}]}), "")
 	check("a restore without a search starts empty", [game.db_search, game.db_day], [null, 0])
 
 
-# On the problem files as they are: "Restarts by itself" is a symptom of four problems, and the dust
-# and the hamster share their checks, so marking those shows both fixes.
+# On the problem files as they are: "Restarts by itself" is a symptom of four causes; the dust and the
+# hamster share their checks, so ticks leave both possible, and the player prints the one they see.
 func _check_screen() -> void:
 	const FREEZES := "Windows stays up after the desktop appears"
 	const FAN := "CPU fan is clean and spins freely"
@@ -87,32 +86,43 @@ func _check_screen() -> void:
 	check("the checks of all four problems are offered", right.all(func(c: String) -> bool: return c in search.offered), true)
 	var hardware := _hardware_checks()
 	check("with 2 to 5 checks of other hardware problems", [others.size() >= 2 and others.size() <= 5, others.all(func(c: String) -> bool: return c in hardware)], [true, true])
-	check("no fix before a mark", _texts(db, FIXES), [])
+	check("its four causes, by name", _texts(db, CAUSES), ["Bad RAM module", "Failing hard drive", "Clogged CPU fan", "Blocked CPU fan"])
+	check("all possible before a tick", _possible(db), [true, true, true, true])
 
-	game.mark_check(FREEZES, true)
-	check("a failing check of three problems shows no fix yet", _texts(db, FIXES), [])
+	game.mark_check("Passes the BIOS memory test", true)
+	check("a passing check rules out the cause that needs it to fail", _possible(db), [false, true, true, true])
+	game.mark_check("Runs without a bluescreen", true)
+	check("both fans stay possible", _possible(db), [false, false, true, true])
 	game.mark_check(FAN, true)
-	check("the shared checks show the fixes of the dust and the hamster", _texts(db, FIXES).count("Test the computer"), 2)
-	game.mark_check(others[0], true)
-	check("a wrong mark hides them", _texts(db, FIXES), [])
-	game.mark_check(others[0], false)
+	check("a passing fan rules out both", _possible(db), [false, false, false, false])
+	game.mark_check(FAN, false)
 
 	db.set("hit_seconds", Vector2(0.2, 0.2))
-	game.mark_check(FAN, false)
-	game.mark_check(FAN, true)
-	check("a fix that shows again is read in, not there at once", _texts(db, FIXES), [])
+	_press(db, KEY_ENTER)  # ticks the check under the cursor, which doesn't change what CAUSES shows
+	_press(db, KEY_ENTER)
+	check("ticks don't read the causes in again", _texts(db, CAUSES).size(), 4)
+	db.call("_search", "Restarts by itself")
+	check("a new search reads them in again, not there at once", _texts(db, CAUSES), [])
 	await create_timer(0.3).timeout
-	check("one entry at a time", _texts(db, FIXES).size(), 1)
+	check("one entry at a time", _texts(db, CAUSES).size(), 1)
 	db.set("hit_seconds", Vector2.ZERO)
-	game.mark_check(FAN, false)
-	game.mark_check(FAN, true)
+	db.call("_search", "Restarts by itself")
+	game.mark_check("Passes the BIOS memory test", true)
+	game.mark_check("Runs without a bluescreen", true)
 
 	var printer: Node3D = load("res://props/printer.tscn").instantiate()
 	printer.add_to_group(&"printer")
 	root.add_child(printer)
+	_press(db, KEY_RIGHT)
+	check("the cursor skips the ruled-out causes", db.call("_selected_cause").cause_name(), "Clogged CPU fan")
+	_press(db, KEY_DOWN)
 	check("F prints outside SEARCH", _press(db, KEY_F), true)
 	var page: PackedStringArray = printer.get("_lines")
-	check("a FIX page for the search", [page[0].begins_with("CompuFunDB 1.0  FIX  "), page[2], "FIX" in page], [true, "SEARCH: Restarts by itself", true])
+	check("a FIX page for the cause", [page[0].begins_with("CompuFunDB 1.0  FIX  "), page[2], page[5]], [true, "SEARCH: Restarts by itself", "Blocked CPU fan"])
+	check("with its steps and the test", [Array(page).any(func(l: String) -> bool: return l.begins_with("2. Take out")), page[-1].begins_with("4. Test the computer")], [true, true])
+	game.mark_check(FAN, true)
+	_press(db, KEY_F)
+	check("a ruled-out cause prints nothing", printer.get("_lines"), page)
 	printer.queue_free()
 	check("Esc leaves", _press(db, KEY_ESCAPE), false)
 	db.queue_free()
@@ -126,6 +136,10 @@ func _hardware_checks() -> Array[String]:
 		if problem != null and problem.location != Problem.Location.SOFTWARE and problem.short_name not in [&"dust_overheat", &"hamster", &"broken_hard_drive", &"bad_ram"]:
 			checks.append_array(problem.checks)
 	return checks
+
+
+func _possible(db: Control) -> Array:
+	return db.call("_entries", CAUSES).map(func(entry: Dictionary) -> bool: return entry.pick)
 
 
 func _texts(db: Control, column: int) -> Array:

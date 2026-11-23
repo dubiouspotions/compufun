@@ -68,6 +68,9 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 
 ## How the customer is affected, in their words. The post-it shows it. From the problem file.
 var perceived_issue: String = ""
+## What CompuFunDB calls this cause, such as "Clogged CPU fan"; empty names it by its id. From the
+## problem file.
+var cause: String = ""
 ## The symptoms: every complaint that this cause can bring, which the player searches CompuFunDB
 ## for. Problems that can bring the same complaint share its words. From the problem file.
 var symptoms: PackedStringArray = []
@@ -88,10 +91,16 @@ var software_steps: PackedStringArray = []
 var notes: String = ""
 
 
-## Replaces the text of this problem (the post-it, the symptoms, the checks, how they show, the
+## Replaces the text of this problem (the post-it, the cause, the symptoms, the checks, how they show, the
 ## steps and the notes) with the text of [param from]. The mechanics stay.
+## What CompuFunDB calls this cause: [member cause], or the id when it has none.
+func cause_name() -> String:
+	return cause if cause != "" else String(short_name).capitalize()
+
+
 func take_text(from: Problem) -> void:
 	perceived_issue = from.perceived_issue
+	cause = from.cause
 	symptoms = from.symptoms.duplicate()
 	symptom_shows = from.symptom_shows.duplicate()
 	checks = from.checks.duplicate()

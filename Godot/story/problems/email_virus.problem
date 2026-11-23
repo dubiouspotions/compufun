@@ -1,4 +1,5 @@
 post-it: CD-tray keeps on opening and closing
+cause: Virus started from StartUp
 symptoms:
 	CD tray opens by itself
 checks:

@@ -1,4 +1,5 @@
 post-it: Computer doesn't start
+cause: Parts in the wrong places
 symptoms:
 	No picture at all
 	Stops before Windows starts

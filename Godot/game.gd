@@ -1019,19 +1019,14 @@ func start_db() -> void:
 	changed.emit()
 
 
-## Marks the check [param check] of the CompuFunDB search as failing (true), or clears it (false).
-func mark_check(check: String, marked: bool) -> void:
+## Ticks the check [param check] of the CompuFunDB search as passing on the computer (true), or
+## clears it (false). A cause that needs it to fail is ruled out.
+func mark_check(check: String, passed: bool) -> void:
 	if _searched("mark_check"):
 		if check not in db_search.offered:
 			push_error("Game.mark_check: '%s' is not offered in the search for '%s'" % [check, db_search.query])
 			return
-		_set_in(db_search.marked_checks, check, marked)
-
-
-## Ticks the repair step [param step] of the CompuFunDB search (true), or unticks it (false).
-func tick_repair(step: String, ticked: bool) -> void:
-	if _searched("tick_repair"):
-		_set_in(db_search.ticked_repairs, step, ticked)
+		_set_in(db_search.passed_checks, check, passed)
 
 
 func _searched(what: String) -> bool:

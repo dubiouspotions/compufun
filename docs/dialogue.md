@@ -88,6 +88,7 @@ brief:
 
 ```
 post-it: Windows starts and turns off
+cause: Clogged CPU fan
 symptoms:
 	Hangs and reboots at startup
 		shows: a second into the Windows startup sound, the computer stops answering...
@@ -110,15 +111,18 @@ The file name is the problem's id, the name of its `problems/<id>.tres`, which h
 (where it is, the broken part, the check that fixes it). Every key but `post-it` is optional.
 
 - `post-it`: what the customer says is wrong; the post-it shows it.
+- `cause`: what CompuFunDB calls the cause, as a service manual would, such as `Clogged CPU fan`:
+  its CAUSES column and the fix it prints. Without one, CompuFunDB names it by the file name.
 - `symptoms`: one per line: every complaint this cause can bring, as a customer would put it, worded
   as other problems word the same complaint ("Slow computer"), so a search offers every likely
   cause. The player searches CompuFunDB for their words.
 - `checks`: one per line: what a working computer does, such as `Boots from C:`. CompuFunDB's CHECK
   lists the checks of every problem with the symptom searched for, among checks of other problems;
-  the player marks those that fail, and only this problem's checks show its fix. The cause goes in
-  the steps. `shows:` under a check says how it fails in the game; every check must be something
-  the game shows.
-- `hardware steps`, `software steps`: one per line, as CompuFunDB prints them.
+  the player ticks those that pass, which rules out every cause that needs one of them to fail.
+  `shows:` under a check says how it fails in the game when this is the cause; every check must be
+  something the game shows.
+- `hardware steps`, `software steps`: one per line, as CompuFunDB prints them on the cause's fix
+  page, which already names the cause.
 - `notes`: for people; the game doesn't read them.
 
 A problem file without a `.tres` is a problem that a writer named before a developer built it: an

@@ -1,4 +1,5 @@
 post-it: Computer smells weird and won't start
+cause: Blocked CPU fan
 symptoms:
 	Restarts by itself
 	Slow computer
@@ -9,7 +10,7 @@ checks:
 		shows: in the Workview, a dead hamster lies on the fan
 hardware steps:
 	Remove the computer shell
-	If something blocks the fan, take it out and throw it in the trash
+	Take out what blocks the fan, throw it in the trash
 	Remount the shell
 notes:
 	Broken part: None. A hamster lies on the fan; the fan itself is fine. Take the hamster out to fix it.

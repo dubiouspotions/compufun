@@ -1,4 +1,5 @@
 post-it: Windows starts and turns off
+cause: Clogged CPU fan
 symptoms:
 	Restarts by itself
 	Slow computer
@@ -9,7 +10,7 @@ checks:
 		shows: in the Workview, the fan is clogged with dust
 hardware steps:
 	Remove the computer shell
-	If the fan is clogged with dust, take it out and throw it in the trash
+	Take out the fan, throw it in the trash
 	Get a new fan from storage
 	Install the fan
 	Remount the shell
