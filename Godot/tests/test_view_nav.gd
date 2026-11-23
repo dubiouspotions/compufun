@@ -1,6 +1,8 @@
 extends "res://tests/test.gd"
 ## The keys between views: Up or W in the Left View enters the storage room, as a click on the
-## storage door does, and Back returns to the Left View. No key or click skips the work computer's
+## storage door does, and Back returns to the Left View. Up or W in the Main View looks up at the
+## ceiling with the counter empty, and otherwise opens the Workview on the computer nearest the middle
+## of the view, as a click on it does. No key or click skips the work computer's
 ## start-up. In CompuFunDB, during the start-up and after it, S and Esc go back as the Back button does.
 ## A turn, with a key or a button, shows its button pressed down for a moment.
 
@@ -22,11 +24,13 @@ func run() -> void:
 	door.clicked.emit(door)
 	check("a click on the storage door goes to the same view", game.view, &"Storage")
 
+	check("the counter is empty", game.jobs.size(), 0)
 	game.go_to_view(&"Main")
 	_press(&"look_up")
-	check("Up in the Main View still looks up at the ceiling", game.view, &"Up")
+	check("Up in the Main View with the counter empty looks up at the ceiling", game.view, &"Up")
 	await _check_press()
 	await _check_workview_computers()
+	await _check_up_to_computer()
 	await _check_db_start_up()
 	_main.queue_free()
 
@@ -71,6 +75,21 @@ func _check_workview_computers() -> void:
 	check("restore one computer", game.restore({"jobs": jobs, "focus_slot": 0, "view": "Workview"}), "")
 	await process_frame
 	check("with one computer neither shows", [left.visible, right.visible], [false, false])
+
+
+# Up in the Main View focuses the computer whose slot is nearest the middle of the view: slot 1, then
+# 2, then 0, then 3.
+func _check_up_to_computer() -> void:
+	var cases := {[3]: 3, [0, 1, 2]: 1, [0, 2, 3]: 2, [0, 3]: 0}  # slots on the counter: slot in focus
+	for slots: Array in cases:
+		var jobs: Array = []
+		for slot: int in slots:
+			jobs.append({"customer": "res://customers/skater_bro.tres", "problem": "dust_overheat", "slot": slot, "order": slot})
+		check("restore computers in slots %s" % [slots], game.restore({"jobs": jobs, "view": "Main"}), "")
+		await process_frame
+		_press(&"look_up")
+		var focus: int = game.focus.slot if game.focus != null else -1
+		check("Up with computers in slots %s opens the Workview on slot %d" % [slots, cases[slots]], [game.view, focus], [&"Workview", cases[slots]])
 
 
 func _check_db_start_up() -> void:

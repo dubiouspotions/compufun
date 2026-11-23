@@ -139,7 +139,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Ceiling mouse**: The easter egg, off for now (`CeilingMouse.enabled`): the animal in the hole above the player that squeaks and drops the computer mouse, once in the whole game (`CeilingMouse`, the flag `ceiling_mouse`).
 *Avoid:* rat, the mouse (alone).
 
-**Up View**: The view straight up at the ceiling, from the Main View with Up or W.
+**Up View**: The view straight up at the ceiling, from the Main View with Up or W while the counter is empty. With computers on the counter, Up or W opens the Workview on the one nearest the middle of the Main View.
 *Avoid:* ceiling view, look-up view.
 
 **Bench screen**: The CRT at the left end of the counter, with its keyboard (`rooms/shop/bench.tscn`). It shows the screen buffer: the desktop of the computer that the VGA cable is connected to, or NO SIGNAL.

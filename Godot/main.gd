@@ -165,6 +165,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_nav.turn(&"left")
 	elif event.is_action_pressed(&"turn_right"):
 		_nav.turn(&"right")
+	elif event.is_action_pressed(&"look_up") and Game.view == &"Main" and _shop.centred_job() != null:
+		_shop.work_on(_shop.centred_job())
 	elif event.is_action_pressed(&"look_up") and marker.up != &"":
 		Game.go_to_view(marker.up)
 	elif event.is_action_pressed(&"go_back"):

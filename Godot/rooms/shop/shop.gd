@@ -119,7 +119,7 @@ func _ready() -> void:
 			hotspot.clicked.connect(_on_hotspot_clicked)
 			if hotspot.action == Hotspot.Action.GO_TO_VIEW:
 				_view_hotspots.append(hotspot)
-	_job_slots.job_clicked.connect(_on_job_clicked)
+	_job_slots.job_clicked.connect(work_on)
 	_job_slots.computer_moved.connect(_on_computer_moved)
 	_job_slots.power_clicked.connect(func(job: Job) -> void: Game.set_powered(job, not job.powered))
 	_job_slots.floppy_clicked.connect(func(job: Job) -> void:
@@ -183,6 +183,25 @@ func turn_from_main() -> float:
 	var size := _camera.get_viewport().get_visible_rect().size
 	var half_width := atan(tan(deg_to_rad(_camera.fov) * 0.5) * size.x / size.y)
 	return yaw / (2.0 * half_width)
+
+
+## The job whose computer stands nearest the middle of the Main View: its slot is the closest to the
+## Main View's line of sight, and of two as close, the left one. null with the counter empty.
+func centred_job() -> Job:
+	var main := view_marker(&"Main")
+	if main == null:
+		return null
+	var best: Job = null
+	var best_off := INF
+	for job: Job in Game.jobs:
+		var slot := _job_slots.slot_marker(job.slot)
+		if slot == null:
+			continue
+		var off := snappedf(absf((main.global_transform.affine_inverse() * slot.global_position).x), 0.001)  # mirrored slots tie
+		if off < best_off or (off == best_off and job.slot < best.slot):
+			best = job
+			best_off = off
+	return best
 
 
 ## How far the camera must turn to face the customer's head, in quarter turns: x to the right,
@@ -664,7 +683,9 @@ func _on_computer_moved(job: Job) -> void:
 		_camera.global_transform = view_marker(WORKVIEW).global_transform
 
 
-func _on_job_clicked(job: Job) -> void:
+## Puts [param job] in focus and asks for the Workview, as a click on its computer does. Does nothing
+## while [param job] is already in focus in the Workview.
+func work_on(job: Job) -> void:
 	if Game.view == WORKVIEW and job == Game.focus:
 		return
 	Game.focus_job(job)
