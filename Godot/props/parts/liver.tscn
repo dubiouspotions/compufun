@@ -43,15 +43,15 @@ height = 0.0075
 radial_segments = 5
 rings = 3
 
-[node name="Liver" type="Node3D" unique_id=574596366]
+[node name="Liver" type="Node3D" unique_id=980759425]
 script = ExtResource("1_h6s22")
 kind = 2
 
-[node name="Body" type="MeshInstance3D" parent="." unique_id=178434383]
+[node name="Body" type="MeshInstance3D" parent="." unique_id=1918943190]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0.072, -0.022000002, -0.03999999)
 mesh = SubResource("ArrayMesh_4fvni")
 
-[node name="Drips" type="CPUParticles3D" parent="." unique_id=1691423765]
+[node name="Drips" type="CPUParticles3D" parent="." unique_id=1018919781]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0.080997474, 0.0102174, -0.04014603)
 amount = 4
 lifetime = 0.9

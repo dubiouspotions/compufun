@@ -40,6 +40,10 @@ gh workflow run godot.yml -R dubiouspotions/humanerror -f bump=patch   # or mino
 - `Godot/sounds/footstep_tile_1.ogg` to `footstep_tile_4.ogg`: four steps cut from "Footsteps_Boots_Tile_Mono" by Nox_Sound on Freesound (https://freesound.org/people/Nox_Sound/sounds/530588/), CC0. `footstep_asphalt_*.ogg` and `footstep_sidewalk_*.ogg` are filtered from them by `tools/make_outdoor_steps.sh`.
 - `Godot/sounds/computer_set_down.ogg`: cut from "Book dropped on table" by Valerie-Vivegnis on Freesound (https://freesound.org/people/Valerie-Vivegnis/sounds/836521/), CC0.
 - `Godot/sounds/computer_pick_up_1.ogg` and `computer_pick_up_2.ogg`: two lifts cut from "Foley_Object_Toolbox_Metal_PickUp_Mono" by Nox_Sound on Freesound (https://freesound.org/people/Nox_Sound/sounds/556647/), CC0.
+- `Godot/sounds/heartbeat.wav`: one beat cut from "Human Heartbeat (60 BPM)" by FenrirFangs on Freesound (https://freesound.org/people/FenrirFangs/sounds/213181/), CC0. `tools/cut_organ_sounds.sh` cuts it, the wheeze and the squelches.
+- `Godot/sounds/wheeze.wav`: one breath cut from "asthmatic_breathing.wav" by harleto on Freesound (https://freesound.org/people/harleto/sounds/204469/), CC0.
+- `Godot/sounds/squelch_1.wav` to `squelch_3.wav`: "Gore Impact - LOT OF HEART", "Meat Slap 2" and "Gushing Flesh" by magnuswaker on Freesound (https://freesound.org/people/magnuswaker/sounds/641046/, https://freesound.org/people/magnuswaker/sounds/540076/, https://freesound.org/people/magnuswaker/sounds/563315/), CC0.
+- `Godot/sounds/squelch_4.wav` to `squelch_6.wav`: three grabs cut from "Slimy flesh" by iampagan on Freesound (https://freesound.org/people/iampagan/sounds/177017/), CC0.
 - `Godot/sounds/part_take.ogg`: trimmed from "Picking Something Up From A Table" by RutgerMuller on Freesound (https://freesound.org/people/RutgerMuller/sounds/51160/), CC0.
 - `Godot/sounds/part_put.ogg`: trimmed from "Clip In" by slappy13 on Freesound (https://freesound.org/people/slappy13/sounds/151778/), CC0.
 - `Godot/sounds/part_rattle.ogg`: cut from "boxofscrews.wav" by j1987 on Freesound (https://freesound.org/people/j1987/sounds/79382/), CC0. `tools/make_part_sounds.sh` makes it.

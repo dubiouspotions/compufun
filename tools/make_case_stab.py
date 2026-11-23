@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-"""Synthesizes the sounds of the organs in Skater Bro's computer as 22050 Hz mono WAVs:
-squelch_1.wav to squelch_4.wav, wet squelches (an organ in a hand, blood shifting in the case);
-wheeze.wav, the whistling, rattling breath of a running computer with a lung in it, one breath that
-loops, as long as the lung's breath in tools/make_organs.gd (3.6 heartbeats); case_stab.wav, the
-stab as the case opens on the organs.
-Usage: make_organ_sounds.py Godot/sounds"""
+"""Synthesizes case_stab.wav, the stab as the case of Skater Bro's computer opens on his organs, as a
+22050 Hz mono WAV: a dissonant cluster, a screech over it, a boom and a wet squelch under it.
+Usage: make_case_stab.py Godot/sounds"""
 import math
 import random
 import struct
@@ -13,7 +10,6 @@ import wave
 
 RATE = 22050
 PEAK = 10 ** (-3 / 20)
-BREATH_SECONDS = 1.25 * 3.6
 
 
 def save(name, samples):
@@ -68,39 +64,6 @@ def squelch(seconds, bursts, start_hz, end_hz):
     return out
 
 
-def envelope(t, start, end):
-    """0 outside [start, end], a smooth hump inside."""
-    if t < start or t > end:
-        return 0.0
-    return math.sin(math.pi * (t - start) / (end - start)) ** 1.5
-
-
-def wheeze():
-    n = int(BREATH_SECONDS * RATE)
-    noise = [random.uniform(-1, 1) for _ in range(n)]
-    breath = []
-    whistle_freqs = []
-    for i in range(n):
-        t = i / RATE
-        inhale = envelope(t / BREATH_SECONDS, 0.02, 0.47)
-        exhale = envelope(t / BREATH_SECONDS, 0.52, 0.97)
-        breath.append(inhale + exhale)
-        # The whistle climbs through the inhale and sags through the exhale.
-        whistle_freqs.append(620 + 260 * (t / BREATH_SECONDS) / 0.5 if t / BREATH_SECONDS < 0.5 else 760 - 200 * (t / BREATH_SECONDS - 0.5) / 0.5)
-    air = bandpass(noise, [1400.0] * n, 0.7)
-    whistle = bandpass(noise, whistle_freqs, 28.0)
-    rattle = bandpass(noise, [260.0] * n, 3.0)
-    out = []
-    for i in range(n):
-        phase = (i / RATE) / BREATH_SECONDS
-        inhale = envelope(phase, 0.02, 0.47)
-        exhale = envelope(phase, 0.52, 0.97)
-        # The exhale rattles: fluid in the airway, a burst every few hundredths of a second.
-        crackle = 1.0 + 0.8 * math.sin(2 * math.pi * 23 * i / RATE) ** 8
-        out.append(0.55 * air[i] * breath[i] + 1.6 * whistle[i] * inhale + 0.9 * rattle[i] * exhale * crackle)
-    return out
-
-
 def stab():
     """A dissonant cluster with a hard attack, a screech over it and a boom under it, dying out."""
     seconds = 1.8
@@ -125,12 +88,6 @@ def stab():
 
 
 def main():
-    random.seed(666)
-    takes = [(0.45, 4, 250, 900), (0.35, 3, 700, 300), (0.55, 5, 300, 1300), (0.3, 2, 900, 400)]
-    for i, take in enumerate(takes, 1):
-        save("squelch_%d.wav" % i, squelch(*take))
-    random.seed(1996)
-    save("wheeze.wav", wheeze())
     random.seed(13)
     save("case_stab.wav", stab())
 

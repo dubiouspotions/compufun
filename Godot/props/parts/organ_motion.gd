@@ -14,11 +14,11 @@ enum Kind {
 
 @export var kind: Kind = Kind.THROB
 ## The seconds of one cycle: a heartbeat (match the heartbeat sound's length), or a breath.
-@export var period: float = 1.25
+@export var period: float = 1.0
 ## How far the body swells or shrinks, as a share of its size.
 @export_range(0.0, 0.5) var amount: float = 0.05
 ## Where the dub falls in a heartbeat, as a share of [member period].
-@export_range(0.0, 1.0) var dub_at: float = 0.24
+@export_range(0.0, 1.0) var dub_at: float = 0.3
 ## Plays from the organ now and then; null for silence.
 @export var squelch: SoundSet
 ## The seconds between two squelches, picked at random between x and y.

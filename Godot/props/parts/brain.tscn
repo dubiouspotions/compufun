@@ -33,15 +33,15 @@ height = 0.0075
 radial_segments = 5
 rings = 3
 
-[node name="Brain" type="Node3D" unique_id=595581981]
+[node name="Brain" type="Node3D" unique_id=502924626]
 script = ExtResource("1_nkwu4")
 amount = 0.015
 
-[node name="Body" type="MeshInstance3D" parent="." unique_id=1677217144]
+[node name="Body" type="MeshInstance3D" parent="." unique_id=1808871807]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -0.005000001, 0, 0.002000004)
 mesh = SubResource("ArrayMesh_ymjic")
 
-[node name="Drips" type="CPUParticles3D" parent="." unique_id=648724877]
+[node name="Drips" type="CPUParticles3D" parent="." unique_id=917562663]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -0.0047249626, 0.03181997, 0.004450597)
 amount = 4
 lifetime = 0.9

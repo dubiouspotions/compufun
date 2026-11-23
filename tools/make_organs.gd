@@ -15,8 +15,10 @@ const FLOOR := 0.01
 const CASE := "res://rooms/shop/open_case.tscn"
 const MOTION := "res://props/parts/organ_motion.gd"
 const SQUELCH := "res://sounds/squelch.tres"
-## The heartbeat's length (sounds/heartbeat.wav), so every organ keeps in step with it.
-const BEAT := 1.25
+## The heartbeat's and the breath's lengths (sounds/heartbeat.wav, sounds/wheeze.wav), so the organs
+## keep in step with them.
+const BEAT := 1.0
+const BREATH := 3.5
 const TEXTURE_SIZE := 32
 const SHADER := preload("res://shaders/psx_world.gdshader")
 
@@ -71,7 +73,7 @@ func _initialize() -> void:
 	# name: [place, where in the case (x, z), turn about Y in degrees, lift off the floor, builder, motion kind, amount, period]
 	var organs := {
 		"heart": ["motherboard", Vector2(0.025, -0.005), -35.0, 0.0, _heart, OrganMotion.Kind.BEAT, 0.09, BEAT],
-		"lungs": ["fan", Vector2(0.135, 0.08), 90.0, 0.0, _lung, OrganMotion.Kind.BREATHE, 0.07, BEAT * 3.6],
+		"lungs": ["fan", Vector2(0.135, 0.08), 90.0, 0.0, _lung, OrganMotion.Kind.BREATHE, 0.07, BREATH],
 		"liver": ["gpu", Vector2(0.1, -0.122), 0.0, 0.0, _liver, OrganMotion.Kind.JIGGLE, 0.05, BEAT],
 		"brain": ["hard_drive", Vector2(-0.035, 0.112), 90.0, 0.0, _brain, OrganMotion.Kind.THROB, 0.015, BEAT],
 		"kidney_left": ["ram_1", Vector2(-0.112, -0.016), 0.0, 0.0, _kidney.bind(false), OrganMotion.Kind.THROB, 0.03, BEAT],

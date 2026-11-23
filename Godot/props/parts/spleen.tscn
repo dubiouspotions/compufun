@@ -43,15 +43,15 @@ height = 0.0075
 radial_segments = 5
 rings = 3
 
-[node name="Spleen" type="Node3D" unique_id=823941386]
+[node name="Spleen" type="Node3D" unique_id=205870738]
 script = ExtResource("1_nknna")
 amount = 0.03
 
-[node name="Body" type="MeshInstance3D" parent="." unique_id=1953134188]
+[node name="Body" type="MeshInstance3D" parent="." unique_id=1332355261]
 transform = Transform3D(0.9396926, 0, 0.34202012, 0, 1, 0, -0.34202012, 0, 0.9396926, -0.105000004, 0, 0.089999996)
 mesh = SubResource("ArrayMesh_xd3pj")
 
-[node name="Drips" type="CPUParticles3D" parent="." unique_id=430533529]
+[node name="Drips" type="CPUParticles3D" parent="." unique_id=892590941]
 transform = Transform3D(0.9396926, 0, 0.34202012, 0, 1, 0, -0.34202012, 0, 0.9396926, -0.10554726, 0.013084033, 0.085339814)
 amount = 4
 lifetime = 0.9
