@@ -1,5 +1,5 @@
 extends "res://tests/test.gd"
-## Flying Windows: its flags fly towards the viewer, and one that leaves starts again far away. A key ends it.
+## Flying Windows: its logos fly towards the viewer, and one that leaves starts again far away. A key ends it.
 
 
 func run() -> void:
@@ -10,16 +10,16 @@ func run() -> void:
 	saver.set_anchors_preset(Control.PRESET_FULL_RECT)
 	screen.add_child(saver)
 	await process_frame
-	var flags: Array = saver.get(&"_flags")
-	check("it flies as many flags as its density", flags.size(), saver.get(&"density"))
-	var start: Array = flags.map(func(f: Vector3) -> float: return f.z)
+	var logos: Array = saver.get(&"_logos")
+	check("it flies as many logos as its density", logos.size(), saver.get(&"density"))
+	var start: Array = logos.map(func(f: Vector3) -> float: return f.z)
 	await process_frame
-	var nearer: Array = range(flags.size()).filter(func(i: int) -> bool: return saver.get(&"_flags")[i].z < start[i])
-	check("the flags come nearer", nearer.size() > flags.size() / 2, true)
+	var nearer: Array = range(logos.size()).filter(func(i: int) -> bool: return saver.get(&"_logos")[i].z < start[i])
+	check("the logos come nearer", nearer.size() > logos.size() / 2, true)
 	await create_timer(4.0).timeout
-	var restarted: Array = range(flags.size()).filter(func(i: int) -> bool: return saver.get(&"_flags")[i].z > start[i])
-	check("flags that left start again far away", restarted.size() > 0, true)
-	check("every flag is ahead of the viewer", saver.get(&"_flags").all(func(f: Vector3) -> bool: return f.z > 0.0), true)
+	var restarted: Array = range(logos.size()).filter(func(i: int) -> bool: return saver.get(&"_logos")[i].z > start[i])
+	check("logos that left start again far away", restarted.size() > 0, true)
+	check("every logo is ahead of the viewer", saver.get(&"_logos").all(func(f: Vector3) -> bool: return f.z > 0.0), true)
 	var key := InputEventKey.new()
 	key.keycode = KEY_A
 	key.pressed = true
