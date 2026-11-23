@@ -3,6 +3,9 @@ extends Resource
 ## The Win95 desktop that one customer's computer boots into. This is the starting state; at
 ## runtime, Game.setup_for makes the running copy that ComputerState changes, never this resource.
 
+## The folder whose items Windows opens each time a boot reaches the desktop.
+const STARTUP_PATH := "C:\\WINDOWS\\Start Menu\\Programs\\StartUp"
+
 ## "Windows theme": the system colours. The default is the stock Win95 palette.
 @export var palette: Win95Palette = preload("res://win95/theme/palette.tres")
 @export var wallpaper: Texture2D = preload("res://win95/wallpapers/win95-default.png")

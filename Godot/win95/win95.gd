@@ -163,6 +163,7 @@ func _exit_tree() -> void:
 	get_tree().node_added.disconnect(_on_node_added)
 
 
+
 # The computer is on the VGA cable, so its picture is on the bench screen and its sound card reaches the speakers.
 func _on_cable() -> bool:
 	return is_inside_tree() and _state != null and _state.job != null and _state.job == Game.connected
@@ -230,7 +231,8 @@ func _on_booted() -> void:
 	pointer_visible = false
 	_boot.finished.connect(func() -> void:
 		pointer_visible = true
-		_state.reached_desktop())
+		_state.reached_desktop()
+		_open_startup())
 	if setup.fragmented:
 		_boot.splash_seconds *= 3.0  # a fragmented disk loads Windows slowly
 	add_child(_boot)
@@ -463,7 +465,7 @@ func _fill(view: IconView) -> void:
 			item.details = PackedStringArray([(entry as Applet).description])
 		else:
 			var file: Win95File = entry
-			item.name_edited.connect(func(_old: String, new_text: String) -> void: _state.rename_file(file, new_text))
+			item.name_edited.connect(func(_old: String, new_text: String) -> void: _rename(view, file, new_text))
 			if file.system == &"":
 				item.stub = ComputerState.is_program_name(file.name) and file.program == null
 			item.details = FileDetails.cells(listing.kind, file, _state)
@@ -577,12 +579,12 @@ func open_file(file: Win95File) -> void:
 			open_file(target)
 		return
 	if ComputerState.is_runnable(file):
-		_launch(file.program, null)
+		_launch(file, null)
 		return
 	var programs := _state.programs_for(file.name.get_extension().to_lower())
 	for program in programs:
 		if ComputerState.is_runnable(program):
-			_launch(program.program, file)
+			_launch(program, file)
 			_state.note_opened(file)
 			return
 	if not programs.is_empty():
@@ -593,10 +595,24 @@ func open_file(file: Win95File) -> void:
 		_message(file.name, "Windows cannot open this file:\n\n%s\n\nNo program on this computer opens files of this type." % file.name)
 
 
-func _launch(program: PackedScene, file: Win95File) -> void:
-	var window: Node = _desktop.open(program)
-	if file != null and window.has_method(&"open_file"):
-		window.open_file(file, _state)
+# A program whose scene is a BackgroundTask runs without a window; any other opens one, with [param document].
+func _launch(program: Win95File, document: Win95File) -> void:
+	if BackgroundTask.runs_in_background(program.program):
+		_state.run_task(program.program.instantiate() as BackgroundTask, program)
+		return
+	var window: Node = _desktop.open(program.program)
+	if document != null and window.has_method(&"open_file"):
+		window.open_file(document, _state)
+
+
+# Each boot that reaches the desktop opens what the StartUp folder holds, as Win95 does.
+func _open_startup() -> void:
+	var startup := _state.setup.file_at(Win95Setup.STARTUP_PATH)
+	if startup == null:
+		return
+	for item: Win95File in startup.children.duplicate():
+		if not item.is_folder:
+			open_file(item)
 
 
 func _message(title: String, text: String) -> void:
@@ -773,7 +789,7 @@ func _on_dropped(items: Array[FileIcon], onto: FileIcon, places: Array[Vector2],
 	if onto != null and onto not in items:
 		var target := _file_of(onto)
 		if onto.name == &"RecycleBin":
-			_state.delete_files(_deletable(files))
+			_report(_state.delete_files(_deletable(files)), "Error Deleting File")
 			return
 		if target != null and target.is_folder and not _drives.has(target):
 			_report_move(_state.move_files(files, target.children))
@@ -795,8 +811,13 @@ static func _deletable(files: Array[Win95File]) -> Array[Win95File]:
 
 
 func _report_move(refused: String) -> void:
+	_report(refused, "Error Moving File")
+
+
+# Shows why ComputerState refused a change; "" shows nothing.
+func _report(refused: String, title: String) -> void:
 	if refused != "":
-		_message("Error Moving File", refused)
+		_message(title, refused)
 
 
 func _delete(view: IconView, items: Array[FileIcon]) -> void:
@@ -804,7 +825,15 @@ func _delete(view: IconView, items: Array[FileIcon]) -> void:
 	if _listings[view].kind == &"recycle_bin":
 		_state.purge_files(files)
 	else:
-		_state.delete_files(files)
+		_report(_state.delete_files(files), "Error Deleting File")
+
+
+# A refused rename lists the view again, so the icon shows the old name.
+func _rename(view: IconView, file: Win95File, new_name: String) -> void:
+	var refused := _state.rename_file(file, new_name)
+	if refused != "":
+		_report(refused, "Error Renaming File")
+		_fill.call_deferred(view)
 
 
 # Win95 names a new folder by letting the player type over "New Folder" at once.

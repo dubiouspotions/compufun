@@ -141,11 +141,16 @@ func _game_unix() -> int:
 	return Time.get_unix_time_from_datetime_dict(t)
 
 
-func rename_file(file: Win95File, new_name: String) -> void:
+## Renames [param file] to [param new_name]. Returns why Win95 refused, as it says it, or "" when
+## renamed or unchanged: a running task's file, or a folder that holds one, is in use.
+func rename_file(file: Win95File, new_name: String) -> String:
 	if setup == null or file.name == new_name:
-		return
+		return ""
+	if in_use(file):
+		return _sharing_violation("rename", file)
 	file.name = new_name
 	_changed()
+	return ""
 
 
 ## Saves [param text] as the contents of [param file], as Notepad's File > Save does.
@@ -201,19 +206,29 @@ func purge_email(email: Email) -> void:
 	_changed()
 
 
-## Moves [param files] into the Recycle Bin, and remembers where each came from.
-func delete_files(files: Array[Win95File]) -> void:
+## Moves [param files] into the Recycle Bin, and remembers where each came from. Returns why a
+## file stayed, as Win95 says it, or "" when all went: a file in use (see [method in_use]) stays.
+func delete_files(files: Array[Win95File]) -> String:
 	if setup == null or files.is_empty():
-		return
+		return ""
+	var refused := ""
+	var any := false
 	for file in files:
 		var from: Variant = _container_of(file)
 		if from == null:
 			push_error("ComputerState.delete_files: %s is not on the desktop or drive C" % file.name)
 			continue
+		if in_use(file):
+			if refused == "":
+				refused = _sharing_violation("delete", file)
+			continue
 		(from as Array).erase(file)
 		setup.deleted_from[file] = from
 		setup.recycle_bin.append(file)
-	_changed()
+		any = true
+	if any:
+		_changed()
+	return refused
 
 
 ## Puts [param files] from the Recycle Bin back where they were deleted from; files that the setup
@@ -270,6 +285,8 @@ func move_files(files: Array[Win95File], container: Array, places: Array[Vector2
 			why = "Cannot move %s: The destination folder is a subfolder of the source folder." % file.name
 		elif container.any(func(other: Win95File) -> bool: return other.name.nocasecmp_to(file.name) == 0):
 			why = "Cannot move %s: There is already a file with the same name in this location." % file.name
+		elif in_use(file):
+			why = _sharing_violation("move", file)
 		if why != "":
 			if refused == "":
 				refused = why
@@ -418,6 +435,46 @@ func _collect_programs(container: Array, wanted: Callable, found: Array[Win95Fil
 			found.append(file)
 
 
+## True when [param file] is on the desktop or drive C, at any depth; false in the Recycle Bin.
+func has_file(file: Win95File) -> bool:
+	return setup != null and _container_of(file) != null
+
+
+## Runs [param task], made from the program [param file], as a task without a window: it starts at
+## once and runs until it stops, End Task stops it, or Windows shuts down, restarts or loses power.
+func run_task(task: BackgroundTask, file: Win95File) -> void:
+	task.file = file
+	add_child(task)
+	task.stopped.connect(changed.emit)
+	task.start(self)
+	changed.emit()
+
+
+## The running tasks, oldest first.
+func tasks() -> Array[BackgroundTask]:
+	var running: Array[BackgroundTask] = []
+	for child in get_children():
+		if child is BackgroundTask and (child as BackgroundTask).is_running():
+			running.append(child)
+	return running
+
+
+## True while a running task runs from [param file], or from a file inside the folder
+## [param file]: Win95 refuses to delete, rename or move it.
+func in_use(file: Win95File) -> bool:
+	return tasks().any(func(task: BackgroundTask) -> bool:
+		return task.file == file or (file.is_folder and _find_container(file.children, task.file) != null))
+
+
+static func _sharing_violation(verb: String, file: Win95File) -> String:
+	return "Cannot %s %s: There has been a sharing violation.\nThe source or destination file may be in use." % [verb, file.name]
+
+
+func _end_tasks() -> void:
+	for task in tasks():
+		task.stop()
+
+
 ## The Array that holds [param file] (the desktop, drive C or a folder's children), or null.
 func _container_of(file: Win95File) -> Variant:
 	for top: Array in [setup.desktop, setup.drive_c]:
@@ -445,6 +502,7 @@ func shut_down() -> void:
 	if not is_on:
 		return
 	_boots += 1
+	_end_tasks()
 	shut_down_done.emit()
 
 
@@ -479,6 +537,7 @@ func _sync() -> void:
 		booted.emit()
 	else:
 		setup.defragmenting = false  # switching off stops the run
+		_end_tasks()
 		powered_off.emit()
 
 
@@ -501,6 +560,7 @@ func reached_desktop() -> void:
 	await get_tree().create_timer(problem.hang_seconds).timeout
 	if _still_on(boot):  # hung is hung, also if the fan was fixed meanwhile
 		_boots += 1
+		_end_tasks()
 		booted.emit()
 
 

@@ -242,6 +242,12 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Pointer trails**: The ghost pointers that follow the mouse on a computer whose Mouse settings turn them on (`Win95Setup.pointer_trails`, drawn by `win95/pointer_trails.gd`).
 *Avoid:* mouse trails, cursor trail.
 
+**Background task**: A Win95 program that runs without a window (`BackgroundTask`), such as the email virus BIZOPP.EXE. It starts when its program file opens, also from the StartUp folder at each boot, and runs until End Task, a shutdown or a restart (`ComputerState.tasks()`).
+*Avoid:* process, service, daemon.
+
+**File in use**: The program file of a running background task, or a folder that holds one (`ComputerState.in_use`). Win95 refuses to delete, rename or move it with a sharing violation.
+*Avoid:* locked file, open file.
+
 **Corruption sign**: One of Cambion's changes to the shop, such as the blue logo (`CorruptionSign`, `corruption/<id>.tscn`). It shows while its flag `sign_<id>` is set and its feature switch `enabled` is on.
 *Avoid:* effect, glitch, event.
 
