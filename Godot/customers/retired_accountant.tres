@@ -215,7 +215,6 @@ script = ExtResource("9_86j8n")
 palette = ExtResource("scheme_hc_white_xl")
 drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResource("Resource_docs")])
 installed_apps = PackedStringArray("Calculator", "Notepad")
-pointer_trails = 7
 pointer_speed = 1
 registered_owner = "Bob"
 
