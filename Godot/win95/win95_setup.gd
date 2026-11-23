@@ -75,6 +75,12 @@ var desktop_screenshot: DesktopScreenshot
 ## A floppy is in drive A:. The PC tries to boot from it and stops on "Non-System disk or disk
 ## error", so Windows does not start until the floppy is out.
 @export var floppy_in_a: bool = false
+## The disk in drive A: while [member floppy_in_a]; null for the boot floppy that a problem puts
+## there. Only while the game runs.
+var floppy_disk: FloppyDisk
+## The files on the disk in A:, this computer's own copies; empty while A: is empty. Only while the
+## game runs.
+var floppy_files: Array[Win95File] = []
 
 
 ## A copy to run: every file and folder is the copy's own, also the ones that came from another
@@ -121,6 +127,24 @@ static func _own(files: Array) -> void:
 			file = file.duplicate_deep()
 			files[i] = file
 		_own(file.children)
+
+
+## Puts [param disk] in drive A:, with copies of its files that the computer changes from now on,
+## never the FloppyDisk resource.
+func insert_floppy(disk: FloppyDisk) -> void:
+	floppy_in_a = true
+	floppy_disk = disk
+	floppy_files.clear()
+	for file: Win95File in disk.files:
+		floppy_files.append(file.duplicate_deep())
+	_own(floppy_files)
+
+
+## Empties drive A:.
+func eject_floppy() -> void:
+	floppy_in_a = false
+	floppy_disk = null
+	floppy_files.clear()
 
 
 ## The file or folder at [param path], or null. The path starts at drive C or the desktop, with

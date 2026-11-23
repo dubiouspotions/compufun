@@ -591,10 +591,11 @@ func _open_item(item: FileIcon) -> void:
 		open_file(file)
 
 
-# A: opens while a floppy is in it; D: never holds a disc. An empty drive says so, and Retry looks again.
+# A: opens while a floppy is in it and lists its files; D: never holds a disc. An empty drive says
+# so, and Retry looks again.
 func _open_removable(drive: Win95File, folder_view: IconView.FolderView) -> void:
 	if drive == _drive_a and _state.setup.floppy_in_a:
-		_show(Listing.new(drive.name, drive.icon, &"folder", func() -> Array: return drive.children, false, drive), folder_view)
+		_show(Listing.new(drive.name, drive.icon, &"folder", func() -> Array: return _state.setup.floppy_files, false, drive), folder_view)
 		return
 	var drive_path := "A:\\" if drive == _drive_a else "D:\\"
 	var buttons: Array[String] = ["Retry", "Cancel"]

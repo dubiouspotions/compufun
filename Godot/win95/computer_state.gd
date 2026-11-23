@@ -206,8 +206,9 @@ func purge_email(email: Email) -> void:
 	_changed()
 
 
-## Moves [param files] into the Recycle Bin, and remembers where each came from. Returns why a
-## file stayed, as Win95 says it, or "" when all went: a file in use (see [method in_use]) stays.
+## Moves [param files] into the Recycle Bin, and remembers where each came from; a file on the
+## floppy in A: is gone for good. Returns why a file stayed, as Win95 says it, or "" when all went:
+## a file in use (see [method in_use]) stays.
 func delete_files(files: Array[Win95File]) -> String:
 	if setup == null or files.is_empty():
 		return ""
@@ -216,16 +217,18 @@ func delete_files(files: Array[Win95File]) -> String:
 	for file in files:
 		var from: Variant = _container_of(file)
 		if from == null:
-			push_error("ComputerState.delete_files: %s is not on the desktop or drive C" % file.name)
+			push_error("ComputerState.delete_files: %s is not on the desktop, drive C or the floppy in A:" % file.name)
 			continue
 		if in_use(file):
 			if refused == "":
 				refused = _sharing_violation("delete", file)
 			continue
 		(from as Array).erase(file)
+		any = true
+		if is_same(from, setup.floppy_files):
+			continue  # a floppy has no Recycle Bin: the file is gone for good
 		setup.deleted_from[file] = from
 		setup.recycle_bin.append(file)
-		any = true
 	if any:
 		_changed()
 	return refused
@@ -376,10 +379,13 @@ static func opens_of(program: PackedScene) -> Array:
 	return opens if opens is Array else []
 
 
-## Where [param file] is, as Properties shows it: "Desktop", "C:\", "C:\WINDOWS" or "Recycle Bin".
+## Where [param file] is, as Properties shows it: "Desktop", "C:\", "C:\WINDOWS", "A:\" or
+## "Recycle Bin".
 func location_of(file: Win95File) -> String:
 	if setup.desktop.has(file):
 		return "Desktop"
+	if setup.floppy_files.has(file):
+		return "A:\\"
 	if setup.recycle_bin.has(file):
 		return "Recycle Bin"
 	var path: Variant = _folder_path(setup.drive_c, file, "C:")
@@ -435,7 +441,8 @@ func _collect_programs(container: Array, wanted: Callable, found: Array[Win95Fil
 			found.append(file)
 
 
-## True when [param file] is on the desktop or drive C, at any depth; false in the Recycle Bin.
+## True when [param file] is on the desktop, drive C or the floppy in A:, at any depth; false in the
+## Recycle Bin.
 func has_file(file: Win95File) -> bool:
 	return setup != null and _container_of(file) != null
 
@@ -475,9 +482,10 @@ func _end_tasks() -> void:
 		task.stop()
 
 
-## The Array that holds [param file] (the desktop, drive C or a folder's children), or null.
+## The Array that holds [param file] (the desktop, drive C, the floppy in A: or a folder's
+## children), or null.
 func _container_of(file: Win95File) -> Variant:
-	for top: Array in [setup.desktop, setup.drive_c]:
+	for top: Array in [setup.desktop, setup.drive_c, setup.floppy_files]:
 		var found: Variant = _find_container(top, file)
 		if found != null:
 			return found

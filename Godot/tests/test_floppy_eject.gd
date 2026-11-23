@@ -1,7 +1,8 @@
 extends "res://tests/test.gd"
 ## In the Workview, the eject button of the floppy drive sticks out and pulses while a floppy is in A:,
-## and a click on it ejects the floppy (Game.eject_floppy) and lets the button in; on an empty drive
-## the button is flush and a click on it does nothing.
+## and a click on it ejects the floppy (Game.eject_floppy) and lets the button in; with the floppy in
+## the hand a click puts it back (Game.insert_floppy); on an empty drive with an empty hand the button
+## is flush and a click on it does nothing.
 
 var _shop: Node3D
 var _camera: Camera3D
@@ -29,8 +30,17 @@ func run() -> void:
 	_click(at)
 	await create_timer(0.3).timeout
 	check("a click on it ejects the floppy", [game.has_floppy(job), job.software_fixed], [false, true])
-	check("the button goes in and stops pulsing", [_out(drive), drive.eject_button.material_overlay == null], [false, true])
-	check("the empty drive's button takes no click", _shop.hotspot_at(at) == hotspot, false)
+	check("the button goes in", _out(drive), false)
+	check("with the floppy in the hand, the drive pulses to take it back", [_shop.hotspot_at(at) == hotspot, drive.eject_button.material_overlay != null], [true, true])
+	_click(at)
+	await create_timer(0.3).timeout
+	check("a click puts it back in", [game.has_floppy(job), game.hand, job.software_fixed, _out(drive)], [true, null, false, true])
+	_click(at)
+	await create_timer(0.3).timeout
+	game.trash_part()
+	await process_frame
+	check("ejected and trashed, the button stops pulsing", [game.has_floppy(job), drive.eject_button.material_overlay == null], [false, true])
+	check("the empty drive takes no click", _shop.hotspot_at(at) == hotspot, false)
 	_click(at)
 	check("a click on it does nothing", [game.has_floppy(job), job.software_fixed], [false, true])
 	_shop.queue_free()

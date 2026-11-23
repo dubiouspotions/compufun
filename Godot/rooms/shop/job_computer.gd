@@ -12,7 +12,8 @@ signal power_clicked(computer: JobComputer)
 ## The player clicked the screwdriver beside the computer in the Workview, or its dashed outline
 ## once the computer lies and is closed with its screws.
 signal screwdriver_clicked(computer: JobComputer)
-## The player clicked the eject button of the case's floppy drive while a floppy is in it.
+## The player clicked the case's floppy drive while a click ejects or inserts a floppy
+## (Game.can_eject, Game.can_insert_floppy).
 signal floppy_clicked(computer: JobComputer)
 
 ## The outline colour while the mouse or the dragged plug is over the computer.
@@ -65,7 +66,7 @@ var _screwdriver_ghost: StandardMaterial3D
 var _pose: float = 0.0
 var _tip: Tween
 var _upright: Dictionary[Node3D, Transform3D] = {}
-## Over the eject button of the case front's floppy drive; null for a front without one.
+## Over the case front's floppy drive, its slot and eject button; null for a front without one.
 var _floppy_hotspot: Hotspot
 ## Over the eject button of the case front's CD-ROM drive; null for a front without one.
 var _cd_hotspot: Hotspot
@@ -117,6 +118,8 @@ func _ready() -> void:
 	_floppy_hotspot = _make_floppy_hotspot()
 	_cd_hotspot = _make_cd_hotspot()
 	_floppy_drives = find_children("*", "FloppyDrive", true, false)
+	for drive: FloppyDrive in _floppy_drives:
+		drive.set_floppy_in(Game.has_floppy(job), false)
 	_cd_drives = find_children("*", "CdDrive", true, false)
 	for drive: CdDrive in _cd_drives:
 		drive.set_open(job.cd_tray_open, false)
@@ -136,7 +139,7 @@ func _make_floppy_hotspot() -> Hotspot:
 		if Game.has_floppy(job):
 			push_error("JobComputer: %s has a floppy in A: but its case front has no FloppyDrive named Floppy, with a box EjectButton, to eject it from" % job.customer.resource_path)
 		return null
-	var hotspot := _button_hotspot(drive.eject_button)
+	var hotspot := _button_hotspot(drive)
 	hotspot.clicked.connect(func(_h: Hotspot) -> void: floppy_clicked.emit(self))
 	hotspot.mouse_entered.connect(func() -> void: drive.hovered = true)
 	hotspot.mouse_exited.connect(func() -> void: drive.hovered = false)
@@ -260,18 +263,22 @@ func _play_part_sound(hum: Hum, property: StringName, when: bool) -> bool:
 	return sound != null
 
 
-# The eject button sticks out while a floppy is in, and pulses where the player works and can eject.
+# The floppy sticks out with its label while it is in, and the eject button pulses where the player
+# works and a click ejects or inserts one.
 func _sync_floppy(working: bool, lying: bool) -> void:
 	var floppy_in := Game.has_floppy(job)
+	var setup := Game.setup_for(job) if floppy_in else null
 	for drive: FloppyDrive in _floppy_drives:
-		drive.floppy_in = floppy_in
+		if floppy_in:
+			drive.disk_label = setup.floppy_disk.label if setup.floppy_disk != null else null
+		drive.set_floppy_in(floppy_in)
 	if _floppy_hotspot == null:
 		return
-	var can_eject := Game.can_eject(job) and not lying
-	_floppy_hotspot.set_enabled(can_eject)
+	var usable := (Game.can_eject(job) or Game.can_insert_floppy(job)) and not lying
+	_floppy_hotspot.set_enabled(usable)
 	var upright := _tower.floppy_drive()
-	upright.usable = can_eject and working
-	if not can_eject:
+	upright.usable = usable and working
+	if not usable:
 		upright.hovered = false
 
 

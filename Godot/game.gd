@@ -194,8 +194,7 @@ func _finish_overnight_work() -> void:
 			continue
 		setup.defragmenting = false
 		setup.fragmented = false
-		if job.software_check() != null:
-			job.software_fixed = job.software_check().is_fixed(setup)
+		_recheck_software(job, setup)
 
 
 ## Starts [param new_day] in the morning with the shop CLOSED: nobody comes in until
@@ -649,24 +648,47 @@ func can_eject(job: Job) -> bool:
 
 
 ## Ejects the floppy from drive A: of [param job]'s computer into the hand, as a click on the drive's
-## eject button does, so the next boot gets past "Non-System disk". Does nothing unless
-## [method can_eject]. The job must be on the counter.
+## eject button does, so the next boot gets past "Non-System disk". The hand gets the disk that went
+## in (Win95Setup.floppy_disk), as it went in, so it can go back in its box; or, for the boot floppy
+## of a problem, the generic floppy (parts/floppy.tres). Does nothing unless [method can_eject]. The
+## job must be on the counter.
 func eject_floppy(job: Job) -> void:
-	if job == null or job not in jobs:
-		push_error("Game.eject_floppy: the job is not on the counter: %s" % job)
+	if not _on_counter(job, "eject_floppy") or not can_eject(job):
 		return
-	if not can_eject(job):
-		return
-	var floppy := Part.named(&"floppy")
-	if floppy == null:
-		push_error("Game.eject_floppy: no parts/floppy.tres for the ejected floppy")
-		return
-	hand = Piece.new(floppy)
 	var setup := setup_for(job)
-	setup.floppy_in_a = false
+	var disk: FloppyDisk = setup.floppy_disk if setup.floppy_disk != null else Part.named(&"floppy") as FloppyDisk
+	if disk == null:
+		push_error("Game.eject_floppy: parts/floppy.tres is missing or not a FloppyDisk, for the ejected floppy")
+		return
+	hand = Piece.new(disk, false, setup.floppy_disk != null)
+	setup.eject_floppy()
+	_recheck_software(job, setup)
+	changed.emit()
+
+
+## True when the player can put the floppy disk in the hand into drive A: of [param job]'s computer:
+## the hand holds a FloppyDisk, the computer has a Win95 setup, and A: is empty.
+func can_insert_floppy(job: Job) -> bool:
+	return hand != null and hand.part is FloppyDisk and setup_for(job) != null and not has_floppy(job)
+
+
+## Puts the floppy disk in the hand into drive A: of [param job]'s computer, as a click on the drive
+## does: A: lists its files from now on, and the next boot stops at "Non-System disk" until it is
+## ejected. Does nothing unless [method can_insert_floppy]. The job must be on the counter.
+func insert_floppy(job: Job) -> void:
+	if not _on_counter(job, "insert_floppy") or not can_insert_floppy(job):
+		return
+	var setup := setup_for(job)
+	setup.insert_floppy(hand.part as FloppyDisk)
+	hand = null
+	_recheck_software(job, setup)
+	changed.emit()
+
+
+# The software check of [param job] judges its running copy [param setup] again, after Game changed it.
+func _recheck_software(job: Job, setup: Win95Setup) -> void:
 	if job.software_check() != null:
 		job.software_fixed = job.software_check().is_fixed(setup)
-	changed.emit()
 
 
 ## True when [param job] can switch on: its motherboard is in. Whatever else is missing shows once
