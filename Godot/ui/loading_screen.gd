@@ -1,8 +1,9 @@
 extends CanvasLayer
-## The loading screen: the CompuFun logo draws itself in while main.tscn loads, in step with the
-## CompuFun jingle (the Jingle player), which plays from the first frame. Then the game starts
-## underneath, the logo's letters turn into windows onto it, and the paper zooms in through the
-## middle of the logo until the game fills the screen.
+## The loading screen: the CompuFun logo's outline draws in as main.tscn loads, as a loading bar.
+## Once the load is complete, the CompuFun jingle (the Jingle player) plays and the logo's ink fills
+## in step with its sung syllables. Then the game starts underneath, the logo's letters turn into
+## windows onto it, and the paper zooms in through the middle of the logo until the game fills the
+## screen.
 
 ## The scene that the screen loads on a thread and starts under the logo. Set it before the screen
 ## enters the tree.
@@ -15,8 +16,6 @@ extends CanvasLayer
 ## letters fill early in their syllable. The last key is also the shortest draw-in, so the logo does
 ## not flash by. Keep the keys in order of time.
 @export var draw_keys: PackedVector2Array = PackedVector2Array([Vector2(0.1, 0.0), Vector2(0.77, 0.42), Vector2(1.35, 0.64), Vector2(2.15, 1.0)])
-## How far the outline runs ahead of the ink, in seconds of the jingle.
-@export var outline_lead_seconds: float = 0.2
 ## The line that fades in under the logo once its ink is complete, and how long the fade takes, in
 ## seconds. A fade, not typing: the game warms up behind the logo meanwhile, and typing showed its stalls.
 @export var byline: String = "a dubious potions game"
@@ -51,8 +50,8 @@ extends CanvasLayer
 @export_range(0.0, 1.0, 0.05) var zoom_boost_from: float = 0.7
 @export var zoom_boost: float = 3.0
 
-# Set on the first frame: the web build has no threads, so the load may block until then.
-var _start_ms: int = -1
+# The seconds of frames since the load completed and the jingle started; negative before.
+var _since_jingle: float = -1.0
 # True once the game has started to come in behind the logo.
 var _game_started: bool = false
 var _byline_shown: bool = false
@@ -66,7 +65,8 @@ var _byline_full_ms: int = 0
 
 func _ready() -> void:
 	get_window().title = BuildInfo.title()
-	_draw(0.0, 0.0)
+	_logo.set_shader_parameter("outline_progress", 0.0)
+	_logo.set_shader_parameter("ink_progress", 0.0)
 	for i: int in range(1, draw_keys.size()):
 		if draw_keys[i].x < draw_keys[i - 1].x:
 			push_error("LoadingScreen: draw_keys are not in order of time at key %d: %s" % [i, draw_keys])
@@ -78,22 +78,22 @@ func _ready() -> void:
 		_fail("cannot start to load %s: %s" % [game_scene, error_string(err)])
 
 
-func _process(_delta: float) -> void:
-	var progress: Array = []
-	var status := ResourceLoader.load_threaded_get_status(game_scene, progress)
-	if _start_ms < 0:
-		_start_ms = Time.get_ticks_msec()
-		%Jingle.play()
-	var seconds := _heard_seconds((Time.get_ticks_msec() - _start_ms) / 1000.0)
+func _process(delta: float) -> void:
+	if _since_jingle >= 0.0:
+		_since_jingle += delta
 	if _game_started:
-		_draw(seconds, 1.0)  # the load is taken; only the ink goes on
+		_draw()  # the load is taken; only the ink goes on
 		return
+	var progress: Array = []
 	var drawn_in: float = draw_keys[draw_keys.size() - 1].x if not draw_keys.is_empty() else 0.0
-	match status:
+	match ResourceLoader.load_threaded_get_status(game_scene, progress):
 		ResourceLoader.THREAD_LOAD_IN_PROGRESS:
-			_draw(seconds, progress[0] if not progress.is_empty() else 0.0)
+			_logo.set_shader_parameter("outline_progress", progress[0] if not progress.is_empty() else 0.0)
 		ResourceLoader.THREAD_LOAD_LOADED:
-			_draw(seconds, 1.0)
+			if _since_jingle < 0.0:
+				_since_jingle = 0.0
+				%Jingle.play()
+			var seconds := _draw()
 			if seconds >= drawn_in + byline_after_seconds and not _byline_shown:
 				_show_byline()
 			if _byline_shown and Time.get_ticks_msec() >= _byline_full_ms:
@@ -122,17 +122,18 @@ func drawn_at(seconds: float) -> float:
 	return 1.0
 
 
-# Draws the logo as far as the jingle has got, but never past [param loaded], the share of the game
-# that has loaded.
-func _draw(seconds: float, loaded: float) -> void:
-	_logo.set_shader_parameter("ink_progress", minf(loaded, drawn_at(seconds)))
-	_logo.set_shader_parameter("outline_progress", minf(loaded, drawn_at(seconds + outline_lead_seconds)))
+# Draws the whole outline and the ink as far as the jingle has got; returns the seconds into the jingle.
+func _draw() -> float:
+	var seconds := _heard_seconds(_since_jingle)
+	_logo.set_shader_parameter("outline_progress", 1.0)
+	_logo.set_shader_parameter("ink_progress", drawn_at(seconds))
+	return seconds
 
 
 # The seconds into the jingle that the player hears now: its playback position, corrected for the
 # audio buffer and the output latency, so the ink follows the sound. While the jingle cannot be heard
 # (no audio device, or a browser that holds sound until the first click), or its position strays from
-# [param wall] (the seconds since the first frame), the frame clock leads, so the logo always draws in.
+# [param wall] (the seconds of frames since it started), the frame clock leads, so the logo always draws in.
 func _heard_seconds(wall: float) -> float:
 	var jingle := %Jingle as AudioStreamPlayer
 	if not jingle.playing:
