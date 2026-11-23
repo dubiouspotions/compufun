@@ -9,3 +9,4 @@ face_color = Color(0.8156863, 0.6901961, 0.7215686, 1)
 highlight_color = Color(0.9098039, 0.8470588, 0.8784314, 1)
 light_color = Color(0.8156863, 0.6901961, 0.7215686, 1)
 shadow_color = Color(0.627451, 0.3764706, 0.4392157, 1)
+font_size = 16

@@ -48,7 +48,6 @@ class Entry:
 		return id == &"" and not (disabled or checked or is_separator) and children.is_empty()
 
 
-const _ROW_HEIGHT := 17.0
 const _BANNER_WIDTH := 21.0
 const _SEPARATOR_HEIGHT := 9.0
 ## The left column holds the check mark; the right one the submenu arrow.
@@ -182,10 +181,11 @@ func _icon_size() -> float:
 
 
 func _row_height() -> float:
+	var text := ceilf(get_theme_font("font", &"PopupMenu").get_height(get_theme_font_size("font_size", &"PopupMenu"))) + 4.0
 	var icon := _icon_size()
 	if icon == 0.0:
-		return _ROW_HEIGHT
-	return icon + (2.0 if icon >= 32.0 else 6.0)
+		return text
+	return maxf(text, icon + (2.0 if icon >= 32.0 else 6.0))
 
 
 func _icon_x() -> float:

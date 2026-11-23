@@ -1,6 +1,6 @@
 extends Control
 ## The picture at the top of Display > Appearance: an inactive window, an active window and a
-## message box, drawn at Win95's pixel positions in the colours of [member palette]. The desktop
+## message box, drawn at Win95's pixel positions in the colours and font size of [member palette]. The desktop
 ## keeps Windows Standard's colour, which Win95Palette doesn't hold.
 
 const _BOLD := preload("res://win95/theme/fonts/w95fa_pixel_bold.ttf")
@@ -41,35 +41,51 @@ func _init() -> void:
 func _draw() -> void:
 	_frame.draw(get_canvas_item(), Rect2(0, 0, 355, 193))
 	draw_rect(Rect2(2, 2, 351, 189), _DESKTOP)
+	# The scheme's font grows the title bars and the menu bar, and the message box upward; at the
+	# stock size every position is Win95's.
+	var text_height := ceilf(_BOLD.get_height(palette.font_size))
+	var title_height := text_height + 5.0
+	var menu_height := text_height + 4.0
 
 	_bevel(Win95Bevel.Kind.WINDOW, Rect2(10, 10, 317, 151))
-	_title(Rect2(14, 14, 309, 18), "Inactive Window", palette.inactive_title_color, palette.inactive_title_text_color)
+	_title(Rect2(14, 14, 309, title_height), "Inactive Window", palette.inactive_title_color, palette.inactive_title_text_color)
 
-	_bevel(Win95Bevel.Kind.WINDOW, Rect2(14, 33, 335, 133))
-	_title(Rect2(18, 37, 327, 18), "Active Window", palette.active_title_color, palette.active_title_text_color)
-	_text(Vector2(25, 58), "Normal", palette.button_text_color)
-	_text(Vector2(71, 58), "Disabled", palette.gray_text_color)
-	draw_rect(Rect2(116, 56, 54, 17), palette.selection_color)
-	_text(Vector2(123, 58), "Selected", palette.selection_text_color)
-	_bevel(Win95Bevel.Kind.FIELD, Rect2(18, 74, 327, 88))
-	_text(Vector2(22, 80), "Window Text", palette.window_text_color, _BOLD)
-	_scroll_bar(Rect2(327, 76, 16, 84))
+	var active := 15.0 + title_height
+	_bevel(Win95Bevel.Kind.WINDOW, Rect2(14, active, 335, 166.0 - active))
+	_title(Rect2(18, active + 4.0, 327, title_height), "Active Window", palette.active_title_color, palette.active_title_text_color)
+	var menu := active + 5.0 + title_height
+	var x := 25.0
+	_text(Vector2(x, menu + 2.0), "Normal", palette.button_text_color, null, -1, palette.font_size)
+	x += _width("Normal") + 14.0
+	_text(Vector2(x, menu + 2.0), "Disabled", palette.gray_text_color, null, -1, palette.font_size)
+	x += _width("Disabled") + 12.0
+	draw_rect(Rect2(x - 7.0, menu, _width("Selected") + 13.0, menu_height), palette.selection_color)
+	_text(Vector2(x, menu + 2.0), "Selected", palette.selection_text_color, null, -1, palette.font_size)
+	var field := menu + menu_height + 1.0
+	_bevel(Win95Bevel.Kind.FIELD, Rect2(18, field, 327, 162.0 - field))
+	_text(Vector2(22, field + 6.0), "Window Text", palette.window_text_color, _BOLD)
+	_scroll_bar(Rect2(327, field + 2.0, 16, 160.0 - field - 2.0))
 
-	_bevel(Win95Bevel.Kind.WINDOW, Rect2(22, 118, 213, 69))
-	_title(Rect2(25, 121, 207, 18), "Message Box", palette.active_title_color, palette.active_title_text_color, false)
-	_text(Vector2(29, 143), "Message Text", palette.button_text_color)
+	var box := 118.0 - (title_height - 18.0) - (text_height - 13.0)
+	_bevel(Win95Bevel.Kind.WINDOW, Rect2(22, box, 213, 187.0 - box))
+	_title(Rect2(25, box + 3.0, 207, title_height), "Message Box", palette.active_title_color, palette.active_title_text_color, false)
+	_text(Vector2(29, box + 7.0 + title_height), "Message Text", palette.button_text_color, null, -1, palette.font_size)
 	_bevel(Win95Bevel.Kind.RAISED, Rect2(92, 157, 72, 24))
 	_text(Vector2(91, 163), "OK", palette.button_text_color, _BOLD, 72)
 
 
 func _title(r: Rect2, title: String, colour: Color, text_colour: Color, all_buttons := true) -> void:
 	draw_rect(r, colour)
-	_text(r.position + Vector2(3, 3), title, text_colour, _BOLD)
-	var button := Rect2(r.end.x - 18, r.position.y + 2, 16, 14)
+	_text(r.position + Vector2(3, 3), title, text_colour, _BOLD, -1, palette.font_size)
+	var button := Rect2(r.end.x - 18, r.position.y + floorf((r.size.y - 14.0) / 2.0), 16, 14)
 	_caption_button(button, _CLOSE)
 	if all_buttons:
 		_caption_button(Rect2(button.position.x - 18, button.position.y, 16, 14), _MAXIMIZE)
 		_caption_button(Rect2(button.position.x - 34, button.position.y, 16, 14), _MINIMIZE)
+
+
+func _width(text: String) -> float:
+	return get_theme_default_font().get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, palette.font_size).x
 
 
 func _caption_button(r: Rect2, glyph: Rect2) -> void:
@@ -105,10 +121,10 @@ func _update_dither() -> void:
 		_dither.set_image(img)
 
 
-# [param width] > 0 centres the text in that many pixels from [param at].
-func _text(at: Vector2, text: String, colour: Color, font: Font = null, width: float = -1) -> void:
+# [param width] > 0 centres the text in that many pixels from [param at]; [param size] 0 is the dialog font's.
+func _text(at: Vector2, text: String, colour: Color, font: Font = null, width: float = -1, size := 0) -> void:
 	var f := font if font != null else get_theme_default_font()
-	var font_size := get_theme_default_font_size()
+	var font_size := size if size > 0 else get_theme_default_font_size()
 	var align := HORIZONTAL_ALIGNMENT_CENTER if width > 0 else HORIZONTAL_ALIGNMENT_LEFT
 	draw_string(f, at + Vector2(0, f.get_ascent(font_size)), text, align, width, font_size, colour)
 

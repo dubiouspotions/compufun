@@ -476,10 +476,10 @@ func _end_hang() -> void:
 # The theme changes once: each change re-themes every control, and a switch makes hundreds.
 func _apply_palette(palette: Win95Palette) -> void:
 	var source := _stock_palette if palette == null or palette == _SHARED_PALETTE else palette
-	if _SHARED_PALETTE.same_colours(source):
+	if _SHARED_PALETTE.same_scheme(source):
 		return
 	_THEME.set_block_signals(true)
-	_SHARED_PALETTE.copy_colours(source)
+	_SHARED_PALETTE.copy_scheme(source)
 	_SHARED_PALETTE.paint(_THEME)
 	_THEME.set_block_signals(false)
 	_THEME.emit_changed()

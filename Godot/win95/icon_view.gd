@@ -32,7 +32,8 @@ enum FolderView { LARGE_ICONS, SMALL_ICONS, LIST, DETAILS }
 const _FILE_ICON := preload("res://win95/file_icon.tscn")
 const _BAND_SHADER := preload("res://win95/drag_outline.gdshader")
 
-## Small Icons and List give every icon a cell this wide, as Win95 does at its stock font size.
+## Small Icons and List give every icon a cell this wide at the stock font size, as Win95 does;
+## a larger scheme font widens it in step.
 const _CELL_WIDTH := 112.0
 
 ## Draws the names white, for icons on the desktop wallpaper.
@@ -283,6 +284,11 @@ func _gui_input(event: InputEvent) -> void:
 			item.selected = _before_band.has(item) != rect.intersects(item.hit_rect())
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_THEME_CHANGED:
+		_sync_layout()  # the scheme's font size sizes the cells
+
+
 func _sync_layout() -> void:
 	if not is_node_ready():
 		return
@@ -296,7 +302,7 @@ func _sync_layout() -> void:
 
 func _lay_out(item: FileIcon) -> void:
 	item.compact = folder_view != FolderView.LARGE_ICONS
-	item.row_width = _CELL_WIDTH
+	item.row_width = roundf(_CELL_WIDTH * get_theme_font_size("font_size", &"IconLabel") / Win95Palette.STOCK_FONT_SIZE)
 	var shown: Array[ReportList.Column] = []
 	if folder_view == FolderView.DETAILS:
 		shown = columns  # a row is wider than half the screen, so each wraps

@@ -5,3 +5,4 @@
 [resource]
 script = ExtResource("script")
 resource_name = "Windows Standard (extra large)"
+font_size = 24

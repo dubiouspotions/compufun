@@ -14,3 +14,4 @@ active_title_color = Color(0, 0, 0, 1)
 inactive_title_color = Color(1, 1, 1, 1)
 inactive_title_text_color = Color(0, 0, 0, 1)
 tooltip_color = Color(1, 1, 1, 1)
+font_size = 24

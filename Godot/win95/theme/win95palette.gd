@@ -1,9 +1,10 @@
 @tool
 class_name Win95Palette
 extends Resource
-## The Windows 95 system colours that Win95Bevel and the Win95 theme draw with. Named after the
-## items in Display Properties > Appearance. Bevels that share one palette all redraw when a colour
-## changes. Setting a colour to its current value emits nothing, so re-applying a palette redraws nothing.
+## A Windows 95 appearance scheme: the system colours that Win95Bevel and the Win95 theme draw with,
+## and the size of the scheme's fonts. Named after the items in Display Properties > Appearance.
+## Bevels that share one palette all redraw when a colour changes. Setting a colour to its current
+## value emits nothing, so re-applying a palette redraws nothing.
 
 ## Every colour of a scheme.
 const COLOURS: Array[StringName] = [&"face_color", &"window_color", &"highlight_color", &"light_color",
@@ -48,6 +49,21 @@ const _THEME_FILLS := {
 	&"inactive_title_color": ["TitleBarInactive/panel"],
 	&"tooltip_color": ["TooltipPanel/panel"],
 }
+## The theme types whose font_size is [member font_size]: Appearance's Active and Inactive Title,
+## Menu, Icon, Message Box and ToolTip fonts. Dialog text keeps the theme's default size, as in Win95.
+const _THEME_FONT_SIZES: Array[StringName] = [&"TitleLabel", &"TitleLabelInactive", &"MenuBar", &"PopupMenu",
+	&"IconLabel", &"IconLabelSelected", &"DesktopIconLabel", &"MessageLabel", &"TooltipLabel"]
+
+## Win95's 8-point MS Sans Serif: one font pixel per screen pixel.
+const STOCK_FONT_SIZE := 12
+
+## The size of the title, menu, icon, message box and tooltip fonts, in pixels; the large schemes
+## raise it from [constant STOCK_FONT_SIZE].
+@export_range(8, 48) var font_size := STOCK_FONT_SIZE:
+	set(value):
+		if value != font_size:
+			font_size = value
+			emit_changed()
 
 ## "3D Objects": buttons, windows, dialogs.
 @export var face_color := Color("#c0c0c0"):
@@ -154,20 +170,22 @@ var _atlas: ImageTexture
 var _atlas_stale := false
 
 
-## Sets every colour to [param from]'s, with one changed signal; none if they already match.
-func copy_colours(from: Win95Palette) -> void:
-	if same_colours(from):
+## Sets every colour and the font size to [param from]'s, with one changed signal; none if they
+## already match.
+func copy_scheme(from: Win95Palette) -> void:
+	if same_scheme(from):
 		return
 	set_block_signals(true)
 	for colour in COLOURS:
 		set(colour, from.get(colour))
+	font_size = from.font_size
 	set_block_signals(false)
 	emit_changed()
 
 
-## Whether every colour matches [param other]'s.
-func same_colours(other: Win95Palette) -> bool:
-	return COLOURS.all(func(colour: StringName) -> bool: return (get(colour) as Color).is_equal_approx(other.get(colour)))
+## Whether every colour and the font size match [param other]'s.
+func same_scheme(other: Win95Palette) -> bool:
+	return font_size == other.font_size and COLOURS.all(func(colour: StringName) -> bool: return (get(colour) as Color).is_equal_approx(other.get(colour)))
 
 
 ## The theme's glyph atlas in these colours. The same texture for the life of the palette; it
@@ -179,8 +197,11 @@ func atlas() -> Texture2D:
 	return _atlas
 
 
-## Paints [param theme]'s text colours, selection, title bars, tooltips and glyphs in these colours.
+## Paints [param theme]'s text colours, selection, title bars, tooltips and glyphs in these colours,
+## and sizes its scheme fonts.
 func paint(theme: Theme) -> void:
+	for type in _THEME_FONT_SIZES:
+		theme.set_font_size(&"font_size", type, font_size)
 	for colour: StringName in _THEME_COLOURS:
 		for path: String in _THEME_COLOURS[colour]:
 			theme.set_color(path.get_slice("/", 1), path.get_slice("/", 0), get(colour))

@@ -41,16 +41,16 @@ func pending() -> Dictionary[StringName, Variant]:
 
 
 ## The row of [param palette] in the drop-down: the scheme itself, else the first scheme with the
-## same colours as [param colours]; -1 when none has them, which leaves the box empty as in Win95.
+## same colours and font size as [param colours]; -1 when none has them, which leaves the box empty as in Win95.
 func scheme_index(palette: Win95Palette, colours: Win95Palette) -> int:
 	var row := _sorted.find(palette)
 	if row >= 0:
 		return row
 	for i in _sorted.size():
-		if _sorted[i].same_colours(colours):
+		if _sorted[i].same_scheme(colours):
 			return i
 	return -1
 
 
 func _show(scheme: Win95Palette) -> void:
-	_preview.palette.copy_colours(scheme)
+	_preview.palette.copy_scheme(scheme)

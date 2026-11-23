@@ -17,7 +17,6 @@ signal context_clicked(at: Vector2)
 signal name_edited(old_text: String, new_text: String)
 
 const _WRAP_WIDTH := 70.0
-const _COMPACT_HEIGHT := 17.0
 const _SMALL_ICON := 16.0
 ## Win95's name box in a compact row: 2 px around the text.
 const _COMPACT_PAD := 2.0
@@ -98,6 +97,7 @@ var placed_at := Vector2.ZERO
 
 var _large_minimum := Vector2.ZERO
 var _large_separation := 0
+var _sized_for := 0  # the name's font size that the layout was made for
 
 
 func _ready() -> void:
@@ -105,6 +105,12 @@ func _ready() -> void:
 	_large_separation = get_theme_constant("separation")
 	%Name.draw.connect(_draw_focus)
 	_sync()
+
+
+func _notification(what: int) -> void:
+	# The scheme's font size sizes the name; the layout's own overrides change the theme too.
+	if what == NOTIFICATION_THEME_CHANGED and is_node_ready() and (%Name as Label).get_theme_font_size("font_size") != _sized_for:
+		_sync()
 
 
 # Only the picture and the name take clicks, as in Win95, so the rest of the cell or row is
@@ -159,6 +165,7 @@ func _sync() -> void:
 
 
 func _sync_layout(icon_rect: TextureRect, label: Label) -> void:
+	_sized_for = label.get_theme_font_size("font_size")
 	if vertical == compact:
 		vertical = not compact
 	queue_sort()  # setting vertical sorts at once, before the sizes below change
@@ -173,10 +180,12 @@ func _sync_layout(icon_rect: TextureRect, label: Label) -> void:
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS if compact else TextServer.OVERRUN_NO_TRIMMING
 	# The name box hugs the text, as Win95 draws the selection behind the name only.
 	var font := label.get_theme_font("font")
-	var size := label.get_theme_font_size("font_size")
+	var size := _sized_for
 	if not compact:
-		custom_minimum_size = _large_minimum
-		var block := font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, _WRAP_WIDTH, size)
+		# A larger scheme font widens the cell and the wrap in step, as Win95's icon spacing grows.
+		var widen := float(size) / Win95Palette.STOCK_FONT_SIZE
+		custom_minimum_size = Vector2(roundf(_large_minimum.x * widen), _large_minimum.y)
+		var block := font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, roundf(_WRAP_WIDTH * widen), size)
 		var box := label.get_theme_stylebox("normal")
 		label.custom_minimum_size = Vector2(ceilf(block.x) + box.get_margin(SIDE_LEFT) + box.get_margin(SIDE_RIGHT), 0)
 		return
@@ -184,16 +193,17 @@ func _sync_layout(icon_rect: TextureRect, label: Label) -> void:
 	var row := 0.0
 	for column in columns:
 		row += column.width
-	custom_minimum_size = Vector2(row if not columns.is_empty() else row_width, _COMPACT_HEIGHT)
+	var height := ceilf(font.get_height(size)) + 4.0
+	custom_minimum_size = Vector2(row if not columns.is_empty() else row_width, height)
 	var wide := ceilf(font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x) + 2.0 * _COMPACT_PAD
-	label.custom_minimum_size = Vector2(minf(wide, name_width - _SMALL_ICON), _COMPACT_HEIGHT)
+	label.custom_minimum_size = Vector2(minf(wide, name_width - _SMALL_ICON), height)
 
 
 func _draw() -> void:
 	if not compact or columns.is_empty():
 		return
 	var font := get_theme_font("font", &"Label")
-	var font_size := get_theme_font_size("font_size", &"Label")
+	var font_size := get_theme_font_size("font_size", &"IconLabel")
 	var ink := get_theme_color("font_color", &"IconLabel")
 	var x := columns[0].width
 	for i in range(1, columns.size()):
