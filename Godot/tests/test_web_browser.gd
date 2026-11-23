@@ -98,12 +98,24 @@ func _on_the_activists_desktop() -> void:
 	desktop.size = Vector2(640, 480)
 	root.add_child(desktop)
 	var window: Control = desktop.call(&"open", load(BROWSER_PATH))
-	await create_timer(window.splash_seconds + window.contact_seconds + 0.2).timeout
-	check("offline, home shows from the disk cache", [window.url, window.page_title], ["http://home.netscape.com/", "Welcome to Netscape"])
+	await create_timer(window.splash_seconds + 0.2).timeout
+	var dialog: Control = window.blocked_by
+	check("going online, AutoDial asks to connect, blocking Netscape", [dialog != null and dialog.get_node("%TitleBar").title == "Connect To", window.is_processing()], [true, true])
+	check("with his provider", [dialog.get_node("%Name").text, dialog.get_node("%User").text, dialog.get_node("%Number").text], ["MainStreet Online", "craig", "555-0199"])
+	dialog.get_node("%Connect").pressed.emit()
+	check("Connect dials", [dialog.get_node("%TitleBar").title, dialog.get_node("%Dialing").visible], ["Connecting to MainStreet Online", true])
+	await create_timer(dialog.dial_seconds + 0.1).timeout
+	var no_modem: Control = dialog.blocked_by
+	check("the modem stayed at home: it doesn't answer", [no_modem != null and no_modem.get_node("%TitleBar").title == "Dial-Up Networking", dialog.get_node("%Form").visible], [true, true])
+	no_modem.call(&"close")
+	dialog.get_node("%Cancel").pressed.emit()
+	await process_frame
+	check("Cancel: home shows from the disk cache", [window.url, window.page_title, window.is_processing()], ["http://home.netscape.com/", "Welcome to Netscape", false])
 	check("with its cached picture", window.get_node("%Page").text.contains("[img width=48 height=48]res://win95/netscape/logo_48.png[/img]"), true)
 
-	window.contact_seconds = 0.0
 	window.navigate("www.yahoo.com")
+	(window.blocked_by as Control).get_node("%Cancel").pressed.emit()
+	await process_frame
 	var box: Control = window.blocked_by
 	check("an uncached site alerts, and the alert blocks Netscape", [box != null, desktop.call(&"active_window") == box], [true, true])
 	check("centred on it", (box.position + box.size / 2).distance_to(window.position + window.size / 2) < 1.0, true)

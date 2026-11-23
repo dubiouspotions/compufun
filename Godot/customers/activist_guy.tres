@@ -430,6 +430,9 @@ drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResou
 desktop = Array[ExtResource("2_egn44")]([SubResource("Shortcut_netscape")])
 installed_apps = PackedStringArray("Calculator", "Notepad")
 registered_owner = "Craig"
+dial_up_name = "MainStreet Online"
+dial_up_user = "craig"
+dial_up_number = "555-0199"
 
 [sub_resource type="Resource" id="Computer_accountant"]
 script = ExtResource("1_2x16c")

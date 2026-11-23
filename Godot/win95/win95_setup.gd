@@ -38,6 +38,13 @@ var desktop_screenshot: DesktopScreenshot
 @export var emails: Array[Email] = []
 ## The programs that the Start menu lists, by their name in the menu.
 @export var installed_apps: PackedStringArray = []
+## Dial-Up Networking: the connection that AutoDial dials when a program goes online, by its name
+## in the Connect To dialog, such as the provider's; empty for none, and programs then fail at once.
+## At the customer's home it dialled; on the bench the modem has no phone line.
+@export var dial_up_name: String = ""
+## The user name and phone number that Connect To shows for [member dial_up_name].
+@export var dial_up_user: String = ""
+@export var dial_up_number: String = ""
 
 @export_group("Sound")
 ## 0 to 100, as the tray volume slider shows it.
