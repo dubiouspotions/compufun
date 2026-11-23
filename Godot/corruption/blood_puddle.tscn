@@ -24,6 +24,10 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 cast_shadow = 0
 
+[node name="Run" type="MeshInstance3D" parent="Blood"]
+unique_name_in_owner = true
+cast_shadow = 0
+
 [node name="Drop" type="MeshInstance3D" parent="Blood"]
 unique_name_in_owner = true
 cast_shadow = 0

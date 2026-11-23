@@ -16,6 +16,8 @@ extends CorruptionSign
 @export var lip_depth: float = 0.062
 ## From the work mat's top down to the floor, in metres.
 @export var floor_depth: float = 1.012
+## How far the counter's top juts out past the front of its body, in metres.
+@export var overhang: float = 0.055
 
 @export_group("Puddle")
 ## Where the puddle's middle lies from the slot's marker, in metres: under the tower's front right
@@ -45,11 +47,11 @@ extends CorruptionSign
 ## How wide a blob is, in metres; each is long enough to overlap the next.
 @export var blob_width: float = 0.028
 ## When the first blob starts to grow, in seconds after the drop-off.
-@export var rivulet_delay: float = 5.0
+@export var rivulet_delay: float = 2.0
 ## From the first blob's start until the last blob is full at the edge, in seconds.
-@export var rivulet_seconds: float = 35.0
+@export var rivulet_seconds: float = 12.0
 ## How long one blob takes to grow to its full size, in seconds.
-@export var blob_grow_seconds: float = 6.0
+@export var blob_grow_seconds: float = 4.0
 
 @export_group("Drip")
 ## How wide the streak down the counter's front is at its top, in metres.
@@ -57,6 +59,10 @@ extends CorruptionSign
 ## How long the streak takes to run down the counter's front once the rivulet is at the edge, in
 ## seconds. The drip starts when it is down.
 @export var streak_seconds: float = 3.0
+## How wide the blood that runs down the body of the counter to the floor is, in metres, and how long
+## it takes to get there once the streak is down, in seconds.
+@export var run_width: float = 0.026
+@export var run_seconds: float = 8.0
 ## How big a drop swells before it falls, in metres.
 @export var drop_radius: float = 0.012
 ## From one drop to the next, in seconds.
@@ -93,6 +99,7 @@ var _rivulet_end := Vector3.ZERO
 @onready var _puddle: MeshInstance3D = %Puddle
 @onready var _rivulet: Node3D = %Rivulet
 @onready var _streak: MeshInstance3D = %Streak
+@onready var _run: MeshInstance3D = %Run
 @onready var _drop: MeshInstance3D = %Drop
 @onready var _floor_puddle: MeshInstance3D = %FloorPuddle
 
@@ -147,6 +154,9 @@ func _show() -> void:
 	var streak := _ease((_elapsed - _streak_start()) / streak_seconds)
 	_streak.visible = streak > 0.0
 	_streak.scale = Vector3(streak_width, lip_depth * maxf(streak, 0.01), 1.0)
+	var run := _ease((_elapsed - _streak_start() - streak_seconds) / run_seconds)
+	_run.visible = run > 0.0
+	_run.scale = Vector3(run_width, (floor_depth - lip_depth) * maxf(run, 0.01), 1.0)
 	_show_drop()
 	var drip := _elapsed - _first_landing()
 	var landed := floorf(drip / drip_seconds) + 1.0 if drip >= 0.0 else 0.0
@@ -224,10 +234,12 @@ func _build() -> void:
 	_rivulet_end = _blob_nodes[-1].position
 	_streak.mesh = _streak_mesh()
 	_streak.position = Vector3(_rivulet_end.x, 0.0, edge_distance + lift)
+	_run.mesh = _streak.mesh
+	_run.position = Vector3(_rivulet_end.x, -lip_depth, edge_distance - overhang + lift)
 	_drop.mesh = _drop_mesh()
 	_floor_puddle.mesh = _disk(rng, Vector2(floor_radius, floor_radius))
 	_floor_puddle.position = Vector3(_rivulet_end.x, lift - floor_depth, edge_distance + floor_radius * 0.5)
-	for mesh: MeshInstance3D in [_puddle, _streak, _drop, _floor_puddle]:
+	for mesh: MeshInstance3D in [_puddle, _streak, _run, _drop, _floor_puddle]:
 		mesh.material_override = material
 
 
