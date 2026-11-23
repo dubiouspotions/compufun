@@ -13,7 +13,6 @@ signal errand_picked(path: String)
 signal problem_picked(id: StringName)
 
 const TIMINGS: PackedStringArray = ["Early: days 1 to 3", "Mid: days 3 to 5", "Late: days 5 to 7"]
-const TRIGGER_WORDS: Dictionary[String, String] = {"drop-off": "drop-off", "pick-up": "pick-up", "phone": "phone call"}
 
 var _box: VBoxContainer
 
@@ -48,58 +47,6 @@ static func signs() -> Array[Dictionary]:
 	return found
 
 
-## The places in [param week] that set the flag of the sign [param id], from the story check's flag
-## index [param index]: each {"text" (plain words, such as "Day 3, at closing"), "day", "errand",
-## "problem"}, of which the one that names where it is is set (day 0, "" or &"" for the others).
-static func starts(week: StoryFiles.Week, index: Dictionary, id: StringName) -> Array[Dictionary]:
-	var found: Array[Dictionary] = []
-	var entry: Dictionary = index.get(StringName("sign_" + id), {})
-	for where: String in entry.get("set_by", PackedStringArray()):
-		found.append(_start(week, where))
-	return found
-
-
-# One "set_by" entry of the flag index, "<path> (<detail>)" with an optional " =<value>", in words.
-static func _start(week: StoryFiles.Week, where: String) -> Dictionary:
-	var start := {"text": where, "day": 0, "errand": "", "problem": &""}
-	var path := where.get_slice(" (", 0)
-	var detail := where.substr(path.length() + 2)
-	var value := -1
-	var set_to := RegEx.create_from_string("\\) =(-?\\d+)$").search(detail)
-	if set_to != null:
-		value = set_to.get_string(1).to_int()
-		detail = detail.substr(0, set_to.get_start())
-	detail = detail.trim_suffix(")")
-	var text := ""
-	if path.begins_with(StoryFiles.DAYS_DIR):
-		start["day"] = path.get_file().get_basename().trim_prefix("day_").to_int()
-		var when: String = {"on start": "as the day starts", "on close": "at closing", "close signs": "at closing, until the next morning"}.get(detail, detail)
-		text = "Day %d, %s" % [start["day"], when]
-	elif path.begins_with(StoryFiles.ERRANDS_DIR):
-		start["errand"] = path
-		var stem := path.get_file().get_basename()
-		var who := stem.substr(5).capitalize()
-		for day: Day in week.days:
-			for errand: Errand in day.errands:
-				if errand.file == path and errand.customer != null:
-					who = errand.customer.spoken_name()
-		var trigger := detail.get_slice("/", 1)
-		text = "%s %s, %s" % [stem.substr(0, 4), who, TRIGGER_WORDS.get(trigger, trigger)]
-		if detail.contains(" > "):
-			text += ", when the player picks %s" % detail.substr(detail.find(" > ") + 3)
-	elif detail == "drop_off_signs":
-		start["problem"] = StringName(path.get_file().get_basename())
-		text = "the problem %s, at drop-off" % path.get_file().get_basename().replace("_", " ")
-	else:
-		return start
-	if value == 0:
-		text += " (stops it)"
-	elif value > 1:
-		text += " (stage %d)" % value
-	start["text"] = text
-	return start
-
-
 ## Shows every sign with its starts in [param week].
 func show_signs(week: StoryFiles.Week) -> void:
 	for child: Node in _box.get_children():
@@ -111,7 +58,17 @@ func show_signs(week: StoryFiles.Week) -> void:
 		_box.add_child(LabUI.label(TIMINGS[timing], 20))
 		for shown: Dictionary in all:
 			if shown["timing"] == timing:
-				_box.add_child(_card(shown, starts(week, index, shown["id"])))
+				_box.add_child(_card(shown, StoryCheck.sign_starts(week, index, shown["id"])))
+
+
+## Scrolls to the sign [param id] once [method show_signs] has shown it; an unknown id is an error.
+func open_sign(id: StringName) -> void:
+	var card := _box.get_node_or_null(NodePath(String(id))) as Control
+	if card == null:
+		push_error("Story Lab: no corruption sign %s in the Signs section" % id)
+		return
+	await get_tree().process_frame
+	ensure_control_visible(card)
 
 
 func _card(shown: Dictionary, found: Array[Dictionary]) -> Control:

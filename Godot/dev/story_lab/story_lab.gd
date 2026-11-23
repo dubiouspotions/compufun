@@ -124,7 +124,7 @@ func refresh() -> void:
 	for path: String in drafts.paths():
 		if path.begins_with(StoryFiles.DAYS_DIR):
 			drafted_days.append(path.get_file().get_basename().trim_prefix("day_").to_int())
-	_board.show_week(_week.days, _cards, _selected, drafted_days)
+	_board.show_week(_week.days, _cards, _selected, drafted_days, _week)
 	_problems.text = "" if _week.errors.is_empty() else "%d problems in the story files (hover)" % _week.errors.size()
 	_problems.tooltip_text = "\n".join(_week.errors)
 	_errand_panel.flags = flag_names()
@@ -238,6 +238,64 @@ func _comes_changes(days: Array, renames: Dictionary[String, String], path: Stri
 				if wanted != now:
 					changes[after] = wanted
 	return changes
+
+
+## Starts the corruption sign [param id] at [param to] ({"day": 1 to 7, "key": "on start" or
+## "close signs"}, or {"errand": path}: its first drop-off sets the flag as it starts) and removes
+## the start [param from] (one of StoryCheck.sign_starts; {} for none), through the drafts. The flag
+## keeps the value that [param from] set (0 stops the sign); a start from on close, or one that
+## doesn't set 1, stays on close at closing. A problem's drop_off_signs don't move. Returns "" or
+## what failed.
+func move_sign(id: StringName, from: Dictionary, to: Dictionary) -> String:
+	if from.get("problem", &"") != &"":
+		return _refuse_sign("%s comes with the problem %s's mechanics; change it in problems/%s.tres" % [id, from["problem"], from["problem"]])
+	var value: int = from.get("value", 1)
+	var texts: Dictionary[String, String] = {}
+	var failed := ""
+	if from.get("day", 0) > 0:
+		failed = _day_sign(texts, from["day"], from["detail"], id, value, false)
+	elif from.get("errand", "") != "":
+		var path: String = from["errand"]
+		texts[path] = StorySignStarts.without_set(drafts.text(path), from["detail"], id, value)
+	if failed == "" and to.has("day"):
+		var key: String = to["key"]
+		if key == "close signs" and (from.get("detail", "") == "on close" or value != 1):
+			key = "on close"
+		failed = _day_sign(texts, to["day"], key, id, value, true)
+	elif failed == "" and to.has("errand"):
+		var path: String = to["errand"]
+		texts[path] = StorySignStarts.with_drop_off_set(texts.get(path, drafts.text(path)), id, value)
+	if failed != "":
+		return _refuse_sign(failed)
+	for path: String in texts:
+		if texts[path] != drafts.text(path):
+			failed = drafts.put(path, texts[path])
+			if failed != "":
+				_after_store()
+				return _refuse_sign(failed)
+	_after_store()
+	_say("Moved the sign %s." % id if not from.is_empty() else "Started the sign %s." % id)
+	return ""
+
+
+func _day_sign(texts: Dictionary[String, String], day: int, key: String, id: StringName, value: int, add: bool) -> String:
+	var path := "%sday_%d.day" % [StoryFiles.DAYS_DIR, day]
+	var edited := StorySignStarts.day_edit(texts.get(path, drafts.text(path)), path, key, id, value, add)
+	if edited.has("error"):
+		return edited["error"]
+	texts[path] = edited["text"]
+	return ""
+
+
+func _refuse_sign(why: String) -> String:
+	_say("Sign not moved: " + why, true)
+	return why
+
+
+## Opens the corruption sign [param id] in the Signs section.
+func open_sign(id: StringName) -> void:
+	show_section("Signs")
+	_sign_panel.open_sign(id)
 
 
 ## Plays [param errand]'s conversation for [param trigger] in the game (Game.play_errand) and hides
@@ -478,9 +536,12 @@ func _build() -> void:
 	_board.errand_picked.connect(open_errand)
 	_board.errand_dropped.connect(move_errand)
 	_board.customer_dropped.connect(add_errand)
+	_board.sign_dropped.connect(move_sign)
+	_board.sign_picked.connect(open_sign)
 	_board.add_requested.connect(_add_errand)
 	_board.day_picked.connect(open_day)
 	_week_view.add_child(StoryLabBoard.customer_strip())
+	_week_view.add_child(StoryLabBoard.sign_strip())
 	_week_view.add_child(_board)
 	_lower = Control.new()
 	_lower.size_flags_vertical = Control.SIZE_EXPAND_FILL

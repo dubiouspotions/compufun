@@ -12,6 +12,8 @@ const CAMBION_SUFFIX: String = "_runs_cambion"
 const GONE_PREFIX: String = "gone_"
 ## The most flags in one errand code's conditions that [method missing_links] tries every value of.
 const MAX_FLAGS_TRIED: int = 10
+## A conversation's trigger in the words of [method sign_starts].
+const TRIGGER_WORDS: Dictionary[String, String] = {"drop-off": "drop-off", "pick-up": "pick-up", "phone": "phone call"}
 
 
 ## Who sets and who checks each flag of [param week]: flag name to
@@ -47,6 +49,64 @@ static func flag_index(week: StoryFiles.Week) -> Dictionary:
 			_note(index, flag, "set_by", "res://corruption/customer_x.tscn (the [x])")
 			_note(index, flag, "checked_by", "res://game.gd (Game.is_gone)")
 	return index
+
+
+## The places in [param week] that set the flag of the sign [param id], from [param index] (from
+## [method flag_index]), in the Story Lab's words: each {"text" (plain words, such as "Day 3, at closing"), "day", "errand",
+## "problem"}, of which the one that names where it is is set (day 0, "" or &"" for the others);
+## "detail", the day's key ("on start", "on close" or "close signs"), the errand's conversation id
+## (such as "0303/drop-off/1", with ' > "choice"' when a choice sets it) or "drop_off_signs"; and
+## "value", the number that it sets the flag to (0 stops the sign).
+static func sign_starts(week: StoryFiles.Week, index: Dictionary, id: StringName) -> Array[Dictionary]:
+	var found: Array[Dictionary] = []
+	var entry: Dictionary = index.get(StringName("sign_" + id), {})
+	for where: String in entry.get("set_by", PackedStringArray()):
+		found.append(_sign_start(week, where))
+	return found
+
+
+# One "set_by" entry of the flag index, "<path> (<detail>)" with an optional " =<value>", in words.
+static func _sign_start(week: StoryFiles.Week, where: String) -> Dictionary:
+	var start := {"text": where, "day": 0, "errand": "", "problem": &"", "detail": "", "value": 1}
+	var path := where.get_slice(" (", 0)
+	var detail := where.substr(path.length() + 2)
+	var value := -1
+	var set_to := RegEx.create_from_string("\\) =(-?\\d+)$").search(detail)
+	if set_to != null:
+		value = set_to.get_string(1).to_int()
+		detail = detail.substr(0, set_to.get_start())
+	detail = detail.trim_suffix(")")
+	start["detail"] = detail
+	if value >= 0:
+		start["value"] = value
+	var text := ""
+	if path.begins_with(StoryFiles.DAYS_DIR):
+		start["day"] = path.get_file().get_basename().trim_prefix("day_").to_int()
+		var when: String = {"on start": "as the day starts", "on close": "at closing", "close signs": "at closing, until the next morning"}.get(detail, detail)
+		text = "Day %d, %s" % [start["day"], when]
+	elif path.begins_with(StoryFiles.ERRANDS_DIR):
+		start["errand"] = path
+		var stem := path.get_file().get_basename()
+		var who := stem.substr(5).capitalize()
+		for day: Day in week.days:
+			for errand: Errand in day.errands:
+				if errand.file == path and errand.customer != null:
+					who = errand.customer.spoken_name()
+		var trigger := detail.get_slice("/", 1)
+		text = "%s %s, %s" % [stem.substr(0, 4), who, TRIGGER_WORDS.get(trigger, trigger)]
+		if detail.contains(" > "):
+			text += ", when the player picks %s" % detail.substr(detail.find(" > ") + 3)
+	elif detail == "drop_off_signs":
+		start["problem"] = StringName(path.get_file().get_basename())
+		text = "the problem %s, at drop-off" % path.get_file().get_basename().replace("_", " ")
+	else:
+		return start
+	if value == 0:
+		text += " (stops it)"
+	elif value > 1:
+		text += " (stage %d)" % value
+	start["text"] = text
+	return start
 
 
 ## The missing links of [param week], one sentence each, starting with the file path: a flag that

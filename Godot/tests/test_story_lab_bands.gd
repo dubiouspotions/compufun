@@ -55,8 +55,7 @@ func _drops_land_in_their_band() -> void:
 	var cards: Dictionary = lab.call("cards")
 	check("day 1 starts before opening, morning, midday", StoryLabBoard.bands(StoryLabBoard.groups(PackedStringArray(cards.keys()))[0], cards), [StoryLabBoard.Band.BEFORE_OPENING, StoryLabBoard.Band.MORNING, StoryLabBoard.Band.MIDDAY])
 	check("an empty Afternoon still shows, with no card", _shown(board, 1, "Afternoon"), [])
-	check("At closing says the day's on close flags and close signs", StoryLabBoard.closing_words((lab.get("_week") as StoryFiles.Week).days[0], StoryDayPanel.signs()),
-		PackedStringArray(["From now on: The logo turns Windows blue", "Remembers met skater", "Until morning: The logos and a poster bounce off the walls like the Solitaire win"]))
+	check("At closing says the day's on close facts; its signs show as chips", StoryLabBoard.closing_words((lab.get("_week") as StoryFiles.Week).days[0]), PackedStringArray(["Remembers met skater"]))
 
 	board.drop_in({"story_customer": "young_entrepreneur"}, 3, StoryLabBoard.Band.AFTERNOON)
 	check("a customer dropped onto day 3's empty Afternoon is a new errand at its end", drafts.text(ERRANDS + "0303_young_entrepreneur.errand"), "customer: young_entrepreneur\n\n== drop-off\n")

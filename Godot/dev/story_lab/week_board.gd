@@ -4,7 +4,8 @@ extends HBoxContainer
 ## the customers come in, each under its band (the time of day that Game.daypart_of gives it).
 ## Alternatives (errands with one errand code) stack in one dashed card. Cards drag to another day,
 ## place or band, or onto a card to become its alternative; customers drag in from
-## [method customer_strip] to make a new errand.
+## [method customer_strip] to make a new errand. A chip shows where each corruption sign starts; the
+## chips, and the signs of [method sign_strip], drag onto a band or a card to start the sign there.
 
 ## The writer clicked the card of the errand file [param path].
 signal errand_picked(path: String)
@@ -20,6 +21,12 @@ signal errand_dropped(path: String, day: int, index: int, alternative: bool, bef
 ## [param day] for a new errand at place [param index] (0 is the first; the errands from there move
 ## down), coming before opening with [param before_opening].
 signal customer_dropped(customer: String, day: int, index: int, before_opening: bool)
+## The writer clicked the chip of the corruption sign [param id].
+signal sign_picked(id: StringName)
+## The writer dropped the sign [param id] to start it at [param to]: {"day": 1 to 7, "key": "on start"
+## or "close signs"}, or {"errand": path} for its drop-off. [param from] is the start that its chip
+## showed (one of StoryCheck.sign_starts), or {} from [method sign_strip].
+signal sign_dropped(id: StringName, from: Dictionary, to: Dictionary)
 
 ## The parts of a day column, in the order of the day.
 enum Band {
@@ -34,6 +41,7 @@ const DAYS: int = 7
 const PORTRAIT_SIZE: int = 44
 const BAND_NAMES: PackedStringArray = ["Before opening", "Morning", "Midday", "Afternoon", "At closing"]
 const CUSTOMERS_DIR: String = "res://customers/"
+const SIGN_COLOR := Color("c58cff")
 const GAME := preload("res://game.gd")  # the script, not the autoload: tests compile this before autoloads exist
 
 var _hinted: PanelContainer
@@ -42,6 +50,8 @@ var _hinted_style: StyleBox
 var _days: Array = []
 var _cards: Dictionary = {}
 var _sign_titles: Dictionary[StringName, String] = {}
+## The shown sign chips, from [method sign_spots].
+var _spots: Array[Dictionary] = []
 
 
 ## The errand files in [param paths] by day and place: for each day 1 to 7 (index 0 to 6), its
@@ -167,29 +177,111 @@ static func place_for(days: Array, cards: Dictionary, day: int, band: Band, path
 	return day_groups.size()
 
 
-## What happens at closing on [param day], in plain words, one line each: its on close flags and
-## close signs. [param sign_titles] names the corruption signs by id (StoryDayPanel.signs()).
-static func closing_words(day: Day, sign_titles: Dictionary[StringName, String]) -> PackedStringArray:
+## The facts that [param day] sets at closing (its on close flags but the signs', which show as
+## chips), in plain words, one line each.
+static func closing_words(day: Day) -> PackedStringArray:
 	var words := PackedStringArray()
 	if day == null:
 		return words
 	for flag: StringName in day.close_flags:
 		var value: int = day.close_flags[flag]
 		if String(flag).begins_with("sign_"):
-			var title := _sign_title(StringName(String(flag).trim_prefix("sign_")), sign_titles)
-			words.append(("From now on: " if value != 0 else "Stops: ") + title)
+			continue
 		elif value == 0:
 			words.append("Forgets " + StoryFactPicker.humanize(flag))
 		else:
 			words.append("Remembers " + StoryFactPicker.humanize(flag) + ("" if value == 1 else " = %d" % value))
-	for id: StringName in day.close_signs:
-		words.append("Until morning: " + _sign_title(id, sign_titles))
 	return words
 
 
-static func _sign_title(id: StringName, sign_titles: Dictionary[StringName, String]) -> String:
-	var title: String = sign_titles.get(id, "")
-	return title if title != "" else StoryFactPicker.humanize(id)
+## Every start of the signs [param ids] in [param week], as the Signs section lists them
+## (StoryCheck.sign_starts, from the story check's flag index): each {"id", "start"}. A problem's
+## drop_off_signs start shows once.
+static func all_sign_starts(week: StoryFiles.Week, ids: Array) -> Array[Dictionary]:
+	var found: Array[Dictionary] = []
+	if week == null:
+		return found
+	var index := StoryCheck.flag_index(week)
+	for id: StringName in ids:
+		var seen: Dictionary[String, bool] = {}
+		for start: Dictionary in StoryCheck.sign_starts(week, index, id):
+			if not seen.has(start["text"]):
+				seen[start["text"]] = true
+				found.append({"id": id, "start": start})
+	return found
+
+
+## Where each of [param starts] (from [method all_sign_starts]) shows on the week of [param days] (from
+## [method groups]) and [param cards]: each {"id", "start", "day" (1 to 7), "band" (a day's start:
+## BEFORE_OPENING or MORNING for on start, by whether its first errand comes before opening;
+## AT_CLOSING for on close and close signs; -1 on a card), "errand" (the card's path, or ""),
+## "locked" (true for a problem's drop_off_signs, on each card whose errand has that problem)}.
+static func sign_spots(starts: Array[Dictionary], days: Array, cards: Dictionary) -> Array[Dictionary]:
+	var spots: Array[Dictionary] = []
+	for each: Dictionary in starts:
+		var start: Dictionary = each["start"]
+		var spot := {"id": each["id"], "start": start, "day": 0, "band": -1, "errand": "", "locked": false}
+		if start["day"] > 0:
+			var day: int = start["day"]
+			spot["day"] = day
+			if start["detail"] != "on start":
+				spot["band"] = Band.AT_CLOSING
+			else:
+				var first := bands(days[day - 1], cards)
+				spot["band"] = Band.BEFORE_OPENING if not first.is_empty() and first[0] == Band.BEFORE_OPENING else Band.MORNING
+			spots.append(spot)
+		elif start["errand"] != "" and cards.has(start["errand"]):
+			spot["errand"] = start["errand"]
+			spot["day"] = code_of(start["errand"]).substr(0, 2).to_int()
+			spots.append(spot)
+		elif start["problem"] != &"":
+			for path: String in cards:
+				var errand: Errand = cards[path]["errand"]
+				if errand != null and errand.problem != null and errand.problem.resource_path.get_file().get_basename() == String(start["problem"]):
+					var locked := spot.duplicate()
+					locked["errand"] = path
+					locked["day"] = code_of(path).substr(0, 2).to_int()
+					locked["locked"] = true
+					spots.append(locked)
+	return spots
+
+
+## A wrapping row of every corruption sign (by title) that drags onto the board: dropped on a band or
+## a card, it starts the sign there ([signal sign_dropped]).
+static func sign_strip() -> Control:
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 6)
+	row.add_theme_constant_override("v_separation", 4)
+	row.add_child(LabUI.label("Signs", 13, LabUI.DIM))
+	var titles := StoryDayPanel.signs()
+	for id: StringName in titles:
+		var chip := _sign_chip_box(titles[id] if titles[id] != "" else StoryFactPicker.humanize(id), 12, 150)
+		chip.mouse_default_cursor_shape = Control.CURSOR_DRAG
+		chip.tooltip_text = "%s (%s)\nDrag onto a time of day or a customer's card to start it there." % [titles[id], id]
+		chip.set_drag_forwarding(_sign_drag.bind(chip, id, {}, titles[id]), Callable(), Callable())
+		row.add_child(chip)
+	return row
+
+
+static func _sign_drag(_at: Vector2, chip: Control, id: StringName, from: Dictionary, title: String) -> Variant:
+	var preview := LabUI.chip(title if title != "" else String(id), SIGN_COLOR, 13)
+	preview.add_theme_stylebox_override("normal", LabUI.box(LabUI.HOVER, 8, 4))
+	chip.set_drag_preview(preview)
+	return {"story_sign": id, "from": from}
+
+
+# A small rounded chip in the signs' colour with [param text], cut with an ellipsis to [param width]
+# pixels, or to the width that its container gives it when 0.
+static func _sign_chip_box(text: String, size: int, width: int) -> PanelContainer:
+	var chip := PanelContainer.new()
+	chip.add_theme_stylebox_override("panel", LabUI.box(Color(SIGN_COLOR, 0.18), 6, 1))
+	chip.mouse_filter = Control.MOUSE_FILTER_STOP
+	var label := LabUI.label(text, size, SIGN_COLOR)
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.custom_minimum_size.x = width
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.add_child(label)
+	return chip
 
 
 ## A row of every customer in customers/ (face and name) that drags onto the board: dropped on a
@@ -228,8 +320,9 @@ static func customer_strip() -> Control:
 
 ## Shows [param days] (Day 1 to 7) with the errand files of [param cards]: path to
 ## {"errand": Errand, "problems": PackedStringArray (parse errors and missing links), "draft": bool}.
-## [param selected] is the open errand's path, [param drafted_days] the days with a draft.
-func show_week(days: Array[Day], cards: Dictionary, selected: String, drafted_days: Array[int]) -> void:
+## [param selected] is the open errand's path, [param drafted_days] the days with a draft. The sign
+## chips show the starts in [param week]; null shows none.
+func show_week(days: Array[Day], cards: Dictionary, selected: String, drafted_days: Array[int], week: StoryFiles.Week = null) -> void:
 	for child: Node in get_children():
 		remove_child(child)
 		child.queue_free()
@@ -239,6 +332,7 @@ func show_week(days: Array[Day], cards: Dictionary, selected: String, drafted_da
 	add_theme_constant_override("separation", 10)
 	_cards = cards
 	_days = groups(PackedStringArray(cards.keys()))
+	_spots = sign_spots(all_sign_starts(week, _sign_titles.keys()), _days, cards)
 	for d: int in DAYS:
 		var day: Day = days[d] if d < days.size() else null
 		add_child(_column(d + 1, day, _days[d], cards, selected, (d + 1) in drafted_days))
@@ -275,8 +369,10 @@ func _column(number: int, day: Day, day_groups: Array, cards: Dictionary, select
 	scroll.add_child(list)
 	var placed := bands(day_groups, cards)
 	for band: Band in [Band.BEFORE_OPENING, Band.MORNING, Band.MIDDAY, Band.AFTERNOON]:
-		var section := _band(number, band)
+		var first := placed.find(band)
+		var section := _band(number, band, day_groups[first][0] if first >= 0 else "")
 		var cards_box: VBoxContainer = section.get_child(0)
+		_add_chips(cards_box, _spots.filter(func(spot: Dictionary) -> bool: return spot["day"] == number and spot["band"] == band))
 		for g: int in day_groups.size():
 			if placed[g] != band:
 				continue
@@ -285,25 +381,28 @@ func _column(number: int, day: Day, day_groups: Array, cards: Dictionary, select
 				cards_box.add_child(_card(group[0], cards[group[0]], selected, number, g, section, band))
 			else:
 				cards_box.add_child(_alternatives(group, cards, selected, number, g, section, band))
-		if cards_box.get_child_count() == 1:
+		if first < 0:
 			var empty := LabUI.label("drop here", 11, Color(LabUI.DIM, 0.6))
 			empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			empty.clip_text = true
 			cards_box.add_child(empty)
 		list.add_child(section)
-	list.add_child(_closing(day))
+	list.add_child(_closing(number, day))
 	var add := LabUI.button("+  Errand", func() -> void: add_requested.emit(number), &"FlatButton")
 	add.tooltip_text = "Add an errand at the end of day %d" % number
 	box.add_child(add)
 	return column
 
 
-# A band's drop target, holding its title; its cards go into its child VBoxContainer.
-func _band(number: int, band: Band) -> PanelContainer:
+# A band's drop target, holding its title; its cards go into its child VBoxContainer. [param first] is
+# its first errand's path, "" when it has none.
+func _band(number: int, band: Band, first: String) -> PanelContainer:
 	var section := PanelContainer.new()
 	section.name = BAND_NAMES[band].to_pascal_case()
 	section.add_theme_stylebox_override("panel", _band_style(false))
-	section.set_drag_forwarding(Callable(), _can_drop_band.bind(section), _drop_band.bind(number, band))
+	section.set_drag_forwarding(Callable(), _can_drop_band.bind(section, band, first), _drop_band.bind(number, band))
+	if first == "" and band in [Band.MIDDAY, Band.AFTERNOON]:
+		section.tooltip_text = "No customer comes in at %s, so no sign can start then: a sign starts with a customer's drop-off." % BAND_NAMES[band].to_lower()
 	var cards_box := VBoxContainer.new()
 	cards_box.add_theme_constant_override("separation", 6)
 	section.add_child(cards_box)
@@ -311,27 +410,72 @@ func _band(number: int, band: Band) -> PanelContainer:
 	return section
 
 
-# At closing: the day's on close flags and close signs. It stops drops: no errand comes then.
-func _closing(day: Day) -> Control:
+# At closing: the day's on close flags and close signs. It takes only signs: no errand comes then.
+func _closing(number: int, day: Day) -> Control:
 	var section := PanelContainer.new()
 	section.name = "AtClosing"
 	section.mouse_filter = Control.MOUSE_FILTER_STOP
 	section.add_theme_stylebox_override("panel", _band_style(false))
+	section.set_drag_forwarding(Callable(), _can_drop_band.bind(section, Band.AT_CLOSING, ""), _drop_band.bind(number, Band.AT_CLOSING))
 	var lines := VBoxContainer.new()
 	lines.add_theme_constant_override("separation", 2)
-	lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	section.add_child(lines)
 	lines.add_child(LabUI.label(BAND_NAMES[Band.AT_CLOSING], 11, LabUI.DIM))
-	var words := closing_words(day, _sign_titles)
-	if words.is_empty():
+	var chips := _spots.filter(func(spot: Dictionary) -> bool: return spot["day"] == number and spot["band"] == Band.AT_CLOSING)
+	_add_chips(lines, chips)
+	var words := closing_words(day)
+	if words.is_empty() and chips.is_empty():
 		words.append("Nothing happens")
 	for line: String in words:
 		var label := LabUI.label(line, 12, LabUI.CHANGED if line != "Nothing happens" else Color(LabUI.DIM, 0.6))
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		label.custom_minimum_size.x = 40
 		lines.add_child(label)
-	section.tooltip_text = "Edit them in the day: click its header."
+	section.tooltip_text = "Edit them in the day: click its header. Drop a sign here to start it at closing."
 	return section
+
+
+# The chips of [param spots], one per line, at the end of [param into].
+func _add_chips(into: Control, spots: Array) -> void:
+	for spot: Dictionary in spots:
+		into.add_child(_sign_chip(spot))
+
+
+# The chip of a sign's start: a click opens the sign, a drag moves the start unless it is locked.
+func _sign_chip(spot: Dictionary) -> Control:
+	var id: StringName = spot["id"]
+	var start: Dictionary = spot["start"]
+	var title := _sign_titles.get(id, "") as String
+	var text := title if title != "" else StoryFactPicker.humanize(id)
+	if start["value"] == 0:
+		text = "Stops: " + text
+	elif start["value"] > 1:
+		text += " (stage %d)" % start["value"]
+	if start["detail"] == "close signs":
+		text = "Until morning: " + text
+	elif String(start["detail"]).contains(" > "):
+		text = "If picked: " + text
+	var chip := _sign_chip_box(text, 11, 0)
+	chip.name = "Sign_" + id
+	chip.tooltip_text = "%s (%s)\n%s\n" % [text, id, start["text"]]
+	if spot["locked"]:
+		var frame := LabUI.box(Color(SIGN_COLOR, 0.0), 6, 1)
+		frame.border_color = Color(SIGN_COLOR, 0.6)
+		frame.set_border_width_all(1)
+		chip.add_theme_stylebox_override("panel", frame)
+		chip.tooltip_text += "It comes with the problem's mechanics (problems/%s.tres), so it doesn't move here. Click to open it in Signs." % start["problem"]
+	else:
+		chip.tooltip_text += "Click to open it in Signs; drag it to start it somewhere else."
+		chip.mouse_filter = Control.MOUSE_FILTER_PASS
+		chip.mouse_default_cursor_shape = Control.CURSOR_DRAG
+		chip.set_drag_forwarding(_sign_drag.bind(chip, id, start, title), Callable(), Callable())
+	chip.gui_input.connect(func(event: InputEvent) -> void:
+		var click := event as InputEventMouseButton
+		if click != null and click.button_index == MOUSE_BUTTON_LEFT:
+			chip.accept_event()
+			if not click.pressed:
+				sign_picked.emit(id))
+	return chip
 
 
 func _band_style(hint: bool) -> StyleBoxFlat:
@@ -439,11 +583,16 @@ func _card(path: String, info: Dictionary, selected: String, day: int, index: in
 		# On release: picking rebuilds the board, which frees the card before a drag can start.
 		if click != null and not click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
 			errand_picked.emit(path))
-	card.set_drag_forwarding(_drag.bind(path, errand), _can_drop.bind(card, section), _drop.bind(card, day, index, band))
+	card.set_drag_forwarding(_drag.bind(path, errand), _can_drop.bind(card, section), _drop.bind(card, day, index, band, path))
+	var stack := VBoxContainer.new()
+	stack.add_theme_constant_override("separation", 4)
+	stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(stack)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	card.add_child(row)
+	stack.add_child(row)
+	_add_chips(stack, _spots.filter(func(spot: Dictionary) -> bool: return spot["errand"] == path))
 	row.add_child(portrait(errand.customer, PORTRAIT_SIZE))
 	var text := VBoxContainer.new()
 	text.add_theme_constant_override("separation", 0)
@@ -579,28 +728,38 @@ func _zone(card: Control, at: Vector2) -> String:
 	return "before" if share < 0.3 else ("after" if share > 0.7 else "alternative")
 
 
-# A customer dropped on a card goes into the card's band.
+# A customer dropped on a card goes into the card's band; a sign starts with the card's drop-off.
 func _can_drop(at: Vector2, data: Variant, card: PanelContainer, section: PanelContainer) -> bool:
 	if not _dragged(data):
 		return false
 	if data.has("story_customer"):
-		return _can_drop_band(at, data, section)
-	_hint(card, _card_style(false, _zone(card, at)))
+		return _can_drop_band(at, data, section, Band.MORNING, "")
+	_hint(card, _card_style(false, "alternative" if data.has("story_sign") else _zone(card, at)))
 	return true
 
 
-func _drop(at: Vector2, data: Variant, card: PanelContainer, day: int, index: int, band: Band) -> void:
+func _drop(at: Vector2, data: Variant, card: PanelContainer, day: int, index: int, band: Band, path: String) -> void:
+	_hint(null, null)
 	if data.has("story_customer"):
-		_drop_band(at, data, day, band)
+		drop_in(data, day, band)
+		return
+	if data.has("story_sign"):
+		sign_dropped.emit(data["story_sign"], data["from"], {"errand": path})
 		return
 	var zone := _zone(card, at)
-	_hint(null, null)
 	var place := index + (1 if zone == "after" else 0)
 	errand_dropped.emit(data["story_errand"], day, place, zone == "alternative", band == Band.BEFORE_OPENING and place == 0)
 
 
-func _can_drop_band(_at: Vector2, data: Variant, section: PanelContainer) -> bool:
+# [param first] is the band's first errand's path, "" when it has none: Midday and Afternoon then
+# refuse signs. At closing takes only signs.
+func _can_drop_band(_at: Vector2, data: Variant, section: PanelContainer, band: Band, first: String) -> bool:
 	if not _dragged(data):
+		return false
+	var is_sign: bool = data.has("story_sign")
+	if band == Band.AT_CLOSING and not is_sign:
+		return false
+	if is_sign and first == "" and band in [Band.MIDDAY, Band.AFTERNOON]:
 		return false
 	_hint(section, _band_style(true))
 	return true
@@ -610,11 +769,30 @@ func _drop_band(_at: Vector2, data: Variant, day: int, band: Band) -> void:
 	drop_in(data, day, band)
 
 
-## Drops [param data], a drag of the board ({"story_errand": path}) or of [method customer_strip]
-## ({"story_customer": name}), into [param band] of day [param day] (1 to 7), at the place that
-## [method place_for] gives: emits [signal errand_dropped] or [signal customer_dropped].
+## Drops [param data], a drag of the board ({"story_errand": path}), of [method customer_strip]
+## ({"story_customer": name}) or of a sign ({"story_sign": id, "from": its start or {}}), into
+## [param band] of day [param day] (1 to 7). An errand goes to the place that [method place_for]
+## gives ([signal errand_dropped]), a customer makes an errand there ([signal customer_dropped]), and
+## a sign starts as the day starts (Before opening, Morning), at closing, or with the drop-off of the
+## band's first errand (Midday, Afternoon) ([signal sign_dropped]). A drop that the band refuses
+## (an errand at closing, a sign in a band without errands) is an error.
 func drop_in(data: Dictionary, day: int, band: Band) -> void:
 	_hint(null, null)
+	if data.has("story_sign"):
+		var to := {}
+		match band:
+			Band.BEFORE_OPENING, Band.MORNING:
+				to = {"day": day, "key": "on start"}
+			Band.AT_CLOSING:
+				to = {"day": day, "key": "close signs"}
+			_:
+				var placed := bands(_days[day - 1], _cards)
+				if band not in placed:
+					push_error("Story Lab: no customer comes at %s on day %d, so the sign %s can't start then" % [BAND_NAMES[band], day, data["story_sign"]])
+					return
+				to = {"errand": _days[day - 1][placed.find(band)][0]}
+		sign_dropped.emit(data["story_sign"], data.get("from", {}), to)
+		return
 	if band == Band.AT_CLOSING:
 		push_error("Story Lab: %s dropped at closing on day %d, where no errand comes" % [data, day])
 		return
@@ -628,7 +806,7 @@ func drop_in(data: Dictionary, day: int, band: Band) -> void:
 
 func _can_drop_end(_at: Vector2, data: Variant) -> bool:
 	_hint(null, null)
-	return _dragged(data)
+	return _dragged(data) and not data.has("story_sign")
 
 
 func _drop_end(_at: Vector2, data: Variant, day: int, count: int) -> void:
@@ -639,7 +817,7 @@ func _drop_end(_at: Vector2, data: Variant, day: int, count: int) -> void:
 
 
 static func _dragged(data: Variant) -> bool:
-	return data is Dictionary and (data.has("story_errand") or data.has("story_customer"))
+	return data is Dictionary and (data.has("story_errand") or data.has("story_customer") or data.has("story_sign"))
 
 
 # Shows [param style] on [param card] while a drop over it is possible; null puts it back.

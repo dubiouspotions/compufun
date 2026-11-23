@@ -62,9 +62,10 @@ func _the_section_lists_every_sign_once_grouped(panel: Node) -> void:
 
 func _starts_say_where_in_plain_words(lab: Control, panel: Node) -> void:
 	var week: StoryFiles.Week = lab.get("_week")
-	var index: Dictionary = load("res://story/story_check.gd").call("flag_index", week)
+	var check_script: GDScript = load("res://story/story_check.gd")
+	var index: Dictionary = check_script.call("flag_index", week)
 	var texts := func(id: StringName) -> Array:
-		return (panel.call("starts", week, index, id) as Array).map(func(start: Dictionary) -> String: return start["text"])
+		return (check_script.call("sign_starts", week, index, id) as Array).map(func(start: Dictionary) -> String: return start["text"])
 	check("logo_blue starts on day 3 at closing", "Day 3, at closing" in texts.call(&"logo_blue"), true)
 	check("blood_puddle starts at organ failure's drop-off", "the problem organ failure, at drop-off" in texts.call(&"blood_puddle"), true)
 	check("a day that sets a sign's flag to 0 stops it", "Day 7, as the day starts (stops it)" in texts.call(&"customer_x"), true)
@@ -74,7 +75,7 @@ func _starts_say_where_in_plain_words(lab: Control, panel: Node) -> void:
 		if says != texts.call(shown["id"]).is_empty():
 			wrong.append(shown["id"])
 	check("a sign says \"Not started anywhere yet\" exactly when nothing starts it", wrong, PackedStringArray())
-	var day_3: Dictionary = (panel.call("starts", week, index, &"logo_blue") as Array)[0]
+	var day_3: Dictionary = (check_script.call("sign_starts", week, index, &"logo_blue") as Array)[0]
 	panel.call("_open", day_3)
 	var day_panel: Control = lab.find_children("*", "StoryDayPanel", true, false)[0]
 	check("clicking a start opens that day", [panel.visible, day_panel.is_visible_in_tree()], [false, true])
