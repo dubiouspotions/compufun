@@ -1,7 +1,7 @@
-extends "res://win95/cover_screen.gd"
+extends Saver
 ## Mystify Your Mind: on black, outlines whose corners bounce off the edges of the rect, each
 ## trailing copies of itself. Each new copy takes the colour of the moment, which fades from one
-## random colour to the next, so a trail shows the fade. Any key or click ends it.
+## random colour to the next, so a trail shows the fade. Any key, click or mouse move ends it.
 
 ## The outlines that move at once.
 @export_range(1, 8) var shapes: int = 2

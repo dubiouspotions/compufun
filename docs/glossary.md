@@ -245,6 +245,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Pointer trails**: The ghost pointers that follow the mouse on a computer whose Mouse settings turn them on (`Win95Setup.pointer_trails`, drawn by `win95/pointer_trails.gd`).
 *Avoid:* mouse trails, cursor trail.
 
+**Screensaver**: One of the savers that Display > Screen Saver lists, such as Flying Through Space: a `Saver` in `win95/savers/` that covers the Win95 screen, hides the pointer, and ends on a key, a click or a mouse move.
+*Avoid:* screen saver (outside Win95's own labels).
+
 **Background task**: A Win95 program that runs without a window (`BackgroundTask`), such as the email virus BIZOPP.EXE. It starts when its program file opens, also from the StartUp folder at each boot, and runs until End Task, a shutdown or a restart (`ComputerState.tasks()`).
 *Avoid:* process, service, daemon.
 

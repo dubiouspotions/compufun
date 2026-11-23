@@ -1,8 +1,8 @@
-extends "res://win95/cover_screen.gd"
+extends Saver
 ## Curves and Colors: on black, a closed loop of Bezier curves whose control points bounce off the
 ## edges of the rect. Each move draws a new copy of the loop and drops the oldest, so the trail
 ## sweeps out a ribbon; each copy takes the colour of the moment, which runs through the hues.
-## Any key or click ends it.
+## Any key, click or mouse move ends it.
 
 ## The Bezier curves that make up the loop, end to end.
 @export_range(1, 6) var curves: int = 2

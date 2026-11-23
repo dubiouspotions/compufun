@@ -1,7 +1,8 @@
-extends "res://win95/cover_screen.gd"
+extends Saver
 ## The Scrolling Marquee screensaver: a line of text scrolls from the right edge to the left across a
 ## coloured screen, then starts again. The defaults are Win95's own: "Your text goes here." in magenta
-## Times New Roman (Liberation Serif here) at 24 points, on navy, centred. Any key or click ends it.
+## Times New Roman (Liberation Serif here) at 24 points, on navy, centred.
+## Any key, click or mouse move ends it.
 
 ## The text that scrolls.
 var text: String = "Your text goes here."

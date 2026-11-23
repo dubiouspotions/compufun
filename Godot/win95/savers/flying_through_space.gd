@@ -1,7 +1,7 @@
-extends "res://win95/cover_screen.gd"
-## The Flying Through Space screensaver: stars on black fly out from the centre of the screen, from dim
-## grey dots to bright white ones as they come closer, as if the viewer flies through a starfield.
-## Any key or click ends it.
+extends Saver
+## The Flying Through Space screensaver: stars on black fly out from the centre of the screen, from
+## dim grey dots to bright white ones as they come closer, as if the viewer flies through a starfield.
+## Any key, click or mouse move ends it.
 
 ## How fast the viewer flies, as Win95's Warp speed slider (0 to 20).
 @export_range(0, 20) var warp_speed: int = 10

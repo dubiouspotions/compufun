@@ -75,15 +75,21 @@ signal pointer_changed
 @export_range(0.1, 1.0) var hang_pitch: float = 0.8
 
 ## Win95 shows the mouse pointer: false while the computer is off and while it boots, until the
-## desktop appears.
+## desktop appears, and while a screensaver (a [Saver] child) plays. Setting it doesn't show the
+## pointer over a screensaver.
 var pointer_visible := false:
+	get:
+		return _pointer_on and not _saver_up
 	set(value):
-		if value != pointer_visible:
-			pointer_visible = value
+		if value != _pointer_on:
+			_pointer_on = value
 			pointer_changed.emit()
 
 ## How long a folder takes to open on a fragmented drive C.
 const _FRAGMENTED_OPEN_SECONDS := 2.0
+
+var _pointer_on := false
+var _saver_up := false
 
 static var _stock_palette: Win95Palette
 ## What each of Win95's own icons opens, by its node name in desktop_icons.tscn: [opens, stub].
@@ -121,6 +127,8 @@ var _hang_screen: Control
 
 func _ready() -> void:
 	_desktop.computer = _state
+	child_entered_tree.connect(_on_child_changed)
+	child_exiting_tree.connect(_on_child_changed)
 	var artifacts: Control = _GpuArtifacts.new()
 	artifacts.set("state", _state)
 	add_child(artifacts)
@@ -316,6 +324,18 @@ func _on_shut_down() -> void:
 	_desktop.close_all()
 	if is_instance_valid(_boot):
 		_boot.queue_free()
+
+
+func _on_child_changed(child: Node) -> void:
+	if child is Saver:
+		_sync_saver.call_deferred()  # a child that is exiting is still among the children
+
+
+func _sync_saver() -> void:
+	var up := get_children().any(func(child: Node) -> bool: return child is Saver)
+	if up != _saver_up:
+		_saver_up = up
+		pointer_changed.emit()
 
 
 func _uncover() -> void:

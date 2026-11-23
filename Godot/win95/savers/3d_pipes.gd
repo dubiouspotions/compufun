@@ -1,6 +1,6 @@
-extends "res://win95/cover_screen.gd"
+extends Saver
 ## The 3D Pipes screensaver: pipes in the Win95 colours grow cell by cell, turn at ball joints, and
-## the screen clears once it is full. Any key or click ends it.
+## the screen clears once it is full. Any key, click or mouse move ends it.
 
 ## The size of one cell of the pipes' grid, in pixels.
 var cell: int = 24

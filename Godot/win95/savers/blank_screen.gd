@@ -1,5 +1,5 @@
-extends "res://win95/cover_screen.gd"
-## The Blank Screen screensaver: the whole screen black. Any key or click ends it.
+extends Saver
+## The Blank Screen screensaver: the whole screen black. Any key, click or mouse move ends it.
 
 
 func _draw() -> void:

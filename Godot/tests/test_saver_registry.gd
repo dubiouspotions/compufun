@@ -4,7 +4,6 @@ extends "res://tests/test.gd"
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run time: it names the Game autoload
 const SCREENSAVER_PATH := "res://win95/applets/display_screensaver.gd"  # loaded at run time: it names Game
-const COVER := preload("res://win95/cover_screen.gd")
 
 
 func run() -> void:
@@ -45,7 +44,7 @@ func run() -> void:
 		var saver: Control = screen.get_child(screen.get_child_count() - 1)
 		var drawn: Script = savers.get(name)
 		check("Preview plays %s over the screen" % name, saver.get_script() == drawn if drawn != null else saver.get_child(0) is ColorRect, true)
-		check("%s is a cover screen" % name, _extends(saver.get_script(), COVER), true)
+		check("%s is a Saver" % name, saver is Saver, true)
 		await create_timer(1.0).timeout
 		check("%s fills the screen" % name, saver.size, screen.size)
 		var key := InputEventKey.new()
@@ -57,10 +56,3 @@ func run() -> void:
 	screen.queue_free()
 	state.queue_free()
 
-
-func _extends(script: Script, base: Script) -> bool:
-	while script != null:
-		if script == base:
-			return true
-		script = script.get_base_script()
-	return false

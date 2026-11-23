@@ -1,10 +1,10 @@
 extends PropertyPage
 ## Display > Screen Saver: the screensaver list. Preview plays the chosen screensaver over the whole
-## screen until a key or a click. Apply sets it.
+## screen until a key, a click or a mouse move. Apply sets it.
 
 ## The screensavers that Preview draws, by the name that Win95 shows: each a script in win95/savers/
-## that extends cover_screen.gd and draws over its whole rect. A name in [member savers] without one
-## shows black.
+## that extends [Saver] and draws over its whole rect. A name in [member savers] without one shows
+## black.
 const SAVERS: Dictionary[String, Script] = {
 	"3D Pipes": preload("res://win95/savers/3d_pipes.gd"),
 	"Blank Screen": preload("res://win95/savers/blank_screen.gd"),
@@ -14,7 +14,6 @@ const SAVERS: Dictionary[String, Script] = {
 	"Mystify Your Mind": preload("res://win95/savers/mystify_your_mind.gd"),
 	"Scrolling Marquee": preload("res://win95/savers/scrolling_marquee.gd"),
 }
-const _COVER := preload("res://win95/cover_screen.gd")
 const _NONE := "(None)"
 
 ## The screensavers that the list offers after (None), by the name that Win95 shows.
@@ -77,7 +76,7 @@ func _play_preview() -> void:
 
 
 func _black() -> Control:
-	var cover: Control = _COVER.new()
+	var cover := Saver.new()
 	var black := ColorRect.new()
 	black.color = Color.BLACK
 	black.mouse_filter = Control.MOUSE_FILTER_IGNORE

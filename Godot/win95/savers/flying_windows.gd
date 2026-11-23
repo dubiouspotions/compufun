@@ -1,7 +1,7 @@
-extends "res://win95/cover_screen.gd"
+extends Saver
 ## The Flying Windows screensaver: Windows flags fly out of the middle of a black screen towards the
-## viewer, growing as they come, and a new one starts far away when one leaves the screen. Any key or
-## click ends it.
+## viewer, growing as they come, and a new one starts far away when one leaves the screen. Any key,
+## click or mouse move ends it.
 
 ## How many flags fly at once.
 var density: int = 20
