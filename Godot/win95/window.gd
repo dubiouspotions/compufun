@@ -32,8 +32,11 @@ var is_minimized := false
 ## True while it fills the desktop above the taskbar.
 var is_maximized := false
 
-## The message box that this window waits on (see message_box.gd belong_to), or null. While it is
-## open, a press on the window goes no further and brings the box back.
+## Plays when a press on the window that this one blocks brings it back (see [method belong_to]).
+@export var blocked_sound: AudioStream = preload("res://win95/sounds/ding.ogg")
+
+## The modal window that this one waits on, such as a message box, or null. While it is open, a
+## press on this window goes no further and brings that one back.
 var blocked_by: Control
 
 var _outline: ColorRect
@@ -108,6 +111,33 @@ func minimize() -> void:
 func restore() -> void:
 	is_minimized = false
 	show()
+
+
+## Makes this window modal to [param window], as Win95's dialogs are to their program: it moves to
+## the middle of the window, and until it closes, a press on the window brings this one back with
+## [member blocked_sound] instead. Call it once this window has its size.
+func belong_to(window: Control) -> void:
+	window.set(&"blocked_by", self)
+	closed.connect(func() -> void:
+		if window.get(&"blocked_by") == self:
+			window.set(&"blocked_by", null), CONNECT_ONE_SHOT)
+	position = (window.position + (window.size - size) / 2).floor()
+
+
+## Brings this window to the front with [member blocked_sound], as a press on the window that it
+## blocks does.
+func bring_back() -> void:
+	var desktop := get_parent()
+	if desktop != null and desktop.has_method(&"activate"):  # not by type: Win95Desktop needs the Game autoload
+		desktop.call(&"activate", self)
+		if blocked_sound != null:
+			desktop.call(&"play_sound", blocked_sound, desktop)
+	_focus_default()
+
+
+## Gives the keyboard to the window's default control; the base gives it to none.
+func _focus_default() -> void:
+	pass
 
 
 # Siblings later in the tree draw on top, so they get the press instead.
