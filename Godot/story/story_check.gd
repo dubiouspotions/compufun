@@ -17,8 +17,9 @@ const MAX_FLAGS_TRIED: int = 10
 ## Who sets and who checks each flag of [param week]: flag name to
 ## {"set_by": PackedStringArray, "checked_by": PackedStringArray}. Each entry starts with the file
 ## path, such as "res://story/errands/0102_skater_bro.errand (0102/drop-off/1 > "Did you...")". A
-## corruption sign checks its flag sign_<id>, Game checks every <customer>_runs_cambion, and the [x]
-## sets and Game checks every gone_<customer>.
+## corruption sign checks its flag sign_<id>, Game checks every <customer>_runs_cambion, the [x]
+## sets and Game checks every gone_<customer>, and an errand's problem sets its replaced_flag and
+## the flags of its drop_off_signs.
 static func flag_index(week: StoryFiles.Week) -> Dictionary:
 	var index := {}
 	for d: Day in week.days:
@@ -29,6 +30,11 @@ static func flag_index(week: StoryFiles.Week) -> Dictionary:
 			_note(index, StringName("sign_" + id), "set_by", day_path + " (close signs)")
 		for errand: Errand in d.errands:
 			_note_when(index, errand.when, errand.file)
+			var problem := errand.problem
+			if problem != null and problem.replaced_flag != &"":
+				_note(index, problem.replaced_flag, "set_by", "%s (replaced_flag)" % problem.resource_path)
+			for id: StringName in problem.drop_off_signs if problem != null else ([] as Array[StringName]):
+				_note(index, StringName("sign_" + id), "set_by", "%s (drop_off_signs)" % problem.resource_path)
 			for c: Conversation in errand.conversations:
 				_scan(index, c, "%s (%s)" % [errand.file, c.id])
 	var signs := sign_titles()
