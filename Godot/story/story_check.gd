@@ -48,7 +48,8 @@ static func flag_index(week: StoryFiles.Week) -> Dictionary:
 ## brings no computer and has no lines at all), an errand code whose alternatives can all fail on
 ## its day, a line's mood that the customer's person has no portrait for or that has no
 ## voices/moods/<mood>.tres, a [leaving] line that the conversation can go on after (it plays in the
-## dialogue box), and a problem without repair mechanics (no broken_part and no software_check).
+## dialogue box), a problem without repair mechanics (no res://problems/<id>.tres, or one with no
+## broken_part, software_check or blocker), and a problem file that no errand names.
 static func missing_links(week: StoryFiles.Week) -> PackedStringArray:
 	var found := PackedStringArray()
 	var index := flag_index(week)
@@ -69,6 +70,14 @@ static func missing_links(week: StoryFiles.Week) -> PackedStringArray:
 				found.append("%s: errand code %s can come with nobody on day %d: %s." % [alternatives[0].file, code, d.number, failing])
 		for errand: Errand in d.errands:
 			_check_errand(errand, found)
+	var named := {}
+	for d: Day in week.days:
+		for errand: Errand in d.errands:
+			if errand.problem != null:
+				named[errand.problem.short_name] = true
+	for id: StringName in week.problems:
+		if not named.has(id):
+			found.append("%s%s.problem: no errand names the problem %s." % [StoryFiles.PROBLEMS_DIR, id, id])
 	return found
 
 
@@ -108,7 +117,9 @@ static func _check_errand(errand: Errand, found: PackedStringArray) -> void:
 	if not arrives and not (errand.brings == Errand.Brings.NOTHING and lines == 0):
 		found.append("%s has no drop-off conversation." % errand.file)
 	var problem := errand.problem
-	if problem != null and problem.broken_part == null and problem.software_check == null and problem.blocker == null:
+	if problem != null and not problem.resource_path.ends_with(".tres"):
+		found.append("%s names the problem %s, which has no repair mechanics: no %s%s.tres." % [errand.file, problem.short_name, StoryFormat.PROBLEMS_DIR, problem.short_name])
+	elif problem != null and problem.broken_part == null and problem.software_check == null and problem.blocker == null:
 		found.append("%s names the problem %s, which has no repair mechanics: no broken_part, software_check or blocker." % [errand.file, problem.resource_path])
 
 

@@ -1,0 +1,11 @@
+post-it: Computer doesn't start - just a bunch of text
+symptoms:
+	Non-System disk error at startup
+	Floppy in drive A:
+software steps:
+	Eject the floppy from drive A:
+	Press a key, or restart, with no floppy in A:
+notes:
+	Error message when booting "Non-System disk or disk error
+	Replace and press any key when ready"
+	In the game, the drive's eject button sticks out and pulses while a diskette is in A:; a click ejects it (Mascolls, #204).

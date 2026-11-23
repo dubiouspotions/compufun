@@ -1,0 +1,15 @@
+post-it: Stops before Windows starts
+symptoms:
+	Memory test fails at startup
+		shows: the BIOS memory test counts up, stops at the same point whichever module is bad, and says "Memory Test Fail"
+	Halts before Windows
+		shows: "System Halted", until the computer is switched off
+hardware steps:
+	Remove the computer shell
+	Swap one RAM module for a new one from storage
+	Switch it on: if the memory test passes, the module that you took out was bad
+	If the test still fails, put that module back and swap the other one
+	Throw the bad module in the trash
+	Remount the shell
+notes:
+	Nothing on the modules shows which one is bad: the player finds it by swapping one and switching the computer on.

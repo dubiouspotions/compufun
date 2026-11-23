@@ -12,9 +12,5 @@ fixed_value = "3D Pipes"
 [resource]
 script = ExtResource("1_3a78c")
 short_name = &"screensaver"
-perceived_issue = "Wants a good-looking screensaver"
 location = 1
-symptoms = PackedStringArray("No screensaver set")
-hardware_steps = PackedStringArray()
-software_steps = PackedStringArray("Right-click the desktop and pick Properties", "Open the Screen Saver tab", "Choose 3D Pipes", "Click Apply or OK")
 software_check = SubResource("Resource_syfmg")

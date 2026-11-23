@@ -1,0 +1,10 @@
+post-it: Blue screen of death
+symptoms:
+	Blue screen at startup
+	Hard drive clicks
+hardware steps:
+	Remove the computer shell
+	Remove the hard drive, throw it in the trash
+	Get a new hard drive from storage
+	Install the hard drive
+	Remount the shell

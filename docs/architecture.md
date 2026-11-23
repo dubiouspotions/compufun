@@ -33,9 +33,9 @@ Godot/               the Godot project: everything the game loads
   sounds/            sound effects: the audio files, and one SoundSet .tres per effect (its takes,
                      volume and pitch range), exported where the effect happens; hum.gd, a quiet loop
                      that plays while a thing runs (the storage bulb, a PC's fans, a CRT)
-  problems/          one .tres per problem
+  problems/          one .tres per problem: its mechanics (its text is in story/problems/)
   corruption/        one scene per corruption sign (<id>.tscn); corruption_sign.gd is their base, corruption_signs.gd loads them all into the shop
-  story/             the story files (docs/dialogue.md): days/, errands/ and bible/; day.gd and errand.gd, the Day and Errand they load into; story_format.gd reads and writes them, story_files.gd loads the week with a writer's drafts over it, story_check.gd finds its missing links
+  story/             the story files (docs/dialogue.md): days/, errands/, problems/ and bible/; day.gd and errand.gd, the Day and Errand they load into; story_format.gd reads and writes them, story_files.gd loads the week with a writer's drafts over it, story_check.gd finds its missing links
   endings/           one Ending per way the week can end (ending.gd): finale.tres (the default), pipes.tres (off)
   finale/            the finale, the default ending (and from the F2 World tab): finale.tscn (the corruption, the bluescreen, the credits), host_boot.gd (the player's own computer, faked: its restart and its error), apple_logo.svg, finale_text.tres (all its text)
   ui/                loading screen, dialogue overlay, phone call (whom to call for a pickup), post-it label (the Workview post-it's text), carried printout (the printout that the player carries: low on the left, or raised on the right side of the view and beside the CompuFunDB screen), end of day (the close-the-shop question, in the game's panel or, from day 4's warp, a Win95 message box; the night between two days, "DAY N" drawn at 480 × 270 through psx_post like the world), window_bluescreen.tscn (the bluescreen over the window, in the finale), screen view, bench screen, CRT screen and tube, debug menu, F9 screen, theme.tres

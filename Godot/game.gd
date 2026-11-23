@@ -312,6 +312,8 @@ func load_story(drafts: Dictionary[String, String] = {}) -> PackedStringArray:
 				errors.append("The game can't go on in the new week, so it plays the old one: " + refused)
 		if week == loaded:
 			story_drafts = drafts.duplicate()
+	if week != loaded and week != null and loaded.errors.is_empty():
+		week.fill_problems()  # the refused week filled the shared Problem resources already
 	story_errors = errors
 	return errors
 

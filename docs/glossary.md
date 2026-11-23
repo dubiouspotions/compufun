@@ -146,8 +146,11 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Errand code**: The four digits that start an errand's file name: the day and the errand's place in it, so `0503_nice_guy.errand` is day 5, the third errand. Two errands with one code are alternatives; the first whose condition matches comes.
 *Avoid:* slot (a place on the work mat), timeslot, id.
 
-**Story file**: A plain-text file in `Godot/story/` that writers edit in the Story Lab: a day (`days/day_<n>.day`), an errand (`errands/<code>_<customer>.errand`) or a bible page (`bible/*.md`). The format is in `docs/dialogue.md`.
+**Story file**: A plain-text file in `Godot/story/` that writers edit in the Story Lab: a day (`days/day_<n>.day`), an errand (`errands/<code>_<customer>.errand`), a problem file (`problems/<id>.problem`) or a bible page (`bible/*.md`). The format is in `docs/dialogue.md`.
 *Avoid:* script, timeline, data file.
+
+**Problem file**: The story file of one computer problem, `story/problems/<id>.problem`: the post-it, the symptoms and how each shows, the repair steps and notes. The mechanics stay in `problems/<id>.tres`; the game fills the text into it as the week loads.
+*Avoid:* problem text, problem resource (that is the `.tres`).
 
 **Brief**: What an errand or a conversation is for, in plain words, written before its lines. People read it; the game doesn't.
 *Avoid:* intent, synopsis, story.
