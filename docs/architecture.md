@@ -10,7 +10,7 @@ in the same commit as the code. The design, what the parts are and why, is on th
 ```
 Godot/               the Godot project: everything the game loads
   main.tscn          the game: the world viewport, the UI layer, the F9 layer (run/main_scene)
-  export_presets.cfg Web, Windows Desktop, MacOS, Linux; CI exports them by name
+  export_presets.cfg Web, Windows Desktop, MacOS, Linux; CI exports them by name. iOS (docs/ios.md) exports an Xcode project
   default_bus_layout.tres  the audio buses: Master; Shop, everything heard from the shop (it pans right while the player is in the storage room), fed by Voice for the customers' voices, Win95, Street (muffled until the door opens) and Room (the shop's reverb); Storage, the storage room's reverb
   game.gd            the Game autoload
   shaders/           psx_world.gdshader (its body in psx_world.gdshaderinc; psx_world_layered.gdshader draws it in the transparent pass, in sorting_offset order), psx_post.gdshader, psx_post_world.tres (the world's post material); pulse_ring.gdshader (the beating ring around a panel screw that can turn)
