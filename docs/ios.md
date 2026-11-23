@@ -60,17 +60,21 @@ Export into an empty folder: an export over an old one logs errors about the ass
   nothing lost.
 - **Touch:** Godot turns a tap into a left click, so buttons, hotspots, the nav arrows, dragging
   parts and cables, and the Win95 drag and drop work. A hardware keyboard reaches F2.
+- **Trackpad and keyboard** (`ui/touch/`): while the last input was a finger, an open Screen View
+  or CompuFunDB shows a trackpad instead of taking fingers on the glass. One finger moves the
+  cursor, a tap clicks (two taps double-click), a long press drags, two fingers tap a right click or
+  drag to scroll. Its KEYS button shows a PC keyboard with sticky Ctrl, Alt and Shift
+  (Ctrl+Alt+Del: Ctrl, Alt, Del), which sends real key events. Both panels move by their grip
+  bars and keep their places in `user://touch_controls.cfg`. Unverified on a device.
 
 ## What a real port needs
 
 | Gap | Size |
 | --- | --- |
 | Device: heat over a whole week's play, the frame rate in the Screen View and the storage room, older iPhones | 0.5 day |
-| Right-click as a long press (`win95/mouse_input.gd`): context menus, Close Program. The Email Virus fix needs Close Program | 0.5 day |
+| The trackpad and keyboard on a device: gesture feel, panel sizes on a phone | 0.5 day |
 | Hover: hotspot outlines show only under the mouse, which is how the player finds things. Pulse them on a tap that hits nothing, or always | 0.5 to 1 day |
-| CompuFunDB scrolls only with the wheel or the keys: drag to scroll, or tappable arrows | 0.5 day |
-| Small fixes: the double-click radius of 2 px (`mouse_input.gd`), the printout trash's `is_hovered()` (`carried_printout.gd:99`), Ctrl+Alt+Del on screen | 0.5 day |
-| Typing in the Win95 desktop (renaming files for Noimages): check that the iOS keyboard shows for a LineEdit inside the screen buffer | 0.5 day, unverified |
+| Small fixes: the printout trash's `is_hovered()` (`carried_printout.gd:99`) | 0.5 day |
 | Phone Screen View: the Win95 desktop is too small to read or tap on a phone (below) | 2 to 4 days, design |
 | CI job: export, archive, TestFlight upload | 1 day |
 
