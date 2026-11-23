@@ -1,19 +1,13 @@
 extends Control
 ## The picture at the top of Display > Appearance: an inactive window, an active window and a
-## message box, drawn at Win95's pixel positions in the colours of [member palette]. The desktop,
-## the title bars and the text keep Windows Standard's colours, which Win95Palette doesn't hold.
+## message box, drawn at Win95's pixel positions in the colours of [member palette]. The desktop
+## keeps Windows Standard's colour, which Win95Palette doesn't hold.
 
 const _BOLD := preload("res://win95/theme/fonts/w95fa_pixel_bold.ttf")
-const _ATLAS := preload("res://win95/theme/atlas.png")
 const _MINIMIZE := Rect2(60, 31, 6, 8)
 const _MAXIMIZE := Rect2(67, 31, 9, 9)
 const _CLOSE := Rect2(51, 31, 8, 7)
 const _DESKTOP := Color("#008080")
-const _ACTIVE_TITLE := Color("#000080")
-const _INACTIVE_TITLE := Color("#808080")
-const _INACTIVE_TITLE_TEXT := Color("#c0c0c0")
-const _GRAY_TEXT := Color("#808080")
-const _SELECTED := Color("#000080")
 
 ## The colours to draw with. Changing its colours redraws the picture.
 var palette: Win95Palette:
@@ -49,23 +43,23 @@ func _draw() -> void:
 	draw_rect(Rect2(2, 2, 351, 189), _DESKTOP)
 
 	_bevel(Win95Bevel.Kind.WINDOW, Rect2(10, 10, 317, 151))
-	_title(Rect2(14, 14, 309, 18), "Inactive Window", _INACTIVE_TITLE, _INACTIVE_TITLE_TEXT)
+	_title(Rect2(14, 14, 309, 18), "Inactive Window", palette.inactive_title_color, palette.inactive_title_text_color)
 
 	_bevel(Win95Bevel.Kind.WINDOW, Rect2(14, 33, 335, 133))
-	_title(Rect2(18, 37, 327, 18), "Active Window", _ACTIVE_TITLE, Color.WHITE)
-	_text(Vector2(25, 58), "Normal", Color.BLACK)
-	_text(Vector2(71, 58), "Disabled", _GRAY_TEXT)
-	draw_rect(Rect2(116, 56, 54, 17), _SELECTED)
-	_text(Vector2(123, 58), "Selected", Color.WHITE)
+	_title(Rect2(18, 37, 327, 18), "Active Window", palette.active_title_color, palette.active_title_text_color)
+	_text(Vector2(25, 58), "Normal", palette.button_text_color)
+	_text(Vector2(71, 58), "Disabled", palette.gray_text_color)
+	draw_rect(Rect2(116, 56, 54, 17), palette.selection_color)
+	_text(Vector2(123, 58), "Selected", palette.selection_text_color)
 	_bevel(Win95Bevel.Kind.FIELD, Rect2(18, 74, 327, 88))
-	_text(Vector2(22, 80), "Window Text", Color.BLACK, _BOLD)
+	_text(Vector2(22, 80), "Window Text", palette.window_text_color, _BOLD)
 	_scroll_bar(Rect2(327, 76, 16, 84))
 
 	_bevel(Win95Bevel.Kind.WINDOW, Rect2(22, 118, 213, 69))
-	_title(Rect2(25, 121, 207, 18), "Message Box", _ACTIVE_TITLE, Color.WHITE, false)
-	_text(Vector2(29, 143), "Message Text", Color.BLACK)
+	_title(Rect2(25, 121, 207, 18), "Message Box", palette.active_title_color, palette.active_title_text_color, false)
+	_text(Vector2(29, 143), "Message Text", palette.button_text_color)
 	_bevel(Win95Bevel.Kind.RAISED, Rect2(92, 157, 72, 24))
-	_text(Vector2(91, 163), "OK", Color.BLACK, _BOLD, 72)
+	_text(Vector2(91, 163), "OK", palette.button_text_color, _BOLD, 72)
 
 
 func _title(r: Rect2, title: String, colour: Color, text_colour: Color, all_buttons := true) -> void:
@@ -81,7 +75,7 @@ func _title(r: Rect2, title: String, colour: Color, text_colour: Color, all_butt
 func _caption_button(r: Rect2, glyph: Rect2) -> void:
 	_bevel(Win95Bevel.Kind.RAISED, r)
 	var at := (r.position + (r.size - glyph.size) / 2).floor()
-	draw_texture_rect_region(_ATLAS, Rect2(at, glyph.size), glyph)
+	draw_texture_rect_region(palette.atlas(), Rect2(at, glyph.size), glyph)
 
 
 func _scroll_bar(r: Rect2) -> void:
@@ -98,7 +92,7 @@ func _scroll_bar(r: Rect2) -> void:
 func _arrow(at: Vector2, up: bool) -> void:
 	for row in 4:
 		var width := 1 + 2 * (row if up else 3 - row)
-		draw_rect(Rect2(at.x + 3 - (width - 1) / 2.0, at.y + row, width, 1), Color.BLACK)
+		draw_rect(Rect2(at.x + 3 - (width - 1) / 2.0, at.y + row, width, 1), palette.button_text_color)
 
 
 func _update_dither() -> void:

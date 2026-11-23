@@ -65,7 +65,7 @@ func _draw() -> void:
 			var text_size := font.get_string_size(str(day), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 			var center := _cell_center(cell / 7 + 1, cell % 7)
 			draw_rect(Rect2((center - Vector2(text_size.x / 2.0 + 2.0, 6.0)).floor(), Vector2(text_size.x + 4.0, 13.0)), selection)
-			color = Color.WHITE
+			color = get_theme_color("font_color", &"IconLabelSelected")
 		_draw_centered(font, font_size, str(day), cell / 7 + 1, cell % 7, color)
 
 

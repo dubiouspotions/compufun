@@ -172,7 +172,7 @@ func _draw_drop_down(ci: RID, b: Rect2, p: Win95Palette) -> void:
 		_draw_arrow(ci, tip + Vector2.ONE, p.highlight_color)
 		_draw_arrow(ci, tip, p.shadow_color)
 	else:
-		_draw_arrow(ci, tip, p.dark_shadow_color)
+		_draw_arrow(ci, tip, p.button_text_color)
 
 
 # The 7 px wide down arrow of scroll and drop-down buttons, from its top left corner.

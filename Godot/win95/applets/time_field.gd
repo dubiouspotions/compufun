@@ -93,7 +93,7 @@ func _draw() -> void:
 		var color := ink
 		if i == segment and has_focus():
 			draw_rect(Rect2(x - 1.0, baseline - font.get_ascent(font_size) + 1.0, width + 2.0, 11.0), (get_theme_stylebox("normal", &"IconLabelSelected") as StyleBoxFlat).bg_color)
-			color = Color.WHITE
+			color = get_theme_color("font_color", &"IconLabelSelected")
 		draw_string(font, Vector2(x, baseline), texts[i], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 	for x in colon_x:
 		draw_string(font, Vector2(x, baseline), ":", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, ink)

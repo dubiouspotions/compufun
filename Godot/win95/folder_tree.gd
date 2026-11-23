@@ -34,6 +34,7 @@ const _ROW_HEIGHT := 17.0
 const _INDENT := 19.0
 const _BOLD := preload("res://win95/theme/fonts/w95fa_pixel_bold.ttf")
 const _WARNING := Color(1.0, 0.85, 0.0)
+static var _palette: Win95Palette = preload("res://win95/theme/palette.tres")
 
 ## The selected item, or -1.
 var selected: int = -1:
@@ -117,7 +118,7 @@ func _draw() -> void:
 		var color := ink
 		if index == selected:
 			draw_rect(Rect2(text_x - 2.0, mid - 7.0, text_width + 4.0, 15.0), highlight)
-			color = Color.WHITE
+			color = get_theme_color("font_color", &"IconLabelSelected")
 		var baseline := mid - floorf(item_font.get_height(font_size) / 2.0) + item_font.get_ascent(font_size)
 		draw_string(item_font, Vector2(text_x, baseline), item.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 	# The boxes last, over the dotted lines that run past them.
@@ -181,7 +182,7 @@ func _dots(from: Vector2, to: Vector2, color: Color) -> void:
 # The 9 x 9 box with a minus, or with a plus while the items under it are hidden.
 func _draw_box(center: Vector2, ink: Color, frame: Color, expanded: bool) -> void:
 	var box := Rect2(center - Vector2(4, 4), Vector2(9, 9))
-	draw_rect(box, Color.WHITE)
+	draw_rect(box, _palette.window_color)
 	draw_rect(box.grow(-0.5), frame, false, 1.0)
 	draw_rect(Rect2(center + Vector2(-2, 0), Vector2(5, 1)), ink)
 	if not expanded:

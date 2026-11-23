@@ -78,6 +78,15 @@ func run() -> void:
 	odd.changed.connect(func() -> void: emits[0] += 1)
 	odd.face_color = Color.RED
 	check("a palette set to the colour it has emits no change", emits[0], 0)
+
+	var hc: Win95Palette = load("res://win95/theme/schemes/high_contrast_black.tres")
+	var theme := (load("res://win95/win95.tres") as Theme).duplicate(true) as Theme
+	hc.paint(theme)
+	check("High Contrast Black paints the labels white", theme.get_color(&"font_color", &"Label"), Color.WHITE)
+	check("and the title bar purple", (theme.get_stylebox(&"panel", &"TitleBar") as StyleBoxFlat).bg_color, hc.active_title_color)
+	var glyphs := hc.atlas().get_image()
+	check("and the check box's inside black", glyphs.get_pixel(48, 3), Color.BLACK)
+	check("and its glyphs white", glyphs.get_pixel(54, 33), Color.WHITE)
 	setup.palette = odd
 	sheet = open(desktop, display)
 	scheme = sheet.find_child("Scheme", true, false)

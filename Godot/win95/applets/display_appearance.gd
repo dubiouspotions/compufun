@@ -4,7 +4,6 @@ extends PropertyPage
 
 const _SHARED_PALETTE := preload("res://win95/theme/palette.tres")
 const _Preview := preload("res://win95/applets/display_scheme_preview.gd")
-const _COLOURS: Array[StringName] = [&"face_color", &"window_color", &"highlight_color", &"light_color", &"shadow_color", &"dark_shadow_color"]
 
 ## The schemes that the drop-down lists, each named by its resource_name; it shows them sorted.
 @export var schemes: Array[Win95Palette] = []
@@ -48,11 +47,10 @@ func scheme_index(palette: Win95Palette, colours: Win95Palette) -> int:
 	if row >= 0:
 		return row
 	for i in _sorted.size():
-		if _COLOURS.all(func(colour: StringName) -> bool: return (_sorted[i].get(colour) as Color).is_equal_approx(colours.get(colour))):
+		if _sorted[i].same_colours(colours):
 			return i
 	return -1
 
 
 func _show(scheme: Win95Palette) -> void:
-	for colour in _COLOURS:
-		_preview.palette.set(colour, scheme.get(colour))
+	_preview.palette.copy_colours(scheme)

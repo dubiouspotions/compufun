@@ -123,7 +123,7 @@ func _draw() -> void:
 		var color := ink
 		if r == selected:
 			draw_rect(Rect2(0, y, size.x, _ROW_HEIGHT), highlight)
-			color = Color.WHITE
+			color = get_theme_color("font_color", &"IconLabelSelected")
 		x = 0.0
 		for i in _columns.size():
 			var width := _width(i, x)

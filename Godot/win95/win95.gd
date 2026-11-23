@@ -26,6 +26,7 @@ const _CRUSH := preload("res://shaders/psx_post.gdshader")
 ## The applet that the desktop's Properties opens. Loaded when used: a preload here cycles.
 const _DISPLAY := "res://win95/applets/display.tres"
 const _SHARED_PALETTE := preload("res://win95/theme/palette.tres")
+const _THEME := preload("res://win95/win95.tres")  # shared by every Win95 scene, so the shared palette paints it
 const _ICONS := "res://win95/theme/icons/"
 ## The meta key on a FileIcon that holds its Win95File, or its Applet in the Control Panel.
 const _FILE_META := &"win95_file"
@@ -471,11 +472,10 @@ func _end_hang() -> void:
 	process_mode = Node.PROCESS_MODE_INHERIT
 
 
-# Every bevel draws with the one shared palette; the desktop on screen sets it, also on entering the tree.
+# Every bevel and the theme draw with the one shared palette; the desktop on screen sets it, also on entering the tree.
 func _apply_palette(palette: Win95Palette) -> void:
-	var source := _stock_palette if palette == null or palette == _SHARED_PALETTE else palette
-	for colour in [&"face_color", &"window_color", &"highlight_color", &"light_color", &"shadow_color", &"dark_shadow_color"]:
-		_SHARED_PALETTE.set(colour, source.get(colour))
+	_SHARED_PALETTE.copy_colours(_stock_palette if palette == null or palette == _SHARED_PALETTE else palette)
+	_SHARED_PALETTE.paint(_THEME)
 
 
 func _apply_sound() -> void:
