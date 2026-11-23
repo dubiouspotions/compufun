@@ -38,6 +38,7 @@
 [ext_resource type="Resource" path="res://people/nice_lady/person.tres" id="40_nim50"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="41_n1bqt"]
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_hamster.png" id="sticker_hamster"]
+[ext_resource type="Texture2D" path="res://customers/nice_lady/hamsters.png" id="wallpaper_hamsters"]
 
 [sub_resource type="Resource" id="Resource_kwjlb"]
 script = ExtResource("2_s7342")
@@ -211,6 +212,7 @@ children = Array[Resource]([SubResource("Resource_271kn")])
 
 [sub_resource type="Resource" id="Resource_btamx"]
 script = ExtResource("34_rf5n6")
+wallpaper = ExtResource("wallpaper_hamsters")
 drive_c = Array[ExtResource("5_rv54o")]([SubResource("Resource_p7pkh"), SubResource("Resource_60ohp")])
 installed_apps = PackedStringArray("Calculator", "Notepad")
 registered_owner = "Bob"

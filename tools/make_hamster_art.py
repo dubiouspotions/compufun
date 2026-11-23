@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
-"""Draws the nice lady's hamster sticker, on her computer's case.
+"""Draws the nice lady's hamster pictures: the sticker on her computer's case, and the tile of her
+Win95 wallpaper in the 16 VGA colours that her display adapter shows.
 Usage: make_hamster_art.py Godot"""
+import math
 import os
 import random
 import struct
 import sys
 import zlib
+
+# The 16 colours of a Standard VGA display adapter.
+BLACK, MAROON, OLIVE, TEAL, SILVER = (0, 0, 0), (128, 0, 0), (128, 128, 0), (0, 128, 128), (192, 192, 192)
+WHITE, YELLOW, FUCHSIA = (255, 255, 255), (255, 255, 0), (255, 0, 255)
+
 
 class Canvas:
     def __init__(self, w, h, fill):
@@ -77,8 +84,28 @@ def sticker():
     return c
 
 
+def wallpaper():
+    """Hamsters and sunflower seeds on the desktop's teal, in VGA colours; the fur and the pink are
+    dithers, as 16 colours can't show them."""
+    c = Canvas(128, 128, TEAL)
+    gold = lambda x, y: YELLOW if (x + y) % 2 else OLIVE
+    pink = lambda x, y: FUCHSIA if (x + y) % 2 else WHITE
+    for cx, cy in ((32, 34), (96, 98)):
+        hamster(c, cx, cy, 14, MAROON, gold, WHITE, pink, BLACK)
+    for sx, sy, tilt in ((80, 24, 0.5), (106, 42, -0.4), (20, 86, 0.3), (46, 110, -0.6), (68, 66, 0.1)):
+        def seed(x, y, sx=sx, sy=sy, tilt=tilt):
+            u = (x - sx) * math.cos(tilt) + (y - sy) * math.sin(tilt)
+            v = -(x - sx) * math.sin(tilt) + (y - sy) * math.cos(tilt)
+            return (u / 1.8) ** 2 + (v / 3.6) ** 2 <= 1.0
+        c.shape(seed, BLACK)
+        c.set(sx, sy, SILVER)
+        c.set(sx, sy - 1, SILVER)
+    return c
+
+
 def main(godot):
     sticker().save(os.path.join(godot, "materials/textures/sticker_hamster.png"))
+    wallpaper().save(os.path.join(godot, "customers/nice_lady/hamsters.png"))
 
 
 main(sys.argv[1])
