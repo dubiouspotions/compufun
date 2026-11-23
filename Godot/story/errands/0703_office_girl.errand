@@ -3,3 +3,21 @@ computer: none
 when: gone_young_entrepreneur
 brief:
 	The Young entrepreneur was deleted on day 6: the Office girl comes without a computer, desperate.
+
+== drop-off
+(despair) HE IS GONE!
+- Woha! Calm down! Who is gone?
+- Your computer? Or...?
+(irritated03) NICK! GODDAMNIT!
+(irritated02) He didn't show up to work and when I went by his apartment it.. wasn't THERE anymore. The building had just VANISHED! And everyone at work pretends he doesn't exist!
+(despair) But he was here earlier this week! RIGHT!? Brown hair in a bun, always wears white shirts. You remember?
+- I mean, yeah. He was just here the other day. Why do you think he's gone? I'm sure he's...fine!
+	(happy) Oh, thank god! I'm not insane: You remember him!
+	(thinking) He didn't show up last night when we were supposed to... nevermind.
+	(irritated01) He just doesn't usually disappear like this. And the weirdest thing is that noone in the office remembers him.
+	(despair) I feel like I'm going insane here. I NEED TO FIND HIM
+- Nick, who?
+	(despair) Don't you dare not remember him!
+	(irritated02) I KNOW you do!!
+	(irritated03) I'M NOT CRAZY
+	(despair) I'M NOT!
