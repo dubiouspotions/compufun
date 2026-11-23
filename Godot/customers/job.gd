@@ -32,6 +32,9 @@ var lying: bool = false
 var case_open: bool = false
 ## The id of the part that the BIOS memory test counts.
 const RAM: StringName = &"ram"
+
+## What stops the BIOS before it shows a picture: the first part that the power-on self test misses.
+enum Fault { NONE, NO_CPU, NO_MEMORY, NO_VIDEO }
 ## How many screws hold the side panel.
 const PANEL_SCREWS: int = 2
 ## The screws of the side panel: true while it is in. The panel comes off only when all are out.
@@ -54,6 +57,9 @@ var hardware_fixed: bool:
 var software_fixed: bool = false
 ## The computer is switched on.
 var powered: bool = false
+## The seconds that the computer has run with a CPU but no fan on it; Game switches it off at
+## Game.OVERHEAT_SECONDS. 0 while it is off.
+var heat_seconds: float = 0.0
 ## Game.setup_for has broken the computer's running copy as the problem says.
 var broken: bool = false
 
@@ -118,6 +124,28 @@ func memory_share() -> float:
 	if slots.is_empty():
 		return 1.0
 	return slots.filter(func(place: Part) -> bool: return places.has(place)).size() / float(slots.size())
+
+
+## True when a piece of the part [param part_id] is in, in any place that takes it.
+func has(part_id: StringName) -> bool:
+	return places.keys().any(func(place: Part) -> bool: return place.piece_part().id() == part_id)
+
+
+## The first part, in the order that the BIOS checks them, whose absence stops it before it shows a
+## picture: NO_CPU (nothing happens but the fans), NO_MEMORY or NO_VIDEO (the PC speaker beeps).
+func post_fault() -> Fault:
+	if not has(&"cpu"):
+		return Fault.NO_CPU
+	if not has(RAM):
+		return Fault.NO_MEMORY
+	if not has(&"gpu"):
+		return Fault.NO_VIDEO
+	return Fault.NONE
+
+
+## True while the computer runs with a CPU but no fan on it: it heats up (see [member heat_seconds]).
+func overheats() -> bool:
+	return powered and has(&"cpu") and not has(&"fan")
 
 
 ## True while a broken RAM piece is in: the BIOS memory test fails.

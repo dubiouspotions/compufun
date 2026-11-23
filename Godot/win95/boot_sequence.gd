@@ -15,6 +15,9 @@ signal _any_key
 @export var floppy_in_a: bool = false
 ## What the BIOS says when the floppy in A: can't start the computer.
 @export_multiline var disk_error: String = "Non-System disk or disk error\nReplace and press any key when ready"
+## What the BIOS says when the hardware has no hard drive to start from; the computer then halts
+## until it is switched off.
+@export_multiline var no_disk_text: String = "DISK BOOT FAILURE, INSERT SYSTEM DISK AND PRESS ENTER"
 ## False: no key or click skips the boot; they go on to the nodes behind it.
 @export var skippable: bool = true
 ## Starts as soon as the node is ready; turn off to start it with play().
@@ -143,6 +146,11 @@ func play() -> void:
 		await _run_summary()
 	if floppy_in_a:
 		await _disk_error()
+	if boots_windows and hardware.hard_drive == "":
+		_halted = true  # a skip doesn't get past it
+		_post.show()
+		_print("\n" + no_disk_text)
+		return
 	if boots_windows and hardware.memory_kb < hardware.windows_needs_kb:
 		_halted = true  # a skip doesn't get past it
 		_post.show()

@@ -56,6 +56,10 @@ const ENDINGS_FOLDER: String = "res://endings/"
 ## Snapshot keys that the game no longer has, which [method restore] skips so that old F9 reports
 ## still restore: "stored" held the parts in the storage bin, which no longer takes parts.
 const RETIRED_KEYS: Array[String] = ["stored"]
+## The seconds that a computer runs without a fan on its CPU before it switches itself off; for the
+## last ALARM_SECONDS of them ([method alarms]), the PC speaker beeps.
+const OVERHEAT_SECONDS: float = 8.0
+const ALARM_SECONDS: float = 3.0
 ## What a pickup visitor says when no PICKUP conversation of theirs matches: one of its lines, the
 ## same one for each customer ([method _thanks]).
 const THANKS: Conversation = preload("res://customers/conversations/thanks.tres")
@@ -617,6 +621,7 @@ func set_powered(job: Job, on: bool) -> void:
 	if on and not can_power_on(job):
 		return
 	job.powered = on
+	job.heat_seconds = 0.0
 	changed.emit()
 
 
@@ -654,16 +659,10 @@ func eject_floppy(job: Job) -> void:
 	changed.emit()
 
 
-## True when [param job] can switch on: every place holds a piece, except that of the places that
-## take the same part, such as the RAM slots, one is enough, and no piece lies misplaced. It runs
-## lying and open too, for testing.
+## True when [param job] can switch on: its motherboard is in. Whatever else is missing shows once
+## it runs (Job.post_fault, Job.overheats). It runs lying and open too, for testing.
 func can_power_on(job: Job) -> bool:
-	if not job.misplaced.is_empty():
-		return false
-	for place: Part in Part.every():
-		if job.piece(place) == null and not job.places.keys().any(func(other: Part) -> bool: return other.piece_part() == place.piece_part()):
-			return false
-	return true
+	return job.has(&"motherboard")
 
 
 # --- Hardware repair (wiki: Hardware Repair). Each move returns false and changes nothing when the
@@ -1419,6 +1418,7 @@ func restore(state: Dictionary) -> String:
 
 
 func _process(delta: float) -> void:
+	_heat(delta)
 	if phase == Phase.CALLING:
 		return
 	if phase == Phase.OPEN and visitor == null and _has_room():
@@ -1427,6 +1427,25 @@ func _process(delta: float) -> void:
 		_waited += delta
 		if _try_arrival():
 			changed.emit()
+
+
+# Runs the clock of each computer without a fan on its CPU: its alarm starts, and it switches off.
+func _heat(delta: float) -> void:
+	for job: Job in jobs:
+		if not job.overheats():
+			continue
+		var alarmed := alarms(job)
+		job.heat_seconds += delta
+		if job.heat_seconds >= OVERHEAT_SECONDS:
+			set_powered(job, false)
+		elif alarms(job) != alarmed:
+			changed.emit()
+
+
+## True while [param job] beeps its overheat alarm: it has run without a fan on its CPU for more than
+## OVERHEAT_SECONDS - ALARM_SECONDS.
+func alarms(job: Job) -> bool:
+	return job.overheats() and job.heat_seconds >= OVERHEAT_SECONDS - ALARM_SECONDS
 
 
 ## The first customer comes in [member Day.first_wait_seconds] after the shop opens; each next one

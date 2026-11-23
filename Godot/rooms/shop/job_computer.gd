@@ -32,6 +32,11 @@ const _HOTSPOT := preload("res://rooms/hotspot.tscn")
 ## The power light's colour while the computer is on, and while it is off.
 @export var power_on_color: Color = Color(0.3, 1.0, 0.3)
 @export var power_off_color: Color = Color(0.08, 0.16, 0.08)
+## The PC speaker's beep codes, seconds on, then off, repeated: without memory, without a video card,
+## and the alarm of a CPU without a fan (Game.alarms).
+@export var no_memory_beeps: PackedFloat32Array = [0.9, 0.5]
+@export var no_video_beeps: PackedFloat32Array = [0.9, 0.3, 0.2, 0.2, 0.2, 0.2, 0.2, 1.5]
+@export var overheat_beeps: PackedFloat32Array = [0.1, 0.06]
 
 ## The job that this computer shows. Set once, before the computer enters the tree.
 var job: Job
@@ -276,3 +281,15 @@ func _sync_outline() -> void:
 func _sync_power() -> void:
 	(_power_light.material_override as StandardMaterial3D).albedo_color = power_on_color if powered else power_off_color
 	_tower.running = powered
+	_tower.beeps = _beeps()
+
+
+func _beeps() -> PackedFloat32Array:
+	if not powered or job == null:
+		return []
+	match job.post_fault():
+		Job.Fault.NO_MEMORY:
+			return no_memory_beeps
+		Job.Fault.NO_VIDEO:
+			return no_video_beeps
+	return overheat_beeps if Game.alarms(job) else PackedFloat32Array()

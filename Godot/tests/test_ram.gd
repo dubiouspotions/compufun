@@ -77,7 +77,7 @@ func run() -> void:
 	job = game.jobs[0]
 	job.places.erase(slot_1)
 	job.places.erase(slot_2)
-	check("no RAM: no power", game.can_power_on(job), false)
+	check("no RAM: it powers on, but the BIOS beeps without a picture", [game.can_power_on(job), job.post_fault()], [true, Job.Fault.NO_MEMORY])
 
 	# The boot: a broken module halts the memory test; a good one boots on.
 	await process_frame  # the root enters the tree

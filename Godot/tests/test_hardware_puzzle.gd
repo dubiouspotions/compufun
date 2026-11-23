@@ -23,7 +23,7 @@ func run() -> void:
 	check("five pieces lie on wrong places", job.misplaced.size(), 5)
 	check("the hard drive lies on the CPU socket", job.misplaced[cpu].part, drive)
 	check("not fixed at drop-off", job.hardware_fixed, false)
-	check("it doesn't start", game.can_power_on(job), false)
+	check("it switches on, but without a CPU nothing starts", [game.can_power_on(job), job.post_fault()], [true, Job.Fault.NO_CPU])
 
 	game.focus_job(job)
 	game.go_to_view(&"Workview")
@@ -78,7 +78,7 @@ func run() -> void:
 	game.turn_screw(job, 0)
 	game.turn_screw(job, 1)
 	check("closed and screwed: fixed", job.hardware_fixed, true)
-	check("it starts", game.can_power_on(job), true)
+	check("it starts", [game.can_power_on(job), job.post_fault()], [true, Job.Fault.NONE])
 
 	job.hardware_fixed = false
 	check("breaking it again lays the pieces wrong again", [job.misplaced.size(), job.piece(cpu)], [5, null])

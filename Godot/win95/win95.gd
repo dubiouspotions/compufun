@@ -208,15 +208,21 @@ func _on_booted() -> void:
 	_listings[_icons] = Listing.new("Desktop", null, &"desktop", func() -> Array: return _state.setup.desktop, true, &"desktop")
 	_fill(_icons)
 	_apply_sound()
-	_no_signal.hide()
 	if is_instance_valid(_boot):
 		_boot.queue_free()
+	if _state.job != null and _state.job.post_fault() != Job.Fault.NONE:
+		pointer_visible = false
+		_no_signal.show()  # the BIOS stops before the video card sends a picture
+		return
+	_no_signal.hide()
 	_boot = _BOOT.instantiate()
 	_boot.floppy_in_a = setup.floppy_in_a
 	if _state.job != null:
 		var computer := _state.job.customer.computer
 		var hardware: Hardware = computer.hardware.duplicate() if computer != null and computer.hardware != null else Hardware.new()
 		hardware.memory_kb = int(hardware.memory_kb * _state.job.memory_share())
+		if not _state.job.has(&"hard_drive"):
+			hardware.hard_drive = ""
 		_boot.hardware = hardware
 		_boot.memory_fails = _state.job.memory_fails()
 	_floppy_heard = setup.floppy_in_a
