@@ -1,7 +1,8 @@
 extends VBoxContainer
 ## The Signs tab of the debug menu: one switch per corruption sign, grouped Early, Mid and Late as
-## the wiki page groups them. ON starts the sign (stage 1) and allows it; OFF takes it back (stage
-## 0). A sign with more stages also shows its stage buttons. Changes last until the game quits.
+## the wiki page groups them, with how each looks and what to do to see it. ON starts the sign
+## (stage 1) and allows it; OFF takes it back (stage 0). A sign with more stages also shows its stage
+## buttons. Changes last until the game quits.
 
 const ON_COLOR: Color = Color(0.55, 1.0, 0.55)
 const OFF_COLOR: Color = Color(0.62, 0.62, 0.66)
@@ -107,6 +108,12 @@ func _row(each: CorruptionSign) -> Control:
 	switch.toggled.connect(_switch.bind(each))
 	line.add_child(switch)
 	box.add_child(line)
+	if not each.description.is_empty():
+		var looks := Label.new()
+		looks.text = each.description
+		looks.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		looks.add_theme_font_size_override(&"font_size", 12)
+		box.add_child(looks)
 	if not each.hint.is_empty():
 		var hint := Label.new()
 		hint.text = each.hint

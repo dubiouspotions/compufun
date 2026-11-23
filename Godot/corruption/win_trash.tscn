@@ -34,6 +34,7 @@ cap_top = false
 script = ExtResource("1_script")
 title = "The trash can blinks into the Recycle Bin"
 timing = 1
+description = "Now and then the trash can blinks into the Recycle Bin for a moment and back into the trash; it still works; only exactly when player are turning away from right view timed so it's visible while turning."
 hint = "The trash can by the work desk, now and then."
 
 [node name="RecycleBin" type="Node3D" parent="."]

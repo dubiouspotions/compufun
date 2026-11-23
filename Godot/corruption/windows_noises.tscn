@@ -15,5 +15,6 @@ pitch_range = Vector2(1, 1)
 [node name="WindowsNoises" type="Node"]
 script = ExtResource("1_script")
 title = "Things in the shop make Windows noises"
+description = "A hotspot click, a part taken or put, and the cable sometimes also play ding, chord or tada. Very seldomly and randomly."
 hint = "Click things in the shop; not every click."
 noises = SubResource("Resource_noises")

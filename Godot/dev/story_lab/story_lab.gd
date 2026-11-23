@@ -50,6 +50,7 @@ var _checkout_chip: Label
 var _week_view: Control
 var _bible: StoryBiblePanel
 var _problem_panel: StoryProblemPanel
+var _sign_panel: StorySignPanel
 var _sections: ButtonGroup
 var _send_panel: StorySendPanel
 var _customers: PopupMenu
@@ -127,6 +128,8 @@ func refresh() -> void:
 	_errand_panel.problems = _week.problems
 	if _problem_panel.visible:
 		_problem_panel.show_problems(_week.problems, drafts)
+	if _sign_panel.visible:
+		_sign_panel.show_signs(_week)
 	_drafts_button.text = "Drafts (%d)" % drafts.paths().size()
 	_send_button.disabled = drafts.paths().is_empty()
 	_send_button.tooltip_text = "Make a GitHub issue of your drafts" if not drafts.to_checkout else "Save to checkout is on: commit the files with git instead"
@@ -180,15 +183,19 @@ func play(errand: Errand, trigger: Conversation.Trigger) -> String:
 	return ""
 
 
-## Shows the "Week" (the board and the picked errand or day), the "Problems" or the "Bible".
+## Shows the "Week" (the board and the picked errand or day), the "Problems", the "Signs" or the
+## "Bible".
 func show_section(section: String) -> void:
 	for button: BaseButton in _sections.get_buttons():
 		button.set_pressed_no_signal((button as Button).text == section)
 	_week_view.visible = section == "Week"
 	_problem_panel.visible = section == "Problems"
+	_sign_panel.visible = section == "Signs"
 	_bible.visible = section == "Bible"
 	if section == "Problems":
 		_problem_panel.show_problems(_week.problems, drafts)
+	elif section == "Signs":
+		_sign_panel.show_signs(_week)
 	elif section == "Bible":
 		_bible.show_pages(drafts)
 
@@ -197,6 +204,11 @@ func show_section(section: String) -> void:
 func open_problem(id: StringName) -> void:
 	show_section("Problems")
 	_problem_panel.open_problem(id)
+
+
+## The Signs section.
+func sign_panel() -> StorySignPanel:
+	return _sign_panel
 
 
 ## The Problems section (for its edits).
@@ -382,6 +394,16 @@ func _build() -> void:
 	_problem_panel.saved.connect(_store_edit)
 	_problem_panel.hide()
 	page.add_child(_problem_panel)
+	_sign_panel = StorySignPanel.new()
+	_sign_panel.day_picked.connect(func(day: int) -> void:
+		show_section("Week")
+		open_day(day))
+	_sign_panel.errand_picked.connect(func(path: String) -> void:
+		show_section("Week")
+		open_errand(path))
+	_sign_panel.problem_picked.connect(open_problem)
+	_sign_panel.hide()
+	page.add_child(_sign_panel)
 	_bible = StoryBiblePanel.new()
 	_bible.saved.connect(_store_page)
 	_bible.hide()
@@ -429,7 +451,7 @@ func _top_bar() -> Control:
 	row.add_child(LabUI.label("Story Lab", 26))
 	row.add_child(LabUI.chip("Game paused", LabUI.ACCENT, 13))
 	_sections = ButtonGroup.new()
-	var sections := LabUI.segmented(PackedStringArray(["Week", "Problems", "Bible"]), _sections)
+	var sections := LabUI.segmented(PackedStringArray(["Week", "Problems", "Signs", "Bible"]), _sections)
 	for button: BaseButton in _sections.get_buttons():
 		button.custom_minimum_size.x = 90
 		button.toggled.connect(func(on: bool) -> void:

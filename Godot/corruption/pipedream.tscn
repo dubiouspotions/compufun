@@ -6,5 +6,6 @@
 script = ExtResource("1_sign")
 title = "The Pipedream grows in the corner"
 timing = 1
+description = "1: the Pipes grow in the corner with the warp. 2: they spread to all of them. They only grow when player aren't looking"
 hint = "1: grows with the day's warp. 2: spreads."
 stages = 2

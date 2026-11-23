@@ -6,4 +6,5 @@
 script = ExtResource("1_script")
 title = "The Windows pointer slips off the screen"
 timing = 1
+description = "When working in windows on the screen on thebench, the Windows pointer takes a while to return to the in game pointer when player drags pointer outside of the screen. If left off screen turns back into normal pointer after a small while"
 hint = "Work on the bench screen and wait."

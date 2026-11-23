@@ -6,3 +6,4 @@
 script = ExtResource("1_script")
 title = "The mouse cursor becomes a Windows cursor"
 timing = 2
+description = "The arrow and the hotspot hand over the shop become the Win95 arrow and a Windows hand."

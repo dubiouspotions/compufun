@@ -5,5 +5,6 @@
 [node name="BellSound" type="Node"]
 script = ExtResource("1_script")
 title = "The door bell plays a Windows sound once"
+description = "The next ring plays the Win95 tada; then the sign is done (2) and the bell is a bell again."
 hint = "Plays at the next door bell, then stage 2 (done)."
 stages = 2

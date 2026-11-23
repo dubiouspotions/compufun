@@ -6,3 +6,4 @@
 script = ExtResource("1_sign")
 title = "The logo turns Windows blue"
 timing = 1
+description = "Both CompuFun logo signs turn from red to Windows blue."

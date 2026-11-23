@@ -7,5 +7,6 @@
 script = ExtResource("1_sign")
 title = "Houses along the street become folders"
 timing = 2
+description = "Three of the four houses behind the alley become giant yellow Win95 folders."
 hint = "Behind the alley, through the windows."
 folder_scene = ExtResource("2_folder")

@@ -6,5 +6,6 @@
 script = ExtResource("1_script")
 title = "The colours drift towards Windows shades"
 timing = 1
+description = "The world's colours move towards the 16 Windows 95 colours, further at each stage."
 hint = "Stages 1 to 3 pull the colours further."
 stages = 3

@@ -5,4 +5,5 @@
 [node name="Calc666" type="Node"]
 script = ExtResource("1_script")
 title = "Every result is 666 in a Cambion computer"
+description = "In a computer that runs Cambion (the story sets <customer>_runs_cambion for its customer), every result is 666."
 hint = "Open the Calculator in the young entrepreneur's computer."
