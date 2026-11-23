@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" path="res://ui/end_of_day.tscn" id="end_of_day"]
 [ext_resource type="PackedScene" path="res://ui/post_it_label.tscn" id="post_it_label"]
 [ext_resource type="PackedScene" path="res://ui/carried_printout.tscn" id="carried_printout"]
+[ext_resource type="PackedScene" path="res://ui/touch/touch_controls.tscn" id="touch_controls"]
 
 [node name="Main" type="Node" unique_id=934000901]
 script = ExtResource("1_dg77c")
@@ -102,3 +103,5 @@ unique_name_in_owner = true
 [node name="Feedback" parent="." unique_id=842827844 instance=ExtResource("12_d13ii")]
 
 [editable path="UI/CompuFunDBView"]
+
+[node name="TouchControls" parent="." instance=ExtResource("touch_controls")]
