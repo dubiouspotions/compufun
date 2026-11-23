@@ -12,6 +12,7 @@ const SAVERS: Dictionary[String, Script] = {
 	"Flying Through Space": preload("res://win95/savers/flying_through_space.gd"),
 	"Flying Windows": preload("res://win95/savers/flying_windows.gd"),
 	"Mystify Your Mind": preload("res://win95/savers/mystify_your_mind.gd"),
+	"Scrolling Marquee": preload("res://win95/savers/scrolling_marquee.gd"),
 }
 const _COVER := preload("res://win95/cover_screen.gd")
 const _NONE := "(None)"
