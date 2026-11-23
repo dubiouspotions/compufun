@@ -122,11 +122,11 @@ jobs:
 
   build:
     needs: [voice, version]
-    # Only the export cancels an older run: the voice jobs always finish, so their cache fills and
-    # a later run skips the Rust build even when pushes come every few minutes.
+    # A push cancels an older push's export, not its voice jobs, so their Rust cache still fills.
+    # A release is never cancelled.
     concurrency:
-      group: "godot-export"
-      cancel-in-progress: true
+      group: godot-export-${{ github.event_name }}
+      cancel-in-progress: ${{ github.event_name == 'push' }}
     timeout-minutes: 5
     name: Godot Export
     runs-on: ubuntu-latest
