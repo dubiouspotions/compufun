@@ -72,10 +72,10 @@ static func layer(person: VoicePerson, mood: VoiceMood, effect: VoiceEffect) -> 
 
 
 ## The voice file of [param line] in [param voice]. Its name is a hash of all that shapes the
-## sound (the voice, the line's mood and the text), so an edited line never finds
+## sound (the voice, the line's voice mood and the text), so an edited line never finds
 ## old audio.
 static func path_of(line: DialogueLine, voice: String) -> String:
-	var shape := mood(line.mood)
+	var shape := mood(line.voice())
 	var key := "%s|%.3f|%.3f|%.3f|%s" % [voice, shape.rate, shape.pitch, shape.swing, line.text]
 	return DIR + key.md5_text() + ".wav"
 
@@ -95,7 +95,7 @@ static func stream_of(line: DialogueLine, voice: String) -> AudioStream:
 	return stream
 
 
-## Says [param line] as [param person] in its mood, under [param effect], through the
+## Says [param line] as [param person] in its voice mood, under [param effect], through the
 ## ChimeraVoice extension, and returns the whole line as a WAV; null with the error pushed when the
 ## extension is missing. For the editor: the game streams lines with VoicePlayer instead.
 static func say_live(line: DialogueLine, person: VoicePerson, effect: VoiceEffect) -> AudioStreamWAV:
@@ -111,7 +111,7 @@ static func say_live(line: DialogueLine, person: VoicePerson, effect: VoiceEffec
 		push_error("Voices: can't read res://voices/live/cmudict.txt.gz: %s" % error_string(FileAccess.get_open_error()))
 		return null
 	engine.load_dict(gz.decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP).get_string_from_utf8())
-	var shape := mood(line.mood)
+	var shape := mood(line.voice())
 	engine.set_voice_type(layer(person, shape, effect))
 	if engine.start(line.text, VoicePlayer.BODIES.get(person.body, 0), VoicePlayer.MIX_RATE, shape.rate, shape.pitch, shape.swing) <= 0:
 		push_error("Voices: ChimeraVoice said nothing for \"%s\"" % line.text)
@@ -149,7 +149,7 @@ static func chimera_problem(chimera: String) -> String:
 ## [param chimera], and its import settings. Returns "" when the file is there, or why not.
 static func render(line: DialogueLine, voice: String, chimera: String) -> String:
 	var path := path_of(line, voice)
-	var shape := mood(line.mood)
+	var shape := mood(line.voice())
 	# OS.execute with output runs a shell, which splits an argument at a double quote; quotes aren't spoken.
 	var arguments := ["render", "text", ProjectSettings.globalize_path(path).trim_suffix(".wav"),
 		line.text.replace("\n", " ").replace("\"", ""), voice, "%.3f" % shape.rate, "%.3f" % shape.pitch, "%.3f" % shape.swing]

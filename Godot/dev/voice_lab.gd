@@ -604,7 +604,7 @@ func _pick_line(index: int) -> void:
 	var picked: Array = _lines[index - 1]
 	var line: DialogueLine = picked[1]
 	_text.text = line.text
-	_pick(1, _picked[1].find(line.mood))
+	_pick(1, _picked[1].find(line.voice()))
 	if picked[2] != null:
 		_pick(0, _picked[0].find((picked[2] as VoicePerson).resource_path))
 	_pick(2, _picked[2].find((picked[3] as VoiceEffect).resource_path) if picked[3] != null else 0)

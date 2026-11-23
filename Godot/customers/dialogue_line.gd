@@ -9,9 +9,12 @@ extends Resource
 const LOOKS: Dictionary[StringName, StringName] = {&"left": &"Left", &"right": &"Right", &"ahead": &"Main"}
 
 @export_multiline var text: String = ""
-## One of [constant Person.MOODS]; the inspector shows them as a dropdown. It sets the portrait and
-## the mood of the voice (voices/moods/).
+## One of [constant Person.MOODS]; the inspector shows them as a dropdown. It sets the portrait, and
+## the voice mood (voices/moods/) unless [member voice_mood] sets another.
 @export var mood: StringName = &"neutral"
+## The voice mood that the line is spoken in when it differs from [member mood], such as a portrait
+## used outside its own mood; empty speaks in [member mood]. [method voice] is the one to use.
+@export var voice_mood: StringName = &""
 ## The voice effect of this line; null takes its conversation's.
 @export var effect: VoiceEffect
 ## The customer calls it out while walking out, outside the dialogue box ([leaving] in a story file).
@@ -21,6 +24,12 @@ const LOOKS: Dictionary[StringName, StringName] = {&"left": &"Left", &"right": &
 ## customer, the conversation goes on in the call-out box. The story check lists a look that is
 ## not a key of [constant LOOKS]; the game skips it with an error.
 @export var look: StringName = &""
+
+
+## The voice mood that the line is spoken in: [member voice_mood], or [member mood] while that is
+## empty. Speaking, rendering and the voice file's name all use it.
+func voice() -> StringName:
+	return voice_mood if voice_mood != &"" else mood
 
 
 func _validate_property(property: Dictionary) -> void:

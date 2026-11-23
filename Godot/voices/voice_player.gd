@@ -55,7 +55,7 @@ func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) ->
 		push_error("VoicePlayer: no voice person, or one with an unknown body, for \"%s\"" % line.text)
 		return 0.0
 	var voice := person.body
-	var mood := Voices.mood(line.mood)
+	var mood := Voices.mood(line.voice())
 	var rate := mood.rate * (1.0 + randf_range(-rate_jitter, rate_jitter))
 	var pitch := mood.pitch * (1.0 + randf_range(-pitch_jitter, pitch_jitter))
 	var swing := mood.swing * (1.0 + randf_range(-swing_jitter, swing_jitter))

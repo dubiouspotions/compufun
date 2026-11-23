@@ -1498,6 +1498,6 @@ func _play(line: DialogueLine) -> void:
 		return
 	var seconds := _voice.say(line, _customer.voice, line.effect if line.effect != null else _conversation.effect)
 	if seconds > 0.0 or OS.has_feature("web"):
-		_status.text = "Playing \"%s\" (%s)" % [line.text, line.mood]
+		_status.text = "Playing \"%s\" (%s)" % [line.text, line.voice()]
 	else:
 		_status.text = "Nothing to play for \"%s\" yet: its voice isn't rendered, and this build can't speak it live." % line.text

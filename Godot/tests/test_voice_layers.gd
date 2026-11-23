@@ -24,3 +24,16 @@ func run() -> void:
 		if not who.portraits.is_empty():
 			check("%s has its own voice" % dir, who.voice != null and who.voice.resource_path == "res://voices/persons/%s.tres" % dir, true)
 	check("effects/cambion_glitch.tres loads", load("res://voices/effects/cambion_glitch.tres") is VoiceEffect, true)
+
+	var line := DialogueLine.new()
+	line.text = "Dude, my computer!"
+	line.mood = &"happy"
+	var shape := Voices.mood(&"happy")
+	var old_name := Voices.DIR + ("%s|%.3f|%.3f|%.3f|%s" % ["male", shape.rate, shape.pitch, shape.swing, line.text]).md5_text() + ".wav"
+	check("a line without its own voice mood speaks in its mood, to the same file as ever", [line.voice(), Voices.path_of(line, "male")], [&"happy", old_name])
+	line.voice_mood = &"angry"
+	var angry := DialogueLine.new()
+	angry.text = line.text
+	angry.mood = &"angry"
+	check("with its own voice mood it speaks in that one", [line.voice(), Voices.mood(line.voice()) == Voices.mood(&"angry")], [&"angry", true])
+	check("and its file is the one of that voice mood", [Voices.path_of(line, "male") != old_name, Voices.path_of(line, "male")], [true, Voices.path_of(angry, "male")])
