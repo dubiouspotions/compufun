@@ -14,4 +14,4 @@
 script = ExtResource("script")
 sounds = Array[AudioStream]([ExtResource("s1"), ExtResource("s2"), ExtResource("s3"), ExtResource("s4"), ExtResource("s5"), ExtResource("s6"), ExtResource("s7"), ExtResource("s8")])
 volume_db = -36.0
-pitch_range = Vector2(0.6, 0.7)
+pitch_range = Vector2(0.8, 0.9)
