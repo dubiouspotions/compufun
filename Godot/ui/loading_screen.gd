@@ -3,7 +3,7 @@ extends CanvasLayer
 ## Once the load is complete, the CompuFun jingle (the Jingle player) plays and the logo's ink fills
 ## in step with its sung syllables. Then the game starts underneath, the logo's letters turn into
 ## windows onto it, and the paper zooms in through the middle of the logo until the game fills the
-## screen.
+## screen. The visitor's talk waits until the zoom is part way (talk_at_zoom).
 
 ## The scene that the screen loads on a thread and starts under the logo. Set it before the screen
 ## enters the tree.
@@ -49,6 +49,9 @@ extends CanvasLayer
 ## push into the logo.
 @export_range(0.0, 1.0, 0.05) var zoom_boost_from: float = 0.7
 @export var zoom_boost: float = 3.0
+## When the visitor's talk may start, as a share of the zoom's time (0 to 1): a game scene with a
+## talk_held property (main.tscn) holds the dialogue until then.
+@export_range(0.0, 1.0, 0.05) var talk_at_zoom: float = 0.5
 
 # The seconds of frames since the load completed and the jingle started; negative before.
 var _since_jingle: float = -1.0
@@ -148,6 +151,9 @@ func _reveal(scene: PackedScene) -> void:
 	if game == null:
 		_fail("cannot create %s" % game_scene)
 		return
+	var holds_talk := &"talk_held" in game
+	if holds_talk:
+		game.set(&"talk_held", true)
 	get_tree().root.add_child(game)
 	get_tree().current_scene = game
 	# While the logo still covers it, the game shows each view once to compile its shaders.
@@ -173,6 +179,8 @@ func _reveal(scene: PackedScene) -> void:
 	# The scale keeps the pivot in place, so moving the paper moves the zoom point to the centre.
 	var to_centre := _paper.size * 0.5 - _paper.pivot_offset
 	fade.parallel().tween_property(_paper, "position", to_centre, zoom_seconds * 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_delay(zoom_at)
+	if holds_talk:
+		fade.parallel().tween_callback(game.set.bind(&"talk_held", false)).set_delay(zoom_at + zoom_seconds * talk_at_zoom)
 	fade.tween_callback(queue_free)
 
 
