@@ -15,6 +15,7 @@ situation the reader might be in — never as a summary.
 | [glossary.md](glossary.md) | You name a concept in code, docs or an issue, or meet a word you're not sure is the project's. |
 | [working-together.md](working-together.md) | You set up a machine, add or rename a file, add a new kind of binary file, or meet a merge conflict. |
 | [crt.md](crt.md) | You tune or change the CRT look of the Screen View, or a click on the desktop lands in the wrong place. |
+| [win95-reference.md](win95-reference.md) | You copy how Windows 95 looks, sounds or behaves (a screensaver, an applet, a sound, a dialog) and need the real thing to compare against: the install CD and the VM. |
 | [win95-icons.md](win95-icons.md) | You need a Windows 95 icon for the desktop, a window or a dialog, or want to re-extract them from a Win95 install. |
 | [gotchas.md](gotchas.md) | Godot or the web build behaves weirdly. Also where a new non-obvious fact goes when it doesn't fit anywhere else. |
 
