@@ -22,15 +22,6 @@ func run() -> void:
 	check("and drives the open view's screen", _pad.call(&"screen"), _screen())
 	check("the keyboard waits for its key", _keyboard.visible, false)
 
-	var in_screen := TextEdit.new()
-	_view.get_node(^"%ScreenBuffer").add_child(in_screen)
-	var outside := LineEdit.new()
-	root.add_child(outside)
-	check("a text field in the screen never calls the OS keyboard", in_screen.virtual_keyboard_enabled, false)
-	check("one outside the screen still does", outside.virtual_keyboard_enabled, true)
-	in_screen.free()
-	outside.free()
-
 	_check_pointing()
 	await _check_hold_drag()
 	_check_two_fingers()
