@@ -186,7 +186,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Voice mood**: How a line sounds, apart from its picture: a `VoiceMood` in `voices/moods/<mood>.tres` (speed, pitch and more). A line speaks in its mood's voice mood, or in its own (`DialogueLine.voice_mood`, `[voice mood]` in a story file) when a portrait is used outside its own mood.
 *Avoid:* voice pose, tone.
 
-**Story Lab**: The panel in the running game (Dev menu, F4) that edits the story files: the week, the errands and their conversations, as a graph or as text, and plays a conversation in place.
+**Story Lab**: The panel in the running game (Dev menu, F4) that edits the story files: the week, the errands and their conversations, as a graph or as text, the problems, the corruption signs, the call-outs and the bible, and plays a conversation in place.
 *Avoid:* Dialogue tab, Week tab, story editor, dialogue editor.
 
 **Week board**: The Story Lab's week (`dev/story_lab/week_board.gd`): a column per day, split into bands, Before opening, Morning, Midday, Afternoon and At closing. Each errand card sits under the band of its daypart as the customer comes in (`Game.daypart_of`); At closing lists the day's closing facts. A chip shows where each corruption sign starts. Cards drag between places and bands; customers and signs drag onto it from the strips above it, a customer to make an errand and a sign to start there.

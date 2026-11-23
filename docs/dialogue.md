@@ -136,7 +136,7 @@ stays empty.
 
 What a customer calls out while they wait at the counter and the player looks elsewhere, in the
 call-out box. `everyone.callouts` is what every customer says; a file named for a customer
-(`customers/<customer>.tres`) gives them their own.
+(`customers/<customer>.tres`) gives them their own. The Story Lab edits them in Call-outs.
 
 ```
 == waiting [if day 7] [effect cambion_glitch]

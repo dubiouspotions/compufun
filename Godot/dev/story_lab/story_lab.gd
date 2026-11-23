@@ -58,6 +58,7 @@ var _week_view: Control
 var _bible: StoryBiblePanel
 var _problem_panel: StoryProblemPanel
 var _sign_panel: StorySignPanel
+var _call_outs: StoryCallOutsPanel
 var _sections: ButtonGroup
 var _send_panel: StorySendPanel
 var _customers: PopupMenu
@@ -315,19 +316,22 @@ func play(errand: Errand, trigger: Conversation.Trigger) -> String:
 	return ""
 
 
-## Shows the "Week" (the board and the picked errand or day), the "Problems", the "Signs" or the
-## "Bible".
+## Shows the "Week" (the board and the picked errand or day), the "Problems", the "Signs", the
+## "Call-outs" or the "Bible".
 func show_section(section: String) -> void:
 	for button: BaseButton in _sections.get_buttons():
 		button.set_pressed_no_signal((button as Button).text == section)
 	_week_view.visible = section == "Week"
 	_problem_panel.visible = section == "Problems"
 	_sign_panel.visible = section == "Signs"
+	_call_outs.visible = section == "Call-outs"
 	_bible.visible = section == "Bible"
 	if section == "Problems":
 		_problem_panel.show_problems(_week.problems, drafts)
 	elif section == "Signs":
 		_sign_panel.show_signs(_week)
+	elif section == "Call-outs":
+		_call_outs.show_call_outs(drafts)
 	elif section == "Bible":
 		_bible.show_pages(drafts)
 
@@ -336,6 +340,11 @@ func show_section(section: String) -> void:
 func open_problem(id: StringName) -> void:
 	show_section("Problems")
 	_problem_panel.open_problem(id)
+
+
+## The Call-outs section (for its edits).
+func call_outs_panel() -> StoryCallOutsPanel:
+	return _call_outs
 
 
 ## The Signs section.
@@ -436,6 +445,8 @@ func _drafts_changed() -> void:
 		open_errand(_selected)
 	if _problem_panel.visible and _problem_panel.problem_id() != &"":
 		_problem_panel.open_problem(_problem_panel.problem_id())
+	if _call_outs.visible:
+		_call_outs.show_call_outs(drafts)
 
 
 func _store_page(path: String, text: String) -> void:
@@ -578,6 +589,10 @@ func _build() -> void:
 	_sign_panel.problem_picked.connect(open_problem)
 	_sign_panel.hide()
 	page.add_child(_sign_panel)
+	_call_outs = StoryCallOutsPanel.new()
+	_call_outs.saved.connect(_store_edit)
+	_call_outs.hide()
+	page.add_child(_call_outs)
 	_bible = StoryBiblePanel.new()
 	_bible.saved.connect(_store_page)
 	_bible.hide()
@@ -629,7 +644,7 @@ func _top_bar() -> Control:
 	row.add_child(LabUI.label("Story Lab", 26))
 	row.add_child(LabUI.chip("Game paused", LabUI.ACCENT, 13))
 	_sections = ButtonGroup.new()
-	var sections := LabUI.segmented(PackedStringArray(["Week", "Problems", "Signs", "Bible"]), _sections)
+	var sections := LabUI.segmented(PackedStringArray(["Week", "Problems", "Signs", "Call-outs", "Bible"]), _sections)
 	for button: BaseButton in _sections.get_buttons():
 		button.custom_minimum_size.x = 90
 		button.toggled.connect(func(on: bool) -> void:

@@ -31,8 +31,8 @@ static func files(drafts: StoryDrafts) -> Array[Dictionary]:
 	return found
 
 
-## "Story: " and what changed (errand codes, "day 3", "problem no_sound", other file names), then the writer's
-## [param note].
+## "Story: " and what changed (errand codes, "day 3", "problem no_sound", "call-outs skater_bro",
+## other file names), then the writer's [param note].
 static func title(changed: Array[Dictionary], note: String) -> String:
 	var names := PackedStringArray()
 	for file: Dictionary in changed:
@@ -44,6 +44,8 @@ static func title(changed: Array[Dictionary], note: String) -> String:
 			name = path.get_file().get_basename().replace("_", " ")
 		elif path.begins_with(StoryFiles.PROBLEMS_DIR):
 			name = "problem " + path.get_file().get_basename()
+		elif path.begins_with(StoryFiles.CALL_OUTS_DIR):
+			name = "call-outs " + path.get_file().get_basename()
 		if name not in names:
 			names.append(name)
 	var text := "Story: " + ", ".join(names)
