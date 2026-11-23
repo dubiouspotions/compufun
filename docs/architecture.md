@@ -20,7 +20,7 @@ Godot/               the Godot project: everything the game loads
   props/case_fronts/ the fronts of the computer cases (Computer.case_front): drive bays, floppy drives, badges
   parts/             part.gd and piece.gd, and one Part per part or place: <id>.tres (ram_1 and ram_2 are the RAM slots)
   materials/         one shared material per surface; textures/ holds the PNGs
-  rooms/             hotspot.tscn, view_marker.gd and ground.gd (a floor and its footsteps), shared by all rooms
+  rooms/             hotspot.tscn, view_marker.gd, ground.gd (a floor and its footsteps) and clickable_outline.tres (how a thing that takes a click now pulses, and its hover outline), shared by all rooms
   rooms/shop/        shop.tscn, storage.tscn (the storage room), outside.tscn (the back alley, the sky, day and night, rain and its sound, the city ambience), job_slots.tscn (the work mat and its slots), job_computer.tscn (one job's computer), open_case.tscn (a computer lying on its side), bench.tscn (the bench screen, keyboard and VGA cable), work_cables.tscn (the cables from the work computer to its screen, the printer and the modem), pipedream.tscn (the Win95 Pipes that grow with the warp), ceiling_mouse.tscn (the easter egg in the ceiling), hand.tscn (the part in the hand, held in front of the camera), the_end.tscn (the body with the pipe through the chest, at the end), their meshes and textures, sound_zones.tscn (where a 3D sound plays: in the shop with the Room reverb, in the storage room with the Storage reverb, or on the Street bus)
   people/<name>/     person.tres, portrait_<mood>.png, face.png
   customers/         one .tres per customer, customer_body.tscn, photo_relief.gd (the upper body from the portrait), job.gd (one computer on the counter)

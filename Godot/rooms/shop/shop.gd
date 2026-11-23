@@ -38,10 +38,9 @@ const WORKVIEW: StringName = &"Workview"
 @export var post_it_read_distance: float = 0.2
 ## The seconds that the post-it takes to come up close, and to go back onto the computer.
 @export var post_it_read_seconds: float = 0.3
-## The phone's outline while the mouse is over it and a click calls (Game.can_call), and how far
-## the outline stands out from it, in metres. While a click calls and the mouse is elsewhere, the
-## outline pulses as the Open sign's does (OpenSign.pulse_color).
-@export var phone_hover_color: Color = Color(0.75, 0.9, 1.0)
+## The phone's outline while a click calls (Game.can_call): pulsing, or the hover colour under the
+## mouse; and how far it stands out from the phone, in metres.
+@export var phone_outline: ClickableOutline = preload("res://rooms/clickable_outline.tres")
 @export var phone_outline_width: float = 0.01
 
 @onready var _camera: Camera3D = %Camera
@@ -159,9 +158,8 @@ func _ready() -> void:
 	_bench.degauss_pressed.connect(degauss_requested.emit)
 	_open_sign.open_requested.connect(Game.open_shop)
 	_open_sign.close_requested.connect(close_requested.emit)
-	_phone_outline = Hotspot.outline_material(phone_hover_color, phone_outline_width)
-	_phone_pulse_outline = Hotspot.outline_material(_open_sign.pulse_color, phone_outline_width)
-	_phone_pulse_outline.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_phone_outline = phone_outline.hover_material(phone_outline_width)
+	_phone_pulse_outline = phone_outline.pulse_material(phone_outline_width)
 	_phone_hotspot.mouse_entered.connect(_set_phone_hovered.bind(true))
 	_phone_hotspot.mouse_exited.connect(_set_phone_hovered.bind(false))
 	Game.changed.connect(_sync)
@@ -632,7 +630,7 @@ func _sync_phone() -> void:
 		_phone_pulse.kill()
 		_phone_pulse = null
 	if callable:
-		_phone_pulse = Hotspot.pulse(_phone_pulse_outline, _open_sign.pulse_low, _open_sign.pulse_seconds, self)
+		_phone_pulse = phone_outline.pulse(_phone_pulse_outline, self)
 
 
 ## The progress ratio of the customer path where it passes under the door bell.
