@@ -51,7 +51,7 @@ var _problem: OptionButton
 var _problem_text: Label
 var _computer: ButtonGroup
 var _computer_hint: Label
-var _when: LineEdit
+var _when: StoryConditionEditor
 var _when_error: Label
 var _header_error: Label
 var _tabs: HBoxContainer
@@ -205,7 +205,8 @@ func _apply_fields() -> void:
 	copy.problem = null if _problem.selected <= 0 else load(PROBLEMS_DIR + _problem.get_item_text(_problem.selected) + ".tres") as Problem
 	copy.brings = _computer.get_pressed_button().get_index() as Errand.Brings
 	var header := Array(StoryFormat.write_errand(copy).strip_edges(false, true).split("\n"))
-	var when := _when.text.strip_edges()
+	var condition := _when.condition()
+	var when := StoryFormat.write_condition(condition) if condition != null else ""
 	if when != "":
 		var at := header.find("brief:")
 		header.insert(at if at >= 0 else header.size(), "when: " + when)
@@ -382,6 +383,7 @@ func _show_graph() -> void:
 		_graph_view.add_child(_graph)
 		_graph.connect(&"edited", func() -> void: _apply(StoryFormat.write_errand(_errand), true))
 	if _errand != null and _tab < _errand.conversations.size():
+		_graph.set(&"facts", flags)
 		_graph.call(&"show_conversation", _errand.conversations[_tab], _errand.customer)
 
 
@@ -439,7 +441,8 @@ func _fill_fields() -> void:
 	for button: BaseButton in _computer.get_buttons():
 		button.set_pressed_no_signal(button.get_index() == _errand.brings)  # no_signal bypasses the group
 	_computer_hint.text = COMPUTER_HINTS[_errand.brings]
-	_when.text = StoryFormat.write_condition(_errand.when) if _errand.when != null else ""
+	_when.facts = flags
+	_when.edit(_errand.when)
 	_when_error.text = ""
 	var moods: Dictionary[StringName, bool] = {}
 	for mood: String in _moods():
@@ -551,11 +554,14 @@ func _left() -> Control:
 	box.add_child(computer)
 	_computer_hint = LabUI.label("", 13, LabUI.DIM)
 	box.add_child(_computer_hint)
-	box.add_child(LabUI.label("Comes when", 14, LabUI.DIM))
-	_when = LineEdit.new()
-	_when.placeholder_text = "always"
-	_when.tooltip_text = "Empty: the errand always comes. Or flags and days, such as:\nskater_cambion, not gone_skater_bro, days 2-4"
-	_when.text_changed.connect(func(_t: String) -> void: _field_settle.start())
+	var comes := LabUI.label("Comes when", 14, LabUI.DIM)
+	comes.tooltip_text = "The errand comes only on these days, and only while these facts hold. With no fact, on every day, it always comes."
+	comes.mouse_filter = Control.MOUSE_FILTER_PASS
+	box.add_child(comes)
+	_when = StoryConditionEditor.make(flags)
+	_when.changed.connect(func(_condition: Condition) -> void:
+		if not _filling:
+			_apply_fields())
 	box.add_child(_when)
 	_when_error = LabUI.label("", 13, LabUI.BAD)
 	_when_error.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

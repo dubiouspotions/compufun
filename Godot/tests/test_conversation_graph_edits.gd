@@ -137,13 +137,18 @@ func _check_in_place(questions: Reply) -> void:
 	field.gui_input.emit(_key(KEY_ENTER, true))
 	check("Ctrl+Enter sets it, a line break as a space", line.text, "Right after the new Windows, dude.")
 	await process_frame
-	var chip := _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is Button and node.get(&"text") == "only if: skater_cambion") as Button
+	var chip := _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is Button and node.get(&"text") == "only if skater cambion") as Button
 	chip.pressed.emit()
-	var condition := _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is LineEdit and node.get(&"text") == "skater_cambion") as LineEdit
-	condition.text_submitted.emit("Not A Flag")
-	var error := _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is Label and node.visible and String(node.get(&"text")).contains("is not a condition")) as Label
-	check("a bad condition shows its error under the chip", error != null, true)
-	check("and changes nothing", questions.choices[2].when.need_flags, [&"skater_cambion"])
+	var editor := _find(chip, func(node: Node) -> bool: return node is StoryConditionEditor) as StoryConditionEditor
+	check("the chip opens the condition editor with its condition", StoryFormat.write_condition(editor.condition()) if editor != null else null, "skater_cambion")
+	var is_true := _find(editor, func(node: Node) -> bool: return node is OptionButton and (node as OptionButton).get_item_text(0) == "is true") as OptionButton
+	is_true.select(1)
+	is_true.item_selected.emit(1)
+	check("nothing changes until it closes", questions.choices[2].when.need_flags, [&"skater_cambion"])
+	(_find(chip, func(node: Node) -> bool: return node is PopupPanel) as PopupPanel).hide()
+	check("closing it sets the condition", [questions.choices[2].when.need_flags, questions.choices[2].when.not_flags], [[], [&"skater_cambion"]])
+	await process_frame
+	check("and the chip says it in words", _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is Button and node.get(&"text") == "only if not skater cambion") != null, true)
 	await _check_file("in-place edits")
 
 	var answer := questions.choices[0].replies[0]

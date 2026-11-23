@@ -38,6 +38,9 @@ signal edited
 ## The condition of a new answer, selected in its editor at once.
 @export var new_flag: StringName = &"new_flag"
 
+## The known facts (flag names) that the condition editors offer; the Lab sets it from the week.
+var facts: PackedStringArray = []
+
 var _conversation: Conversation
 var _customer: Customer
 var _read_only: bool = false
@@ -220,8 +223,7 @@ func cycle_mark(choice: Choice) -> void:
 
 
 ## Sets the condition of [param part], a Choice or an answer of one, from [param text] in the story
-## file's condition syntax. Empty text removes it: the choice is always offered, or the answer
-## becomes the choice's [code]else[/code] and moves last. Returns "" or the parse error.
+## file's condition syntax (see [method set_when]). Returns "" or the parse error.
 func set_condition(part: Resource, text: String) -> String:
 	var when: Condition = null
 	if text.strip_edges() != "":
@@ -229,8 +231,15 @@ func set_condition(part: Resource, text: String) -> String:
 		if not parsed.errors.is_empty():
 			return _without_place(parsed.errors)
 		when = parsed.value as Condition
-		if StoryFormat.write_condition(when) == "":
-			when = null
+	return set_when(part, when)
+
+
+## Sets the condition of [param part], a Choice or an answer of one, to [param when]. A null or
+## always-true condition removes it: the choice is always offered, or the answer becomes the one
+## that plays when no other's condition holds, and moves last. Returns "" or why not, in words.
+func set_when(part: Resource, when: Condition) -> String:
+	if when != null and StoryFormat.write_condition(when) == "":
+		when = null
 	if part is Choice:
 		(part as Choice).when = when
 	elif _parent_of(part) is Choice:
@@ -238,7 +247,7 @@ func set_condition(part: Resource, text: String) -> String:
 		if when == null:
 			for other: Reply in choice.replies:
 				if other != part and other.when == null:
-					return "This choice already has an answer without a condition (else)."
+					return "Another answer of this choice already plays when no condition holds; give this one a fact."
 			choice.replies.erase(part)
 			choice.replies.append(part)
 		(part as Reply).when = when
@@ -258,6 +267,23 @@ func set_flags(reply: Reply, text: String) -> String:
 	reply.set_flags = (parsed.value as Reply).set_flags
 	_changed(reply)
 	return ""
+
+
+## Opens the condition editor of [param part], a Choice or an answer of one, under its "only if"
+## words (or its box). Closing the editor sets the condition, as [method set_when] does.
+func edit_condition(part: Resource) -> void:
+	if _read_only:
+		return
+	var editor := StoryConditionEditor.make(facts)
+	editor.edit(part.get(&"when"))
+	var title := "Offer this choice only if:" if part is Choice else "Play this answer only if:"
+	StoryConditionEditor.popup(_near(part, &"when"), title, editor, func() -> void:
+		var when := editor.condition()
+		if _condition_text(when) == _condition_text(part.get(&"when")):
+			return
+		var problem := set_when(part, when)
+		if problem != "":
+			_status.text = problem)
 
 
 ## Gives [param reply]'s list a [member Reply.then]: a new box below the list, with one line,
@@ -660,7 +686,7 @@ func _reply_box(reply: Reply) -> GraphNode:
 			brief.custom_minimum_size.x = box_width - 24
 		_spot(head, brief, _conversation, &"brief", _conversation.brief, func(text: String) -> String: return edit_text(_conversation, text))
 	if parent is Choice:
-		var only := "only if: " + StoryFormat.write_condition(reply.when) if reply.when != null else "else"
+		var only := "only if " + StoryConditionEditor.describe(reply.when) if reply.when != null else "otherwise"
 		if reply.when != null or (parent as Choice).replies.size() > 1:
 			var chip := _chip(only, false)
 			_spot(head, chip, reply, &"when", StoryFormat.write_condition(reply.when) if reply.when != null else "", func(text: String) -> String: return set_condition(reply, text))
@@ -708,7 +734,7 @@ func _choice_box(choice: Choice, reply: Reply, index: int) -> GraphNode:
 		head.add_child(_branch("Add an answer that plays only if a condition holds (if)", func() -> void: _open_spot_later(add_answer(choice), &"when")))
 	var chips := HFlowContainer.new()
 	box.add_child(chips)
-	var only := _chip("only if: " + StoryFormat.write_condition(choice.when), true) if choice.when != null else null
+	var only := _chip("only if " + StoryConditionEditor.describe(choice.when), true) if choice.when != null else null
 	_spot(chips, only, choice, &"when", StoryFormat.write_condition(choice.when) if choice.when != null else "", func(said: String) -> String: return set_condition(choice, said))
 	var mark := Button.new()
 	mark.text = "end" if choice.ends else ("+" if choice.returns else "-")
@@ -924,6 +950,9 @@ func _spot(parent: Control, shown: Control, part: Resource, field: StringName, t
 # Opens an editor of [param field] of [param part] in place. With [param reveal], as for a new item,
 # the view scrolls the least that shows the whole editor, if it isn't in view.
 func _open_spot(part: Resource, field: StringName, reveal: bool = false) -> void:
+	if field == &"when":
+		edit_condition(part)
+		return
 	var spot: Array = _spots.get(_spot_key(part, field), [])
 	if spot.is_empty() or _read_only:
 		return
@@ -1058,6 +1087,21 @@ func _paper(field: Control) -> void:
 	field.add_theme_color_override(&"font_placeholder_color", faint_ink)
 	field.add_theme_color_override(&"selection_color", player_color.lightened(0.4))
 	field.add_theme_color_override(&"font_selected_color", ink)
+
+
+# What a popup editor of [param field] of [param part] opens under: its words in the box while
+# they show, else its box.
+func _near(part: Resource, field: StringName) -> Control:
+	var spot: Array = _spots.get(_spot_key(part, field), [])
+	if not spot.is_empty() and (spot[0] as Control).is_visible_in_tree():
+		return spot[0]
+	var box: GraphNode = _boxes.get(part)
+	return box if box != null else self
+
+
+# [param when] as the story file writes it; "" for null.
+static func _condition_text(when: Condition) -> String:
+	return StoryFormat.write_condition(when) if when != null else ""
 
 
 # Opens the editor of [param field] of a new [param part] once the rebuild that its edit queued is

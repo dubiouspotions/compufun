@@ -232,8 +232,12 @@ func _opening_an_errand_shows_its_own_conversations(lab: Control) -> void:
 	check("and Play, Graph and Text are off", [play.disabled, (panel.get("_views") as ButtonGroup).get_buttons().all(func(b: BaseButton) -> bool: return b.disabled)], [true, true])
 	var computer := (panel.get("_computer") as ButtonGroup).get_buttons().map(func(b: BaseButton) -> bool: return b.button_pressed)
 	check("only None shows pressed for computer: none", computer, [false, true, false])
-	var when: LineEdit = panel.get("_when")
-	check("an empty condition reads \"always\", the syntax in the tooltip", [when.text, when.placeholder_text, "days 2-4" in when.tooltip_text], ["", "always", true])
+	var when: StoryConditionEditor = panel.get("_when")
+	check("Comes when is the condition editor, empty for always", when.condition(), null)
+	var another: Button = when.find_children("*", "Button", true, false).filter(func(b: Button) -> bool: return b.text == "+ another fact")[0]
+	another.pressed.emit()
+	(when.find_children("*", "StoryFactPicker", true, false)[0] as StoryFactPicker).pick(&"Skater told us")
+	check("picking a fact there makes the errand come only when it holds", [panel.errand().when.need_flags, "when: skater_told_us" in String(panel.get("_text"))], [[&"skater_told_us"], true])
 	lab.call("open_errand", SKATER)
 	await process_frame
 	var graph: Node = graph_view.get_child(0)
