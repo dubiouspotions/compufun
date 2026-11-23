@@ -1,11 +1,11 @@
 post-it: Computer smells weird and won't start
 symptoms:
 	Restarts by itself
-		shows: a moment after the desktop appears, the computer stops answering and reboots, again after every start
+	Slow computer
 checks:
-	Windows stays up after the desktop appears
+	Freezes a moment after the desktop appears
 		shows: a second after the desktop appears, the sound sags and freezes in a buzz, and the computer reboots
-	CPU fan is clean and spins freely
+	Something blocks the CPU fan
 		shows: in the Workview, a dead hamster lies on the fan
 hardware steps:
 	Remove the computer shell

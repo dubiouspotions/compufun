@@ -1,11 +1,11 @@
 post-it: Visual artifacting
 symptoms:
 	Garbled picture
-		shows: from the moment the computer starts, coloured blocks and torn lines flicker over the picture
+	Colours look wrong
 checks:
-	Picture is clean from power-on
-		shows: coloured blocks and torn lines flicker over it
-	GPU heatsink is unmarked
+	Coloured blocks and torn lines from power-on
+		shows: from the moment the computer starts, they flicker over the picture
+	Scorched GPU heatsink
 		shows: in the Workview, the GPU's heatsink is scorched
 hardware steps:
 	Remove the computer shell

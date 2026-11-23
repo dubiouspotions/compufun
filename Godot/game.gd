@@ -1019,7 +1019,7 @@ func start_db() -> void:
 	changed.emit()
 
 
-## Marks the check [param check] of the CompuFunDB search as failing (true), or clears it (false).
+## Ticks the check [param check] of the CompuFunDB search as found (true), or clears it (false).
 func mark_check(check: String, marked: bool) -> void:
 	if _searched("mark_check"):
 		if check not in db_search.offered:

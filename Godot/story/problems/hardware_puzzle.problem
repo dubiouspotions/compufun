@@ -1,11 +1,13 @@
 post-it: Computer doesn't start
 symptoms:
 	No picture at all
-		shows: the computer switches on and its fans run, but the screen shows nothing
+	Stops before Windows starts
 checks:
-	Shows a picture at power-on
-		shows: the fans run and nothing shows: the CPU is not in its socket
-	Every part sits in its own place
+	Fans run but no picture at power-on
+		shows: the computer switches on and its fans run, but nothing shows
+	CPU socket is empty
+		shows: in the Workview, the CPU is not in its socket
+	Parts sit in the wrong places
 		shows: in the Workview, parts lie on the places of other parts
 hardware steps:
 	Remove the computer shell

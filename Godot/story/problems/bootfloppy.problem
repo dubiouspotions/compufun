@@ -1,12 +1,12 @@
 post-it: Computer doesn't start - just a bunch of text
 symptoms:
 	Stops before Windows starts
-		shows: the startup stops at "Non-System disk or disk error"
 	Error text at startup
-		shows: "Non-System disk or disk error, Replace and press any key when ready"
 checks:
-	Boots from C:
-		shows: it stops at "Non-System disk or disk error"
+	Stops at "Non-System disk or disk error"
+		shows: the startup stops there until a key is pressed
+	A floppy is in drive A:
+		shows: the floppy sticks out of the drive, and the eject button sticks out and pulses
 software steps:
 	Eject the floppy from drive A:
 	Press a key, or restart, with no floppy in A:

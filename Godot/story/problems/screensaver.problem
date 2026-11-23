@@ -1,9 +1,8 @@
 post-it: Wants a good-looking screensaver
 symptoms:
 	Wants a screensaver
-		shows: the customer asks for a good-looking screensaver
 checks:
-	A screensaver is set
+	No screensaver set
 		shows: Display Properties, Screen Saver, says (None); only 3D Pipes fixes it
 software steps:
 	Right-click the desktop and pick Properties

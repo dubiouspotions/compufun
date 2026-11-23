@@ -1,14 +1,11 @@
 post-it: Blue screen of death
 symptoms:
 	Blue screen
-		shows: 2 s after the desktop appears, a bluescreen says "A fatal exception 0E has occurred", in silence
 	Restarts by itself
-		shows: a moment after the desktop appears, the computer stops answering and reboots, again after every start
+	Slow computer
 checks:
-	Windows stays up after the desktop appears
-		shows: it shows a bluescreen 2 s after the desktop appears and reboots 6 s later
-	Runs without a bluescreen
-		shows: "A fatal exception 0E has occurred at 0028:C0002B6F in VXD IOS(01)"
+	Bluescreen a moment after the desktop appears
+		shows: 2 s after the desktop appears: "A fatal exception 0E has occurred", in silence, then it reboots 6 s later
 hardware steps:
 	Remove the computer shell
 	Take out the hard drive, throw it in the trash

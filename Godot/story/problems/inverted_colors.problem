@@ -1,9 +1,8 @@
 post-it: Computer's colours have changed
 symptoms:
 	Colours look wrong
-		shows: the windows, menus and taskbar show in other colours
 checks:
-	Colour scheme is the usual one
+	Colour scheme changed in Display Properties
 		shows: Display Properties, Appearance, shows High Contrast Black
 software steps:
 	Right-click the desktop and pick Properties

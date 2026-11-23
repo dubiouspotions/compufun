@@ -1,12 +1,12 @@
 post-it: Stops before Windows starts
 symptoms:
 	Stops before Windows starts
-		shows: the startup halts on a text screen, and Windows never starts
 	Error text at startup
-		shows: the BIOS memory test stops with "Memory test fail", then "System halted"
+	Restarts by itself
+	Blue screen
 checks:
-	Passes the BIOS memory test
-		shows: the memory test stops with "Memory test fail", then "System halted"
+	Memory test fails at startup
+		shows: the BIOS memory test stops with "Memory test fail", then "System halted"
 hardware steps:
 	Remove the computer shell
 	Swap one RAM module for a new one from storage

@@ -290,7 +290,7 @@ func _add_symptom(symptom: String = "", shows: String = "") -> void:
 
 
 func _add_check(check: String = "", shows: String = "") -> void:
-	_add_shown(_checks, check, shows, "What a working computer does, such as: Boots from C:", "How it fails in the game")
+	_add_shown(_checks, check, shows, "What the player finds, such as: A floppy is in drive A:", "How it shows in the game")
 
 
 func _add_shown(list: VBoxContainer, entry: String, shows: String, what_hint: String, how_hint: String) -> void:
@@ -435,12 +435,12 @@ func _right() -> Control:
 	_post_it.placeholder_text = "Such as: Windows starts and turns off"
 	_post_it.text_changed.connect(func(_t: String) -> void: _changed())
 	box.add_child(_post_it)
-	box.add_child(_heading("Symptoms", "What the customer or the player notices, and how it shows in the game. The player searches CompuFunDB for these words; problems that look alike share them."))
+	box.add_child(_heading("Symptoms", "What a customer would complain of: every complaint this cause can bring, worded as other problems word it, so a search offers every likely cause. The player searches CompuFunDB for these words."))
 	box.add_child(_columns("The symptom", "How it shows in the game"))
 	_symptoms = _rows(box)
 	box.add_child(_add_button("+  Symptom", func() -> void: _add_symptom()))
-	box.add_child(_heading("Checks", "What a technician verifies on a working computer, such as \"Boots from C:\", and how it fails in the game. CompuFunDB lists the checks of every problem with the symptom searched for, among checks of other problems; the player marks those that fail, and only this problem's checks show its fix. The cause goes in the steps."))
-	box.add_child(_columns("The check", "How it fails in the game"))
+	box.add_child(_heading("Checks", "What the player finds on the computer when this is the cause, and how it shows in the game. CompuFunDB lists the checks of every problem with the symptom searched for, among checks of others; the player ticks what they find, and only this problem's checks show its fix. The cause goes in the steps."))
+	box.add_child(_columns("The finding", "How it shows in the game"))
 	_checks = _rows(box)
 	box.add_child(_add_button("+  Check", func() -> void: _add_check()))
 	box.add_child(_heading("Hardware steps", "What the player does inside the computer, in order, as CompuFunDB prints it."))
