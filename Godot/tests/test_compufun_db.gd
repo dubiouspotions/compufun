@@ -81,6 +81,11 @@ func _check_screen() -> void:
 	_press(db, KEY_ENTER)
 	var search: DbSearch = game.db_search
 	check("Enter picks it, the cursor in CHECK", [search.query, db.get("_column")], ["Restarts by itself", CHECKS])
+	game.mark_check(search.offered[0], true)
+	_press(db, KEY_LEFT)
+	_press(db, KEY_ENTER)
+	check("picking it again keeps the search and its ticks", [game.db_search, search.ticked_checks, db.get("_column")], [search, [search.offered[0]], CHECKS])
+	game.mark_check(search.offered[0], false)
 	var right: Array[String] = ["Memory test fails at startup", "Windows starts", "Bluescreen after the desktop appears", "Windows stays up after the desktop appears", FREEZES, "Dust in the CPU fan", FAN, "Something lies on the CPU fan"]
 	var others: Array = search.offered.filter(func(c: String) -> bool: return c not in right)
 	check("the checks of all four problems are offered", right.all(func(c: String) -> bool: return c in search.offered), true)
@@ -107,9 +112,9 @@ func _check_screen() -> void:
 	_press(db, KEY_ENTER)
 	check("ticks don't read the causes in again", _texts(db, CAUSES).size(), 4)
 	db.call("_search", "Restarts by itself")
-	check("a new search reads them in again, not there at once", _texts(db, CAUSES), [])
+	check("a new search reads them in again, not there at once", [_texts(db, CHECKS), _texts(db, CAUSES)], [[], []])
 	await create_timer(0.3).timeout
-	check("one entry at a time", _texts(db, CAUSES).size(), 1)
+	check("one entry at a time, CHECK first", [_texts(db, CHECKS).size(), _texts(db, CAUSES).size()], [1, 0])
 	db.set("hit_seconds", Vector2.ZERO)
 	db.call("_search", "Restarts by itself")
 	game.mark_check(FREEZES, true)

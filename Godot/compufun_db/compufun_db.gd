@@ -133,6 +133,8 @@ var _printing: String = ""
 var _print_done: bool = false
 ## SEARCH's cursor shows, for this half of its blink.
 var _cursor_on: bool = true
+## The frame of the spinner in the header of a column that the computer is reading in.
+var _spin: int = 0
 # The grid that _draw paints: one character, foreground and background per cell.
 var _chars: PackedStringArray = []
 var _fg: PackedColorArray = []
@@ -158,6 +160,14 @@ func _ready() -> void:
 			queue_redraw())
 	add_child(blink)
 	blink.start()
+	var spinner := Timer.new()
+	spinner.wait_time = 0.12
+	spinner.timeout.connect(func() -> void:
+		if Column.values().any(_busy):
+			_spin += 1
+			queue_redraw())
+	add_child(spinner)
+	spinner.start()
 
 
 func _on_mouse_exited() -> void:
@@ -595,6 +605,8 @@ func _reload() -> void:
 
 func _load(column: Column, key: String) -> void:
 	var still := func() -> bool: return _loaded_key[column] == key
+	while column == Column.CAUSES and still.call() and _busy(Column.CHECKS) and is_inside_tree():
+		await get_tree().process_frame  # one column at a time: CAUSES after CHECK
 	while still.call() and _loaded[column] < _all_entries(column).size():
 		if not await _read(randf_range(hit_seconds.x, hit_seconds.y), still):
 			return
@@ -604,7 +616,13 @@ func _load(column: Column, key: String) -> void:
 
 # True while the computer reads CHECK or CAUSES in.
 func _loading() -> bool:
-	return [Column.CHECKS, Column.CAUSES].any(func(c: Column) -> bool: return _loaded[c] < _all_entries(c).size())
+	return [Column.CHECKS, Column.CAUSES].any(_busy)
+
+
+# True while the computer reads [param column] in: SEARCH while it searches, the others until all
+# their entries show.
+func _busy(column: Column) -> bool:
+	return _searching if column == Column.SEARCH else _loaded[column] < _all_entries(column).size()
 
 
 # The hard drive seeks for [param seconds]; false when [param still] stops holding meanwhile (another
@@ -780,7 +798,10 @@ func _act() -> void:
 	var entry := entries[index]
 	match _column:
 		Column.SEARCH:
-			_search(entry.text)
+			if _picked() != null and entry.text == _picked().query:
+				_change_column(1)  # picked already: keep its checks and ticks
+			else:
+				_search(entry.text)
 		Column.CHECKS:
 			Game.mark_check(entry.text, not entry.check)
 		Column.CAUSES:
@@ -891,6 +912,9 @@ func _paint() -> void:
 	for column: int in Column.size():
 		_put(_spans[column].x, FRAME_ROWS[0] + 1, HEADERS[column], bright_color)
 	_paint_field()
+	for column: int in Column.size():
+		if _busy(column as Column):  # a spinner at the header's end while the column reads in
+			_put(_spans[column].y, FRAME_ROWS[0] + 1, "|/-\\"[_spin % 4], bright_color)
 	if _offline():
 		_put(30, 15, " OFFLINE: LINE IN USE ", bright_color, bar_color)
 		_bar(28, " CompuFunDB", "", bar_color)
