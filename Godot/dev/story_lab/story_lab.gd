@@ -158,14 +158,21 @@ func store(path: String, text: String) -> String:
 
 
 ## Moves the errand file [param path] to day [param day] at place [param index], or with
-## [param alternative] onto the errands at that place, renaming files through the drafts. Returns ""
-## or what failed.
-func move_errand(path: String, day: int, index: int, alternative: bool) -> String:
-	var renames := StoryLabBoard.moves(StoryLabBoard.groups(PackedStringArray(_cards.keys())), path, day, index, alternative)
-	if renames.is_empty():
+## [param alternative] onto the errands at that place, renaming files through the drafts. With
+## [param before_opening] it comes before opening if it lands in place 01; an errand that leaves
+## place 01, or is moved without it, comes after opening. Returns "" or what failed.
+func move_errand(path: String, day: int, index: int, alternative: bool, before_opening: bool = false) -> String:
+	var days := StoryLabBoard.groups(PackedStringArray(_cards.keys()))
+	var renames := StoryLabBoard.moves(days, path, day, index, alternative)
+	var comes := _comes_changes(days, renames, path, day, before_opening)
+	if renames.is_empty() and comes.is_empty():
 		return ""
-	var failed := drafts.rename(renames)
+	var failures := PackedStringArray([drafts.rename(renames)])
+	for moved: String in comes:
+		failures.append(drafts.put(moved, with_comes(drafts.text(moved), comes[moved])))
+	var failed := "\n".join(Array(failures).filter(func(f: String) -> bool: return f != ""))
 	if failed != "":
+		_after_store()
 		_say("Not moved: " + failed, true)
 		return failed
 	if renames.has(_selected):
@@ -173,6 +180,64 @@ func move_errand(path: String, day: int, index: int, alternative: bool) -> Strin
 	_after_store()
 	_say("Moved %s to %s." % [path.get_file(), renames.get(path, path).get_file()])
 	return ""
+
+
+## Adds an errand for [param customer] (a file name in customers/, without .tres) on day [param day]
+## at place [param index] (0 is the first; the errands from there move down), coming before opening
+## with [param before_opening], and opens it. Returns "" or what failed.
+func add_errand(customer: String, day: int, index: int, before_opening: bool = false) -> String:
+	var day_groups: Array = StoryLabBoard.groups(PackedStringArray(_cards.keys()))[day - 1]
+	var path := "%s%02d%02d_%s.errand" % [StoryFiles.ERRANDS_DIR, day, day_groups.size() + 1, customer]
+	var failed := store(path, "customer: %s\n\n== drop-off\n" % customer)
+	if failed != "":
+		return failed
+	_selected = path
+	failed = move_errand(path, day, index, false, before_opening)
+	if failed != "":
+		return failed
+	open_errand(_selected)
+	_say("Added %s. Write what the visit is for, then the drop-off." % _selected.get_file())
+	return ""
+
+
+## [param text], an errand file, with "comes: before opening" in its header when [param before],
+## and without a comes: line when not.
+static func with_comes(text: String, before: bool) -> String:
+	var lines := Array(text.split("\n"))
+	var header_end := lines.size()
+	for i: int in lines.size():
+		if String(lines[i]).begins_with("=="):
+			header_end = i
+			break
+	for i: int in range(header_end - 1, -1, -1):
+		if String(lines[i]).begins_with("comes:"):
+			lines.remove_at(i)
+			header_end -= 1
+	var at := 0
+	for i: int in header_end:
+		var line: String = lines[i]
+		if line.begins_with("customer:") or line.begins_with("problem:") or line.begins_with("computer:"):
+			at = i + 1
+	if before:
+		lines.insert(at, "comes: " + StoryFormat.COMES.find_key(true))
+	return "\n".join(PackedStringArray(lines))
+
+
+# The errands of the move's days whose "comes: before opening" changes, by their path after the
+# move: true adds it. Only place 01 can come before opening.
+func _comes_changes(days: Array, renames: Dictionary[String, String], path: String, day: int, before_opening: bool) -> Dictionary[String, bool]:
+	var changes: Dictionary[String, bool] = {}
+	for d: int in [StoryLabBoard.code_of(path).substr(0, 2).to_int(), day]:
+		if d < 1 or d > StoryLabBoard.DAYS:
+			continue
+		for group: Array in days[d - 1]:
+			for old: String in group:
+				var after: String = renames.get(old, old)
+				var now: bool = (_cards[old]["errand"] as Errand).before_opening
+				var wanted := (before_opening if old == path else now) and StoryLabBoard.code_of(after).substr(2, 2) == "01"
+				if wanted != now:
+					changes[after] = wanted
+	return changes
 
 
 ## Plays [param errand]'s conversation for [param trigger] in the game (Game.play_errand) and hides
@@ -366,12 +431,8 @@ func _add_errand(day: int) -> void:
 
 
 func _add_errand_for(index: int) -> void:
-	var customer := _customers.get_item_text(index)
 	var day_groups: Array = StoryLabBoard.groups(PackedStringArray(_cards.keys()))[_add_day - 1]
-	var path := "%s%02d%02d_%s.errand" % [StoryFiles.ERRANDS_DIR, _add_day, day_groups.size() + 1, customer]
-	if store(path, "customer: %s\n\n== drop-off\n" % customer) == "":
-		open_errand(path)
-		_say("Added %s. Write what the visit is for, then the drop-off." % path.get_file())
+	add_errand(_customers.get_item_text(index), _add_day, day_groups.size())
 
 
 func _build() -> void:
@@ -413,11 +474,13 @@ func _build() -> void:
 	_bible.hide()
 	page.add_child(_bible)
 	_board = StoryLabBoard.new()
-	_board.custom_minimum_size.y = 390
+	_board.custom_minimum_size.y = 480
 	_board.errand_picked.connect(open_errand)
 	_board.errand_dropped.connect(move_errand)
+	_board.customer_dropped.connect(add_errand)
 	_board.add_requested.connect(_add_errand)
 	_board.day_picked.connect(open_day)
+	_week_view.add_child(StoryLabBoard.customer_strip())
 	_week_view.add_child(_board)
 	_lower = Control.new()
 	_lower.size_flags_vertical = Control.SIZE_EXPAND_FILL

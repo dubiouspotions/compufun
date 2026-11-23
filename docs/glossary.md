@@ -189,6 +189,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Story Lab**: The panel in the running game (Dev menu, F4) that edits the story files: the week, the errands and their conversations, as a graph or as text, and plays a conversation in place.
 *Avoid:* Dialogue tab, Week tab, story editor, dialogue editor.
 
+**Week board**: The Story Lab's week (`dev/story_lab/week_board.gd`): a column per day, split into bands, Before opening, Morning, Midday, Afternoon and At closing. Each errand card sits under the band of its daypart as the customer comes in (`Game.daypart_of`); At closing lists the day's closing flags and signs. Cards drag between places and bands, and customers drag onto it from the strip above it to make an errand.
+*Avoid:* timeline, calendar, week view.
+
 **Draft**: A writer's edit of a story file, kept in the player's user folder until `main` has it (`user://story_drafts/`). The game plays drafts over the files from `main`; Send turns them into a GitHub issue.
 *Avoid:* local change, patch, overlay.
 
