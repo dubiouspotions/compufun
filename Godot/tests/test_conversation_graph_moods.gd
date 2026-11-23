@@ -56,6 +56,37 @@ func run() -> void:
 	else:
 		check("Play without the live voice or a rendered file says why", _status().begins_with("Nothing to play for"), true)
 	(graph.get_node("%Voice") as VoicePlayer).hush()
+	await _check_voice_dropdown(talk, manager)
+
+
+# The line row's Voice dropdown offers every voice mood, writes the line's own voice mood and clears it.
+func _check_voice_dropdown(talk: Conversation, manager: Customer) -> void:
+	graph.show_conversation(talk, manager)
+	await process_frame
+	var line := talk.lines[0]
+	var voice := _voice_of(talk)
+	var moods := LabUI.resource_names(Voices.MOODS_DIR)
+	check("it offers the picture's voice, then every voice mood", [voice.get_item_text(0), voice.item_count, voice.selected], ["Same as the picture", moods.size() + 1, 0])
+	var thinking := moods.find("thinking") + 1
+	voice.select(thinking)
+	voice.item_selected.emit(thinking)
+	check("picking one gives the line its own voice mood", [line.voice_mood, line.voice(), line.mood], [&"thinking", &"thinking", &"angry"])
+	var errand := Errand.new()
+	errand.customer = load("res://customers/skater_bro.tres")
+	errand.conversations.append(talk)
+	check("which the story file writes as a voice tag", StoryFormat.write_errand(errand).contains("(angry) %s [voice thinking]" % line.text), true)
+	await process_frame
+	voice = _voice_of(talk)
+	check("and the dropdown shows it", voice.get_item_text(voice.selected), "thinking")
+	voice.select(0)
+	voice.item_selected.emit(0)
+	check("Same as the picture clears it", [line.voice_mood, line.voice()], [&"", &"angry"])
+	graph.set_voice_mood(line, &"angry")
+	check("the picture's own mood is no voice mood of its own", line.voice_mood, &"")
+
+
+func _voice_of(talk: Conversation) -> OptionButton:
+	return _find(graph.box_of(talk), func(node: Node) -> bool: return node is OptionButton and (node as OptionButton).get_item_text(0) == "Same as the picture") as OptionButton
 
 
 # [the portrait, whether the crop is square, its top] of a mood button's thumbnail.

@@ -189,6 +189,8 @@ func edit_text(part: Resource, text: String) -> String:
 ## Makes [param line] say its text in [param mood], one of the customer's person's moods.
 func set_mood(line: DialogueLine, mood: StringName) -> void:
 	line.mood = mood
+	if line.voice_mood == mood:
+		line.voice_mood = &""
 	_changed(_owner_of(line))
 
 
@@ -367,6 +369,13 @@ func move_answer(choice: Choice, from: int, to: int) -> String:
 ## Makes [param line] speak with [param effect], or with its conversation's effect for null.
 func set_line_effect(line: DialogueLine, effect: VoiceEffect) -> void:
 	line.effect = effect
+	_changed(_owner_of(line))
+
+
+## Makes [param line] speak in the voice mood [param voice] (voices/moods/), whatever its picture;
+## empty, or its own mood, speaks in the voice of its picture's mood.
+func set_voice_mood(line: DialogueLine, voice: StringName) -> void:
+	line.voice_mood = voice if voice != line.mood else &""
 	_changed(_owner_of(line))
 
 
@@ -868,6 +877,7 @@ func _line_row(reply: Reply, index: int) -> Control:
 	words.add_theme_constant_override(&"separation", 0)
 	var text := _label(line.text, 14, ink)
 	_spot(words, text, line, &"text", line.text, func(said: String) -> String: return edit_text(line, said))
+	words.add_child(_line_voice(line))
 	words.add_child(_line_effect(line))
 	words.add_child(_line_look(line))
 	row.add_child(words)
@@ -1038,6 +1048,38 @@ func _line_effect(line: DialogueLine) -> OptionButton:
 
 # The small dropdown of where the player looks before [param line]; a look that the game doesn't know
 # shows in red until the writer picks another.
+# "Voice: [Same as the picture / a voice mood]" for [param line].
+func _line_voice(line: DialogueLine) -> Control:
+	var moods: Array[StringName] = [&""]
+	for name: String in LabUI.resource_names(Voices.MOODS_DIR):
+		moods.append(StringName(name))
+	if not moods.has(line.voice_mood):
+		moods.append(line.voice_mood)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override(&"separation", 2)
+	var said := _label("Voice:", 10, faint_ink)
+	said.autowrap_mode = TextServer.AUTOWRAP_OFF
+	said.custom_minimum_size.x = 0
+	row.add_child(said)
+	var voice := OptionButton.new()
+	voice.flat = true
+	voice.focus_mode = Control.FOCUS_NONE
+	voice.add_theme_font_size_override(&"font_size", 10)
+	voice.add_theme_color_override(&"font_color", faint_ink if Voices.has_mood(line.voice()) else error_color)
+	voice.tooltip_text = "How this line sounds. Same as the picture speaks in the picture's mood; pick another when the picture is used outside its own mood."
+	for each: StringName in moods:
+		if each == &"":
+			voice.add_item("Same as the picture")
+		else:
+			voice.add_item(String(each) if Voices.has_mood(each) else "%s (no voice yet)" % each)
+			voice.set_item_tooltip(voice.item_count - 1, "Speaks in the %s voice" % each if Voices.has_mood(each) else "The %s voice isn't made yet: it speaks as neutral" % each)
+	voice.select(moods.find(line.voice_mood))
+	voice.disabled = _read_only
+	voice.item_selected.connect(func(index: int) -> void: set_voice_mood(line, moods[index]))
+	row.add_child(voice)
+	return row
+
+
 func _line_look(line: DialogueLine) -> OptionButton:
 	var looks: Array[StringName] = [&""]
 	looks.append_array(DialogueLine.LOOKS.keys())
