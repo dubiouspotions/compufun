@@ -116,8 +116,8 @@ static func _sign_start(week: StoryFiles.Week, where: String) -> Dictionary:
 ## speaks in (DialogueLine.voice) that has no voices/moods/<mood>.tres, a [leaving] line that the conversation can go on after (it plays in the
 ## dialogue box), a look that is not in DialogueLine.LOOKS or that never turns the view (on a
 ## [leaving] line or the phone), a problem without repair mechanics (no res://problems/<id>.tres, or one
-## that fails Problem.has_repair_mechanics), and a problem file
-## that no errand names.
+## that fails Problem.has_repair_mechanics), a problem file
+## that no errand names, and a call-out whose mood or voice mood has no voice.
 static func missing_links(week: StoryFiles.Week) -> PackedStringArray:
 	var found := PackedStringArray()
 	var index := flag_index(week)
@@ -138,6 +138,12 @@ static func missing_links(week: StoryFiles.Week) -> PackedStringArray:
 				found.append("%s: errand code %s can come with nobody on day %d: %s." % [alternatives[0].file, code, d.number, failing])
 		for errand: Errand in d.errands:
 			_check_errand(errand, found)
+	for name: StringName in week.call_outs:
+		var outs: CallOuts = week.call_outs[name]
+		for each: CallOuts.Set in outs.sets:
+			for line: DialogueLine in each.lines:
+				if not Voices.has_mood(line.voice()):
+					found.append("%s (%s): \"%s\" speaks in the voice mood %s, which has no voice (%s%s.tres)." % [outs.file, each.id, line.text.left(40), line.voice(), MOODS_DIR, line.voice()])
 	var named := {}
 	for d: Day in week.days:
 		for errand: Errand in d.errands:

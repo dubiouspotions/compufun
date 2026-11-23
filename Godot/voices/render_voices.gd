@@ -1,6 +1,6 @@
 extends SceneTree
-## Renders the voice file of every customer line in the story files and the shared conversations
-## that has none, with Chimera's command-line tool, and lists the voice files that no line uses any
+## Renders the voice file of every customer line in the story files (errands and call-outs) and the
+## shared conversations that has none, with Chimera's command-line tool, and lists the voice files that no line uses any
 ## more. See docs/building-and-testing.md.
 ## From Godot/: CHIMERA=/path/to/chimera godot --headless --script res://voices/render_voices.gd
 
@@ -15,10 +15,11 @@ func _initialize() -> void:
 		return
 	var wanted := {}
 	var errors := 0
-	# Conversations in their own file are shared, for example what every customer says while
-	# waiting: render them in each voice that a customer has.
+	# Conversations in their own file and everyone's call-outs are shared: render them in each voice
+	# that a customer has.
 	var shared: Array[Conversation] = []
 	var voices := {}
+	var bodies: Dictionary[StringName, String] = {}
 	for path: String in _resources(CUSTOMERS):
 		var resource := load(path)
 		if resource == null:
@@ -36,6 +37,7 @@ func _initialize() -> void:
 			errors += 1
 			continue
 		voices[customer.voice.body] = true
+		bodies[StringName(path.get_file().get_basename())] = customer.voice.body
 	var week := StoryFiles.load_week()
 	for error: String in week.errors:
 		push_error("render_voices: " + error)
@@ -49,6 +51,13 @@ func _initialize() -> void:
 				for line: DialogueLine in conversation.all_lines():
 					if not line.text.strip_edges().is_empty():
 						wanted[Voices.path_of(line, voice.body)] = [line, voice.body, errand.file]
+	for name: StringName in week.call_outs:
+		var outs: CallOuts = week.call_outs[name]
+		var in_voices: Array = voices.keys() if name == CallOuts.EVERYONE else ([bodies[name]] if bodies.has(name) else [])
+		for each: CallOuts.Set in outs.sets:
+			for voice: String in in_voices:
+				for line: DialogueLine in each.lines:
+					wanted[Voices.path_of(line, voice)] = [line, voice, outs.file]
 	for conversation in shared:
 		for voice: String in voices:
 			for line: DialogueLine in conversation.all_lines():

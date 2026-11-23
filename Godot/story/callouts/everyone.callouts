@@ -1,0 +1,46 @@
+== waiting
+brief: What every customer says while they wait and the player looks elsewhere. They climb through the moods, calmest first.
+(neutral) Hello...
+(neutral) Hi?
+(neutral) Hello there?
+(neutral) Anyone here?
+(neutral) Hi, um... I have a computer?
+(neutral) Is the shop open?
+(neutral) The sign said open...
+(neutral) Knock knock?
+
+(thinking) Are you there?
+(thinking) Is anybody back there?
+(thinking) Hmm... hello?
+(thinking) Maybe they're in the back.
+(thinking) Should I ring the bell again?
+(thinking) Did I come on the wrong day?
+(thinking) This is the computer shop, right?
+(thinking) I can hear someone in there...
+
+(irritated01) Hello?
+(irritated01) Excuse me...
+(irritated01) Hello-o?
+(irritated01) Excuse me, sir?
+(irritated01) Um. Hello?
+(irritated01) I'm right here.
+(irritated01) Could I get some help, please?
+(irritated01) Yoo-hoo?
+
+(irritated02) Are you busy?
+(irritated02) I'm still waiting here.
+(irritated02) Can someone help me?
+(irritated02) I've been standing here a while.
+(irritated02) Is this a bad time?
+(irritated02) My parking runs out soon.
+(irritated02) Hello? HELLO?
+(irritated02) I can wait. I guess.
+
+(irritated03) I can go somewhere else.
+(irritated03) I don't have all day.
+(irritated03) Unbelievable.
+(irritated03) Some service this is.
+(irritated03) I'll take it to the place across town.
+(irritated03) Is this how you treat customers?
+(irritated03) Do you even work here?
+(irritated03) Fine. FINE. I'll just stand here.

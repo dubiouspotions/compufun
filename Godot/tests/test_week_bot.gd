@@ -51,7 +51,7 @@ const KNOWN_GAME_METHODS: Array[String] = [
 	# the day, the visitor and the talk
 	"start_day", "start_next_day", "has_next_day", "can_open", "open_shop", "can_close", "close_shop",
 	"customer_arrived", "dialogue_finished", "talk_to_visitor", "visitor_carries", "customer_out_the_door", "customer_left",
-	"offered", "reply_to", "choose", "go_on", "matching_conversation", "coming", "go_to_view",
+	"offered", "reply_to", "choose", "go_on", "matching_conversation", "call_outs_of", "coming", "go_to_view",
 	# the repair
 	"focus_job", "job_beside", "lay_down", "can_stand_up", "stand_up", "open_case", "turn_screw", "can_turn",
 	"can_take", "take_part", "can_put", "put_part", "take_new_part", "can_take_blocker", "take_blocker", "can_take_misplaced", "take_misplaced", "put_on_mat", "take_from_mat",

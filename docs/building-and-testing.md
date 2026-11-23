@@ -226,9 +226,9 @@ gh release upload live-voice live-voice-windows.zip --clobber
 **Rendered.** Each customer line plays a WAV in `Godot/voices/`, which [Chimera](https://github.com/jamesondh/chimera-vocal-synth)
 renders from the text, in the body of the customer's `voice` person and the line's voice mood
 (`Godot/voices/moods/<mood>.tres`: speed, pitch and pitch swing). A line without its file is
-silent, and a debug run warns about it. Conversations that every customer shares, such as what
-they say while they wait, live in `Godot/customers/conversations/`; they are rendered in each
-body that a customer's person has.
+silent, and a debug run warns about it. Conversations that every customer shares, such as the thanks at a pickup, live in
+`Godot/customers/conversations/`; they and everyone's call-outs (`story/callouts/everyone.callouts`)
+are rendered in each body that a customer's person has.
 
 1. Once: install [Rust](https://rustup.rs), then clone Chimera outside this repo, at the commit
    that the patch fits, and build its CLI with our mood patch. The binary finds Chimera's data

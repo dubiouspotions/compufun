@@ -168,7 +168,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Errand code**: The four digits that start an errand's file name: the day and the errand's place in it, so `0503_nice_guy.errand` is day 5, the third errand. Two errands with one code are alternatives; the first whose condition matches comes.
 *Avoid:* slot (a place on the work mat), timeslot, id.
 
-**Story file**: A plain-text file in `Godot/story/` that writers edit in the Story Lab: a day (`days/day_<n>.day`), an errand (`errands/<code>_<customer>.errand`), a problem file (`problems/<id>.problem`) or a bible page (`bible/*.md`). The format is in `docs/dialogue.md`.
+**Story file**: A plain-text file in `Godot/story/` that writers edit in the Story Lab: a day (`days/day_<n>.day`), an errand (`errands/<code>_<customer>.errand`), a problem file (`problems/<id>.problem`), a customer's call-outs (`callouts/<customer>.callouts`) or a bible page (`bible/*.md`). The format is in `docs/dialogue.md`.
 *Avoid:* script, timeline, data file.
 
 **Problem file**: The story file of one computer problem, `story/problems/<id>.problem`: the post-it, the symptoms and how each shows, the repair steps and notes. The mechanics stay in `problems/<id>.tres`; the game fills the text into it as the week loads.
@@ -227,7 +227,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Conversation**: One exchange with a customer: the lines they say, one at a time, and the player's choices. It is a section of an errand's story file; `Game` plays the errand's first one whose trigger and condition match.
 *Avoid:* dialog, dialogue tree, script.
 
-**Call-out**: A line that a customer says outside the dialogue box, in the call-out box at the edge of the screen that points at them (`ui/customer_calling.tscn`): while they wait and the player looks elsewhere, as they leave (`[leaving]`), and while a look has turned the player away.
+**Call-out**: A line that a customer says outside the dialogue box, in the call-out box at the edge of the screen that points at them (`ui/customer_calling.tscn`): while they wait and the player looks elsewhere, as they leave (`[leaving]`), and while a look has turned the player away. What they call out while they wait is in `story/callouts/` (`Game.call_outs_of`).
 *Avoid:* bark, shout, speech bubble.
 
 **Look**: A turn of the player's view that a customer's line asks for before it is said: left to the Left View, right to the Right View or ahead to the Main View (`DialogueLine.look`, `[look left]` in a story file). While a look has turned the player away from the customer, the conversation's lines show in the call-out box.

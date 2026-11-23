@@ -5,10 +5,11 @@ extends RefCounted
 const DAYS_DIR: String = "res://story/days/"
 const ERRANDS_DIR: String = "res://story/errands/"
 const PROBLEMS_DIR: String = StoryFormat.PROBLEM_FILES_DIR
+const CALL_OUTS_DIR: String = "res://story/callouts/"
 const DAYS: int = 7
 
-## The loaded week: the days 1 to 7 in order, each with its errands, its problems, and one
-## "path:line: what" per error. A week with errors must not play.
+## The loaded week: the days 1 to 7 in order, each with its errands, its problems, the call-outs,
+## and one "path:line: what" per error. A week with errors must not play.
 class Week:
 	extends RefCounted
 	var days: Array[Day] = []
@@ -16,6 +17,9 @@ class Week:
 	## made in memory, text only, for a problem file without one. Holding them keeps the cached
 	## resources, and so their text, alive.
 	var problems: Dictionary[StringName, Problem] = {}
+	## The call-outs of each customer that has a call-outs file, by its file name, and everyone's
+	## by [constant CallOuts.EVERYONE].
+	var call_outs: Dictionary[StringName, CallOuts] = {}
 	var errors: PackedStringArray = []
 	# The text of each problem file, by id, as it parsed.
 	var _texts: Dictionary[StringName, Problem] = {}
@@ -53,9 +57,23 @@ static func load_week(drafts: Dictionary[String, String] = {}) -> Week:
 		var errand := parsed.value as Errand
 		if errand.day_number() >= 1 and errand.day_number() <= DAYS:
 			week.days[errand.day_number() - 1].errands.append(errand)
+	_load_call_outs(week, drafts)
 	if week.errors.is_empty():
 		week.fill_problems()
 	return week
+
+
+# Parses the call-outs files into [param week]; everyone's must have a plain set, as every customer
+# falls back to it.
+static func _load_call_outs(week: Week, drafts: Dictionary[String, String]) -> void:
+	for path: String in files(CALL_OUTS_DIR, ".callouts", drafts):
+		var parsed := StoryFormat.parse_call_outs(_text(path, drafts, week.errors), path)
+		week.errors.append_array(parsed.errors)
+		var outs := parsed.value as CallOuts
+		week.call_outs[outs.name] = outs
+	var everyone: CallOuts = week.call_outs.get(CallOuts.EVERYONE)
+	if everyone == null or not everyone.sets.any(func(each: CallOuts.Set) -> bool: return each.is_plain()):
+		week.errors.append("%s%s.callouts: missing, or without a '== waiting' set that has no [if] or [daypart]; every customer falls back to it" % [CALL_OUTS_DIR, CallOuts.EVERYONE])
 
 
 # Parses the problem files into [param week], each with its .tres; a .tres without a problem file is

@@ -12,6 +12,8 @@ Everything that writers edit is plain text under `Godot/story/`. One thing is on
 story/days/day_1.day ... day_7.day    each day's settings: weather, warp, flags, signs, notes
 story/errands/0101_skater_bro.errand  one visit: who, which problem, the brief, the conversations
 story/problems/dust_overheat.problem  one computer problem's text: the post-it, symptoms, steps, notes
+story/callouts/everyone.callouts      what every customer calls out while they wait
+story/callouts/skater_bro.callouts    what one customer calls out instead, by day, daypart or flags
 story/bible/storyline.md              prose that the game doesn't read: the lore, the end, the cast
 story/bible/customers.md
 ```
@@ -130,6 +132,39 @@ in its `.tres`: CompuFunDB finds nothing for its symptoms. With
 taking the side panel off and putting it back on with its screws in is the repair, and the case
 stays empty.
 
+## Call-outs: `story/callouts/<customer>.callouts`
+
+What a customer calls out while they wait at the counter and the player looks elsewhere, in the
+call-out box. `everyone.callouts` is what every customer says; a file named for a customer
+(`customers/<customer>.tres`) gives them their own.
+
+```
+== waiting [if day 7] [effect cambion_glitch]
+(irritated03) I am still here. I am always here.
+
+== waiting [daypart afternoon]
+(neutral) Getting late, man.
+
+== waiting
+brief: The skater gets bored fast.
+(neutral) Yo?
+(thinking) Dude?
+(irritated01) Hellooo?
+```
+
+- A file holds sets: each starts with `== waiting`, then `(mood) text` lines, without choices,
+  `set`, `if`, `[leaving]` or `[look]`. A line can have `[effect name]` and `[voice mood]`.
+- Tags after `== waiting`: `[if ...]` (a condition, below), `[daypart morning]`, `midday` or
+  `afternoon` (the daypart as the customer waits, as the week board's bands show it), and
+  `[effect name]` for all its lines.
+- **Which set plays:** the first set whose `if` and `daypart` both match; else the set without
+  either, the customer's fallback. A file has at most one such set. When none of the customer's
+  sets plays, or they have no file, everyone's file decides the same way; it must have a set
+  without `if` and `daypart`.
+- The customer says two random lines of a mood, then the next mood's, in the order in which
+  each mood first appears in the set: put the calmest first. After the last mood they go round
+  the moods from the fourth on, or stay in the last in a set with fewer than five.
+
 ## Conversations
 
 One line per thing; a tab indents. Depth matters, not width.
@@ -216,7 +251,7 @@ The files are the outline. The story check lists the missing links: a flag that 
 checks, a `+` choice without a line, an errand without a `drop-off`, an errand code whose alternatives can
 all fail, a mood that the person has no portrait for, a voice mood that a line speaks in and that has no voice, a `[leaving]` line that the
 conversation can go on after, a look that is unknown or never turns the view, a problem without repair mechanics, a problem file that no errand
-names:
+names, a call-out whose voice mood has no voice:
 
 ```sh
 "$GODOT" --headless -s res://dev/story.gd

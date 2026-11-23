@@ -1773,6 +1773,22 @@ static func daypart_of(on_day: Day, count: int) -> Daypart:
 	return clampi(count - visits_first, 1, Daypart.AFTERNOON) as Daypart
 
 
+## The set of lines that [param who] calls out now while they wait (docs/dialogue.md, "Call-outs"):
+## their own set for today's day, flags and daypart, else everyone's; null without a week that
+## loaded, or for a null [param who].
+func call_outs_of(who: Customer) -> CallOuts.Set:
+	if week == null or who == null:
+		return null
+	var part := StringName(String(Daypart.find_key(daypart)).to_lower())
+	var number := day.number if day != null else 1
+	for name: StringName in [StringName(_id_of(who)), CallOuts.EVERYONE]:
+		var outs: CallOuts = week.call_outs.get(name)
+		var picked := outs.pick(number, flags, part) if outs != null else null
+		if picked != null:
+			return picked
+	return null
+
+
 ## Why [param d] can't be played, or "" when it can: it is null, has more than
 ## [constant MAX_CUSTOMERS] errand codes, or an errand without a customer.
 static func check_day(d: Day) -> String:

@@ -6,7 +6,10 @@ func run() -> void:
 	var calling: Node = load("res://ui/customer_calling.tscn").instantiate()
 	root.add_child(calling)
 	await process_frame
-	var lines: Conversation = load("res://customers/conversations/waiting.tres")
+	var week := StoryFiles.load_week()
+	check("the call-outs load", week.errors, PackedStringArray())
+	var lines: Conversation = week.call_outs[CallOuts.EVERYONE].sets[0]
+	check("everyone's call-outs keep their 40 lines", lines.lines.size(), 40)
 	calling._moods = calling._by_mood(lines.lines)
 	check("five moods, calmest first", calling._moods.map(func(m: Array) -> StringName: return m[0].mood), [&"neutral", &"thinking", &"irritated01", &"irritated02", &"irritated03"])
 	var moods := []

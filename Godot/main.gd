@@ -244,7 +244,7 @@ func _sync_talk() -> void:
 	if line != null:
 		_calling.say(Game.visitor, line, Game.conversation)
 	elif talking and not facing:
-		_calling.call_out(Game.visitor)
+		_calling.call_out(Game.visitor, Game.call_outs_of(Game.visitor))
 	elif not Game.leaving_lines.is_empty():
 		_calling.call_out_leaving(Game.visitor, Game.leaving_lines)
 	else:

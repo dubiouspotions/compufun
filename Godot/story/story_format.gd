@@ -1,6 +1,7 @@
 class_name StoryFormat
 extends RefCounted
-## Reads and writes the story files: a day (.day), an errand (.errand) and a problem (.problem). The format is in
+## Reads and writes the story files: a day (.day), an errand (.errand), a problem (.problem) and a
+## customer's call-outs (.callouts). The format is in
 ## docs/dialogue.md. Writing a parsed file gives the same text when the file is in the written
 ## layout, so the Story Lab can edit the text and the graph of one file.
 
@@ -50,6 +51,12 @@ static func parse_errand(text: String, path: String, problems: Dictionary[String
 ## [member Resource.resource_path] [param path].
 static func parse_problem(text: String, path: String) -> Parsed:
 	return _Reader.new(text, path).problem()
+
+
+## The call-outs in [param text], read from [param path] (story/callouts/<customer>.callouts, or
+## everyone.callouts): a CallOuts whose name is the file name.
+static func parse_call_outs(text: String, path: String) -> Parsed:
+	return _Reader.new(text, path).call_outs()
 
 
 ## The day in [param text], read from [param path] (story/days/day_<n>.day).
@@ -315,6 +322,71 @@ class _Reader:
 			errand.conversations.append(c)
 		result.errors = _sorted_errors()
 		return result
+
+	func call_outs() -> Parsed:
+		var result := Parsed.new()
+		var outs := CallOuts.new()
+		result.value = outs
+		outs.file = _path
+		outs.name = StringName(_path.get_file().get_basename())
+		if outs.name != CallOuts.EVERYONE and (not _is_name(outs.name) or not ResourceLoader.exists(CUSTOMERS_DIR + outs.name + ".tres")):
+			_error(0, "the file name must be a customer's (%s<name>.tres) or %s, not '%s'" % [CUSTOMERS_DIR, CallOuts.EVERYONE, outs.name])
+		var sections := _section_starts()
+		var header_end: int = sections[0] if not sections.is_empty() else _lines.size()
+		for i: int in header_end:
+			if _lines[i].strip_edges() != "":
+				_error(i, "a line before the first '== waiting'")
+				break
+		var plain := -1
+		for i: int in sections.size():
+			var end: int = sections[i + 1] if i + 1 < sections.size() else _lines.size()
+			var each := _call_out_set(sections[i], end)
+			if each == null:
+				continue
+			each.id = StringName("%s/waiting/%d" % [outs.name, outs.sets.size() + 1])
+			if each.is_plain():
+				if plain >= 0:
+					_error(sections[i], "a second '== waiting' without [if] or [daypart]; only one plays when no other set matches (line %d)" % (plain + 1))
+				plain = sections[i]
+			outs.sets.append(each)
+		result.errors = _sorted_errors()
+		return result
+
+	func _call_out_set(from: int, to: int) -> CallOuts.Set:
+		var tags := _split_tags(_lines[from].substr(2).strip_edges())
+		if tags.text != "waiting":
+			_error(from, "'== %s': a call-out set starts with '== waiting'" % tags.text)
+			return null
+		var each := CallOuts.Set.new()
+		for tag: String in tags.tags:
+			if tag.begins_with("if "):
+				each.when = _condition(tag.substr(3), from)
+			elif tag.begins_with("daypart "):
+				each.daypart = StringName(tag.substr(8).strip_edges())
+				if each.daypart not in CallOuts.DAYPARTS:
+					_error(from, "[%s]: the daypart must be %s" % [tag, ", ".join(PackedStringArray(CallOuts.DAYPARTS))])
+			elif tag.begins_with("effect "):
+				each.effect = _load(EFFECTS_DIR, tag.substr(7).strip_edges(), from, "voice effect") as VoiceEffect
+			else:
+				_error(from, "[%s] is not a tag of a call-out set: if, daypart or effect" % tag)
+		var body := from + 1
+		while body < to and _lines[body].strip_edges() == "":
+			body += 1
+		if body < to and _lines[body].begins_with("brief:"):
+			each.brief = _lines[body].substr(6).strip_edges()
+			body += 1
+		_tokenize(body, to)
+		for token: Dictionary in _tokens:
+			if token.kind != Kind.LINE or token.depth != 0:
+				_error(token.line, "'%s': a call-out set holds only lines, (mood) text, without indent" % token.text)
+				continue
+			var line := _said(token)
+			if line.leaving or line.look != &"":
+				_error(token.line, "'%s': a call-out can't have [leaving] or [look]" % token.text)
+			each.lines.append(line)
+		if each.lines.is_empty():
+			_error(from, "a call-out set without lines")
+		return each
 
 	func day() -> Parsed:
 		var result := Parsed.new()

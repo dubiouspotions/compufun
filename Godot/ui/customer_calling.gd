@@ -1,19 +1,17 @@
 class_name CustomerCalling
 extends PanelContainer
-## A waiting customer calls out while the player looks elsewhere, until stop(): one line at a
-## time, spoken in the customer's voice. The lines are grouped by mood, calmest first, in the order
-## each mood first appears; the customer says [member lines_per_mood] random lines of a group
-## (never the one just said) before the next, so they get more annoyed, and once at the end they
-## stay annoyed, going round from group [member loop_from_mood] on. A customer who goes calls out
-## their leaving lines instead, each once. While a look of the conversation has turned the player
+## A waiting customer calls out a set of lines (Game.call_outs_of) while the player looks elsewhere,
+## until stop(): one line at a time, spoken in the customer's voice with the set's effect. The lines
+## are grouped by mood, calmest first, in the order each mood first appears; the customer says
+## [member lines_per_mood] random lines of a group (never the one just said) before the next, so
+## they get more annoyed, and once at the end they stay annoyed, going round from group
+## [member loop_from_mood] on. A customer who goes calls out their leaving lines instead, each once. While a look of the conversation has turned the player
 ## away, the box says the conversation's line instead ([method say]).
 
 ## The line that [method say] shows has been read: its voice ended and [member read_seconds] passed,
 ## or the player clicked the box or pressed accept. Fires once per line.
 signal line_read(line: DialogueLine)
 
-## What every customer says while waiting.
-@export var lines: Conversation = preload("res://customers/conversations/waiting.tres")
 ## How many lines the customer says in one mood before the next.
 @export var lines_per_mood: int = 2
 ## The mood group (0 is the calmest) that the customer goes back to after the angriest.
@@ -88,24 +86,24 @@ func _on_click(event: InputEvent) -> void:
 		_read()
 
 
-## Starts calling as [param customer], from the first line. Calling again for the same customer
-## carries on where it was.
-func call_out(customer: Customer) -> void:
+## Starts calling as [param customer], the lines of [param lines] from the first. Calling again for
+## the same customer and set carries on where it was.
+func call_out(customer: Customer, lines: Conversation) -> void:
 	if customer == null:
 		push_error("CustomerCalling.call_out: no customer")
 		return
-	if _calling and customer == _customer and _leaving.is_empty() and _said == null:
+	if _calling and customer == _customer and lines == _conversation and _leaving.is_empty() and _said == null:
 		return
 	if _said != null:
 		stop()
 	_leaving = []
-	var conversation := lines
-	_conversation = conversation
-	if conversation == null or conversation.lines.is_empty():
-		push_error("CustomerCalling: no waiting lines are set (lines: %s), so %s can't call out" % [conversation, customer.resource_path])
+	if lines == null or lines.lines.is_empty():
+		push_error("CustomerCalling: no call-outs (%s) for %s, so they can't call out; see the story check" % [lines, customer.resource_path])
+		stop()
 		return
+	_conversation = lines
 	_customer = customer
-	_moods = _by_mood(conversation.lines)
+	_moods = _by_mood(lines.lines)
 	_step = 0
 	_last = null
 	_calling = true
