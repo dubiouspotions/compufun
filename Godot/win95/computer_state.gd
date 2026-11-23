@@ -100,7 +100,8 @@ func removable_programs() -> Array[Win95File]:
 
 
 ## Removes [param folder], one of [method removable_programs], for good, with every shortcut in the
-## Start Menu that points into it, as an uninstaller does.
+## Start Menu and on the desktop that points into it and its name in installed_apps, as an
+## uninstaller does.
 func uninstall(folder: Win95File) -> void:
 	var program_files := setup.file_at(_PROGRAM_FILES_PATH) if setup != null else null
 	if program_files == null or not program_files.children.has(folder):
@@ -111,7 +112,70 @@ func uninstall(folder: Win95File) -> void:
 	var start_menu := setup.file_at(_START_MENU_PATH)
 	if start_menu != null:
 		_remove_shortcuts(start_menu.children, inside)
+	_remove_shortcuts(setup.desktop, inside)
+	var app := setup.installed_apps.find(folder.name)
+	if app >= 0:
+		setup.installed_apps.remove_at(app)
 	_changed()
+
+
+## True when C:\Program Files\[param app_name] holds a file named [param program_name], as
+## [method install] leaves it.
+func is_installed(program_name: String, app_name: String) -> bool:
+	return setup != null and setup.file_at("%s\\%s\\%s" % [_PROGRAM_FILES_PATH, app_name, program_name]) != null
+
+
+## Installs a copy of [param program] as a setup program does: in C:\Program Files\[param app_name],
+## making the folders that are missing, with a shortcut named [param app_name] in the Start menu's
+## Programs and on the desktop, and [param app_name] in installed_apps. What is there already stays,
+## so a second run adds only what is missing. Returns the installed program file; null while the
+## computer has no setup, or with an error when a file stands where a folder goes.
+func install(program: Win95File, app_name: String) -> Win95File:
+	if setup == null:
+		return null
+	var folder := _make_folder(_PROGRAM_FILES_PATH + "\\" + app_name)
+	var programs := _make_folder(_START_MENU_PATH + "\\Programs")
+	if folder == null or programs == null:
+		return null
+	var path := "%s\\%s\\%s" % [_PROGRAM_FILES_PATH, app_name, program.name]
+	var installed := setup.file_at(path)
+	if installed == null:
+		installed = program.duplicate_deep()
+		_stamp(installed)
+		folder.children.append(installed)
+	for container: Array in [programs.children, setup.desktop]:
+		if not container.any(func(file: Win95File) -> bool: return file.target.nocasecmp_to(path) == 0):
+			var shortcut := Win95File.new()
+			shortcut.name = app_name
+			shortcut.icon = program.icon
+			shortcut.target = path
+			container.append(shortcut)
+	if not setup.installed_apps.has(app_name):
+		setup.installed_apps.append(app_name)
+	_changed()
+	return installed
+
+
+# The folder at [param path] on drive C, made with the folders above it where they are missing;
+# null, with an error, when a file stands in the way.
+func _make_folder(path: String) -> Win95File:
+	var parts := path.split("\\", false)
+	var container: Array = setup.drive_c
+	var folder: Win95File
+	for i in range(1, parts.size()):
+		var at := "\\".join(parts.slice(0, i + 1))
+		folder = setup.file_at(at)
+		if folder != null and not folder.is_folder:
+			push_error("ComputerState: %s is a file, so no folder can be made there" % at)
+			return null
+		if folder == null:
+			folder = Win95File.new()
+			folder.name = parts[i]
+			folder.icon = _NEW_FOLDER_ICON
+			folder.is_folder = true
+			container.append(folder)
+		container = folder.children
+	return folder
 
 
 ## Ends every task that is a Virus, then deletes for good every file on the desktop and drive C that

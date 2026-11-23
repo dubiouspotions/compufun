@@ -1,0 +1,114 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/av_setup.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/computer_install_software_16.png" id="icon"]
+[ext_resource type="Texture2D" path="res://materials/textures/antivirus_label.png" id="picture"]
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="file"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/find_files_32.png" id="av_icon"]
+[ext_resource type="PackedScene" path="res://win95/av_scan.tscn" id="av_scan"]
+
+[sub_resource type="Resource" id="av_exe"]
+script = ExtResource("file")
+name = "AV.EXE"
+icon = ExtResource("av_icon")
+program = ExtResource("av_scan")
+
+[node name="AvSetup" type="PanelContainer"]
+theme = ExtResource("theme")
+script = ExtResource("script")
+program = SubResource("av_exe")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "CompuFun AntiVirus Setup"
+icon = ExtResource("icon")
+
+[node name="Body" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Rows" type="VBoxContainer" parent="VBox/Body"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Page" type="HBoxContainer" parent="VBox/Body/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="PictureField" type="PanelContainer" parent="VBox/Body/Rows/Page"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_type_variation = &"FieldPanel"
+
+[node name="Picture" type="TextureRect" parent="VBox/Body/Rows/Page/PictureField"]
+custom_minimum_size = Vector2(136, 48)
+texture_filter = 1
+layout_mode = 2
+texture = ExtResource("picture")
+stretch_mode = 2
+
+[node name="Column" type="VBoxContainer" parent="VBox/Body/Rows/Page"]
+custom_minimum_size = Vector2(240, 150)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Text" type="Label" parent="VBox/Body/Rows/Page/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="File" type="Label" parent="VBox/Body/Rows/Page/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Progress" type="ProgressBar" parent="VBox/Body/Rows/Page/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="Separator" type="HSeparator" parent="VBox/Body/Rows"]
+layout_mode = 2
+
+[node name="Buttons" type="HBoxContainer" parent="VBox/Body/Rows"]
+layout_mode = 2
+alignment = 2
+theme_override_constants/separation = 0
+
+[node name="Back" type="Button" parent="VBox/Body/Rows/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+text = "< Back"
+
+[node name="Next" type="Button" parent="VBox/Body/Rows/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+theme_type_variation = &"DefaultButton"
+text = "Next >"
+
+[node name="Gap" type="Control" parent="VBox/Body/Rows/Buttons"]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+
+[node name="Cancel" type="Button" parent="VBox/Body/Rows/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+text = "Cancel"

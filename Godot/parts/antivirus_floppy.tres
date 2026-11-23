@@ -7,11 +7,13 @@
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/computer_install_software_32.png" id="5_setup_icon"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/document_text_32.png" id="6_text_icon"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/file_unknown_32.png" id="7_unknown_icon"]
+[ext_resource type="PackedScene" path="res://win95/av_setup.tscn" id="8_setup"]
 
 [sub_resource type="Resource" id="setup"]
 script = ExtResource("4_file")
 name = "SETUP.EXE"
 icon = ExtResource("5_setup_icon")
+program = ExtResource("8_setup")
 modified = "Monday, March 4, 1996 10:00:00 AM"
 
 [sub_resource type="Resource" id="readme"]
