@@ -790,7 +790,7 @@ func _choice_box(choice: Choice, reply: Reply, index: int) -> GraphNode:
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_spot(head, text, choice, &"text", choice.text, func(said: String) -> String: return edit_text(choice, said))
 	if not _read_only:
-		head.add_child(_branch("Add an answer that plays only if a condition holds (if)", func() -> void: _open_spot_later(add_answer(choice), &"when")))
+		head.add_child(_branch("Add an answer that plays only when certain facts hold", func() -> void: _open_spot_later(add_answer(choice), &"when")))
 	var chips := HFlowContainer.new()
 	box.add_child(chips)
 	var only := _chip("only if " + StoryConditionEditor.describe(choice.when), true) if choice.when != null else null
@@ -1226,7 +1226,7 @@ func _reply_menu(reply: Reply) -> Array[Array]:
 	if _parent_of(reply) is Choice:
 		items.append(["Only if...", func() -> void: _open_spot(reply, &"when")])
 	if not reply.choices.is_empty() and reply.then == null:
-		items.append(["Go on below the list", func() -> void: _open_spot_later(go_on_below(reply).lines[0], &"text")])
+		items.append(["Add what is said after this list", func() -> void: _open_spot_later(go_on_below(reply).lines[0], &"text")])
 	if reply != _conversation:
 		items.append(["Delete", func() -> void: _ask_delete(reply)])
 	return items
@@ -1234,7 +1234,7 @@ func _reply_menu(reply: Reply) -> Array[Array]:
 
 func _choice_menu(choice: Choice) -> Array[Array]:
 	return [
-		["Add an answer (if)", func() -> void: _open_spot_later(add_answer(choice), &"when")],
+		["Add an answer that plays only when certain facts hold", func() -> void: _open_spot_later(add_answer(choice), &"when")],
 		["Only if...", func() -> void: _open_spot(choice, &"when")],
 		["Delete", func() -> void: _ask_delete(choice)],
 	]
@@ -1340,7 +1340,7 @@ func _misread() -> String:
 	if not parsed.errors.is_empty():
 		return "The story file can't hold this text: %s" % _without_place(parsed.errors)
 	if not _same(_conversation, (parsed.value as Errand).conversations[0]):
-		return "The story file would read this text as something else, such as a tag."
+		return "Leave out the square brackets at the end: the story file reads them as a setting."
 	return ""
 
 
@@ -1414,7 +1414,7 @@ func _mood_tip(mood: StringName) -> String:
 	if _portrait(mood) == null:
 		tip += "\nThe person has no portrait for this mood."
 	if not _has_voice_mood(mood):
-		tip += "\nNo voices/moods/%s.tres: it speaks as neutral." % mood
+		tip += "\nThis mood has no voice of its own yet: it speaks as neutral."
 	return tip
 
 
@@ -1450,10 +1450,10 @@ func _pick_mood(line: DialogueLine, near: Control) -> void:
 
 func _play(line: DialogueLine) -> void:
 	if _customer == null or _customer.voice == null:
-		_status.text = "%s has no voice person (voices/persons/); nothing to play." % (_customer.display_name if _customer != null else "This customer")
+		_status.text = "%s has no voice yet, so there is nothing to play." % (_customer.display_name if _customer != null else "This customer")
 		return
 	var seconds := _voice.say(line, _customer.voice, line.effect if line.effect != null else _conversation.effect)
 	if seconds > 0.0 or OS.has_feature("web"):
 		_status.text = "Playing \"%s\" (%s)" % [line.text, line.mood]
 	else:
-		_status.text = "Nothing to play for \"%s\": this build has no live voice and the line has no rendered file (docs/building-and-testing.md, Voices)." % line.text
+		_status.text = "Nothing to play for \"%s\" yet: its voice isn't rendered, and this build can't speak it live." % line.text

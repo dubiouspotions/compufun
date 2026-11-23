@@ -45,7 +45,7 @@ func run() -> void:
 	graph.show_conversation(talk, nobody)
 	var play := _find(graph.box_of(talk), func(node: Node) -> bool: return node is Button and node.get(&"tooltip_text") == "Play this line") as Button
 	play.pressed.emit()
-	check("Play without a voice says why", _status().contains("Nobody has no voice person"), true)
+	check("Play without a voice says why", _status().contains("Nobody has no voice yet"), true)
 	var portrait_less := _find(graph.box_of(talk), func(node: Node) -> bool: return node is Button and node.get(&"text") == "?") as Button
 	check("a mood without a portrait is marked", portrait_less != null, true)
 	graph.show_conversation(talk, manager)

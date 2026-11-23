@@ -191,7 +191,7 @@ func _check_in_place(questions: Reply) -> void:
 	await process_frame
 	check("the + at a box's right edge starts a list under an answer", answer.choices.size(), 1)
 	check("and opens the new choice's text", (_find(graph.box_of(answer.choices[0]), func(node: Node) -> bool: return node is TextEdit) as TextEdit).text, graph.new_text)
-	_tip(graph.box_of(answer.choices[0]), "Add an answer that plays only if a condition holds (if)").pressed.emit()
+	_tip(graph.box_of(answer.choices[0]), "Add an answer that plays only when certain facts hold").pressed.emit()
 	await process_frame
 	check("the + at a choice's right edge adds an if branch", answer.choices[0].replies[0].when.need_flags, [graph.new_flag])
 	_then_under(answer.choices[0]).pressed.emit()

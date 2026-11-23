@@ -297,7 +297,7 @@ func _fill_tabs() -> void:
 		tab.toggle_mode = true
 		tab.button_group = _tab_group
 		tab.theme_type_variation = &"SegmentButton"
-		tab.tooltip_text = _errand.conversations[i].brief if _errand.conversations[i].brief != "" else "No brief: write one under the == line"
+		tab.tooltip_text = _errand.conversations[i].brief if _errand.conversations[i].brief != "" else "No brief yet: say what this conversation must get across, above its graph"
 		tab.toggled.connect(func(on: bool) -> void:
 			if on:
 				_show_tab(i))
