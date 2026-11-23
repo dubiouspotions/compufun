@@ -122,7 +122,7 @@ templates (Editor > Manage Export Templates).
 3. Export from `Godot/`, into a folder outside the repo, as CI does:
 
    ```sh
-   bash ../tools/write-build-commit.sh
+   bash ../tools/write-build-info.sh
    "$GODOT" --headless --export-release "Web" /path/to/web/index.html
    ```
 
@@ -230,21 +230,27 @@ body that a customer's person has.
 
 ## CI
 
-`.github/workflows/godot.yml` runs on every push to `main` and `deploy`:
+`.github/workflows/godot.yml` runs on every push to `main`, and as a release when started by hand
+(see [Releasing](#releasing)):
+
+- **Version** reads the version from the `vX.Y.Z` tags. A release bumps it and tags the commit.
 
 - **Live Voice** builds `native/chimera_voice` with `tools/build-voice.sh`: macOS on a Mac runner, the wasm, Linux and Windows on Ubuntu. Build downloads them before its import.
-- **Build** imports, exports all four presets and uploads them as run artifacts. A failed build posts to
-  Discord, and so do `ERROR` lines in the export log.
-- **Sign and Notarize macOS** runs before every deploy, on a Mac runner. It re-signs the macOS
+- **Build** stamps the version into the game, imports, exports all four presets as
+  `CompuFun-<version>.zip` and uploads them as run artifacts. A failed build posts to Discord, and so
+  do `ERROR` lines in the export log.
+- **Sign and Notarize macOS** runs in every release, on a Mac runner. It re-signs the macOS
   export with Nevyn's Developer ID (team `M4Q2TE45WT`): the libraries in `Contents/Frameworks`
   first, then the app with the entitlements of Godot's own signature. Apple then notarizes it, and
   the ticket is stapled. It needs the secrets `MACOS_CERT_P12_BASE64` and `MACOS_CERT_PASSWORD` (the
   certificate as a base64 .p12) and `MACOS_NOTARY_KEY_P8_BASE64`, `MACOS_NOTARY_KEY_ID` and
   `MACOS_NOTARY_ISSUER_ID` (an App Store Connect API key). Without it, macOS refuses the
   downloaded game.
-- **Deploy** uploads the builds to itch.io with butler, with the notarized macOS build. It runs
-  on the `deploy` branch, or when started by hand (Actions > godot-ci export > Run workflow). It
-  needs the `ITCHIO_*` secrets.
+- **Deploy** uploads the builds to itch.io with butler, with the notarized macOS build, and
+  `--userversion` so that the page shows the version under each download. It needs the
+  `ITCHIO_*` secrets.
+- **GitHub Release** creates the tag's release on GitHub, with the commit subjects since the
+  previous tag as its notes.
 
 A newer push cancels a running export. The tests run in their own workflow,
 `.github/workflows/tests.yml`, on every push to `main` and every pull request: it imports, runs
@@ -255,6 +261,24 @@ Every push to `main` also posts its commits to Discord (`.discord-main.yml`), an
 post there too (`.discord-issues.yml`). Both post into the thread whose ID is in the repository
 variable `DISCORD_THREAD_ID`, so they don't flood the channel; with the variable empty they post
 in the channel. Build failures always post in the channel.
+
+## Releasing
+
+The version lives only in the `vX.Y.Z` git tags; no file in the repo holds it. A build between two
+releases is called after the last one and the commits since, like `0.8.1-5-gcd55d5b`. The game shows
+it in its window title (`Godot/build_info.gd`), and CI also writes its `X.Y.Z` into the macOS and
+Windows file metadata. `tools/write-build-info.sh` writes both.
+
+To release, run Actions > godot-ci export > Run workflow on `main` and pick the part to bump, or:
+
+```sh
+gh workflow run godot.yml -R dubiouspotions/humanerror -f bump=patch   # or minor, major
+```
+
+The run tags `main` with the next version, then builds, signs, deploys and writes the GitHub
+release. If it fails, use "Re-run failed jobs": a re-run keeps the version. A release that reached
+itch.io is never redone: fix it in the next patch release. Running a release on a commit that
+already has a tag deploys that version again without a bump.
 
 ## Ways the build lies
 

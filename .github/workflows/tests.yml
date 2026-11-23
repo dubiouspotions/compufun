@@ -33,7 +33,7 @@ jobs:
         run: |
           # The container runs as another user than the checkout's owner, so git refuses the repo without this.
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          bash ../tools/write-build-commit.sh
+          bash ../tools/write-build-info.sh
 
       - name: Import
         run: godot --headless --import
