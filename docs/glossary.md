@@ -111,6 +111,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Mat**: The strip in front of an open computer where the player lays the pieces that they took out, in two piles either side of the screwdriver's outline (`Job.mat`).
 *Avoid:* tray, bench.
 
+**Stand-in**: A part that no place takes but that sits in the places of another part and works like it, such as Skater Bro's heart in place of the motherboard (`Part.poses_as`, `Problem.stand_ins`).
+*Avoid:* organ part, fake part.
+
 **Misplaced piece**: A piece that the customer put on a place of another kind; it keeps that place empty until the player lifts it off (`Problem.misplaced`, `Job.misplaced`).
 *Avoid:* loose part, wrong part.
 
