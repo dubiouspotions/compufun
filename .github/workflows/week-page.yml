@@ -1,0 +1,67 @@
+name: "week page"
+# Rebuilds the wiki's "The Week" page from the story files, so people who don't run the game can read the week.
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "Godot/story/**"
+      - "Godot/problems/**"
+      - "Godot/customers/**"
+      - "Godot/dev/story_week_page.gd"
+      - ".github/workflows/week-page.yml"
+  workflow_dispatch: {}
+
+# The newest push wins; an older page is never worth finishing.
+concurrency:
+  group: week-page
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+    working-directory: Godot
+
+jobs:
+  week-page:
+    name: The Week
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    container:
+      image: docker://barichello/godot-ci:4.7.2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: 'true'
+
+      - name: Import
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          godot --headless --import
+
+      - name: Build the page
+        # story.gd exits 1 when a story file doesn't load, so a broken week never replaces the page.
+        run: godot --headless -s res://dev/story.gd -- week-page "$GITHUB_WORKSPACE/The-Week.md"
+
+      - name: Push it to the wiki
+        working-directory: ${{ github.workspace }}
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git" wiki
+          cp The-Week.md wiki/The-Week.md
+          cd wiki
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add The-Week.md
+          if git diff --cached --quiet; then echo "The Week is unchanged"; exit 0; fi
+          git commit -m "The Week: rebuilt from ${GITHUB_SHA::8}"
+          for attempt in 1 2 3; do
+            git push && exit 0
+            git pull --rebase
+          done
+          echo "::error::could not push The-Week.md to the wiki after 3 attempts"; exit 1

@@ -176,6 +176,10 @@ a day or a conversation sets it, and clearing it uninstalls Cambion.
 
 ## Read and check it
 
+The wiki page "The Week" shows the whole week for people who don't run the game: each day, its
+errands with their briefs, problems, missing links and conversations. CI rebuilds it from these
+files on every push; nobody edits it.
+
 The files are the outline. The story check lists the missing links: a flag that nothing sets or
 checks, a `+` choice without a line, an errand without a `drop-off`, an errand code whose alternatives can
 all fail, a mood that the person has no portrait for or no voice for, a `[leaving]` line that the

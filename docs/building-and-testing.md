@@ -262,6 +262,11 @@ A newer push cancels a running export. The tests run in their own workflow,
 `tests/run.gd`, and passes only on its "N of N tests passed" line. Newer pushes don't cancel it, so
 every commit gets a test verdict.
 
+`.github/workflows/week-page.yml` rebuilds the wiki page "The Week" on every push to `main` that
+touches the story files, the problems or the customers: it imports, runs
+`dev/story.gd -- week-page`, and pushes the page to the wiki with the workflow's own token. A week
+whose story files don't load fails the job and leaves the page as it was.
+
 Every push to `main` also posts its commits to Discord (`.discord-main.yml`), and issue changes
 post there too (`.discord-issues.yml`). Both post into the thread whose ID is in the repository
 variable `DISCORD_THREAD_ID`, so they don't flood the channel; with the variable empty they post
