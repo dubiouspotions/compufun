@@ -106,13 +106,19 @@ func _input(event: InputEvent) -> void:
 	if key != null and key.pressed and not key.echo:
 		var sound := space_bar if key.keycode == KEY_SPACE and space_bar != null else keystroke
 		if sound != null:
-			sound.play_on(_keys)
+			_play_key.call_deferred(sound, Game.view)
 	var button := event as InputEventMouseButton
 	if button != null and button.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE] \
 			and _screen.get_global_rect().has_point(button.position):
 		var sound := mouse_down if button.pressed else mouse_up
 		if sound != null:
 			sound.play_on(_buttons)
+
+
+# After the key's handlers: a key that leaves the view (S, Esc, down) presses no key on the keyboard.
+func _play_key(sound: SoundSet, view: StringName) -> void:
+	if _open and Game.view == view:
+		sound.play_on(_keys)
 
 
 func _gui_input(event: InputEvent) -> void:

@@ -102,11 +102,27 @@ func _check_back_keys(when: String) -> void:
 	for key: Key in [KEY_S, KEY_ESCAPE, KEY_NONE]:
 		game.go_to_view(&"CompuFunDB")
 		await process_frame
+		_keyboard().stop()
 		if key == KEY_NONE:
 			back.pressed.emit()
 		else:
 			_press_key(key)
 		check("%s goes back %s" % ["Back" if key == KEY_NONE else OS.get_keycode_string(key), when], game.view, &"Right")
+		await process_frame
+		check("without a keystroke", _keyboard().playing, false)
+	game.go_to_view(&"CompuFunDB")
+	await process_frame
+	_press_key(KEY_X)
+	await process_frame
+	check("a key that the screen takes clicks %s" % when, _keyboard().playing, true)
+	_keyboard().stop()
+	game.go_to_view(&"Right")
+	await process_frame
+
+
+# The CompuFunDB view's keyboard: the player that its keystrokes play on.
+func _keyboard() -> AudioStreamPlayer:
+	return _main.find_child("CompuFunDBView", true, false).get("_keys")
 
 
 func _press_key(key: Key) -> void:
