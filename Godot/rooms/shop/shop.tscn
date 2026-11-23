@@ -45,6 +45,7 @@
 [ext_resource type="Resource" path="res://sounds/footsteps.tres" id="steps_tile"]
 [ext_resource type="PackedScene" path="res://rooms/shop/sound_zones.tscn" id="sound_zones"]
 [ext_resource type="PackedScene" path="res://rooms/shop/work_cables.tscn" id="work_cables"]
+[ext_resource type="Texture2D" path="res://materials/textures/funtastic_sticker.png" id="funtastic_sticker"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -559,6 +560,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 0.76, -0.921)
 [node name="Hotspot" parent="Room/TapedNote" instance=ExtResource("13_ojat2")]
 size = Vector3(0.66, 0.34, 0.02)
 view = &"Note"
+
+[node name="FuntasticSticker" parent="Room" instance=ExtResource("23_poster")]
+transform = Transform3D(0.9945219, 0.104528464, 0, -0.104528464, 0.9945219, 0, 0, 0, 1, -0.9, 0.78, -0.923)
+texture = ExtResource("funtastic_sticker")
+size = Vector2(0.63, 0.168)
 
 [node name="CorruptionSigns" type="Node" parent="."]
 script = ExtResource("corruption_signs")
