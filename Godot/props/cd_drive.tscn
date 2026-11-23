@@ -11,17 +11,7 @@
 size = Vector3(0.15, 0.035, 0.006)
 
 [sub_resource type="BoxMesh" id="BoxMesh_front"]
-size = Vector3(0.11, 0.009, 0.004)
-
-[sub_resource type="BoxMesh" id="BoxMesh_bed"]
-size = Vector3(0.106, 0.004, 0.12)
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_well"]
-top_radius = 0.05
-bottom_radius = 0.05
-height = 0.0012
-radial_segments = 24
-rings = 1
+size = Vector3(0.12, 0.009, 0.004)
 
 [sub_resource type="BoxMesh" id="BoxMesh_button"]
 size = Vector3(0.014, 0.006, 0.006)
@@ -41,15 +31,34 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.012, 0.004, 0.002)
 material_override = ExtResource("5_charcoal")
 mesh = SubResource("BoxMesh_front")
 
-[node name="Bed" type="MeshInstance3D" parent="Tray"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0015, -0.062)
-material_override = ExtResource("5_charcoal")
-mesh = SubResource("BoxMesh_bed")
+[node name="Bed" type="CSGCombiner3D" parent="Tray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0015, -0.0645)
 
-[node name="Well" type="MeshInstance3D" parent="Tray/Bed"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0016, 0.004)
-material_override = ExtResource("6_black")
-mesh = SubResource("CylinderMesh_well")
+[node name="Body" type="CSGBox3D" parent="Tray/Bed"]
+size = Vector3(0.12, 0.004, 0.125)
+material = ExtResource("5_charcoal")
+
+[node name="Recess" type="CSGCylinder3D" parent="Tray/Bed"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.002, 0.0005)
+operation = 2
+radius = 0.058
+height = 0.003
+sides = 32
+material = ExtResource("6_black")
+
+[node name="Spindle" type="CSGCylinder3D" parent="Tray/Bed"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.0005)
+operation = 2
+radius = 0.016
+height = 0.01
+sides = 16
+material = ExtResource("6_black")
+
+[node name="LaserSlot" type="CSGBox3D" parent="Tray/Bed"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.03)
+operation = 2
+size = Vector3(0.028, 0.01, 0.058)
+material = ExtResource("6_black")
 
 [node name="EjectButton" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, -0.007, 0.002)
