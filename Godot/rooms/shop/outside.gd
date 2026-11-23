@@ -176,8 +176,8 @@ func _apply() -> void:
 		_sun.light_energy = moon_energy * clampf(-daylight * 3.0, 0.0, 1.0) * (1.0 - 0.7 * gloom)
 	_skylight.light_color = horizon
 	_skylight.light_energy = skylight_energy * clampf(daylight * 3.0, 0.0, 1.0) * (1.0 - 0.7 * gloom)
-	# The lamps: off in daylight, on from dusk to dawn, a little on in the rain.
-	var dark := maxf(1.0 - clampf(daylight * 4.0, 0.0, 1.0), 0.5 * gloom)
+	# The lamps: off in daylight, rain or shine; on from dusk to dawn.
+	var dark := 1.0 - clampf(daylight * 4.0, 0.0, 1.0)
 	for i: int in _lamps.size():
 		_lamps[i].light_energy = _lamp_energy[i] * lamp_brightness * dark
 		_lamps[i].visible = dark > 0.01
