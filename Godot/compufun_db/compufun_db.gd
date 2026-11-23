@@ -657,10 +657,12 @@ func _process(_delta: float) -> void:
 	queue_redraw()
 
 
-# Closes "Print complete".
+# Closes "Print complete" and clears the search, ready for the next.
 func _close_print_box() -> void:
 	_printing = ""
 	_print_done = false
+	_type("")
+	_column = Column.SEARCH
 	queue_redraw()
 
 

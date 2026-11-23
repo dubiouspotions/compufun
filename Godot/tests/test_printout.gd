@@ -268,5 +268,6 @@ func _check_print_fix() -> void:
 	enter.pressed = true
 	db.call("_on_key", enter)
 	check("Enter presses OK", [db.get("_print_done"), db.get("_printing")], [false, ""])
+	check("and clears the search", [db.get("_typed"), db.get("_hits"), db.get("_column"), db.call("_entries", 2)], ["", PackedStringArray(), 0, []])
 	db.queue_free()
 	printer.queue_free()
