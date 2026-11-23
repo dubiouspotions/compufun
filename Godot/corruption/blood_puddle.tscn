@@ -4,12 +4,30 @@
 
 [node name="BloodPuddle" type="Node"]
 script = ExtResource("1_script")
-title = "Blood seeps out under a computer on the counter"
+title = "Blood seeps out under a computer on the counter and drips to the floor"
 timing = 2
 hint = "Stage n: under counter slot n - 1. Organ Failure sets it as the computer is set down."
 stages = 4
 
-[node name="Puddle" type="MeshInstance3D" parent="."]
+[node name="Blood" type="Node3D" parent="."]
 unique_name_in_owner = true
 visible = false
+
+[node name="Puddle" type="MeshInstance3D" parent="Blood"]
+unique_name_in_owner = true
+cast_shadow = 0
+
+[node name="Rivulet" type="Node3D" parent="Blood"]
+unique_name_in_owner = true
+
+[node name="Streak" type="MeshInstance3D" parent="Blood"]
+unique_name_in_owner = true
+cast_shadow = 0
+
+[node name="Drop" type="MeshInstance3D" parent="Blood"]
+unique_name_in_owner = true
+cast_shadow = 0
+
+[node name="FloorPuddle" type="MeshInstance3D" parent="Blood"]
+unique_name_in_owner = true
 cast_shadow = 0
