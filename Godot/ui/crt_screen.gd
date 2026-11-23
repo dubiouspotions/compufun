@@ -44,6 +44,10 @@ var cursor_offset: Vector2 = Vector2.ZERO:
 	set(value):
 		cursor_offset = value
 		_sync_cursor()
+## False makes the screen take no mouse events that a finger made, while the touch trackpad points
+## instead ([method push_mouse]); a real mouse still points. The screen still accepts those events,
+## so a touch on the glass doesn't fall through and leave the view.
+var takes_touch: bool = true
 
 var _near: Dictionary[StringName, float] = {}
 var _cursor_at: Vector2 = Vector2(320, 240)
@@ -100,23 +104,38 @@ func set_closeness(closeness: float) -> void:
 		look.set_shader_parameter(uniform, lerpf(_param(far_look, uniform), _near[uniform], closeness))
 
 
+## Pushes [param event] into [member buffer] as the desktop's mouse, at its [code]position[/code] in
+## buffer pixels: the cursor moves there (clamped to the buffer) and takes the shape of the control
+## under it. For a pointer that doesn't point at the glass, such as the touch trackpad. The caller
+## sets the button mask, and a motion's [code]relative[/code], as a real mouse would.
+func push_mouse(event: InputEventMouse) -> void:
+	if buffer == null:
+		push_error("CrtScreen %s: no buffer to push %s into" % [get_path(), event])
+		return
+	var pixels := Vector2(buffer.size)
+	event.global_position = event.position  # controls in the buffer read either
+	buffer.push_input(event, true)
+	_cursor_at = event.position.clamp(Vector2.ZERO, pixels - Vector2.ONE)
+	var over := buffer.gui_get_hovered_control()
+	var shape := over.get_cursor_shape(over.get_global_transform_with_canvas().affine_inverse() * event.position) if over != null else Control.CURSOR_ARROW
+	_set_cursor(ibeam_cursor if shape == Control.CURSOR_IBEAM else sizing_cursors.get(shape, arrow_cursor))
+
+
 func _gui_input(event: InputEvent) -> void:
 	var mouse := event as InputEventMouse
 	if mouse == null or buffer == null:
 		return
+	if not takes_touch and TouchInput.is_touch(mouse):
+		accept_event()
+		return
 	var pixels := Vector2(buffer.size)
 	var bent := mouse.duplicate() as InputEventMouse
 	bent.position = bend(mouse.position / size) * pixels
-	bent.global_position = bent.position  # controls in the buffer read either
 	var motion := bent as InputEventMouseMotion
 	if motion != null:
 		motion.relative = bent.position - bend((mouse.position - motion.relative) / size) * pixels
-	buffer.push_input(bent, true)
+	push_mouse(bent)
 	accept_event()  # after the push, which clears the flag: a frozen desktop takes nothing, and the click must not leave the view
-	_cursor_at = bent.position.clamp(Vector2.ZERO, pixels - Vector2.ONE)
-	var over := buffer.gui_get_hovered_control()
-	var shape := over.get_cursor_shape(over.get_global_transform_with_canvas().affine_inverse() * bent.position) if over != null else Control.CURSOR_ARROW
-	_set_cursor(ibeam_cursor if shape == Control.CURSOR_IBEAM else sizing_cursors.get(shape, arrow_cursor))
 
 
 func _unhandled_input(event: InputEvent) -> void:
