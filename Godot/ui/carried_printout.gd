@@ -3,8 +3,9 @@ extends Control
 ## The printout that the player carries (Game.printout), in every view: its top peeks in at the
 ## bottom left, clear of the part in the hand on the right. A click on it raises the page: the player
 ## holds it up on the right side of the view, readable, and keeps playing beside it. A click on a
-## line with a check box ticks or unticks it, and a click on the trash can throws the page away. Any
-## other click on the page or outside it, or Esc, lowers it; a click outside does nothing else. Beside
+## line with a check box ticks or unticks it, and a click on the trash can throws the page away. A
+## click outside the page, or Esc, lowers it, and does nothing else. A page just picked up comes up
+## raised. Beside
 ## an open screen (see [method lay_out_around]) the page is always up, right of the screen and leaving
 ## it uncovered. Only the trash can takes the page (TrashCan); while the player carries one, a try to
 ## take another hops the corner.
@@ -41,6 +42,8 @@ var _buttons: Array[Rect2] = []
 ## How far the raised page has risen into place, 0 to 1.
 var _rise: float = 0.0
 var _rising: Tween
+## The page carried at the last sync: a new one, just picked up, comes up raised.
+var _carried: PackedStringArray = []
 
 
 func _ready() -> void:
@@ -53,6 +56,7 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout)
 	Game.changed.connect(_sync)
 	_paper.hide()
+	_carried = Game.printout  # one carried as the scene loads stays in the corner
 	_sync()
 
 
@@ -128,12 +132,13 @@ func _on_paper_input(event: InputEvent) -> void:
 		var tick := line not in Game.printout_ticks
 		if Game.tick_printout(line, tick):
 			(tick_sound if tick else untick_sound).play_at(self)
-	else:
-		lower()
 
 
 func _sync() -> void:
 	var carrying := not Game.printout.is_empty()
+	if carrying and Game.printout != _carried:
+		_raised = true
+	_carried = Game.printout
 	_raised = _raised and carrying
 	var up := carrying and (_raised or _beside.has_area())
 	_corner.visible = carrying and not up

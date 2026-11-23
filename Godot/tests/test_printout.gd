@@ -69,8 +69,9 @@ func _check_printer() -> void:
 
 
 # The corner shows at the bottom left while the player carries a page; a click raises the page on the
-# right, where a click on a box ticks it and a click elsewhere on it or outside it lowers it. A click
-# outside reaches nothing else. Beside an open screen the page is always up.
+# right, where a click on a box ticks it, a click elsewhere on it keeps it up, and a click outside lowers
+# it and reaches nothing else. Beside an open screen the page is always up. A page picked up comes up
+# raised.
 func _check_close_up() -> void:
 	game.carry_printout(PAGE)
 	var behind := Control.new()  # a stand-in for the buttons and hotspots under the page
@@ -115,7 +116,10 @@ func _check_close_up() -> void:
 	check("a second click rubs it out", [game.printout_ticks, handled[0], _latest_sound(carried) in eraser.sounds], [[], 3, true])
 	click.position = paper.call("box_rect", 3).get_center() - Vector2(0.0, paper.call("cell").y)
 	paper.gui_input.emit(click)
-	check("a click on a line without a box lowers it, with a rustle", [carried.call("is_raised"), corner.visible, game.printout_ticks, handled[0]], [false, true, [], 4])
+	check("a click on a line without a box keeps it up", [carried.call("is_raised"), corner.visible, game.printout_ticks, handled[0]], [true, false, [], 3])
+	click.position = Vector2(2.0, 2.0)
+	paper.gui_input.emit(click)
+	check("so does a click on the margin", carried.call("is_raised"), true)
 
 	carried.call("raise")
 	await create_timer(float(carried.get("raise_seconds")) + 0.1).timeout
@@ -123,7 +127,7 @@ func _check_close_up() -> void:
 	_click_at(page.position + paper.call("box_rect", 5).get_center())
 	check("a real click on the box ticks it and keeps it up", [game.printout_ticks, carried.call("is_raised"), behind_clicks[0]], [[5], true, 0])
 	_click_at(Vector2(page.position.x - 40.0, page.get_center().y))
-	check("a click outside lowers it, with a rustle, and reaches nothing else", [carried.call("is_raised"), corner.visible, behind_clicks[0], handled[0]], [false, true, 0, 7])
+	check("a click outside lowers it, with a rustle, and reaches nothing else", [carried.call("is_raised"), corner.visible, behind_clicks[0], handled[0]], [false, true, 0, 5])
 	_click_at(Vector2(page.position.x - 40.0, page.get_center().y))
 	check("lowered, a click there reaches what is under it", behind_clicks[0], 1)
 	game.tick_printout(5, false)
@@ -149,6 +153,9 @@ func _check_close_up() -> void:
 	check("thrown away, the page and the corner go", [carried.call("is_raised"), corner.visible], [false, false])
 	carried.call("raise")
 	check("nothing carried, nothing to raise", carried.call("is_raised"), false)
+	game.carry_printout(PAGE)
+	check("a page picked up comes up raised", [carried.call("is_raised"), corner.visible], [true, false])
+	game.trash_printout()
 	carried.queue_free()
 	behind.queue_free()
 
