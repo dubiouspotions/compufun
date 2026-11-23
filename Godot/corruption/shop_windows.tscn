@@ -14,5 +14,5 @@ texture_filter = 0
 script = ExtResource("1_sign")
 title = "The shop windows become Windows-logo windows"
 timing = 2
-description = "Four coloured panes, with the alley still visible behind them."
+description = "A wavy cross splits each window into four panes, like the Windows logo; the glass stays plain."
 flag_glass = SubResource("StandardMaterial3D_flag")

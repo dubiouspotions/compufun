@@ -1,5 +1,5 @@
 extends CorruptionSign
-## The shop windows become Windows-logo windows: four coloured panes with the alley still behind them.
+## The shop windows become Windows-logo windows: a wavy cross splits each into four panes of plain glass.
 
 ## The glass that the windows get.
 @export var flag_glass: Material
