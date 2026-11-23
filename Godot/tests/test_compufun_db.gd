@@ -61,6 +61,7 @@ func _check_picked_up() -> void:
 	for key: Key in [KEY_DOWN, KEY_DOWN, KEY_RIGHT]:
 		_press(db, key)
 	check("on the last record's checks", [db.call("_record").text, db.get("_column")], ["record 2", CHECKS])
+	_check_categories(db)
 
 	_leave(0)
 	check("the first record left the list", _texts(db), ["record 1", "record 2"])
@@ -71,6 +72,32 @@ func _check_picked_up() -> void:
 	check("the selected record left", _texts(db), ["record 1"])
 	check("the cursor goes back to the list, on the record left", [db.call("_record").text, db.get("_column")], ["record 1", RECORDS])
 	db.queue_free()
+
+
+# The CHECK column lists the symptoms under their categories' headings, in check_categories' order,
+# and the cursor and the mouse pass over the headings.
+func _check_categories(db: Control) -> void:
+	var entries: Array = db.call("_entries", CHECKS)
+	var headings: Array = entries.filter(func(entry: Dictionary) -> bool: return not entry.pick).map(func(entry: Dictionary) -> String: return entry.text)
+	check("a heading per category, in order", headings, Array(db.get("check_categories")).map(func(category: String) -> String: return "-- %s --" % category))
+	check("a heading comes first", entries[0].pick, false)
+	check("the cursor settles on the first symptom, under it", db.get("_selected")[CHECKS], 1)
+	var startup: int = entries.find(entries.filter(func(entry: Dictionary) -> bool: return entry.text == "-- At startup --")[0])
+	db.get("_selected")[CHECKS] = startup - 1
+	_press(db, KEY_DOWN)
+	check("Down steps over a heading", db.get("_selected")[CHECKS], startup + 1)
+	_press(db, KEY_UP)
+	check("and Up back over it", db.get("_selected")[CHECKS], startup - 1)
+	var record: DbRecord = db.call("_record")
+	var lines: Array = db.call("_lines", CHECKS, entries)
+	var row: int = lines.map(func(line: Array) -> int: return line[0]).find(startup) - db.get("_scroll")[CHECKS]
+	check("the heading is on screen", row >= 0 and row <= db.LIST_BOTTOM - db.LIST_TOP, true)
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.position = (Vector2(db.get("_spans")[CHECKS].x, db.LIST_TOP + row) + Vector2(0.5, 0.5)) * db.CELL
+	db.call("_on_click", click)
+	check("a click on a heading marks nothing and leaves the cursor", [record.marked_symptoms.is_empty(), db.get("_selected")[CHECKS]], [true, startup - 1])
 
 
 # The computer of job [param order] leaves the counter; its record stays in Game.

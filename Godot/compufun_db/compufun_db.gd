@@ -3,8 +3,8 @@ extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
 ## the customers (the Game.records of the computers on the counter: a record leaves the list when its
 ## computer leaves the counter; New record makes the character type up the next computer on the
-## counter, key by key), what to check (every symptom of every Problem; the player marks what is
-## wrong on the selected record), and what to fix (the repair steps of each problem whose symptoms
+## counter, key by key), what to check (every symptom of every Problem, under the headings of their
+## categories; the player marks what is wrong on the selected record), and what to fix (the repair steps of each problem whose symptoms
 ## are all marked, numbered and ending in [member test_step]; the player ticks them off). Marking
 ## the wrong symptoms leads to the wrong fix. This screen keeps only its cursor and the typing. It
 ## reads every Problem file, so its text is never a second copy of the problems.
@@ -43,6 +43,9 @@ const HEADERS: Array[String] = ["CUSTOMER", "CHECK", "FIX"]
 @export var bar_color: Color = Color(0.89, 0, 0)
 ## The last repair step of every problem, after its hardware and software steps (see Job.tested).
 @export var test_step: String = "Test the computer"
+## The order of the CHECK column's headings: each symptom's category, as its problem file names it.
+## A category that this list leaves out comes after these, in alphabetical order.
+@export var check_categories: PackedStringArray = ["From the customer", "On the computer", "At startup", "In Windows"]
 ## The sound of each key that the character types.
 @export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
 ## The sound of the space bar; null plays [member keystroke].
@@ -75,8 +78,11 @@ signal picture_changed
 ## The first and last x of each column's text, inside the frame.
 var _spans: Array[Vector2i] = [Vector2i(1, 24), Vector2i(26, 51), Vector2i(53, 78)]
 var _problems: Array[Problem] = []
-## Every symptom of every problem, once each, in the order of the problems.
+## Every symptom of every problem, once each, by category (see [member check_categories]), then
+## alphabetically.
 var _symptoms: PackedStringArray = []
+## The category of each symptom in [member _symptoms].
+var _categories: Dictionary[String, String] = {}
 var _column: Column = Column.RECORDS
 var _selected: Array[int] = [0, 0, 0]
 var _scroll: Array[int] = [0, 0, 0]
@@ -130,10 +136,30 @@ func _load_problems() -> void:
 			continue
 		_problems.append(problem)
 		for symptom: String in problem.symptoms:
-			if symptom not in _symptoms:
+			var category: String = problem.symptom_categories.get(symptom, "")
+			if category == "":
+				push_error("CompuFunDB: the symptom '%s' of %s has no 'category:'; CHECK lists it under Other" % [symptom, problem.short_name])
+				category = "Other"
+			if not _categories.has(symptom):
 				_symptoms.append(symptom)
+				_categories[symptom] = category
+			elif _categories[symptom] != category:
+				push_error("CompuFunDB: the symptom '%s' of %s is in the category '%s', but another problem puts it in '%s'" % [symptom, problem.short_name, category, _categories[symptom]])
 	if _problems.is_empty():
 		push_error("CompuFunDB: no Problem files in %s" % PROBLEMS_DIR)
+	var ordered := Array(_symptoms)
+	ordered.sort_custom(func(a: String, b: String) -> bool:
+		var rank_a := _category_rank(_categories[a])
+		var rank_b := _category_rank(_categories[b])
+		return rank_a < rank_b or (rank_a == rank_b and (_categories[a] < _categories[b] or (_categories[a] == _categories[b] and a.naturalnocasecmp_to(b) < 0))))
+	_symptoms = PackedStringArray(ordered)
+
+
+# Where [param category] comes among the CHECK column's headings: its place in check_categories, or
+# after them all.
+func _category_rank(category: String) -> int:
+	var rank := check_categories.find(category)
+	return rank if rank >= 0 else check_categories.size()
 
 
 # An entry of a column: its text, its check box (null: none) and whether the player can pick it.
@@ -149,7 +175,11 @@ func _entries(column: Column) -> Array[Dictionary]:
 		Column.CHECKS:
 			var record := _record()
 			if record != null:
+				var heading := ""
 				for symptom: String in _symptoms:
+					if _categories[symptom] != heading:
+						heading = _categories[symptom]
+						entries.append({text = "-- %s --" % heading, check = null, pick = false})
 					entries.append({text = symptom, check = symptom in record.marked_symptoms, pick = true})
 		Column.FIXES:
 			var record := _record()
@@ -410,6 +440,8 @@ func _on_click(button: InputEventMouseButton) -> void:
 	var line := _scroll[column] + cell.y - LIST_TOP
 	if line >= lines.size():
 		return
+	if not _entries(column)[lines[line][0]].pick:  # a heading
+		return
 	_column = column
 	_select(lines[line][0])
 	if column != Column.RECORDS or _record() == null:  # a click on a record only selects it
@@ -578,12 +610,16 @@ func _select(index: int) -> void:
 	if _column == Column.RECORDS and index != _selected[_column]:
 		_reset_record_columns()
 	_selected[_column] = index
-	var lines := _lines(_column, _entries(_column))
+	var entries := _entries(_column)
+	var lines := _lines(_column, entries)
 	var height := LIST_BOTTOM - LIST_TOP + 1
+	var shown := index  # the entry, and the headings right above it
+	while shown > 0 and shown <= entries.size() and not entries[shown - 1].pick:
+		shown -= 1
 	var first := -1
 	var last := -1
 	for i: int in lines.size():
-		if lines[i][0] == index:
+		if lines[i][0] >= shown and lines[i][0] <= index:
 			last = i
 			if first < 0:
 				first = i
