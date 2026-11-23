@@ -74,11 +74,11 @@ var symptoms: PackedStringArray = []
 ## How each symptom shows in the game, for people: symptom to text; a symptom without one is
 ## missing. From the problem file.
 var symptom_shows: Dictionary[String, String] = {}
-## What the player finds on the computer when this is the cause, such as "A floppy is in drive A:", as
-## CompuFunDB's CHECK lists them; the player ticks what they find. Their combination is unique to
-## this problem. From the problem file.
+## What a working computer does, such as "Boots from C:", as CompuFunDB's CHECK lists them; the
+## player marks those that fail. From the problem file.
 var checks: PackedStringArray = []
-## How each check shows in the game, for people: check to text. From the problem file.
+## How each check fails in the game when this is the cause, for people: check to text. From the
+## problem file.
 var check_shows: Dictionary[String, String] = {}
 ## The repair steps that CompuFunDB prints, hardware first. From the problem file.
 var hardware_steps: PackedStringArray = []

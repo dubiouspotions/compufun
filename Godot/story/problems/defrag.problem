@@ -2,9 +2,9 @@ post-it: Mouse glitches
 symptoms:
 	Slow computer
 checks:
-	Windows takes long to start
+	Windows starts quickly
 		shows: the Windows splash screen lasts three times as long
-	Folders take seconds to open
+	Folders open at once
 		shows: a folder takes 2 seconds to open
 software steps:
 	Open Start, Programs, Accessories, System Tools, Disk Defragmenter

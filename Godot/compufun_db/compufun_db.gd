@@ -5,8 +5,8 @@ extends Control
 ## every Problem that hold them all come in one at a time, each after a seek of the hard drive, and
 ## so do the entries of the other two columns whenever what they show changes),
 ## what to check (the checks of every problem with the symptom picked, among a few checks of
-## other problems in the same place: the Game.db_search; the player ticks what they find) and what
-## to fix (the repair steps of each of those problems whose checks are all ticked, while no other is,
+## other problems in the same place: the Game.db_search; the player marks those that fail) and what
+## to fix (the repair steps of each of those problems whose checks are all marked, while no other is,
 ## numbered and ending in [member test_step]; the player ticks them off). This screen keeps only its
 ## cursor and the typed
 ## words. It reads every Problem file, so its text is never a second copy of the problems.

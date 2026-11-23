@@ -43,11 +43,11 @@ func _check_game() -> void:
 	check("a restore without a search starts empty", [game.db_search, game.db_day], [null, 0])
 
 
-# On the problem files as they are: "Restarts by itself" is a symptom of four problems, and marking
-# what the dust problem shows finds its fix alone.
+# On the problem files as they are: "Restarts by itself" is a symptom of four problems, and the dust
+# and the hamster share their checks, so marking those shows both fixes.
 func _check_screen() -> void:
-	const FREEZES := "Freezes a moment after the desktop appears"
-	const FAN := "Dust in the CPU fan"
+	const FREEZES := "Windows stays up after the desktop appears"
+	const FAN := "CPU fan is clean and spins freely"
 	check("a fresh day, CompuFunDB on", game.restore({"day": 1, "db_day": 1}), "")
 	var db: Control = load("res://compufun_db/compufun_db.tscn").instantiate()  # untyped: CompuFunDB names Game
 	db.set("hdd_seek", null)
@@ -82,7 +82,7 @@ func _check_screen() -> void:
 	_press(db, KEY_ENTER)
 	var search: DbSearch = game.db_search
 	check("Enter picks it, the cursor in CHECK", [search.query, db.get("_column")], ["Restarts by itself", CHECKS])
-	var right: Array[String] = ["Memory test fails at startup", "Bluescreen a moment after the desktop appears", FREEZES, FAN, "Something blocks the CPU fan"]
+	var right: Array[String] = ["Passes the BIOS memory test", "Runs without a bluescreen", FREEZES, FAN]
 	var others: Array = search.offered.filter(func(c: String) -> bool: return c not in right)
 	check("the checks of all four problems are offered", right.all(func(c: String) -> bool: return c in search.offered), true)
 	var hardware := _hardware_checks()
@@ -90,11 +90,11 @@ func _check_screen() -> void:
 	check("no fix before a mark", _texts(db, FIXES), [])
 
 	game.mark_check(FREEZES, true)
-	check("a finding of two problems shows no fix yet", _texts(db, FIXES), [])
+	check("a failing check of three problems shows no fix yet", _texts(db, FIXES), [])
 	game.mark_check(FAN, true)
-	check("what the dust problem shows finds its fix alone", _texts(db, FIXES).count("Test the computer"), 1)
+	check("the shared checks show the fixes of the dust and the hamster", _texts(db, FIXES).count("Test the computer"), 2)
 	game.mark_check(others[0], true)
-	check("a wrong mark hides it", _texts(db, FIXES), [])
+	check("a wrong mark hides them", _texts(db, FIXES), [])
 	game.mark_check(others[0], false)
 
 	db.set("hit_seconds", Vector2(0.2, 0.2))

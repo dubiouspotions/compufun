@@ -2,12 +2,12 @@ post-it: Icons don't open
 symptoms:
 	Icons don't open
 checks:
-	Desktop icons are part of the wallpaper
-		shows: most icons are only a picture and do nothing when clicked; My Computer and the Recycle Bin still work
-	Wallpaper is a picture of the desktop
+	Desktop icons open
+		shows: the icons are only part of the wallpaper, a picture of the desktop
+	Wallpaper is not a picture of the desktop
 		shows: Display Properties lists the wallpaper as "prank"
-	A folder hidden in a corner holds the icons
-		shows: a New Folder, mostly off the screen in the bottom right corner
+	Icons are on the desktop
+		shows: a New Folder, mostly off the screen in the bottom right corner, holds them
 software steps:
 	Open the folder hidden in the corner
 	Drag every icon in it onto the desktop

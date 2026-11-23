@@ -3,10 +3,8 @@ symptoms:
 	Can't open pictures
 	Programs won't start
 checks:
-	"Cannot find the file" when opening a picture
-		shows: "Cannot find the file 'C:\WINDOWS\PBRUSH.EXE' (or one of its components)"
-	Programs in C:\WINDOWS lost their .EXE
-		shows: NOTEPAD, WORDPAD, PBRUSH, CALC and others
+	Programs in C:\WINDOWS start
+		shows: NOTEPAD, WORDPAD, PBRUSH, CALC and others lost their .EXE
 software steps:
 	Open C:\WINDOWS
 	Rename each program that lost its .EXE back to its name with .EXE

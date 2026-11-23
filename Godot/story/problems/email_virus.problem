@@ -2,9 +2,9 @@ post-it: CD-tray keeps on opening and closing
 symptoms:
 	CD tray opens by itself
 checks:
-	CD tray opens and closes every few seconds
-		shows: while Windows runs
-	Unknown program in StartUp
+	CD tray stays shut
+		shows: while Windows runs, the tray opens and closes every few seconds
+	StartUp holds only known programs
 		shows: a shortcut to BIZOPP.EXE, which is in C:\WINDOWS
 software steps:
 	Get the CompuFun AntiVirus floppy from storage

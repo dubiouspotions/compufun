@@ -2,7 +2,7 @@ post-it: Computer's colours have changed
 symptoms:
 	Colours look wrong
 checks:
-	Colour scheme changed in Display Properties
+	Colour scheme is the usual one
 		shows: Display Properties, Appearance, shows High Contrast Black
 software steps:
 	Right-click the desktop and pick Properties
