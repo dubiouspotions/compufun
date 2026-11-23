@@ -5,7 +5,7 @@ extends "res://win95/window.gd"
 enum FileMenu { CLOSE }
 
 const _HEADER_HEIGHT := 17.0
-const _PALETTE := preload("res://win95/theme/palette.tres")
+static var _palette: Win95Palette = preload("res://win95/theme/palette.tres")
 
 ## The icons. Fill it with items.add_item(); its item_opened signal reports double-clicks. Its
 ## folder_view is the window's view, and its columns are the Details header's.
@@ -27,7 +27,7 @@ func _ready() -> void:
 	for i in %Help.item_count:
 		%Help.set_item_icon(i, Stub.dot())
 	_header.draw.connect(_draw_header)
-	_corner.draw.connect(func() -> void: _corner.draw_rect(Rect2(Vector2.ZERO, _corner.size), _PALETTE.face_color))
+	_corner.draw.connect(func() -> void: _corner.draw_rect(Rect2(Vector2.ZERO, _corner.size), _palette.face_color))
 	_scroll.sort_children.connect(_fit_to_bars)
 	_scroll.get_h_scroll_bar().value_changed.connect(func(_value: float) -> void: _header.queue_redraw())
 	items.items_changed.connect(_sync_status)

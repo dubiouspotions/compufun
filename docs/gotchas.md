@@ -150,6 +150,11 @@ GDScript keeps the defaults only in editor builds, and the tests run the editor 
 pass while the export breaks. To read a script's default, make a bare instance with `script.new()`,
 read the property and free it (`ComputerState.opens_of`). — 2026-11
 
+**A property read through a `const` preload keeps the value the resource had when the script
+compiled.** `const _PALETTE := preload("res://win95/theme/palette.tres")` then `_PALETTE.face_color`
+is folded at compile time, so later changes to the resource never show, though `_PALETTE.get()` sees
+them. Hold a resource that changes at run time in a `static var` (`GroupBox._palette`). — 2026-11
+
 ## Web export
 
 **Sound stutters or the first play of a track hangs for a second.** The web build has no

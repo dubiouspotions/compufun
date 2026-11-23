@@ -3,7 +3,7 @@ extends Control
 ## The grip in the bottom right corner of a window's status bar: dragging it resizes the window
 ## that it is in, from its bottom right corner.
 
-const _PALETTE := preload("res://win95/theme/palette.tres")
+static var _palette: Win95Palette = preload("res://win95/theme/palette.tres")
 const _BOTTOM_RIGHT := 4 | 8
 
 
@@ -37,7 +37,7 @@ func _draw() -> void:
 	var corner := size - Vector2.ONE
 	for groove in 3:
 		for line in 3:
-			var color := _PALETTE.highlight_color if line == 0 else _PALETTE.shadow_color
+			var color := _palette.highlight_color if line == 0 else _palette.shadow_color
 			var reach := 2 + groove * 4 + line
 			for i in reach + 1:
 				draw_rect(Rect2(corner - Vector2(reach - i, i), Vector2.ONE), color)

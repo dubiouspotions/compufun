@@ -3,7 +3,7 @@ extends PropertyPage
 ## Short to Long, is greyed while "Show pointer trails" is off; it then keeps its last length, Long
 ## when the setup has no trail.
 
-const _PALETTE := preload("res://win95/theme/palette.tres")
+static var _palette: Win95Palette = preload("res://win95/theme/palette.tres")
 
 
 func _ready() -> void:
@@ -39,4 +39,4 @@ func _sync() -> void:
 		if on:
 			label.remove_theme_color_override(&"font_color")
 		else:
-			label.add_theme_color_override(&"font_color", _PALETTE.shadow_color)
+			label.add_theme_color_override(&"font_color", _palette.shadow_color)

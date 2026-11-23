@@ -2,7 +2,7 @@ extends TextureRect
 ## The monitor picture at the top of Display Properties, in the scheme's 3D colours. Its screen
 ## shows a 640 x 480 desktop scaled down, or a fixed picture.
 
-const _PALETTE := preload("res://win95/theme/palette.tres")
+static var _palette: Win95Palette = preload("res://win95/theme/palette.tres")
 const _WIN95 := preload("res://win95/win95.gd")
 
 ## A picture of the whole screen, shown 1:1 instead of the desktop; null shows the desktop.
@@ -18,7 +18,7 @@ const _WIN95 := preload("res://win95/win95.gd")
 
 
 func _ready() -> void:
-	_PALETTE.changed.connect(_recolour)
+	_palette.changed.connect(_recolour)
 	_recolour()
 	var screen: Control = %Screen
 	_desktop.scale = screen.size / _desktop.size
@@ -44,4 +44,4 @@ func _sync() -> void:
 func _recolour() -> void:
 	var shader := material as ShaderMaterial
 	for colour: StringName in [&"face_color", &"shadow_color", &"highlight_color", &"dark_shadow_color"]:
-		shader.set_shader_parameter(colour, _PALETTE.get(colour))
+		shader.set_shader_parameter(colour, _palette.get(colour))

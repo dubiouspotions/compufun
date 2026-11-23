@@ -6,7 +6,7 @@ extends Control
 signal day_picked(day: int)
 
 const _WEEKDAYS := ["S", "M", "T", "W", "T", "F", "S"]
-const _PALETTE := preload("res://win95/theme/palette.tres")
+static var _palette: Win95Palette = preload("res://win95/theme/palette.tres")
 
 ## The height of the weekday band, and of each week, in pixels.
 @export var row_height: int = 18
@@ -17,7 +17,7 @@ var _day: int = 1
 
 
 func _ready() -> void:
-	_PALETTE.changed.connect(queue_redraw)
+	_palette.changed.connect(queue_redraw)
 
 
 ## Shows [param month] (1 to 12) of [param year] with [param day] selected.
@@ -53,9 +53,9 @@ func _draw() -> void:
 	var inner := _inner()
 	var font := get_theme_font("font", &"Label")
 	var font_size := get_theme_font_size("font_size", &"Label")
-	draw_rect(Rect2(inner.position, Vector2(inner.size.x, row_height)), _PALETTE.shadow_color)
+	draw_rect(Rect2(inner.position, Vector2(inner.size.x, row_height)), _palette.shadow_color)
 	for column in 7:
-		_draw_centered(font, font_size, _WEEKDAYS[column], 0, column, _PALETTE.face_color)
+		_draw_centered(font, font_size, _WEEKDAYS[column], 0, column, _palette.face_color)
 	var selection := (get_theme_stylebox("normal", &"IconLabelSelected") as StyleBoxFlat).bg_color
 	var first := _first_weekday()
 	for day in range(1, days_in(_year, _month) + 1):

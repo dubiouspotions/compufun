@@ -57,7 +57,7 @@ const _COLUMN := 18.0
 const _SHORTCUT_GAP := 16.0
 const _SUBMENU_DELAY := 0.3
 const _BOLD := preload("res://win95/theme/fonts/w95fa_pixel_bold.ttf")
-const _PALETTE := preload("res://win95/theme/palette.tres")
+static var _palette: Win95Palette = preload("res://win95/theme/palette.tres")
 
 ## Draws the "Windows95" banner down the left side, as the Start menu does; its submenus don't.
 var banner := false
@@ -218,8 +218,8 @@ func _draw_rows() -> void:
 	var font_size := get_theme_font_size("font_size", &"PopupMenu")
 	var normal := get_theme_color("font_color", &"PopupMenu")
 	var hover_color := get_theme_color("font_hover_color", &"PopupMenu")
-	var disabled := _PALETTE.shadow_color
-	var emboss := _PALETTE.highlight_color
+	var disabled := _palette.shadow_color
+	var emboss := _palette.highlight_color
 	if banner:
 		_draw_banner()
 	var text_x := _text_x()
@@ -270,12 +270,12 @@ func _draw_label(entry: Entry, font: Font, font_size: int, at: Vector2, color: C
 # Win95's banner: "Windows" in light gray and "95" in white, bold, reading upwards on dark gray.
 func _draw_banner() -> void:
 	var height := _rows.size.y
-	_rows.draw_rect(Rect2(0, 0, _BANNER_WIDTH, height), _PALETTE.shadow_color)
+	_rows.draw_rect(Rect2(0, 0, _BANNER_WIDTH, height), _palette.shadow_color)
 	var size := 16
 	_rows.draw_set_transform(Vector2(_BANNER_WIDTH - 5.0, height - 6.0), -PI / 2.0)
-	_rows.draw_string(_BOLD, Vector2.ZERO, "Windows", HORIZONTAL_ALIGNMENT_LEFT, -1, size, _PALETTE.face_color)
+	_rows.draw_string(_BOLD, Vector2.ZERO, "Windows", HORIZONTAL_ALIGNMENT_LEFT, -1, size, _palette.face_color)
 	var after := _BOLD.get_string_size("Windows", HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
-	_rows.draw_string(_BOLD, Vector2(after, 0), "95", HORIZONTAL_ALIGNMENT_LEFT, -1, size, _PALETTE.highlight_color)
+	_rows.draw_string(_BOLD, Vector2(after, 0), "95", HORIZONTAL_ALIGNMENT_LEFT, -1, size, _palette.highlight_color)
 	_rows.draw_set_transform(Vector2.ZERO, 0.0)
 
 
