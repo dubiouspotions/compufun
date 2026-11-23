@@ -2,7 +2,7 @@ extends "res://tests/test.gd"
 ## In the Workview, the eject button of the floppy drive sticks out and pulses while a floppy is in A:,
 ## and a click on it ejects the floppy (Game.eject_floppy) and lets the button in; with the floppy in
 ## the hand a click puts it back (Game.insert_floppy); on an empty drive with an empty hand the button
-## is flush and a click on it does nothing.
+## is flush and a click on it does nothing. In the Main view the drive takes no click and doesn't pulse.
 
 var _shop: Node3D
 var _camera: Camera3D
@@ -42,15 +42,29 @@ func run() -> void:
 	check("ejected and trashed, the button stops pulsing", [game.has_floppy(job), drive.eject_button.material_overlay == null], [false, true])
 	check("the empty drive takes no click", _shop.hotspot_at(at) == hotspot, false)
 	_click(at)
+	await create_timer(0.3).timeout
 	check("a click on it does nothing", [game.has_floppy(job), job.software_fixed], [false, true])
+
+	check("restore a floppy in A:, in the Main view", game.restore({"jobs": [
+		{"customer": "res://customers/skater_bro.tres", "problem": "bootfloppy", "slot": 0}],
+		"focus_slot": -1, "connected_slot": -1, "view": "Main"}), "")
+	await create_timer(1.0).timeout  # the camera reaches the Main view
+	job = game.jobs[0]
+	drive = _drive(job)
+	at = _camera.unproject_position(drive.eject_button.global_position)
+	check("in the Main view the drive doesn't pulse, and the computer takes the click", [game.has_floppy(job), drive.eject_button.material_overlay == null, _shop.hotspot_at(at) == _computer(job).get_node("%Hotspot")], [true, true, true])
 	_shop.queue_free()
 
 
-func _drive(job: Job) -> FloppyDrive:
+func _computer(job: Job) -> Node:
 	for computer: Node in _shop.get_node("%JobSlots").find_children("*", "JobComputer", true, false):
 		if computer.get("job") == job:
-			return computer.get_node("Tower").call("floppy_drive")
+			return computer
 	return null
+
+
+func _drive(job: Job) -> FloppyDrive:
+	return _computer(job).get_node("Tower").call("floppy_drive")
 
 
 func _out(drive: FloppyDrive) -> bool:

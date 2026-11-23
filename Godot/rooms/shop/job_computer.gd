@@ -263,8 +263,8 @@ func _play_part_sound(hum: Hum, property: StringName, when: bool) -> bool:
 	return sound != null
 
 
-# The floppy sticks out with its label while it is in, and the eject button pulses where the player
-# works and a click ejects or inserts one.
+# The floppy sticks out with its label while it is in. Only in the Workview do clicks on the drive
+# eject or insert one, and the eject button pulses while they do; elsewhere they focus the computer.
 func _sync_floppy(working: bool, lying: bool) -> void:
 	var floppy_in := Game.has_floppy(job)
 	var setup := Game.setup_for(job) if floppy_in else null
@@ -274,10 +274,10 @@ func _sync_floppy(working: bool, lying: bool) -> void:
 		drive.set_floppy_in(floppy_in)
 	if _floppy_hotspot == null:
 		return
-	var usable := (Game.can_eject(job) or Game.can_insert_floppy(job)) and not lying
+	var usable := (Game.can_eject(job) or Game.can_insert_floppy(job)) and working and not lying
 	_floppy_hotspot.set_enabled(usable)
 	var upright := _tower.floppy_drive()
-	upright.usable = usable and working
+	upright.usable = usable
 	if not usable:
 		upright.hovered = false
 
