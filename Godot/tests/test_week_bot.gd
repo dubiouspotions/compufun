@@ -228,6 +228,9 @@ func _act() -> void:
 	if game.visitor_state == GAME.VisitorState.TALKING:
 		await _talk()
 		return
+	if game.phase == GAME.Phase.CLOSED and not game.can_open():
+		_doing = [_code(game.errand), "waits for %s, who came before opening, to walk out" % _who()]
+		return
 	if game.phase == GAME.Phase.CLOSED:
 		_doing = ["", "clicks the open sign on day %d" % game.day_number]
 		await _click_in(&"Main", _shop.get_node("%OpenSign").find_child("Hotspot"))

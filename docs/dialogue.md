@@ -73,6 +73,9 @@ brief:
 - `computer`: `leaves` (the default: it stays on the counter), `none` (the customer comes without
   one and leaves when the conversation ends), or `shows` (it stands on the counter while they
   visit, and goes with them).
+- `comes`: `after opening` (the default) or `before opening`: the customer is already at the
+  counter, talking, when the day starts, and the player can open the shop once they are out the
+  door. Only the day's first errand (place 01) can come before opening.
 - `when`: a condition (below); without it the errand always comes.
 - `brief`: what the visit is for, written before any line.
 - **Conversations** start with `==` and the trigger: `drop-off` (the customer arrives),

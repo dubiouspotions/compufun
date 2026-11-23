@@ -37,8 +37,9 @@ const HINT_COLOR := Color(0.7, 0.7, 0.7)
 var _status: Label
 
 
-## Two presets per day of the week, by button text: the closed morning, and the open shop with every
-## errand of the day come and gone, ready to close. Each holds the flags that the week sets before
+## Two presets per day of the week, by button text: the closed morning (with the customer who comes
+## before opening talking at the counter), and the open shop with every errand of the day come and
+## gone, ready to close. Each holds the flags that the week sets before
 ## it: the days' [member Day.set_flags] and [member Day.close_flags], and the flags of each drop-off
 ## conversation that plays. The flags of a reply depend on the player's choices, so they are left out.
 static func day_presets() -> Dictionary[String, Dictionary]:
@@ -48,7 +49,13 @@ static func day_presets() -> Dictionary[String, Dictionary]:
 	var flags: Dictionary[StringName, int] = {}
 	for day: Day in Game.week.days:
 		_put_flags(flags, day.set_flags)
-		presets["Day %d starts" % day.number] = {"day": day.number, "phase": "CLOSED", "flags": flags.duplicate()}
+		var start: Dictionary = {"day": day.number, "phase": "CLOSED", "flags": flags.duplicate()}
+		var early: Errand = null
+		if not day.errands.is_empty():
+			early = _first_met(day.alternatives(day.codes()[0]), day.number, flags) as Errand
+		if early != null and early.before_opening:
+			start.merge({"arrivals": 1, "visitor": early.customer.resource_path, "visitor_state": "TALKING"})
+		presets["Day %d starts" % day.number] = start
 		for code: String in day.codes():
 			var errand := _first_met(day.alternatives(code), day.number, flags) as Errand
 			if errand == null:

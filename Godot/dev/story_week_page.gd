@@ -46,7 +46,7 @@ static func markdown(week: StoryFiles.Week, dates: Array, missing: PackedStringA
 static func _errand(out: PackedStringArray, errand: Errand, missing: PackedStringArray) -> void:
 	out.append("")
 	var who := errand.customer.spoken_name() if errand.customer != null else "nobody"
-	out.append("### %s %s (%s)" % [errand.code, who, BRINGS[errand.brings]])
+	out.append("### %s %s (%s%s)" % [errand.code, who, BRINGS[errand.brings], ", in the shop before it opens" if errand.before_opening else ""])
 	if errand.when != null:
 		out.append("**Comes when:** %s" % StoryConditionEditor.describe(errand.when))
 		out.append("")

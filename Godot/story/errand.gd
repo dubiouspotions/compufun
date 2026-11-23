@@ -15,6 +15,10 @@ enum Brings {
 ## The problem of the computer on this visit; null for a visit that needs no repair.
 @export var problem: Problem
 @export var brings: Brings = Brings.LEAVES
+## The customer is already at the counter, talking, when the day starts, before the player opens the
+## shop; the shop opens only after they have walked out the door. Only an errand in the day's first
+## place (01) can come before opening.
+@export var before_opening: bool = false
 ## null comes always. Two errands with one [member code] are alternatives: the first, by file name,
 ## whose condition matches comes.
 @export var when: Condition

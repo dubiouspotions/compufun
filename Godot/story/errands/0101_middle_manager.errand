@@ -1,5 +1,6 @@
 customer: middle_manager
 computer: none
+comes: before opening
 brief:
 	Tutorial conversation.
 

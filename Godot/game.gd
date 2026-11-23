@@ -160,6 +160,7 @@ var date: Dictionary:
 var _next_order: int = 0
 var _waited: float = 0.0
 var _wait: float = 0.0
+var _first_wait: bool = true
 var _pickup: Job
 
 
@@ -199,10 +200,11 @@ func _finish_overnight_work() -> void:
 
 
 ## Starts [param new_day] in the morning with the shop CLOSED: nobody comes in until
-## [method open_shop]. Jobs left overnight stay, and those computers that stayed on finish their
-## Disk Defragmenter run. The player no longer carries a printout. The last day's
-## [member Day.close_signs] stop, and the new day sets its [member Day.set_flags]. Refuses a day
-## that [method check_day] refuses, and keeps the current state.
+## [method open_shop], except the customer of a first errand that comes
+## [member Errand.before_opening], who is already TALKING at the counter. Jobs left overnight stay,
+## and those computers that stayed on finish their Disk Defragmenter run. The player no longer
+## carries a printout. The last day's [member Day.close_signs] stop, and the new day sets its
+## [member Day.set_flags]. Refuses a day that [method check_day] refuses, and keeps the current state.
 func start_day(new_day: Day) -> void:
 	var invalid := check_day(new_day)
 	if invalid != "":
@@ -221,6 +223,11 @@ func start_day(new_day: Day) -> void:
 	phase = Phase.CLOSED
 	_set_flags(new_day.set_flags, "day %d" % new_day.number)
 	_set_visitor(null, Visit.NONE)
+	if _next_arrival() == 0 and coming(0).before_opening and _has_room():
+		arrivals = 1
+		_set_visitor(coming(0), Visit.DROP_OFF)
+		visitor_state = VisitorState.TALKING
+		_start_talk()
 	jump += 1
 	changed.emit()
 
@@ -1133,9 +1140,10 @@ func hang_up() -> void:
 	changed.emit()
 
 
-## True when the shop can open: the day started, and the shop is CLOSED.
+## True when the shop can open: the day started, the shop is CLOSED, and nobody is in it (a visitor
+## who came before opening is OUTSIDE once they are out the door).
 func can_open() -> bool:
-	return phase == Phase.CLOSED
+	return phase == Phase.CLOSED and not _in_shop(visitor, visitor_state)
 
 
 ## Opens the shop: OPEN, and the first customer comes in [member Day.first_wait_seconds] later
@@ -1144,7 +1152,7 @@ func open_shop() -> void:
 	if not can_open():
 		return
 	phase = Phase.OPEN
-	_restart_wait()
+	_restart_wait(true)
 	_try_arrival()
 	changed.emit()
 
@@ -1271,8 +1279,8 @@ func restore(state: Dictionary) -> String:
 	var codes := new_day.codes()
 	if new_arrivals < 0 or new_arrivals > codes.size():
 		return _refuse("day %d has %d errand codes, not %d arrivals" % [number, codes.size(), new_arrivals])
-	if new_phase == Phase.CLOSED and new_arrivals > 0:
-		return _refuse("the shop is CLOSED, but %d customers came in; it opens before the first" % new_arrivals)
+	if new_phase == Phase.CLOSED and new_arrivals > 0 and not (new_arrivals == 1 and new_day.alternatives(codes[0]).any(func(e: Errand) -> bool: return e.before_opening)):
+		return _refuse("the shop is CLOSED, but %d customers came in; it opens before the first, unless that one comes before opening" % new_arrivals)
 	if new_phase == Phase.ENDED and day_of(number + 1) != null:
 		return _refuse("ENDED is only for the last day, and day %d has a next day" % number)
 	var evening: bool = new_phase == Phase.DAY_OVER or new_phase == Phase.ENDED
@@ -1389,8 +1397,9 @@ func restore(state: Dictionary) -> String:
 			return _refuse(value)
 	if (new_visitor == null) != (new_visit == Visit.NONE) or (new_visitor == null) != (new_visitor_state == VisitorState.NONE):
 		return _refuse("visitor, visit and visitor_state must all be set, or all be none")
-	if new_visitor != null and new_phase != Phase.OPEN and not (new_phase == Phase.CALLING and new_visitor_state == VisitorState.OUTSIDE):
-		return _refuse("a visitor can be in the shop only while it is OPEN, or OUTSIDE while CALLING")
+	if new_visitor != null and new_phase != Phase.OPEN and not (new_phase == Phase.CALLING and new_visitor_state == VisitorState.OUTSIDE) \
+			and not (new_phase == Phase.CLOSED and new_visit == Visit.DROP_OFF):
+		return _refuse("a visitor can be in the shop only while it is OPEN, OUTSIDE while CALLING, or dropping off before opening while CLOSED")
 	var new_pickup: Job = null
 	var new_errand: Errand = null
 	var handed_over: bool = new_visitor_state in [VisitorState.WALKING_OUT, VisitorState.OUTSIDE, VisitorState.WAITING]
@@ -1398,6 +1407,8 @@ func restore(state: Dictionary) -> String:
 		new_errand = _arrived(new_day, new_arrivals, new_visitor, new_flags)
 		if new_errand == null:
 			return _refuse("%s drops off, but the errands that %d arrivals let in are someone else's" % [_who(new_visitor), new_arrivals])
+		if new_phase == Phase.CLOSED and not new_errand.before_opening:
+			return _refuse("%s is in the CLOSED shop, but %s doesn't come before opening" % [_who(new_visitor), new_errand.file_name()])
 		if new_visitor_state == VisitorState.WAITING:
 			if new_errand.brings != Errand.Brings.SHOWS:
 				return _refuse("%s waits at the counter, but %s doesn't show a computer" % [_who(new_visitor), new_errand.file_name()])
@@ -1490,7 +1501,7 @@ func _process(delta: float) -> void:
 	if phase == Phase.CALLING:
 		return
 	if phase == Phase.OPEN and visitor == null and _has_room():
-		if jobs.is_empty() and arrivals > 0:
+		if jobs.is_empty() and not _first_wait:
 			_wait = minf(_wait, _waited + day.idle_wait_seconds)
 		_waited += delta
 		if _try_arrival():
@@ -1524,11 +1535,13 @@ func _arrival_due() -> bool:
 	return _waited >= _wait
 
 
-# Starts the wait for the next customer, with a new random length.
-func _restart_wait() -> void:
+# Starts the wait for the next customer, with a new random length; [param first] for the first wait
+# after opening, which a customer who came before opening doesn't end.
+func _restart_wait(first: bool = false) -> void:
 	_waited = 0.0
+	_first_wait = first or arrivals == 0
 	if day != null:
-		var span := day.first_wait_seconds if arrivals == 0 else day.gap_seconds
+		var span := day.first_wait_seconds if _first_wait else day.gap_seconds
 		_wait = randf_range(span.x, span.y)
 
 

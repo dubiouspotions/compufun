@@ -4,8 +4,10 @@ extends Node3D
 ## reads: OPEN while the shop is closed, a click away from opening, and CLOSED while it is open.
 ## Its origin is where the strings hang from. It takes clicks only while [method Game.can_open] or
 ## [method Game.can_close] is true, and then a yellow outline pulses around it. [method shake]
-## swings it on its strings to draw the eye. When the shop opens or closes, it turns over on its
-## strings with [member flip_sound]; a restore or a new day shows the side at once.
+## swings it on its strings to draw the eye; it shakes by itself when it starts to take clicks by a
+## step of play, as when the visitor who came before opening walks out. When the shop opens or
+## closes, it turns over on its strings with [member flip_sound]; a restore or a new day shows the
+## side at once.
 
 ## The player clicked the sign while [method Game.can_open] is true.
 signal open_requested
@@ -40,6 +42,7 @@ var _rest_y: float
 var _rest_z: float
 # Whether the shop was open on the last sync: a change turns the sign over.
 var _was_open: bool
+var _could_open: bool
 var _jump: int
 
 @onready var _board: MeshInstance3D = %Board
@@ -51,6 +54,7 @@ func _ready() -> void:
 	_rest_y = rotation.y
 	_rest_z = rotation.z
 	_was_open = _open()
+	_could_open = Game.can_open()
 	_jump = Game.jump
 	_hotspot.clicked.connect(_on_clicked)
 	Game.changed.connect(_sync)
@@ -99,6 +103,9 @@ func _sync() -> void:
 		_stop_turning()
 		_show_side(side)
 	_was_open = open
+	if Game.can_open() and not _could_open and Game.jump == _jump:
+		shake()
+	_could_open = Game.can_open()
 	_jump = Game.jump
 	var clickable := Game.can_open() or Game.can_close()
 	_hotspot.set_enabled(clickable)

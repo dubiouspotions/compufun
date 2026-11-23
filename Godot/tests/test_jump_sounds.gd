@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## No change sound plays when the state jumps (Game.jump): not when the game starts, not on a
-## restore and not when a new day starts. The street ambience, the rain, the hums and the wall clock's
+## No change sound plays when the state jumps (Game.jump): not when the game starts (but the first
+## line of day 1's customer who came before opening), not on a restore and not when a new day starts. The street ambience, the rain, the hums and the wall clock's
 ## ticking always play, so they are not changes.
 
 const AMBIENT: Array[String] = ["res://sounds/city_ambience.ogg", "res://sounds/rain_open.wav", "res://sounds/rain_shut.wav",
@@ -17,7 +17,9 @@ func run() -> void:
 	var main: Node = load("res://main.tscn").instantiate()
 	root.add_child(main)
 	await _frames(10)
-	check("the game starts with the street ambience and hums only", _changes(), [])
+	var voices := _changes().filter(func(path: String) -> bool: return path.begins_with("res://voices/"))
+	check("the game starts with the street ambience, the hums and the voice of the customer who came before opening only",
+		[_changes().size() - voices.size(), voices.size(), game.visitor_state], [0, 1, game.VisitorState.TALKING])
 	check("the street ambience plays", "res://sounds/city_ambience.ogg" in _started, true)
 
 	_hush()

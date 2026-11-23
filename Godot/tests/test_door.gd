@@ -1,5 +1,6 @@
 extends "res://tests/test.gd"
-## The shop door (props/door.gd): shut and locked while the shop is closed (#103); while it is open, a
+## The shop door (props/door.gd): shut and locked while the shop is closed (#103), but for a visitor
+## who came before opening and lets themselves out; while it is open, a
 ## customer near the doorway pushes it away from them, in from the street and out from the shop, and
 ## the closer swings it shut again once nobody is near. Closing the shop slams it, with a sound.
 
@@ -17,6 +18,15 @@ func run() -> void:
 	walker.position = doorway + Vector3(0, 0, -0.6)
 	await create_timer(0.6).timeout
 	check("closed: someone at the door, still shut", is_zero_approx(door.rotation.y), true)
+
+	check("restore day 1, closed, the manager who came before opening walking out", game.restore({"day": 1, "phase": "CLOSED", "arrivals": 1,
+		"visitor": "res://customers/middle_manager.tres", "visitor_state": "WALKING_OUT"}), "")
+	walker.position = doorway + Vector3(0, 0, 0.6)
+	await create_timer(0.6).timeout
+	check("closed: he lets himself out, swinging it out to the street", door.rotation.y > deg_to_rad(60.0), true)
+	check("restore day 1, closed, nobody in", game.restore({"day": 1, "phase": "CLOSED"}), "")
+	walker.position = Vector3(5, 0, 5)
+	await create_timer(3.0).timeout
 
 	walker.position = Vector3(5, 0, 5)
 	game.call("open_shop")

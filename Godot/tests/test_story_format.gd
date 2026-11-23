@@ -103,6 +103,11 @@ func run() -> void:
 	_check_errors("script", StoryFormat.parse_errand("customer: skater_bro\n\n== drop-off\n(neutral) Hi\n  (happy) spaces\n\t\t(happy) too deep\nelse\n- Bye [maybe]\n", "res://story/errands/0101_x.errand").errors, [
 		":5: indented with spaces", ":6: indented deeper", ":7: 'else' must start", ":8: [maybe] is not a tag of a choice",
 	])
+	var early := StoryFormat.parse_errand("customer: skater_bro\ncomputer: none\ncomes: before opening\n\n== drop-off\n(neutral) Hi.\n", "res://story/errands/0101_skater_bro.errand")
+	check("comes: before opening", [early.errors, (early.value as Errand).before_opening], [PackedStringArray(), true])
+	check("comes: before opening written back the same", StoryFormat.write_errand(early.value), "customer: skater_bro\ncomputer: none\ncomes: before opening\n\n== drop-off\n(neutral) Hi.\n")
+	_check_errors("comes", StoryFormat.parse_errand("customer: skater_bro\ncomes: at noon\n", "res://story/errands/0101_x.errand").errors, [":2: comes: 'at noon' is not after opening or before opening"])
+	_check_errors("comes before opening, not first", StoryFormat.parse_errand("customer: skater_bro\ncomes: before opening\n", "res://story/errands/0102_x.errand").errors, [":2: comes: before opening is only for the day's first errand (place 01), not 0102"])
 	_check_errors("file names", StoryFormat.parse_errand("customer: skater_bro\n", "res://story/errands/skater.errand").errors, ["the file name must be"])
 	_check_errors("day", StoryFormat.parse_day("weather: snow\nwarp: 2\non start: Bad Flag\n", "res://story/days/day_9.day").errors, [
 		"day_9.day:1: the file name", ":1: weather: 'snow'", ":2: warp: '2'", ":3: 'Bad Flag' is not a flag name",

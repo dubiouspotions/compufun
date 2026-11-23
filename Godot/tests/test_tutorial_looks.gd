@@ -26,13 +26,9 @@ func run() -> void:
 	_box = _main.get_node("%DialogueOverlay")
 	_calling = _main.get_node("%CustomerCalling")
 	game.start_day(game.day_of(1))
-	game.open_shop()
-	tick(10.0)
 	await process_frame
-	_main.get_node("%Shop").call(&"skip_walk")
-	await process_frame
-	check("the middle manager talks in the box, facing the player", [game.visitor.resource_path, game.view, _box.visible, _said()],
-		["res://customers/middle_manager.tres", &"Main", true, "...so as mentioned I'm off for vacation. I'll need you to mind the store for me until I'm back."])
+	check("the middle manager is in before opening, and talks in the box at once, facing the player", [game.phase, game.visitor.resource_path, game.view, _box.visible, _said()],
+		[game.Phase.CLOSED, "res://customers/middle_manager.tres", &"Main", true, "...so as mentioned I'm off for vacation. I'll need you to mind the store for me until I'm back."])
 
 	game.go_to_view(&"Left")
 	await create_timer(6.0).timeout

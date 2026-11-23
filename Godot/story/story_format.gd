@@ -21,6 +21,11 @@ const BRINGS: Dictionary[String, Errand.Brings] = {
 	"none": Errand.Brings.NOTHING,
 	"shows": Errand.Brings.SHOWS,
 }
+## The values of an errand's "comes:", to [member Errand.before_opening].
+const COMES: Dictionary[String, bool] = {
+	"after opening": false,
+	"before opening": true,
+}
 const CUSTOMERS_DIR: String = "res://customers/"
 const PROBLEMS_DIR: String = "res://problems/"
 ## The problem files: the text of each problem in PROBLEMS_DIR.
@@ -83,6 +88,8 @@ static func write_errand(errand: Errand) -> String:
 		out.append("problem: " + _stem(errand.problem))
 	if errand.brings != Errand.Brings.LEAVES:
 		out.append("computer: " + BRINGS.find_key(errand.brings))
+	if errand.before_opening:
+		out.append("comes: " + COMES.find_key(true))
 	if errand.when != null:
 		out.append("when: " + write_condition(errand.when))
 	_write_text_block(out, "brief", errand.brief)
@@ -257,7 +264,7 @@ class _Reader:
 				_error(0, "errand code %s: the day must be 01 to 07 and the place 01 or more" % errand.code)
 		var sections := _section_starts()
 		var header_end: int = sections[0] if not sections.is_empty() else _lines.size()
-		var fields := _read_fields(0, header_end, ["customer", "problem", "computer", "when", "brief"])
+		var fields := _read_fields(0, header_end, ["customer", "problem", "computer", "comes", "when", "brief"])
 		if not fields.has("customer"):
 			_error(0, "no 'customer:'")
 		else:
@@ -269,6 +276,13 @@ class _Reader:
 				errand.brings = BRINGS[fields.computer]
 			else:
 				_error(fields.computer_line, "computer: '%s' is not leaves, none or shows" % fields.computer)
+		if fields.has("comes"):
+			if not COMES.has(fields.comes):
+				_error(fields.comes_line, "comes: '%s' is not after opening or before opening" % fields.comes)
+			elif COMES[fields.comes] and errand.code != "" and errand.place() != 1:
+				_error(fields.comes_line, "comes: before opening is only for the day's first errand (place 01), not %s" % errand.code)
+			else:
+				errand.before_opening = COMES[fields.comes]
 		if fields.has("when"):
 			errand.when = _condition(fields.when, fields.when_line)
 		errand.brief = fields.get("brief", "")
