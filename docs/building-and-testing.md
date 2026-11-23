@@ -92,6 +92,11 @@ doesn't compile under `-s`. Its `_process` is off: `tick(seconds)` moves time. A
 `check` fails, when no check ran, or on a script error. Expected `ERROR` lines from `push_error` don't
 fail it. `run()` may `await`, for example `await process_frame` after adding a scene to `root`.
 
+Every Godot process of the project shares one user folder (`user://`), across all checkouts and
+every test that runs at the same time. A test that writes files writes them in `user_dir()`, a
+folder of its own process that `test.gd` removes when the test ends; a fixed folder in `user://`
+lets two runs read and wipe each other's files.
+
 ## Export
 
 ```sh
