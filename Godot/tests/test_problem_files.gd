@@ -27,8 +27,21 @@ const TODAY: Dictionary = {
 }
 
 
+# A problem's checks, each with how it fails, read and written back as they were.
+func _problem_checks() -> void:
+	var path := PROBLEM_FILE % "bootfloppy"
+	var text := "post-it: Won't start\nsymptoms:\n\tStops at a message\nchecks:\n\tBoots from C:\n\t\tshows: stops at Non-System disk\n\tMemory test passes\n"
+	var parsed := StoryFormat.parse_problem(text, path)
+	var problem := parsed.value as Problem
+	check("checks parse", [parsed.errors, problem.checks, problem.check_shows], [PackedStringArray(), PackedStringArray(["Boots from C:", "Memory test passes"]), {"Boots from C:": "stops at Non-System disk"}])
+	check("and write back as they were", StoryFormat.write_problem(problem), text)
+	var twice := StoryFormat.parse_problem("post-it: x\nchecks:\n\tA\n\tA\n", path)
+	check("a check twice is an error", twice.errors, PackedStringArray([path + ":4: the check 'A' a second time"]))
+
+
 func run() -> void:
 	_round_trip()
+	_problem_checks()
 	_errors()
 	_week_fills_the_resources()
 	_drafts()
@@ -68,7 +81,7 @@ func _errors() -> void:
 		path + ":5: under a symptom go only 'shows:', how it shows in the game, and 'category:', its heading in CompuFunDB",
 		path + ":8: a step is one line, with nothing under it",
 		path + ":9: 'software steps:' takes one entry per line, under it",
-		path + ":10: 'colour: red' is not a key here; the keys are post-it, symptoms, hardware steps, software steps, notes",
+		path + ":10: 'colour: red' is not a key here; the keys are post-it, symptoms, checks, hardware steps, software steps, notes",
 	]))
 	var removed: Dictionary[String, String] = {PROBLEM_FILE % "no_sound": ""}
 	check("a .tres without a problem file is an error", Array(StoryFiles.load_week(removed).errors).has("res://problems/no_sound.tres: no problem file res://story/problems/no_sound.problem holds its text"), true)

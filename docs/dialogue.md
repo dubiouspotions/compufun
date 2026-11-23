@@ -92,9 +92,11 @@ symptoms:
 	Hangs and reboots at startup
 		shows: a second into the Windows startup sound, the computer stops answering...
 		category: At startup
-	Customer mentions increased heat
-		shows: at drop-off, the customer says that the computer was a little hot when he unplugged it
-		category: From the customer
+	Computer overheating
+		shows: the fan is full of dust in the Workview
+checks:
+	Windows stays up
+		shows: a second after the desktop appears, it freezes in a buzz and reboots
 hardware steps:
 	Remove the computer shell
 	Remove the fan, throw it in the trash
@@ -108,8 +110,13 @@ The file name is the problem's id, the name of its `problems/<id>.tres`, which h
 (where it is, the broken part, the check that fixes it). Every key but `post-it` is optional.
 
 - `post-it`: what the customer says is wrong; the post-it shows it.
-- `symptoms`: one per line, as CompuFunDB finds and lists them. The player searches them by their words, so
-  a symptom says what the player sees. Changing one changes what the player marks. `shows:` under a symptom says how it shows in the game, for people.
+- `symptoms`: one per line: what the customer or the player notices. The player searches CompuFunDB
+  for their words; problems that look alike share them. `shows:` under a symptom says how it shows
+  in the game, for people.
+- `checks`: one per line: what a technician verifies on a working computer, such as `Boots from C:`.
+  CompuFunDB's CHECK lists the checks of every problem with the symptom searched for, among checks
+  of other problems; the player marks those that fail, and only this problem's checks show its fix.
+  The cause goes in the steps. `shows:` under a check says how it fails in the game.
 - `hardware steps`, `software steps`: one per line, as CompuFunDB prints them.
 - `notes`: for people; the game doesn't read them.
 

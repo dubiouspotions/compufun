@@ -2,9 +2,9 @@ class_name CompuFunDB
 extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
 ## SEARCH (the player types words, and the symptoms of every Problem that hold them all list under
-## it), what to check (the symptoms that go with the one picked, among a few of other problems in the
-## same place: the Game.db_search; the player marks what they find) and what to fix (the repair steps
-## of each problem whose symptoms are all marked, while nothing else is, numbered and ending in
+## it), what to check (the checks of every problem with the symptom picked, among a few checks of
+## other problems in the same place: the Game.db_search; the player marks those that fail) and what to
+## fix (the repair steps of each of those problems whose checks are all marked, while no other is, numbered and ending in
 ## [member test_step]; the player ticks them off). This screen keeps only its cursor and the typed
 ## words. It reads every Problem file, so its text is never a second copy of the problems.
 ## The first time the player opens it on a day, the work computer boots, the character starts the
@@ -45,7 +45,7 @@ const SEARCH_LENGTH: int = 40
 ## The last repair step of every problem but a software-only one, after its hardware and software
 ## steps (see Job.tested). A software fix lands on a running Windows, which tests it at once.
 @export var test_step: String = "Test the computer"
-## How many symptoms of other problems CompuFunDB mixes into what to check: between x and y.
+## How many checks of other problems CompuFunDB mixes into what to check: between x and y.
 @export var decoys: Vector2i = Vector2i(2, 5)
 ## The sound of each key that the character types.
 @export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
@@ -165,8 +165,8 @@ func _entries(column: Column) -> Array[Dictionary]:
 				entries.append({text = symptom, check = null, pick = true})
 		Column.CHECKS:
 			if search != null:
-				for symptom: String in search.offered:
-					entries.append({text = symptom, check = symptom in search.marked_symptoms, pick = true})
+				for check: String in search.offered:
+					entries.append({text = check, check = check in search.marked_checks, pick = true})
 		Column.FIXES:
 			for problem: Problem in _matches():
 				var number := _add_steps(entries, "Hardware", problem.hardware_steps, 1)
@@ -199,8 +199,8 @@ func _found() -> PackedStringArray:
 	return found
 
 
-# The problems whose symptoms are all marked in the search, while no other symptom is: a wrong mark
-# shows no fix.
+# The problems with the symptom searched for whose checks are all marked, while no other check is: a
+# wrong mark shows no fix.
 func _matches() -> Array[Problem]:
 	var found: Array[Problem] = []
 	var search := Game.db_search
@@ -208,32 +208,32 @@ func _matches() -> Array[Problem]:
 		return found
 	var covered: Array[String] = []
 	for problem: Problem in _problems:
-		if not problem.symptoms.is_empty() and Array(problem.symptoms).all(func(s: String) -> bool: return s in search.marked_symptoms):
+		if search.query in problem.symptoms and Array(problem.checks).all(func(c: String) -> bool: return c in search.marked_checks):
 			found.append(problem)
-			covered.append_array(problem.symptoms)
-	if search.marked_symptoms.any(func(s: String) -> bool: return s not in covered):
+			covered.append_array(problem.checks)
+	if search.marked_checks.any(func(c: String) -> bool: return c not in covered):
 		found.clear()
 	return found
 
 
-# Starts the search for [param query]: what to check is the symptoms of every problem that has it,
-# mixed with a few symptoms of other problems in the same place, so the list doesn't give it away.
+# Starts the search for [param query]: what to check is the checks of every problem that has it,
+# mixed with a few checks of other problems in the same place, so the list doesn't give it away.
 func _search(query: String) -> void:
 	var right: Array[String] = []
 	var places: Array[Problem.Location] = []
 	for problem: Problem in _problems:
 		if query in problem.symptoms:
 			places.append(problem.location)
-			for symptom: String in problem.symptoms:
-				if symptom not in right:
-					right.append(symptom)
+			for check: String in problem.checks:
+				if check not in right:
+					right.append(check)
 	var others: Array[String] = []
 	for problem: Problem in _problems:
 		if query in problem.symptoms or not places.any(func(at: Problem.Location) -> bool: return _same_place(at, problem.location)):
 			continue
-		for symptom: String in problem.symptoms:
-			if symptom not in right and symptom not in others:
-				others.append(symptom)
+		for check: String in problem.checks:
+			if check not in right and check not in others:
+				others.append(check)
 	others.shuffle()
 	var offered: Array[String] = right.duplicate()
 	offered.append_array(others.slice(0, randi_range(decoys.x, decoys.y)))
@@ -546,7 +546,7 @@ func _act() -> void:
 		Column.SEARCH:
 			_search(entry.text)
 		Column.CHECKS:
-			Game.mark_symptom(entry.text, not entry.check)
+			Game.mark_check(entry.text, not entry.check)
 		Column.FIXES:
 			Game.tick_repair(entry.text, not entry.check)
 	queue_redraw()

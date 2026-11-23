@@ -1,8 +1,8 @@
 class_name StoryProblemPanel
 extends HBoxContainer
 ## The Story Lab's Problems: every computer problem of the week, with its post-it and whether the
-## game can repair it yet, and a form for the open one (the post-it, the symptoms and how each
-## shows, the repair steps and notes). Each edit that is complete is a new text of the problem file
+## game can repair it yet, and a form for the open one (the post-it, the symptoms and the checks and
+## how each shows, the repair steps and notes). Each edit that is complete is a new text of the problem file
 ## (story/problems/<id>.problem), which [signal saved] hands up.
 
 ## [param text] is the new text of the problem file [param path]; "" removes it.
@@ -27,6 +27,7 @@ var _built_slot: HBoxContainer
 var _remove: Button
 var _post_it: LineEdit
 var _symptoms: VBoxContainer
+var _checks: VBoxContainer
 var _hardware: VBoxContainer
 var _software: VBoxContainer
 var _notes: TextEdit
@@ -77,7 +78,10 @@ func open_problem(id: StringName) -> void:
 	_post_it.text = problem.perceived_issue
 	_clear(_symptoms)
 	for symptom: String in problem.symptoms:
-		_add_symptom(symptom, problem.symptom_shows.get(symptom, ""), problem.symptom_categories.get(symptom, ""))
+		_add_symptom(symptom, problem.symptom_shows.get(symptom, ""))
+	_clear(_checks)
+	for check: String in problem.checks:
+		_add_check(check, problem.check_shows.get(check, ""))
 	for list: VBoxContainer in [_hardware, _software]:
 		_clear(list)
 		for step: String in (problem.hardware_steps if list == _hardware else problem.software_steps):
@@ -128,16 +132,8 @@ func add_problem(name: String) -> String:
 func text() -> String:
 	var problem := Problem.new()
 	problem.perceived_issue = _post_it.text.strip_edges()
-	for row: Node in _symptoms.get_children():
-		var symptom := (row.get_child(0) as LineEdit).text.strip_edges()
-		var shows := (row.get_child(1) as LineEdit).text.strip_edges()
-		var category := (row.get_child(2) as LineEdit).text.strip_edges()
-		if symptom != "":
-			problem.symptoms.append(symptom)
-			if shows != "":
-				problem.symptom_shows[symptom] = shows
-			if category != "":
-				problem.symptom_categories[symptom] = category
+	problem.symptoms = _shown(_symptoms, problem.symptom_shows)
+	problem.checks = _shown(_checks, problem.check_shows)
 	problem.hardware_steps = _steps(_hardware)
 	problem.software_steps = _steps(_software)
 	problem.notes = _notes.text.strip_edges(false, true)
@@ -166,14 +162,16 @@ func _form_problems() -> PackedStringArray:
 	var found := PackedStringArray()
 	if _post_it.text.strip_edges() == "":
 		found.append("Write the post-it: what the customer says is wrong.")
-	var seen: Dictionary[String, bool] = {}
-	for row: Node in _symptoms.get_children():
-		var symptom := (row.get_child(0) as LineEdit).text.strip_edges()
-		if symptom == "" and (row.get_child(1) as LineEdit).text.strip_edges() != "":
-			found.append("A symptom says how it shows, but not what it is.")
-		elif seen.has(symptom):
-			found.append("Two symptoms say \"%s\"; give each its own words." % symptom)
-		seen[symptom] = true
+	for list: VBoxContainer in [_symptoms, _checks]:
+		var noun := "symptom" if list == _symptoms else "check"
+		var seen: Dictionary[String, bool] = {}
+		for row: Node in list.get_children():
+			var entry := (row.get_child(0) as LineEdit).text.strip_edges()
+			if entry == "" and (row.get_child(1) as LineEdit).text.strip_edges() != "":
+				found.append("A %s says how it shows, but not what it is." % noun)
+			elif seen.has(entry):
+				found.append("Two %ss say \"%s\"; give each its own words." % [noun, entry])
+			seen[entry] = true
 	return found
 
 
@@ -199,6 +197,19 @@ func _plain(errors: PackedStringArray) -> PackedStringArray:
 		var rest := error.trim_prefix(path() + ":")
 		plain.append(rest.substr(rest.find(":") + 1).strip_edges() if rest != error else error)
 	return plain
+
+
+# The entries of the rows of [param list], with how each shows into [param shows].
+func _shown(list: VBoxContainer, shows: Dictionary[String, String]) -> PackedStringArray:
+	var entries := PackedStringArray()
+	for row: Node in list.get_children():
+		var entry := (row.get_child(0) as LineEdit).text.strip_edges()
+		var how := (row.get_child(1) as LineEdit).text.strip_edges()
+		if entry != "":
+			entries.append(entry)
+			if how != "":
+				shows[entry] = how
+	return entries
 
 
 func _steps(list: VBoxContainer) -> PackedStringArray:
@@ -294,18 +305,26 @@ func _arm_remove() -> void:
 
 # --- The form's rows
 
-func _add_symptom(symptom: String = "", shows: String = "", category: String = "") -> void:
+func _add_symptom(symptom: String = "", shows: String = "") -> void:
+	_add_shown(_symptoms, symptom, shows, "As the customer or the player would put it", "What the player sees or hears")
+
+
+func _add_check(check: String = "", shows: String = "") -> void:
+	_add_shown(_checks, check, shows, "What a working computer does, such as: Boots from C:", "How it fails in the game")
+
+
+func _add_shown(list: VBoxContainer, entry: String, shows: String, what_hint: String, how_hint: String) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	var what := LineEdit.new()
-	what.text = symptom
-	what.placeholder_text = "As CompuFunDB lists it"
+	what.text = entry
+	what.placeholder_text = what_hint
 	what.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	what.text_changed.connect(func(_t: String) -> void: _changed())
 	row.add_child(what)
 	var how := LineEdit.new()
 	how.text = shows
-	how.placeholder_text = "What the player sees or hears"
+	how.placeholder_text = how_hint
 	how.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	how.size_flags_stretch_ratio = 1.6
 	how.text_changed.connect(func(_t: String) -> void: _changed())
@@ -319,7 +338,7 @@ func _add_symptom(symptom: String = "", shows: String = "", category: String = "
 	heading.text_changed.connect(func(_t: String) -> void: _changed())
 	row.add_child(heading)
 	_add_row_buttons(row)
-	_symptoms.add_child(row)
+	list.add_child(row)
 
 
 func _add_step(list: VBoxContainer, step: String = "") -> void:
@@ -436,28 +455,17 @@ func _right() -> Control:
 	_post_it.placeholder_text = "Such as: Windows starts and turns off"
 	_post_it.text_changed.connect(func(_t: String) -> void: _changed())
 	box.add_child(_post_it)
-	box.add_child(_heading("Symptoms", "What CompuFunDB lists, and how each shows in the game. The player searches CompuFunDB by these words."))
-	var columns := HBoxContainer.new()
-	var what := LabUI.label("The symptom", 13, LabUI.DIM)
-	what.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	columns.add_child(what)
-	var how := LabUI.label("How it shows in the game", 13, LabUI.DIM)
-	how.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	how.size_flags_stretch_ratio = 1.6
-	columns.add_child(how)
-	var heading := LabUI.label("Heading in CompuFunDB", 13, LabUI.DIM)
-	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	heading.size_flags_stretch_ratio = 0.6
-	columns.add_child(heading)
-	var room := Control.new()
-	room.custom_minimum_size.x = 102
-	columns.add_child(room)
-	box.add_child(columns)
+	box.add_child(_heading("Symptoms", "What the customer or the player notices, and how it shows in the game. The player searches CompuFunDB for these words; problems that look alike share them."))
+	box.add_child(_columns("The symptom", "How it shows in the game"))
 	_symptoms = _rows(box)
 	box.add_child(_add_button("+  Symptom", func() -> void: _add_symptom()))
 	_warning = LabUI.label("", 13, LabUI.CHANGED)
 	_warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_warning)
+	box.add_child(_heading("Checks", "What a technician verifies on a working computer, such as \"Boots from C:\", and how it fails in the game. CompuFunDB lists the checks of every problem with the symptom searched for, among checks of other problems; the player marks those that fail, and only this problem's checks show its fix. The cause goes in the steps."))
+	box.add_child(_columns("The check", "How it fails in the game"))
+	_checks = _rows(box)
+	box.add_child(_add_button("+  Check", func() -> void: _add_check()))
 	box.add_child(_heading("Hardware steps", "What the player does inside the computer, in order, as CompuFunDB prints it."))
 	_hardware = _rows(box)
 	box.add_child(_add_button("+  Hardware step", func() -> void: _add_step(_hardware)))
@@ -475,6 +483,21 @@ func _right() -> Control:
 	box.add_child(_errors)
 	_form.hide()
 	return panel
+
+
+func _columns(what_title: String, how_title: String) -> Control:
+	var columns := HBoxContainer.new()
+	var what := LabUI.label(what_title, 13, LabUI.DIM)
+	what.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	columns.add_child(what)
+	var how := LabUI.label(how_title, 13, LabUI.DIM)
+	how.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	how.size_flags_stretch_ratio = 1.6
+	columns.add_child(how)
+	var room := Control.new()
+	room.custom_minimum_size.x = 102
+	columns.add_child(room)
+	return columns
 
 
 func _heading(title: String, hint: String) -> Control:

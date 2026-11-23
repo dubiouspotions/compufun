@@ -235,14 +235,17 @@ func _check_print_fix() -> void:
 	root.add_child(db)
 	game.restore({"day": 1, "phase": "OPEN", "arrivals": 1, "jobs": [{"customer": "res://customers/skater_bro.tres", "problem": "dust_overheat", "slot": 0}]})
 	game.db_day = game.day_number
-	game.search_db("Computer overheating", ["Computer overheating", "Hangs and reboots at startup"])
+	load("res://problems/dust_overheat.tres").checks = ["Windows stays up", "CPU fan is clean"]
+	load("res://problems/hamster.tres").checks = ["Windows stays up", "Nothing blocks the CPU fan"]
+	game.search_db("Computer overheating", ["Windows stays up", "CPU fan is clean", "Nothing blocks the CPU fan"])
 	await process_frame
 	db.set("_column", 1)  # CHECK: in SEARCH, F types
 	var key := InputEventKey.new()
 	key.keycode = KEY_F
 	key.pressed = true
 	check("no FIX steps, nothing to print", [db.call("_on_key", key), printer.get("_lines")], [true, PackedStringArray()])
-	game.mark_symptom("Hangs and reboots at startup", true)
+	game.mark_check("Windows stays up", true)
+	game.mark_check("CPU fan is clean", true)
 	db.call("_on_key", key)
 	var page: PackedStringArray = printer.get("_lines")
 	check("F prints a FIX page", [page[0].begins_with("CompuFunDB 1.0  FIX  "), "FIX" in page, "CHECK" in page], [true, true, false])

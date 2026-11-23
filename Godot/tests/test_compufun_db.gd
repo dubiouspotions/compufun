@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
-## CompuFunDB's search: typed words list the symptoms that hold them; picking one offers what goes
-## with it among 2 to 5 symptoms of other problems in the same place; only the right marks show the
-## fix. The search, with its marks and ticks, survives a snapshot and a restore, and a malformed one
+## CompuFunDB's search: typed words list the symptoms that hold them; picking one offers the checks
+## of every problem with it among checks of other problems in the same place; only one problem's
+## checks marked show its fix. The search, with its marks and ticks, survives a snapshot and a restore, and a malformed one
 ## is refused.
 
 ## CompuFunDB.Column, which a test can't name: CompuFunDB names the Game autoload.
@@ -18,11 +18,11 @@ func run() -> void:
 func _check_game() -> void:
 	check("a fresh day", game.restore({"day": 1}), "")
 	check("no search yet", game.db_search, null)
-	var search: DbSearch = game.search_db("Sound is muted", ["Window colours changed drastically", "Sound is muted"])
-	check("the query is marked", [search.query, search.marked_symptoms], ["Sound is muted", ["Sound is muted"]])
-	game.mark_symptom("Window colours changed drastically", true)
-	game.mark_symptom("Window colours changed drastically", true)
-	check("a symptom is marked once", search.marked_symptoms, ["Sound is muted", "Window colours changed drastically"])
+	var search: DbSearch = game.search_db("Sound is muted", ["Volume is on", "Colour scheme is the usual"])
+	check("nothing marked", [search.query, search.marked_checks], ["Sound is muted", []])
+	game.mark_check("Volume is on", true)
+	game.mark_check("Volume is on", true)
+	check("a check is marked once", search.marked_checks, ["Volume is on"])
 	game.tick_repair("Unmute", true)
 	game.tick_repair("Unmute", false)
 	check("a repair unticks", search.ticked_repairs, [])
@@ -32,17 +32,28 @@ func _check_game() -> void:
 	check("restore the snapshot", game.restore(game.snapshot()), "")
 	check("the start-up day survives", game.db_day, 1)
 	var restored: DbSearch = game.db_search
-	check("the search survives", [restored.query, restored.offered], ["Sound is muted", ["Window colours changed drastically", "Sound is muted"]])
-	check("the marks and ticks survive", [restored.marked_symptoms, restored.ticked_repairs], [["Sound is muted", "Window colours changed drastically"], ["Unmute"]])
+	check("the search survives", [restored.query, restored.offered], ["Sound is muted", ["Volume is on", "Colour scheme is the usual"]])
+	check("the marks and ticks survive", [restored.marked_checks, restored.ticked_repairs], [["Volume is on"], ["Unmute"]])
 
-	var refused: String = game.restore({"db_search": {"query": "x", "marked_symptoms": "oops"}})
-	check("a list that is not a list is refused", refused.contains("marked_symptoms of the CompuFunDB search 'x' is not a list"), true)
+	var refused: String = game.restore({"db_search": {"query": "x", "marked_checks": "oops"}})
+	check("a list that is not a list is refused", refused.contains("marked_checks of the CompuFunDB search 'x' is not a list"), true)
 	check("the refusal keeps the search", game.db_search, restored)
 	check("the old records are ignored", game.restore({"records": [{"text": "x"}]}), "")
 	check("a restore without a search starts empty", [game.db_search, game.db_day], [null, 0])
 
 
+# Two problems with one symptom get checks of their own for the test: the problem files have none yet.
 func _check_screen() -> void:
+	var dust: Problem = load("res://problems/dust_overheat.tres")
+	var hamster: Problem = load("res://problems/hamster.tres")
+	var gpu: Problem = load("res://problems/gpu_overheating.tres")
+	var bad_ram: Problem = load("res://problems/bad_ram.tres")
+	var no_sound: Problem = load("res://problems/no_sound.tres")
+	dust.checks = ["Windows stays up", "CPU fan is clean"]
+	hamster.checks = ["Windows stays up", "Nothing blocks the CPU fan"]
+	gpu.checks = ["Picture is clean"]
+	bad_ram.checks = ["Memory test passes"]
+	no_sound.checks = ["Volume is on"]
 	check("a fresh day, CompuFunDB on", game.restore({"day": 1, "db_day": 1}), "")
 	var db: Control = load("res://compufun_db/compufun_db.tscn").instantiate()  # untyped: CompuFunDB names Game
 	root.add_child(db)
@@ -56,27 +67,26 @@ func _check_screen() -> void:
 	check("backspace erases", db.get("_typed"), "OVERhea")
 	_press(db, KEY_P)
 	check("P types in SEARCH", db.get("_typed"), "OVERheap")
-	for key: Key in [KEY_BACKSPACE, KEY_BACKSPACE, KEY_BACKSPACE, KEY_BACKSPACE, KEY_BACKSPACE, KEY_BACKSPACE, KEY_BACKSPACE, KEY_BACKSPACE]:
-		_press(db, key)
+	for i: int in 8:
+		_press(db, KEY_BACKSPACE)
 	for letter: String in "computer over":
 		_type(db, letter)
 	check("every word must be in it", _texts(db, SEARCH), ["Computer overheating"])
 	_press(db, KEY_ENTER)
 	var search: DbSearch = game.db_search
 	check("Enter picks it, the cursor in CHECK", [search.query, db.get("_column")], ["Computer overheating", CHECKS])
-	var right: Array[String] = ["Hangs and reboots at startup", "Computer overheating"]  # dust_overheat and hamster
-	var decoys: Array = search.offered.filter(func(s: String) -> bool: return s not in right)
-	check("every right symptom is offered", right.all(func(s: String) -> bool: return s in search.offered), true)
-	check("with 2 to 5 others", decoys.size() >= 2 and decoys.size() <= 5, true)
-	var hardware := _hardware_symptoms()
-	check("the others are of a hardware problem", decoys.all(func(s: String) -> bool: return s in hardware), true)
-	check("no fix with one mark", _texts(db, FIXES), [])
+	var right: Array[String] = ["Windows stays up", "CPU fan is clean", "Nothing blocks the CPU fan"]
+	var others: Array = search.offered.filter(func(c: String) -> bool: return c not in right)
+	check("the checks of both problems are offered", right.all(func(c: String) -> bool: return c in search.offered), true)
+	check("with the other hardware checks, not the software one", others.duplicate().map(func(c: String) -> bool: return c in ["Picture is clean", "Memory test passes"]), [true, true])
+	check("no fix before a mark", _texts(db, FIXES), [])
 
-	game.mark_symptom("Hangs and reboots at startup", true)
-	check("the right marks show the fixes of both problems", _texts(db, FIXES).count("Test the computer"), 2)
-	game.mark_symptom(decoys[0], true)
-	check("a wrong mark hides them", _texts(db, FIXES), [])
-	game.mark_symptom(decoys[0], false)
+	game.mark_check("Windows stays up", true)
+	game.mark_check("CPU fan is clean", true)
+	check("the dust problem's checks show its fix alone", _texts(db, FIXES).count("Test the computer"), 1)
+	game.mark_check("Picture is clean", true)
+	check("a wrong mark hides it", _texts(db, FIXES), [])
+	game.mark_check("Picture is clean", false)
 
 	var printer: Node3D = load("res://props/printer.tscn").instantiate()
 	printer.add_to_group(&"printer")
@@ -87,15 +97,6 @@ func _check_screen() -> void:
 	printer.queue_free()
 	check("Esc leaves", _press(db, KEY_ESCAPE), false)
 	db.queue_free()
-
-
-func _hardware_symptoms() -> Array[String]:
-	var symptoms: Array[String] = []
-	for file: String in ResourceLoader.list_directory("res://problems/"):
-		var problem := load("res://problems/" + file) as Problem if file.ends_with(".tres") else null
-		if problem != null and problem.location != Problem.Location.SOFTWARE:
-			symptoms.append_array(problem.symptoms)
-	return symptoms
 
 
 func _texts(db: Control, column: int) -> Array:

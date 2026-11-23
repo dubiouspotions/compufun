@@ -1000,16 +1000,15 @@ func set_tested(job: Job) -> void:
 	changed.emit()
 
 
-## Starts a new CompuFunDB search for the symptom [param query], which it marks, with the symptoms
-## [param offered] to look for (they must hold [param query]), and returns it.
+## Starts a new CompuFunDB search for the symptom [param query], with the checks [param offered],
+## none marked, and returns it.
 func search_db(query: String, offered: PackedStringArray) -> DbSearch:
-	if query not in offered:
-		push_error("Game.search_db: '%s' is not among the symptoms offered: %s" % [query, offered])
+	if query.is_empty():
+		push_error("Game.search_db: no symptom to search for")
 		return null
 	db_search = DbSearch.new()
 	db_search.query = query
 	db_search.offered.assign(offered)
-	db_search.marked_symptoms = [query]
 	changed.emit()
 	return db_search
 
@@ -1020,13 +1019,13 @@ func start_db() -> void:
 	changed.emit()
 
 
-## Marks [param symptom] of the CompuFunDB search (true), or clears it (false).
-func mark_symptom(symptom: String, marked: bool) -> void:
-	if _searched("mark_symptom"):
-		if symptom not in db_search.offered:
-			push_error("Game.mark_symptom: '%s' is not offered in the search for '%s'" % [symptom, db_search.query])
+## Marks the check [param check] of the CompuFunDB search as failing (true), or clears it (false).
+func mark_check(check: String, marked: bool) -> void:
+	if _searched("mark_check"):
+		if check not in db_search.offered:
+			push_error("Game.mark_check: '%s' is not offered in the search for '%s'" % [check, db_search.query])
 			return
-		_set_in(db_search.marked_symptoms, symptom, marked)
+		_set_in(db_search.marked_checks, check, marked)
 
 
 ## Ticks the repair step [param step] of the CompuFunDB search (true), or unticks it (false).

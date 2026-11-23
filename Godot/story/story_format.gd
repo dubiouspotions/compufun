@@ -117,14 +117,8 @@ static func write_errand(errand: Errand) -> String:
 static func write_problem(problem: Problem) -> String:
 	var out := PackedStringArray()
 	out.append("post-it: " + problem.perceived_issue)
-	if not problem.symptoms.is_empty():
-		out.append("symptoms:")
-		for symptom: String in problem.symptoms:
-			out.append("\t" + symptom)
-			if problem.symptom_shows.has(symptom):
-				out.append("\t\tshows: " + problem.symptom_shows[symptom])
-			if problem.symptom_categories.has(symptom):
-				out.append("\t\tcategory: " + problem.symptom_categories[symptom])
+	_write_shown(out, "symptoms", problem.symptoms, problem.symptom_shows)
+	_write_shown(out, "checks", problem.checks, problem.check_shows)
 	for key: String in ["hardware steps", "software steps"]:
 		var steps: PackedStringArray = problem.hardware_steps if key == "hardware steps" else problem.software_steps
 		if not steps.is_empty():
@@ -133,6 +127,17 @@ static func write_problem(problem: Problem) -> String:
 				out.append("\t" + step)
 	_write_text_block(out, "notes", problem.notes)
 	return "\n".join(out) + "\n"
+
+
+# A block of entries, each with its 'shows:' line under it when it has one; nothing when empty.
+static func _write_shown(out: PackedStringArray, key: String, entries: PackedStringArray, shows: Dictionary[String, String]) -> void:
+	if entries.is_empty():
+		return
+	out.append(key + ":")
+	for entry: String in entries:
+		out.append("\t" + entry)
+		if shows.has(entry):
+			out.append("\t\tshows: " + shows[entry])
 
 
 ## The story file of [param day].
@@ -355,31 +360,15 @@ class _Reader:
 		if not _is_name(stem):
 			_error(0, "the file name must be the problem's id, in lower case, digits and _, not '%s'" % stem)
 		p.short_name = StringName(stem)
-		var fields := _read_fields(0, _lines.size(), ["post-it", "symptoms", "hardware steps", "software steps", "notes"])
+		var fields := _read_fields(0, _lines.size(), ["post-it", "symptoms", "checks", "hardware steps", "software steps", "notes"])
 		if fields.get("post-it", "") == "":
 			_error(fields.get("post-it_line", 0), "no 'post-it:' text, which the post-it shows")
 		elif fields["post-it"].contains("\n"):
 			_error(fields["post-it_line"], "'post-it:' is one line, after the colon")
 		else:
 			p.perceived_issue = fields["post-it"]
-		for row: Array in _rows(fields, "symptoms"):
-			var text: String = row[1]
-			if not text.begins_with("\t"):
-				if text in p.symptoms:
-					_error(row[0], "the symptom '%s' a second time" % text)
-				else:
-					p.symptoms.append(text)
-			else:
-				var key := text.substr(1).get_slice(":", 0)
-				var under: Dictionary[String, String] = p.symptom_shows if key == "shows" else p.symptom_categories
-				if key not in ["shows", "category"] or not text.contains(":"):
-					_error(row[0], "under a symptom go only 'shows:', how it shows in the game, and 'category:', its heading in CompuFunDB")
-				elif p.symptoms.is_empty():
-					_error(row[0], "'%s:' before any symptom" % key)
-				elif under.has(p.symptoms[-1]):
-					_error(row[0], "a second '%s:' for the symptom '%s'" % [key, p.symptoms[-1]])
-				else:
-					under[p.symptoms[-1]] = text.substr(text.find(":") + 1).strip_edges()
+		p.symptoms = _read_shown(fields, "symptoms", "symptom", p.symptom_shows)
+		p.checks = _read_shown(fields, "checks", "check", p.check_shows)
 		for key: String in ["hardware steps", "software steps"]:
 			var steps := PackedStringArray()
 			for row: Array in _rows(fields, key):
@@ -394,6 +383,27 @@ class _Reader:
 		p.notes = fields.get("notes", "")
 		result.errors = _sorted_errors()
 		return result
+
+	# The entries of the block [param key] of [param fields], each [param noun] once; the 'shows:' line
+	# under each goes into [param shows].
+	func _read_shown(fields: Dictionary, key: String, noun: String, shows: Dictionary[String, String]) -> PackedStringArray:
+		var entries := PackedStringArray()
+		for row: Array in _rows(fields, key):
+			var text: String = row[1]
+			if not text.begins_with("\t"):
+				if text in entries:
+					_error(row[0], "the %s '%s' a second time" % [noun, text])
+				else:
+					entries.append(text)
+			elif not text.substr(1).begins_with("shows:"):
+				_error(row[0], "under a %s goes only 'shows:' and how it shows in the game" % noun)
+			elif entries.is_empty():
+				_error(row[0], "'shows:' before any %s" % noun)
+			elif shows.has(entries[-1]):
+				_error(row[0], "a second 'shows:' for the %s '%s'" % [noun, entries[-1]])
+			else:
+				shows[entries[-1]] = text.substr(7).strip_edges()
+		return entries
 
 	# The lines under the block key [param key] of [param fields], as [line index, text], blank ones
 	# left out; a value on the key's own line is an error.
