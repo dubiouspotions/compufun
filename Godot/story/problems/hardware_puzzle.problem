@@ -3,15 +3,15 @@ cause: Parts in the wrong places
 symptoms:
 	No picture at all
 	Stops before Windows starts
+	No sound
 checks:
 	no: Windows starts
 	no: Shows a picture at power-on
 	no: Stops at "Non-System disk or disk error"
-	no: Floppy in drive A:
 	no: Every part sits in its own place
-	yes: CPU socket is empty
-		shows: in the Workview
 	yes: Fans run but no picture
+	no: CPU is in its socket
+		shows: in the Workview
 hardware steps:
 	Open case
 	Put each part in its own slot

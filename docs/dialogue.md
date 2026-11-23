@@ -115,9 +115,8 @@ The file name is the problem's id, the name of its `problems/<id>.tres`, which h
   as other problems word the same complaint ("Slow computer"), so a search offers every likely
   cause. The player searches CompuFunDB for their words.
 - `checks`: one per line, `yes:` (true when this is the cause) or `no:` (false). The player ticks
-  what is true. A ticked check rules out every cause that says `no:` to it. Each check is on 3
-  causes or more, so no single tick names the cause; a test keeps it so. `shows:` is how it shows
-  in the game.
+  what is true. A ticked check rules out every cause that says `no:` to it, so a cause says `no:`
+  only to a check that it makes false. `shows:` is how it fails in the game.
 - `hardware steps`, `software steps`: one per line, as CompuFunDB prints them on the cause's fix
   page, which already names the cause.
 - `notes`: for people; the game doesn't read them.

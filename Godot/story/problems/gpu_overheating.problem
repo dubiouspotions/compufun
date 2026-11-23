@@ -8,19 +8,13 @@ checks:
 	yes: Memory test passes
 	yes: Shows a picture at power-on
 	yes: Windows stays up after the desktop appears
-	no: Bluescreen after the desktop appears
-	no: Freezes with a buzz after the desktop appears
 	yes: CPU fan is clean and spins freely
-	no: CPU fan is clogged or blocked
-	yes: GPU heatsink is scorched
-		shows: in the Workview
-	yes: Coloured blocks and torn lines on screen
-		shows: from power-on
 	no: Picture is clean
+		shows: from power-on
 	yes: Every part sits in its own place
-	no: CPU socket is empty
 	no: Fans run but no picture
-	no: High contrast colour scheme
+	no: GPU heatsink looks fine
+		shows: in the Workview
 hardware steps:
 	Open case
 	Trash the GPU

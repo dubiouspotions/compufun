@@ -3,14 +3,15 @@ cause: Floppy left in drive A:
 symptoms:
 	Stops before Windows starts
 	Error text at startup
+	No sound
 checks:
 	no: Windows starts
 	yes: Memory test passes
 	yes: Shows a picture at power-on
 	yes: Stops at "Non-System disk or disk error"
-	yes: Floppy in drive A:
-		shows: sticks out of the drive; the eject button pulses
 	no: Fans run but no picture
+	no: Drive A: is empty
+		shows: sticks out of the drive; the eject button pulses
 software steps:
 	Eject the floppy
 	Restart

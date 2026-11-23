@@ -3,14 +3,10 @@ cause: No screensaver set
 symptoms:
 	Wants a screensaver
 checks:
-	yes: No screensaver set
-		shows: Display Properties, Screen Saver: (None)
-	no: Wallpaper is a picture of the desktop
-	no: High contrast colour scheme
-	no: Sound is muted
 	yes: Picture is clean
 	yes: Desktop icons open
-	no: Windows takes long to start
+	no: A screensaver is set
+		shows: Display Properties, Screen Saver: (None)
 software steps:
 	Display Properties, Screen Saver
 	Pick 3D Pipes

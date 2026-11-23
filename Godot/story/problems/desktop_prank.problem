@@ -4,17 +4,11 @@ symptoms:
 	Icons don't open
 checks:
 	no: Desktop icons open
-	yes: Wallpaper is a picture of the desktop
-		shows: Display Properties calls it "prank"
-	yes: Folder of icons hidden in a corner
-		shows: bottom right, mostly off the screen
-	no: Coloured blocks and torn lines on screen
 	yes: Picture is clean
-	no: High contrast colour scheme
-	no: No screensaver set
-	no: Folders take seconds to open
-	no: Unknown program in StartUp
-	no: Programs lost their .EXE
+	no: Wallpaper is a normal picture
+		shows: Display Properties calls it "prank"
+	no: Icons are on the desktop
+		shows: bottom right, mostly off the screen
 software steps:
 	Open the folder in the corner
 	Drag the icons to the desktop

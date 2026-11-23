@@ -11,11 +11,8 @@ checks:
 	yes: Freezes with a buzz after the desktop appears
 		shows: a second after the desktop appears, the sound sags into a buzz, then a reboot
 	no: CPU fan is clean and spins freely
-	yes: CPU fan is clogged or blocked
 		shows: in the Workview: dust in it, or something lying on it
-	no: GPU heatsink is scorched
 	yes: Every part sits in its own place
-	no: CPU socket is empty
 hardware steps:
 	Open case
 	Clear the CPU fan

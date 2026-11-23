@@ -22,19 +22,7 @@ func _problem_checks() -> void:
 	check("a check twice is an error", twice.errors, PackedStringArray([path + ":4: the check 'A' a second time"]))
 
 
-# Every check in CompuFunDB is a yes: or no: of 3 causes or more, so one tick never names the cause.
-func _three_causes_a_check() -> void:
-	var causes: Dictionary[String, Dictionary] = {}
-	for problem: Problem in game.week.problems.values():
-		if problem.in_compufun_db:
-			for c: String in problem.checks:
-				causes.get_or_add(c, {})[problem.cause_name()] = true
-	var few := causes.keys().filter(func(c: String) -> bool: return causes[c].size() < 3)
-	check("every check is on 3 causes or more", few.map(func(c: String) -> String: return "%s: %s" % [c, causes[c].keys()]), [])
-
-
 func run() -> void:
-	_three_causes_a_check()
 	_round_trip()
 	_problem_checks()
 	_errors()
@@ -52,7 +40,7 @@ func _round_trip() -> void:
 		check("%s parses" % path, parsed.errors, PackedStringArray())
 		check("%s writes back the same text" % path, StoryFormat.write_problem(parsed.value), text)
 	var dust := StoryFormat.parse_problem(FileAccess.get_file_as_string(PROBLEM_FILE % "dust_overheat"), PROBLEM_FILE % "dust_overheat").value as Problem
-	check("a check shows how it fails", dust.check_shows.has("CPU fan is clogged or blocked"), true)
+	check("a check shows how it fails", dust.check_shows.has("CPU fan is clean and spins freely"), true)
 	check("the steps", [dust.hardware_steps.size(), dust.hardware_steps[0], dust.software_steps], [4, "Open case", PackedStringArray()])
 	check("text only, named by its file", [dust.short_name, dust.resource_path, dust.broken_part], [&"dust_overheat", PROBLEM_FILE % "dust_overheat", null])
 
