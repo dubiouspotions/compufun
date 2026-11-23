@@ -46,6 +46,9 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 ## A flag that is 1 while none of the [member stand_ins] is in the computer, after the player took
 ## them out, and 0 while one is. Empty for none.
 @export var replaced_flag: StringName = &""
+## Plays, and jolts the view, each time the player opens the case while one of the [member stand_ins]
+## is in it, as the organs show. null for none.
+@export var reveal_stab: SoundSet
 ## A scene that the open case shows inside it for this visit, whatever the player takes out, such as
 ## blood on the case's floor. Its origin is the case's, with the floor at y 0.01. null for none.
 @export var case_dressing: PackedScene

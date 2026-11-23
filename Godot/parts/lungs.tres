@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" path="res://props/parts/lungs.tscn" id="2_model"]
 [ext_resource type="Resource" path="res://parts/fan.tres" id="3_poses"]
 [ext_resource type="Resource" path="res://sounds/squelch.tres" id="4_squelch"]
+[ext_resource type="AudioStream" path="res://sounds/wheeze.wav" id="5_wheeze"]
 
 [resource]
 script = ExtResource("1_part")
@@ -11,3 +12,4 @@ display_name = "Lung"
 model = ExtResource("2_model")
 poses_as = ExtResource("3_poses")
 handle_sound = ExtResource("4_squelch")
+running_sound = ExtResource("5_wheeze")

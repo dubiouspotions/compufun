@@ -10,7 +10,12 @@ extends Node3D
 var running: bool = false:
 	set(value):
 		running = value
-		($Fan as Hum).on = value
+		($Fan as Hum).on = value and fans_heard
+## False silences the fans' hum, for a computer that sounds otherwise while it runs.
+var fans_heard: bool = true:
+	set(value):
+		fans_heard = value
+		($Fan as Hum).on = running and value
 ## What the PC speaker beeps: seconds on, then off, and so on, repeated; empty is silent. Setting the
 ## pattern that it beeps already changes nothing, so a caller may set it on every change.
 var beeps: PackedFloat32Array = []:

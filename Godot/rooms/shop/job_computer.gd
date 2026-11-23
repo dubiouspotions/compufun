@@ -89,6 +89,8 @@ var _floppy_drives: Array[Node] = []
 @onready var _screwdriver_hotspot: Hotspot = %ScrewdriverHotspot
 # Plays the sound of a part in the computer that has one (Part.sound), such as a heart.
 @onready var _part_sound: Hum = %PartSound
+# Plays instead of the fans while the computer runs with a part that has one (Part.running_sound).
+@onready var _running_sound: Hum = %RunningSound
 
 
 func _ready() -> void:
@@ -212,12 +214,20 @@ func _sync_case() -> void:
 
 
 func _sync_part_sound() -> void:
-	var sounding := job.places.values().filter(func(each: Piece) -> bool: return each.part.sound != null)
-	var sound: AudioStream = (sounding[0] as Piece).part.sound if not sounding.is_empty() else null
-	if _part_sound.stream != sound:
-		_part_sound.on = false
-		_part_sound.stream = sound
-	_part_sound.on = sound != null
+	_play_part_sound(_part_sound, &"sound", true)
+	_tower.fans_heard = not _play_part_sound(_running_sound, &"running_sound", powered)
+
+
+# Plays on [param hum] the [param property] sound of the first part in the computer that has one
+# while [param when]; returns whether a part has one.
+func _play_part_sound(hum: Hum, property: StringName, when: bool) -> bool:
+	var sounding := job.places.values().filter(func(each: Piece) -> bool: return each.part.get(property) != null)
+	var sound: AudioStream = (sounding[0] as Piece).part.get(property) if not sounding.is_empty() else null
+	if hum.stream != sound:
+		hum.on = false
+		hum.stream = sound
+	hum.on = sound != null and when
+	return sound != null
 
 
 # The eject button sticks out while a floppy is in, and pulses where the player works and can eject.
@@ -298,6 +308,7 @@ func _sync_power() -> void:
 	(_power_light.material_override as StandardMaterial3D).albedo_color = power_on_color if powered else power_off_color
 	_tower.running = powered
 	_tower.beeps = _beeps()
+	_sync_part_sound()
 
 
 func _beeps() -> PackedFloat32Array:

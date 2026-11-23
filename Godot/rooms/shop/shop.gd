@@ -64,6 +64,10 @@ const WORKVIEW: StringName = &"Workview"
 ## Plays at a computer's socket when the keyboard cable goes in, and when it comes out.
 @export var plug_in_sound: SoundSet = preload("res://sounds/cable_plug_in.tres")
 @export var plug_out_sound: SoundSet = preload("res://sounds/cable_plug_out.tres")
+## How far the view jolts as a problem's reveal stab plays (Problem.reveal_stab), in metres, and how
+## long it takes to settle, in seconds.
+@export var stab_shake_metres: float = 0.025
+@export var stab_shake_seconds: float = 0.6
 
 ## Whether the work computer runs; its fans hum while it does.
 var work_computer_running: bool = false:
@@ -83,6 +87,9 @@ var _walk_out_arrival: int = -1
 var _walk_tween: Tween
 var _calling: bool = false
 var _camera_tween: Tween
+var _stab_shake: Tween
+# The jobs whose case was open at the last sync.
+var _heard_open: Array[Job] = []
 var _mouse := Vector2(-1.0, -1.0)  # in pixels of the world buffer
 var _press_at := Vector2(-1.0, -1.0)  # where the left button last went down, in pixels of the world buffer
 var _grab_held: bool = false  # from the press that grabbed the plug until its release
@@ -549,6 +556,23 @@ func _play_changes(jumped: bool) -> void:
 		if Game.connected != null:
 			plug_in_sound.play_at(_job_slots.cable_socket(Game.connected))
 	_heard_cable = Game.connected
+	for job: Job in Game.jobs:
+		if job.case_open and job not in _heard_open and not jumped and job.problem != null and job.problem.reveal_stab != null \
+				and job.places.values().any(func(each: Piece) -> bool: return each.part in job.problem.stand_ins):
+			job.problem.reveal_stab.play_at(_hand)
+			_shake_view()
+	_heard_open.assign(Game.jobs.filter(func(job: Job) -> bool: return job.case_open))
+
+
+# Jolts the view, and lets it settle over stab_shake_seconds.
+func _shake_view() -> void:
+	if _stab_shake != null:
+		_stab_shake.kill()
+	_stab_shake = create_tween()
+	_stab_shake.tween_method(func(left: float) -> void:
+		var shake := stab_shake_metres * left * left
+		_camera.h_offset = randf_range(-shake, shake)
+		_camera.v_offset = randf_range(-shake, shake), 1.0, 0.0, stab_shake_seconds)
 
 
 func _on_plug_grabbed() -> void:
