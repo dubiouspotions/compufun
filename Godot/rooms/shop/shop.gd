@@ -401,8 +401,9 @@ func _sync() -> void:
 	_the_end.ended = Game.ending() == &"pipes"
 	if _bench.dragging and Game.view != _shown_view:
 		_let_go_of_plug()  # before lay_cable below, which leaves a held plug where it is
-	# Deferred: a computer turns to lie or stand on the same change, and the cable must reach its new socket.
-	_bench.lay_cable.call_deferred(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
+	# Deferred: a computer turns to lie or stand on the same change, and the cable must reach its new socket;
+	# the socket is looked up then, as a computer that leaves meanwhile frees its own.
+	_lay_cable.call_deferred()
 	var workview_moved := _follow_focus()
 	if Game.view != _shown_view or (workview_moved and Game.view == WORKVIEW):
 		_move_camera(Game.view)
@@ -579,6 +580,10 @@ func _drop_plug(job: Job) -> void:
 	_let_go_of_plug()
 	Game.connect_cable(job)
 
+
+
+func _lay_cable() -> void:
+	_bench.lay_cable(_job_slots.cable_socket(Game.connected) if Game.connected != null else null)
 
 func _let_go_of_plug() -> void:
 	_bench.dragging = false
