@@ -50,6 +50,7 @@ gh workflow run godot.yml -R dubiouspotions/humanerror -f bump=patch   # or mino
 - `Godot/win95/theme/boot_logo.png`: the Windows 95 startup screen, (C) Microsoft, not licensed to us. Taken from the Windows Wallpaper Wiki (https://windowswallpaper.miraheze.org/wiki/Windows_95).
 - `Godot/win95/wallpapers/` (all but `win95-default.png`): the wallpapers that shipped with Windows 95, (C) Microsoft, not licensed to us. Taken from the Windows Wallpaper Wiki (https://windowswallpaper.miraheze.org/wiki/Windows_95).
 - `Godot/sounds/end_groan_1.wav`, `end_groan_2.wav`: groans recorded for the game by the team.
+- `Godot/sounds/cd_button.wav`, `cd_tray_open.wav` and `cd_tray_close.wav`: a CD-ROM drive recorded for the game by Nevyn Bengtsson; `tools/make_cd_sounds.py` cuts them.
 - `Godot/win95/sounds/chord.wav`: CHORD.WAV, the Critical Stop sound of Windows 95, (C) Microsoft, not licensed to us. Taken from "Windows 95 audio media" on the Internet Archive (https://archive.org/details/Win95-audio-media).
 - `Godot/win95/theme/icons_extracted/`: the icons that shipped with Windows 95, (C) Microsoft, not licensed to us. Extracted from a Windows 95 install with `tools/extract_win95_icons.py`.
 - `Godot/win95/applets/*.png`: pictures from Windows 95's Control Panel (the monitors, the mouse, the jack-in-the-box, the pointers, the time zone map, the Device Manager tree, the Windows Setup components), (C) Microsoft, not licensed to us. Cropped from screenshots of Windows 95 in a VM.
