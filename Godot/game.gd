@@ -1714,10 +1714,13 @@ func _set_visitor(visiting: Errand, why: Visit) -> void:
 
 ## Picks what the TALKING visitor says, and remembers that it played. A pickup visitor with no
 ## PICKUP conversation says a line of [constant THANKS]. A visitor who brings no computer and has
-## nothing to say goes at once.
+## nothing to say goes at once. A conversation without lines or choices sets its flags and is
+## nothing to say.
 func _start_talk() -> void:
 	leaving_lines = []
 	_play(errand, Conversation.Trigger.PICKUP if visit == Visit.PICKUP else Conversation.Trigger.ARRIVE)
+	if conversation != null and conversation.lines.is_empty() and conversation.choices.is_empty():
+		conversation = null
 	if conversation == null and visit == Visit.PICKUP:
 		conversation = _thanks(visitor)
 		if conversation == null:

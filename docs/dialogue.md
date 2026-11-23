@@ -84,7 +84,8 @@ brief:
   `pick-up` (they come back for the computer, on any later day) and `phone` (the player calls).
   A trigger can have several; the first whose condition matches plays. Without a match, a pick-up
   is a short thanks and a phone call a "Hello?". A `phone` without lines rings out: nobody
-  answers.
+  answers. A drop-off without lines sets its flags and says nothing, so a customer without a
+  computer leaves at once.
 
 ## A problem: `story/problems/<id>.problem`
 

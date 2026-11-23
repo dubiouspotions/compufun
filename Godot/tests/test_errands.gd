@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
 ## Game plays a day of errands from story files: alternatives by condition, errands that bring no
-## computer or only show it, an errand without a problem, the pick-up and phone of a job's errand on
+## computer or only show it (or say nothing), an errand without a problem, the pick-up and phone of a job's errand on
 ## a later day, a phone call that rings out, and the dayparts with day 1's tutorial first.
 
 const GAME := preload("res://game.gd")
@@ -99,6 +99,13 @@ func _brings_nothing() -> void:
 	game.customer_arrived()
 	game.dialogue_finished()
 	check("walks out after the drop-off, with no computer left", [game.visitor_state, game.visitor_carries(), game.jobs.size()], [GAME.VisitorState.WALKING_OUT, false, 0])
+	game.customer_left()
+
+	game.restore({"day": 2, "phase": "CLOSED"})
+	game.start_day(day_of(2, [errand("0201_office_girl", "customer: office_girl\ncomputer: none\n\n== drop-off\nset sign_pipedream\n")]))
+	game.open_shop()
+	game.customer_arrived()
+	check("a drop-off without lines sets its flags, and she goes at once", [game.flag(&"sign_pipedream"), game.visitor_state, game.conversation], [1, GAME.VisitorState.WALKING_OUT, null])
 	game.customer_left()
 
 	var leaves := errand("0201_office_girl", "customer: office_girl\nproblem: dust_overheat\n\n== drop-off\n(neutral) Fix it.\n")
