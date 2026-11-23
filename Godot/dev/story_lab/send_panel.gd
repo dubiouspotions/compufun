@@ -7,7 +7,7 @@ extends Control
 ## issue was made.
 signal sent(text: String, ok: bool)
 
-## The GitHub repo as owner/name; "" reads it from git's remote origin.
+## The GitHub repo as owner/name; "" is GitHubIssues.repo_slug().
 var github_repo: String = ""
 
 var _drafts: StoryDrafts
@@ -36,14 +36,6 @@ func show_send(drafts: StoryDrafts) -> void:
 	_note.grab_focus()
 
 
-## The name that the issue gives the writer: git's user.name, or else the login.
-static func writer() -> String:
-	var name := GitHubIssues.git(["config", "user.name"])
-	if name != "unknown" and name != "":
-		return name
-	return OS.get_environment("USER") if OS.has_environment("USER") else OS.get_environment("USERNAME")
-
-
 func _send_now() -> void:
 	if _sending or _drafts == null or _drafts.paths().is_empty():
 		return
@@ -56,7 +48,7 @@ func _send_now() -> void:
 	_sending = true
 	_send.disabled = true
 	_status.text = "Sending to GitHub..."
-	var result := await github.create_issue(StoryIssue.title(files, _note.text), StoryIssue.body(files, _note.text, writer()), StoryIssue.labels(_note.text))
+	var result := await github.create_issue(StoryIssue.title(files, _note.text), StoryIssue.body(files, _note.text, _writer()), StoryIssue.labels(_note.text))
 	_sending = false
 	_send.disabled = false
 	if result.has("error"):
@@ -67,6 +59,11 @@ func _send_now() -> void:
 	print("Story Lab sent: %s" % result["url"])
 	_note.text = ""
 	_done(text + ". Your drafts stay until main has them.", true)
+
+
+func _writer() -> String:
+	var name := GitHubIssues.reporter_name()
+	return name if name != "" else "unknown"
 
 
 func _done(text: String, ok: bool) -> void:

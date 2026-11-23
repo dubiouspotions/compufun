@@ -59,7 +59,8 @@ Export into an empty folder: an export over an old one logs errors about the ass
   Dynamic Island. Unfolding the Duo moves the game to the inner screen mid-conversation, with
   nothing lost.
 - **Touch:** Godot turns a tap into a left click, so buttons, hotspots, the nav arrows, dragging
-  parts and cables, and the Win95 drag and drop work. A hardware keyboard reaches F2.
+  parts and cables, and the Win95 drag and drop work. A hardware keyboard or the debug strip
+  reaches F2.
 
 ## What a real port needs
 
@@ -96,18 +97,26 @@ assets replaced.
 
 ## The Story Lab and F9 on a device
 
-- `dev/` is excluded from every export, and `main.gd` adds the Dev menu only to a debug build. An
-  iOS debug export that includes `dev/` would carry it; F4 needs a hardware keyboard or a touch
-  entry point.
-- Drafts live in `user://`, which works. Git doesn't: `story_drafts.gd` and `github_issues.gd` run
-  `git` through `OS.execute`, and iOS can't start processes. The start commit has to come from
-  `build_info.txt`, and "changed on `main`" from the GitHub API.
+- **The debug strip:** in a debug build on touch, buttons in the top-left corner send F2, F3, F4,
+  F9 and Cmd+N (`ui/touch/debug_strip.gd`). F3 and F4 show only where `dev/` is in the build.
+- **The iOS preset carries `dev/`**, so its builds have the Dev menu, the Voice Lab and the Story
+  Lab. Keep iOS builds within the team.
+- **The token goes in by hand.** The F2 GitHub tab saves the issues token and the reporter name in
+  `user://github.cfg` on the device, and shows only the token's last 4 characters. Paste copies the
+  token from the clipboard. Check reads the repo with it and shows the HTTP status and GitHub's
+  message when that fails. Without a token, F9 saves its report in `user://feedback/`, and Send
+  keeps the drafts.
+- **No git on a device:** iOS can't start processes, and an export has no checkout.
+  `GitHubIssues` runs git only where `.git` is next to the project; elsewhere the commit comes from
+  `build_info.txt`, the repo is `dubiouspotions/humanerror` and the name is the tab's. A draft
+  started on this build starts from the build's own file; "changed on `main`" doesn't show.
 - The Story Lab is a 1080p mouse tool: an iPad with a keyboard and a trackpad can use it, a phone
   can't.
-- **Never put the issues token in an iOS build.** It can write to every branch of the repo, and
+- **Never build the issues token into an iOS build.** It can write to every branch of the repo, and
   anyone can unzip an IPA and read the `.pck`. With it they could push to `main`, which CI builds
-  with the signing and itch.io secrets. Instead, either a small relay (a serverless function)
-  holds the token and only makes `story`/`feedback` issues and writes to the `feedback` branch,
-  for a per-writer passphrase (about 1 day); or each writer signs in with GitHub's device flow to
-  a GitHub App that has only this repo's Issues and Contents, and the token stays in the Keychain
+  with the signing and itch.io secrets. A token typed into one team phone stays in that phone's
+  app container. For testers outside the team, either a small relay (a serverless function) holds
+  the token and only makes `story`/`feedback` issues and writes to the `feedback` branch, for a
+  per-writer passphrase (about 1 day); or each writer signs in with GitHub's device flow to a
+  GitHub App that has only this repo's Issues and Contents, and the token stays in the Keychain
   (1 to 2 days).

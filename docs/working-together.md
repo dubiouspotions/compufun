@@ -25,7 +25,8 @@ same on every machine and keep merges small.
    The token is a fine-grained one owned by `dubiouspotions`, for this repository only, with
    **Contents: read and write** (the screenshots go to the branch `feedback`) and **Issues: read
    and write**. The board adds new issues itself. Contents write can push to any branch, so the
-   token never goes into an export; F9 runs only in the editor.
+   token never goes into an export. On a phone or tablet, paste it into the debug menu's GitHub
+   tab (F2), which keeps it on that device (docs/ios.md).
 
 ## Line endings
 

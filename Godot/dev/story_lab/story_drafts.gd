@@ -9,8 +9,10 @@ const DIR: String = "user://story_drafts/"
 const INDEX: String = "drafts.json"
 ## The Story Lab's settings: Save to checkout, and whether its warning was shown.
 const SETTINGS: String = "user://story_lab.cfg"
-## The start commit of a draft made where git can't tell.
+## The start commit of a draft made where neither git nor the build can tell.
 const UNKNOWN: String = "unknown"
+## The code of [member git] when git doesn't run: no checkout (an export, a device) or no git.
+const NO_GIT: int = -1
 
 ## Where the drafts are kept: one file per path, mirroring it, and [constant INDEX].
 var dir: String
@@ -18,8 +20,11 @@ var dir: String
 var checkout: String = "res://"
 ## True: [method put] writes the checkout itself, and no drafts are kept.
 var to_checkout: bool = false
-## Runs git in the repo: (arguments: PackedStringArray) -> {"code": int, "out": String}.
+## Runs git in the repo: (arguments: PackedStringArray) -> {"code": int, "out": String}; code
+## [constant NO_GIT] when git doesn't run.
 var git: Callable = _run_git
+## The commit of this build, for where git doesn't run: () -> String, or [constant UNKNOWN].
+var build_commit: Callable = _build_commit
 
 var _texts: Dictionary[String, String] = {}
 var _commits: Dictionary[String, String] = {}
@@ -165,10 +170,16 @@ func discard(path: String) -> String:
 
 
 ## The text of [param path] at the draft's start commit: {"text"} ("" when the file wasn't there),
-## or {} when git can't tell.
+## or {} when git can't tell. Where git doesn't run, a draft that started on this build starts
+## from the build's own file, and any other is {}.
 func start_text(path: String) -> Dictionary:
 	var commit := start_commit(path)
-	if commit == UNKNOWN or git.call(PackedStringArray(["cat-file", "-e", commit + "^{commit}"]))["code"] != 0:
+	if commit == UNKNOWN:
+		return {}
+	var found: Dictionary = git.call(PackedStringArray(["cat-file", "-e", commit + "^{commit}"]))
+	if found["code"] == NO_GIT:
+		return {"text": checkout_text(path)} if commit == build_commit.call() else {}
+	if found["code"] != 0:
 		return {}
 	var spec := "%s:%s" % [commit, repo_path(path)]
 	if git.call(PackedStringArray(["cat-file", "-e", spec]))["code"] != 0:
@@ -191,9 +202,11 @@ func keep_mine(path: String) -> String:
 	return "\n".join(_save_index())
 
 
-## The commit of the checkout, or [constant UNKNOWN] where git can't tell.
+## The commit of the checkout; where git doesn't run, the build's; or [constant UNKNOWN].
 func head_commit() -> String:
 	var head: Dictionary = git.call(PackedStringArray(["rev-parse", "HEAD"]))
+	if head["code"] == NO_GIT:
+		return build_commit.call()
 	return String(head["out"]).strip_edges() if head["code"] == 0 else UNKNOWN
 
 
@@ -264,11 +277,19 @@ func _read(file: String) -> Dictionary:
 
 
 static func _run_git(arguments: PackedStringArray) -> Dictionary:
+	if not GitHubIssues.in_checkout():
+		return {"code": NO_GIT, "out": "no git checkout at %s" % GitHubIssues.repo_dir()}
 	var output: Array = []
 	var args := PackedStringArray(["-C", GitHubIssues.repo_dir()])
 	args.append_array(arguments)
 	var code := OS.execute("git", args, output)
 	return {"code": code, "out": String(output[0]) if not output.is_empty() else ""}
+
+
+# The short hash from BuildInfo, or UNKNOWN.
+static func _build_commit() -> String:
+	var commit := BuildInfo.commit()
+	return commit.get_slice(" ", 0) if commit != BuildInfo.UNKNOWN_COMMIT else UNKNOWN
 
 
 static func _setting(key: String, default: bool) -> bool:
