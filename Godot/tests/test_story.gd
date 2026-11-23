@@ -44,6 +44,13 @@ computer: none
 	(neutral) Later! [leaving]
 	(neutral) Really later! [leaving]
 """)
+	add(week, "0304_hat_guy", """customer: hat_guy
+computer: none
+
+== drop-off
+(happy) Ha. [voice grumpy]
+(sulky) Hm. [voice angry]
+""")
 	add(week, "0303_hat_guy", """customer: hat_guy
 computer: none
 
@@ -63,6 +70,8 @@ computer: none
 	check("a checked flag that nothing sets", text.contains(drop_off + " > \"Did you install anything?\") checks the flag knows_install, which nothing sets."), true)
 	check("a set flag that nothing checks", text.contains(drop_off + " > \"Did you install anything?\") sets the flag pat_told, which nothing checks."), true)
 	check("a choice without lines", text.contains(drop_off + " > \"Hello?\"): the + choice has no lines, so its list shows again at once."), true)
+	check("a voice mood without a voice is listed under the voice mood that the line speaks in", [text.contains("\"Ha.\" speaks in the voice mood grumpy, which has no voice (res://voices/moods/grumpy.tres)."), text.contains("\"Ha.\" is in the mood happy")], [true, false])
+	check("a portrait that the person lacks stays listed under the line's mood", [text.contains("\"Hm.\" is in the mood sulky, which res://people/hat_guy/person.tres has no portrait for."), text.contains("\"Hm.\" is in the mood sulky, which has no voice"), text.contains("\"Hm.\" speaks in the voice mood angry")], [true, false, false])
 	check("a mood without a portrait or a voice", [text.contains("\"Bye then.\" is in the mood sulky, which res://people/skater_bro/person.tres has no portrait for."), text.contains("which has no voice (res://voices/moods/sulky.tres)")], [true, true])
 	check("an errand without a drop-off", text.contains("res://story/errands/0102_office_girl.errand has no drop-off conversation."), true)
 	check("but not one that brings nothing and says nothing", text.contains("0103_hat_guy.errand has no drop-off"), false)
@@ -78,7 +87,7 @@ computer: none
 	check("a look that is not left, right or ahead", text.contains(looks + "drop-off/1): \"Up there.\" has the look up, which is not left or right or ahead."), true)
 	check("a look that never turns the view", [text.contains(looks + "drop-off/1): \"Bye.\" has the look left, which turns the view only"), text.contains(looks + "phone/1): \"Look!\" has the look ahead, which turns the view only")], [true, true])
 	check("but not a look before a line in the box", text.contains("Over there."), false)
-	check("no other links", links.size(), 13)
+	check("no other links", links.size(), 15)
 
 	var index := StoryCheck.flag_index(week)
 	check("who sets pat_told", index[&"pat_told"]["set_by"], PackedStringArray([drop_off + " > \"Did you install anything?\")"]))

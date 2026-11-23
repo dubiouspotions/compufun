@@ -52,8 +52,8 @@ static func flag_index(week: StoryFiles.Week) -> Dictionary:
 ## The missing links of [param week], one sentence each, starting with the file path: a flag that
 ## nothing sets or nothing checks, a + choice without lines, an errand without a drop-off (unless it
 ## brings no computer and has no lines at all), an errand code whose alternatives can all fail on
-## its day, a line's mood that the customer's person has no portrait for or that has no
-## voices/moods/<mood>.tres, a [leaving] line that the conversation can go on after (it plays in the
+## its day, a line's mood that the customer's person has no portrait for, a voice mood that a line
+## speaks in (DialogueLine.voice) that has no voices/moods/<mood>.tres, a [leaving] line that the conversation can go on after (it plays in the
 ## dialogue box), a look that is not in DialogueLine.LOOKS or that never turns the view (on a
 ## [leaving] line or the phone), a problem without repair mechanics (no res://problems/<id>.tres, or one with no
 ## broken_part, software_check, blocker, missing_part, misplaced or stand_ins), and a problem file
@@ -119,7 +119,9 @@ static func _check_errand(errand: Errand, found: PackedStringArray) -> void:
 			var mood := line.mood
 			if person == null or not person.moods().has(mood):
 				found.append("%s (%s): \"%s\" is in the mood %s, which %s has no portrait for." % [errand.file, c.id, line.text.left(40), mood, person.resource_path if person != null else "a customer without a person"])
-			if not Voices.has_mood(mood):
+			if line.voice_mood != &"" and not Voices.has_mood(line.voice_mood):
+				found.append("%s (%s): \"%s\" speaks in the voice mood %s, which has no voice (%s%s.tres)." % [errand.file, c.id, line.text.left(40), line.voice_mood, MOODS_DIR, line.voice_mood])
+			elif line.voice_mood == &"" and not Voices.has_mood(mood):
 				found.append("%s (%s): \"%s\" is in the mood %s, which has no voice (%s%s.tres)." % [errand.file, c.id, line.text.left(40), mood, MOODS_DIR, mood])
 			if line.look != &"" and not DialogueLine.LOOKS.has(line.look):
 				found.append("%s (%s): \"%s\" has the look %s, which is not %s." % [errand.file, c.id, line.text.left(40), line.look, " or ".join(PackedStringArray(DialogueLine.LOOKS.keys()))])
