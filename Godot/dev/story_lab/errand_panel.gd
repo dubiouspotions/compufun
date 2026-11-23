@@ -9,12 +9,13 @@ extends HBoxContainer
 signal saved(path: String, text: String)
 ## The writer asked to remove the errand file [param path].
 signal remove_requested(path: String)
+## The writer asked to edit the problem [param id] in the Problems section.
+signal edit_problem_requested(id: StringName)
 ## The writer asked to play [param errand]'s conversation for [param trigger] in the game.
 signal play_requested(errand: Errand, trigger: Conversation.Trigger)
 
 ## The conversation graph, while the game has it (contract: show_conversation and edited).
 const GRAPH: String = "res://dev/story_lab/conversation_graph.tscn"
-const PROBLEMS_DIR: String = "res://problems/"
 const TRIGGER_NAMES: Dictionary[Conversation.Trigger, String] = {
 	Conversation.Trigger.ARRIVE: "Drop-off",
 	Conversation.Trigger.PICKUP: "Pick-up",
@@ -30,6 +31,13 @@ const SETTLE_SECONDS: float = 0.4
 
 ## The flags to offer while typing; the Lab fills it from the week.
 var flags: PackedStringArray = []
+## The week's problems by id (StoryFiles.Week.problems), which the problem picker lists and the
+## errand names; the Lab fills it.
+var problems: Dictionary[StringName, Problem] = {}:
+	set(value):
+		problems = value
+		if _problem != null:
+			_fill_problem_picker()
 
 var _path: String = ""
 var _text: String = ""
@@ -49,6 +57,7 @@ var _remove: Button
 var _brief: TextEdit
 var _problem: OptionButton
 var _problem_text: Label
+var _edit_problem: Button
 var _computer: ButtonGroup
 var _computer_hint: Label
 var _when: LineEdit
@@ -83,7 +92,7 @@ func show_errand(path: String, text: String) -> void:
 		_tab = 0
 	_path = path
 	_text = text
-	var parsed := StoryFormat.parse_errand(text, path)
+	var parsed := StoryFormat.parse_errand(text, path, problems)
 	_errand = parsed.value as Errand
 	_fill_fields()
 	_fill_tabs()
@@ -160,7 +169,7 @@ static func _trimmed(lines: PackedStringArray) -> String:
 func _apply(full: String, keep_errand: bool = false) -> PackedStringArray:
 	if full == _text:
 		return PackedStringArray()
-	var parsed := StoryFormat.parse_errand(full, _path)
+	var parsed := StoryFormat.parse_errand(full, _path, problems)
 	if not parsed.errors.is_empty():
 		return parsed.errors
 	_text = full
@@ -202,7 +211,7 @@ func _apply_fields() -> void:
 	copy.conversations = []
 	copy.when = null
 	copy.brief = _brief.text.strip_edges(false, true)
-	copy.problem = null if _problem.selected <= 0 else load(PROBLEMS_DIR + _problem.get_item_text(_problem.selected) + ".tres") as Problem
+	copy.problem = null if _problem.selected <= 0 else problems.get(_problem.get_item_metadata(_problem.selected)) as Problem
 	copy.brings = _computer.get_pressed_button().get_index() as Errand.Brings
 	var header := Array(StoryFormat.write_errand(copy).strip_edges(false, true).split("\n"))
 	var when := _when.text.strip_edges()
@@ -212,6 +221,7 @@ func _apply_fields() -> void:
 	var errors := _apply(join("\n".join(PackedStringArray(header)), split(_text)["sections"]))
 	_when_error.text = "" if errors.is_empty() else "\n".join(Array(errors).map(func(e: String) -> String: return e.get_slice(": ", 1) if e.get_slice(": ", 1) != "" else e))
 	_show_problem()
+	_select_problem()
 	_computer_hint.text = COMPUTER_HINTS[_errand.brings]
 
 
@@ -432,10 +442,7 @@ func _fill_fields() -> void:
 	_name.text = customer.spoken_name() if customer != null else "No customer"
 	_code_label.text = "%s   %s" % [_errand.code, _path.get_file()]
 	_brief.text = _errand.brief
-	_problem.select(0)
-	for i: int in _problem.item_count:
-		if _errand.problem != null and _problem.get_item_text(i) == _errand.problem.resource_path.get_file().get_basename():
-			_problem.select(i)
+	_select_problem()
 	for button: BaseButton in _computer.get_buttons():
 		button.set_pressed_no_signal(button.get_index() == _errand.brings)  # no_signal bypasses the group
 	_computer_hint.text = COMPUTER_HINTS[_errand.brings]
@@ -447,6 +454,29 @@ func _fill_fields() -> void:
 	_highlighter.moods = moods
 	_show_problem()
 	_filling = false
+
+
+# Lists every problem of the week, the ones without repair mechanics marked, and selects the errand's.
+func _fill_problem_picker() -> void:
+	_problem.clear()
+	_problem.add_item("No problem: no repair")
+	_problem.set_item_metadata(0, &"")
+	var ids: Array = problems.keys()
+	ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
+	for id: StringName in ids:
+		_problem.add_item(String(id) + ("" if StoryProblemPanel.built(problems[id]) else "  (not built yet)"))
+		_problem.set_item_metadata(_problem.item_count - 1, id)
+	if _errand != null:
+		_select_problem()
+
+
+func _select_problem() -> void:
+	_problem.select(0)
+	for i: int in _problem.item_count:
+		if _errand.problem != null and _problem.get_item_metadata(i) == _errand.problem.short_name:
+			_problem.select(i)
+	_edit_problem.disabled = _errand.problem == null
+	_edit_problem.tooltip_text = "Edit this problem's post-it, symptoms and steps" if _errand.problem != null else "The errand has no problem"
 
 
 func _show_problem() -> void:
@@ -531,12 +561,18 @@ func _left() -> Control:
 	_brief.text_changed.connect(func() -> void: _field_settle.start())
 	box.add_child(_brief)
 	box.add_child(LabUI.label("Problem", 14, LabUI.DIM))
+	var picker := HBoxContainer.new()
+	picker.add_theme_constant_override("separation", 8)
+	box.add_child(picker)
 	_problem = OptionButton.new()
-	_problem.add_item("No problem: no repair")
-	for name: String in LabUI.resource_names(PROBLEMS_DIR):
-		_problem.add_item(name)
+	_problem.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_problem.item_selected.connect(func(_i: int) -> void: _apply_fields())
-	box.add_child(_problem)
+	picker.add_child(_problem)
+	_edit_problem = LabUI.button("Edit problem", func() -> void:
+		if _errand != null and _errand.problem != null:
+			edit_problem_requested.emit(_errand.problem.short_name))
+	picker.add_child(_edit_problem)
+	_fill_problem_picker()
 	_problem_text = LabUI.label("", 13, LabUI.DIM)
 	_problem_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_problem_text)

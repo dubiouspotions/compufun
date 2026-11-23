@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
 ## The Story Lab's Problems section (dev/story_lab/problem_panel.gd) on the real week: the list, a new
-## text-only problem, the form's edits as drafts, and the symptom warning.
+## text-only problem, the form's edits as drafts, the symptom warning, and the errand panel's
+## problem picker.
 
 const DIR := "user://test_story_lab_problems/"
 const PROBLEMS := "res://story/problems/"
@@ -22,6 +23,7 @@ func run() -> void:
 	_a_new_problem_is_text_only(lab, panel, drafts)
 	_the_form_edits_a_draft(panel, drafts)
 	_a_changed_symptom_warns_on_a_built_problem(panel, drafts)
+	_the_picker_lists_and_opens_every_problem(lab, drafts)
 	check("Send names a problem file in the title", StoryIssue.title([{"path": DUST}] as Array[Dictionary], ""), "Story: problem dust_overheat")
 	lab.queue_free()
 	await process_frame
@@ -81,6 +83,32 @@ func _a_changed_symptom_warns_on_a_built_problem(panel: StoryProblemPanel, draft
 	panel.call("_save")
 	check("a new symptom on a problem without mechanics doesn't warn", warning.text, "")
 	check("its symptom and how it shows are drafted", drafts.text(HAUNTED), "post-it: Haunted printer\nsymptoms:\n\tPrints by itself\n\t\tshows: pages come out at night\n")
+
+
+func _the_picker_lists_and_opens_every_problem(lab: Control, drafts: StoryDrafts) -> void:
+	lab.call("show_section", "Week")
+	var errand_path := ""
+	for path: String in (lab.call("cards") as Dictionary):
+		if (lab.call("cards")[path]["errand"] as Errand).problem != null:
+			errand_path = path
+			break
+	lab.call("open_errand", errand_path)
+	var errand_panel: StoryErrandPanel = lab.call("errand_panel")
+	var picker: OptionButton = errand_panel.get("_problem")
+	var labels := PackedStringArray()
+	for i: int in picker.item_count:
+		labels.append(picker.get_item_text(i))
+	check("the picker marks a problem without mechanics", "haunted_printer  (not built yet)" in labels, true)
+	check("and lists every problem", picker.item_count, 1 + StoryFiles.files(PROBLEMS, ".problem", drafts.texts()).size())
+	var named := errand_panel.errand().problem.short_name
+	(errand_panel.get("_edit_problem") as Button).pressed.emit()
+	var panel: StoryProblemPanel = lab.call("problem_panel")
+	check("Edit problem opens it in the Problems section", [panel.visible, panel.problem_id()], [true, named])
+	lab.call("show_section", "Week")
+	picker.select(labels.find("haunted_printer  (not built yet)"))
+	errand_panel.call("_apply_fields")
+	check("an errand can name a problem without mechanics", "problem: haunted_printer" in drafts.text(errand_path), true)
+	check("and it parses with the week's problems", StoryFormat.parse_errand(drafts.text(errand_path), errand_path, (lab.get("_week") as StoryFiles.Week).problems).errors, PackedStringArray())
 
 
 static func _clear(dir: String) -> void:

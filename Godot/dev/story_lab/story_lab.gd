@@ -107,7 +107,7 @@ func refresh() -> void:
 	var links := _missing_links()
 	_cards.clear()
 	for path: String in StoryFiles.files(StoryFiles.ERRANDS_DIR, ".errand", texts):
-		var parsed := StoryFormat.parse_errand(drafts.text(path), path)
+		var parsed := StoryFormat.parse_errand(drafts.text(path), path, _week.problems)
 		var problems := parsed.errors.duplicate()
 		for link: String in links:
 			if link.begins_with(path) or link.begins_with(StoryDrafts.repo_path(path)):
@@ -123,6 +123,7 @@ func refresh() -> void:
 	_problems.text = "" if _week.errors.is_empty() else "%d problems in the story files (hover)" % _week.errors.size()
 	_problems.tooltip_text = "\n".join(_week.errors)
 	_errand_panel.flags = flag_names()
+	_errand_panel.problems = _week.problems
 	if _problem_panel.visible:
 		_problem_panel.show_problems(_week.problems, drafts)
 	_drafts_button.text = "Drafts (%d)" % drafts.paths().size()
@@ -401,6 +402,7 @@ func _build() -> void:
 	_errand_panel.saved.connect(_store_edit)
 	_errand_panel.remove_requested.connect(_remove_errand)
 	_errand_panel.play_requested.connect(play)
+	_errand_panel.edit_problem_requested.connect(open_problem)
 	_day_panel = StoryDayPanel.new()
 	_day_panel.saved.connect(_store_edit)
 	for shown: Control in [_hint, _errand_panel, _day_panel]:
