@@ -84,6 +84,55 @@ func run() -> void:
 	await _frames(30)
 	check("after the writer scrolls, an edit holds the new view", _on_screen(questions), scrolled)
 
+	await _check_reveal(questions)
+
+
+# A new choice at the end of a list whose place is below the view: the view scrolls down by just
+# what brings its editor, and reveal_margin around it, inside.
+func _check_reveal(questions: Reply) -> void:
+	graph.motion_seconds = 0.0
+	graph.flash_seconds = 0.0
+	_hover(Vector2(-10, -10))
+	var top := graph.box_of(questions).position_offset * graph.zoom
+	graph.scroll_offset = Vector2(top.x - 100.0, top.y - (graph.size.y - 120.0))
+	await _frames(3)
+	var before := graph.scroll_offset
+	_plus_of(questions).pressed.emit()
+	await _frames(4)
+	var added := questions.choices[questions.choices.size() - 1]
+	var editor: TextEdit = graph.box_of(added).find_children("*", "TextEdit", true, false)[0]
+	var spot := graph.get_global_transform().affine_inverse() * editor.get_global_rect()
+	var room := Rect2(Vector2.ONE * graph.reveal_margin, graph.size - Vector2.ONE * graph.reveal_margin * 2.0)
+	check("the new choice's editor ends inside the view, with the margin", room.grow(0.5).encloses(spot), true)
+	check("the view moved down by just what that needs", [is_equal_approx(roundf(spot.end.y), roundf(room.end.y)), graph.scroll_offset.y > before.y], [true, true])
+	check("and not sideways", graph.scroll_offset.x, before.x)
+
+	graph.motion_seconds = 0.2
+	var from := graph.scroll_offset
+	_plus_of(questions).pressed.emit()
+	await _frames(6)
+	var midway := graph.scroll_offset.y
+	await _frames(30)
+	check("the view glides there", [midway > from.y, midway < graph.scroll_offset.y], [true, true])
+	graph.motion_seconds = 0.0
+	var answer := questions.choices[0].replies[0]
+	graph.scroll_offset = graph.box_of(answer).position_offset * graph.zoom - Vector2(100, 100)
+	await _frames(3)
+	var still := graph.scroll_offset
+	for node: Node in graph.box_of(answer).find_children("*", "Button", true, false):
+		if (node as Button).text == "+ line":
+			(node as Button).pressed.emit()
+	await _frames(4)
+	editor = graph.box_of(answer).find_children("*", "TextEdit", true, false)[0]
+	check("a new line whose editor opens in view doesn't move the view", [room.grow(0.5).encloses(graph.get_global_transform().affine_inverse() * editor.get_global_rect()), graph.scroll_offset], [true, still])
+
+
+func _plus_of(reply: Reply) -> Button:
+	for node: Node in graph.box_of(reply).find_children("*", "Button", true, false):
+		if (node as Button).tooltip_text == "Add a choice the player can say after these lines":
+			return node
+	return null
+
 
 func _on_screen(part: Resource) -> Vector2:
 	var box := graph.box_of(part)
