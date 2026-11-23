@@ -7,6 +7,8 @@ extends PropertyPage
 ## shows black.
 const SAVERS: Dictionary[String, Script] = {
 	"3D Pipes": preload("res://win95/savers/3d_pipes.gd"),
+	"Curves and Colors": preload("res://win95/savers/curves_and_colors.gd"),
+	"Mystify Your Mind": preload("res://win95/savers/mystify_your_mind.gd"),
 }
 const _COVER := preload("res://win95/cover_screen.gd")
 const _NONE := "(None)"
