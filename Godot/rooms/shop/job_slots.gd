@@ -121,11 +121,17 @@ func _add_computer(job: Job) -> JobComputer:
 	return computer
 
 
-func _slot_of(job: Job) -> Marker3D:
-	var slot := _slots.get_node_or_null("Slot%d" % job.slot) as Marker3D
+## The marker of counter slot [param index] (0 is leftmost), where a computer stands; null, with an
+## error, when there is no such slot.
+func slot_marker(index: int) -> Marker3D:
+	var slot := get_node_or_null("Slots/Slot%d" % index) as Marker3D
 	if slot == null:
-		push_error("JobSlots: no Marker3D named Slot%d under %s for the job of %s" % [job.slot, _slots.get_path(), job.customer.resource_path])
+		push_error("JobSlots: no Marker3D named Slots/Slot%d under %s" % [index, get_path()])
 	return slot
+
+
+func _slot_of(job: Job) -> Marker3D:
+	return slot_marker(job.slot)
 
 
 # Moves the computer of [param job] under its slot's marker, keeping it where it stands, and slides it
