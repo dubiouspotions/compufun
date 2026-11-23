@@ -37,6 +37,11 @@ var _holding: bool = false
 ## True while the Lab is hidden for Play: Esc brings it back.
 var _playing: bool = false
 var _was_paused: bool = false
+var _was_low_processor: bool = false
+## The game's viewports that stopped drawing while the Lab shows, with the update mode each had.
+var _frozen: Dictionary[SubViewport, SubViewport.UpdateMode] = {}
+## The canvas items below the Lab that the renderer hides while it shows; their nodes stay visible.
+var _covered: Array[CanvasItem] = []
 
 var _board: StoryLabBoard
 var _status: Label
@@ -470,6 +475,52 @@ func _hold(on: bool) -> void:
 		get_tree().paused = true
 	else:
 		get_tree().paused = _was_paused
+	_freeze_game(on)
+
+
+# The Lab covers the paused game, so its viewports keep their last picture, and the window draws
+# only when the Lab changes: an idle Lab costs nothing. A viewport that always updates counts as a
+# change in every frame, so low processor mode alone doesn't stop the drawing.
+func _freeze_game(on: bool) -> void:
+	if on:
+		for node in get_tree().root.find_children("*", "SubViewport", true, false):
+			var viewport := node as SubViewport
+			if viewport.render_target_update_mode == SubViewport.UPDATE_ALWAYS and not is_ancestor_of(viewport):
+				_frozen[viewport] = viewport.render_target_update_mode
+				viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+		_cover_game()
+		_was_low_processor = OS.low_processor_usage_mode
+		OS.low_processor_usage_mode = true
+		return
+	for viewport: Variant in _frozen:
+		if is_instance_valid(viewport):
+			(viewport as SubViewport).render_target_update_mode = _frozen[viewport]
+	_frozen.clear()
+	for item: Variant in _covered:
+		if is_instance_valid(item):
+			RenderingServer.canvas_item_set_visible((item as CanvasItem).get_canvas_item(), (item as CanvasItem).visible)
+	_covered.clear()
+	OS.low_processor_usage_mode = _was_low_processor
+
+
+# Hides from the renderer what draws below the Lab, without hiding the nodes, which the game reads:
+# a shader that reads TIME, such as the Screen View's CRT, redraws the window every frame.
+func _cover_game() -> void:
+	var layer := get_canvas_layer_node().layer if get_canvas_layer_node() != null else 0
+	var node: Node = self
+	while node.get_parent() != null:
+		for sibling in node.get_parent().get_children():
+			if sibling == node:
+				continue
+			var items: Array[Node] = []
+			if sibling is CanvasItem:
+				items.append(sibling)
+			elif sibling is CanvasLayer and (sibling as CanvasLayer).layer < layer:
+				items.assign(sibling.get_children().filter(func(child: Node) -> bool: return child is CanvasItem))
+			for item: Node in items:
+				RenderingServer.canvas_item_set_visible((item as CanvasItem).get_canvas_item(), false)
+				_covered.append(item as CanvasItem)
+		node = node.get_parent()
 
 
 func _say(text: String, bad: bool = false) -> void:

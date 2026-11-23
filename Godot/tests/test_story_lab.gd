@@ -34,10 +34,23 @@ func run() -> void:
 	drafts.put(ERRANDS + "0701_hat_guy.errand", "customer: hat_guy\n")
 	drafts.put(ERRANDS + "0702_young_entrepreneur.errand", "customer: young_entrepreneur\nwhen: not gone_young_entrepreneur\n")
 	drafts.put(ERRANDS + "0702_retired_accountant.errand", "customer: retired_accountant\n")
+	var world := SubViewport.new()
+	world.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	root.add_child(world)
+	var game_ui := Control.new()
+	root.add_child(game_ui)
 	var lab: Control = (load("res://dev/story_lab/story_lab.tscn") as PackedScene).instantiate()
 	lab.set("drafts", drafts)
 	root.add_child(lab)
 	await process_frame
+	check("the shown Lab freezes the game's viewports and draws only on a change, and hides no game node",
+			[world.render_target_update_mode, OS.low_processor_usage_mode, game_ui.visible], [SubViewport.UPDATE_DISABLED, true, true])
+	lab.hide()
+	check("the hidden Lab lets the game draw again",
+			[world.render_target_update_mode, OS.low_processor_usage_mode], [SubViewport.UPDATE_ALWAYS, false])
+	lab.show()
+	world.queue_free()
+	game_ui.queue_free()
 	_board_lists_the_week(lab)
 	_moving_a_card_renames_through_drafts(lab, drafts)
 	_a_text_edit_with_an_error_keeps_the_last_good_draft(lab, drafts)
