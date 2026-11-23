@@ -63,7 +63,7 @@ const SEARCH_LENGTH: int = 40
 @export var hit_seconds: Vector2 = Vector2(0.3, 0.7)
 ## The seconds between two seeks of the hard drive while it reads, picked between x and y.
 @export var seek_seconds: Vector2 = Vector2(0.05, 0.2)
-## The hard drive seeking, from the work modem's speaker beside the tower; null is silent.
+## The hard drive seeking, dry, from beside the work modem's speaker by the tower; null is silent.
 @export var hdd_seek: SoundSet = preload("res://sounds/hdd_seek.tres")
 @export_group("")
 @export_group("Start-up")
@@ -407,6 +407,23 @@ func _start_up() -> void:
 	Game.start_db()
 
 
+# The hard drive's player beside the work modem's speaker: dry, on the Shop bus, past the sound
+# zones, whose reverb smears the fast ticks into an echo. null, with an error, without the speaker.
+func _drive() -> AudioStreamPlayer3D:
+	var speaker := _speaker(MODEM_SPEAKER)
+	if speaker == null:
+		return null
+	var drive := speaker.get_node_or_null(^"HardDrive") as AudioStreamPlayer3D
+	if drive == null:
+		drive = AudioStreamPlayer3D.new()
+		drive.name = "HardDrive"
+		drive.area_mask = 0
+		drive.bus = &"Shop"
+		drive.unit_size = speaker.unit_size
+		speaker.add_child(drive)
+	return drive
+
+
 func _pause(seconds: float) -> void:
 	await get_tree().create_timer(seconds).timeout
 
@@ -522,10 +539,10 @@ func _run_search() -> void:
 
 # The hard drive seeks for [param seconds]; false when another search or typing took over meanwhile.
 func _read(seconds: float, count: int) -> bool:
-	var speaker := _speaker(MODEM_SPEAKER) if hdd_seek != null else null
+	var drive := _drive() if hdd_seek != null else null
 	while seconds > 0.0:
-		if speaker != null:
-			hdd_seek.play_on(speaker)  # one player: a tick cuts the last one off rather than doubling it
+		if drive != null:
+			hdd_seek.play_on(drive)  # one player: a tick cuts the last one off rather than doubling it
 		var wait := minf(seconds, randf_range(seek_seconds.x, seek_seconds.y))
 		seconds -= wait
 		await _pause(wait)
