@@ -585,6 +585,8 @@ func _add_ghost(model: PackedScene, where: Node3D, hotspot: Hotspot) -> void:
 	var ghost := model.instantiate() as Node3D
 	for mesh: MeshInstance3D in ghost.find_children("*", "MeshInstance3D", true, false):
 		mesh.material_override = _ghost_hover if hotspot == _hovered else _ghost
+	for smoke: CPUParticles3D in ghost.find_children("*", "CPUParticles3D", true, false):
+		smoke.emitting = false
 	where.add_child(ghost)
 	_ghosts.append(ghost)
 

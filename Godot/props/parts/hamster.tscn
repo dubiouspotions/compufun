@@ -2,7 +2,7 @@
 
 [ext_resource type="Material" path="res://materials/hamster_fur.tres" id="1_fur"]
 [ext_resource type="Material" path="res://materials/mouse_pink.tres" id="2_pink"]
-[ext_resource type="Material" path="res://materials/mouse_fur.tres" id="3_belly"]
+[ext_resource type="Material" path="res://materials/hamster_belly.tres" id="3_belly"]
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="4_eye"]
 
 [sub_resource type="CapsuleMesh" id="Body"]
@@ -41,6 +41,37 @@ radius = 0.012
 height = 0.018
 radial_segments = 8
 rings = 4
+
+[sub_resource type="Gradient" id="Gradient_smoke"]
+offsets = PackedFloat32Array(0, 0.2, 1)
+colors = PackedColorArray(0.7, 0.7, 0.7, 0, 0.7, 0.7, 0.7, 0.35, 0.75, 0.75, 0.75, 0)
+
+[sub_resource type="Curve" id="Curve_smoke"]
+_data = [Vector2(0, 0.6), 0.0, 0.0, 0, 0, Vector2(1, 2), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Gradient" id="Gradient_puff"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_puff"]
+gradient = SubResource("Gradient_puff")
+width = 16
+height = 16
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_smoke"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = SubResource("GradientTexture2D_puff")
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="QuadMesh_smoke"]
+material = SubResource("StandardMaterial3D_smoke")
+size = Vector2(0.022, 0.022)
 
 [node name="Hamster" type="Node3D"]
 
@@ -98,3 +129,18 @@ surface_material_override/0 = ExtResource("2_pink")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.016, 0.031, -0.006)
 mesh = SubResource("Leg")
 surface_material_override/0 = ExtResource("2_pink")
+
+[node name="Smoke" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.005, 0.025, 0)
+amount = 5
+lifetime = 3.5
+mesh = SubResource("QuadMesh_smoke")
+emission_shape = 1
+emission_sphere_radius = 0.012
+direction = Vector3(0, 1, 0)
+spread = 12.0
+gravity = Vector3(0, 0.003, 0)
+initial_velocity_min = 0.02
+initial_velocity_max = 0.03
+scale_amount_curve = SubResource("Curve_smoke")
+color_ramp = SubResource("Gradient_smoke")
