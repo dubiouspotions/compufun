@@ -63,15 +63,15 @@ height = 0.0075
 radial_segments = 5
 rings = 3
 
-[node name="KidneyLeft" type="Node3D" unique_id=1171991121]
+[node name="KidneyLeft" type="Node3D" unique_id=87796352]
 script = ExtResource("1_s44ok")
 amount = 0.03
 
-[node name="Body" type="MeshInstance3D" parent="." unique_id=336505264]
+[node name="Body" type="MeshInstance3D" parent="." unique_id=225499636]
 transform = Transform3D(0, 0, 1, -1, 0, 0, 0, -1, 0, 0.103999995, 0.1905, 0.035000004)
 mesh = SubResource("ArrayMesh_t05td")
 
-[node name="Drips" type="CPUParticles3D" parent="." unique_id=448333009]
+[node name="Drips" type="CPUParticles3D" parent="." unique_id=998398062]
 transform = Transform3D(0, 0, 1, -1, 0, 0, 0, -1, 0, 0.09137531, 0.19077978, 0.020849396)
 amount = 4
 lifetime = 0.9

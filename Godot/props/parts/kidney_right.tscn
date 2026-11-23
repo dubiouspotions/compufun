@@ -63,15 +63,15 @@ height = 0.0075
 radial_segments = 5
 rings = 3
 
-[node name="KidneyRight" type="Node3D" unique_id=63809271]
+[node name="KidneyRight" type="Node3D" unique_id=420071541]
 script = ExtResource("1_mloft")
 amount = 0.03
 
-[node name="Body" type="MeshInstance3D" parent="." unique_id=573132671]
+[node name="Body" type="MeshInstance3D" parent="." unique_id=417573194]
 transform = Transform3D(-1, 0, -4.371139e-08, 4.371139e-08, 0, -1, 0, -1, 0, -0.030000009, 0.116500005, 0.035000004)
 mesh = SubResource("ArrayMesh_kcobb")
 
-[node name="Drips" type="CPUParticles3D" parent="." unique_id=807530453]
+[node name="Drips" type="CPUParticles3D" parent="." unique_id=418602765]
 transform = Transform3D(-1, 0, -4.371139e-08, 4.371139e-08, 0, -1, 0, -1, 0, -0.030254647, 0.10368566, 0.020849396)
 amount = 4
 lifetime = 0.9

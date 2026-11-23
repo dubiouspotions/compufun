@@ -21,19 +21,19 @@ const TEXTURE_SIZE := 32
 const SHADER := preload("res://shaders/psx_world.gdshader")
 
 ## Each tissue: base colour, dark (veins, folds, speckles), light (wet highlights), and how much of
-## it is dark lines (0 none, 1 all).
+## it is dark lines (0 none, 1 all). Only pinks, reds and purples, so it all reads as one meat.
 const TISSUES := {
 	"flesh": [Color8(156, 40, 44), Color8(80, 12, 18), Color8(240, 160, 160), 0.15],
-	"fat": [Color8(214, 178, 92), Color8(150, 104, 40), Color8(255, 240, 190), 0.1],
+	"fat": [Color8(228, 160, 164), Color8(170, 96, 110), Color8(255, 232, 232), 0.1],
 	"artery": [Color8(170, 30, 34), Color8(100, 10, 16), Color8(255, 180, 170), 0.05],
 	"vein": [Color8(70, 40, 92), Color8(36, 16, 52), Color8(190, 160, 220), 0.1],
 	"lung": [Color8(200, 128, 128), Color8(54, 40, 46), Color8(255, 220, 215), 0.3],
 	"liver": [Color8(96, 28, 20), Color8(48, 10, 8), Color8(220, 150, 130), 0.1],
-	"gall": [Color8(96, 120, 40), Color8(48, 64, 18), Color8(210, 230, 150), 0.05],
+	"gall": [Color8(104, 44, 96), Color8(56, 18, 52), Color8(220, 170, 215), 0.05],
 	"brain": [Color8(206, 156, 150), Color8(120, 70, 76), Color8(255, 230, 225), 0.55],
 	"kidney": [Color8(104, 34, 30), Color8(52, 12, 12), Color8(230, 150, 140), 0.1],
 	"spleen": [Color8(92, 34, 62), Color8(46, 12, 32), Color8(210, 150, 190), 0.1],
-	"cartilage": [Color8(226, 200, 190), Color8(160, 120, 112), Color8(255, 250, 245), 0.1],
+	"cartilage": [Color8(222, 150, 160), Color8(150, 80, 96), Color8(255, 225, 230), 0.1],
 	"blood": [Color8(84, 4, 8), Color8(40, 0, 4), Color8(200, 70, 70), 0.05],
 }
 

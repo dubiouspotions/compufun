@@ -53,16 +53,16 @@ height = 0.0075
 radial_segments = 5
 rings = 3
 
-[node name="Heart" type="Node3D" unique_id=413772024]
+[node name="Heart" type="Node3D" unique_id=687591271]
 script = ExtResource("1_lcqwd")
 kind = 0
 amount = 0.09
 
-[node name="Body" type="MeshInstance3D" parent="." unique_id=2047691126]
+[node name="Body" type="MeshInstance3D" parent="." unique_id=525162459]
 transform = Transform3D(0.81915206, 0, -0.57357645, 0, 1, 0, 0.57357645, 0, 0.81915206, -0.050000004, 0, 0.065)
 mesh = SubResource("ArrayMesh_5ajks")
 
-[node name="Drips" type="CPUParticles3D" parent="." unique_id=217583528]
+[node name="Drips" type="CPUParticles3D" parent="." unique_id=1184281639]
 transform = Transform3D(0.81915206, 0, -0.57357645, 0, 1, 0, 0.57357645, 0, 0.81915206, -0.061264083, 0.049530264, 0.05438903)
 amount = 4
 lifetime = 0.9
