@@ -156,6 +156,9 @@ func _check_close_up() -> void:
 	game.carry_printout(PAGE)
 	check("a page picked up comes up raised", [carried.call("is_raised"), corner.visible], [true, false])
 	game.trash_printout()
+	game.carry_printout(PackedStringArray(["FIX", "2. Take out what", "   blocks the fan  [ ]", "[ ] Something lies on", "    the CPU fan"]))
+	check("a click on any line of a wrapped entry finds its box", [0, 1, 2, 3, 4].map(func(l: int) -> int: return carried.call("_boxed_line", l)), [-1, 2, 2, 3, 3])
+	game.trash_printout()
 	carried.queue_free()
 	behind.queue_free()
 

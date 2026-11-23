@@ -127,11 +127,29 @@ func _on_paper_input(event: InputEvent) -> void:
 	_paper.accept_event()
 	if click.button_index != MOUSE_BUTTON_LEFT:
 		return
-	var line := _paper.line_at(click.position)
-	if line >= 0 and Game.printout_box(Game.printout[line]) >= 0:
+	var line := _boxed_line(_paper.line_at(click.position))
+	if line >= 0:
 		var tick := line not in Game.printout_ticks
 		if Game.tick_printout(line, tick):
 			(tick_sound if tick else untick_sound).play_at(self)
+
+
+# The line with the check box of the entry that [param line] is part of; -1 for none. An entry wraps
+# onto lines that start with spaces: a step has its box on its last line, a check on its first.
+func _boxed_line(line: int) -> int:
+	if line < 0:
+		return -1
+	var lines := Game.printout
+	var first := line
+	while first > 0 and lines[first].begins_with(" "):
+		first -= 1
+	var last := first
+	while last + 1 < lines.size() and lines[last + 1].begins_with(" "):
+		last += 1
+	for i: int in range(first, last + 1):
+		if Game.printout_box(lines[i]) >= 0:
+			return i
+	return -1
 
 
 func _sync() -> void:
