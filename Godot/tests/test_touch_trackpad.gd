@@ -89,7 +89,8 @@ func _check_pointing() -> void:
 	for step in 6:
 		_drag(0, at + Vector2(10 * (step + 1), 0), Vector2(10, 0))
 	_touch(0, at + Vector2(60, 0), false)
-	check("a drag moves the cursor right, faster than the finger", _cursor().x - from.x > 60.0, true)
+	var moved := _cursor().x - from.x
+	check("a slow drag moves the cursor right, a little less than the finger", moved > 30.0 and moved < 60.0, true)
 	check("by none down", _cursor().y, from.y)
 	check("and clicks nothing", _clicks.size(), 0)
 

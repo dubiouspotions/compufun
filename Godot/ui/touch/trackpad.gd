@@ -12,11 +12,11 @@ extends Control
 const GROUP: StringName = &"touch_trackpad"
 
 ## Cursor pixels per pad pixel at slow finger speed.
-@export var speed: float = 1.2
+@export var speed: float = 0.6
 ## How much faster a quick finger moves the cursor: the gain grows by this per pad pixel per event.
 @export var acceleration: float = 0.04
 ## The most that acceleration multiplies [member speed] by.
-@export var max_acceleration: float = 3.0
+@export var max_acceleration: float = 2.0
 ## Pad pixels that a finger may wander before a touch counts as a drag instead of a tap.
 @export var tap_slop: float = 12.0
 ## Seconds that a still finger holds before the left button goes down for a drag.
