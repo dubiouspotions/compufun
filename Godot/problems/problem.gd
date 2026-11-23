@@ -111,3 +111,10 @@ func take_text(from: Problem) -> void:
 	hardware_steps = from.hardware_steps.duplicate()
 	software_steps = from.software_steps.duplicate()
 	notes = from.notes
+
+
+## True when the .tres sets something that the player repairs: a broken part, a software check, a
+## blocker, a missing or misplaced part, stand-ins, or an empty case. A problem without any is text
+## that writers named before a developer built it.
+func has_repair_mechanics() -> bool:
+	return broken_part != null or software_check != null or blocker != null or missing_part != null or not misplaced.is_empty() or not stand_ins.is_empty() or empty_case
