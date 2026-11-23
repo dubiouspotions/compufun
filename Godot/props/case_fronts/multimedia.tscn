@@ -15,7 +15,7 @@ size = Vector3(0.045, 0.006, 0.004)
 [node name="CdRom" parent="." instance=ExtResource("cd_drive")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0.001)
 
-[node name="Bay2" type="MeshInstance3D" parent="."]
+[node name="Bay2" type="MeshInstance3D" parent="." groups=["case_lid"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0.001)
 material_override = ExtResource("1_dark")
 mesh = SubResource("BoxMesh_bay")

@@ -2,6 +2,13 @@ class_name PcTower
 extends Node3D
 ## A PC tower. Without [method dress] it is a plain beige tower.
 
+## The group of the meshes on a case front that are lids over empty drive bays: they take the case's
+## colour, shaded by [member lid_shade].
+const CASE_LID: StringName = &"case_lid"
+
+## The tint that the lids over empty drive bays put on the case's colour.
+@export var lid_shade: Color = Color(0.86, 0.86, 0.86)
+
 ## The PC speaker's tone, which [member beeps] gates, and its loudness.
 @export var speaker_tone: AudioStream = preload("res://sounds/pc_speaker.wav")
 @export var speaker_db: float = -20.0
@@ -56,7 +63,20 @@ func dress(computer: Computer) -> void:
 	var case_material: Material = computer.case_material if computer != null else null
 	_case.material_override = case_material if case_material != null else _plain_case
 	Computer.mount_front(computer, _front)
+	_cover_bays()
 	Sticker.stick(computer.stickers if computer != null else ([] as Array[Sticker]), _sticker_faces)
+
+
+func _cover_bays() -> void:
+	var lid := _case.material_override.duplicate() as Material
+	if lid is ShaderMaterial:
+		var color: Variant = lid.get_shader_parameter(&"albedo_color")
+		lid.set_shader_parameter(&"albedo_color", (color as Color if color is Color else Color.WHITE) * lid_shade)
+	elif lid is BaseMaterial3D:
+		lid.albedo_color *= lid_shade
+	for bay: Node in _front.find_children("*", "MeshInstance3D", true, false):
+		if bay.is_in_group(CASE_LID):
+			(bay as MeshInstance3D).material_override = lid
 
 
 ## The 3.5" floppy drive on the case front, the front's FloppyDrive named Floppy; null for a front without one.

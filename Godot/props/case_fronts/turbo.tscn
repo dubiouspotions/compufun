@@ -60,7 +60,7 @@ transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.072, 0.175, 0.002)
 material_override = ExtResource("2_metal")
 mesh = SubResource("CylinderMesh_lock")
 
-[node name="Bay" type="MeshInstance3D" parent="."]
+[node name="Bay" type="MeshInstance3D" parent="." groups=["case_lid"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0.001)
 material_override = ExtResource("1_dark")
 mesh = SubResource("BoxMesh_bay")

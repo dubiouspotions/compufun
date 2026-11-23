@@ -15,15 +15,16 @@ const SOUND_ZONES: int = 1
 @export var pitch_range: Vector2 = Vector2(0.95, 1.05)
 
 
-## Plays a random take on [param player], an AudioStreamPlayer or AudioStreamPlayer3D.
-func play_on(player: Node) -> void:
+## Plays a random take on [param player], an AudioStreamPlayer or AudioStreamPlayer3D, from
+## [param from_seconds] into the take. A take already playing on [param player] stops.
+func play_on(player: Node, from_seconds: float = 0.0) -> void:
 	if sounds.is_empty():
 		push_error("SoundSet %s has no sounds" % resource_path)
 		return
 	player.set(&"stream", sounds.pick_random())
 	player.set(&"pitch_scale", randf_range(pitch_range.x, pitch_range.y))
 	player.set(&"volume_db", volume_db)
-	player.call(&"play")
+	player.call(&"play", from_seconds)
 
 
 ## Plays a random take from where [param at] is: in 3D when it is a Node3D, else flat. The player
