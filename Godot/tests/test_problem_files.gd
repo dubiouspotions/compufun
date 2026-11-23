@@ -21,6 +21,7 @@ const TODAY: Dictionary = {
 	"inverted_colors": ["Computer's colours have changed", ["Window colours changed drastically"]],
 	"no_sound": ["Can't hear sounds", ["Sound is muted"]],
 	"noimages": ["Can't open images", ["Image program not found", "Programs won't start", "Customer changed something", "Start menu shortcut broken"]],
+	"no_parts": ["Take a closer look at the super computer", ["No parts in the computer", "Works without any parts"]],
 	"organ_failure": ["None", ["Blood comes out of the chassi", "Sound of heartbeat from computer"]],
 	"screensaver": ["Wants a good-looking screensaver", ["No screensaver set"]],
 }
