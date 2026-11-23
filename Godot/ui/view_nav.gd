@@ -2,12 +2,14 @@ class_name ViewNav
 extends Control
 ## The turn buttons, the Back button and the status line (debug builds only). It shows a view marker
 ## and asks for view changes; it does not change the view itself. In the Workview, Left and Right
-## move to the computer beside the one in focus.
+## move to the computer beside the one in focus; past the leftmost one, Left turns to the view that
+## the Workview marker names on its left. A view whose marker names the Workview turns there onto the
+## leftmost computer.
 
 ## The player pressed a turn button or Back.
 signal view_requested(view: StringName)
 ## The player pressed Left or Right in the Workview while a computer stands on that side of the one
-## in focus.
+## in focus, or turned into the Workview (followed by [signal view_requested]).
 signal focus_requested(job: Job)
 
 ## The seconds that the back strip takes to darken, and to clear again.
@@ -36,9 +38,9 @@ func _ready() -> void:
 ## Shows the buttons that [param marker] allows. null hides them.
 func show_marker(marker: ViewMarker) -> void:
 	_marker = marker
-	_left.visible = marker != null and (marker.left != &"" or _beside(&"left") != null)
-	_right.visible = marker != null and (marker.right != &"" or _beside(&"right") != null)
-	_back.visible = marker != null and marker.back != &""
+	_left.visible = _beside(&"left") != null or _turn_view(&"left") != &""
+	_right.visible = _beside(&"right") != null or _turn_view(&"right") != &""
+	_back.visible = _turn_view(&"back") != &""
 	_status_label.text = _status_text()
 
 
@@ -85,22 +87,39 @@ func button_rects() -> Array[Rect2]:
 	return rects
 
 
-## Turns the way of [param direction] (&"left", &"right" or &"back"), as its button does: asks for
-## the computer beside the one in focus in the Workview, or else for the view that the marker names
-## that way, and shows the button pressed down.
+## Turns the way of [param direction] (&"left", &"right" or &"back"), as its button does, and shows
+## the button pressed down: asks for the computer beside the one in focus in the Workview; turning
+## into the Workview, for the leftmost computer and then the Workview; else for the view that the
+## marker names that way. Does nothing when no button shows that way.
 func turn(direction: StringName) -> void:
 	press(direction)
 	var beside := _beside(direction)
 	if beside != null:
 		focus_requested.emit(beside)
-	elif _marker != null:
-		view_requested.emit(_marker.get(direction))
+		if Game.view != Shop.WORKVIEW:
+			view_requested.emit(Shop.WORKVIEW)
+	elif _turn_view(direction) != &"":
+		view_requested.emit(_turn_view(direction))
 
 
+# The computer that a turn toward [param direction] puts in focus, or null: in the Workview the one
+# beside the focus, and from a view whose marker names the Workview that way, the leftmost one.
 func _beside(direction: StringName) -> Job:
-	if Game.view != Shop.WORKVIEW or direction == &"back":
+	if _marker == null or direction == &"back":
 		return null
-	return Game.job_beside(Game.focus, -1 if direction == &"left" else 1)
+	if Game.view == Shop.WORKVIEW:
+		return Game.job_beside(Game.focus, -1 if direction == &"left" else 1)
+	if _marker.get(direction) == Shop.WORKVIEW:
+		return Game.jobs.reduce(func(leftmost: Job, job: Job) -> Job: return job if leftmost == null or job.slot < leftmost.slot else leftmost, null)
+	return null
+
+
+# The view that the marker names toward [param direction], or "" when there is none or it is the
+# Workview, which a turn reaches only onto a computer (see [method _beside]).
+func _turn_view(direction: StringName) -> StringName:
+	if _marker == null or _marker.get(direction) == Shop.WORKVIEW:
+		return &""
+	return _marker.get(direction)
 
 
 func _status_text() -> String:

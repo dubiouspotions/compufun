@@ -2,7 +2,8 @@ extends "res://tests/test.gd"
 ## The keys between views: Up or W in the Left View enters the storage room, as a click on the
 ## storage door does, and Back returns to the Left View. Up or W in the Main View looks up at the
 ## ceiling with the counter empty, and otherwise opens the Workview on the computer nearest the middle
-## of the view, as a click on it does. No key or click skips the work computer's
+## of the view, as a click on it does. In the Workview, Left on the leftmost computer turns to the test
+## screen, and Right there turns back. No key or click skips the work computer's
 ## start-up. In CompuFunDB, during the start-up and after it, S and Esc go back as the Back button does.
 ## A turn, with a key or a button, shows its button pressed down for a moment.
 
@@ -49,8 +50,10 @@ func _check_press() -> void:
 	check("a click on Left turns and presses it down", [game.view, nav.call("is_pressed_down", &"left")], [&"Left", true])
 
 
-# In the Workview, Left and Right move the focus to the computer beside it, in slot order, and stop
-# at either end; the part in the hand stays there. With one computer they don't show.
+# In the Workview, Left and Right move the focus to the computer beside it, in slot order; the part in
+# the hand stays there. Right stops at the right end, and Left on the leftmost computer turns to the
+# bench screen (the Screen View), as a click on it does. Right in the Screen View turns back onto the
+# leftmost computer, and doesn't show with the counter empty.
 func _check_workview_computers() -> void:
 	var nav: Control = _main.get_node("%ViewNav")
 	var jobs: Array = []
@@ -62,19 +65,35 @@ func _check_workview_computers() -> void:
 	await process_frame
 	var left: Button = nav.get_node("%LeftButton")
 	var right: Button = nav.get_node("%RightButton")
-	check("at the left end only Right shows", [left.visible, right.visible], [false, true])
+	check("at the left end Left and Right show", [left.visible, right.visible], [true, true])
 	var path: Array[int] = []
-	for action: StringName in [&"turn_right", &"turn_right", &"turn_right", &"turn_left", &"turn_left", &"turn_left"]:
+	for action: StringName in [&"turn_right", &"turn_right", &"turn_right", &"turn_left", &"turn_left"]:
 		_press(action)
 		path.append(game.focus.slot)
-	check("Right goes 0 to 1 to 2 and stops, Left goes back to 0 and stops", path, [1, 2, 2, 1, 0, 0])
+	check("Right goes 0 to 1 to 2 and stops, Left goes back to 0", path, [1, 2, 2, 1, 0])
 	check("still in the Workview, the part still in the hand", [game.view, game.hand != null], [&"Workview", true])
+	var screen: Hotspot = _main.get_node("%Shop").find_child("ScreenHotspot", true, false)
+	_press(&"turn_left")
+	check("Left on the leftmost computer turns to the bench screen's view", [game.view, game.focus.slot], [screen.view, 0])
+	await process_frame
+	check("in the Screen View only Right and Back show", [left.visible, right.visible], [false, true])
+	_press(&"turn_right")
+	check("Right in the Screen View turns back onto the leftmost computer", [game.view, game.focus.slot, game.hand != null], [&"Workview", 0, true])
+	await process_frame
 	right.pressed.emit()
 	check("the Right button moves the focus too", [game.focus.slot, left.visible, right.visible], [1, true, true])
+	game.go_to_view(&"Main")
+	game.go_to_view(&"Screen")
+	_press(&"turn_right")
+	check("Right in the Screen View turns onto the leftmost computer, whichever was in focus", [game.view, game.focus.slot], [&"Workview", 0])
 	jobs.resize(1)
 	check("restore one computer", game.restore({"jobs": jobs, "focus_slot": 0, "view": "Workview"}), "")
 	await process_frame
-	check("with one computer neither shows", [left.visible, right.visible], [false, false])
+	check("with one computer only Left shows", [left.visible, right.visible], [true, false])
+	check("restore an empty counter in the Screen View", game.restore({"jobs": [], "view": "Screen"}), "")
+	await process_frame
+	_press(&"turn_right")
+	check("with the counter empty Right in the Screen View doesn't show or turn", [right.visible, game.view], [false, &"Screen"])
 
 
 # Up in the Main View focuses the computer whose slot is nearest the middle of the view: slot 1, then

@@ -619,12 +619,14 @@ fov = 40.0
 [node name="Workview" type="Marker3D" parent="Views" unique_id=901056409]
 transform = Transform3D(1, 0, 0, 0, 0.88294756, 0.46947157, 0, -0.46947157, 0.88294756, -0.285, 1.5, -0.48)
 script = ExtResource("21_sg8ra")
+left = &"Screen"
 back = &"Main"
 screen = 3
 
 [node name="Screen" type="Marker3D" parent="Views" unique_id=1028610608]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.08, 1.255, -0.6566)
 script = ExtResource("21_sg8ra")
+right = &"Workview"
 back = &"Main"
 screen = 2
 fov = 40.0
