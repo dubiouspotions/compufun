@@ -21,7 +21,7 @@ desktop.ini
 /godot-path.txt
 
 # Written before an export (Godot/build_info.gd)
-/Godot/build_commit.txt
+/Godot/build_info.txt
 
 # API keys for local tools; never commit them
 /api-keys.txt

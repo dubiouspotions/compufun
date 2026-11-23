@@ -3,8 +3,14 @@ on:
   push:
     branches:
       - "main"
-      - "deploy"
-  workflow_dispatch: {}
+  # A manual run is a release: it bumps the version, tags main and deploys to itch.io.
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Which part of the version to bump"
+        type: choice
+        options: [patch, minor, major]
+        default: patch
 
 env:
   GODOT_VERSION: 4.7.2
@@ -21,6 +27,62 @@ defaults:
     working-directory: Godot
 
 jobs:
+  version:
+    # The vX.Y.Z tags are the only record of the version (docs/building-and-testing.md, "Releasing").
+    name: Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      previous: ${{ steps.version.outputs.previous }}
+      release: ${{ steps.version.outputs.release }}
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: version
+        env:
+          BUMP: ${{ inputs.bump }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          semver='^v[0-9]+\.[0-9]+\.[0-9]+$'
+          tags() { git tag --list 'v*' | grep -E "$semver" | sort -V; }
+          latest="$(tags | tail -1)" || true
+          [ -n "$latest" ] || { echo "::error::no vX.Y.Z tag in the repo; tag the first release by hand"; exit 1; }
+          if [ "$EVENT" != workflow_dispatch ]; then
+            desc="$(git describe --tags --match 'v[0-9]*.[0-9]*.[0-9]*')"
+            echo "Build version ${desc#v}"
+            { echo "version=${desc#v}"; echo "previous="; echo "release=false"; } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          [ "$GITHUB_REF" = refs/heads/main ] || { echo "::error::releases are made from main, not $GITHUB_REF"; exit 1; }
+          here="$(git tag --points-at HEAD | grep -E "$semver" | sort -V | tail -1)" || true
+          if [ -n "$here" ]; then
+            # A re-run, or a release of a commit that is already released: keep its version.
+            tag="$here"
+            previous="$(tags | grep -B1 -x "$here" | head -1)"
+            [ "$previous" != "$here" ] || previous=""
+            echo "::notice::$GITHUB_SHA is already $tag; releasing it again without a bump"
+          else
+            IFS=. read -r major minor patch <<< "${latest#v}"
+            case "$BUMP" in
+              major) tag="v$((major + 1)).0.0" ;;
+              minor) tag="v$major.$((minor + 1)).0" ;;
+              patch) tag="v$major.$minor.$((patch + 1))" ;;
+              *) echo "::error::bump must be major, minor or patch, not '$BUMP'"; exit 1 ;;
+            esac
+            previous="$latest"
+            git tag "$tag" "$GITHUB_SHA"
+            git push origin "refs/tags/$tag"
+          fi
+          echo "Release ${tag#v} (previous: ${previous:-none})"
+          { echo "version=${tag#v}"; echo "previous=$previous"; echo "release=true"; } >> "$GITHUB_OUTPUT"
+
   voice:
     # The live voice (native/chimera_voice): macOS needs a Mac; Linux, Windows and the web build here.
     name: Live Voice ${{ matrix.targets }}
@@ -59,7 +121,7 @@ jobs:
           if-no-files-found: error
 
   build:
-    needs: voice
+    needs: [voice, version]
     # Only the export cancels an older run: the voice jobs always finish, so their cache fills and
     # a later run skips the Rust build even when pushes come every few minutes.
     concurrency:
@@ -68,6 +130,8 @@ jobs:
     timeout-minutes: 5
     name: Godot Export
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
     container:
       image: docker://barichello/godot-ci:4.7.2
     steps:
@@ -82,7 +146,7 @@ jobs:
           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
           # The container runs as another user than the checkout's owner, so git refuses the repo without this.
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          bash ../tools/write-build-commit.sh
+          bash ../tools/write-build-info.sh --stamp-project
 
       - name: Live voice
         uses: actions/download-artifact@v4
@@ -105,17 +169,17 @@ jobs:
       - name: Mac Build
         run: |
           mkdir -v -p build/mac
-          godot --headless --verbose --export-release "MacOS" build/mac/$EXPORT_NAME.zip 2>&1 | tee -a $LOGFILE
+          godot --headless --verbose --export-release "MacOS" "build/mac/$EXPORT_NAME-$VERSION.zip" 2>&1 | tee -a $LOGFILE
 
       - name: Windows Build
         run: |
           mkdir -v -p build/windows
-          godot --headless --verbose --export-release "Windows Desktop" build/windows/$EXPORT_NAME.zip 2>&1 | tee -a $LOGFILE
+          godot --headless --verbose --export-release "Windows Desktop" "build/windows/$EXPORT_NAME-$VERSION.zip" 2>&1 | tee -a $LOGFILE
 
       - name: Linux Build
         run: |
           mkdir -v -p build/linux
-          godot --headless --verbose --export-release "Linux" build/linux/$EXPORT_NAME.zip 2>&1 | tee -a $LOGFILE
+          godot --headless --verbose --export-release "Linux" "build/linux/$EXPORT_NAME-$VERSION.zip" 2>&1 | tee -a $LOGFILE
 
       - name: Upload Artifact web
         uses: actions/upload-artifact@v4
@@ -171,12 +235,13 @@ jobs:
   sign-mac:
     # Gatekeeper refuses an ad-hoc signed app downloaded from itch.io, so deploys get a notarized one.
     name: Sign and Notarize macOS
-    needs: build
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/deploy'
+    needs: [version, build]
+    if: needs.version.outputs.release == 'true'
     runs-on: macos-15
     timeout-minutes: 30
     env:
       TEAM_ID: M4Q2TE45WT
+      VERSION: ${{ needs.version.outputs.version }}
     defaults:
       run:
         shell: bash
@@ -218,9 +283,11 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          ditto -x -k "build/mac/$EXPORT_NAME.zip" build/unzipped
-          app="build/unzipped/$EXPORT_NAME.app"
-          [ -d "$app" ] || { echo "::error::build/mac/$EXPORT_NAME.zip holds no $EXPORT_NAME.app"; find build/unzipped -maxdepth 2; exit 1; }
+          zip="build/mac/$EXPORT_NAME-$VERSION.zip"
+          ditto -x -k "$zip" build/unzipped
+          apps=(build/unzipped/*.app)
+          [ "${#apps[@]}" -eq 1 ] || { echo "::error::$zip holds ${#apps[@]} .app bundles, not 1"; find build/unzipped -maxdepth 2; exit 1; }
+          app="${apps[0]}"
           # Godot's ad-hoc signature carries the entitlements the engine needs; keep them.
           codesign -d --entitlements - --xml "$app" > "$RUNNER_TEMP/entitlements.plist"
           plutil -lint "$RUNNER_TEMP/entitlements.plist"
@@ -263,7 +330,7 @@ jobs:
           spctl -a -vvv -t exec "$APP" 2>&1 | tee "$RUNNER_TEMP/spctl.txt"
           grep -q "source=Notarized Developer ID" "$RUNNER_TEMP/spctl.txt"
           mkdir -p build/signed
-          ditto -c -k --keepParent "$APP" "build/signed/$EXPORT_NAME.zip"
+          ditto -c -k --keepParent "$APP" "build/signed/$EXPORT_NAME-$VERSION.zip"
 
       - name: Remove the signing keychain
         if: always()
@@ -293,10 +360,11 @@ jobs:
 
   deploy:
     name: Itch.io Deploy
-    needs: [build, sign-mac]
+    needs: [version, build, sign-mac]
     runs-on: ubuntu-latest
-    # Auto-run only on the `deploy` branch; workflow_dispatch always allowed.
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/deploy'
+    if: needs.version.outputs.release == 'true'
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
     container:
       image: docker://barichello/godot-ci:4.7.2
     defaults:
@@ -328,21 +396,19 @@ jobs:
           name: Linux
           path: ./build/linux
 
-      - name: Itch.io web
-        if: env.ITCHIO_API_KEY != '' && env.ITCHIO_USERNAME != '' && env.ITCHIO_GAME != ''
-        run: BUTLER_API_KEY=${ITCHIO_API_KEY} butler push ./build/web ${ITCHIO_USERNAME}/${ITCHIO_GAME}:web
-
-      - name: Itch.io MacOS
-        if: env.ITCHIO_API_KEY != '' && env.ITCHIO_USERNAME != '' && env.ITCHIO_GAME != ''
-        run: BUTLER_API_KEY=${ITCHIO_API_KEY} butler push ./build/mac/$EXPORT_NAME.zip ${ITCHIO_USERNAME}/${ITCHIO_GAME}:mac
-
-      - name: Itch.io Windows
-        if: env.ITCHIO_API_KEY != '' && env.ITCHIO_USERNAME != '' && env.ITCHIO_GAME != ''
-        run: BUTLER_API_KEY=${ITCHIO_API_KEY} butler push ./build/windows/$EXPORT_NAME.zip ${ITCHIO_USERNAME}/${ITCHIO_GAME}:windows
-
-      - name: Itch.io Linux
-        if: env.ITCHIO_API_KEY != '' && env.ITCHIO_USERNAME != '' && env.ITCHIO_GAME != ''
-        run: BUTLER_API_KEY=${ITCHIO_API_KEY} butler push ./build/linux/$EXPORT_NAME.zip ${ITCHIO_USERNAME}/${ITCHIO_GAME}:linux
+      - name: Itch.io
+        run: |
+          set -euo pipefail
+          for v in ITCHIO_API_KEY ITCHIO_USERNAME ITCHIO_GAME; do
+            [ -n "${!v:-}" ] || { echo "::error::secret $v is not set"; exit 1; }
+          done
+          export BUTLER_API_KEY="$ITCHIO_API_KEY"
+          target="$ITCHIO_USERNAME/$ITCHIO_GAME"
+          # itch.io names each download after its channel and shows --userversion under it.
+          butler push ./build/web "$target:web" --userversion "$VERSION"
+          for channel in mac windows linux; do
+            butler push "./build/$channel/$EXPORT_NAME-$VERSION.zip" "$target:$channel" --userversion "$VERSION"
+          done
 
       - name: Notify Discord of deploy failure
         if: failure()
@@ -354,3 +420,34 @@ jobs:
           embeds="[{\"title\": \"Deploy Failed\", \"description\": \"See details here: ${run_url}\", \"url\": \"${run_url}\", \"color\": 10038562}]"
           data="{\"content\": \"$msg\", \"username\": \"Buildbot\", \"embeds\": $embeds}"
           wget -q -O /dev/null --header="Content-Type: application/json" --post-data="$data" "${{ secrets.DISCORD_WEBHOOK_URL }}"
+
+  github-release:
+    name: GitHub Release
+    needs: [version, deploy]
+    if: needs.version.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Release notes from the tag-to-tag compare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.version.outputs.version }}
+          PREVIOUS: ${{ needs.version.outputs.previous }}
+        run: |
+          set -euo pipefail
+          tag="v$VERSION"
+          if gh release view "$tag" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "::notice::$tag already has a GitHub release"
+            exit 0
+          fi
+          if [ -n "$PREVIOUS" ]; then
+            gh api --paginate "repos/$GITHUB_REPOSITORY/compare/$PREVIOUS...$tag" \
+              --jq '.commits[] | select(.parents | length == 1) | "- " + (.commit.message | split("\n")[0])' > notes.md
+          else
+            echo "The first release." > notes.md
+          fi
+          gh release create "$tag" -R "$GITHUB_REPOSITORY" --verify-tag --title "$EXPORT_NAME $VERSION" --notes-file notes.md
