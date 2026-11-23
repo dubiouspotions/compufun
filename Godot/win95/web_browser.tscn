@@ -3,8 +3,21 @@
 [ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
 [ext_resource type="Script" path="res://win95/web_browser.gd" id="script"]
 [ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons/netscape_16.png" id="icon"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons/netscape_32.png" id="throbber"]
+[ext_resource type="Texture2D" path="res://win95/netscape/logo_16.png" id="icon"]
+[ext_resource type="Texture2D" path="res://win95/netscape/logo_48.png" id="throbber"]
+[ext_resource type="Texture2D" path="res://win95/netscape/splash.png" id="splash"]
+[ext_resource type="Texture2D" path="res://win95/netscape/back.png" id="back"]
+[ext_resource type="Texture2D" path="res://win95/netscape/forward.png" id="forward"]
+[ext_resource type="Texture2D" path="res://win95/netscape/home.png" id="home"]
+[ext_resource type="Texture2D" path="res://win95/netscape/reload.png" id="reload"]
+[ext_resource type="Texture2D" path="res://win95/netscape/images.png" id="images"]
+[ext_resource type="Texture2D" path="res://win95/netscape/open.png" id="open"]
+[ext_resource type="Texture2D" path="res://win95/netscape/print.png" id="print"]
+[ext_resource type="Texture2D" path="res://win95/netscape/find.png" id="find"]
+[ext_resource type="Texture2D" path="res://win95/netscape/stop.png" id="stop"]
+[ext_resource type="Texture2D" path="res://win95/netscape/key.png" id="key"]
+[ext_resource type="Texture2D" path="res://win95/netscape/mail.png" id="mail"]
+[ext_resource type="Texture2D" path="res://win95/netscape/drop.png" id="drop"]
 [ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_regular.ttf" id="font_regular"]
 [ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="font_bold"]
 [ext_resource type="FontFile" path="res://win95/theme/fonts/px437_ibm_vga_8x16.ttf" id="font_mono"]
@@ -18,7 +31,7 @@ base_font = ExtResource("font_bold")
 variation_transform = Transform2D(1, 0, 0.25, 1, 0, 0)
 
 [node name="WebBrowser" type="PanelContainer"]
-custom_minimum_size = Vector2(520, 380)
+custom_minimum_size = Vector2(600, 420)
 theme = ExtResource("theme")
 script = ExtResource("script")
 resizable = true
@@ -40,46 +53,355 @@ layout_mode = 2
 prefer_global_menu = false
 
 [node name="File" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 13
+item_0/text = "New Web Browser"
+item_0/id = 99
+item_0/disabled = true
+item_1/text = "New Mail Message"
+item_1/id = 99
+item_1/disabled = true
+item_2/text = "Mail Document..."
+item_2/id = 99
+item_2/disabled = true
+item_3/text = "Open Location..."
+item_3/id = 1
+item_4/text = "Open File..."
+item_4/id = 99
+item_4/disabled = true
+item_5/text = "Save as..."
+item_5/id = 99
+item_5/disabled = true
+item_6/text = ""
+item_6/id = 98
+item_6/separator = true
+item_7/text = "Page Setup..."
+item_7/id = 99
+item_7/disabled = true
+item_8/text = "Print..."
+item_8/id = 99
+item_8/disabled = true
+item_9/text = "Print Preview"
+item_9/id = 99
+item_9/disabled = true
+item_10/text = ""
+item_10/id = 98
+item_10/separator = true
+item_11/text = "Close"
+item_11/id = 2
+item_12/text = "Exit"
+item_12/id = 2
+
+[node name="Edit" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 8
+item_0/text = "Undo"
+item_0/id = 99
+item_0/disabled = true
+item_1/text = ""
+item_1/id = 98
+item_1/separator = true
+item_2/text = "Cut"
+item_2/id = 99
+item_2/disabled = true
+item_3/text = "Copy"
+item_3/id = 3
+item_4/text = "Paste"
+item_4/id = 99
+item_4/disabled = true
+item_5/text = ""
+item_5/id = 98
+item_5/separator = true
+item_6/text = "Select All"
+item_6/id = 4
+item_7/text = "Find..."
+item_7/id = 99
+item_7/disabled = true
+
+[node name="View" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 5
+item_0/text = "Reload"
+item_0/id = 5
+item_1/text = "Load Images"
+item_1/id = 99
+item_1/disabled = true
+item_2/text = "Refresh"
+item_2/id = 5
+item_3/text = "Document Source"
+item_3/id = 99
+item_3/disabled = true
+item_4/text = "Document Info"
+item_4/id = 99
+item_4/disabled = true
+
+[node name="Go" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 4
+item_0/text = "Back"
+item_0/id = 6
+item_1/text = "Forward"
+item_1/id = 7
+item_2/text = "Home"
+item_2/id = 8
+item_3/text = "Stop Loading"
+item_3/id = 9
+
+[node name="Bookmarks" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 2
+item_0/text = "Add Bookmark"
+item_0/id = 99
+item_0/disabled = true
+item_1/text = "Go to Bookmarks..."
+item_1/id = 99
+item_1/disabled = true
+
+[node name="Options" type="PopupMenu" parent="VBox/MenuBar"]
+unique_name_in_owner = true
+item_count = 11
+item_0/text = "General Preferences..."
+item_0/id = 99
+item_0/disabled = true
+item_1/text = "Mail and News Preferences..."
+item_1/id = 99
+item_1/disabled = true
+item_2/text = "Network Preferences..."
+item_2/id = 99
+item_2/disabled = true
+item_3/text = "Security Preferences..."
+item_3/id = 99
+item_3/disabled = true
+item_4/text = ""
+item_4/id = 98
+item_4/separator = true
+item_5/text = "Show Toolbar"
+item_5/id = 10
+item_5/checkable = 1
+item_5/checked = true
+item_6/text = "Show Location"
+item_6/id = 11
+item_6/checkable = 1
+item_6/checked = true
+item_7/text = "Show Directory Buttons"
+item_7/id = 12
+item_7/checkable = 1
+item_7/checked = true
+item_8/text = "Auto Load Images"
+item_8/id = 99
+item_8/checkable = 1
+item_8/checked = true
+item_8/disabled = true
+item_9/text = ""
+item_9/id = 98
+item_9/separator = true
+item_10/text = "Save Options"
+item_10/id = 99
+item_10/disabled = true
+
+[node name="Directory" type="PopupMenu" parent="VBox/MenuBar"]
 unique_name_in_owner = true
 item_count = 1
-item_0/text = "Close"
-item_0/id = 0
+item_0/text = "Netscape's Home"
+item_0/id = 8
+
+[node name="Window" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 5
+item_0/text = "Netscape Mail"
+item_0/id = 99
+item_0/disabled = true
+item_1/text = "Netscape News"
+item_1/id = 99
+item_1/disabled = true
+item_2/text = "Address Book"
+item_2/id = 99
+item_2/disabled = true
+item_3/text = "Bookmarks"
+item_3/id = 99
+item_3/disabled = true
+item_4/text = "History"
+item_4/id = 99
+item_4/disabled = true
+
+[node name="Help" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 4
+item_0/text = "About Netscape..."
+item_0/id = 13
+item_1/text = "About Plug-ins"
+item_1/id = 99
+item_1/disabled = true
+item_2/text = ""
+item_2/id = 98
+item_2/separator = true
+item_3/text = "Handbook"
+item_3/id = 14
 
 [node name="Toolbar" type="HBoxContainer" parent="VBox"]
+unique_name_in_owner = true
 layout_mode = 2
+theme_override_constants/separation = 0
 
 [node name="Back" type="Button" parent="VBox/Toolbar"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 40)
 layout_mode = 2
 disabled = true
 text = "Back"
+icon = ExtResource("back")
+icon_alignment = 1
+vertical_icon_alignment = 0
 
 [node name="Forward" type="Button" parent="VBox/Toolbar"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 40)
 layout_mode = 2
 disabled = true
 text = "Forward"
+icon = ExtResource("forward")
+icon_alignment = 1
+vertical_icon_alignment = 0
 
 [node name="Home" type="Button" parent="VBox/Toolbar"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 40)
 layout_mode = 2
 text = "Home"
+icon = ExtResource("home")
+icon_alignment = 1
+vertical_icon_alignment = 0
 
-[node name="LocationLabel" type="Label" parent="VBox/Toolbar"]
+[node name="Gap1" type="Control" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(8, 0)
 layout_mode = 2
-text = "Location:"
 
-[node name="Address" type="LineEdit" parent="VBox/Toolbar"]
+[node name="Reload" type="Button" parent="VBox/Toolbar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 40)
+layout_mode = 2
+text = "Reload"
+icon = ExtResource("reload")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="Images" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(44, 40)
+layout_mode = 2
+disabled = true
+text = "Images"
+icon = ExtResource("images")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="Open" type="Button" parent="VBox/Toolbar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 40)
+layout_mode = 2
+text = "Open"
+icon = ExtResource("open")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="Print" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(44, 40)
+layout_mode = 2
+disabled = true
+text = "Print"
+icon = ExtResource("print")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="Find" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(44, 40)
+layout_mode = 2
+disabled = true
+text = "Find"
+icon = ExtResource("find")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="Gap2" type="Control" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+
+[node name="Stop" type="Button" parent="VBox/Toolbar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 40)
+layout_mode = 2
+disabled = true
+text = "Stop"
+icon = ExtResource("stop")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="Bars" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="Rows" type="VBoxContainer" parent="VBox/Bars"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/separation = 2
+
+[node name="LocationRow" type="HBoxContainer" parent="VBox/Bars/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="LocationLabel" type="Label" parent="VBox/Bars/Rows/LocationRow"]
+layout_mode = 2
+text = "Location: "
+
+[node name="Address" type="LineEdit" parent="VBox/Bars/Rows/LocationRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Throbber" type="TextureRect" parent="VBox/Toolbar"]
-custom_minimum_size = Vector2(32, 32)
+[node name="History" type="MenuButton" parent="VBox/Bars/Rows/LocationRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(16, 0)
 layout_mode = 2
+flat = false
+icon = ExtResource("drop")
+icon_alignment = 1
+
+[node name="DirectoryButtons" type="HBoxContainer" parent="VBox/Bars/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="WhatsNew" type="Button" parent="VBox/Bars/Rows/DirectoryButtons"]
+layout_mode = 2
+text = " What's New! "
+metadata/url = "http://home.netscape.com/home/whats-new.html"
+
+[node name="WhatsCool" type="Button" parent="VBox/Bars/Rows/DirectoryButtons"]
+layout_mode = 2
+text = " What's Cool! "
+metadata/url = "http://home.netscape.com/home/whats-cool.html"
+
+[node name="Handbook" type="Button" parent="VBox/Bars/Rows/DirectoryButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = " Handbook "
+metadata/url = "http://home.netscape.com/eng/mozilla/2.0/handbook/"
+
+[node name="NetSearch" type="Button" parent="VBox/Bars/Rows/DirectoryButtons"]
+layout_mode = 2
+text = " Net Search "
+metadata/url = "http://home.netscape.com/home/internet-search.html"
+
+[node name="NetDirectory" type="Button" parent="VBox/Bars/Rows/DirectoryButtons"]
+layout_mode = 2
+text = " Net Directory "
+metadata/url = "http://home.netscape.com/home/internet-directory.html"
+
+[node name="Software" type="Button" parent="VBox/Bars/Rows/DirectoryButtons"]
+layout_mode = 2
+text = " Software "
+metadata/url = "http://home.netscape.com/comprod/upgrades/index.html"
+
+[node name="Throbber" type="TextureRect" parent="VBox/Bars"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_vertical = 4
 texture = ExtResource("throbber")
 
-[node name="Meteors" type="Control" parent="VBox/Toolbar/Throbber"]
+[node name="Meteors" type="Control" parent="VBox/Bars/Throbber"]
 unique_name_in_owner = true
 clip_contents = true
 layout_mode = 1
@@ -90,10 +412,14 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Page" type="RichTextLabel" parent="VBox"]
-unique_name_in_owner = true
+[node name="Frame" type="PanelContainer" parent="VBox"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_type_variation = &"FieldPanel"
+
+[node name="Page" type="RichTextLabel" parent="VBox/Frame"]
+unique_name_in_owner = true
+layout_mode = 2
 focus_mode = 2
 theme_override_fonts/normal_font = ExtResource("font_regular")
 theme_override_fonts/bold_font = ExtResource("font_bold")
@@ -104,7 +430,79 @@ theme_override_font_sizes/mono_font_size = 16
 bbcode_enabled = true
 selection_enabled = true
 
-[node name="Status" type="Label" parent="VBox"]
+[node name="StatusBar" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Key" type="TextureRect" parent="VBox/StatusBar"]
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "This is an insecure document that is not encrypted and offers no security protection."
+texture = ExtResource("key")
+
+[node name="Well" type="PanelContainer" parent="VBox/StatusBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"StatusWell"
+
+[node name="Status" type="Label" parent="VBox/StatusBar/Well"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Done"
+clip_text = true
+
+[node name="Mail" type="TextureRect" parent="VBox/StatusBar"]
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("mail")
+
+[node name="Splash" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+top_level = true
+custom_minimum_size = Vector2(210, 316)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Picture" type="TextureRect" parent="Splash"]
+layout_mode = 0
+offset_right = 210.0
+offset_bottom = 316.0
+texture = ExtResource("splash")
+
+[node name="Netscape" type="Label" parent="Splash"]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 70.0
+offset_right = 200.0
+offset_bottom = 96.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0.1, 0.12, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("font_bold")
+theme_override_font_sizes/font_size = 24
+text = "Netscape"
+
+[node name="Navigator" type="Label" parent="Splash"]
+layout_mode = 0
+offset_left = 52.0
+offset_top = 96.0
+offset_right = 210.0
+offset_bottom = 122.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0.1, 0.12, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("font_bold")
+theme_override_font_sizes/font_size = 24
+text = "Navigator 2.0"
+
+[node name="Copyright" type="Label" parent="Splash"]
+layout_mode = 0
+offset_top = 268.0
+offset_right = 210.0
+offset_bottom = 314.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0.1, 0.12, 1)
+text = "Copyright © 1995,1996
+Netscape Communications Corporation.
+All rights reserved."
+horizontal_alignment = 1

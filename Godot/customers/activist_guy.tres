@@ -47,7 +47,7 @@
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_smiley.png" id="sticker_smiley"]
 [ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
 [ext_resource type="PackedScene" path="res://win95/web_browser.tscn" id="app_netscape"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons/netscape_32.png" id="icon_netscape"]
+[ext_resource type="Texture2D" path="res://win95/netscape/logo_32.png" id="icon_netscape"]
 
 [sub_resource type="Resource" id="Hardware_486"]
 script = ExtResource("hardware_script")

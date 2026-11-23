@@ -46,17 +46,31 @@ func run() -> void:
 	var state: Node = load(COMPUTER_STATE_PATH).new()
 	state.setup = setup
 
+	var desk := Control.new()
+	desk.size = Vector2(640, 480)
+	root.add_child(desk)
 	var window: Node = load(BROWSER_PATH).instantiate()
-	root.add_child(window)
+	desk.add_child(window)
 	await process_frame
-	check("the meteors fly while it contacts home", [window.is_processing(), window.get_node("%Address").text], [true, "http://home.netscape.com/"])
+	var splash: Node = desk.get_node_or_null(^"Splash")
+	check("the splash shows first, centred, and the window waits", [splash != null and splash.visible, splash.position if splash != null else Vector2.ZERO, window.visible], [true, Vector2(215, 82), false])
+	await create_timer(window.splash_seconds + 0.1).timeout
+	check("then the window shows, and the splash is gone", [window.visible, is_instance_valid(splash)], [true, false])
+	check("the meteors fly while it contacts home", [window.is_processing(), window.get_node("%Address").text, window.get_node("%Stop").disabled], [true, "http://home.netscape.com/", false])
 	await create_timer(window.contact_seconds + 0.1).timeout
 	check("no modem: they stop, and the window stays blank", [window.is_processing(), window.url, window.get_node("%Address").text], [false, "", ""])
+	window.navigate("www.yahoo.com")
+	window.stop()
+	check("Stop stops it at once", [window.is_processing(), window.get_node("%Status").text, window.get_node("%Address").text], [false, "Transfer interrupted!", ""])
 	window.contact_seconds = 0.0
+	check("the Directory menu lists the directory buttons", window.get_node("%Directory").item_count, 7)
+	window.navigate("about:")
+	check("about: is Netscape's own page, with its logo", [window.page_title, window.get_node("%Page").text.contains("[img]res://win95/netscape/logo_96.png[/img]")], ["Version 2.0", true])
+	window.back()
 
 	window.open_file(a, state)
 	check("opens a file on drive C", window.url, "file:///C:/DOCS/A.HTM")
-	check("its picture is its ALT text", window.get_node("%Page").text.contains("[lb]Pic[rb]"), true)
+	check("its picture is out of reach: the broken picture", window.get_node("%Page").text.contains("[img tooltip=\"Pic\"]res://win95/netscape/broken.png[/img]"), true)
 	window.get_node("%Page").meta_clicked.emit(browser.resolve(window.url, "B.HTM"))
 	check("and follows its link to another", window.page_title, "Bee")
 	window.back()
@@ -69,5 +83,5 @@ func run() -> void:
 	window.navigate("C:\\DOCS\\GONE.HTM")
 	check("so does a missing file", window.url, "file:///C:/DOCS/A.HTM")
 	state.free()
-	window.queue_free()
+	desk.queue_free()
 	await process_frame

@@ -1,15 +1,20 @@
 extends "res://win95/window.gd"
-## Netscape Navigator 2.0: a 1996 web browser that shows HTML 3.2 pages from drive C. No computer in
-## the shop has a modem, so a web address fails as Netscape failed offline: the meteors fly while
-## it contacts the host, then an alert, and the page before stays. No forms, frames, scripts or
-## style sheets: they came later.
+## Netscape Navigator 2.0, after screenshots of the real one: the splash, the toolbar, the Location
+## and directory buttons, the throbber and the menus. It shows HTML 3.2 pages from drive C and its
+## own about: page. No computer in the shop has a modem, so a web address fails as Netscape failed
+## offline: meteors fly across the N while it contacts the host, then an alert, and the page on
+## show stays. No forms, frames, scripts or style sheets: they came later.
 
-enum FileMenu { CLOSE }
+## The menu items that do something; the rest are greyed out, as offline Netscape needs none.
+enum Item { OPEN_LOCATION = 1, CLOSE, COPY, SELECT_ALL, RELOAD, BACK, FORWARD, HOME, STOP,
+		SHOW_TOOLBAR, SHOW_LOCATION, SHOW_DIRECTORY, ABOUT, HANDBOOK, DIRECTORY = 100 }
 
 ## The file extensions that this app opens, lower case, without the dot.
 @export var opens: Array[String] = ["htm", "html"]
 ## The page that the window opens with and that Home goes to.
 @export var home := "http://home.netscape.com/"
+## Seconds that the splash shows before the window; 0 skips it.
+@export var splash_seconds := 3.0
 ## Seconds that Netscape tries to reach a host before it gives up; 0 gives up at once.
 @export var contact_seconds := 2.5
 ## How many meteors fly across the N at a time.
@@ -18,6 +23,20 @@ enum FileMenu { CLOSE }
 @export var meteor_speed := 1.5
 
 const _MESSAGE := preload("res://win95/message_box.tscn")
+const _ABOUT := """<TITLE>Version 2.0</TITLE><BODY BGCOLOR="#C0C0C0">
+<CENTER><IMG SRC="about:logo"><BR><B>N E T S C A P E</B>
+<H2>Netscape Navigator (TM)</H2><B>Version 2.0</B><BR>
+Copyright &copy; 1994-1995 Netscape Communications Corporation, All rights reserved.</CENTER>
+<P>This software is subject to the license agreement set forth in the <A HREF="about:license">license</A>.
+Please read and agree to all terms before using this software.
+<P>Report any problems through the <A HREF="http://home.netscape.com/assist/feedback.html">feedback page</A>.
+<P>Netscape Communications, Netscape, Netscape Navigator and the Netscape Communications logo are
+trademarks of Netscape Communications Corporation.
+<HR>Contains Java (TM) software developed by Sun Microsystems, Inc.<BR>
+Copyright &copy; 1992-1995 Sun Microsystems, Inc. All Rights Reserved.
+<HR>Contains security software from RSA Data Security, Inc.<BR>
+Copyright &copy; 1994 RSA Data Security, Inc. All rights reserved.<BR>
+<B>This version supports International security with RSA Public Key Cryptography, MD2, MD5, RC4.</B>"""
 
 ## The URL of the page on show, absolute; empty while the window is blank.
 var url := ""
@@ -39,12 +58,20 @@ var _load := 0  # counts the pages asked for, so a slow one doesn't replace a ne
 func _ready() -> void:
 	super()
 	_app_title = %TitleBar.title
-	%File.id_pressed.connect(func(id: int) -> void:
-		if id == FileMenu.CLOSE:
-			request_close())
+	for menu in $VBox/MenuBar.get_children():
+		(menu as PopupMenu).id_pressed.connect(_on_menu.bind(menu))
+	for button: Button in %DirectoryButtons.get_children():
+		var link: String = button.get_meta(&"url")
+		button.pressed.connect(navigate.bind(link))
+		%Directory.add_item(button.text.strip_edges(), Item.DIRECTORY + button.get_index())
 	%Back.pressed.connect(back)
 	%Forward.pressed.connect(forward)
 	%Home.pressed.connect(func() -> void: navigate(home))
+	%Reload.pressed.connect(reload)
+	%Open.pressed.connect(_open_location)
+	%Stop.pressed.connect(stop)
+	%History.about_to_popup.connect(_list_history)
+	%History.get_popup().index_pressed.connect(func(index: int) -> void: navigate(%History.get_popup().get_item_text(index)))
 	_address.text_submitted.connect(navigate)
 	_page.meta_clicked.connect(func(link: Variant) -> void: navigate(str(link)))
 	_page.meta_hover_started.connect(func(link: Variant) -> void: _status.text = link)
@@ -52,7 +79,10 @@ func _ready() -> void:
 	%Meteors.draw.connect(_draw_meteors)
 	set_process(false)
 	_buttons()
-	if url == "":
+	_paint(Page.new())
+	if splash_seconds > 0.0 and get_parent() is Control:
+		await _show_splash()
+	if _load == 0:
 		navigate(home)
 
 
@@ -74,7 +104,7 @@ func navigate(address: String) -> void:
 	address = address.strip_edges()
 	if address == "":
 		return
-	if not "://" in address and not address.begins_with("mailto:"):
+	if not _Renderer.has_scheme(address):
 		var is_path := address.length() > 1 and address[1] == ":"
 		address = ("file:///" + address.replace("\\", "/")) if is_path else "http://" + address
 	_go(resolve(url, address) if url != "" else address)
@@ -94,6 +124,21 @@ func forward() -> void:
 		_buttons()
 
 
+## Shows the page on show again, as it is now on the disk.
+func reload() -> void:
+	if url != "":
+		_open(url)
+
+
+## Stops contacting a host; the page on show stays.
+func stop() -> void:
+	if _loading >= 0.0:
+		_load += 1
+		_stop_meteors()
+		_address.text = url
+		_status.text = "Transfer interrupted!"
+
+
 func _go(to: String) -> void:
 	if await _open(to):
 		_history.resize(_at + 1)
@@ -107,38 +152,114 @@ func _buttons() -> void:
 	%Forward.disabled = _at >= _history.size() - 1
 
 
+func _on_menu(id: int, menu: PopupMenu) -> void:
+	match id:
+		Item.OPEN_LOCATION:
+			_open_location()
+		Item.CLOSE:
+			request_close()
+		Item.COPY:
+			DisplayServer.clipboard_set(_page.get_selected_text())
+		Item.SELECT_ALL:
+			_page.select_all()
+		Item.RELOAD:
+			reload()
+		Item.BACK:
+			back()
+		Item.FORWARD:
+			forward()
+		Item.HOME:
+			navigate(home)
+		Item.STOP:
+			stop()
+		Item.SHOW_TOOLBAR, Item.SHOW_LOCATION, Item.SHOW_DIRECTORY:
+			var index := menu.get_item_index(id)
+			menu.toggle_item_checked(index)
+			var bars := {Item.SHOW_TOOLBAR: %Toolbar, Item.SHOW_LOCATION: %LocationRow, Item.SHOW_DIRECTORY: %DirectoryButtons}
+			(bars[id] as Control).visible = menu.is_item_checked(index)
+		Item.ABOUT:
+			navigate("about:")
+		Item.HANDBOOK:
+			navigate(%Handbook.get_meta(&"url"))
+		_ when id >= Item.DIRECTORY:
+			navigate(%DirectoryButtons.get_child(id - Item.DIRECTORY).get_meta(&"url"))
+
+
+func _open_location() -> void:
+	_address.grab_focus()
+	_address.select_all()
+
+
+func _list_history() -> void:
+	var popup: PopupMenu = %History.get_popup()
+	popup.clear()
+	for visited in _history:
+		popup.add_item(visited)
+
+
+# The splash shows on the desktop, centred, while the window waits hidden.
+func _show_splash() -> void:
+	var splash: Control = %Splash
+	remove_child(splash)
+	var desktop := get_parent() as Control
+	desktop.add_child(splash)
+	splash.theme = theme  # outside the window, it would lose the Win95 fonts
+	splash.top_level = false
+	splash.size = splash.custom_minimum_size
+	splash.position = ((desktop.size - splash.size) / 2).floor()
+	splash.show()
+	visible = false
+	await get_tree().create_timer(splash_seconds).timeout
+	splash.queue_free()
+	if is_queued_for_deletion():
+		return
+	visible = true
+	if desktop is Win95Desktop:
+		(desktop as Win95Desktop).activate(self)
+
+
 # Shows the page at [param to] and returns true, or alerts why it can't and keeps the page on show.
 # A page asked for after it wins: this one then returns false.
 func _open(to: String) -> bool:
 	_load += 1
 	var load := _load
 	_address.text = to
-	if not to.begins_with("file:///"):
+	var html := ""
+	if to.begins_with("about:"):
+		html = _ABOUT if to == "about:" else ""
+	elif to.begins_with("file:///"):
+		var path := to.trim_prefix("file:///").get_slice("#", 0).uri_decode().replace("/", "\\")
+		var desktop_path := "C:\\WINDOWS\\Desktop\\"
+		if path.to_upper().begins_with(desktop_path.to_upper()):
+			path = "Desktop\\" + path.substr(desktop_path.length())
+		var file: Win95File = _state.setup.file_at(path) if _state != null else null
+		if file == null or file.is_folder:
+			_fail("File Not Found\n\nThe file %s cannot be found. Please check the location and try again." % path)
+			return false
+		html = file.contents
+	else:
 		var host := to.get_slice("://", 1).get_slice("/", 0) if "://" in to else to.get_slice(":", 1).get_slice("@", 1)
 		_status.text = "Connect: Contacting host: %s..." % host
 		if contact_seconds > 0.0:
 			_loading = 0.0
 			set_process(true)
+			%Stop.disabled = false
 			await get_tree().create_timer(contact_seconds).timeout
 			if load != _load:
 				return false
-			_loading = -1.0
-			set_process(false)
-			%Meteors.queue_redraw()
+			_stop_meteors()
 		_fail("Netscape is unable to locate the server: %s\nThe server does not have a DNS entry.\n\nCheck the server name in the Location (URL) and try again." % host)
 		return false
-	var path := to.trim_prefix("file:///").get_slice("#", 0).uri_decode().replace("/", "\\")
-	var desktop_path := "C:\\WINDOWS\\Desktop\\"
-	if path.to_upper().begins_with(desktop_path.to_upper()):
-		path = "Desktop\\" + path.substr(desktop_path.length())
-	var file: Win95File = _state.setup.file_at(path) if _state != null else null
-	if file == null or file.is_folder:
-		_fail("File Not Found\n\nThe file %s cannot be found. Please check the location and try again." % path)
-		return false
 	url = to
-	var page := render(file.contents, to)
+	var page := render(html, to)
 	page_title = page.title
 	%TitleBar.title = "%s - [%s]" % [_app_title, page.title if page.title != "" else to.get_file()]
+	_paint(page)
+	_status.text = "Document: Done"
+	return true
+
+
+func _paint(page: Page) -> void:
 	var style := StyleBoxFlat.new()
 	style.bg_color = page.background
 	style.set_content_margin_all(8)
@@ -146,8 +267,13 @@ func _open(to: String) -> bool:
 	_page.add_theme_color_override(&"default_color", page.text_color)
 	_page.text = page.bbcode
 	_page.scroll_to_line(0)
-	_status.text = "Document: Done"
-	return true
+
+
+func _stop_meteors() -> void:
+	_loading = -1.0
+	set_process(false)
+	%Stop.disabled = true
+	%Meteors.queue_redraw()
 
 
 # Netscape's alert; the Location box goes back to the page on show.
@@ -199,6 +325,8 @@ static func render(html: String, base: String) -> Page:
 
 
 class _Renderer:
+	const ABOUT_LOGO := "res://win95/netscape/logo_96.png"
+	const BROKEN_PICTURE := "res://win95/netscape/broken.png"
 	const HTML_COLORS := {
 		"black": "000000", "silver": "c0c0c0", "gray": "808080", "white": "ffffff", "maroon": "800000",
 		"red": "ff0000", "purple": "800080", "fuchsia": "ff00ff", "green": "008000", "lime": "00ff00",
@@ -229,8 +357,13 @@ class _Renderer:
 	var _entity := RegEx.create_from_string("&(#?[a-zA-Z0-9]+);?")
 
 	## [param link] as an absolute URL, read relative to the page at [param base].
+	## True when [param link] starts with a scheme, such as http: or about:; a drive letter is none.
+	static func has_scheme(link: String) -> bool:
+		var colon := link.find(":")
+		return colon > 1 and link.substr(0, colon).is_valid_ascii_identifier()
+
 	static func resolve(base: String, link: String) -> String:
-		if "://" in link or link.begins_with("mailto:"):
+		if has_scheme(link):
 			return link
 		var scheme_end := base.find("://") + 3
 		var host_end := base.find("/", scheme_end)
@@ -467,10 +600,13 @@ class _Renderer:
 		if not open.is_empty():
 			_out.append(open.pop_back())
 
-	# The pictures were on the web, out of reach, so their ALT text stands in, as with images off.
+	# Netscape's own pictures show; the rest were on the web, out of reach, so each shows Netscape's
+	# broken picture, its ALT text as the tooltip.
 	func _picture(attrs: Dictionary) -> String:
-		var alt: String = _decode(attrs.get("alt", ""))
-		return "[lb]%s[rb]" % alt.replace("[", "(").replace("]", ")") if alt != "" else ""
+		if attrs.get("src", "") == "about:logo":
+			return "[img]%s[/img]" % ABOUT_LOGO
+		var alt: String = _decode(attrs.get("alt", "")).replace("\"", "'").replace("]", ")")
+		return "[img tooltip=\"%s\"]%s[/img]" % [alt, BROKEN_PICTURE] if alt != "" else "[img]%s[/img]" % BROKEN_PICTURE
 
 	func _attributes(source: String) -> Dictionary:
 		var found := {}

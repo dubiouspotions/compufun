@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bs76gccam1oaf"
-path="res://.godot/imported/netscape_32.png-4ab65d7f8c2a42bd449b664bfb35f8d8.ctex"
+uid="uid://db17mcnd2hum1"
+path="res://.godot/imported/open.png-c8f9043584dfcfe75877e6862fb6e06e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://win95/theme/icons/netscape_32.png"
-dest_files=["res://.godot/imported/netscape_32.png-4ab65d7f8c2a42bd449b664bfb35f8d8.ctex"]
+source_file="res://win95/netscape/open.png"
+dest_files=["res://.godot/imported/open.png-c8f9043584dfcfe75877e6862fb6e06e.ctex"]
 
 [params]
 
