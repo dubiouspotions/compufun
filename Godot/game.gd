@@ -1081,14 +1081,24 @@ static func _in_shop(who: Customer, state: VisitorState) -> bool:
 	return who != null and state != VisitorState.OUTSIDE
 
 
-## The done job on the counter that came in first (lowest [member Job.order]), whose customer the
-## phone calls; null when no computer is done.
+## The done job on the counter whose customer the phone calls: of those whose customer
+## [method answers], the one that came in first (lowest [member Job.order]); when nobody answers, the
+## first of all, whose call rings out. null when no computer is done.
 func next_to_call() -> Job:
+	var done := jobs.filter(func(j: Job) -> bool: return j.done)
+	var answering := done.filter(answers)
 	var next: Job = null
-	for job: Job in jobs:
-		if job.done and (next == null or job.order < next.order):
+	for job: Job in answering if not answering.is_empty() else done:
+		if next == null or job.order < next.order:
 			next = job
 	return next
+
+
+## True when a call about [param job] would be answered: its errand's matching PHONE conversation
+## has lines or choices, or there is none (the customer just says hello). False when the call
+## would ring out ([method rings_out]).
+func answers(job: Job) -> bool:
+	return not _silent(matching_conversation(job.errand, Conversation.Trigger.PHONE))
 
 
 ## Calls the customer of [param job], a done computer on the counter, to say it is ready (phase
@@ -1108,7 +1118,12 @@ func call_customer(job: Job) -> void:
 ## True while the phone calls a customer who doesn't answer: their errand's matching PHONE
 ## conversation has no lines and no choices. The call ends at [method hang_up], and nobody comes.
 func rings_out() -> bool:
-	return phase == Phase.CALLING and conversation != null and conversation.lines.is_empty() and conversation.choices.is_empty()
+	return phase == Phase.CALLING and _silent(conversation)
+
+
+# True for a conversation without lines or choices: on the phone, nobody answers.
+static func _silent(c: Conversation) -> bool:
+	return c != null and c.lines.is_empty() and c.choices.is_empty()
 
 
 ## Ends the call: the called customer comes at once for a PICKUP, unless the call [method rings_out].

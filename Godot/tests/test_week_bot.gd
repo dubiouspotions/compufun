@@ -61,7 +61,7 @@ const KNOWN_GAME_METHODS: Array[String] = [
 	"search_db", "start_db", "mark_check", "carry_printout", "tick_printout",
 	"trash_printout", "printout_box",
 	# the phone and the end
-	"can_pick_up_phone", "pick_up_phone", "put_down_phone", "can_call", "next_to_call", "call_customer", "rings_out", "hang_up",
+	"can_pick_up_phone", "pick_up_phone", "put_down_phone", "can_call", "next_to_call", "answers", "call_customer", "rings_out", "hang_up",
 	"ending", "reboot",
 	# state, flags and tools that a week doesn't need to play
 	"snapshot", "restore", "load_story", "play_errand", "day_numbers", "day_of", "date_of", "daypart_of", "check_day",
@@ -257,7 +257,7 @@ func _act() -> void:
 	elif game.visitor_state == GAME.VisitorState.WAITING:
 		_doing = [_code(game.errand), "clicks %s, who waits beside the computer" % _who()]
 		await _click_in(&"Main", _shop.get_node("%VisitorHotspot"))
-	elif game.can_call():
+	elif game.can_call() and game.answers(game.next_to_call()):
 		var job: Job = game.next_to_call()
 		_doing = [_code(job.errand), "clicks the phone to call %s for the pickup" % job.customer.spoken_name()]
 		await _click_in(&"Main", _shop.get_node("%Phone"))

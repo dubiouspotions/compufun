@@ -198,3 +198,22 @@ func _rings_out() -> void:
 	check("the call ends, and nobody comes", [game.phase, game.phone_off_hook, game.visitor, game.jobs.size()], [GAME.Phase.OPEN, false, null, 1])
 	tick(1000.0)
 	check("still nobody", game.visitor, null)
+	check("the phone calls him again", [game.next_to_call() == job, game.answers(job)], [true, false])
+
+	var talker := errand("0102_skater_bro", "customer: skater_bro\nproblem: dust_overheat\n\n== drop-off\n(neutral) Mine too.\n\n== phone\n(neutral) On my way.\n")
+	game.restore({"day": 1, "phase": "CLOSED"})
+	game.start_day(day_of(1, [silent, talker]))
+	game.open_shop()
+	for i: int in 2:
+		tick(1000.0)
+		game.customer_arrived()
+		see_out()
+	for each: Job in game.jobs:
+		each.hardware_fixed = true
+		game.set_tested(each)
+	var first: Job = game.jobs.filter(func(j: Job) -> bool: return j.errand == silent)[0]
+	var second: Job = game.jobs.filter(func(j: Job) -> bool: return j.errand == talker)[0]
+	check("the phone calls the one who answers first, though he came later", [first.order < second.order, game.next_to_call() == second], [true, true])
+	game.call_customer(second)
+	game.hang_up()
+	check("he comes", game.visitor, second.customer)
