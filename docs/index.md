@@ -17,6 +17,7 @@ situation the reader might be in — never as a summary.
 | [crt.md](crt.md) | You tune or change the CRT look of the Screen View, or a click on the desktop lands in the wrong place. |
 | [win95-reference.md](win95-reference.md) | You copy how Windows 95 looks, sounds or behaves (a screensaver, an applet, a sound, a dialog) and need the real thing to compare against: the install CD and the VM. |
 | [win95-icons.md](win95-icons.md) | You need a Windows 95 icon for the desktop, a window or a dialog, or want to re-extract them from a Win95 install. |
+| [performance.md](performance.md) | The game or the Story Lab makes a computer hot or slow, you add a light with a shadow, a SubViewport, a shader that reads TIME or work in `_process`, or you want to measure what a frame costs. |
 | [gotchas.md](gotchas.md) | Godot or the web build behaves weirdly. Also where a new non-obvious fact goes when it doesn't fit anywhere else. |
 
 When you learn something deep that isn't easily rediscovered from the code, fold it into the
