@@ -154,10 +154,15 @@ var _atlas: ImageTexture
 var _atlas_stale := false
 
 
-## Sets every colour to [param from]'s.
+## Sets every colour to [param from]'s, with one changed signal; none if they already match.
 func copy_colours(from: Win95Palette) -> void:
+	if same_colours(from):
+		return
+	set_block_signals(true)
 	for colour in COLOURS:
 		set(colour, from.get(colour))
+	set_block_signals(false)
+	emit_changed()
 
 
 ## Whether every colour matches [param other]'s.

@@ -473,9 +473,16 @@ func _end_hang() -> void:
 
 
 # Every bevel and the theme draw with the one shared palette; the desktop on screen sets it, also on entering the tree.
+# The theme changes once: each change re-themes every control, and a switch makes hundreds.
 func _apply_palette(palette: Win95Palette) -> void:
-	_SHARED_PALETTE.copy_colours(_stock_palette if palette == null or palette == _SHARED_PALETTE else palette)
+	var source := _stock_palette if palette == null or palette == _SHARED_PALETTE else palette
+	if _SHARED_PALETTE.same_colours(source):
+		return
+	_THEME.set_block_signals(true)
+	_SHARED_PALETTE.copy_colours(source)
 	_SHARED_PALETTE.paint(_THEME)
+	_THEME.set_block_signals(false)
+	_THEME.emit_changed()
 
 
 func _apply_sound() -> void:
