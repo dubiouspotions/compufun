@@ -240,7 +240,8 @@ func _card(path: String, info: Dictionary, selected: String, day: int, index: in
 	card.tooltip_text = "%s\nDrag to another day or place, or onto a card to make an alternative." % path.get_file()
 	card.gui_input.connect(func(event: InputEvent) -> void:
 		var click := event as InputEventMouseButton
-		if click != null and click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
+		# On release: picking rebuilds the board, which frees the card before a drag can start.
+		if click != null and not click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
 			errand_picked.emit(path))
 	card.set_drag_forwarding(_drag.bind(path, errand), _can_drop.bind(card), _drop.bind(card, day, index))
 	var row := HBoxContainer.new()

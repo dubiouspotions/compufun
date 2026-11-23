@@ -155,6 +155,17 @@ compiled.** `const _PALETTE := preload("res://win95/theme/palette.tres")` then `
 is folded at compile time, so later changes to the resource never show, though `_PALETTE.get()` sees
 them. Hold a resource that changes at run time in a `static var` (`GroupBox._palette`). — 2026-11
 
+**A control that rebuilds on mouse press can't be dragged.** Godot starts a drag on the control
+that got the press, after the mouse moves; a press that rebuilds it (a card that opens its errand,
+and the board redraws) frees that control first, and the drag never starts. Act on the release
+instead (`StoryLabBoard._card`). — 2026-11
+
+**A headless test drags only with `relative` set, and drops at the real mouse.** The viewport adds
+up each motion's `relative` to pass its drag threshold, so pushed motions without it never start a
+drag. The position that `_can_drop_data` and `_drop_data` get comes from the real mouse, which a
+headless run can't move (`warp_mouse` does nothing); test a drop whose result doesn't depend on
+where in the control it lands (`test_story_lab_drag.gd`). — 2026-11
+
 ## Web export
 
 **Sound stutters or the first play of a track hangs for a second.** The web build has no
