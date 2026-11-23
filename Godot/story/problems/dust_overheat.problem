@@ -1,17 +1,17 @@
 post-it: Windows starts and turns off
-cause: Clogged CPU fan
+cause: Faulty CPU fan
 symptoms:
 	Restarts by itself
 	Slow computer
 checks:
 	yes: Freezes with a buzz after the desktop appears
 		shows: a second after the desktop appears, the sound sags into a buzz, then a reboot
-	yes: Dust in the CPU fan
-		shows: in the Workview
+	yes: CPU fan is clogged or blocked
+		shows: in the Workview: dust in it, or something lying on it
 	no: Windows stays up after the desktop appears
 	no: CPU fan is clean and spins freely
 hardware steps:
 	Open case
-	Trash the CPU fan
-	Fit a new CPU fan
+	Clear the CPU fan
+	Replace it if it is dirty or broken
 	Close case

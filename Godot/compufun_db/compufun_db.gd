@@ -211,7 +211,8 @@ func _all_entries(column: Column) -> Array[Dictionary]:
 					entries.append({text = check, check = check in search.ticked_checks, pick = true})
 		Column.CAUSES:
 			for problem: Problem in _causes():
-				entries.append({text = problem.cause_name(), check = null, pick = _possible(problem), problem = problem})
+				var possible := _problems.any(func(p: Problem) -> bool: return p.cause_name() == problem.cause_name() and search.query in p.symptoms and _possible(p))
+				entries.append({text = problem.cause_name(), check = null, pick = possible, problem = problem})
 	return entries
 
 
@@ -246,10 +247,14 @@ func _picked() -> DbSearch:
 	return search if search != null and search.query in _hits else null
 
 
-# The problems with the symptom searched for, in the order of the problems.
+# The causes of the symptom searched for, in the order of the problems: one problem per cause name.
 func _causes() -> Array[Problem]:
 	var search := _picked()
-	return _problems.filter(func(p: Problem) -> bool: return search != null and search.query in p.symptoms)
+	var causes: Array[Problem] = []
+	for problem: Problem in _problems:
+		if search != null and search.query in problem.symptoms and not causes.any(func(c: Problem) -> bool: return c.cause_name() == problem.cause_name()):
+			causes.append(problem)  # problems with one cause name are one cause, with one fix
+	return causes
 
 
 # False once a ticked check rules [param problem] out: one it says no: to, or one that another
