@@ -2,7 +2,6 @@ extends "res://tests/test.gd"
 ## The Story Lab (dev/story_lab/): its week board, moving cards, editing text, drafts and the issue
 ## that Send makes, on a week of story files written as drafts over an emptied checkout.
 
-const DIR := "user://test_story_lab/"
 const ERRANDS := "res://story/errands/"
 const SKATER := ERRANDS + "0101_skater_bro.errand"
 const NICE := ERRANDS + "0102_nice_guy.errand"
@@ -24,8 +23,7 @@ const DAY_TEXT := "weather: clear\nwarp: 0\n"
 
 
 func run() -> void:
-	_clear(DIR)
-	var drafts := test_drafts(DIR + "drafts/")
+	var drafts := test_drafts(user_dir() + "drafts/")
 	for path: String in StoryFiles.files(ERRANDS, ".errand"):
 		drafts.put(path, "")
 	for n: int in range(1, 8):
@@ -121,29 +119,29 @@ func _a_text_edit_with_an_error_keeps_the_last_good_draft(lab: Control, drafts: 
 
 
 func _a_draft_equal_to_the_file_disappears() -> void:
-	var drafts := test_drafts(DIR + "equal/drafts/")
-	drafts.checkout = DIR + "equal/checkout/"
+	var drafts := test_drafts(user_dir() + "equal/drafts/")
+	drafts.checkout = user_dir() + "equal/checkout/"
 	DirAccess.make_dir_recursive_absolute(drafts.checkout + "story/errands")
 	var file := FileAccess.open(drafts.checkout + "story/errands/0101_skater_bro.errand", FileAccess.WRITE)
 	file.store_string(SKATER_TEXT)
 	file.close()
 	check("a changed text is a draft", [drafts.put(SKATER, "customer: skater_bro\n"), drafts.has(SKATER)], ["", true])
-	check("the draft is on disk", FileAccess.file_exists(DIR + "equal/drafts/story/errands/0101_skater_bro.errand"), true)
+	check("the draft is on disk", FileAccess.file_exists(user_dir() + "equal/drafts/story/errands/0101_skater_bro.errand"), true)
 	check("the file's own text drops the draft", [drafts.put(SKATER, SKATER_TEXT), drafts.has(SKATER)], ["", false])
-	check("and its file", FileAccess.file_exists(DIR + "equal/drafts/story/errands/0101_skater_bro.errand"), false)
+	check("and its file", FileAccess.file_exists(user_dir() + "equal/drafts/story/errands/0101_skater_bro.errand"), false)
 	drafts.put(SKATER, "customer: skater_bro\n")
 	file = FileAccess.open(drafts.checkout + "story/errands/0101_skater_bro.errand", FileAccess.WRITE)
 	file.store_string("customer: skater_bro\n")
 	file.close()
-	var reloaded := test_drafts(DIR + "equal/drafts/")
+	var reloaded := test_drafts(user_dir() + "equal/drafts/")
 	reloaded.checkout = drafts.checkout
 	check("drafts load without errors", reloaded.load_drafts(), PackedStringArray())
 	check("a draft that main has now disappears on load", reloaded.has(SKATER), false)
 
 
 func _a_draft_that_main_changed_shows_it() -> void:
-	var drafts := StoryDrafts.new(DIR + "main/drafts/")
-	drafts.checkout = DIR + "main/checkout/"
+	var drafts := StoryDrafts.new(user_dir() + "main/drafts/")
+	drafts.checkout = user_dir() + "main/checkout/"
 	drafts.git = func(arguments: PackedStringArray) -> Dictionary:
 		match arguments[0]:
 			"rev-parse":
@@ -191,14 +189,14 @@ func _the_issue_has_each_file_and_its_diff() -> void:
 
 
 func _save_to_checkout_writes_the_files() -> void:
-	var drafts := test_drafts(DIR + "checkout/drafts/")
-	drafts.checkout = DIR + "checkout/checkout/"
+	var drafts := test_drafts(user_dir() + "checkout/drafts/")
+	drafts.checkout = user_dir() + "checkout/checkout/"
 	drafts.put(NICE, "customer: nice_guy\n")
 	drafts.to_checkout = true
 	check("drafts wait while Save to checkout is on", drafts.texts(), {})
 	check("an edit writes the checkout", drafts.put(SKATER, SKATER_TEXT), "")
 	check("the file is there", FileAccess.get_file_as_string(drafts.checkout + "story/errands/0101_skater_bro.errand"), SKATER_TEXT)
-	check("and no draft", FileAccess.file_exists(DIR + "checkout/drafts/story/errands/0101_skater_bro.errand"), false)
+	check("and no draft", FileAccess.file_exists(user_dir() + "checkout/drafts/story/errands/0101_skater_bro.errand"), false)
 	check("removing deletes the file", [drafts.put(SKATER, ""), FileAccess.file_exists(drafts.checkout + "story/errands/0101_skater_bro.errand")], ["", false])
 	drafts.to_checkout = false
 	check("the drafts come back when it is off", drafts.texts().keys(), [NICE])
@@ -248,14 +246,3 @@ func _opening_an_errand_shows_its_own_conversations(lab: Control) -> void:
 	lab.call("open_errand", quiet)
 	panel.call("_add_conversation", 2)
 	check("the empty state adds a phone conversation", [panel.errand().conversations.size(), empty.visible, graph_view.visible], [1, false, true])
-
-
-## Removes the files under [param dir], a test folder in user://.
-static func _clear(dir: String) -> void:
-	if not DirAccess.dir_exists_absolute(dir):
-		return
-	for sub: String in DirAccess.get_directories_at(dir):
-		_clear(dir.path_join(sub))
-		DirAccess.remove_absolute(dir.path_join(sub))
-	for file: String in DirAccess.get_files_at(dir):
-		DirAccess.remove_absolute(dir.path_join(file))

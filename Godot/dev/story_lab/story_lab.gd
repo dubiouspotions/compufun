@@ -16,16 +16,20 @@ const CUSTOMERS_DIR: String = "res://customers/"
 ## Save to checkout).
 var to_checkout: bool:
 	get:
-		return drafts.to_checkout
+		return drafts != null and drafts.to_checkout
 	set(on):
+		if drafts == null:
+			return  # _ready reads the setting itself
 		drafts.to_checkout = on
 		if is_node_ready():
 			_after_store()
 			_checkout_chip.visible = on
 			_say("Save to checkout is on: edits change res://story/ in this checkout." if on else "Save to checkout is off: edits are drafts again.")
 
-## The drafts that the Lab edits. Replace it before the Lab enters the tree to keep them elsewhere.
-var drafts: StoryDrafts = StoryDrafts.new()
+## The drafts that the Lab edits. Set it before the Lab enters the tree to keep them elsewhere, as it
+## is; null: the writer's drafts in user://story_drafts/, saved to the checkout while the Dev menu's
+## Save to checkout is on.
+var drafts: StoryDrafts
 
 var _week: StoryFiles.Week
 ## Errand file path to {"errand": Errand, "problems": PackedStringArray, "draft": bool}.
@@ -59,7 +63,9 @@ var _add_day: int = 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	drafts.to_checkout = StoryDrafts.saves_to_checkout()
+	if drafts == null:
+		drafts = StoryDrafts.new()
+		drafts.to_checkout = StoryDrafts.saves_to_checkout()
 	_build()
 	var errors := drafts.load_drafts()
 	refresh()

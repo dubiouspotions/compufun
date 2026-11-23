@@ -16,6 +16,7 @@ var game: Node
 var _checks: int = 0
 var _failures: int = 0
 var _script_errors := ScriptErrors.new()
+var _user_dir: String = ""
 
 
 ## Plays the test. May await, for example [code]await process_frame[/code].
@@ -69,6 +70,19 @@ func software_problem(software_check: SoftwareCheck) -> Problem:
 	return problem
 
 
+## An empty folder in user:// for this test's files, removed when the test ends. Every game
+## process shares one user folder (every checkout and every test that runs at the same time), so the
+## folder is this process's own.
+func user_dir() -> String:
+	if _user_dir == "":
+		_user_dir = "user://tests/%s_%d/" % [get_script().resource_path.get_file().get_basename(), OS.get_process_id()]
+		_remove_tree(_user_dir)
+		var err := DirAccess.make_dir_recursive_absolute(_user_dir)
+		if err != OK:
+			push_error("Couldn't make %s: %s" % [_user_dir, error_string(err)])
+	return _user_dir
+
+
 ## The seconds of game time since the test started: the frames so far over [constant FPS].
 func now() -> float:
 	return Engine.get_process_frames() / float(FPS)
@@ -89,6 +103,8 @@ func _initialize() -> void:
 	game = root.get_node("Game")  # by path: a script that names the autoload doesn't compile under -s
 	game.set_process(false)
 	await run()
+	if _user_dir != "":
+		_remove_tree(_user_dir)
 	var path: String = get_script().resource_path
 	if _checks == 0:
 		_failures += 1
@@ -100,6 +116,16 @@ func _initialize() -> void:
 	if _failures == 0:
 		print(PASSED)
 	quit(1 if _failures > 0 else 0)
+
+
+static func _remove_tree(dir: String) -> void:
+	if not DirAccess.dir_exists_absolute(dir):
+		return
+	for sub: String in DirAccess.get_directories_at(dir):
+		_remove_tree(dir.path_join(sub))
+	for file: String in DirAccess.get_files_at(dir):
+		DirAccess.remove_absolute(dir.path_join(file))
+	DirAccess.remove_absolute(dir)
 
 
 class ScriptErrors extends Logger:

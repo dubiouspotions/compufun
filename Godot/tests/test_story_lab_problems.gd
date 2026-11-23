@@ -3,15 +3,13 @@ extends "res://tests/test.gd"
 ## text-only problem, the form's edits as drafts, the symptom warning, and the errand panel's
 ## problem picker.
 
-const DIR := "user://test_story_lab_problems/"
 const PROBLEMS := "res://story/problems/"
 const DUST := PROBLEMS + "dust_overheat.problem"
 const HAUNTED := PROBLEMS + "haunted_printer.problem"
 
 
 func run() -> void:
-	_clear(DIR)
-	var drafts := StoryDrafts.new(DIR + "drafts/")
+	var drafts := StoryDrafts.new(user_dir() + "drafts/")
 	drafts.git = func(_arguments: PackedStringArray) -> Dictionary: return {"code": 1, "out": ""}
 	var lab: Control = (load("res://dev/story_lab/story_lab.tscn") as PackedScene).instantiate()
 	lab.set("drafts", drafts)
@@ -109,13 +107,3 @@ func _the_picker_lists_and_opens_every_problem(lab: Control, drafts: StoryDrafts
 	errand_panel.call("_apply_fields")
 	check("an errand can name a problem without mechanics", "problem: haunted_printer" in drafts.text(errand_path), true)
 	check("and it parses with the week's problems", StoryFormat.parse_errand(drafts.text(errand_path), errand_path, (lab.get("_week") as StoryFiles.Week).problems).errors, PackedStringArray())
-
-
-static func _clear(dir: String) -> void:
-	if not DirAccess.dir_exists_absolute(dir):
-		return
-	for sub: String in DirAccess.get_directories_at(dir):
-		_clear(dir.path_join(sub))
-		DirAccess.remove_absolute(dir.path_join(sub))
-	for file: String in DirAccess.get_files_at(dir):
-		DirAccess.remove_absolute(dir.path_join(file))

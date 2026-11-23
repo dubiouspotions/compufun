@@ -8,7 +8,7 @@ const UNDESCRIBED: Array[String] = ["blood_puddle"]
 
 func run() -> void:
 	_every_described_sign_has_its_description()
-	var drafts := StoryDrafts.new("user://test_story_lab_signs/drafts/")
+	var drafts := StoryDrafts.new(user_dir() + "drafts/")
 	drafts.git = func(_arguments: PackedStringArray) -> Dictionary: return {"code": 1, "out": ""}
 	var lab: Control = (load("res://dev/story_lab/story_lab.tscn") as PackedScene).instantiate()
 	lab.set("drafts", drafts)
