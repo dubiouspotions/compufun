@@ -20,11 +20,8 @@ func run() -> void:
 	check("the ink is at 'Fun' as it is sung", ink.call(1.35), 0.64)
 	check("the logo is drawn as 'Fun' ends", ink.call(2.15), 1.0)
 	check("within a syllable the ink eases out: past halfway at half the syllable", ink.call((0.77 + 1.35) / 2.0) > (0.42 + 0.64) / 2.0, true)
-	# The game loads on a thread; let it finish before the screen goes, so no load is left running.
-	var end := Time.get_ticks_msec() + 60000
-	while ResourceLoader.load_threaded_get_status("res://main.tscn") == ResourceLoader.THREAD_LOAD_IN_PROGRESS and Time.get_ticks_msec() < end:
-		await process_frame
+	# Stopped before the load ends, the screen never starts the game: a slow load must not race the test.
 	screen.set_process(false)
-	ResourceLoader.load_threaded_get("res://main.tscn")
+	check("the game loads", ResourceLoader.load_threaded_get("res://main.tscn") is PackedScene, true)  # waits for the load
 	screen.queue_free()
 	await process_frame
