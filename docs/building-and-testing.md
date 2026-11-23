@@ -29,11 +29,12 @@ A script that uses an autoload, such as `Game`, always fails this check with "Id
 found: Game": the check does not load autoloads. That line is not your error; run the scene.
 
 To run the game straight into a state, give it a JSON file in the format of `Game.snapshot()` (an
-F2 preset, or what F2's Copy state copies); a debug run restores it once the main scene is up:
+F2 preset, or what F2's Copy state copies); a debug run restores it once the main scene is up.
+Start `main.tscn` itself, past the loading screen, so you land in the state at once:
 
 ```sh
 echo '{"day": 1, "phase": "OPEN", "db_day": 1, "view": "CompuFunDB"}' > /tmp/db.json
-"$GODOT" --path Godot -- --restore /tmp/db.json   # CompuFunDB, started up for the day
+"$GODOT" --path Godot res://main.tscn -- --restore /tmp/db.json   # CompuFunDB, started up for the day
 ```
 
 After a pull, a class that a teammate added (`class_name`) can be missing from the class cache, so
