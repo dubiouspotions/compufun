@@ -99,10 +99,10 @@ func path() -> String:
 	return StoryFiles.PROBLEMS_DIR + String(_id) + ".problem"
 
 
-## True when [param problem] has repair mechanics: its problems/<id>.tres, with a broken part, a
-## software check or a blocker. The story check lists the others.
+## True when [param problem] has repair mechanics: its problems/<id>.tres passes
+## Problem.has_repair_mechanics. The story check lists the others.
 static func built(problem: Problem) -> bool:
-	return problem != null and problem.resource_path.ends_with(".tres") and (problem.broken_part != null or problem.software_check != null or problem.blocker != null)
+	return problem != null and problem.resource_path.ends_with(".tres") and problem.has_repair_mechanics()
 
 
 ## The problem id of a name that a writer typed: lower case, spaces as _, other characters left out.

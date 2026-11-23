@@ -32,6 +32,11 @@ func _the_list_has_every_problem(panel: StoryProblemPanel) -> void:
 	check("the list has a row per problem file", (panel.get("_list") as VBoxContainer).get_child_count(), files.size())
 	check("the first problem opens", panel.problem_id(), StringName(files[0].get_file().get_basename()))
 	check("a problem with mechanics is built", StoryProblemPanel.built(load("res://problems/dust_overheat.tres") as Problem), true)
+	var unbuilt := PackedStringArray()
+	for file: String in StoryFiles.files("res://problems/", ".tres"):
+		if not StoryProblemPanel.built(load(file) as Problem):
+			unbuilt.append(file)
+	check("every problem in problems/ is built", unbuilt, PackedStringArray())
 	check("a typed name becomes an id", StoryProblemPanel.id_of(" Haunted Printer-2! "), "haunted_printer_2")
 
 

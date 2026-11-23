@@ -115,8 +115,8 @@ static func _sign_start(week: StoryFiles.Week, where: String) -> Dictionary:
 ## its day, a line's mood that the customer's person has no portrait for, a voice mood that a line
 ## speaks in (DialogueLine.voice) that has no voices/moods/<mood>.tres, a [leaving] line that the conversation can go on after (it plays in the
 ## dialogue box), a look that is not in DialogueLine.LOOKS or that never turns the view (on a
-## [leaving] line or the phone), a problem without repair mechanics (no res://problems/<id>.tres, or one with no
-## broken_part, software_check, blocker, missing_part, misplaced or stand_ins), and a problem file
+## [leaving] line or the phone), a problem without repair mechanics (no res://problems/<id>.tres, or one
+## that fails Problem.has_repair_mechanics), and a problem file
 ## that no errand names.
 static func missing_links(week: StoryFiles.Week) -> PackedStringArray:
 	var found := PackedStringArray()
@@ -193,8 +193,8 @@ static func _check_errand(errand: Errand, found: PackedStringArray) -> void:
 	var problem := errand.problem
 	if problem != null and not problem.resource_path.ends_with(".tres"):
 		found.append("%s names the problem %s, which has no repair mechanics: no %s%s.tres." % [errand.file, problem.short_name, StoryFormat.PROBLEMS_DIR, problem.short_name])
-	elif problem != null and problem.broken_part == null and problem.software_check == null and problem.blocker == null and problem.missing_part == null and problem.misplaced.is_empty() and problem.stand_ins.is_empty():
-		found.append("%s names the problem %s, which has no repair mechanics: no broken_part, software_check, blocker, missing_part, misplaced or stand_ins." % [errand.file, problem.resource_path])
+	elif problem != null and not problem.has_repair_mechanics():
+		found.append("%s names the problem %s, which has no repair mechanics: no broken_part, software_check, blocker, missing_part, misplaced, stand_ins or empty_case." % [errand.file, problem.resource_path])
 
 
 static func _check_choices(reply: Reply, where: String, found: PackedStringArray) -> void:
