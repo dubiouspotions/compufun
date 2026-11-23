@@ -11,8 +11,8 @@ extends Control
 
 ## The heading over the customers to call.
 @export var pick_title: String = "Call a customer"
-## What shows while the phone rings.
-@export var ringing_text: String = "Ring... ring..."
+## What shows while the phone dials and rings, under an empty heading: the call box shows no number.
+@export var ringing_text: String = "- DIALING -"
 ## What a customer without a PHONE conversation says when they answer. Customers never say their
 ## nickname: the player gave it to them.
 @export var greeting: String = "Hello?"
@@ -124,7 +124,6 @@ func _sync() -> void:
 
 ## The phone starts to ring for the called customer, whose lines are ready for when they answer.
 func _ring() -> void:
-	var customer := Game.calling.customer
 	if Game.rings_out():
 		_lines = []
 	elif Game.conversation != null and not Game.conversation.lines.is_empty():
@@ -136,7 +135,7 @@ func _ring() -> void:
 	_call_time = 0.0
 	_line = -1
 	_clear_choices()
-	_name.text = number_of(customer)
+	_name.text = ""
 	_text.type_out(ringing_text)
 	_next.get_parent().hide()  # the call goes on by itself or at a click
 
@@ -150,7 +149,7 @@ func _show_line() -> void:
 		_text.type_out(line.text)
 		_voice.say(line, customer.voice, VoiceEffect.of(line, Game.conversation))
 	elif Game.rings_out():
-		_name.text = number_of(customer)
+		_name.text = ""
 		_text.type_out(no_answer)
 		_voice.hush()
 	else:
