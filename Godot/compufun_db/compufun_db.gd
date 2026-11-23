@@ -525,7 +525,7 @@ func _read(seconds: float, count: int) -> bool:
 	var speaker := _speaker(MODEM_SPEAKER) if hdd_seek != null else null
 	while seconds > 0.0:
 		if speaker != null:
-			hdd_seek.play_at(speaker)
+			hdd_seek.play_on(speaker)  # one player: a tick cuts the last one off rather than doubling it
 		var wait := minf(seconds, randf_range(seek_seconds.x, seek_seconds.y))
 		seconds -= wait
 		await _pause(wait)
