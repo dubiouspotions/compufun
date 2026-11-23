@@ -138,6 +138,12 @@ func _check_screen() -> void:
 	click.pressed = true
 	click.position = Vector2(54.5, 6.5) * Vector2(8, 16)  # the third cause, Faulty CPU fan
 	db.call("_on_click", click)
+	db.set("_column", SEARCH)
+	click.position = Vector2(1.5, 4.5) * Vector2(8, 16)  # the symptom found
+	db.call("_on_click", click)
+	check("a click on a symptom picks it and keeps the cursor on it", [db.get("_column"), db.get("_selected")[SEARCH], game.db_search.query], [SEARCH, 0, "Restarts by itself"])
+	click.position = Vector2(54.5, 6.5) * Vector2(8, 16)
+	db.call("_on_click", click)
 	check("a click on a cause picks it and prints nothing", [db.call("_selected_cause").cause_name(), printer.get("_lines")], ["Faulty CPU fan", PackedStringArray()])
 	check("F prints outside SEARCH", _press(db, KEY_F), true)
 	var page: PackedStringArray = printer.get("_lines")

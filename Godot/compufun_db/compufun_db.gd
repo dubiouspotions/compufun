@@ -484,6 +484,7 @@ func _on_click(button: InputEventMouseButton) -> void:
 	_select(lines[line][0])
 	if column != Column.CAUSES:  # a click on a cause only picks it; F or the button prints it
 		_act()
+	_column = column  # a click keeps the cursor, red, on what it picked
 	queue_redraw()
 
 
