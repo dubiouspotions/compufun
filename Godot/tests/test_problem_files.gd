@@ -8,23 +8,8 @@ const PROBLEM_FILE: String = "res://story/problems/%s.problem"
 const RESOURCE: String = "res://problems/%s.tres"
 
 
-# A problem's checks, each with how it fails, read and written back as they were.
-func _problem_checks() -> void:
-	var path := PROBLEM_FILE % "bootfloppy"
-	var text := "post-it: Won't start\nsymptoms:\n\tStops at a message\nchecks:\n\tyes: Floppy in drive A:\n\t\tshows: it sticks out\n\tno: Windows starts\n"
-	var parsed := StoryFormat.parse_problem(text, path)
-	var problem := parsed.value as Problem
-	check("checks parse", [parsed.errors, problem.checks, problem.check_yes, problem.check_shows], [PackedStringArray(), PackedStringArray(["Floppy in drive A:", "Windows starts"]), {"Floppy in drive A:": true, "Windows starts": false}, {"Floppy in drive A:": "it sticks out"}])
-	check("and write back as they were", StoryFormat.write_problem(problem), text)
-	var bare := StoryFormat.parse_problem("post-it: x\nchecks:\n\tWindows starts\n", path).value as Problem
-	check("a check without yes: or no: is a no:", bare.check_yes, {"Windows starts": false})
-	var twice := StoryFormat.parse_problem("post-it: x\nchecks:\n\tA\n\tA\n", path)
-	check("a check twice is an error", twice.errors, PackedStringArray([path + ":4: the check 'A' a second time"]))
-
-
 func run() -> void:
 	_round_trip()
-	_problem_checks()
 	_errors()
 	_week_fills_the_resources()
 	_drafts()

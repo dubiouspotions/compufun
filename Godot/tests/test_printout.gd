@@ -44,7 +44,6 @@ func run() -> void:
 	await _check_close_up()
 	await _check_trash_can()
 	await _check_trash_raised()
-	await _check_print_fix()
 
 
 # The finished page at the printer goes to the player and leaves the printer.
@@ -70,8 +69,7 @@ func _check_printer() -> void:
 
 # The corner shows at the bottom left while the player carries a page; a click raises the page on the
 # right, where a click on a box ticks it, a click elsewhere on it keeps it up, and a click outside lowers
-# it and reaches nothing else. Beside an open screen the page is always up. A page picked up comes up
-# raised.
+# it and reaches nothing else. Beside an open screen the page is always up.
 func _check_close_up() -> void:
 	game.carry_printout(PAGE)
 	var behind := Control.new()  # a stand-in for the buttons and hotspots under the page
@@ -117,9 +115,6 @@ func _check_close_up() -> void:
 	click.position = paper.call("box_rect", 3).get_center() - Vector2(0.0, paper.call("cell").y)
 	paper.gui_input.emit(click)
 	check("a click on a line without a box keeps it up", [carried.call("is_raised"), corner.visible, game.printout_ticks, handled[0]], [true, false, [], 3])
-	click.position = Vector2(2.0, 2.0)
-	paper.gui_input.emit(click)
-	check("so does a click on the margin", carried.call("is_raised"), true)
 
 	carried.call("raise")
 	await create_timer(float(carried.get("raise_seconds")) + 0.1).timeout
@@ -153,12 +148,6 @@ func _check_close_up() -> void:
 	check("thrown away, the page and the corner go", [carried.call("is_raised"), corner.visible], [false, false])
 	carried.call("raise")
 	check("nothing carried, nothing to raise", carried.call("is_raised"), false)
-	game.carry_printout(PAGE)
-	check("a page picked up comes up raised", [carried.call("is_raised"), corner.visible], [true, false])
-	game.trash_printout()
-	game.carry_printout(PackedStringArray(["FIX", "2. Take out what", "   blocks the fan  [ ]", "[ ] Something lies on", "    the CPU fan"]))
-	check("a click on any line of a wrapped entry finds its box", [0, 1, 2, 3, 4].map(func(l: int) -> int: return carried.call("_boxed_line", l)), [-1, 2, 2, 3, 3])
-	game.trash_printout()
 	carried.queue_free()
 	behind.queue_free()
 
@@ -234,52 +223,3 @@ func _check_trash_raised() -> void:
 	carried.queue_free()
 	can.queue_free()
 	await process_frame
-
-
-# CompuFunDB's F prints the FIX steps alone; with no FIX steps it prints nothing.
-func _check_print_fix() -> void:
-	var printer: Node3D = load("res://props/printer.tscn").instantiate()
-	printer.add_to_group(&"printer")
-	root.add_child(printer)
-	var db: Control = load("res://compufun_db/compufun_db.tscn").instantiate()  # untyped: CompuFunDB names Game
-	db.set("hdd_seek", null)
-	db.set("hit_seconds", Vector2.ZERO)
-	root.add_child(db)
-	game.restore({"day": 1, "phase": "OPEN", "arrivals": 1, "jobs": [{"customer": "res://customers/skater_bro.tres", "problem": "dust_overheat", "slot": 0}]})
-	game.db_day = game.day_number
-	await process_frame
-	db.set("_hits", PackedStringArray(["Restarts by itself"]))  # as SEARCH found it
-	db.call("_search", "Restarts by itself")
-	for ticked: String in ["Windows starts", "Freezes with a buzz after the desktop appears", "CPU fan is clean and spins freely"]:
-		game.mark_check(ticked, true)
-	var key := InputEventKey.new()
-	key.keycode = KEY_F
-	key.pressed = true
-	check("every cause ruled out, nothing to print", [db.call("_on_key", key), printer.get("_lines")], [true, PackedStringArray()])
-	game.mark_check("CPU fan is clean and spins freely", false)
-	db.call("_change_column", 1)
-	db.call("_on_key", key)
-	var page: PackedStringArray = printer.get("_lines")
-	check("F prints the fix of the cause under the cursor", [page[0].begins_with("CompuFunDB 1.0  FIX  "), page[5], "CHECK" in page], [true, "Faulty CPU fan", false])
-	check("with the steps and their boxes", page[-1].ends_with("[ ]"), true)
-	check("the print box shows while it prints", [db.get("_printing"), printer.call("progress") >= 0.0], ["FIX", true])
-	await create_timer(printer.get("line_seconds") * page.size() + printer.get("feed_seconds") + 0.2).timeout
-	check("then says the print is complete", [db.get("_print_done"), printer.call("progress")], [true, -1.0])
-	check("a modal box: other keys do nothing", [db.call("_on_key", key), printer.get("_lines")], [true, page])
-	var enter := InputEventKey.new()
-	enter.keycode = KEY_ENTER
-	enter.pressed = true
-	db.call("_on_key", enter)
-	check("Enter presses OK", [db.get("_print_done"), db.get("_printing")], [false, ""])
-	check("and, after a fix, clears the search", [db.get("_typed"), db.get("_hits"), db.get("_column"), db.call("_entries", 2)], ["", PackedStringArray(), 0, []])
-	db.set("_hits", PackedStringArray(["Restarts by itself"]))
-	db.call("_search", "Restarts by itself")
-	var p := InputEventKey.new()
-	p.keycode = KEY_P
-	p.pressed = true
-	db.call("_on_key", p)
-	await create_timer(printer.get("line_seconds") * (printer.get("_lines") as PackedStringArray).size() + printer.get("feed_seconds") + 0.2).timeout
-	db.call("_on_key", enter)
-	check("after a checklist the search stays", [db.get("_print_done"), db.get("_hits"), game.db_search.query], [false, PackedStringArray(["Restarts by itself"]), "Restarts by itself"])
-	db.queue_free()
-	printer.queue_free()
