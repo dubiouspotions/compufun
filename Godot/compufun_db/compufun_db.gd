@@ -108,6 +108,9 @@ var _typed: String = ""
 var _searched: String = ""
 var _hits: PackedStringArray = []
 var _searching: bool = false
+## False once the player types or searches again: Game's search belongs to the last list, and
+## picking a symptom starts a new one.
+var _search_live: bool = false
 ## How many entries of CHECK and CAUSES the slow computer has read in so far, and the search it read
 ## them for: a new search reads them in again, one entry at a time.
 var _loaded: Array[int] = [0, 0, 0]
@@ -244,7 +247,7 @@ func _found(text: String) -> PackedStringArray:
 # show nothing until the player picks a symptom that the words typed found.
 func _picked() -> DbSearch:
 	var search := Game.db_search
-	return search if search != null and search.query in _hits else null
+	return search if _search_live and search != null and search.query in _hits else null
 
 
 # The causes of the symptom searched for, in the order of the problems: one problem per cause name.
@@ -271,7 +274,9 @@ func _search(query: String) -> void:
 			for check: String in problem.checks:
 				if check not in offered:
 					offered.append(check)
+	_search_live = true  # before Game.changed, which reads the columns in
 	if Game.search_db(query, offered) == null:
+		_search_live = false
 		return
 	_column = Column.CHECKS
 	for column: Column in [Column.CHECKS, Column.CAUSES]:
@@ -532,6 +537,7 @@ func _on_key(key: InputEventKey) -> bool:
 # Sets what SEARCH holds: what an earlier search found goes, and a search that runs stops.
 func _type(text: String) -> void:
 	_typed = text
+	_search_live = false
 	_search_count += 1
 	_searching = false
 	_searched = ""

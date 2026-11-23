@@ -118,13 +118,15 @@ func _check_screen() -> void:
 	game.mark_check(FREEZES, true)
 	game.mark_check("Windows starts", true)
 
+	var before: DbSearch = game.db_search
 	_press(db, KEY_LEFT)
 	_type(db, " ")
 	check("typing hides CHECK and CAUSES until a symptom is picked again", [_texts(db, CHECKS), _texts(db, CAUSES)], [[], []])
 	_press(db, KEY_BACKSPACE)
 	_press(db, KEY_ENTER)
+	check("the same words found again show no checks yet", _texts(db, CHECKS), [])
 	_press(db, KEY_ENTER)
-	check("picked again, they show", _texts(db, CAUSES).size(), 3)
+	check("picked again, it is a new search, read in anew", [game.db_search != before, _texts(db, CAUSES).size()], [true, 3])
 	game.mark_check(FREEZES, true)
 	game.mark_check("Windows starts", true)
 
