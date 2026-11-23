@@ -238,6 +238,7 @@ func _check_print_fix() -> void:
 	game.restore({"day": 1, "phase": "OPEN", "arrivals": 1, "jobs": [{"customer": "res://customers/skater_bro.tres", "problem": "dust_overheat", "slot": 0}]})
 	game.db_day = game.day_number
 	await process_frame
+	db.set("_hits", PackedStringArray(["Restarts by itself"]))  # as SEARCH found it
 	db.call("_search", "Restarts by itself")
 	for passing: String in ["Passes the BIOS memory test", "Runs without a bluescreen", "CPU fan is clean and spins freely"]:
 		game.mark_check(passing, true)

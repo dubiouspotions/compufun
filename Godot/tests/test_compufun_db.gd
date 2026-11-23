@@ -110,6 +110,16 @@ func _check_screen() -> void:
 	game.mark_check("Passes the BIOS memory test", true)
 	game.mark_check("Runs without a bluescreen", true)
 
+	_press(db, KEY_LEFT)
+	_type(db, " ")
+	check("typing hides CHECK and CAUSES until a symptom is picked again", [_texts(db, CHECKS), _texts(db, CAUSES)], [[], []])
+	_press(db, KEY_BACKSPACE)
+	_press(db, KEY_ENTER)
+	_press(db, KEY_ENTER)
+	check("picked again, they show", _texts(db, CAUSES).size(), 4)
+	game.mark_check("Passes the BIOS memory test", true)
+	game.mark_check("Runs without a bluescreen", true)
+
 	var printer: Node3D = load("res://props/printer.tscn").instantiate()
 	printer.add_to_group(&"printer")
 	root.add_child(printer)

@@ -190,7 +190,7 @@ func _entries(column: Column) -> Array[Dictionary]:
 # a cause, its problem.
 func _all_entries(column: Column) -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
-	var search := Game.db_search
+	var search := _picked()
 	match column:
 		Column.SEARCH:
 			for symptom: String in _hits:
@@ -229,9 +229,16 @@ func _found(text: String) -> PackedStringArray:
 	return found
 
 
+# Game's search while its symptom is listed under SEARCH, picked; null otherwise: CHECK and CAUSES
+# show nothing until the player picks a symptom that the words typed found.
+func _picked() -> DbSearch:
+	var search := Game.db_search
+	return search if search != null and search.query in _hits else null
+
+
 # The problems with the symptom searched for, in the order of the problems.
 func _causes() -> Array[Problem]:
-	var search := Game.db_search
+	var search := _picked()
 	return _problems.filter(func(p: Problem) -> bool: return search != null and search.query in p.symptoms)
 
 
@@ -588,7 +595,7 @@ func _read(seconds: float, still: Callable) -> bool:
 
 # Prints the search's checklist on the shop's Printer.
 func _print() -> void:
-	if Game.db_search != null:
+	if _picked() != null:
 		_print_page(_page())
 
 
@@ -668,7 +675,7 @@ func _date_text() -> String:
 # The buttons that show in the bottom frame, each with the column that it is centred under.
 func _buttons() -> Dictionary[String, Column]:
 	var buttons: Dictionary[String, Column] = {}
-	if Game.db_search != null:
+	if _picked() != null:
 		buttons[PRINT_BUTTON] = Column.CHECKS
 		if _selected_cause() != null:
 			buttons[PRINT_FIX_BUTTON] = Column.CAUSES
@@ -713,7 +720,7 @@ func _move(step: int) -> void:
 
 func _change_column(step: int) -> void:
 	var column := clampi(_column + step, 0, Column.size() - 1) as Column
-	if column != Column.SEARCH and Game.db_search == null:
+	if column != Column.SEARCH and _picked() == null:
 		return
 	_column = column
 	_move(0)
@@ -745,7 +752,7 @@ func _select(index: int) -> void:
 
 # Keeps the cursors on entries that exist, and in SEARCH while there is no search.
 func _reconcile() -> void:
-	if Game.db_search == null:
+	if _picked() == null:
 		_column = Column.SEARCH
 	for column: int in Column.size():
 		_selected[column] = clampi(_selected[column], 0, maxi(_entries(column as Column).size() - 1, 0))
@@ -837,7 +844,7 @@ func _paint_column(column: Column) -> void:
 		var entry := entries[index]
 		var fg := text_color if entry.pick else dim_color
 		var bg := background
-		if column == Column.SEARCH and Game.db_search != null and entry.text == Game.db_search.query:
+		if column == Column.SEARCH and _picked() != null and entry.text == _picked().query:
 			fg = bright_color  # the symptom picked stays marked while the player works in the other columns
 			bg = dim_color
 		if column == _column and index == _selected[column]:
