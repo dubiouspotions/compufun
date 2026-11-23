@@ -78,6 +78,16 @@ func cable_socket(job: Job) -> Node3D:
 	return computer.cable_socket()
 
 
+## Blinks the rings of the screws that are out of the side panel of [param job]'s computer (see
+## [method OpenCase.blink_screws]). Fails with an error when the job has no computer on the counter.
+func blink_screws(job: Job) -> void:
+	var computer: JobComputer = _computers.get(job)
+	if computer == null:
+		push_error("JobSlots.blink_screws: the job in slot %d has no computer on the counter" % job.slot)
+		return
+	computer.blink_screws()
+
+
 ## The post-it that the player reads on the computer of [param job] in the Workview (see
 ## [method JobComputer.pinned_post_it]), or null when the job has no computer on the counter or the
 ## post-it isn't showing.

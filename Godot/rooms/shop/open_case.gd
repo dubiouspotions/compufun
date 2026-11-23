@@ -24,6 +24,10 @@ const PULSE_RING: Shader = preload("res://shaders/pulse_ring.gdshader")
 ## outer diameter in metres.
 @export var screw_pulse_seconds: float = 1.6
 @export var screw_ring_size: float = 0.08
+## How many times the rings of the screws that are out blink when the player tries to stand the
+## computer up too early ([method blink_screws]), and the seconds of one blink, off and on.
+@export var screw_blinks: int = 3
+@export var screw_blink_seconds: float = 0.3
 ## The colour of an empty screw hole.
 @export var hole_color: Color = Color(0.05, 0.04, 0.03)
 ## How high the screwdriver hovers over a screw under the mouse, and how far it bobs, in metres.
@@ -81,6 +85,7 @@ var _mat_shown: Dictionary[Piece, Array] = {}
 # Panel screw index to [screw head, hotspot, pulse ring, empty hole].
 var _screws: Array[Array] = []
 var _screw_ring: ShaderMaterial
+var _blink: Tween
 var _outline: StandardMaterial3D
 var _outline_hover: StandardMaterial3D
 var _ghost: StandardMaterial3D
@@ -506,6 +511,29 @@ func _turn(index: int, at: Vector3) -> void:
 
 
 # --- Highlights ----------------------------------------------------------------------------------
+
+## Blinks the rings of the side panel's screws that are out, [member screw_blinks] times: they keep
+## the computer lying. Their rings show only while the case is [member active] and closed.
+func blink_screws() -> void:
+	if _blink != null:
+		_blink.kill()
+	var blink := _screw_ring.duplicate() as ShaderMaterial
+	blink.set_shader_parameter(&"flash", 1.0)
+	var rings: Array[MeshInstance3D] = []
+	for i: int in _screws.size():
+		if not job.panel_screws[i]:
+			rings.append(_screws[i][2])
+			rings.back().material_override = blink
+	_blink = create_tween()
+	for n: int in screw_blinks:
+		_blink.tween_callback(blink.set_shader_parameter.bind(&"color", Color(usable_color, 0.0)))
+		_blink.tween_interval(screw_blink_seconds / 2.0)
+		_blink.tween_callback(blink.set_shader_parameter.bind(&"color", usable_color))
+		_blink.tween_interval(screw_blink_seconds / 2.0)
+	_blink.tween_callback(func() -> void:
+		for ring: MeshInstance3D in rings:
+			ring.material_override = _screw_ring)
+
 
 func _pulse(t: float) -> void:
 	_outline.albedo_color = usable_color.lerp(Color.WHITE, 0.35 * t)

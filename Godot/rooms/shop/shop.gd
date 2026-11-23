@@ -350,9 +350,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		view_requested.emit(view_marker(Game.view).back)
 		return
 	if press != null and press.pressed and press.button_index == MOUSE_BUTTON_LEFT and Game.focus != null \
-			and Game.can_stand_up(Game.focus) and _empty_workview_at(press.position):
+			and Game.focus.lying and not Game.focus.case_open and _empty_workview_at(press.position):
 		get_viewport().set_input_as_handled()  # the standing case must not take this click in picking
-		Game.stand_up(Game.focus)  # as a click on the screwdriver's outline does
+		if Game.can_stand_up(Game.focus):
+			Game.stand_up(Game.focus)  # as a click on the screwdriver's outline does
+		else:
+			_job_slots.blink_screws(Game.focus)  # a screw that is out keeps it lying
 		return
 	var mouse := event as InputEventMouse
 	if not _bench.dragging or mouse == null:

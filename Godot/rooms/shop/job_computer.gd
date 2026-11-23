@@ -183,6 +183,11 @@ func pinned_post_it() -> PostIt3D:
 	return _post_it if _working() else null
 
 
+## Blinks the rings of the side panel's screws that are out (see [method OpenCase.blink_screws]).
+func blink_screws() -> void:
+	_open_case.blink_screws()
+
+
 ## The VGA socket that the bench cable plugs into; its +Z points out of the socket.
 func cable_socket() -> Node3D:
 	return _cable_socket
