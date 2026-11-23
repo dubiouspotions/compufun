@@ -1,11 +1,12 @@
 post-it: Computer's colours have changed
 symptoms:
-	Window colours changed drastically
+	Colours look wrong
+		shows: the windows, menus and taskbar show in other colours
 checks:
 	Colour scheme is the usual one
-		shows: Display Properties, Appearance, shows another scheme
+		shows: Display Properties, Appearance, shows High Contrast Black
 software steps:
 	Right-click the desktop and pick Properties
 	Open the Appearance tab
-	Switch the Scheme from High Contrast Black back to Windows Standard
+	Switch the Scheme back to Windows Standard
 	Click Apply or OK

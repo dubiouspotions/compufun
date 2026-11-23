@@ -1,6 +1,7 @@
 post-it: Wants a good-looking screensaver
 symptoms:
-	No screensaver set
+	Wants a screensaver
+		shows: the customer asks for a good-looking screensaver
 checks:
 	A screensaver is set
 		shows: Display Properties, Screen Saver, says (None); only 3D Pipes fixes it

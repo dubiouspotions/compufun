@@ -1,8 +1,7 @@
 post-it: Computer doesn't start
 symptoms:
-	Computer doesn't start at all when clicking start button
-		category: At startup
-	User has tampered with the hardware
+	No picture at all
+		shows: the computer switches on and its fans run, but the screen shows nothing
 checks:
 	Shows a picture at power-on
 		shows: the fans run and nothing shows: the CPU is not in its socket
@@ -10,8 +9,8 @@ checks:
 		shows: in the Workview, parts lie on the places of other parts
 hardware steps:
 	Remove the computer shell
-	Re-arrange the hardware in their correct spots
-	Replace missing hardware
+	Put each part back in its own place
+	Get any missing part from storage and install it
 	Remount the shell
 notes:
 	Broken part: All hardware are in the wrong places

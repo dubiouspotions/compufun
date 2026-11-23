@@ -237,7 +237,7 @@ func _check_print_fix() -> void:
 	game.db_day = game.day_number
 	load("res://problems/dust_overheat.tres").checks = ["Windows stays up", "CPU fan is clean"]
 	load("res://problems/hamster.tres").checks = ["Windows stays up", "Nothing blocks the CPU fan"]
-	game.search_db("Computer overheating", ["Windows stays up", "CPU fan is clean", "Nothing blocks the CPU fan"])
+	game.search_db("Restarts by itself", ["Windows stays up", "CPU fan is clean", "Nothing blocks the CPU fan"])
 	await process_frame
 	db.set("_column", 1)  # CHECK: in SEARCH, F types
 	var key := InputEventKey.new()

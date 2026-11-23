@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
 ## The Story Lab's Problems section (dev/story_lab/problem_panel.gd) on the real week: the list, a new
-## text-only problem, the form's edits as drafts, the symptom warning, and the errand panel's
+## text-only problem, the form's edits as drafts, and the errand panel's
 ## problem picker.
 
 const PROBLEMS := "res://story/problems/"
@@ -20,7 +20,7 @@ func run() -> void:
 	_the_list_has_every_problem(panel)
 	_a_new_problem_is_text_only(lab, panel, drafts)
 	_the_form_edits_a_draft(panel, drafts)
-	_a_changed_symptom_warns_on_a_built_problem(panel, drafts)
+	_a_reworded_symptom_is_drafted(panel, drafts)
 	_the_picker_lists_and_opens_every_problem(lab, drafts)
 	check("Send names a problem file in the title", StoryIssue.title([{"path": DUST}] as Array[Dictionary], ""), "Story: problem dust_overheat")
 	lab.queue_free()
@@ -67,19 +67,15 @@ func _the_form_edits_a_draft(panel: StoryProblemPanel, drafts: StoryDrafts) -> v
 	panel.call("_save")
 
 
-func _a_changed_symptom_warns_on_a_built_problem(panel: StoryProblemPanel, drafts: StoryDrafts) -> void:
+func _a_reworded_symptom_is_drafted(panel: StoryProblemPanel, drafts: StoryDrafts) -> void:
 	var symptoms: VBoxContainer = panel.get("_symptoms")
 	var first: LineEdit = symptoms.get_child(0).get_child(0)
-	var old := first.text
 	first.text = "Shuts off by itself"
 	panel.call("_save")
-	var warning: Label = panel.get("_warning")
-	check("rewording a checked symptom warns", "tell a developer" in warning.text and old in warning.text, true)
-	check("but saves", "Shuts off by itself" in drafts.text(DUST), true)
+	check("a reworded symptom saves", "Shuts off by itself" in drafts.text(DUST), true)
 	panel.open_problem(&"haunted_printer")
 	panel.call("_add_symptom", "Prints by itself", "pages come out at night")
 	panel.call("_save")
-	check("a new symptom on a problem without mechanics doesn't warn", warning.text, "")
 	check("its symptom and how it shows are drafted", drafts.text(HAUNTED), "post-it: Haunted printer\nsymptoms:\n\tPrints by itself\n\t\tshows: pages come out at night\n")
 
 

@@ -1,19 +1,12 @@
 post-it: Can't open images
 symptoms:
-	Image program not found
-		shows: an error message when opening an image (can't find the .exe)
-		category: In Windows
+	Can't open pictures
+		shows: opening a picture says "Cannot find the file 'C:\WINDOWS\PBRUSH.EXE' (or one of its components)"
 	Programs won't start
-		shows: every program in the Windows folder lost its ".exe" and won't run
-		category: In Windows
-	Customer changed something
-		shows: if asked, the customer says the problem appeared after something they did
-		category: From the customer
-	Start menu shortcut broken
-		shows: an error message, or a corrupted link, when following the Start menu link to the image program
+		shows: Notepad, WordPad, Paint, Calculator and more don't run
 checks:
-	Programs start
-		shows: the programs in C:\WINDOWS, such as NOTEPAD, WORDPAD, PBRUSH and CALC, lost their .EXE
+	Programs in C:\WINDOWS start
+		shows: NOTEPAD, WORDPAD, PBRUSH, CALC and others lost their .EXE
 software steps:
-	Open the Windows folder
-	Add ".exe" back to every program
+	Open C:\WINDOWS
+	Rename each program that lost its .EXE back to its name with .EXE

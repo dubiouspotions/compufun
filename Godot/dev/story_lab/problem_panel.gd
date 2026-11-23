@@ -9,7 +9,6 @@ extends HBoxContainer
 signal saved(path: String, text: String)
 
 const SETTLE_SECONDS: float = 0.4
-const SYMPTOM_WARNING: String = "You changed a symptom that the game already checks for: %s. The repair checks match this text; tell a developer."
 const NOT_BUILT_TIP: String = "Writers named this problem; a developer still has to make its repair work in the game."
 
 var _drafts: StoryDrafts
@@ -31,7 +30,6 @@ var _checks: VBoxContainer
 var _hardware: VBoxContainer
 var _software: VBoxContainer
 var _notes: TextEdit
-var _warning: Label
 var _errors: Label
 var _settle: Timer
 
@@ -89,7 +87,6 @@ func open_problem(id: StringName) -> void:
 	_notes.text = problem.notes
 	_errors.text = "" if parsed.errors.is_empty() else "This file has errors; editing the form rewrites it:\n" + "\n".join(_plain(parsed.errors))
 	_filling = false
-	_warn()
 	_fill_list()
 
 
@@ -143,7 +140,6 @@ func text() -> String:
 func _save() -> void:
 	if _filling or _id == &"":
 		return
-	_warn()
 	var problems := _form_problems()
 	if not problems.is_empty():
 		_errors.text = "\n".join(problems)
@@ -173,22 +169,6 @@ func _form_problems() -> PackedStringArray:
 				found.append("Two %ss say \"%s\"; give each its own words." % [noun, entry])
 			seen[entry] = true
 	return found
-
-
-# Warns when the form drops or rewords a symptom of the checkout's file while the game checks for it.
-func _warn() -> void:
-	_warning.text = ""
-	if not built(_problems.get(_id)):
-		return
-	var current := PackedStringArray()
-	for row: Node in _symptoms.get_children():
-		current.append((row.get_child(0) as LineEdit).text.strip_edges())
-	var changed := PackedStringArray()
-	for symptom: String in (StoryFormat.parse_problem(_drafts.checkout_text(path()), path()).value as Problem).symptoms:
-		if symptom not in current:
-			changed.append("\"%s\"" % symptom)
-	if not changed.is_empty():
-		_warning.text = SYMPTOM_WARNING % ", ".join(changed)
 
 
 func _plain(errors: PackedStringArray) -> PackedStringArray:
@@ -459,9 +439,6 @@ func _right() -> Control:
 	box.add_child(_columns("The symptom", "How it shows in the game"))
 	_symptoms = _rows(box)
 	box.add_child(_add_button("+  Symptom", func() -> void: _add_symptom()))
-	_warning = LabUI.label("", 13, LabUI.CHANGED)
-	_warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	box.add_child(_warning)
 	box.add_child(_heading("Checks", "What a technician verifies on a working computer, such as \"Boots from C:\", and how it fails in the game. CompuFunDB lists the checks of every problem with the symptom searched for, among checks of other problems; the player marks those that fail, and only this problem's checks show its fix. The cause goes in the steps."))
 	box.add_child(_columns("The check", "How it fails in the game"))
 	_checks = _rows(box)

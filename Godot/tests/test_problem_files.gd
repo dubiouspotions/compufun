@@ -1,30 +1,11 @@
 extends "res://tests/test.gd"
 ## The problem files (story/problems/<id>.problem): they read and write back the same text, name the
 ## line of an error, and the week fills their text into the cached problems/<id>.tres, so CompuFunDB
-## and the post-its read the same strings as before. A draft plays at once, a refused week keeps the
+## and the post-its read the files' text. A draft plays at once, a refused week keeps the
 ## text, and a problem file without a .tres loads as text only, which the story check lists.
 
 const PROBLEM_FILE: String = "res://story/problems/%s.problem"
 const RESOURCE: String = "res://problems/%s.tres"
-## Every problem's post-it and symptoms, as CompuFunDB showed them before they moved to the files.
-const TODAY: Dictionary = {
-	"bad_ram": ["Stops before Windows starts", ["Memory test fails at startup", "Halts before Windows"]],
-	"bootfloppy": ["Computer doesn't start - just a bunch of text", ["Non-System disk error at startup", "Floppy in drive A:"]],
-	"broken_hard_drive": ["Blue screen of death", ["Blue screen at startup", "Hard drive clicks"]],
-	"defrag": ["Mouse glitches", ["Slow to boot", "Mouse pointer jumps", "Folders open slowly"]],
-	"desktop_prank": ["Icons don't open", ["Desktop icons don't respond", "Wallpaper is a picture of the desktop", "Icons are in a folder hidden in a corner"]],
-	"dust_overheat": ["Windows starts and turns off", ["Hangs and reboots at startup", "Customer mentions increased heat"]],
-	"email_virus": ["CD-tray keeps on opening and closing", ["CD-tray keeps on opening and closing", "If connected to the internet the mouse moves on its own"]],
-	"gpu_overheating": ["Visual artifacting", ["Visual artifacting on screen", "GPU overheating"]],
-	"hamster": ["Computer smells weird and won't start", ["Hangs and reboots at startup", "Computer overheating"]],
-	"hardware_puzzle": ["Computer doesn't start", ["Computer doesn't start at all when clicking start button", "User has tampered with the hardware"]],
-	"inverted_colors": ["Computer's colours have changed", ["Window colours changed drastically"]],
-	"no_sound": ["Can't hear sounds", ["Sound is muted"]],
-	"noimages": ["Can't open images", ["Image program not found", "Programs won't start", "Customer changed something", "Start menu shortcut broken"]],
-	"no_parts": ["Take a closer look at the super computer", ["No parts in the computer", "Works without any parts"]],
-	"organ_failure": ["None", ["Blood comes out of the chassi", "Sound of heartbeat from computer"]],
-	"screensaver": ["Wants a good-looking screensaver", ["No screensaver set"]],
-}
 
 
 # A problem's checks, each with how it fails, read and written back as they were.
@@ -50,23 +31,14 @@ func run() -> void:
 
 func _round_trip() -> void:
 	var files := StoryFiles.files(StoryFiles.PROBLEMS_DIR, ".problem")
-	check("a problem file per problem", files.size(), TODAY.size())
+	check("a problem file per problem", files.size(), Array(ResourceLoader.list_directory("res://problems/")).filter(func(f: String) -> bool: return f.ends_with(".tres")).size())
 	for path: String in files:
 		var text := FileAccess.get_file_as_string(path)
 		var parsed := StoryFormat.parse_problem(text, path)
 		check("%s parses" % path, parsed.errors, PackedStringArray())
 		check("%s writes back the same text" % path, StoryFormat.write_problem(parsed.value), text)
 	var dust := StoryFormat.parse_problem(FileAccess.get_file_as_string(PROBLEM_FILE % "dust_overheat"), PROBLEM_FILE % "dust_overheat").value as Problem
-	check("a symptom shows", dust.symptom_shows["Customer mentions increased heat"], "at drop-off, the customer says that the computer was a little hot when he unplugged it")
-	check("and has a category", dust.symptom_categories["Customer mentions increased heat"], "From the customer")
-	var categories: Dictionary[String, String] = {}
-	for path: String in files:
-		var problem := StoryFormat.parse_problem(FileAccess.get_file_as_string(path), path).value as Problem
-		for symptom: String in problem.symptoms:
-			var category: String = problem.symptom_categories.get(symptom, "")
-			check("%s: '%s' has a category" % [path, symptom], category != "", true)
-			check("%s: '%s' is in the category that the other problems give it" % [path, symptom], categories.get(symptom, category), category)
-			categories[symptom] = category
+	check("a check shows how it fails", dust.check_shows.has("CPU fan is clean and spins freely"), true)
 	check("the steps", [dust.hardware_steps.size(), dust.hardware_steps[0], dust.software_steps], [5, "Remove the computer shell", PackedStringArray()])
 	check("text only, named by its file", [dust.short_name, dust.resource_path, dust.broken_part], [&"dust_overheat", PROBLEM_FILE % "dust_overheat", null])
 
@@ -89,11 +61,12 @@ func _errors() -> void:
 
 func _week_fills_the_resources() -> void:
 	check("the week loaded", game.story_errors, PackedStringArray())
-	check("it holds every problem", game.week.problems.size(), TODAY.size())
-	for id: String in TODAY:
+	for path: String in StoryFiles.files(StoryFiles.PROBLEMS_DIR, ".problem"):
+		var id := path.get_file().get_basename()
+		var file := StoryFormat.parse_problem(FileAccess.get_file_as_string(path), path).value as Problem
 		var problem := load(RESOURCE % id) as Problem
 		check("%s: the cached .tres is the week's" % id, problem == game.week.problems[StringName(id)], true)
-		check("%s: its post-it and symptoms, as before" % id, [problem.perceived_issue, problem.symptoms], [TODAY[id][0], PackedStringArray(TODAY[id][1])])
+		check("%s: its text is the file's" % id, [problem.perceived_issue, problem.symptoms, problem.checks, problem.hardware_steps, problem.software_steps], [file.perceived_issue, file.symptoms, file.checks, file.hardware_steps, file.software_steps])
 	var job := Job.new(load("res://customers/skater_bro.tres"), load(RESOURCE % "dust_overheat"), 0, 0)
 	check("the post-it reads it", job.perceived_issue(), "Windows starts and turns off")
 

@@ -1,18 +1,15 @@
 post-it: Computer smells weird and won't start
 symptoms:
-	Hangs and reboots at startup
-		shows: a second into the Windows startup sound, the computer stops answering and the sound sags, then it freezes in a buzz, and a few seconds later it reboots
-		category: At startup
-	Computer overheating
-		shows: the fan is covered by a dead hamster
+	Restarts by itself
+		shows: a moment after the desktop appears, the computer stops answering and reboots, again after every start
 checks:
 	Windows stays up after the desktop appears
-		shows: a second after the desktop appears, the sound sags and freezes in a buzz, and it reboots
-	Nothing in the CPU fan
-		shows: a dead hamster lies on the fan in the Workview
+		shows: a second after the desktop appears, the sound sags and freezes in a buzz, and the computer reboots
+	CPU fan is clean and spins freely
+		shows: in the Workview, a dead hamster lies on the fan
 hardware steps:
 	Remove the computer shell
-	Take out the hamster, throw it in the trash
+	If something blocks the fan, take it out and throw it in the trash
 	Remount the shell
 notes:
 	Broken part: None. A hamster lies on the fan; the fan itself is fine. Take the hamster out to fix it.

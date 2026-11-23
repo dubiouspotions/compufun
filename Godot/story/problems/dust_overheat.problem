@@ -1,18 +1,15 @@
 post-it: Windows starts and turns off
 symptoms:
-	Hangs and reboots at startup
-		shows: a second into the Windows startup sound, the computer stops answering and the sound sags, then it freezes in a buzz, and a few seconds later it reboots
-		category: At startup
-	Computer overheating
-		shows: the fan is full of dust in the Workview
+	Restarts by itself
+		shows: a moment after the desktop appears, the computer stops answering and reboots, again after every start
 checks:
 	Windows stays up after the desktop appears
-		shows: a second after the desktop appears, the sound sags and freezes in a buzz, and it reboots
-	CPU fan is clean
-		shows: the fan is clogged with dust in the Workview
+		shows: a second after the desktop appears, the sound sags and freezes in a buzz, and the computer reboots
+	CPU fan is clean and spins freely
+		shows: in the Workview, the fan is clogged with dust
 hardware steps:
 	Remove the computer shell
-	Remove the fan, throw it in the trash
+	If the fan is clogged with dust, take it out and throw it in the trash
 	Get a new fan from storage
 	Install the fan
 	Remount the shell

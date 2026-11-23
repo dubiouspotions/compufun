@@ -1,17 +1,11 @@
 post-it: Icons don't open
 symptoms:
-	Desktop icons don't respond
-		shows: someone took a screenshot of the desktop and set it as the wallpaper, so every icon on it, My Computer and the Recycle Bin too, is only a picture
-		category: In Windows
-	Wallpaper is a picture of the desktop
-		shows: the picture has fewer colours than the screen, and Display Properties lists the wallpaper as "prank"
-		category: In Windows
-	Icons are in a folder hidden in a corner
-		shows: a "New Folder" holds every icon; it is hidden mostly off the screen in the bottom right corner, its name behind the taskbar
+	Icons don't open
+		shows: most desktop icons are only a picture and do nothing when clicked; My Computer and the Recycle Bin still work
 checks:
 	Desktop icons open
-		shows: the icons are only part of the wallpaper, a screenshot of the desktop
-	Wallpaper is not a screenshot
+		shows: the icons are only part of the wallpaper, a picture of the desktop
+	Wallpaper is not a picture of the desktop
 		shows: Display Properties lists the wallpaper as "prank"
 	Icons are on the desktop
 		shows: a New Folder, mostly off the screen in the bottom right corner, holds them

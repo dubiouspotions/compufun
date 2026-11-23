@@ -1,8 +1,9 @@
 post-it: Computer doesn't start - just a bunch of text
 symptoms:
-	Non-System disk error at startup
-		category: At startup
-	Floppy in drive A:
+	Stops before Windows starts
+		shows: the startup stops at "Non-System disk or disk error"
+	Error text at startup
+		shows: "Non-System disk or disk error, Replace and press any key when ready"
 checks:
 	Boots from C:
 		shows: it stops at "Non-System disk or disk error"
