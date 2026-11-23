@@ -42,7 +42,7 @@ const KNOWN_ENUMS: Dictionary[String, Array] = {
 	"Problem.Location": ["HARDWARE", "SOFTWARE", "BOTH"],
 }
 ## The SoftwareCheck types that [method _fix_check] fixes the way a player does.
-const KNOWN_CHECKS: Array[String] = ["SettingCheck", "FileCheck", "MultiCheck", "DesktopPrankCheck"]
+const KNOWN_CHECKS: Array[String] = ["SettingCheck", "FileCheck", "MultiCheck", "DesktopPrankCheck", "VirusCheck"]
 ## Game's public methods: those that the bot, or the scenes that it clicks, use in a week, and those
 ## that a week doesn't need (queries, the debug menu, the Story Lab).
 const KNOWN_GAME_METHODS: Array[String] = [
@@ -462,8 +462,8 @@ func _repair_software(job: Job) -> void:
 
 # Fixes what [param software] broke, through the running computer [param state] as the Win95 windows
 # do: the volume control, the drive's eject button, Disk Defragmenter (done the next morning), a
-# Control Panel property sheet, a rename in Explorer and a save in Notepad, Display Properties and a
-# drag of the icons.
+# Control Panel property sheet, a rename in Explorer and a save in Notepad, Display Properties, a
+# drag of the icons, and End Task in Close Program before a delete.
 func _fix_check(job: Job, software: SoftwareCheck, state: Node) -> void:
 	var setup: Win95Setup = state.get(&"setup")
 	match software.get_script().get_global_name():
@@ -487,6 +487,15 @@ func _fix_check(job: Job, software: SoftwareCheck, state: Node) -> void:
 				var hidden: Array[Win95File] = []
 				hidden.assign(shot.icons.filter(func(icon: Win95File) -> bool: return not setup.desktop.has(icon)))
 				state.call(&"move_files", hidden, setup.desktop)
+		&"VirusCheck":
+			var virus_check := software as VirusCheck
+			var copies := virus_check.copies(setup)
+			for task: Node in state.call(&"tasks"):
+				if copies.has(task.get(&"file")):
+					task.call(&"stop")  # End Task in Close Program
+			var refused: String = state.call(&"delete_files", copies)
+			if refused != "":
+				_fail(refused)
 		&"SettingCheck":
 			var setting := software as SettingCheck
 			match setting.setting:

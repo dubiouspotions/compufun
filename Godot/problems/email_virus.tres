@@ -1,8 +1,23 @@
 [gd_resource type="Resource" script_class="Problem" format=3]
 
 [ext_resource type="Script" path="res://problems/problem.gd" id="1_problem"]
+[ext_resource type="Script" path="res://problems/virus_check.gd" id="virus_check"]
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="win95_file"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/dollar_sign_32.png" id="icon_dollar"]
+[ext_resource type="PackedScene" path="res://win95/bizopp.tscn" id="bizopp"]
+
+[sub_resource type="Resource" id="Win95File_bizopp"]
+script = ExtResource("win95_file")
+name = "BIZOPP.EXE"
+icon = ExtResource("icon_dollar")
+program = ExtResource("bizopp")
+
+[sub_resource type="Resource" id="VirusCheck_bizopp"]
+script = ExtResource("virus_check")
+virus = SubResource("Win95File_bizopp")
 
 [resource]
 script = ExtResource("1_problem")
 short_name = &"email_virus"
 location = 1
+software_check = SubResource("VirusCheck_bizopp")
