@@ -61,6 +61,13 @@ Export into an empty folder: an export over an old one logs errors about the ass
 - **Touch:** Godot turns a tap into a left click, so buttons, hotspots, the nav arrows, dragging
   parts and cables, and the Win95 drag and drop work. A hardware keyboard or the debug strip
   reaches F2.
+- **Swipes:** a finger's swipe across the world turns the view like a panorama (a finger that moves
+  left turns right, as the right arrow key does), and a swipe down leaves a close-up. A mouse never
+  swipes. `Shop` sees the swipe in the world buffer, after the UI took its drags and before physics
+  picking; the thresholds are its `swipe_*` exports. A finger clicks a hotspot or the back strip
+  when it lifts, within `tap_slop` of its touch (`ui/touch/tap_gate.gd`), so a swipe clicks nothing.
+  The VGA plug still acts on the touch, so that a finger drags it; the part in the hand tells a tap
+  from a drag itself. A swipe never starts while either is dragged.
 
 ## What a real port needs
 

@@ -54,6 +54,7 @@ var _cord_sphere := SphereShape3D.new()
 
 
 func _ready() -> void:
+	_plug_hotspot.drag_source = true
 	_screen_hotspot.clicked.connect(func(h: Hotspot) -> void: view_requested.emit(h.view))
 	_plug_hotspot.clicked.connect(func(_h: Hotspot) -> void: plug_grabbed.emit())
 	_degauss_hotspot.clicked.connect(func(_h: Hotspot) -> void: degauss_pressed.emit())
