@@ -31,3 +31,6 @@ General population. A jock who doesn't care about computers. Day 4: wants the sc
 
 ## Nice guy
 General population. Day 5 evening: a broken hard drive, a calm errand.
+
+## Top hat man
+Photographed. Not on the week yet.
