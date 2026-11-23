@@ -1,7 +1,8 @@
 extends "res://tests/test.gd"
-## CompuFunDB's search: typed words list the symptoms that hold them; picking one offers the checks
-## of every problem with it among checks of other problems in the same place; only one problem's
-## checks marked show its fix. The search, with its marks and ticks, survives a snapshot and a restore, and a malformed one
+## CompuFunDB's search: Enter lists the symptoms that hold the typed words, one at a time; picking
+## one offers the checks of every problem with it among checks of other problems in the same place;
+## only one problem's checks marked show its fix. The search, with its marks and ticks, survives a
+## snapshot and a restore, and a malformed one
 ## is refused.
 
 ## CompuFunDB.Column, which a test can't name: CompuFunDB names the Game autoload.
@@ -56,13 +57,24 @@ func _check_screen() -> void:
 	no_sound.checks = ["Volume is on"]
 	check("a fresh day, CompuFunDB on", game.restore({"day": 1, "db_day": 1}), "")
 	var db: Control = load("res://compufun_db/compufun_db.tscn").instantiate()  # untyped: CompuFunDB names Game
+	db.set("hdd_seek", null)
+	db.set("search_seconds", Vector2(0.2, 0.2))
+	db.set("hit_seconds", Vector2(0.2, 0.2))
 	root.add_child(db)
 	await process_frame
 	check("nothing listed before typing", _texts(db, SEARCH), [])
 	check("right goes nowhere without a search", [_press(db, KEY_RIGHT), db.get("_column")], [true, SEARCH])
 	for letter: String in "OVERheat":
 		_type(db, letter)
-	check("the words find symptoms, whatever the case", _texts(db, SEARCH), ["Computer overheating", "GPU overheating"])
+	check("typing finds nothing yet", _texts(db, SEARCH), [])
+	_press(db, KEY_ENTER)
+	check("Enter searches, slowly", [db.get("_searching"), _texts(db, SEARCH)], [true, []])
+	await create_timer(0.5).timeout  # the read, then the first hit
+	check("the first symptom found shows alone", _texts(db, SEARCH), ["Computer overheating"])
+	await create_timer(0.25).timeout
+	check("then the next, whatever the case", [_texts(db, SEARCH), db.get("_searching")], [["Computer overheating", "GPU overheating"], false])
+	db.set("search_seconds", Vector2.ZERO)
+	db.set("hit_seconds", Vector2.ZERO)
 	_press(db, KEY_BACKSPACE)
 	check("backspace erases", db.get("_typed"), "OVERhea")
 	_press(db, KEY_P)
@@ -71,6 +83,8 @@ func _check_screen() -> void:
 		_press(db, KEY_BACKSPACE)
 	for letter: String in "computer over":
 		_type(db, letter)
+	check("typing clears what was found", _texts(db, SEARCH), [])
+	_press(db, KEY_ENTER)
 	check("every word must be in it", _texts(db, SEARCH), ["Computer overheating"])
 	_press(db, KEY_ENTER)
 	var search: DbSearch = game.db_search

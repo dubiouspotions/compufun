@@ -24,6 +24,8 @@ const ENDING_SECONDS: float = 120.0
 const READ_FRAMES: int = 8
 ## Game seconds that the printer may take to print a page.
 const PRINT_SECONDS: float = 10.0
+## How long the bot waits for CompuFunDB's slow search to find everything.
+const SEARCH_SECONDS: float = 30.0
 const DEFAULT_SEEDS: Array[int] = [1]
 ## Errors that come from a missing link that dev/story.gd lists, by a part of their text: reported,
 ## not failed, so that the writers' gaps don't fail every push.
@@ -355,6 +357,15 @@ func _look_up(job: Job) -> bool:
 		await _press(KEY_BACKSPACE)
 	for letter: String in query:
 		await _press(KEY_NONE, letter.unicode_at(0))
+	await _press(KEY_ENTER)
+	# The screen, not the view marker of the same name.
+	var db: Node = _main.find_children("CompuFunDB", "Control", true, false)[0]
+	var waited := now()
+	while db.get("_searching") and now() - waited < SEARCH_SECONDS:
+		await process_frame
+	var hits: PackedStringArray = db.get("_hits")
+	for i: int in hits.find(query):
+		await _press(KEY_DOWN)
 	await _press(KEY_ENTER)
 	if game.db_search == null or game.db_search.query != query:
 		_gaps.append("%s: CompuFunDB's SEARCH for '%s' didn't pick it" % [_where(), query])

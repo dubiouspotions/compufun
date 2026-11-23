@@ -1,16 +1,18 @@
 class_name CompuFunDB
 extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
-## SEARCH (the player types words, and the symptoms of every Problem that hold them all list under
-## it), what to check (the checks of every problem with the symptom picked, among a few checks of
+## SEARCH (the player types words and presses Enter; the work computer is slow, so the symptoms of
+## every Problem that hold them all come in one at a time, each after a seek of the hard drive),
+## what to check (the checks of every problem with the symptom picked, among a few checks of
 ## other problems in the same place: the Game.db_search; the player marks those that fail) and what to
-## fix (the repair steps of each of those problems whose checks are all marked, while no other is, numbered and ending in
-## [member test_step]; the player ticks them off). This screen keeps only its cursor and the typed
+## fix (the repair steps of each of those problems whose checks are all marked, while no other is,
+## numbered and ending in [member test_step]; the player ticks them off). This screen keeps only its cursor and the typed
 ## words. It reads every Problem file, so its text is never a second copy of the problems.
 ## The first time the player opens it on a day, the work computer boots, the character starts the
 ## program at the DOS prompt and the modem dials up; until then the computer is off. Nothing skips
 ## the start-up; the player can leave meanwhile, and it goes on.
-## Keys: in SEARCH, letters type and Backspace erases; arrows and Tab move, Enter acts (Space too
+## Keys: in SEARCH, letters type, Backspace erases, and Enter searches, or picks a symptom found for
+## the words as typed; arrows and Tab move, Enter acts (Space too
 ## outside SEARCH), and outside SEARCH, P prints the checklist on the shop's Printer, F only its FIX
 ## steps, and the go_back keys but Down leave the view, as the Back button does; Esc always does.
 ## The mouse clicks and scrolls.
@@ -53,6 +55,17 @@ const SEARCH_LENGTH: int = 40
 @export var space_bar: SoundSet = preload("res://sounds/keystroke_space.tres")
 ## The seconds between two keys, picked between x and y for each key.
 @export var key_seconds: Vector2 = Vector2(0.03, 0.09)
+@export_group("Search")
+## The seconds that a search reads before its first symptom shows, picked between x and y.
+@export var search_seconds: Vector2 = Vector2(1.2, 2.0)
+## The seconds that each symptom found takes to show, picked between x and y for each; the more
+## found, the longer the search.
+@export var hit_seconds: Vector2 = Vector2(0.6, 1.4)
+## The seconds between two seeks of the hard drive while it reads, picked between x and y.
+@export var seek_seconds: Vector2 = Vector2(0.12, 0.4)
+## The hard drive seeking, from the work modem's speaker beside the tower; null is silent.
+@export var hdd_seek: SoundSet = preload("res://sounds/hdd_seek.tres")
+@export_group("")
 @export_group("Start-up")
 ## The work computer's boot: a 386 that stops after the BIOS.
 @export var boot_scene: PackedScene = preload("res://compufun_db/work_pc_boot.tscn")
@@ -87,6 +100,13 @@ var _selected: Array[int] = [0, 0, 0]
 var _scroll: Array[int] = [0, 0, 0]
 ## What the player typed into SEARCH.
 var _typed: String = ""
+## The words of the last search, and the symptoms that it found so far; the search runs while
+## [member _searching].
+var _searched: String = ""
+var _hits: PackedStringArray = []
+var _searching: bool = false
+## Counts up with each search, so that a search that a new one replaced stops.
+var _search_count: int = 0
 var _mouse_cell: Vector2i = Vector2i(-1, -1)
 ## True from the first opening of a day until the database shows.
 var _starting: bool = false
@@ -161,7 +181,7 @@ func _entries(column: Column) -> Array[Dictionary]:
 	var search := Game.db_search
 	match column:
 		Column.SEARCH:
-			for symptom: String in _found():
+			for symptom: String in _hits:
 				entries.append({text = symptom, check = null, pick = true})
 		Column.CHECKS:
 			if search != null:
@@ -186,9 +206,9 @@ func _add_steps(entries: Array[Dictionary], title: String, steps: PackedStringAr
 	return number
 
 
-# The symptoms that hold every word typed into SEARCH, whatever the case; none while nothing is typed.
-func _found() -> PackedStringArray:
-	var words := _typed.to_lower().split(" ", false)
+# The symptoms that hold every word of [param text], whatever the case; none for no words.
+func _found(text: String) -> PackedStringArray:
+	var words := text.to_lower().split(" ", false)
 	var found: PackedStringArray = []
 	if words.is_empty():
 		return found
@@ -450,6 +470,8 @@ func _on_key(key: InputEventKey) -> bool:
 			_change_column(-1)
 		KEY_RIGHT, KEY_TAB:
 			_change_column(1)
+		KEY_ENTER, KEY_KP_ENTER when typing and _typed != _searched:
+			_run_search()
 		KEY_ENTER, KEY_KP_ENTER:
 			_act()
 		KEY_BACKSPACE when typing:
@@ -469,11 +491,47 @@ func _on_key(key: InputEventKey) -> bool:
 	return true
 
 
-# Sets what SEARCH holds: the list under it starts over.
+# Sets what SEARCH holds: what an earlier search found goes, and a search that runs stops.
 func _type(text: String) -> void:
 	_typed = text
+	_search_count += 1
+	_searching = false
+	_searched = ""
+	_hits.clear()
 	_selected[Column.SEARCH] = 0
 	_scroll[Column.SEARCH] = 0
+
+
+# Searches for the words typed: the symptoms found show one at a time, each after its seek.
+func _run_search() -> void:
+	_type(_typed)
+	_searched = _typed
+	var count := _search_count
+	_searching = true
+	var found := _found(_typed)
+	if not await _read(randf_range(search_seconds.x, search_seconds.y), count):
+		return
+	for symptom: String in found:
+		if not await _read(randf_range(hit_seconds.x, hit_seconds.y), count):
+			return
+		_hits.append(symptom)
+		queue_redraw()
+	_searching = false
+	queue_redraw()
+
+
+# The hard drive seeks for [param seconds]; false when another search or typing took over meanwhile.
+func _read(seconds: float, count: int) -> bool:
+	var speaker := _speaker(MODEM_SPEAKER) if hdd_seek != null else null
+	while seconds > 0.0:
+		if speaker != null:
+			hdd_seek.play_at(speaker)
+		var wait := minf(seconds, randf_range(seek_seconds.x, seek_seconds.y))
+		seconds -= wait
+		await _pause(wait)
+		if count != _search_count or not is_inside_tree():
+			return false
+	return true
 
 
 # Prints the search's checklist on the shop's Printer.
@@ -661,11 +719,12 @@ func _paint() -> void:
 		return
 	for column: int in Column.size():
 		_paint_column(column as Column)
-	var count := "%d found " % _found().size() if not _typed.is_empty() else ""
+	var count := "%d found " % _hits.size() if not _searched.is_empty() else ""
 	var buttons := _buttons()
 	for text: String in buttons:
 		_put(_button_x(buttons[text], text), FRAME_ROWS[-1], text, bright_color, bar_color)
-	_bar(28, " %s" % (_status if not _status.is_empty() else HEADERS[_column]), count, bar_color)
+	var status := _status if not _status.is_empty() else ("Searching..." if _searching else HEADERS[_column])
+	_bar(28, " %s" % status, count, bar_color)
 	_put(1, 29, "Type Search  \u2191\u2193 Move  \u2190\u2192 Column  Enter Pick  P Print  F Print fix  Esc Leave", text_color)
 
 
