@@ -11,8 +11,7 @@ checks:
 		shows: "A fatal exception 0E has occurred", then a reboot 6 s later
 	no: Windows stays up after the desktop appears
 hardware steps:
-	Remove the computer shell
-	Take out the hard drive, throw it in the trash
-	Get a new hard drive from storage
-	Install the hard drive
-	Remount the shell
+	Open case
+	Trash the hard drive
+	Fit a new hard drive
+	Close case

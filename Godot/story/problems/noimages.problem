@@ -8,4 +8,4 @@ checks:
 		shows: in C:\WINDOWS: NOTEPAD, WORDPAD, PBRUSH, CALC and others
 software steps:
 	Open C:\WINDOWS
-	Rename each program that lost its .EXE back to its name with .EXE
+	Add .EXE back to each program

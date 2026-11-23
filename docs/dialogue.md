@@ -97,8 +97,8 @@ checks:
 		shows: in the Workview
 	no: CPU fan is clean and spins freely
 hardware steps:
-	Remove the computer shell
-	Remove the fan, throw it in the trash
+	Open case
+	Trash the CPU fan
 software steps:
 	Unmute
 notes:

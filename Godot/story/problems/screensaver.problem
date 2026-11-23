@@ -7,9 +7,8 @@ checks:
 	yes: No screensaver set
 		shows: Display Properties, Screen Saver: (None)
 software steps:
-	Right-click the desktop and pick Properties
-	Open the Screen Saver tab
-	Choose 3D Pipes
-	Click Apply or OK
+	Display Properties, Screen Saver
+	Pick 3D Pipes
+	Apply
 notes:
 	"A good looking guy like me needs a good looking screensaver"

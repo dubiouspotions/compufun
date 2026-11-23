@@ -11,9 +11,9 @@ checks:
 	no: Windows stays up after the desktop appears
 	no: CPU fan is clean and spins freely
 hardware steps:
-	Remove the computer shell
-	Take out what blocks the fan, throw it in the trash
-	Remount the shell
+	Open case
+	Clear the CPU fan
+	Close case
 notes:
 	Broken part: None. A hamster lies on the fan; the fan itself is fine. Take the hamster out to fix it.
 	One exception on purpose: Hamster has the symptoms of Dust Overheat, and the player tells them apart by opening the computer.

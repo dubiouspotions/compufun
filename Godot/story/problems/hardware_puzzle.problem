@@ -11,9 +11,9 @@ checks:
 		shows: in the Workview
 	no: Windows starts
 hardware steps:
-	Remove the computer shell
-	Put each part back in its own place
-	Get any missing part from storage and install it
-	Remount the shell
+	Open case
+	Put each part in its own slot
+	Fit any missing part
+	Close case
 notes:
 	Broken part: All hardware are in the wrong places

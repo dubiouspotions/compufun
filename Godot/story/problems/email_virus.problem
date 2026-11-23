@@ -10,8 +10,7 @@ checks:
 	yes: Unknown program in StartUp
 		shows: BIZOPP.EXE, from C:\WINDOWS
 software steps:
-	Get the CompuFun AntiVirus floppy from storage
-	Put it in drive A: and run SETUP.EXE
-	Run CompuFun AntiVirus, scan, and Clean what it finds
+	Install CompuFun AntiVirus from its floppy
+	Scan and clean
 notes:
 	Broken part: OS

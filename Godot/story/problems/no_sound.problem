@@ -7,8 +7,8 @@ checks:
 	yes: Sound is muted
 		shows: the speaker in the taskbar is crossed out
 software steps:
-	Connect the VGA cable to the computer
-	Switch it on and wait for Windows to start
-	Click the speaker by the clock and untick Mute
+	Connect the monitor
+	Start Windows
+	Untick Mute on the taskbar speaker
 notes:
 	NOTE - ONLY DUPLICATE ISSUE

@@ -8,7 +8,6 @@ checks:
 	yes: High contrast colour scheme
 		shows: Display Properties, Appearance: High Contrast Black
 software steps:
-	Right-click the desktop and pick Properties
-	Open the Appearance tab
-	Switch the Scheme back to Windows Standard
-	Click Apply or OK
+	Display Properties, Appearance
+	Pick Windows Standard
+	Apply

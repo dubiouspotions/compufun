@@ -9,8 +9,8 @@ checks:
 		shows: sticks out of the drive; the eject button pulses
 	no: Windows starts
 software steps:
-	Eject the floppy from drive A:
-	Press a key, or restart, with no floppy in A:
+	Eject the floppy
+	Restart
 notes:
 	Error message when booting "Non-System disk or disk error
 	Replace and press any key when ready"

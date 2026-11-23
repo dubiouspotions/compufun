@@ -134,7 +134,7 @@ func _check_screen() -> void:
 	check("F prints outside SEARCH", _press(db, KEY_F), true)
 	var page: PackedStringArray = printer.get("_lines")
 	check("a FIX page for the cause", [page[0].begins_with("CompuFunDB 1.0  FIX  "), page[2], page[5]], [true, "SEARCH: Restarts by itself", "Blocked CPU fan"])
-	check("with its steps and the test", [Array(page).any(func(l: String) -> bool: return l.begins_with("2. Take out")), page[-1].begins_with("4. Test the computer")], [true, true])
+	check("with its steps and the test", [Array(page).any(func(l: String) -> bool: return l.begins_with("2. Clear the CPU fan")), page[-1].begins_with("4. Test the computer")], [true, true])
 	game.mark_check(FAN, true)
 	_press(db, KEY_F)
 	check("a ruled-out cause prints nothing", printer.get("_lines"), page)

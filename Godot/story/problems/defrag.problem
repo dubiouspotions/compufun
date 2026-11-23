@@ -8,8 +8,7 @@ checks:
 	yes: Folders take seconds to open
 		shows: 2 s each
 software steps:
-	Open Start, Programs, Accessories, System Tools, Disk Defragmenter
-	Click Start: it defragments drive C:
-	Leave the computer on overnight: the run finishes by the next day
+	Run Disk Defragmenter
+	Leave it on overnight
 notes:
 	WILL TAKE UNTIL EVENING NEXT DAY

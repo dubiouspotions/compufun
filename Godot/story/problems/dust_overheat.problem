@@ -12,8 +12,7 @@ checks:
 	no: Windows stays up after the desktop appears
 	no: CPU fan is clean and spins freely
 hardware steps:
-	Remove the computer shell
-	Take out the fan, throw it in the trash
-	Get a new fan from storage
-	Install the fan
-	Remount the shell
+	Open case
+	Trash the CPU fan
+	Fit a new CPU fan
+	Close case

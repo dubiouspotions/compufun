@@ -14,6 +14,6 @@ checks:
 	yes: Folder of icons hidden in a corner
 		shows: bottom right, mostly off the screen
 software steps:
-	Open the folder hidden in the corner
-	Drag every icon in it onto the desktop
-	Change the wallpaper in Display Properties
+	Open the folder in the corner
+	Drag the icons to the desktop
+	Change the wallpaper

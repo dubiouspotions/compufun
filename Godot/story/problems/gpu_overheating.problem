@@ -11,8 +11,7 @@ checks:
 		shows: in the Workview
 	no: Picture is clean
 hardware steps:
-	Remove the computer shell
-	Take out the GPU, throw it in the trash
-	Get a new GPU from storage
-	Install the GPU
-	Remount the shell
+	Open case
+	Trash the GPU
+	Fit a new GPU
+	Close case

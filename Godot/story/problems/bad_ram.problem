@@ -11,11 +11,11 @@ checks:
 		shows: "Memory test fail", then "System halted"
 	no: Windows starts
 hardware steps:
-	Remove the computer shell
-	Swap one RAM module for a new one from storage
-	Switch it on: if the memory test passes, the module that you took out was bad
-	If the test still fails, put that module back and swap the other one
-	Throw the bad module in the trash
-	Remount the shell
+	Open case
+	Swap one RAM module for a new one
+	Power on and watch the memory test
+	If it still fails, put that module back and swap the other
+	Trash the bad module
+	Close case
 notes:
 	Nothing on the modules shows which one is bad: the player finds it by swapping one and switching the computer on.
