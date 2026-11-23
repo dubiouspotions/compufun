@@ -6,9 +6,12 @@ extends Node3D
 ## of the same rain play: RainShut on the Shop bus, muffled and faint, as heard through the shut door
 ## and windows, and RainOpen on the Street bus, which the door opens up as it swings (ShopDoor).
 
-## The time of day in hours, 0 to 24.
+## The time of day in hours, 0 to 24. Setting it stops a running ease to the next daypart.
 @export_range(0.0, 24.0, 0.01) var hour: float = 13.0:
 	set(value):
+		if _easing != null and not _easing_step:
+			_easing.kill()
+			_easing = null
 		hour = fposmod(value, 24.0)
 		if is_node_ready():
 			_apply()
@@ -20,6 +23,10 @@ extends Node3D
 @export_range(0.0, 24.0, 0.01) var afternoon_hour: float = 19.0
 @export_range(0.0, 24.0, 0.01) var evening_hour: float = 20.0
 @export_range(0.0, 24.0, 0.01) var night_hour: float = 23.0
+## The real seconds that the sky, the light and the lamps take to run forward to the next daypart's
+## hour within a day, easing in and out. A new day, or a jump of the game state (Game.jump), shows
+## its hour at once, and so does 0.
+@export_range(0.0, 30.0, 0.5) var daypart_seconds: float = 6.0
 ## Whether it rains now. Day.rain sets it whenever the day or the daypart changes; the debug menu can
 ## change it in between.
 @export var raining: bool = false:
@@ -52,6 +59,9 @@ var _lamp_energy: Array[float] = []
 var _glows: Array[Node3D] = []
 var _shown_daypart: int = -1
 var _shown_day: Day
+var _shown_jump: int = -1
+var _easing: Tween
+var _easing_step: bool = false
 
 @onready var _sun: DirectionalLight3D = %Sun
 @onready var _skylight: DirectionalLight3D = %Skylight
@@ -97,13 +107,40 @@ func hour_of(daypart: int) -> float:
 
 # Only on a change of day or daypart, so the debug menu can set another hour or weather until the next one.
 func _follow_game() -> void:
-	if Game.daypart == _shown_daypart and Game.day == _shown_day:
+	if Game.daypart == _shown_daypart and Game.day == _shown_day and Game.jump == _shown_jump:
 		return
+	var stepped := _shown_day != null and Game.day == _shown_day and Game.jump == _shown_jump
 	_shown_daypart = Game.daypart
 	_shown_day = Game.day
-	hour = hour_of(Game.daypart)
+	_shown_jump = Game.jump
+	var target := hour_of(Game.daypart)
+	var ahead := fposmod(target - hour, 24.0)
+	if stepped and daypart_seconds > 0.0 and ahead > 0.0 and ahead <= 12.0:
+		_ease_hour(hour + ahead)
+	else:
+		hour = target
 	if Game.day != null:
 		raining = Game.day.rain
+
+
+## The real seconds until [member hour] reaches the daypart's hour, while it runs forward to it; 0
+## when it shows it.
+func seconds_to_daypart() -> float:
+	return maxf(daypart_seconds - _easing.get_total_elapsed_time(), 0.0) if _easing != null else 0.0
+
+
+func _ease_hour(to: float) -> void:
+	if _easing != null:
+		_easing.kill()
+	_easing = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_easing.tween_method(_ease_step, hour, to, daypart_seconds)
+	_easing.tween_callback(func() -> void: _easing = null)
+
+
+func _ease_step(value: float) -> void:
+	_easing_step = true
+	hour = value
+	_easing_step = false
 
 
 func _process(delta: float) -> void:

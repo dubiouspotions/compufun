@@ -1,7 +1,7 @@
 class_name CeilingLight
 extends Node3D
 ## A ceiling light panel: a cold tube that is on only in [member lit_dayparts], blinks on when it
-## switches on, and stutters now and then, more often on later days. The panel glows in the colour
+## switches on (after the sky outside has run forward to the new daypart), and stutters now and then, more often on later days. The panel glows in the colour
 ## of the light. [method cover] blacks the lights out to hide a change in the shop.
 
 ## Every ceiling light, for [method cover].
@@ -84,7 +84,17 @@ func _sync() -> void:
 		_flicker.kill()
 	_set_level(0.0)
 	if lit:
-		_stutter(blink_seconds, randf_range(0.0, blink_delay))
+		_switch_on.call_deferred()  # after the Outside has seen the same change
+
+
+func _switch_on() -> void:
+	if not _lit:
+		return
+	if _flicker != null:
+		_flicker.kill()
+	var outside := get_tree().get_first_node_in_group(&"outside") as Outside
+	var dusk := outside.seconds_to_daypart() if outside != null else 0.0
+	_stutter(blink_seconds, dusk + randf_range(0.0, blink_delay))
 
 
 func _lit_now() -> bool:

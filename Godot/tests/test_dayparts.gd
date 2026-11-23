@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
 ## The day starts in the morning, the second and third arrivals make it midday and afternoon,
-## closing makes it evening, and the sky outside follows.
+## closing makes it evening, and the sky outside follows: it runs forward to each daypart's hour
+## within the day, and shows a new day's or a restored state's hour at once.
 
 const GAME := preload("res://game.gd")
 
@@ -9,6 +10,7 @@ func run() -> void:
 	var outside: Node = load("res://rooms/shop/outside.tscn").instantiate()
 	root.add_child(outside)
 	await process_frame
+	outside.daypart_seconds = 1.0
 	var skater: Customer = load("res://customers/skater_bro.tres")
 	var entrepreneur: Customer = load("res://customers/young_entrepreneur.tres")
 	var hat_guy: Customer = load("res://customers/hat_guy.tres")
@@ -28,15 +30,29 @@ func run() -> void:
 	check("the sky shows the morning", outside.hour, outside.morning_hour)
 	serve()
 	check("midday arrival", [game.arrivals, game.daypart], [2, GAME.Daypart.MIDDAY])
-	check("the sky shows midday", outside.hour, outside.midday_hour)
+	await check_eases(outside, outside.morning_hour, outside.midday_hour, "midday")
 	serve()
 	check("afternoon arrival", [game.arrivals, game.daypart], [3, GAME.Daypart.AFTERNOON])
-	check("the sky shows the afternoon", outside.hour, outside.afternoon_hour)
+	await check_eases(outside, outside.midday_hour, outside.afternoon_hour, "the afternoon")
 	serve()
 	game.close_shop()
 	check("closed: evening", [game.phase, game.daypart], [GAME.Phase.DAY_OVER, GAME.Daypart.EVENING])
-	check("the sky shows the evening", outside.hour, outside.evening_hour)
+	await check_eases(outside, outside.afternoon_hour, outside.evening_hour, "the evening")
 	check("a closed day restores as evening", [game.restore({"phase": "DAY_OVER"}), game.daypart], ["", GAME.Daypart.EVENING])
+	check("a restore to the afternoon shows its hour at once", [game.restore({"arrivals": 3, "daypart": "AFTERNOON"}), outside.hour], ["", outside.afternoon_hour])
+	outside.hour = 2.0
+	game.start_day(day)
+	check("a new day shows the morning at once", outside.hour, outside.morning_hour)
+
+
+## Checks that the sky leaves [param from] at the daypart change, is between the two hours half way,
+## and shows [param to] once the ease is over.
+func check_eases(outside: Node, from: float, to: float, what: String) -> void:
+	check("the sky starts at %s's hour" % what, is_equal_approx(outside.hour, from), true)
+	await create_timer(outside.daypart_seconds * 0.5).timeout
+	check("half way to %s, the sky is between the hours" % what, [outside.hour > from and outside.hour < to, outside.seconds_to_daypart() > 0.0], [true, true])
+	await create_timer(outside.daypart_seconds * 0.6).timeout
+	check("the sky shows %s" % what, [outside.hour, outside.seconds_to_daypart()], [to, 0.0])
 
 
 ## Plays the visitor's drop-off to the end and waits out the gap to the next customer, checking
