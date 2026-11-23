@@ -57,12 +57,12 @@ const SEARCH_LENGTH: int = 40
 @export var key_seconds: Vector2 = Vector2(0.03, 0.09)
 @export_group("Search")
 ## The seconds that a search reads before its first symptom shows, picked between x and y.
-@export var search_seconds: Vector2 = Vector2(1.2, 2.0)
+@export var search_seconds: Vector2 = Vector2(0.6, 1.0)
 ## The seconds that each symptom found takes to show, picked between x and y for each; the more
 ## found, the longer the search.
-@export var hit_seconds: Vector2 = Vector2(0.6, 1.4)
+@export var hit_seconds: Vector2 = Vector2(0.3, 0.7)
 ## The seconds between two seeks of the hard drive while it reads, picked between x and y.
-@export var seek_seconds: Vector2 = Vector2(0.12, 0.4)
+@export var seek_seconds: Vector2 = Vector2(0.2, 0.5)
 ## The hard drive seeking, from the work modem's speaker beside the tower; null is silent.
 @export var hdd_seek: SoundSet = preload("res://sounds/hdd_seek.tres")
 @export_group("")
