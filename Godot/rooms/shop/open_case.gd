@@ -6,7 +6,8 @@ extends Node3D
 ## What the player can use now has a thin pulsing outline, and a screw or an empty screw hole that
 ## can turn a beating ring; where the piece in the hand or a screw can go shows a see-through ghost of
 ## it; the screwdriver hovers over a screw. An empty screw hole in the closed panel shows dark.
-## What lies in the way (Job.blocker), such as a hamster, lies on top of the part that it sits on.
+## What lies in the way (Job.blocker), such as a hamster, lies on top of the part that it sits on; a
+## misplaced piece (Job.misplaced) lies askew on its wrong place, on top of the part that place sits on.
 
 const HOTSPOT: PackedScene = preload("res://rooms/hotspot.tscn")
 const SCREW_MATERIAL: Material = preload("res://materials/metal.tres")
@@ -30,6 +31,10 @@ const PULSE_RING: Shader = preload("res://shaders/pulse_ring.gdshader")
 @export var bob: float = 0.006
 ## The seconds that the screwdriver takes to fade in or out.
 @export var fade_seconds: float = 0.15
+## How a misplaced piece lies on its wrong place: tilted about its width and turned, in degrees. The
+## pieces on every other place lean the other way.
+@export var misplaced_tilt: float = 8.0
+@export var misplaced_turn: float = 20.0
 
 ## The job whose computer this is. Set once, before or after the case enters the tree.
 var job: Job:
@@ -61,9 +66,8 @@ var _turning: Tween
 var _bobbing: Tween
 var _fading: Tween
 var _driver_materials: Array[StandardMaterial3D] = []
-## The model of what lies in the way, and its hotspot; null while nothing does.
-var _blocker_model: Node3D
-var _blocker_hotspot: Hotspot
+# The pieces that lie on a place that isn't theirs (Job.blocker, Job.misplaced), to [model, hotspot].
+var _lying: Dictionary[Piece, Array] = {}
 
 @onready var _places: Node3D = %Places
 @onready var _eye: Marker3D = %Eye
@@ -157,39 +161,73 @@ func _sync() -> void:
 		if piece != null and shown == null:
 			_shown[part.id()] = _show_model(piece, place)
 		(place.get_node("Hotspot") as Hotspot).set_enabled(active and (Game.can_take(job, part) or Game.can_put(job, part)))
-	_sync_blocker()
+	_sync_lying()
 	if _hovered != null and not _hovered.input_ray_pickable:
 		_on_hover(_hovered, -1, false)
 	_sync_highlights()
 
 
-# Shows what lies in the way on top of the part that it sits on, with a hotspot that takes it.
-func _sync_blocker() -> void:
-	var blocker := job.blocker
-	if _blocker_model != null and (blocker == null or _blocker_model.get_meta(&"piece") != blocker):
-		_blocker_model.queue_free()
-		_blocker_model = null
-	if blocker != null and _blocker_model == null:
-		var place := _place(blocker.part.sits_on)
-		if place == null:
-			return
-		var under: Node3D = _shown.get(blocker.part.sits_on.id())
-		_blocker_model = _show_model(blocker, place)
-		if _blocker_model == null:
-			push_error("OpenCase: %s has no model to lie in the way" % blocker.part.resource_path)
-			return
-		_blocker_model.position.y = Part.bounds(under).end.y if under != null else 0.0
-		var box := Part.bounds(_blocker_model)
-		if _blocker_hotspot != null:
-			_blocker_hotspot.queue_free()
-		_blocker_hotspot = HOTSPOT.instantiate() as Hotspot
-		_blocker_hotspot.size = box.size + Vector3.ONE * 0.01
-		_blocker_hotspot.position = _blocker_model.position + box.get_center()
-		place.add_child(_blocker_hotspot)
-		_blocker_hotspot.clicked.connect(func(_h: Hotspot) -> void: Game.take_blocker(job))
-		_watch(_blocker_hotspot)
-	if _blocker_hotspot != null:
-		_blocker_hotspot.set_enabled(active and _blocker_model != null and Game.can_take_blocker(job))
+# Shows each piece that lies on a place that isn't its own, with a hotspot that lifts it.
+func _sync_lying() -> void:
+	var wanted: Dictionary[Piece, Part] = {}
+	if job.blocker != null:
+		wanted[job.blocker] = job.blocker.part.sits_on
+	for place: Part in job.misplaced:
+		wanted[job.misplaced[place]] = place
+	for piece: Piece in _lying.keys():
+		if not wanted.has(piece):
+			(_lying[piece][0] as Node3D).queue_free()
+			_lying.erase(piece)
+	for piece: Piece in wanted:
+		if not _lying.has(piece):
+			var laid := _lay(piece, wanted[piece])
+			if laid.is_empty():
+				continue
+			_lying[piece] = laid
+		(_lying[piece][1] as Hotspot).set_enabled(active and _can_lift(piece, wanted[piece]))
+
+
+# The model of [param piece] lying on [param place], and its hotspot; [] when it can't show.
+func _lay(piece: Piece, place: Part) -> Array:
+	var marker := _place(place)
+	if marker == null:
+		return []
+	var model := piece.make_model()
+	if model == null:
+		return []
+	model.set_meta(&"piece", piece)
+	if piece == job.blocker:
+		var under: Node3D = _shown.get(place.id())
+		model.position.y = Part.bounds(under).end.y if under != null else 0.0
+		marker.add_child(model)
+	else:
+		# Flat in the case, not in the marker's frame: the RAM slots' markers stand the RAM up.
+		var under: Node3D = _shown.get(place.sits_on.id()) if place.sits_on != null else null
+		var lean := 1.0 if Part.IDS.find(place.id()) % 2 == 0 else -1.0
+		model.position = marker.position
+		if under != null:
+			model.position.y = _places.to_local(under.to_global(Vector3(0, Part.bounds(under).end.y, 0))).y
+		model.rotation_degrees = Vector3(misplaced_tilt * lean, misplaced_turn * lean, 0.0)
+		_places.add_child(model)
+	var box := Part.bounds(model)
+	var hotspot := HOTSPOT.instantiate() as Hotspot
+	hotspot.size = box.size + Vector3.ONE * 0.01
+	hotspot.position = box.get_center()
+	model.add_child(hotspot)
+	hotspot.clicked.connect(func(_h: Hotspot) -> void: _lift(piece, place))
+	_watch(hotspot)
+	return [model, hotspot]
+
+
+func _can_lift(piece: Piece, place: Part) -> bool:
+	return Game.can_take_blocker(job) if piece == job.blocker else Game.can_take_misplaced(job, place)
+
+
+func _lift(piece: Piece, place: Part) -> void:
+	if piece == job.blocker:
+		Game.take_blocker(job)
+	else:
+		Game.take_misplaced(job, place)
 
 
 func _show_model(piece: Piece, where: Node3D) -> Node3D:
@@ -282,8 +320,9 @@ func _sync_highlights() -> void:
 			_highlight(_shown.get(part.id()), hotspot)
 		elif Game.hand != null:
 			_add_ghost(Game.hand.part.model, place, hotspot)
-	if _blocker_hotspot != null and _blocker_hotspot.input_ray_pickable:
-		_highlight(_blocker_model, _blocker_hotspot)
+	for laid: Array in _lying.values():
+		if (laid[1] as Hotspot).input_ray_pickable:
+			_highlight(laid[0], laid[1])
 	if _panel_hotspot.input_ray_pickable:
 		_highlight(_panel, _panel_hotspot)
 	for i: int in _screws.size():

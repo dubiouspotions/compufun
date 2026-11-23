@@ -655,8 +655,11 @@ func eject_floppy(job: Job) -> void:
 
 
 ## True when [param job] can switch on: every place holds a piece, except that of the places that
-## take the same part, such as the RAM slots, one is enough. It runs lying and open too, for testing.
+## take the same part, such as the RAM slots, one is enough, and no piece lies misplaced. It runs
+## lying and open too, for testing.
 func can_power_on(job: Job) -> bool:
+	if not job.misplaced.is_empty():
+		return false
 	for place: Part in Part.every():
 		if job.piece(place) == null and not job.places.keys().any(func(other: Part) -> bool: return other.piece_part() == place.piece_part()):
 			return false
@@ -685,7 +688,7 @@ func can_take(job: Job, part: Part) -> bool:
 		return false
 	if job.blocker != null and job.blocker.part.sits_on == part:
 		return false
-	for other: Part in job.places:
+	for other: Part in job.places.keys() + job.misplaced.keys():
 		if other.sits_on == part:
 			return false
 	return true
@@ -708,10 +711,28 @@ func take_blocker(job: Job) -> bool:
 	return true
 
 
+## True when the player can lift the piece that lies misplaced on the place [param part] of
+## [param job] (Job.misplaced) into the empty hand: the computer is off and open.
+func can_take_misplaced(job: Job, part: Part) -> bool:
+	return job.misplaced.has(part) and hand == null and not job.powered and job.case_open
+
+
+## Lifts the misplaced piece off the place [param part] of [param job] into the hand (see
+## [method can_take_misplaced]). It goes in its own place like any piece, and never back on a wrong one.
+func take_misplaced(job: Job, part: Part) -> bool:
+	if not _on_counter(job, "take_misplaced") or not can_take_misplaced(job, part):
+		return false
+	hand = job.misplaced[part]
+	job.misplaced.erase(part)
+	changed.emit()
+	return true
+
+
 ## True when the piece in the hand can go into the place [param part] of [param job]: the place takes
-## it, the computer is off, the case is open, the place is empty, and the part that it sits on is in.
+## it, the computer is off, the case is open, the place is empty with nothing misplaced on it, and the
+## part that it sits on is in.
 func can_put(job: Job, part: Part) -> bool:
-	if hand == null or hand.part != part.piece_part() or job.powered or not job.case_open or job.piece(part) != null:
+	if hand == null or hand.part != part.piece_part() or job.powered or not job.case_open or job.piece(part) != null or job.misplaced.has(part):
 		return false
 	return part.sits_on == null or job.piece(part.sits_on) != null
 
@@ -1230,6 +1251,22 @@ func restore(state: Dictionary) -> String:
 				if each.part != place.piece_part():
 					return _refuse("job %d: the place %s takes %s, not %s" % [i, place_id, place.piece_part().id(), each.part.id()])
 				job.places[place] = each
+		if data.has("misplaced") or data.has("parts"):
+			var lying_wrong: Variant = data.get("misplaced", {})
+			if lying_wrong is not Dictionary:
+				return _refuse("job %d: misplaced must map a place id to a piece, not %s" % [i, lying_wrong])
+			job.misplaced.clear()
+			for place_id: Variant in lying_wrong:
+				var place := Part.named(StringName(str(place_id)))
+				if place == null or place.id() not in Part.IDS:
+					return _refuse("job %d: a computer has no place '%s' for a misplaced piece" % [i, place_id])
+				var pieces: Variant = Job.pieces_from([lying_wrong[place_id]])
+				if pieces is String:
+					return _refuse("job %d: misplaced: %s" % [i, pieces])
+				var each: Piece = pieces[0]
+				if each.part == place.piece_part() or job.places.has(place):
+					return _refuse("job %d: %s can't lie misplaced on %s" % [i, each.part.id(), place_id])
+				job.misplaced[place] = each
 		var mat_pieces: Variant = Job.pieces_from(data.get("mat", []))
 		if mat_pieces is String:
 			return _refuse("job %d: the mat: %s" % [i, mat_pieces])

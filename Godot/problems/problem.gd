@@ -18,6 +18,14 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 ## place takes, lying on the part that it sits on, which doesn't come out until it is out. The
 ## hardware is fixed only once it is out. null for none.
 @export var blocker: Part
+## A part that the customer took out: one place that takes it starts empty, and no piece of it is in
+## the computer, so the player takes a new one from the storage. null for none.
+@export var missing_part: Part
+## The pieces that the customer put in the wrong places: the place that each lies on, to the part of
+## the piece. Such a piece lies askew on a place that doesn't take it, which stays empty until the
+## player lifts the piece off; a place of the piece's own part starts empty. Every place that a piece
+## lies on must have its own piece missing or lying elsewhere. Empty for none.
+@export var misplaced: Dictionary[Part, Part] = {}
 ## For a hardware problem that shows in Windows, as an overheating computer does, until the
 ## hardware is fixed: the seconds after the desktop appears, which is when the startup sound
 ## starts, until Windows stutters and hangs. 0 keeps it running.

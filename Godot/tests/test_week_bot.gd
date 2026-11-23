@@ -52,7 +52,7 @@ const KNOWN_GAME_METHODS: Array[String] = [
 	"offered", "reply_to", "choose", "go_on", "matching_conversation", "coming", "go_to_view",
 	# the repair
 	"focus_job", "job_beside", "lay_down", "can_stand_up", "stand_up", "open_case", "turn_screw", "can_turn",
-	"can_take", "take_part", "can_put", "put_part", "take_new_part", "can_take_blocker", "take_blocker",
+	"can_take", "take_part", "can_put", "put_part", "take_new_part", "can_take_blocker", "take_blocker", "can_take_misplaced", "take_misplaced",
 	"can_return_part", "return_part", "trash_part", "take_from_trash", "connect_cable", "set_powered",
 	"can_power_on", "setup_for", "has_floppy", "can_eject", "eject_floppy", "set_software_fixed", "set_tested",
 	# CompuFunDB and the printout
@@ -392,6 +392,7 @@ func _repair_hardware(job: Job) -> void:
 	for place: Part in Part.every():
 		if job.piece(place) != null and job.piece(place).broken:
 			_replace(job, place)
+	_rearrange(job)
 	if not game.open_case(job, false):
 		_fail("the side panel won't go back on")
 		return
@@ -404,6 +405,26 @@ func _turn_screws(job: Job, out: bool) -> void:
 	for i: int in job.panel_screws.size():
 		if job.panel_screws[i] == out and not game.turn_screw(job, i):
 			_fail("screw %d won't turn %s" % [i, "out" if out else "in"])
+
+
+# Lifts the misplaced pieces onto the trash, puts a new piece from the storage in each place whose
+# part is missing, and the lifted pieces from the trash in their own places.
+func _rearrange(job: Job) -> void:
+	var lifted := 0
+	for place: Part in job.misplaced.keys():
+		if not (game.take_misplaced(job, place) and game.trash_part()):
+			_fail("the %s misplaced on %s won't come off" % [job.misplaced[place].part.id(), place.id()])
+			return
+		lifted += 1
+	for place: Part in Part.every():
+		if job.piece(place) == null and place.piece_part() == job.problem.missing_part:
+			if not (game.take_new_part(place.piece_part()) and game.put_part(job, place)):
+				_fail("a new %s for the missing one won't go in" % place.piece_part().id())
+				return
+	for i: int in lifted:
+		if not (game.take_from_trash() and game.put_part(job)):
+			_fail("the lifted %s won't go in its own place" % (game.hand.part.id() if game.hand != null else "piece"))
+			return
 
 
 # Takes the pieces that sit on [param place] out onto the trash, the broken piece into the trash, a

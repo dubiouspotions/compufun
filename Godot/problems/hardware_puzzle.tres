@@ -1,7 +1,23 @@
 [gd_resource type="Resource" script_class="Problem" format=3]
 
+[ext_resource type="Script" path="res://parts/part.gd" id="1_ocrp4"]
 [ext_resource type="Script" path="res://problems/problem.gd" id="1_problem"]
+[ext_resource type="Resource" path="res://parts/cpu.tres" id="2_y8gsw"]
+[ext_resource type="Resource" path="res://parts/hard_drive.tres" id="3_0p1mh"]
+[ext_resource type="Resource" path="res://parts/ram_1.tres" id="4_282g6"]
+[ext_resource type="Resource" path="res://parts/gpu.tres" id="5_ekyki"]
+[ext_resource type="Resource" path="res://parts/ram.tres" id="6_pavl3"]
+[ext_resource type="Resource" path="res://parts/ram_2.tres" id="7_yr5po"]
+[ext_resource type="Resource" path="res://parts/fan.tres" id="8_7wmv5"]
 
 [resource]
 script = ExtResource("1_problem")
 short_name = &"hardware_puzzle"
+missing_part = ExtResource("2_y8gsw")
+misplaced = Dictionary[ExtResource("1_ocrp4"), ExtResource("1_ocrp4")]({
+ExtResource("2_y8gsw"): ExtResource("3_0p1mh"),
+ExtResource("4_282g6"): ExtResource("5_ekyki"),
+ExtResource("5_ekyki"): ExtResource("6_pavl3"),
+ExtResource("3_0p1mh"): ExtResource("6_pavl3"),
+ExtResource("7_yr5po"): ExtResource("8_7wmv5")
+})
