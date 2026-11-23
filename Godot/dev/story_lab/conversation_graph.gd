@@ -264,9 +264,27 @@ func set_flags(reply: Reply, text: String) -> String:
 	var parsed := StoryFormat.parse_flags(text, "flags")
 	if not parsed.errors.is_empty():
 		return _without_place(parsed.errors)
-	reply.set_flags = (parsed.value as Reply).set_flags
-	_changed(reply)
+	remember(reply, (parsed.value as Reply).set_flags)
 	return ""
+
+
+## Makes [param reply] remember [param flags] as it starts: fact to number, 0 to clear it.
+func remember(reply: Reply, flags: Dictionary[StringName, int]) -> void:
+	reply.set_flags = flags.duplicate()
+	_changed(reply)
+
+
+## Opens the "remembers" editor of [param reply] under its "remembers" words (or its box). Closing
+## the editor sets what it remembers, as [method remember] does.
+func edit_remembers(reply: Reply) -> void:
+	if _read_only:
+		return
+	var editor := StoryFlagsEditor.make(facts)
+	editor.edit(reply.set_flags)
+	StoryConditionEditor.popup(_near(reply, &"set_flags"), "When this plays, the story remembers:", editor, func() -> void:
+		var flags := editor.flags()
+		if flags != reply.set_flags:
+			remember(reply, flags))
 
 
 ## Opens the condition editor of [param part], a Choice or an answer of one, under its "only if"
@@ -692,7 +710,7 @@ func _reply_box(reply: Reply) -> GraphNode:
 			_spot(head, chip, reply, &"when", StoryFormat.write_condition(reply.when) if reply.when != null else "", func(text: String) -> String: return set_condition(reply, text))
 		else:
 			_spot(head, null, reply, &"when", "", func(text: String) -> String: return set_condition(reply, text))
-	var sets := _chip("sets: " + StoryFormat.write_flags(reply.set_flags), false) if not reply.set_flags.is_empty() else null
+	var sets := _chip("remembers: " + StoryFlagsEditor.describe(reply.set_flags), false) if not reply.set_flags.is_empty() else null
 	_spot(head, sets, reply, &"set_flags", StoryFormat.write_flags(reply.set_flags), func(text: String) -> String: return set_flags(reply, text))
 	for i: int in reply.lines.size():
 		box.add_child(_line_row(reply, i))
@@ -953,6 +971,9 @@ func _open_spot(part: Resource, field: StringName, reveal: bool = false) -> void
 	if field == &"when":
 		edit_condition(part)
 		return
+	if field == &"set_flags":
+		edit_remembers(part)
+		return
 	var spot: Array = _spots.get(_spot_key(part, field), [])
 	if spot.is_empty() or _read_only:
 		return
@@ -974,28 +995,13 @@ func _open_spot(part: Resource, field: StringName, reveal: bool = false) -> void
 		if problem != "":
 			error.text = problem
 			error.show()
-	var editor: Control
-	if field == &"text" or field == &"brief":
-		editor = _text_editor(said, commit)
-		# A text gets the whole width of its box, under the row that shows it.
-		var row: Control = anchor
-		while not (row.get_parent() is GraphNode):
-			row = row.get_parent()
-		row.get_parent().add_child(holder)
-		row.get_parent().move_child(holder, row.get_index() + 1)
-	else:
-		var line := LineEdit.new()
-		line.text = said
-		line.custom_minimum_size.x = 160
-		line.select_all_on_focus = true
-		line.placeholder_text = {&"when": "flag, not flag, days 2-4", &"set_flags": "flag, flag=2, flag=0"}.get(field, "")
-		line.text_submitted.connect(commit)
-		line.focus_exited.connect(func() -> void:
-			if line.text != said:
-				commit.call(line.text))
-		editor = line
-		anchor.get_parent().add_child(holder)
-		anchor.get_parent().move_child(holder, anchor.get_index())
+	var editor := _text_editor(said, commit)
+	# A text gets the whole width of its box, under the row that shows it.
+	var row: Control = anchor
+	while not (row.get_parent() is GraphNode):
+		row = row.get_parent()
+	row.get_parent().add_child(holder)
+	row.get_parent().move_child(holder, row.get_index() + 1)
 	_paper(editor)
 	editor.gui_input.connect(func(event: InputEvent) -> void:
 		var key := event as InputEventKey
@@ -1126,7 +1132,7 @@ func _reply_menu(reply: Reply) -> Array[Array]:
 	var items: Array[Array] = [
 		["Add a line", func() -> void: _open_spot_later(add_line(reply), &"text")],
 		["Add a choice", func() -> void: _open_spot_later(add_choice(reply), &"text")],
-		["Sets flags...", func() -> void: _open_spot(reply, &"set_flags")],
+		["Remembers...", func() -> void: edit_remembers(reply)],
 	]
 	if _parent_of(reply) is Choice:
 		items.append(["Only if...", func() -> void: _open_spot(reply, &"when")])
