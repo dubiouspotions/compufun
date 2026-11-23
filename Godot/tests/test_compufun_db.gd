@@ -133,6 +133,12 @@ func _check_screen() -> void:
 	root.add_child(printer)
 	_press(db, KEY_RIGHT)
 	check("the cursor skips the ruled-out causes", db.call("_selected_cause").cause_name(), "Faulty CPU fan")
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.position = Vector2(54.5, 6.5) * Vector2(8, 16)  # the third cause, Faulty CPU fan
+	db.call("_on_click", click)
+	check("a click on a cause picks it and prints nothing", [db.call("_selected_cause").cause_name(), printer.get("_lines")], ["Faulty CPU fan", PackedStringArray()])
 	check("F prints outside SEARCH", _press(db, KEY_F), true)
 	var page: PackedStringArray = printer.get("_lines")
 	check("a FIX page for the cause", [page[0].begins_with("CompuFunDB 1.0  FIX  "), page[2], page[5]], [true, "SEARCH: Restarts by itself", "Faulty CPU fan"])
