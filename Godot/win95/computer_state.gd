@@ -114,6 +114,22 @@ func uninstall(folder: Win95File) -> void:
 	_changed()
 
 
+## Ends every task that is a Virus, then deletes for good every file on the desktop and drive C that
+## is one and every StartUp shortcut to one (Win95Setup.remove_files), as CompuFun AntiVirus's
+## Clean does.
+## Returns how many files it deleted.
+func remove_viruses() -> int:
+	if setup == null:
+		return 0
+	for task in tasks():
+		if task is Virus:
+			task.stop()
+	var removed := setup.remove_files(Virus.infects)
+	if removed > 0:
+		_changed()
+	return removed
+
+
 func _remove_shortcuts(container: Array, inside: String) -> void:
 	for i in range(container.size() - 1, -1, -1):
 		var file: Win95File = container[i]
