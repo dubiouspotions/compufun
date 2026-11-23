@@ -37,7 +37,7 @@ func run() -> void:
 	var db: Control = load("res://compufun_db/compufun_db.tscn").instantiate()  # untyped: CompuFunDB names Game
 	root.add_child(db)
 	await process_frame
-	check("the software fix has no Test step", _fixes(db), ["-- Software --", "Unmute"])
+	check("the software fix has no Test step", _fixes(db), ["-- Software --"] + Array((load("res://problems/no_sound.tres") as Problem).software_steps))
 	var down := InputEventKey.new()
 	down.keycode = KEY_DOWN
 	down.pressed = true

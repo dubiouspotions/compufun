@@ -4,6 +4,8 @@ symptoms:
 		shows: the volume is muted in Windows
 		category: In Windows
 software steps:
-	Unmute
+	Connect the VGA cable to the computer
+	Switch it on and wait for Windows to start
+	Click the speaker by the clock and untick Mute
 notes:
 	NOTE - ONLY DUPLICATE ISSUE
