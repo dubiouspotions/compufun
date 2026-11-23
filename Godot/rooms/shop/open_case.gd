@@ -512,6 +512,8 @@ func _sync_highlights() -> void:
 			_lay_flat(_ghosts.back(), _pile_height(pile), job.mat.size())
 	if _panel_hotspot.input_ray_pickable:
 		_highlight(_panel, _panel_hotspot)
+	if job.powered and job.case_open:  # nothing comes out of a running computer: the button that stops it
+		_highlight($Shell/PowerButton as MeshInstance3D, null)
 	for i: int in _screws.size():
 		var head := _screws[i][0] as MeshInstance3D
 		var hotspot := _screws[i][1] as Hotspot
