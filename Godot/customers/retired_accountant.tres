@@ -23,6 +23,7 @@
 [ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="app_volume_control"]
 [ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="app_wordpad"]
 [ext_resource type="Material" path="res://materials/tan_plastic.tres" id="case_tan"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/high_contrast_white_extra_large.tres" id="scheme_hc_white_xl"]
 [ext_resource type="Script" path="res://customers/hardware.gd" id="hardware_script"]
 [ext_resource type="PackedScene" path="res://props/fedora.tscn" id="hat_fedora"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/calculator_spreadsheet_32.png" id="icon_calculator_spreadsheet"]
@@ -211,6 +212,7 @@ children = Array[Resource]([SubResource("Resource_letter")])
 
 [sub_resource type="Resource" id="Setup_accountant"]
 script = ExtResource("9_86j8n")
+palette = ExtResource("scheme_hc_white_xl")
 drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResource("Resource_docs")])
 installed_apps = PackedStringArray("Calculator", "Notepad")
 pointer_trails = 7
