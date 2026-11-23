@@ -64,6 +64,10 @@ func run() -> void:
 	var names: PackedStringArray = dialog.call(&"program_names")
 	check("Ctrl+Alt+Del opens Close Program", dialog.get_node("%TitleBar").title, "Close Program")
 	check("it lists the windows, then the task", [names.has("Windows"), names[names.size() - 1]], [true, "Bizopp"])
+	check("Explorer and Systray come before the task", [names.find("Explorer") < names.find("Systray"), names.find("Systray") == names.size() - 2], [true, true])
+	await process_frame
+	var task_buttons: Dictionary = win95.get_node(^"TaskBar").get(&"_buttons")
+	check("and the dialog has no taskbar button", task_buttons.has(dialog.get_instance_id()), false)
 	dialog.call(&"select", names.size() - 1)
 	dialog.get_node("%EndTask").pressed.emit()
 	await process_frame
@@ -101,7 +105,12 @@ func run() -> void:
 	(win95.get("_context") as Node).call(&"hide")  # as a click on the item does
 	win95.call(&"_on_action", &"close_program")
 	check("whose Close Program... opens it", [_front(desktop).get_node("%TitleBar").title, _close_programs(desktop)], ["Close Program", 1])
-	_front(desktop).get_node("%Cancel").pressed.emit()
+	var programs: PackedStringArray = _front(desktop).call(&"program_names")
+	_front(desktop).call(&"select", programs.find("Explorer"))
+	_front(desktop).get_node("%EndTask").pressed.emit()
+	await process_frame
+	check("End Task on Explorer opens Shut Down Windows, as in Win95", _front(desktop).get_node("%TitleBar").title, "Shut Down Windows")
+	_front(desktop).call(&"close")
 	await process_frame
 
 	root.push_input(_ctrl_alt(KEY_END))

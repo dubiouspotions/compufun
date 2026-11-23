@@ -8,6 +8,7 @@
 [node name="CloseProgram" type="PanelContainer"]
 theme = ExtResource("theme")
 script = ExtResource("script")
+in_taskbar = false
 shut_down = ExtResource("shut_down")
 
 [node name="VBox" type="VBoxContainer" parent="."]

@@ -33,7 +33,8 @@ func _queue_sync() -> void:
 
 func _sync() -> void:
 	_sync_queued = false
-	var open := desktop.windows()
+	var open: Array[Control] = []
+	open.assign(desktop.windows().filter(func(window: Control) -> bool: return window.get(&"in_taskbar") != false))
 	for id: int in _buttons.keys():
 		if not is_instance_id_valid(id) or not open.has(instance_from_id(id)):
 			_buttons[id].queue_free()

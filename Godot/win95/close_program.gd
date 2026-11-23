@@ -1,7 +1,8 @@
 extends "res://win95/window.gd"
-## Win95's Close Program dialog, which Ctrl+Alt+Del opens: the open windows by title, then the
-## computer's running tasks (BackgroundTask.task_name), the first selected. End Task closes the
-## selected window, as its X does, or stops the selected task; Shut Down opens Shut Down Windows.
+## Win95's Close Program dialog, which Ctrl+Alt+Del opens: the open windows by title, Explorer and
+## Systray, then the computer's running tasks (BackgroundTask.task_name), the first selected. End
+## Task closes the selected window, as its X does, or stops the selected task; on Explorer it opens
+## Shut Down Windows, as Win95 did, and on Systray it does nothing. Shut Down opens Shut Down Windows.
 ## Pressing Ctrl+Alt+Del again while it is open restarts the computer ([method restart]).
 
 ## The window that Shut Down opens.
@@ -11,8 +12,11 @@ extends "res://win95/window.gd"
 ## How long the power stays off while it restarts, in seconds.
 @export_range(0.0, 10.0) var restart_off_seconds: float = 1.0
 
-## The windows and tasks that the list shows, row by row.
-var _entries: Array[Node] = []
+## Win95's own programs, listed between the windows and the tasks.
+const _SYSTEM: Array[StringName] = [&"Explorer", &"Systray"]
+
+## What the list shows, row by row: a window, a BackgroundTask, or a name in _SYSTEM.
+var _entries: Array = []
 
 @onready var _list: ItemList = %Programs
 
@@ -51,9 +55,13 @@ func select(index: int) -> void:
 ## unsaved work asks first); a task stops, and its file is free again.
 func end_task() -> void:
 	var selected := _list.get_selected_items()
-	var entry: Node = _entries[selected[0]] if not selected.is_empty() and selected[0] < _entries.size() else null
+	var entry: Variant = _entries[selected[0]] if not selected.is_empty() and selected[0] < _entries.size() else null
 	close()
-	if entry is BackgroundTask:
+	if entry is StringName:
+		var desktop := _desktop()
+		if entry == &"Explorer" and desktop != null:
+			desktop.open(shut_down)
+	elif entry is BackgroundTask:
 		(entry as BackgroundTask).stop()
 	elif is_instance_valid(entry):
 		entry.call(&"request_close")
@@ -80,7 +88,7 @@ func _fill() -> void:
 	if desktop == null or not visible:
 		return
 	var selected := _list.get_selected_items()
-	var kept: Node = _entries[selected[0]] if not selected.is_empty() and selected[0] < _entries.size() else null
+	var kept: Variant = _entries[selected[0]] if not selected.is_empty() and selected[0] < _entries.size() else null
 	_entries.clear()
 	_list.clear()
 	for window: Control in desktop.windows():
@@ -88,6 +96,9 @@ func _fill() -> void:
 			var bar := window.get_node_or_null(^"%TitleBar")
 			_entries.append(window)
 			_list.add_item(str(bar.get(&"title")) if bar != null else String(window.name))
+	for program: StringName in _SYSTEM:
+		_entries.append(program)
+		_list.add_item(program)
 	if desktop.computer != null:
 		for task: BackgroundTask in desktop.computer.tasks():
 			_entries.append(task)

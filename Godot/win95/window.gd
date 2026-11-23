@@ -23,6 +23,8 @@ enum { _LEFT = 1, _TOP = 2, _RIGHT = 4, _BOTTOM = 8 }
 
 ## The player can resize it by its frame and maximize it. Dialogs keep their size, as in Win95.
 @export var resizable := false
+## Whether the taskbar has a button for the window. Win95's own Close Program dialog has none.
+@export var in_taskbar := true
 
 ## True while the window is minimized: hidden, but still open, with its taskbar button.
 var is_minimized := false
