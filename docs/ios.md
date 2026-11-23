@@ -74,6 +74,9 @@ Export into an empty folder: an export over an old one logs errors about the ass
   drag to scroll. Its KEYS button shows a PC keyboard with sticky Ctrl, Alt and Shift
   (Ctrl+Alt+Del: Ctrl, Alt, Del), which sends real key events. Both panels move by their grip
   bars and keep their places in `user://touch_controls.cfg`. Unverified on a device.
+- **The OS keyboard:** text fields inside the screen buffers never raise it (the touch keyboard types
+  there). Elsewhere (F9's note, the Story Lab), `TouchControls` lifts the focused field's CanvasLayer
+  above it, by the caret line in a TextEdit, and puts it back when the keyboard goes.
 
 ## What a real port needs
 
