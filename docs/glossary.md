@@ -96,7 +96,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Part**: One kind of computer part: motherboard, CPU, fan, graphics card or hard drive (`Part`, `parts/<id>.tres`). Every computer has one of each, and a part can sit on another (the fan on the CPU).
 *Avoid:* component, hardware item.
 
-**Piece**: One real part: which part it is and whether it is broken (`Piece`). A piece sits in a computer's place, lies on the mat, or is in the hand.
+**Piece**: One real part: which part it is and whether it is broken (`Piece`). A piece sits in a computer's place, lies misplaced on another place, lies on the mat, is in the hand, or lies in the trash.
 *Avoid:* item, instance.
 
 **Unused piece**: A piece that the player took from a box in the Storage View and hasn't put in a computer yet (`Piece.unused`). Only an unused piece goes back into its box; a piece that was in a computer goes in the trash.
@@ -108,8 +108,13 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Side panel**: The panel that the player lifts off a computer to reach its parts, held by two screws (`Job.case_open`, `Job.panel_screws`). In the Workview the computer stands until the player clicks its top; then it lies on its side, the side panel up (`Job.lying`), in every view until the player stands it up with the panel on. Taken off, the panel leans against the back of the case until a click puts it back on.
 *Avoid:* lid, cover, shell.
 
-**Mat**: The strip in front of an open computer where the player lays the pieces that they took out (`Job.mat`).
+**Mat**: The strip in front of an open computer where the player lays the pieces that they took out, in two piles either side of the screwdriver's outline (`Job.mat`).
 *Avoid:* tray, bench.
+
+**Misplaced piece**: A piece that the customer put on a place of another kind; it keeps that place empty until the player lifts it off (`Problem.misplaced`, `Job.misplaced`).
+*Avoid:* loose part, wrong part.
+
+**Missing part**: A part that the customer took out: one place that takes it starts empty, and the player takes a new one from the storage (`Problem.missing_part`).
 
 **Hand**: The one piece that the player holds (`Game.hand`). Its model shows low in the view, held in front of the camera, with its name (`rooms/shop/hand.tscn`). The player puts it somewhere by clicking there or by dragging it there.
 *Avoid:* inventory, cursor item.

@@ -29,7 +29,7 @@ const _HOTSPOT := preload("res://rooms/hotspot.tscn")
 @export var button_hover_color: Color = Color(1.0, 0.84, 0.35)
 ## How long the case takes to tip over onto its side, or back up, in seconds.
 @export var tip_seconds: float = 0.5
-## Plays as the case tips while pieces lie loose in it (Job.misplaced).
+## Plays as the case tips while pieces lie misplaced in it (Job.misplaced).
 @export var rattle_sound: SoundSet = preload("res://sounds/part_rattle.tres")
 ## The power light's colour while the computer is on, and while it is off.
 @export var power_on_color: Color = Color(0.3, 1.0, 0.3)
