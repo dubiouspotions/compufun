@@ -68,9 +68,31 @@ func _ready() -> void:
 	Game.changed.connect(_sync)
 	if Game.week != null:
 		Game.start_day(Game.week.days[0])
+		_restore_from_args()
 	else:
 		_show_story_errors()
 	_sync()
+
+
+# A debug run started with "-- --restore <file>" starts in the state that the file holds, in the
+# format of Game.snapshot() (an F2 preset or "Copy state").
+func _restore_from_args() -> void:
+	var args := OS.get_cmdline_user_args()
+	var at := args.find("--restore")
+	if not OS.is_debug_build() or at < 0:
+		return
+	var path := args[at + 1] if at + 1 < args.size() else ""
+	var text := FileAccess.get_file_as_string(path)
+	if text.is_empty():
+		push_error("--restore: can't read '%s': %s" % [path, error_string(FileAccess.get_open_error())])
+		return
+	var state: Variant = JSON.parse_string(text)
+	if not state is Dictionary:
+		push_error("--restore: '%s' is not a JSON object" % path)
+		return
+	var refused := Game.restore(state)
+	if refused != "":
+		push_error("--restore: Game refused '%s': %s" % [path, refused])
 
 
 # The loading screen shows them first; this box is for a run of main.tscn alone.

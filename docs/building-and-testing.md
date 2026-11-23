@@ -28,6 +28,14 @@ it. Parse-check the scripts you changed:
 A script that uses an autoload, such as `Game`, always fails this check with "Identifier not
 found: Game": the check does not load autoloads. That line is not your error; run the scene.
 
+To run the game straight into a state, give it a JSON file in the format of `Game.snapshot()` (an
+F2 preset, or what F2's Copy state copies); a debug run restores it once the main scene is up:
+
+```sh
+echo '{"day": 1, "phase": "OPEN", "db_day": 1, "view": "CompuFunDB"}' > /tmp/db.json
+"$GODOT" --path Godot -- --restore /tmp/db.json   # CompuFunDB, started up for the day
+```
+
 After a pull, a class that a teammate added (`class_name`) can be missing from the class cache, so
 every script that uses it fails with "Identifier ... not declared", and `--import` does not fix
 it. An editor scan does: open the project in the editor, or run
