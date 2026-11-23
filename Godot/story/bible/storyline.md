@@ -43,8 +43,8 @@ Who comes when, and what each visit is for, is in the story files: `story/days/`
 | --- | --- | --- |
 | Skater bro | from day 1 | a buddy gave him Cambion on floppies; hooked on day 5, clearly corrupted on day 7 |
 | Young entrepreneur | from day 2 | the boot floppy; Cambion glitches his voice |
-| Old dude | from day 6 | |
-| Hat guy | from day 7 | |
+| Old dude | never | his visits after day 3 were cut |
+| Hat guy | from day 6 | shows off his computer without parts on day 6 |
 | Activist guy | never | researches Cambion, and leaves town on day 6 |
 | Nice lady, Office girl, Attractive guy, Nice guy | never | |
 

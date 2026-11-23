@@ -1,6 +1,6 @@
 weather: clear
 warp: 1
-on start: hat_guy_runs_cambion, sign_customer_x=0
+on start: sign_customer_x=0
 notes:
 	The ending times. The week ends after it, so anything goes.
 	After the evening, space and time bluescreen.

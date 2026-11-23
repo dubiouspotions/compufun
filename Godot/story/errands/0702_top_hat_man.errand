@@ -1,0 +1,19 @@
+customer: top_hat_man
+problem: broken_hard_drive
+brief:
+	A rich mogul (Cole Vanderbilt on his computer). He wants his hard drive replaced, won't say what's wrong with it, and insists that the old one is thrown away.
+
+== drop-off
+(neutral) Good day, dear sir. I come in a matter of great importance.
+- Welcome to CompuFun!
+- Tell me more and I'll see if I can help you.
+(happy) I must say I really appreciate your store! So small and out of the way. Just perfect.
+- Thanks, I guess...
+- So, how can I help you?
+(thinking) I really need to get my hard drive replaced.
+- What's wrong with it?
+	(angry) That's really none of your business! Prying like that will not get you far in life.
+	- Oh, I'm sorry. I didn't mean to pry. Just trying to do my job.
+	- Woha man, calm down.
+	(neutral) Just change the hard drive. And don't forget to throw away the old one.
+	- Don't worry we always throw away the parts we don't use.
