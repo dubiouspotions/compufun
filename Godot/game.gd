@@ -23,6 +23,7 @@ enum Visit {
 	NONE, ## Nobody is in the shop.
 	DROP_OFF, ## The visitor brings a computer.
 	PICKUP, ## The visitor takes a finished computer home.
+	EVENT, ## The visitor pops up behind the counter for their errand's event ([method waiting_event]).
 }
 
 ## The time of day. The customers and closing move it forward; time does not pass on its own.
@@ -42,8 +43,12 @@ enum VisitorState {
 	WALKING_OUT, ## The visitor has handed the computer over and walks from the counter to the door.
 	WAITING, ## The visitor's computer stands on the counter while they wait beside it ([constant Errand.Brings.SHOWS]), until [method talk_to_visitor].
 	OUTSIDE, ## The visitor walked out the door and walks away down the alley; the phone works again.
+	POPPING_UP, ## The visitor of an EVENT pops up from behind the counter and steps to it; the room calls [method customer_arrived] then.
 }
 
+## The views from which a turn to the Main view lets an event in once the next customer is due
+## ([method waiting_event]).
+const SIDE_VIEWS: Array[StringName] = [&"Left", &"Right"]
 ## The places on the counter. A full counter holds back the next drop-off.
 const MAX_JOBS: int = 4
 ## The most errand codes that a Day may have: the most visitors that it brings.
@@ -126,8 +131,10 @@ var db_day: int = 0
 ## What the visitor says while TALKING, or what the called customer says on the phone while
 ## CALLING (no lines: nobody answers, see [method rings_out]); null when no conversation matches.
 var conversation: Conversation
-## The leaving lines that the visitor calls out after the dialogue box closed, in order, as they walk
-## out (or wait); empty for none. Cleared when the visitor goes out of the door or talks again.
+## The lines that the visitor calls out outside the dialogue box, in order: the leaving lines after the
+## box closed, as they walk out (or wait), or an event's pop-up line as they pop up
+## ([member Conversation.pop_up]); empty for none. Cleared when the visitor goes out of the door or
+## talks again.
 var leaving_lines: Array[DialogueLine] = []
 ## Goes up every time a visitor starts to walk in or a waiting visitor starts their pickup, also on
 ## [method restore]. A scene that remembers it can tell a new visit from a re-read of the same one.
@@ -235,16 +242,22 @@ func start_day(new_day: Day) -> void:
 func go_to_view(view_name: StringName) -> void:
 	if view_name == &"" or view_name == view:
 		return
+	var from := view
 	view = view_name
+	if view == &"Main" and from in SIDE_VIEWS and _arrival_due():
+		_try_event()
 	changed.emit()
 
 
 ## The room calls this when the visitor reaches the counter: TALKING, with the first conversation
-## that matches. A pickup visitor with no matching conversation says a short thanks.
+## that matches. A pickup visitor with no matching conversation says a short thanks. A visitor who
+## popped up for an event turns the player to the Main view, to talk.
 func customer_arrived() -> void:
-	if visitor_state != VisitorState.WALKING_IN:
-		push_error("Game.customer_arrived: no visitor is walking in (visitor state %s)" % VisitorState.find_key(visitor_state))
+	if visitor_state not in [VisitorState.WALKING_IN, VisitorState.POPPING_UP]:
+		push_error("Game.customer_arrived: no visitor is walking in or popping up (visitor state %s)" % VisitorState.find_key(visitor_state))
 		return
+	if visitor_state == VisitorState.POPPING_UP:
+		view = &"Main"
 	visitor_state = VisitorState.TALKING
 	_start_talk()
 	changed.emit()
@@ -348,8 +361,9 @@ func load_story(drafts: Dictionary[String, String] = {}) -> PackedStringArray:
 ## flags as they are, with the day's [member Day.set_flags] on top and the customer not gone; the
 ## errand's conversations not yet seen. Then the conversation for [param trigger] plays:
 ## [constant Conversation.Trigger.ARRIVE] with the customer at the counter, PICKUP with them at the
-## counter and their computer fixed and tested on it, PHONE with the call on about that computer.
-## For the Story Lab's Play here. Returns "" or why it can't, and then keeps the state.
+## counter and their computer fixed and tested on it, PHONE with the call on about that computer,
+## EVENT with them popping up behind their computer, not yet repaired. For the Story Lab's Play
+## here. Returns "" or why it can't, and then keeps the state.
 func play_errand(to_play: Errand, trigger: Conversation.Trigger = Conversation.Trigger.ARRIVE) -> String:
 	if to_play == null or to_play.file == "":
 		return _refuse_play("play_errand needs an errand from a story file, not %s" % to_play)
@@ -382,8 +396,13 @@ func play_errand(to_play: Errand, trigger: Conversation.Trigger = Conversation.T
 				state.merge({"visitor": target.customer.resource_path, "visit": "PICKUP", "visitor_state": "TALKING"})
 			else:
 				state.merge({"phase": "CALLING", "calling_slot": 0}, true)
+		Conversation.Trigger.EVENT:
+			if target.brings == Errand.Brings.NOTHING:
+				return _refuse_play("%s brings no computer, and an event comes while it is on the counter" % target.file_name())
+			state.merge({"jobs": [{"errand": target.file_name(), "slot": 0}], "focus_slot": 0,
+					"visitor": target.customer.resource_path, "visit": "EVENT", "visitor_state": "POPPING_UP"})
 	var refused := restore(state)
-	if refused == "" and visitor != null and errand != target:
+	if refused == "" and visitor_state == VisitorState.TALKING and errand != target:
 		errand = target  # another alternative of the same customer matched first
 		_start_talk()
 		changed.emit()
@@ -1450,6 +1469,16 @@ func restore(state: Dictionary) -> String:
 			return _refuse("%s picks up, but has no fixed and tested computer, nor one that they show" % _who(new_visitor))
 		new_pickup = theirs[0]
 		new_errand = new_pickup.errand
+	elif new_visit == Visit.EVENT:
+		if new_visitor_state == VisitorState.WAITING:
+			return _refuse("%s popped up for an event, so they don't wait; WAITING is for a drop-off that shows a computer" % _who(new_visitor))
+		var theirs := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.errand != null and j.errand.day_number() == number \
+				and j.errand.conversations.any(func(c: Conversation) -> bool: return c.trigger == Conversation.Trigger.EVENT))
+		if theirs.is_empty():
+			return _refuse("%s is in for an event, but no computer of theirs from an errand of day %d with an event is on the counter" % [_who(new_visitor), number])
+		new_errand = theirs[0].errand
+	if new_visitor_state == VisitorState.POPPING_UP and new_visit != Visit.EVENT:
+		return _refuse("%s pops up, but only an EVENT visitor pops up, not a %s one" % [_who(new_visitor), Visit.find_key(new_visit)])
 	if (new_phase == Phase.CALLING) != (new_calling != null):
 		return _refuse("calling_slot is set exactly while the phase is CALLING")
 	if new_calling != null and not new_calling.done:
@@ -1521,6 +1550,9 @@ func _process(delta: float) -> void:
 	_heat(delta)
 	if phase == Phase.CALLING:
 		return
+	if focus != null and focus.case_open and view == &"Workview" and _try_event():
+		changed.emit()
+		return
 	if phase == Phase.OPEN and visitor == null and _has_room():
 		if jobs.is_empty() and not _first_wait:
 			_wait = minf(_wait, _waited + day.idle_wait_seconds)
@@ -1571,7 +1603,7 @@ func _try_arrival() -> bool:
 	if phase != Phase.OPEN or visitor != null or phone_off_hook or not _has_room():
 		return false
 	var next := _next_arrival()
-	if next < 0 or not _arrival_due():
+	if next < 0 or not _arrival_due() or waiting_event() != null:
 		return false
 	arrivals = next + 1
 	daypart = daypart_of(day, arrivals)
@@ -1585,6 +1617,39 @@ func _has_room() -> bool:
 		return true
 	var next := _next_arrival()
 	return next >= 0 and coming(next).brings == Errand.Brings.NOTHING
+
+
+## The errand whose event comes next, or null: in the midday of an open shop with nobody in it and
+## the phone on the hook, an errand of today whose computer is on the counter, whose customer is not
+## gone for good, and that has an EVENT conversation that matches and hasn't played. Until it comes,
+## it holds back the next customer. It comes while the player is in the Workview with the computer in
+## focus open, or as they turn to the Main view from a side view ([constant SIDE_VIEWS]) once the
+## next customer is due.
+func waiting_event() -> Errand:
+	if phase != Phase.OPEN or daypart != Daypart.MIDDAY or visitor != null or phone_off_hook:
+		return null
+	for job: Job in jobs:
+		var e := job.errand
+		if e == null or e.day_number() != day_number or is_gone(e.customer):
+			continue
+		var event := matching_conversation(e, Conversation.Trigger.EVENT)
+		if event != null and not seen.has(String(event.id)):
+			return e
+	return null
+
+
+# Lets the waiting event in: its customer pops up (POPPING_UP) and calls out its pop-up line. True
+# when one came.
+func _try_event() -> bool:
+	var e := waiting_event()
+	if e == null:
+		return false
+	_set_visitor(e, Visit.EVENT)
+	visitor_state = VisitorState.POPPING_UP
+	var event := matching_conversation(e, Conversation.Trigger.EVENT)
+	if event.pop_up != null:
+		leaving_lines = [event.pop_up]
+	return true
 
 
 ## The errand that comes for the errand code at [param index] in today's [method Day.codes], if it
@@ -1728,19 +1793,20 @@ func _set_visitor(visiting: Errand, why: Visit) -> void:
 
 
 ## Picks what the TALKING visitor says, and remembers that it played. A pickup visitor with no
-## PICKUP conversation says a line of [constant THANKS]. A visitor who brings no computer and has
-## nothing to say goes at once. A conversation without lines or choices sets its flags and is
-## nothing to say.
+## PICKUP conversation says a line of [constant THANKS]. A visitor who brings no computer, or who
+## popped up for an event, and has nothing to say goes at once. A conversation without lines or
+## choices sets its flags and is nothing to say.
 func _start_talk() -> void:
 	leaving_lines = []
-	_play(errand, Conversation.Trigger.PICKUP if visit == Visit.PICKUP else Conversation.Trigger.ARRIVE)
+	var trigger := {Visit.PICKUP: Conversation.Trigger.PICKUP, Visit.EVENT: Conversation.Trigger.EVENT}.get(visit, Conversation.Trigger.ARRIVE) as Conversation.Trigger
+	_play(errand, trigger)
 	if conversation != null and conversation.lines.is_empty() and conversation.choices.is_empty():
 		conversation = null
 	if conversation == null and visit == Visit.PICKUP:
 		conversation = _thanks(visitor)
 		if conversation == null:
 			_leave()
-	elif conversation == null and errand != null and errand.brings == Errand.Brings.NOTHING:
+	elif conversation == null and (visit == Visit.EVENT or (errand != null and errand.brings == Errand.Brings.NOTHING)):
 		_leave()
 
 

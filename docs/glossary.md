@@ -163,7 +163,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Slot**: One of the `Game.MAX_JOBS` places on the work mat where a job's computer stands (`Job.slot`). The computers fill the slots from the left, oldest first: when one leaves, the computers right of it slide left. In the scene it is a `Slot<n>` marker in `rooms/shop/job_slots.tscn`.
 *Avoid:* place, spot, position.
 
-**Errand**: One visit on a day: a customer, what is wrong with their computer this time (or nothing), what the visit is for and what is said (`Errand`, a story file in `story/errands/`). A customer who comes back on another day brings the same computer with a new errand. Not *visit*, which is why the visitor is in (`Game.Visit`: drop-off or pickup).
+**Errand**: One visit on a day: a customer, what is wrong with their computer this time (or nothing), what the visit is for and what is said (`Errand`, a story file in `story/errands/`). A customer who comes back on another day brings the same computer with a new errand. Not *visit*, which is why the visitor is in (`Game.Visit`: drop-off, pickup or event).
 
 **Errand code**: The four digits that start an errand's file name: the day and the errand's place in it, so `0503_nice_guy.errand` is day 5, the third errand. Two errands with one code are alternatives; the first whose condition matches comes.
 *Avoid:* slot (a place on the work mat), timeslot, id.
@@ -194,6 +194,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 **Draft**: A writer's edit of a story file, kept in the player's user folder until `main` has it (`user://story_drafts/`). The game plays drafts over the files from `main`; Send turns them into a GitHub issue.
 *Avoid:* local change, patch, overlay.
+
+**Event**: A visit that a customer doesn't walk in for: in the midday of their errand's day, while their computer is on the counter, they pop up from behind the counter and talk (`== event` in the errand's story file, `Game.Visit.EVENT`). It holds the next customer back until it came, and isn't an arrival.
+*Avoid:* jumpscare, special visit, interruption.
 
 **Visitor**: The customer who is in the shop now, to drop off, show or pick up a computer, or with none (`Game.visitor`, in for `Game.errand`). Only one at a time. One who shows a computer waits beside it on the counter until the player clicks them; then they pick it up.
 *Avoid:* current customer.

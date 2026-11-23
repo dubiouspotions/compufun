@@ -20,6 +20,7 @@ const TRIGGER_NAMES: Dictionary[Conversation.Trigger, String] = {
 	Conversation.Trigger.ARRIVE: "Drop-off",
 	Conversation.Trigger.PICKUP: "Pick-up",
 	Conversation.Trigger.PHONE: "Phone",
+	Conversation.Trigger.EVENT: "Event",
 }
 const COMPUTER_HINTS: PackedStringArray = [
 	"They leave it on the counter for repair.",

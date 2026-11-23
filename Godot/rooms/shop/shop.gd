@@ -50,6 +50,7 @@ const WORKVIEW: StringName = &"Workview"
 @export var head_height: float = 1.6
 
 @onready var _body: CustomerBody = %CustomerBody
+@onready var _pop_up_spot: Marker3D = %PopUpSpot
 ## Takes the click on a visitor who waits beside the computer that they show.
 @onready var _visitor_hotspot: Hotspot = %VisitorHotspot
 @onready var _job_slots: JobSlots = %JobSlots
@@ -75,6 +76,21 @@ const WORKVIEW: StringName = &"Workview"
 ## long it takes to settle, in seconds.
 @export var stab_shake_metres: float = 0.025
 @export var stab_shake_seconds: float = 0.6
+## An event's pop-up (Game.VisitorState.POPPING_UP): the customer rises from pop_up_depth metres below
+## the PopUpSpot marker in pop_up_seconds, the view jolts by pop_up_shake_metres and the body
+## wobbles by up to pop_up_wobble_degrees over pop_up_shake_seconds; they stay pop_up_stay_seconds,
+## then step to the counter in pop_up_step_seconds.
+@export var pop_up_depth: float = 1.0
+## In the Workview the customer peeks over the counter instead, as far back as the PopUpSpot: their
+## face shows at this point of the view, from (0, 0) in the middle to (1, 1) at the top right corner.
+## The default is beside the open case, which stands up into the top of the view.
+@export var pop_up_peek_at: Vector2 = Vector2(0.6, 0.6)
+@export var pop_up_seconds: float = 0.25
+@export var pop_up_shake_metres: float = 0.05
+@export var pop_up_wobble_degrees: float = 6.0
+@export var pop_up_shake_seconds: float = 0.7
+@export var pop_up_stay_seconds: float = 1.2
+@export var pop_up_step_seconds: float = 0.6
 
 ## Whether the work computer runs; its fans hum while it does.
 var work_computer_running: bool = false:
@@ -91,6 +107,7 @@ var _workview_job: Job
 var _workview_lying: bool = false
 var _walk_in_arrival: int = -1
 var _walk_out_arrival: int = -1
+var _pop_up_arrival: int = -1
 var _walk_tween: Tween
 var _calling: bool = false
 var _camera_tween: Tween
@@ -457,11 +474,15 @@ func _sync() -> void:
 		Game.VisitorState.WALKING_IN:
 			if _walk_in_arrival != Game.arrival:
 				_walk_in()
+		Game.VisitorState.POPPING_UP:
+			if _pop_up_arrival != Game.arrival:
+				_pop_up()
 		Game.VisitorState.NONE, Game.VisitorState.TALKING, Game.VisitorState.WAITING:
-			# A restore can end a walk halfway; its tween must not reach Game.
+			# A restore can end a walk or a pop-up halfway; its tween must not reach Game.
 			if _walk_tween != null:
 				_walk_tween.kill()
-			_body.rotation.y = 0.0
+			_body.rotation = Vector3.ZERO
+			_body.position = Vector3.ZERO
 			_follow.progress_ratio = 1.0
 		Game.VisitorState.WALKING_OUT, Game.VisitorState.OUTSIDE:
 			if _walk_out_arrival != Game.arrival:
@@ -515,6 +536,7 @@ func _walk_in() -> void:
 	if _walk_tween != null:
 		_walk_tween.kill()
 	_body.rotation.y = 0.0
+	_body.position = Vector3.ZERO
 	_follow.progress_ratio = 0.0
 	var door := _door_ratio()
 	_walk_tween = create_tween()
@@ -522,6 +544,40 @@ func _walk_in() -> void:
 	_walk_tween.tween_callback(_door_bell.play)
 	_walk_tween.tween_property(_follow, "progress_ratio", 1.0, walk_seconds * (1.0 - door))
 	_walk_tween.finished.connect(Game.customer_arrived)
+
+
+# The customer of an event rises behind the counter at the PopUpSpot, the view and the body shake,
+# and after a moment they step to their place at the counter.
+func _pop_up() -> void:
+	_pop_up_arrival = Game.arrival
+	if _walk_tween != null:
+		_walk_tween.kill()
+	_follow.progress_ratio = 1.0
+	_body.rotation = Vector3.ZERO
+	var top := _pop_up_spot.global_position if Game.view != WORKVIEW else _peek_spot()
+	_body.global_position = top + Vector3.DOWN * pop_up_depth
+	_walk_tween = create_tween()
+	_walk_tween.tween_property(_body, "global_position", top, pop_up_seconds).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_walk_tween.tween_callback(_shake_view.bind(pop_up_shake_metres, pop_up_shake_seconds))
+	# A wobble, not a shift: the body walks whenever it moves across the ground.
+	_walk_tween.tween_method(func(left: float) -> void:
+		_body.rotation.z = deg_to_rad(pop_up_wobble_degrees) * left * sin(left * 40.0), 1.0, 0.0, pop_up_shake_seconds)
+	_walk_tween.tween_interval(pop_up_stay_seconds)
+	_walk_tween.tween_property(_body, "position", Vector3.ZERO, pop_up_step_seconds).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_walk_tween.finished.connect(Game.customer_arrived)
+
+
+# Where the body stands for its face to show at pop_up_peek_at in the Workview, as far back as the
+# PopUpSpot; the feet sink through the floor behind the counter.
+func _peek_spot() -> Vector3:
+	var marker := view_marker(WORKVIEW)
+	var half := tan(deg_to_rad(marker.fov) * 0.5)
+	var screen := _camera.get_viewport().get_visible_rect().size
+	var across := marker.global_basis.x * half * screen.aspect() * pop_up_peek_at.x + marker.global_basis.y * half * pop_up_peek_at.y
+	var ray := (-marker.global_basis.z + across).normalized()
+	var from := marker.global_position
+	var face := from + ray * ((_pop_up_spot.global_position.z - from.z) / ray.z)
+	return Vector3(face.x, face.y - head_height, face.z)
 
 
 ## Debug: ends the customer's walk in or out at once, as if it had run its course. False when
@@ -612,19 +668,19 @@ func _play_changes(jumped: bool) -> void:
 		if job.case_open and job not in _heard_open and not jumped and job.problem != null and job.problem.reveal_stab != null \
 				and job.places.values().any(func(each: Piece) -> bool: return each.part in job.problem.stand_ins):
 			job.problem.reveal_stab.play_at(_hand)
-			_shake_view()
+			_shake_view(stab_shake_metres, stab_shake_seconds)
 	_heard_open.assign(Game.jobs.filter(func(job: Job) -> bool: return job.case_open))
 
 
-# Jolts the view, and lets it settle over stab_shake_seconds.
-func _shake_view() -> void:
+# Jolts the view by [param metres], and lets it settle over [param seconds].
+func _shake_view(metres: float, seconds: float) -> void:
 	if _stab_shake != null:
 		_stab_shake.kill()
 	_stab_shake = create_tween()
 	_stab_shake.tween_method(func(left: float) -> void:
-		var shake := stab_shake_metres * left * left
+		var shake := metres * left * left
 		_camera.h_offset = randf_range(-shake, shake)
-		_camera.v_offset = randf_range(-shake, shake), 1.0, 0.0, stab_shake_seconds)
+		_camera.v_offset = randf_range(-shake, shake), 1.0, 0.0, seconds)
 
 
 func _on_plug_grabbed() -> void:

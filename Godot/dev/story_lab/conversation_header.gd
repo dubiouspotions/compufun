@@ -1,7 +1,8 @@
 class_name StoryConversationHeader
 extends VBoxContainer
 ## The Story Lab's row above a conversation's graph: what the conversation must get across, whether
-## it plays only once, when it plays, its voice effect, and the words of its leave buttons. Edits
+## it plays only once, when it plays, its voice effect, the words of its leave buttons, and for an
+## event what the customer calls out as they pop up. Edits
 ## change the conversation in place, then emit [signal edited].
 
 ## The conversation changed in place; the owner writes its story file from it.
@@ -20,6 +21,8 @@ var _when: Button
 var _effect: OptionButton
 var _leave: LineEdit
 var _back: LineEdit
+var _pop_up_row: Control
+var _pop_up: LineEdit
 var _error: Label
 
 
@@ -64,12 +67,17 @@ func _ready() -> void:
 	_back = _field(Conversation.new().back_text, "The button that goes back to the list above, under a deeper list where every choice comes back")
 	buttons.add_child(_back)
 	add_child(buttons)
+	_pop_up_row = HBoxContainer.new()
+	_pop_up_row.add_child(_words("Pops up calling out"))
+	_pop_up = _field("Nothing", "What the customer calls out as they pop up behind the counter, before the dialogue box opens")
+	_pop_up_row.add_child(_pop_up)
+	add_child(_pop_up_row)
 	_error = LabUI.label("", 13, LabUI.BAD)
 	_error.hide()
 	add_child(_error)
 	_brief.text_submitted.connect(func(_text: String) -> void: _commit())
 	_brief.focus_exited.connect(_commit)
-	for field: LineEdit in [_leave, _back]:
+	for field: LineEdit in [_leave, _back, _pop_up]:
 		field.text_submitted.connect(func(_text: String) -> void: _commit())
 		field.focus_exited.connect(_commit)
 
@@ -95,6 +103,8 @@ func show_conversation(conversation: Conversation) -> void:
 			_effect.select(i)
 	_leave.text = "" if conversation.leave_text == defaults.leave_text else conversation.leave_text
 	_back.text = "" if conversation.back_text == defaults.back_text else conversation.back_text
+	_pop_up_row.visible = conversation.trigger == Conversation.Trigger.EVENT
+	_pop_up.text = conversation.pop_up.text if conversation.pop_up != null else ""
 	_error.hide()
 
 
@@ -104,20 +114,28 @@ func _commit() -> void:
 	if _conversation == null:
 		return
 	var defaults := Conversation.new()
-	for field: LineEdit in [_leave, _back]:
+	for field: LineEdit in [_leave, _back, _pop_up]:
 		if field.text.contains("[") or field.text.contains("]"):
-			_error.text = "A button's words can't have [ or ] in them."
+			_error.text = "These words can't have [ or ] in them."
 			_error.show()
 			return
 	_error.hide()
 	var brief := _brief.text.strip_edges()
 	var leave := _leave.text.strip_edges() if _leave.text.strip_edges() != "" else defaults.leave_text
 	var back := _back.text.strip_edges() if _back.text.strip_edges() != "" else defaults.back_text
-	if brief == _conversation.brief and leave == _conversation.leave_text and back == _conversation.back_text:
+	var pop_up := _pop_up.text.strip_edges()
+	var had := _conversation.pop_up.text if _conversation.pop_up != null else ""
+	if brief == _conversation.brief and leave == _conversation.leave_text and back == _conversation.back_text and pop_up == had:
 		return
 	_conversation.brief = brief
 	_conversation.leave_text = leave
 	_conversation.back_text = back
+	if pop_up == "":
+		_conversation.pop_up = null
+	elif pop_up != had:
+		var line := _conversation.pop_up.duplicate() as DialogueLine if _conversation.pop_up != null else DialogueLine.new()
+		line.text = pop_up
+		_conversation.pop_up = line
 	edited.emit()
 
 

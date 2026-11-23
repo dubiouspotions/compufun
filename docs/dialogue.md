@@ -81,12 +81,33 @@ brief:
 - `when`: a condition (below); without it the errand always comes.
 - `brief`: what the visit is for, written before any line.
 - **Conversations** start with `==` and the trigger: `drop-off` (the customer arrives),
-  `pick-up` (they come back for the computer, on any later day) and `phone` (the player calls).
-  A trigger can have several; the first whose condition matches plays. Without a match, a pick-up
+  `pick-up` (they come back for the computer, on any later day), `phone` (the player calls) and
+  `event` (they pop up behind the counter; below). A trigger can have several; the first whose condition matches plays. Without a match, a pick-up
   is a short thanks and a phone call a "Hello?". A `phone` without lines rings out: nobody
   answers, nobody comes, and the computer stays on the counter (as `0701_skater_bro`'s does once
   `skater_organs_replaced` is set). The phone calls the customers who answer first. A drop-off without lines sets its flags and says nothing, so a customer without a
   computer leaves at once.
+
+### Events: `== event`
+
+```
+== event [pop-up (happy) Hey!]
+(happy) Yo! Is my computer done yet?
+- Not yet. I'll call you when it's ready.
+	(neutral) Aw, man. Okay, okay.
+(neutral) Later, dude! [leaving]
+```
+
+An event is a visit that the customer doesn't walk in for: they pop up from behind the counter,
+the view shakes, they call out the `[pop-up ...]` line (a `(mood)` is optional), step to the
+counter, and the player turns to face them for the conversation. Then they walk out.
+
+- It comes on the errand's day, in the midday (after the customer who makes it midday left), while
+  the errand's computer is on the counter, nobody is in the shop and the phone is on the hook.
+- It comes while the player works in the Workview on a computer whose case is open; else as they
+  turn back to the Main view from the left or the right once the next customer is due. The next
+  customer waits until it came.
+- It plays once, and it is not an arrival: the afternoon customer still makes it afternoon.
 
 ## A problem: `story/problems/<id>.problem`
 
@@ -235,7 +256,7 @@ brief: He arrives cheerful; the problem comes out only when asked.
 
 **Tags** in `[...]` after a conversation's `==` line: `[if ...]`, `[once]` (plays only the first
 time it matches), `[effect name]` (for all its lines), `[leave Text]` and `[back Text]` (the
-leave buttons). After a choice: `[if ...]` and `[end]`.
+leave buttons), and for an event `[pop-up Text]`. After a choice: `[if ...]` and `[end]`.
 
 ## Flags and signs
 

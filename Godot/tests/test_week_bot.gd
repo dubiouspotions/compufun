@@ -36,11 +36,11 @@ const STORY_GAPS: Array[String] = ["has no conversation for day", "\" portrait"]
 ## add the name. The values of each enum that [method _act] plays:
 const KNOWN_ENUMS: Dictionary[String, Array] = {
 	"Game.Phase": ["IDLE", "OPEN", "CALLING", "DAY_OVER", "ENDED", "CLOSED"],
-	"Game.Visit": ["NONE", "DROP_OFF", "PICKUP"],
-	"Game.VisitorState": ["NONE", "WALKING_IN", "TALKING", "WALKING_OUT", "WAITING", "OUTSIDE"],
+	"Game.Visit": ["NONE", "DROP_OFF", "PICKUP", "EVENT"],
+	"Game.VisitorState": ["NONE", "WALKING_IN", "TALKING", "WALKING_OUT", "WAITING", "OUTSIDE", "POPPING_UP"],
 	"Game.Daypart": ["NONE", "MORNING", "MIDDAY", "AFTERNOON", "EVENING", "NIGHT"],
 	"Errand.Brings": ["LEAVES", "NOTHING", "SHOWS"],
-	"Conversation.Trigger": ["ARRIVE", "PICKUP", "PHONE"],
+	"Conversation.Trigger": ["ARRIVE", "PICKUP", "PHONE", "EVENT"],
 	"Problem.Location": ["HARDWARE", "SOFTWARE", "BOTH"],
 }
 ## The SoftwareCheck types that [method _fix_check] fixes the way a player does.
@@ -51,7 +51,7 @@ const KNOWN_GAME_METHODS: Array[String] = [
 	# the day, the visitor and the talk
 	"start_day", "start_next_day", "has_next_day", "can_open", "open_shop", "can_close", "close_shop",
 	"customer_arrived", "dialogue_finished", "talk_to_visitor", "visitor_carries", "customer_out_the_door", "customer_left",
-	"offered", "reply_to", "choose", "go_on", "matching_conversation", "call_outs_of", "coming", "go_to_view",
+	"offered", "reply_to", "choose", "go_on", "matching_conversation", "call_outs_of", "waiting_event", "coming", "go_to_view",
 	# the repair
 	"focus_job", "job_beside", "lay_down", "can_stand_up", "stand_up", "open_case", "turn_screw", "can_turn",
 	"can_take", "take_part", "can_put", "put_part", "take_new_part", "can_take_blocker", "take_blocker", "can_take_misplaced", "take_misplaced", "put_on_mat", "take_from_mat",
@@ -205,6 +205,8 @@ func _watch() -> void:
 	var errand: Errand = was[3]
 	if was[2] == GAME.Visit.PICKUP:
 		_happened(errand, "picked up on day %d" % game.day_number)
+	elif was[2] == GAME.Visit.EVENT:
+		_happened(errand, "popped up for its event on day %d" % game.day_number)
 	else:
 		_happened(errand, ["left its computer", "brought no computer", "showed its computer"][errand.brings])
 
@@ -243,6 +245,8 @@ func _act() -> void:
 		return
 	if game.visitor_state in [GAME.VisitorState.WALKING_IN, GAME.VisitorState.WALKING_OUT, GAME.VisitorState.OUTSIDE]:
 		_doing = [_code(game.errand), "waits for %s to walk %s" % [_who(), "in" if game.visitor_state == GAME.VisitorState.WALKING_IN else "out"]]
+	elif game.visitor_state == GAME.VisitorState.POPPING_UP:
+		_doing = [_code(game.errand), "waits for %s to pop up and step to the counter" % _who()]
 	if _testing != null:
 		if _testing in game.jobs and not _testing.tested:
 			_doing = [_code(_testing.errand), "waits for %s's computer to boot and pass its test" % _testing.customer.spoken_name()]
@@ -265,6 +269,9 @@ func _act() -> void:
 		_doing = ["", "clicks the open sign to close the shop on day %d" % game.day_number]
 		if await _click_in(&"Main", _shop.get_node("%OpenSign").find_child("Hotspot")):
 			_note_who_stays_away()
+	elif game.waiting_event() != null:
+		_doing = [_code(game.waiting_event()), "turns left and back, which lets %s's event in once the next customer is due" % game.waiting_event().customer.spoken_name()]
+		game.go_to_view(&"Left")
 	elif game.visitor == null:
 		_doing = ["", "waits for the next customer on day %d" % game.day_number]
 
@@ -554,7 +561,7 @@ func _state_of(job: Job) -> Node:
 # away, and clicks one of the choices when they show: one not clicked yet in this conversation, or the
 # button that leaves the list. The dialogue ends itself.
 func _talk() -> void:
-	_doing = [_code(game.errand), "talks with %s at the %s" % [_who(), "drop-off" if game.visit == GAME.Visit.DROP_OFF else "pickup"]]
+	_doing = [_code(game.errand), "talks with %s at the %s" % [_who(), {GAME.Visit.DROP_OFF: "drop-off", GAME.Visit.PICKUP: "pickup", GAME.Visit.EVENT: "event"}.get(game.visit, "visit")]]
 	var calling: Control = _main.get_node("%CustomerCalling")
 	if calling.call(&"unread_line") != null:
 		if _frame % READ_FRAMES == 0:

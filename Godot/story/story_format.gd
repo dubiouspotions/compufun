@@ -16,6 +16,7 @@ const TRIGGERS: Dictionary[String, Conversation.Trigger] = {
 	"drop-off": Conversation.Trigger.ARRIVE,
 	"pick-up": Conversation.Trigger.PICKUP,
 	"phone": Conversation.Trigger.PHONE,
+	"event": Conversation.Trigger.EVENT,
 }
 const BRINGS: Dictionary[String, Errand.Brings] = {
 	"leaves": Errand.Brings.LEAVES,
@@ -113,6 +114,8 @@ static func write_errand(errand: Errand) -> String:
 			head += " [leave %s]" % c.leave_text
 		if c.back_text != Conversation.new().back_text:
 			head += " [back %s]" % c.back_text
+		if c.pop_up != null:
+			head += " [pop-up %s%s]" % ["" if c.pop_up.mood == &"neutral" else "(%s) " % c.pop_up.mood, c.pop_up.text]
 		out.append(head)
 		if c.brief != "":
 			out.append("brief: " + c.brief)
@@ -577,7 +580,7 @@ class _Reader:
 		var tags := _split_tags(head)
 		var name: String = tags.text
 		if not TRIGGERS.has(name):
-			_error(from, "'== %s': the trigger must be drop-off, pick-up or phone" % name)
+			_error(from, "'== %s': the trigger must be drop-off, pick-up, phone or event" % name)
 			return null
 		var c := Conversation.new()
 		c.trigger = TRIGGERS[name]
@@ -592,8 +595,12 @@ class _Reader:
 				c.leave_text = tag.substr(6).strip_edges()
 			elif tag.begins_with("back "):
 				c.back_text = tag.substr(5).strip_edges()
+			elif tag.begins_with("pop-up ") and c.trigger == Conversation.Trigger.EVENT:
+				c.pop_up = _said({text = tag.substr(7).strip_edges(), line = from})
+			elif tag.begins_with("pop-up "):
+				_error(from, "[%s]: only an event pops up" % tag)
 			else:
-				_error(from, "[%s] is not a tag of a conversation: if, once, effect, leave or back" % tag)
+				_error(from, "[%s] is not a tag of a conversation: if, once, effect, leave, back or pop-up" % tag)
 		var body := from + 1
 		while body < to and _lines[body].strip_edges() == "":
 			body += 1

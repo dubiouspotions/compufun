@@ -15,6 +15,7 @@ const TRIGGERS: Dictionary[Conversation.Trigger, String] = {
 	Conversation.Trigger.ARRIVE: "Drop-off",
 	Conversation.Trigger.PICKUP: "Pick-up",
 	Conversation.Trigger.PHONE: "Phone",
+	Conversation.Trigger.EVENT: "Event",
 }
 
 
