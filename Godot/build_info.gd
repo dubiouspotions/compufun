@@ -8,6 +8,8 @@ const INFO_FILE: String = "res://build_info.txt"
 ## The same commands as tools/write-build-info.sh.
 const GIT_DESCRIBE: PackedStringArray = ["describe", "--tags", "--match", "v[0-9]*.[0-9]*.[0-9]*"]
 const GIT_COMMIT: PackedStringArray = ["log", "-1", "--format=%h %cd", "--date=format:%Y-%m-%d %H:%M"]
+## What [method commit] returns when neither git nor INFO_FILE can tell.
+const UNKNOWN_COMMIT: String = "unknown commit"
 
 
 ## The release version, like "0.8.1", or for a build between releases the last release and the
@@ -25,8 +27,8 @@ static func version() -> String:
 static func commit() -> String:
 	if OS.has_feature("editor"):
 		var text := _git(GIT_COMMIT, true)
-		return text if text != "" else "unknown commit"
-	return _info_line(1, "unknown commit")
+		return text if text != "" else UNKNOWN_COMMIT
+	return _info_line(1, UNKNOWN_COMMIT)
 
 
 ## The window title: the game's name, [method version] and [method commit].
