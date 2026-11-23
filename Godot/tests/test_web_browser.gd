@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## Netscape: HTML 3.2 turns into BBCode, links resolve, and the window browses the
-## CompuFun site, a missing page, a missing host and the .htm files on drive C.
+## Netscape: HTML 3.2 turns into BBCode, links resolve, the window browses the .htm files on drive C,
+## and with no modem every web address fails after the meteors, leaving the page on show.
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run time: it names the Game autoload
 const BROWSER_PATH := "res://win95/web_browser.tscn"
@@ -31,30 +31,12 @@ func run() -> void:
 	page = browser.render("<ul><li>one<li>two</ul>after<a href=\"b.htm\">link</a><script>x()</script><pre>\na\n  b</pre>", "http://a.com/")
 	check("lists, links, PRE and no SCRIPT", page.bbcode, "[ul]one\ntwo[/ul]\nafter[url=http://a.com/b.htm][color=#0000ff]link[/color][/url]\n\n[code]a\n  b[/code]")
 
-	var window: Node = load(BROWSER_PATH).instantiate()
-	root.add_child(window)
-	await process_frame
-	check("opens at home", window.url, "http://www.compufun.com/")
-	check("titled after the page", window.get_node("%TitleBar").title, "Netscape - [CompuFun - Your Friendly Computer Store]")
-	check("shows the logo", window.get_node("%Page").text.contains("[img width=82 height=82]res://win95/web/www.compufun.com/logo.png[/img]"), true)
-	window.get_node("%Page").meta_clicked.emit("http://www.compufun.com/support.htm")
-	check("a link goes to its page", window.page_title, "CompuFun Support")
-	window.back()
-	check("Back goes back", window.url, "http://www.compufun.com/")
-	window.forward()
-	check("Forward goes forward", window.url, "http://www.compufun.com/support.htm")
-	window.navigate("www.compufun.com/nothing.htm")
-	check("a missing page is a 404", window.page_title, "404 Not Found")
-	check("and cuts Forward", window.get_node("%Forward").disabled, true)
-	window.navigate("www.nowhere.com")
-	check("a missing host", [window.url, window.page_title], ["http://www.nowhere.com", "Unable to locate server"])
-
 	var b := Win95File.new()
 	b.name = "B.HTM"
 	b.contents = "<title>Bee</title>"
 	var a := Win95File.new()
 	a.name = "A.HTM"
-	a.contents = "<a href=\"B.HTM\">b</a>"
+	a.contents = "<a href=\"B.HTM\">b</a><img src=\"pic.gif\" alt=\"Pic\">"
 	var docs := Win95File.new()
 	docs.name = "DOCS"
 	docs.is_folder = true
@@ -63,12 +45,29 @@ func run() -> void:
 	setup.drive_c = [docs]
 	var state: Node = load(COMPUTER_STATE_PATH).new()
 	state.setup = setup
+
+	var window: Node = load(BROWSER_PATH).instantiate()
+	root.add_child(window)
+	await process_frame
+	check("the meteors fly while it contacts home", [window.is_processing(), window.get_node("%Address").text], [true, "http://home.netscape.com/"])
+	await create_timer(window.contact_seconds + 0.1).timeout
+	check("no modem: they stop, and the window stays blank", [window.is_processing(), window.url, window.get_node("%Address").text], [false, "", ""])
+	window.contact_seconds = 0.0
+
 	window.open_file(a, state)
 	check("opens a file on drive C", window.url, "file:///C:/DOCS/A.HTM")
+	check("its picture is its ALT text", window.get_node("%Page").text.contains("[lb]Pic[rb]"), true)
 	window.get_node("%Page").meta_clicked.emit(browser.resolve(window.url, "B.HTM"))
 	check("and follows its link to another", window.page_title, "Bee")
+	window.back()
+	check("Back goes back", window.url, "file:///C:/DOCS/A.HTM")
+	window.forward()
+	check("Forward goes forward", window.url, "file:///C:/DOCS/B.HTM")
+	window.back()
+	window.navigate("www.yahoo.com")
+	check("a web address fails and keeps the page", [window.url, window.get_node("%Address").text, window.get_node("%Forward").disabled], ["file:///C:/DOCS/A.HTM", "file:///C:/DOCS/A.HTM", false])
 	window.navigate("C:\\DOCS\\GONE.HTM")
-	check("a missing file", window.page_title, "Cannot open file")
+	check("so does a missing file", window.url, "file:///C:/DOCS/A.HTM")
 	state.free()
 	window.queue_free()
 	await process_frame

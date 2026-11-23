@@ -1,25 +1,25 @@
 extends "res://win95/window.gd"
-## Netscape Navigator: a 1996 web browser that shows HTML 3.2 pages. An http:// page is a file in
-## res://win95/web/<host>/<path> (a path ending in / is its index.htm); a file:// page is an .htm
-## file on the computer's drive C. No forms, frames, scripts or style sheets: they came later.
+## Netscape Navigator 2.0: a 1996 web browser that shows HTML 3.2 pages from drive C. No computer in
+## the shop has a modem, so a web address fails as Netscape failed offline: the meteors fly while
+## it contacts the host, then an alert, and the page before stays. No forms, frames, scripts or
+## style sheets: they came later.
 
 enum FileMenu { CLOSE }
 
 ## The file extensions that this app opens, lower case, without the dot.
 @export var opens: Array[String] = ["htm", "html"]
 ## The page that the window opens with and that Home goes to.
-@export var home := "http://www.compufun.com/"
+@export var home := "http://home.netscape.com/"
+## Seconds that Netscape tries to reach a host before it gives up; 0 gives up at once.
+@export var contact_seconds := 2.5
+## How many meteors fly across the N at a time.
+@export var meteors := 3
+## Meteors that cross the N per second, each.
+@export var meteor_speed := 1.5
 
-## Where the http:// pages are: one folder per host.
-const WEB_ROOT := _Renderer.WEB_ROOT
+const _MESSAGE := preload("res://win95/message_box.tscn")
 
-## Where the http:// pages are: one folder per host.
-const _NOT_FOUND := "<title>404 Not Found</title><h1>Not Found</h1>The requested URL %s was not found on this server.<hr><address>NCSA/1.5.2</address>"
-const _NO_HOST := "<title>Unable to locate server</title><h2>Unable to locate the server</h2><p><tt>%s</tt><p>Netscape is unable to locate the server. The server does not have a DNS entry. Check the server name in the Location (URL) and try again."
-const _NO_FILE := "<title>Cannot open file</title><h2>Cannot find the file</h2><p><tt>%s</tt><p>Make sure the path and filename are correct."
-const _UNREADABLE := "<title>Cannot read page</title><h2>The page could not be read</h2><p><tt>%s</tt><p>%s"
-
-## The URL of the page on show, absolute.
+## The URL of the page on show, absolute; empty while the window is blank.
 var url := ""
 ## The title of the page on show; empty when it has none.
 var page_title := ""
@@ -28,6 +28,8 @@ var _state: ComputerState
 var _history: Array[String] = []
 var _at := -1
 var _app_title := ""
+var _loading := -1.0  # seconds into contacting a host; below 0 while not
+var _load := 0  # counts the pages asked for, so a slow one doesn't replace a newer one
 
 @onready var _page: RichTextLabel = %Page
 @onready var _address: LineEdit = %Address
@@ -45,10 +47,18 @@ func _ready() -> void:
 	%Home.pressed.connect(func() -> void: navigate(home))
 	_address.text_submitted.connect(navigate)
 	_page.meta_clicked.connect(func(link: Variant) -> void: navigate(str(link)))
-	_page.meta_hover_started.connect(func(link: Variant) -> void: _status.text = "Shortcut to %s" % link)
-	_page.meta_hover_ended.connect(func(_link: Variant) -> void: _status.text = "Done")
+	_page.meta_hover_started.connect(func(link: Variant) -> void: _status.text = link)
+	_page.meta_hover_ended.connect(func(_link: Variant) -> void: _status.text = "")
+	%Meteors.draw.connect(_draw_meteors)
+	set_process(false)
+	_buttons()
 	if url == "":
 		navigate(home)
+
+
+func _process(delta: float) -> void:
+	_loading += delta
+	%Meteors.queue_redraw()
 
 
 ## Shows [param opened], an .htm file in [param state]'s running copy, whose links can reach the
@@ -64,7 +74,7 @@ func navigate(address: String) -> void:
 	address = address.strip_edges()
 	if address == "":
 		return
-	if not "://" in address:
+	if not "://" in address and not address.begins_with("mailto:"):
 		var is_path := address.length() > 1 and address[1] == ":"
 		address = ("file:///" + address.replace("\\", "/")) if is_path else "http://" + address
 	_go(resolve(url, address) if url != "" else address)
@@ -72,31 +82,63 @@ func navigate(address: String) -> void:
 
 ## Back to the page before, if there is one.
 func back() -> void:
-	if _at > 0:
+	if _at > 0 and await _open(_history[_at - 1]):
 		_at -= 1
-		_show(_history[_at])
+		_buttons()
 
 
 ## Forward to the page that Back left, if there is one.
 func forward() -> void:
-	if _at < _history.size() - 1:
+	if _at < _history.size() - 1 and await _open(_history[_at + 1]):
 		_at += 1
-		_show(_history[_at])
+		_buttons()
 
 
 func _go(to: String) -> void:
-	_history.resize(_at + 1)
-	_history.append(to)
-	_at = _history.size() - 1
-	_show(to)
+	if await _open(to):
+		_history.resize(_at + 1)
+		_history.append(to)
+		_at = _history.size() - 1
+		_buttons()
 
 
-func _show(to: String) -> void:
-	url = to
+func _buttons() -> void:
+	%Back.disabled = _at <= 0
+	%Forward.disabled = _at >= _history.size() - 1
+
+
+# Shows the page at [param to] and returns true, or alerts why it can't and keeps the page on show.
+# A page asked for after it wins: this one then returns false.
+func _open(to: String) -> bool:
+	_load += 1
+	var load := _load
 	_address.text = to
-	var page := render(_fetch(to), to)
+	if not to.begins_with("file:///"):
+		var host := to.get_slice("://", 1).get_slice("/", 0) if "://" in to else to.get_slice(":", 1).get_slice("@", 1)
+		_status.text = "Connect: Contacting host: %s..." % host
+		if contact_seconds > 0.0:
+			_loading = 0.0
+			set_process(true)
+			await get_tree().create_timer(contact_seconds).timeout
+			if load != _load:
+				return false
+			_loading = -1.0
+			set_process(false)
+			%Meteors.queue_redraw()
+		_fail("Netscape is unable to locate the server: %s\nThe server does not have a DNS entry.\n\nCheck the server name in the Location (URL) and try again." % host)
+		return false
+	var path := to.trim_prefix("file:///").get_slice("#", 0).uri_decode().replace("/", "\\")
+	var desktop_path := "C:\\WINDOWS\\Desktop\\"
+	if path.to_upper().begins_with(desktop_path.to_upper()):
+		path = "Desktop\\" + path.substr(desktop_path.length())
+	var file: Win95File = _state.setup.file_at(path) if _state != null else null
+	if file == null or file.is_folder:
+		_fail("File Not Found\n\nThe file %s cannot be found. Please check the location and try again." % path)
+		return false
+	url = to
+	var page := render(file.contents, to)
 	page_title = page.title
-	%TitleBar.title = "%s - [%s]" % [_app_title, page.title if page.title != "" else to]
+	%TitleBar.title = "%s - [%s]" % [_app_title, page.title if page.title != "" else to.get_file()]
 	var style := StyleBoxFlat.new()
 	style.bg_color = page.background
 	style.set_content_margin_all(8)
@@ -104,48 +146,38 @@ func _show(to: String) -> void:
 	_page.add_theme_color_override(&"default_color", page.text_color)
 	_page.text = page.bbcode
 	_page.scroll_to_line(0)
-	%Back.disabled = _at <= 0
-	%Forward.disabled = _at >= _history.size() - 1
-	_status.text = "Done"
+	_status.text = "Document: Done"
+	return true
 
 
-# The HTML at [param from]; a missing page or host is an error page, as a server or the browser says it.
-func _fetch(from: String) -> String:
-	if from.begins_with("file:///"):
-		var path := from.trim_prefix("file:///").uri_decode().replace("/", "\\")
-		var desktop_path := "C:\\WINDOWS\\Desktop\\"
-		if path.to_upper().begins_with(desktop_path.to_upper()):
-			path = "Desktop\\" + path.substr(desktop_path.length())
-		var file: Win95File = _state.setup.file_at(path) if _state != null else null
-		if file == null or file.is_folder:
-			return _NO_FILE % _escape_html(path)
-		return file.contents
-	if not from.begins_with("http://"):
-		return _NO_HOST % _escape_html(from)
-	var host := from.trim_prefix("http://").get_slice("/", 0).to_lower()
-	if not DirAccess.dir_exists_absolute(WEB_ROOT + host):
-		return _NO_HOST % _escape_html(from)
-	var path := from.trim_prefix("http://").substr(host.length()).get_slice("#", 0).get_slice("?", 0)
-	var res := WEB_ROOT + host + (path if path != "" else "/")
-	if res.ends_with("/"):
-		res += "index.htm"
-	if not FileAccess.file_exists(res):
-		return _NOT_FOUND % _escape_html(path if path != "" else "/")
-	var html := FileAccess.get_file_as_string(res)
-	var err := FileAccess.get_open_error()
-	if err != OK:
-		push_error("Netscape: couldn't read %s: %s" % [res, error_string(err)])
-		return _UNREADABLE % [_escape_html(from), error_string(err)]
-	return html
+# Netscape's alert; the Location box goes back to the page on show.
+func _fail(message: String) -> void:
+	_address.text = url
+	_status.text = ""
+	var desktop := get_parent() as Win95Desktop
+	if desktop == null:
+		return  # outside a desktop, as in a test: the Location box and status say enough
+	var box: Node = desktop.open(_MESSAGE, false)
+	box.closed.connect(box.queue_free)
+	box.show_message(_app_title, message)
+
+
+# Meteors streak from the top right to the bottom left of the N while Netscape contacts a host.
+func _draw_meteors() -> void:
+	if _loading < 0.0:
+		return
+	var box: Vector2 = %Meteors.size
+	for i in meteors:
+		var along := fmod(_loading * meteor_speed + float(i) / meteors, 1.0)
+		var lane := box.y * (float(i) + 0.5) / meteors - box.y * 0.5
+		var head := Vector2(lerpf(box.x + 6.0, -6.0, along), lerpf(lane - 6.0, lane + box.y, along)).floor()
+		for k in 6:
+			%Meteors.draw_rect(Rect2(head + Vector2(k, -k), Vector2.ONE), Color(1.0, 1.0, 0.8, 1.0 - k / 6.0))
 
 
 ## [param link] as an absolute URL, read relative to the page at [param base].
 static func resolve(base: String, link: String) -> String:
 	return _Renderer.resolve(base, link)
-
-
-static func _escape_html(text: String) -> String:
-	return text.replace("&", "&amp;").replace("<", "&lt;")
 
 
 ## A page as the RichTextLabel shows it.
@@ -167,7 +199,6 @@ static func render(html: String, base: String) -> Page:
 
 
 class _Renderer:
-	const WEB_ROOT := "res://win95/web/"
 	const HTML_COLORS := {
 		"black": "000000", "silver": "c0c0c0", "gray": "808080", "white": "ffffff", "maroon": "800000",
 		"red": "ff0000", "purple": "800080", "fuchsia": "ff00ff", "green": "008000", "lime": "00ff00",
@@ -436,16 +467,9 @@ class _Renderer:
 		if not open.is_empty():
 			_out.append(open.pop_back())
 
+	# The pictures were on the web, out of reach, so their ALT text stands in, as with images off.
 	func _picture(attrs: Dictionary) -> String:
 		var alt: String = _decode(attrs.get("alt", ""))
-		var link := resolve(_base, attrs.get("src", ""))
-		if link.begins_with("http://"):
-			var path := WEB_ROOT + link.trim_prefix("http://")
-			if ResourceLoader.exists(path, "Texture2D"):
-				var size := ""
-				if attrs.has("width") and attrs.has("height"):
-					size = " width=%d height=%d" % [str(attrs["width"]).to_int(), str(attrs["height"]).to_int()]
-				return "[img%s]%s[/img]" % [size, path]
 		return "[lb]%s[rb]" % alt.replace("[", "(").replace("]", ")") if alt != "" else ""
 
 	func _attributes(source: String) -> Dictionary:

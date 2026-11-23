@@ -47,7 +47,7 @@
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_smiley.png" id="sticker_smiley"]
 [ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
 [ext_resource type="PackedScene" path="res://win95/web_browser.tscn" id="app_netscape"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/globe_small_32.png" id="icon_netscape"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/netscape_32.png" id="icon_netscape"]
 
 [sub_resource type="Resource" id="Hardware_486"]
 script = ExtResource("hardware_script")
@@ -272,12 +272,45 @@ Put the 8 megs from my old box in yours. Twice the memory, so it should fly now.
 "
 modified = "Saturday, April 27, 1996 3:12:05 PM"
 
+[sub_resource type="Resource" id="Page_park"]
+script = ExtResource("2_egn44")
+name = "PARK.HTM"
+icon = ExtResource("icon_netscape")
+contents = "<HTML>
+<HEAD><TITLE>Save Elm Park!</TITLE></HEAD>
+<BODY BGCOLOR=\"#FFFFFF\" TEXT=\"#000000\" LINK=\"#006600\">
+<CENTER>
+<IMG SRC=\"http://www.geocities.com/RainForest/1996/tree.gif\" ALT=\"Elm Park\">
+<H1><FONT COLOR=\"green\">Save Elm Park!</FONT></H1>
+<I>A parking lot is not a park.</I>
+</CENTER>
+<HR>
+<P>The city council wants to pave over <B>Elm Park</B> for a 300-car parking lot. The vote is on
+<B>June 12, 1996</B>. We have until then.
+
+<H2>What you can do</H2>
+<OL>
+<LI>Sign the petition at the library or at CompuFun's counter.
+<LI>Write to your council member.
+<LI>Come to the council meeting on June 12.
+</OL>
+
+<P>Signatures so far: <FONT SIZE=+2><B>412</B></FONT>
+
+<HR>
+<ADDRESS>Friends of Elm Park. Webmaster: <A HREF=\"mailto:bob@aol.com\">bob@aol.com</A><BR>
+<A HREF=\"http://www.geocities.com/RainForest/1996/\">Back to the Friends of Elm Park home page</A></ADDRESS>
+</BODY>
+</HTML>
+"
+modified = "Wednesday, May 29, 1996 11:42:10 PM"
+
 [sub_resource type="Resource" id="Resource_docs"]
 script = ExtResource("2_egn44")
 name = "My Documents"
 icon = ExtResource("5_lymrw")
 is_folder = true
-children = Array[Resource]([SubResource("Resource_letter")])
+children = Array[Resource]([SubResource("Resource_letter"), SubResource("Page_park")])
 
 [sub_resource type="Resource" id="Program_netscape"]
 script = ExtResource("2_egn44")

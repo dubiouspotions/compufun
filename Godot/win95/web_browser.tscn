@@ -3,7 +3,8 @@
 [ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
 [ext_resource type="Script" path="res://win95/web_browser.gd" id="script"]
 [ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/globe_small_32.png" id="icon"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/netscape_16.png" id="icon"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/netscape_32.png" id="throbber"]
 [ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_regular.ttf" id="font_regular"]
 [ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="font_bold"]
 [ext_resource type="FontFile" path="res://win95/theme/fonts/px437_ibm_vga_8x16.ttf" id="font_mono"]
@@ -72,6 +73,22 @@ text = "Location:"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="Throbber" type="TextureRect" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+texture = ExtResource("throbber")
+
+[node name="Meteors" type="Control" parent="VBox/Toolbar/Throbber"]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="Page" type="RichTextLabel" parent="VBox"]
 unique_name_in_owner = true
