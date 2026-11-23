@@ -6,6 +6,7 @@ symptoms:
 	Can't open pictures
 	Programs won't start
 	Icons don't open
+	Computer runs hot
 checks:
 	yes: Windows starts
 	yes: Memory test passes

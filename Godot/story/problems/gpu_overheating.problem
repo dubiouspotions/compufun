@@ -3,6 +3,7 @@ cause: Overheated GPU
 symptoms:
 	Garbled picture
 	Colours look wrong
+	Computer runs hot
 checks:
 	yes: Windows starts
 	yes: Memory test passes
