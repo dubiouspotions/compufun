@@ -5,7 +5,12 @@ extends PanelContainer
 ## each mood first appears; the customer says [member lines_per_mood] random lines of a group
 ## (never the one just said) before the next, so they get more annoyed, and once at the end they
 ## stay annoyed, going round from group [member loop_from_mood] on. A customer who goes calls out
-## their leaving lines instead, each once.
+## their leaving lines instead, each once. While a look of the conversation has turned the player
+## away, the box says the conversation's line instead ([method say]).
+
+## The line that [method say] shows has been read: its voice ended and [member read_seconds] passed,
+## or the player clicked the box or pressed accept. Fires once per line.
+signal line_read(line: DialogueLine)
 
 ## What every customer says while waiting.
 @export var lines: Conversation = preload("res://customers/conversations/waiting.tres")
@@ -21,6 +26,9 @@ extends PanelContainer
 @export var leaving_gap: float = 0.4
 ## The shortest time a line stays on screen, in seconds; a longer voice keeps it up longer.
 @export var show_seconds: float = 2.5
+## The seconds of quiet after the voice of a conversation's line ([method say]) before it counts as
+## read, so that the player can finish reading it.
+@export var read_seconds: float = 1.5
 ## The gap between the box and the edge of the screen, in pixels.
 @export var margin: float = 48.0
 ## The size of the arrow that points at the customer, in pixels.
@@ -35,6 +43,12 @@ var _last: DialogueLine
 var _calling: bool = false
 # The leaving lines to call out, each once; empty while waiting.
 var _leaving: Array[DialogueLine] = []
+# The conversation's line that [method say] shows; null while waiting or leaving.
+var _said: DialogueLine
+# Seconds that _said has shown, and that its voice has been over; its voice's length, 0 if unknown.
+var _shown: float = 0.0
+var _quiet: float = 0.0
+var _voice_seconds: float = 0.0
 ## The side of the box that the arrow sticks out of: a unit vector, or zero for no arrow.
 var _side: Vector2 = Vector2.ZERO
 
@@ -46,7 +60,32 @@ var _side: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	_timer.timeout.connect(_on_timer)
+	gui_input.connect(_on_click)
 	stop()
+
+
+func _process(delta: float) -> void:
+	if _said == null:
+		return
+	_shown += delta
+	# The length also ends it where no audio plays out, as in a headless run.
+	var over := _voice.quiet() or (_voice_seconds > 0.0 and _shown >= _voice_seconds)
+	_quiet = _quiet + delta if over else 0.0
+	if _shown >= show_seconds and _quiet >= read_seconds:
+		_read()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _said != null and event.is_action_pressed(&"ui_accept"):
+		get_viewport().set_input_as_handled()
+		_read()
+
+
+func _on_click(event: InputEvent) -> void:
+	var button := event as InputEventMouseButton
+	if _said != null and button != null and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
+		accept_event()
+		_read()
 
 
 ## Starts calling as [param customer], from the first line. Calling again for the same customer
@@ -55,8 +94,10 @@ func call_out(customer: Customer) -> void:
 	if customer == null:
 		push_error("CustomerCalling.call_out: no customer")
 		return
-	if _calling and customer == _customer and _leaving.is_empty():
+	if _calling and customer == _customer and _leaving.is_empty() and _said == null:
 		return
+	if _said != null:
+		stop()
 	_leaving = []
 	var conversation := lines
 	_conversation = conversation
@@ -81,6 +122,7 @@ func call_out_leaving(customer: Customer, leaving: Array[DialogueLine]) -> void:
 		return
 	_customer = customer
 	_conversation = null
+	_end_line()
 	_leaving = leaving.duplicate()
 	_step = 0
 	_calling = true
@@ -88,13 +130,55 @@ func call_out_leaving(customer: Customer, leaving: Array[DialogueLine]) -> void:
 	_on_timer()
 
 
+## Says [param line] of [param conversation] as [param customer] at once, and shows it until the
+## next call: the visitor's line while a look of the conversation has turned the player away from
+## them. [signal line_read] fires once the player has had the time to read it, or clicks it. Saying
+## the line that shows again carries on.
+func say(customer: Customer, line: DialogueLine, conversation: Conversation) -> void:
+	if customer == null or line == null:
+		push_error("CustomerCalling.say: no customer (%s) or no line (%s)" % [customer, line])
+		return
+	if line == _said and customer == _customer:
+		return
+	stop()
+	_customer = customer
+	_conversation = conversation
+	_said = line
+	_shown = 0.0
+	_quiet = 0.0
+	mouse_filter = Control.MOUSE_FILTER_STOP
+	_name.text = customer.spoken_name()
+	_label.text = line.text
+	show()
+	_voice_seconds = _voice.say(line, customer.voice, VoiceEffect.of(line, conversation))
+
+
+## The conversation's line that [method say] shows and that the player hasn't read yet; null
+## otherwise.
+func unread_line() -> DialogueLine:
+	return _said
+
+
 ## Stops calling, the voice too, and hides the line.
 func stop() -> void:
 	_calling = false
 	_leaving = []
+	_end_line()
 	_timer.stop()
 	_voice.hush()
 	hide()
+
+
+func _read() -> void:
+	var line := _said
+	_end_line()
+	line_read.emit(line)
+
+
+# Forgets the conversation's line: it no longer takes clicks or counts as unread.
+func _end_line() -> void:
+	_said = null
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 ## Moves the box to the edge of the screen toward the customer, with its arrow pointing at them.

@@ -6,6 +6,9 @@ const DEV_MENU: String = "res://dev/dev_menu.tscn"
 
 ## The Game.arrival whose conversation started; it starts when the player first faces the visitor.
 var _dialogue_for: int = -1
+## A look of the conversation turned the player away from the visitor, and they haven't faced the
+## visitor since: the conversation goes on in the call-out box.
+var _led_away: bool = false
 ## The hotspot beside the open screen that the mouse is over, or null (see _hover_beside_screen).
 var _hovered_beside_screen: Hotspot
 
@@ -49,6 +52,8 @@ func _ready() -> void:
 	work_screen.picture_changed.connect(func() -> void: _shop.work_computer_running = work_screen.has_picture())
 	_shop.work_computer_running = work_screen.has_picture()
 	_dialogue.finished.connect(Game.dialogue_finished)
+	_dialogue.looked.connect(_look)
+	_calling.line_read.connect(_on_line_read)
 	Game.changed.connect(_sync)
 	if Game.week != null:
 		Game.start_day(Game.week.days[0])
@@ -186,20 +191,53 @@ func _sync() -> void:
 	for view: ScreenView in _screen_views:
 		view.set_open(screen == view.screen)
 	_hover_beside_screen(get_viewport().get_mouse_position())
+	_sync_talk()
+
+
+# Shows the visitor's conversation in the box while the player faces them, in the call-out box while
+# a look of its own turned the player away; otherwise the visitor calls out that they wait.
+func _sync_talk() -> void:
+	var marker := _shop.view_marker(Game.view)
 	var talking := Game.visitor_state == Game.VisitorState.TALKING
 	var facing := talking and marker != null and marker.faces_customer
-	# Looking away hushes the line, and looking back says it again from its start.
-	if facing and _dialogue_for != Game.arrival:
-		_dialogue_for = Game.arrival
-		_dialogue.start(Game.visitor, Game.conversation)
-	elif facing and not _dialogue.visible:
-		_dialogue.replay()
-	elif not facing and _dialogue.visible:
+	if facing or not talking or _dialogue_for != Game.arrival:
+		_led_away = false
+	var was_shown := _dialogue.visible
+	if not facing and was_shown:
 		_dialogue.hush()
 	_dialogue.visible = facing
-	if talking and not facing:
+	var line := _dialogue.shown_line() if _led_away else null
+	if line != null:
+		_calling.say(Game.visitor, line, Game.conversation)
+	elif talking and not facing:
 		_calling.call_out(Game.visitor)
 	elif not Game.leaving_lines.is_empty():
 		_calling.call_out_leaving(Game.visitor, Game.leaving_lines)
 	else:
 		_calling.stop()
+	# Last: a look of the line that starts comes back here. Looking away on one's own hushes the line,
+	# and looking back says it again from its start.
+	if facing and _dialogue_for != Game.arrival:
+		_dialogue_for = Game.arrival
+		_dialogue.start(Game.visitor, Game.conversation)
+	elif facing and not was_shown:
+		_dialogue.replay()
+
+
+# A look of the conversation turns the player's view; turned away, its lines go on in the call-out box.
+func _look(look: StringName) -> void:
+	var view: StringName = DialogueLine.LOOKS.get(look, &"")
+	var marker := _shop.view_marker(view)
+	if marker == null:
+		push_error("Main: the look '%s' of a line in %s names no view of the shop (%s); the view stays" % [look, Game.conversation.id if Game.conversation != null else "no conversation", view])
+		return
+	_led_away = not marker.faces_customer
+	Game.go_to_view(view)
+	_sync_talk()  # also when the view was there already
+
+
+func _on_line_read(line: DialogueLine) -> void:
+	if not _led_away or line != _dialogue.shown_line():
+		return
+	_dialogue.next_line()
+	_sync_talk()

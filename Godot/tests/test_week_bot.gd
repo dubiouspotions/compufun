@@ -523,10 +523,16 @@ func _state_of(job: Job) -> Node:
 	return null
 
 
-# Reads the visitor's lines, a click at a time, and clicks one of the choices when they show: one not
-# clicked yet in this conversation, or the button that leaves the list. The dialogue ends itself.
+# Reads the visitor's lines, a click at a time, also in the call-out box while a look turned the player
+# away, and clicks one of the choices when they show: one not clicked yet in this conversation, or the
+# button that leaves the list. The dialogue ends itself.
 func _talk() -> void:
 	_doing = [_code(game.errand), "talks with %s at the %s" % [_who(), "drop-off" if game.visit == GAME.Visit.DROP_OFF else "pickup"]]
+	var calling: Control = _main.get_node("%CustomerCalling")
+	if calling.call(&"unread_line") != null:
+		if _frame % READ_FRAMES == 0:
+			await _click(_screen_of(calling, calling.size / 2.0))  # a look of the conversation turned the player away
+		return
 	if game.view != &"Main":
 		game.go_to_view(&"Main")  # the dialogue shows while the player faces the customer
 		return

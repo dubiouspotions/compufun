@@ -10,6 +10,10 @@ extends Control
 ## [param leaving] are the leaving lines that the customer calls out as they go, outside the box
 ## (ConversationWalk.leaving_lines), each with its effect; empty for none.
 signal finished(leaving: Array[DialogueLine])
+## The player's view should turn before the line that starts: [param look] is a key of
+## [constant DialogueLine.LOOKS], the line's own look ([member DialogueLine.look]), or "ahead" when
+## choices show while the box is hidden, because the player answers facing the customer.
+signal looked(look: StringName)
 
 const _NEUTRAL := &"neutral"
 ## Source pixels either side of the torso center that still count as the head.
@@ -362,6 +366,8 @@ func _show_line() -> void:
 	if _walk != null and _line >= _lines.size() - 1:
 		_walk.said()  # now, so that choices can show once the line goes quiet
 		_pending = _walk.choices()
+	if line != null and line.look != &"":
+		looked.emit(line.look)
 	_speak(line)
 
 
@@ -370,16 +376,32 @@ func hush() -> void:
 	_voice.hush()
 
 
-## Says the shown line again from its start, as when the player looks back at the customer.
+## Says the shown line again from its start, as when the player looks back at the customer. Once
+## its choices show, the line is over, and it stays quiet.
 func replay() -> void:
-	if _line < _lines.size():
+	if shown_line() != null:
 		_speak(_lines[_line])
 
 
-## Plays the voice file of [param line]. A line without one stays silent: its voice is not rendered yet.
+## The customer's line that the box shows, also while it is hidden; null while choices show, and
+## before [method start].
+func shown_line() -> DialogueLine:
+	return _lines[_line] if _line < _lines.size() and not _choices.visible else null
+
+
+## Goes on from the shown line as a click does once it is typed out: to the next line, the choices
+## or the end. The call-out box calls it while a look has turned the player away and hidden the box.
+func next_line() -> void:
+	if _text.is_typing():
+		_text.finish()
+	_advance()
+
+
+## Plays the voice of [param line] while the box shows; a hidden box leaves the voice to the call-out
+## box. A line without a voice file stays silent: its voice is not rendered yet.
 func _speak(line: DialogueLine) -> void:
 	_voice.hush()
-	if _voiced:
+	if _voiced and is_visible_in_tree():
 		_voice.say(line, _customer.voice, VoiceEffect.of(line, _conversation))
 
 
@@ -404,6 +426,13 @@ func _advance() -> void:
 func _show_pending() -> void:
 	_show_choices(_pending)
 	_pending = []
+	_face_choices()
+
+
+# Choices that show while a look has hidden the box turn the player back to the customer.
+func _face_choices() -> void:
+	if _choices.visible and not is_visible_in_tree():
+		looked.emit(&"ahead")
 
 
 # On to where the walk is: the next reply's lines, a list of choices, or the end.
@@ -414,6 +443,7 @@ func _go_on() -> void:
 		_show_line()
 	elif _walk != null and not _walk.choices().is_empty():
 		_show_choices(_walk.choices())
+		_face_choices()
 	else:
 		_show_choices([])
 		_voice.hush()
