@@ -41,6 +41,7 @@ enum VisitorState {
 	TALKING, ## The visitor talks at the counter.
 	WALKING_OUT, ## The visitor has handed the computer over and walks from the counter to the door.
 	WAITING, ## The visitor's computer stands on the counter while they wait beside it ([constant Errand.Brings.SHOWS]), until [method talk_to_visitor].
+	OUTSIDE, ## The visitor walked out the door and walks away down the alley; the phone works again.
 }
 
 ## The places on the counter. A full counter holds back the next drop-off.
@@ -278,18 +279,31 @@ func visitor_carries() -> bool:
 	match visitor_state:
 		VisitorState.WALKING_IN, VisitorState.TALKING:
 			return visit == Visit.DROP_OFF and errand != null and errand.brings != Errand.Brings.NOTHING
-		VisitorState.WALKING_OUT:
+		VisitorState.WALKING_OUT, VisitorState.OUTSIDE:
 			return visit == Visit.PICKUP
 	return false
 
 
-## The room calls this when the visitor who walks out reaches the door. The visit ends, and the
-## wait for the next customer starts.
-func customer_left() -> void:
+## The room calls this when the visitor who walks out passes the door (OUTSIDE): from then on the
+## phone works, though they stay the visitor until [method customer_left].
+func customer_out_the_door() -> void:
 	if visitor_state != VisitorState.WALKING_OUT:
+		push_error("Game.customer_out_the_door: no visitor is walking out (visitor state %s)" % VisitorState.find_key(visitor_state))
+		return
+	visitor_state = VisitorState.OUTSIDE
+	changed.emit()
+
+
+## The room calls this when the visitor who walks out is out of sight, after
+## [method customer_out_the_door]. The visit ends, and the wait for the next customer starts. A call
+## that the player made meanwhile goes on.
+func customer_left() -> void:
+	if visitor_state not in [VisitorState.WALKING_OUT, VisitorState.OUTSIDE]:
 		push_error("Game.customer_left: no visitor is walking out (visitor state %s)" % VisitorState.find_key(visitor_state))
 		return
+	var call := conversation if phase == Phase.CALLING else null
 	_set_visitor(null, Visit.NONE)
+	conversation = call
 	changed.emit()
 
 
@@ -1037,12 +1051,17 @@ func _set_in(items: Array[String], item: String, present: bool) -> void:
 	changed.emit()
 
 
-## Picks up the phone's receiver. False, and nothing changes, while someone is in the shop or the
-## shop is not open.
+## True when the player can pick up the phone: the shop is open and nobody is in it (a visitor
+## who is OUTSIDE is out the door).
+func can_pick_up_phone() -> bool:
+	return phase == Phase.OPEN and not _in_shop(visitor, visitor_state)
+
+
+## Picks up the phone's receiver. False, and nothing changes, unless [method can_pick_up_phone].
 func pick_up_phone() -> bool:
 	if phone_off_hook:
 		return true
-	if phase != Phase.OPEN or visitor != null:
+	if not can_pick_up_phone():
 		return false
 	phone_off_hook = true
 	changed.emit()
@@ -1057,9 +1076,14 @@ func put_down_phone() -> void:
 	changed.emit()
 
 
-## True when the phone can call: the shop is open, nobody is in it, and a computer is done.
+## True when the phone can call: [method can_pick_up_phone], and a computer is done.
 func can_call() -> bool:
-	return phase == Phase.OPEN and visitor == null and jobs.any(func(j: Job) -> bool: return j.done)
+	return can_pick_up_phone() and jobs.any(func(j: Job) -> bool: return j.done)
+
+
+# True when [param who] is in the shop: a visitor who hasn't walked out the door yet.
+static func _in_shop(who: Customer, state: VisitorState) -> bool:
+	return who != null and state != VisitorState.OUTSIDE
 
 
 ## The done job on the counter that came in first (lowest [member Job.order]), whose customer the
@@ -1365,11 +1389,11 @@ func restore(state: Dictionary) -> String:
 			return _refuse(value)
 	if (new_visitor == null) != (new_visit == Visit.NONE) or (new_visitor == null) != (new_visitor_state == VisitorState.NONE):
 		return _refuse("visitor, visit and visitor_state must all be set, or all be none")
-	if new_visitor != null and new_phase != Phase.OPEN:
-		return _refuse("a visitor can be in the shop only while it is OPEN")
+	if new_visitor != null and new_phase != Phase.OPEN and not (new_phase == Phase.CALLING and new_visitor_state == VisitorState.OUTSIDE):
+		return _refuse("a visitor can be in the shop only while it is OPEN, or OUTSIDE while CALLING")
 	var new_pickup: Job = null
 	var new_errand: Errand = null
-	var handed_over: bool = new_visitor_state in [VisitorState.WALKING_OUT, VisitorState.WAITING]
+	var handed_over: bool = new_visitor_state in [VisitorState.WALKING_OUT, VisitorState.OUTSIDE, VisitorState.WAITING]
 	if new_visit == Visit.DROP_OFF:
 		new_errand = _arrived(new_day, new_arrivals, new_visitor, new_flags)
 		if new_errand == null:
@@ -1396,7 +1420,7 @@ func restore(state: Dictionary) -> String:
 	if new_calling != null and not new_calling.done:
 		return _refuse("CALLING about a computer that isn't fixed and tested")
 	var new_off_hook: bool = new_phase == Phase.CALLING or bool(state.get("phone_off_hook", false))
-	if new_off_hook and new_visitor != null:
+	if new_off_hook and _in_shop(new_visitor, new_visitor_state):
 		return _refuse("the phone is off the hook while %s is in the shop" % _who(new_visitor))
 
 	var hand_pieces: Variant = Job.pieces_from(state.get("hand", []))

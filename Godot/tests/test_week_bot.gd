@@ -35,7 +35,7 @@ const STORY_GAPS: Array[String] = ["has no conversation for day", "\" portrait"]
 const KNOWN_ENUMS: Dictionary[String, Array] = {
 	"Game.Phase": ["IDLE", "OPEN", "CALLING", "DAY_OVER", "ENDED", "CLOSED"],
 	"Game.Visit": ["NONE", "DROP_OFF", "PICKUP"],
-	"Game.VisitorState": ["NONE", "WALKING_IN", "TALKING", "WALKING_OUT", "WAITING"],
+	"Game.VisitorState": ["NONE", "WALKING_IN", "TALKING", "WALKING_OUT", "WAITING", "OUTSIDE"],
 	"Game.Daypart": ["NONE", "MORNING", "MIDDAY", "AFTERNOON", "EVENING", "NIGHT"],
 	"Errand.Brings": ["LEAVES", "NOTHING", "SHOWS"],
 	"Conversation.Trigger": ["ARRIVE", "PICKUP", "PHONE"],
@@ -48,7 +48,7 @@ const KNOWN_CHECKS: Array[String] = ["SettingCheck", "FileCheck", "MultiCheck", 
 const KNOWN_GAME_METHODS: Array[String] = [
 	# the day, the visitor and the talk
 	"start_day", "start_next_day", "has_next_day", "can_open", "open_shop", "can_close", "close_shop",
-	"customer_arrived", "dialogue_finished", "talk_to_visitor", "visitor_carries", "customer_left",
+	"customer_arrived", "dialogue_finished", "talk_to_visitor", "visitor_carries", "customer_out_the_door", "customer_left",
 	"offered", "reply_to", "choose", "go_on", "matching_conversation", "coming", "go_to_view",
 	# the repair
 	"focus_job", "job_beside", "lay_down", "can_stand_up", "stand_up", "open_case", "turn_screw", "can_turn",
@@ -59,7 +59,7 @@ const KNOWN_GAME_METHODS: Array[String] = [
 	"enter_job", "record_of", "start_db", "mark_symptom", "tick_repair", "carry_printout", "tick_printout",
 	"trash_printout", "printout_box",
 	# the phone and the end
-	"pick_up_phone", "put_down_phone", "can_call", "next_to_call", "call_customer", "rings_out", "hang_up",
+	"can_pick_up_phone", "pick_up_phone", "put_down_phone", "can_call", "next_to_call", "call_customer", "rings_out", "hang_up",
 	"ending", "reboot",
 	# state, flags and tools that a week doesn't need to play
 	"snapshot", "restore", "load_story", "play_errand", "day_numbers", "day_of", "date_of", "check_day",
@@ -235,7 +235,7 @@ func _act() -> void:
 	if _restored_day != game.day_number:
 		_check_restore()
 		return
-	if game.visitor_state in [GAME.VisitorState.WALKING_IN, GAME.VisitorState.WALKING_OUT]:
+	if game.visitor_state in [GAME.VisitorState.WALKING_IN, GAME.VisitorState.WALKING_OUT, GAME.VisitorState.OUTSIDE]:
 		_doing = [_code(game.errand), "waits for %s to walk %s" % [_who(), "in" if game.visitor_state == GAME.VisitorState.WALKING_IN else "out"]]
 	if _testing != null:
 		if _testing in game.jobs and not _testing.tested:

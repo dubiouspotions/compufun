@@ -37,6 +37,10 @@ const WORKVIEW: StringName = &"Workview"
 @export var post_it_read_distance: float = 0.2
 ## The seconds that the post-it takes to come up close, and to go back onto the computer.
 @export var post_it_read_seconds: float = 0.3
+## The phone's outline while the mouse is over it and a click picks it up (Game.can_pick_up_phone), and how far
+## the outline stands out from it, in metres.
+@export var phone_hover_color: Color = Color(0.75, 0.9, 1.0)
+@export var phone_outline_width: float = 0.01
 
 @onready var _camera: Camera3D = %Camera
 @onready var _views: Node3D = %Views
@@ -55,6 +59,8 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
+@onready var _phone_hotspot: Hotspot = %Phone
+@onready var _phone_body: MeshInstance3D = $Room/PhoneProp/Body
 @onready var _the_end: TheEnd = %TheEnd
 @onready var _hand: Hand = %Hand
 
@@ -101,6 +107,8 @@ var _read_weight: float = 0.0  # 0 on the computer, 1 up close
 var _read_open: bool = false
 var _read_tween: Tween
 var _view_hotspots: Array[Hotspot] = []  # GO_TO_VIEW hotspots, off in their own view so the back strip and the cursor see past them
+var _phone_hovered: bool = false
+var _phone_outline: StandardMaterial3D
 
 
 func _ready() -> void:
@@ -130,6 +138,9 @@ func _ready() -> void:
 	_bench.degauss_pressed.connect(degauss_requested.emit)
 	_open_sign.open_requested.connect(Game.open_shop)
 	_open_sign.close_requested.connect(close_requested.emit)
+	_phone_outline = Hotspot.outline_material(phone_hover_color, phone_outline_width)
+	_phone_hotspot.mouse_entered.connect(_set_phone_hovered.bind(true))
+	_phone_hotspot.mouse_exited.connect(_set_phone_hovered.bind(false))
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -432,9 +443,10 @@ func _sync() -> void:
 				_walk_tween.kill()
 			_body.rotation.y = 0.0
 			_follow.progress_ratio = 1.0
-		Game.VisitorState.WALKING_OUT:
+		Game.VisitorState.WALKING_OUT, Game.VisitorState.OUTSIDE:
 			if _walk_out_arrival != Game.arrival:
-				_walk_out()
+				_walk_out(Game.visitor_state == Game.VisitorState.OUTSIDE)
+	_sync_phone()
 	var calling := Game.phase == Game.Phase.CALLING
 	if calling and not _calling:
 		_phone_receiver.play()
@@ -501,18 +513,33 @@ func skip_walk() -> bool:
 
 
 # The path runs from the door to the counter, so the visitor turns around and walks it backwards.
-func _walk_out() -> void:
+# [param outside] starts at the door, past it, as a restore of an OUTSIDE visitor does.
+func _walk_out(outside: bool = false) -> void:
 	_walk_out_arrival = Game.arrival
 	if _walk_tween != null:
 		_walk_tween.kill()
-	_follow.progress_ratio = 1.0
-	_walk_tween = create_tween()
-	_walk_tween.tween_property(_body, "rotation:y", PI, about_face_seconds)
 	var door := _door_ratio()
-	_walk_tween.tween_property(_follow, "progress_ratio", door, walk_seconds * (1.0 - door))
-	_walk_tween.tween_callback(_door_bell.play)
+	_walk_tween = create_tween()
+	if outside:
+		_body.rotation.y = PI
+		_follow.progress_ratio = door
+	else:
+		_follow.progress_ratio = 1.0
+		_walk_tween.tween_property(_body, "rotation:y", PI, about_face_seconds)
+		_walk_tween.tween_property(_follow, "progress_ratio", door, walk_seconds * (1.0 - door))
+		_walk_tween.tween_callback(_door_bell.play)
+		_walk_tween.tween_callback(Game.customer_out_the_door)
 	_walk_tween.tween_property(_follow, "progress_ratio", 0.0, walk_seconds * door)
 	_walk_tween.finished.connect(Game.customer_left)
+
+
+func _set_phone_hovered(on: bool) -> void:
+	_phone_hovered = on
+	_sync_phone()
+
+
+func _sync_phone() -> void:
+	_phone_body.material_overlay = _phone_outline if _phone_hovered and not Game.phone_off_hook and Game.can_pick_up_phone() else null
 
 
 ## The progress ratio of the customer path where it passes under the door bell.

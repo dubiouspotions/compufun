@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## A conversation that ends in two [leaving] lines: the dialogue box closes before them, and the
-## customer calls both out, one after the other, in the call-out box while walking out; at the door
-## the box goes.
+## customer calls both out, one after the other, in the call-out box while walking out; once they
+## are out of sight the box goes.
 
 const ERRAND := """customer: skater_bro
 
@@ -40,8 +40,8 @@ func run() -> void:
 	check("after the last line in the box, the box closes and the customer walks out", [box.visible, game.visitor_state], [false, game.VisitorState.WALKING_OUT])
 	check("the first leaving line is called out at once", [calling.visible, said.text], [true, "Later, skater!"])
 	await create_timer(float(calling.get(&"show_seconds")) + float(calling.get(&"leaving_gap")) + 0.1).timeout
-	check("then the second, while still walking", [game.visitor_state, calling.visible, said.text], [game.VisitorState.WALKING_OUT, true, "Peace out!"])
+	check("then the second, while still walking", [game.visitor_state in [game.VisitorState.WALKING_OUT, game.VisitorState.OUTSIDE], calling.visible, said.text], [true, true, "Peace out!"])
 	shop.call(&"skip_walk")
 	await process_frame
-	check("out of the door, the call-out box goes", [game.visitor_state, calling.visible], [game.VisitorState.NONE, false])
+	check("out of sight, the call-out box goes", [game.visitor_state, calling.visible], [game.VisitorState.NONE, false])
 	main.queue_free()
