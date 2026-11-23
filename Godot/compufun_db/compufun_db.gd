@@ -62,7 +62,7 @@ const SEARCH_LENGTH: int = 40
 ## found, the longer the search.
 @export var hit_seconds: Vector2 = Vector2(0.3, 0.7)
 ## The seconds between two seeks of the hard drive while it reads, picked between x and y.
-@export var seek_seconds: Vector2 = Vector2(0.2, 0.5)
+@export var seek_seconds: Vector2 = Vector2(0.08, 0.3)
 ## The hard drive seeking, from the work modem's speaker beside the tower; null is silent.
 @export var hdd_seek: SoundSet = preload("res://sounds/hdd_seek.tres")
 @export_group("")
