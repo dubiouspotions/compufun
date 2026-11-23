@@ -85,19 +85,23 @@ func _check_screen() -> void:
 	_press(db, KEY_ENTER)
 	check("picking it again keeps the search and its ticks", [game.db_search, search.ticked_checks, db.get("_column")], [search, [search.offered[0]], CHECKS])
 	game.mark_check(search.offered[0], false)
-	var right: Array[String] = ["Memory test fails at startup", "Windows starts", "Bluescreen after the desktop appears", "Windows stays up after the desktop appears", FREEZES, "CPU fan is clogged or blocked", FAN]
+	var right: Array[String] = []
+	for id: String in ["bad_ram", "broken_hard_drive", "dust_overheat", "hamster"]:
+		for c: String in (load("res://problems/%s.tres" % id) as Problem).checks:
+			if c not in right:
+				right.append(c)
 	check("CHECK lists the checks of its causes, and no others, in their order", search.offered, right)
 	check("its causes, by name: the dust and the hamster are one", _texts(db, CAUSES), ["Bad RAM module", "Failing hard drive", "Faulty CPU fan"])
 	check("all possible before a tick", _possible(db), [true, true, true])
 
 	game.mark_check(FREEZES, true)
-	check("a yes: ticked rules out the causes that don't say yes: to it", _possible(db), [false, false, true])
+	check("a tick rules out the causes that say no: to it, and no others", _possible(db), [true, false, true])
 	game.mark_check(FAN, true)
-	check("a no: ticked rules out the causes that say no: to it", _possible(db), [false, false, false])
-	game.mark_check(FAN, false)
-	game.mark_check(FREEZES, false)
+	check("each tick narrows on", _possible(db), [true, false, false])
 	game.mark_check("Windows starts", true)
-	check("a no: of one cause leaves the others", _possible(db), [false, true, true])
+	check("until none is left", _possible(db), [false, false, false])
+	for c: String in [FREEZES, FAN, "Windows starts"]:
+		game.mark_check(c, false)
 	game.mark_check("Windows starts", false)
 
 	db.set("hit_seconds", Vector2(0.2, 0.2))
@@ -112,6 +116,7 @@ func _check_screen() -> void:
 	db.set("hit_seconds", Vector2.ZERO)
 	db.call("_search", "Restarts by itself")
 	game.mark_check(FREEZES, true)
+	game.mark_check("Windows starts", true)
 
 	_press(db, KEY_LEFT)
 	_type(db, " ")
@@ -121,6 +126,7 @@ func _check_screen() -> void:
 	_press(db, KEY_ENTER)
 	check("picked again, they show", _texts(db, CAUSES).size(), 3)
 	game.mark_check(FREEZES, true)
+	game.mark_check("Windows starts", true)
 
 	var printer: Node3D = load("res://props/printer.tscn").instantiate()
 	printer.add_to_group(&"printer")

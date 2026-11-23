@@ -22,7 +22,19 @@ func _problem_checks() -> void:
 	check("a check twice is an error", twice.errors, PackedStringArray([path + ":4: the check 'A' a second time"]))
 
 
+# Every check in CompuFunDB is a yes: or no: of 3 causes or more, so one tick never names the cause.
+func _three_causes_a_check() -> void:
+	var causes: Dictionary[String, Dictionary] = {}
+	for problem: Problem in game.week.problems.values():
+		if problem.in_compufun_db:
+			for c: String in problem.checks:
+				causes.get_or_add(c, {})[problem.cause_name()] = true
+	var few := causes.keys().filter(func(c: String) -> bool: return causes[c].size() < 3)
+	check("every check is on 3 causes or more", few.map(func(c: String) -> String: return "%s: %s" % [c, causes[c].keys()]), [])
+
+
 func run() -> void:
+	_three_causes_a_check()
 	_round_trip()
 	_problem_checks()
 	_errors()

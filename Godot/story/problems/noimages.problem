@@ -6,6 +6,10 @@ symptoms:
 checks:
 	yes: Programs lost their .EXE
 		shows: in C:\WINDOWS: NOTEPAD, WORDPAD, PBRUSH, CALC and others
+	no: Folder of icons hidden in a corner
+	no: CD tray opens and closes by itself
+	no: Unknown program in StartUp
+	no: Folders take seconds to open
 software steps:
 	Open C:\WINDOWS
 	Add .EXE back to each program

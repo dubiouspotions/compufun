@@ -4,10 +4,13 @@ symptoms:
 	Stops before Windows starts
 	Error text at startup
 checks:
+	no: Windows starts
+	yes: Memory test passes
+	yes: Shows a picture at power-on
 	yes: Stops at "Non-System disk or disk error"
 	yes: Floppy in drive A:
 		shows: sticks out of the drive; the eject button pulses
-	no: Windows starts
+	no: Fans run but no picture
 software steps:
 	Eject the floppy
 	Restart

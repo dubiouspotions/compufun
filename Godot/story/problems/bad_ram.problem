@@ -6,9 +6,18 @@ symptoms:
 	Restarts by itself
 	Blue screen
 checks:
-	yes: Memory test fails at startup
-		shows: "Memory test fail", then "System halted"
 	no: Windows starts
+	no: Memory test passes
+		shows: fails with "Memory test fail", then "System halted"
+	yes: Shows a picture at power-on
+	no: Stops at "Non-System disk or disk error"
+	no: Floppy in drive A:
+	yes: CPU fan is clean and spins freely
+	no: CPU fan is clogged or blocked
+	no: GPU heatsink is scorched
+	yes: Every part sits in its own place
+	no: CPU socket is empty
+	no: Fans run but no picture
 hardware steps:
 	Open case
 	Swap one RAM module for a new one

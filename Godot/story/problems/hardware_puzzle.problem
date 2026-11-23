@@ -4,12 +4,14 @@ symptoms:
 	No picture at all
 	Stops before Windows starts
 checks:
-	yes: Fans run but no picture
+	no: Windows starts
+	no: Shows a picture at power-on
+	no: Stops at "Non-System disk or disk error"
+	no: Floppy in drive A:
+	no: Every part sits in its own place
 	yes: CPU socket is empty
 		shows: in the Workview
-	yes: Parts in the wrong places
-		shows: in the Workview
-	no: Windows starts
+	yes: Fans run but no picture
 hardware steps:
 	Open case
 	Put each part in its own slot

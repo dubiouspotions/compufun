@@ -5,6 +5,13 @@ symptoms:
 checks:
 	yes: High contrast colour scheme
 		shows: Display Properties, Appearance: High Contrast Black
+	no: Wallpaper is a picture of the desktop
+	yes: Picture is clean
+	no: Coloured blocks and torn lines on screen
+	no: Sound is muted
+	no: No screensaver set
+	yes: Desktop icons open
+	no: Windows takes long to start
 software steps:
 	Display Properties, Appearance
 	Pick Windows Standard

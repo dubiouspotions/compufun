@@ -4,7 +4,7 @@ extends Control
 ## SEARCH (the player types words and presses Enter: the symptoms of every Problem that hold them
 ## all), CHECK (the checks of every cause of the symptom picked: the Game.db_search; the player ticks what is true on the computer) and CAUSES
 ## (every Problem with that symptom, by its cause; a ticked check rules out a cause that says no: to
-## it, or that doesn't say yes: to a check another cause says yes: to). F prints the selected cause's fix, its steps ending in [member test_step], on the
+## it). F prints the selected cause's fix, its steps ending in [member test_step], on the
 ## shop's Printer; P prints the checklist. The work computer is slow: a column's entries come in one
 ## at a time, each after a seek of the hard drive, whenever what it shows changes. This screen keeps
 ## only its cursor and the typed words. It reads every Problem file, so its text is never a second
@@ -257,26 +257,9 @@ func _causes() -> Array[Problem]:
 	return causes
 
 
-# False once a ticked check rules [param problem] out: one it says no: to, or one that another
-# problem says yes: to and it doesn't (a computer has one cause).
+# False once a check that [param problem] says no: to is ticked.
 func _possible(problem: Problem) -> bool:
-	var findings := _findings()
-	for check: String in Game.db_search.ticked_checks:
-		if problem.check_yes.has(check) and not problem.check_yes[check]:
-			return false
-		if not problem.check_yes.has(check) and findings.has(check):
-			return false
-	return true
-
-
-# Every check that some problem says yes: to.
-func _findings() -> Dictionary[String, bool]:
-	var found: Dictionary[String, bool] = {}
-	for problem: Problem in _problems:
-		for check: String in problem.check_yes:
-			if problem.check_yes[check]:
-				found[check] = true
-	return found
+	return not Game.db_search.ticked_checks.any(func(c: String) -> bool: return problem.check_yes.has(c) and not problem.check_yes[c])
 
 
 # Starts the search for [param query]: what to check is the checks of every problem that has it, in

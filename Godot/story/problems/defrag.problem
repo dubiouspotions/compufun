@@ -3,10 +3,17 @@ cause: Fragmented hard drive
 symptoms:
 	Slow computer
 checks:
+	yes: Windows starts
+	yes: Windows stays up after the desktop appears
+	no: Bluescreen after the desktop appears
+	no: Freezes with a buzz after the desktop appears
 	yes: Windows takes long to start
 		shows: the splash screen lasts three times as long
 	yes: Folders take seconds to open
 		shows: 2 s each
+	yes: Desktop icons open
+	no: CD tray opens and closes by itself
+	no: Unknown program in StartUp
 software steps:
 	Run Disk Defragmenter
 	Leave it on overnight
