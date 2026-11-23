@@ -340,7 +340,7 @@ static func is_program_name(file_name: String) -> bool:
 
 
 ## The extensions that the app in [param program] opens: its root's `opens`, from the scene or
-## else from the root script's default. Read without making the app.
+## else from the root script's default. Reads it without making the app's scene.
 static func opens_of(program: PackedScene) -> Array:
 	var state := program.get_state()
 	var script: Script
@@ -352,7 +352,10 @@ static func opens_of(program: PackedScene) -> Array:
 			script = state.get_node_property_value(0, i)
 	if script == null:
 		return []
-	var opens: Variant = script.get_property_default_value(&"opens")
+	var bare: Object = script.new()  # get_property_default_value returns null outside the editor (docs/gotchas.md)
+	var opens: Variant = bare.get(&"opens")
+	if bare is Node:
+		bare.free()
 	return opens if opens is Array else []
 
 
