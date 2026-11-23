@@ -18,14 +18,14 @@ same on every machine and keep merges small.
    ```
 
 4. On Windows, run `export.sh` from Git Bash, or export from the editor (Project > Export).
-5. For F9 reports to reach the board, put the team's issues token in `issues-token.txt` in the repo
-   root (one line; git ignores it), or in the environment variable `HUMANERROR_ISSUES_TOKEN`.
-   Ask a teammate for it. Without it, reports stay in `feedback/`.
+5. For F9 reports and the Story Lab's Send to make issues, put the team's issues token in
+   `issues-token.txt` in the repo root (one line; git ignores it), or in the environment variable
+   `HUMANERROR_ISSUES_TOKEN`. Ask a teammate for it. Without it, reports stay in `feedback/`.
 
    The token is a fine-grained one owned by `dubiouspotions`, for this repository only, with
-   **Contents: read and write** (the screenshots go to the branch `feedback`), **Issues: read and
-   write**, and the organization permission **Projects: read and write** (the board). Contents
-   write can push to any branch, so the token never goes into an export; F9 runs only in the editor.
+   **Contents: read and write** (the screenshots go to the branch `feedback`) and **Issues: read
+   and write**. The board adds new issues itself. Contents write can push to any branch, so the
+   token never goes into an export; F9 runs only in the editor.
 
 ## Line endings
 

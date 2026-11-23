@@ -1,3 +1,24 @@
 customer: activist_guy
 brief:
 	He has seen what happens and leaves town. He just leaves his computer and leaves, without a problem: "I would recommend you stay away from tech as well." Digging deep in it finds his research. With a lot of time: he has downgraded his OS. His narrative ends here.
+
+== drop-off
+(neutral) Dude.
+- What?
+- Are you ok? You look a little...
+(irritated03) Listen. Somethings not adding up here. I suggest you do as I, pack up and leave.
+- Uuh...
+	(irritated02) I don't have time to stand here and try to explain this to you. I should already be far away from here but I wanted to give you heads up. If you don't want to follow my advice, up to you. But I strongly recommend you get outta here asap.
+- I can't really leave. I promised to take care of the store this week.
+	(irritated02) I don't have time to stand here and try to explain this to you. I should already be far away from here but I wanted to give you heads up. If you don't want to follow my advice, up to you. But I strongly recommend you get outta here asap.
+- What do you mean "not adding up"?
+	(irritated02) Something really fishy is going on and it involves our computers somehow! The signs are everywhere!
+	- Like what?
+		(irritated02) I don't have time to stand here and try to explain this to you. I should already be far away from here but I wanted to give you heads up. If you don't want to follow my advice, up to you. But I strongly recommend you get outta here asap.
+	- Yeah, I've been noticing some strange things myself.
+		(irritated02) We're running out of time. I should already be far away from here but I wanted to give you a heads up. If you don't want to follow my advice, up to you. But I strongly recommend you get outta here asap.
+
+- Ok, thanks for the heads up. What about your computer?
+	(neutral) No worries, dude.
+	(angry) You can keep it - I'm planning on staying away from any tech for the foreseeable future.
+	- Ok..? Stay safe, I guess!

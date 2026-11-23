@@ -3,3 +3,34 @@ problem: desktop_prank
 brief:
 	A colleague's prank (desktop_prank).
 	Special event, the Skater jumpscare: while the player works on the Hat guy's hardware, the Skater pops up from behind the counter, as if he had hidden there: "Is my computer done?" When the player zooms out, he stands as usual; a short talk, "OK, I'll wait", and he leaves.
+
+== drop-off
+(angry) Mr IT-guy! I have NO IDEA what happened but my computer is acting up AGAIN!
+- Welcome back and tell me more!
+	(problem) My programs won't open! See for yourself!
+- No idea you say...
+	(problem) I swear! I just opened my computer and it was like this!!
+
+- What do you mean?
+	(angry) I can't click on any of the icons on my desktop! It's like they are all frozen in place.
+	(irritated01) I absolutely cannot work like this!
+	- That sounds odd!
+	- I feel you girl!
+	- I'll take a look. It's probably nothing major, like last time.
+	(neutral) Well, Nick says the trusts you and you fixed my issues earlier this week so I hope you'll figure this one out as well mr IT-guy.
+	- I will do my absolute best. Have a Funtastic day!
+
+== pick-up
+(neutral) This is starting to feel like my second home. Did you figure it out mr IT-guy?
+- It was an easy fix. All is back to normal. Nothing to worry about.
+	(happy) You're truly the best!
+	- Thanks. See you around. Oh, and hey - Don't leave your computer unattended!
+- You didn't by any chance leave your computer unattended again..?
+	(neutral) What do you mean "again"!?
+	- ...I think someone is playing pranks you!
+		(thinking) Playing pranks...?
+		(irritated03) Oh.. my..god!
+		(irritated02) It's NICK isn't it!?
+		(thinking) I THOUGHT he has been acting weird around me. I thought he didn't like hanging out with me anymore!
+		(happy) But It's OBVIOUSLY just because he's sneaking about orchestrating these HILARIOUS Hijinks to brighten my day! Thank you for fixing my computer! I'm off to the office to prank him RIGHT BACK!
+		- Have a... Funtastic day...

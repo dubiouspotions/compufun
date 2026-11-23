@@ -4,15 +4,31 @@ brief:
 	The Young entrepreneur pranked her: High Contrast Black. Their emails go back and forth about it; nothing leads the player there.
 
 == drop-off
-(neutral) Hi. I hope you can help, I have a report due.
-+ Busy at the office?
-	(irritated01) Always. And someone thinks pranks are a business strategy.
-+ So, what's your problem?
-	(problem) All the colours on my computer have changed. Black and yellow everywhere. I can't read a thing.
-	+ Did someone use it?
-		(thinking) I left it on over lunch. When I came back, it looked like this.
-	- OK, leave it with me. [end]
-		(neutral) Thank you. Please make it normal again.
+(neutral) Hey mr IT-guy! Nick from work recommended this place. I have NO IDEA what happened but I need URGENT help!
+- Welcome to Compufun! I'll do my best to help. Tell me more.
+	(problem) The colors are all messed up! Open it and see for yourself!
+- ... that's pretty evident.
+	(angry) Hey! I don't need your sarcasm! I swear! I just opened my computer and it was like this!!
+
+- What do you mean?
+	(irritated02) It's my work computer! All the colours have changed! Everything is all black and tacky looking. I can't work like this!
+	- This machine is from your workplace? Are you the only one using this computer?
+		(neutral) It's only me! I worry about people accessing my files, so Nick helped me set up the computer all safe-like!
+		- I think I know what might be up... Just leave it with me.
+	- I feel you girl!
+	- I'll take a look. I'm sure this is nothing critical.
+	(happy) I'm so relieved.
+	(problem) Nick said he thought it was something about my OS version maybe?
+	(happy) Of course: he isn't a computer WIZ like you, so what does he know! At least coming here was good advice!
+	- You're in safe hands miss. I'll call you when you can come and pick it up! Have a Funtastic day!
 
 == pick-up
-(happy) Normal colours! You're a lifesaver.
+(neutral) Hey mr IT-guy! You already figured out why my computer suddenly became so awful looking?
+- It was an easy fix. All is back to normal. Nothing to worry about.
+	(happy) I'm so happy! Thanks mr IT-guy! You're the best!
+	- Thanks... I guess... Have a Funtastic day!
+- Looks like someone set you up for a little prank. Did you perhaps leave your computer unlocked and unattended?
+	(thinking) Hmm. Not that I can think of. I mean, it was just me and Nick in the office this week.
+	- ...
+		(happy) Well then! I'll be on my way! Buh-bye mr IT-guy!
+		- Have a... Funtastic day...

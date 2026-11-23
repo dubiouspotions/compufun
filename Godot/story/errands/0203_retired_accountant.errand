@@ -4,15 +4,22 @@ brief:
 	Exactly the same issue as his first visit: the only duplicate problem of the week.
 
 == drop-off
-(irritated01) Hello again.
-+ Back so soon?
-	(irritated02) Believe me, I'd rather not be.
-+ So, what's your problem?
-	(irritated01) It's silent again! Since last night. I didn't touch a thing, I promise.
-	+ Really nothing? Not even the volume?
-		(thinking) Well... maybe I clicked the little speaker. Once. Or twice.
-	- OK, leave it with me. [end]
-		(irritated01) Please hurry. The tax office won't wait.
+(neutral) Hello again.
+- Back so soon?
+	(problem) Believe me, I'd rather not be.
+	- So, what's your problem?
+- Oh, it's you again! Anything happened?
+(problem) It's silent again! Since last night. I didn't touch a thing, I promise.
+- Really? Nothing? Not even the volume?
+	(neutral) Well... maybe I clicked the little speaker. Once. Or twice.
+	- OK, leave it with me.
+		(neutral) Please hurry. The tax office won't wait.
+		- I'll call you.
 
 == pick-up
-(happy) It plays its little tune again? Wonderful.
+(happy) Thanks for getting back to me so quickly!
+- Well.. It wasn't really a complicated issue...
+- I didn't want to make the tax office wait
+- We are known for our swiftness here at CompuFun .
+(happy) So it plays its little tune again? Wonderful.
+- Pling plong! Good luck with those tax returns and stay off the speaker button!

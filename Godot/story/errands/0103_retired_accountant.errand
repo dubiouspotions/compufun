@@ -5,14 +5,23 @@ brief:
 
 == drop-off
 (neutral) Good day.
-+ Lovely weather today.
+- Welcome to CompuFun! Lovely weather today.
 	(neutral) Is it? I hadn't noticed. I've been inside with the tax returns all week.
-+ So, what's your problem?
-	(problem) My computer has gone quiet. Not a sound, not even the little tune when it starts.
-	+ Has anyone looked at it?
-		(neutral) My nephew says it is something in the settings, but I don't dare touch them.
-	- OK, leave it with me. [end]
-		(neutral) I need it for the tax returns, so please be quick.
+	- So, what's your problem?
+- So, what's your problem?
+(problem) My computer has gone quiet. Not a sound, not even the little tune when it starts.
+- Has anyone looked at it?
+	(neutral) My nephew says it is something in the settings, but I don't dare touch them.
+	- OK, leave it with me.
+		(neutral) I need it for the tax returns, so fingers crossed it's an easy fix.
+		- I'll call you as soon as I've fixed it. Have a Funtastic day!
 
 == pick-up
+(happy) Good day. Did you find out what was wrong?
+- Yep, and I fixed it too!
+- The sound was turned off...
 (happy) It plays its little tune again? Wonderful.
+- ...
+- Yeah, isn't it?
+(neutral) Thanks a lot.
+- Good luck with those tax returns!

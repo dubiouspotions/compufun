@@ -5,16 +5,28 @@ brief:
 
 == drop-off
 (neutral) Hello! Have you got a minute?
-+ Nice button. What's it for?
-	(happy) Saving the old park from the parking lot people. Sign our petition sometime!
-+ Busy day?
+- Busy day?
 	(neutral) Always. The newsletter doesn't write itself.
-+ So, what's your problem?
+- Nice button. What's it for?
+	(happy) Saving the old park from the parking lot people. Sign our petition sometime!
+
+- So, what's your problem?
 	(problem) My computer counts up its memory, and then it just stops. It never gets to Windows.
-	+ Did anything change lately?
-		(neutral) My nephew put more memory in it last month. It was meant to be faster!
-	- OK, leave it with me. [end]
+	- Did anything change lately?
+	- That's unfortunate. Can you remember doing anything special before it started to act up?
+	(neutral) My nephew put more memory in it last month.
+	(angry) It was meant to be faster!
+	- OK, leave it with me. Have a Funtastic day!
 		(neutral) I need it for the newsletter, so please be quick.
+		- I'll do my best. Have a Funtastic day!
 
 == pick-up
-(happy) It starts again? Wonderful. I'll have a word with my nephew.
+(neutral) It starts again? Wonderful.
+- Happy I could help.
+	(neutral) Was it the new memory?
+	- Yeah.
+- That upgrade...
+(irritated02) Yeah, I figured. I'll have a word with my nephew.
+- Maybe come back here next time you need an upgrade and I'll throw in a discount for you.
+	(happy) Thanks dude. I'll keep that in mind.
+	- Take care now.
