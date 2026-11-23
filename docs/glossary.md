@@ -204,8 +204,20 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Daypart**: The time of day in the game: morning, midday, afternoon or evening (`Game.daypart`). The day starts in the morning, the second and third customers who come in make it midday and afternoon (a visit without a computer at the start of the day, such as day 1's tutorial, doesn't count), and closing the shop makes it evening; time does not pass on its own. The Outside shows it.
 *Avoid:* hour, time, clock.
 
-**Debug menu**: The F2 panel in debug builds, with three tabs: World (the time of day, the day cycle, the rain), Game (the `Game` state) and Presets.
+**Debug menu**: The F2 panel in debug builds, with the tabs World (the time of day, the day cycle, the rain), Game (the `Game` state), Presets, Signs and GitHub (the issues token and the reporter name on a device).
 *Avoid:* dev menu, cheat menu.
+
+**Touch controls**: What a touch screen gets while the player's last pointer input was a finger (`ui/touch/`): swipes in the world, the trackpad, the touch keyboard and, in debug builds, the debug strip.
+
+**Swipe**: A finger's quick drag across the world: sideways it turns the view like a panorama, down it leaves a close-up. A mouse never swipes.
+
+**Trackpad**: The touch panel that moves the desktop's cursor in an open Screen View or CompuFunDB, instead of fingers on the glass.
+*Avoid:* touchpad, virtual mouse.
+
+**Touch keyboard**: The on-screen PC keyboard that the trackpad's KEYS button shows; it sends real key events.
+*Avoid:* virtual keyboard, soft keyboard.
+
+**Debug strip**: The row of buttons in debug builds on touch screens that press the debug tools' keys (F2, F3, F4, F9, Skip).
 
 **Preset**: A `Game` state that the debug menu sets with one click, in the format of `Game.snapshot()`. The presets are in `ui/debug_presets.gd`.
 *Avoid:* quick button, shortcut, save state.

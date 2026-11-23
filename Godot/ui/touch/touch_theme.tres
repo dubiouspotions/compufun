@@ -1,0 +1,93 @@
+[gd_resource type="Theme" format=3]
+
+[ext_resource type="Texture2D" path="res://ui/nav_buttons/button_normal.png" id="1_normal"]
+[ext_resource type="Texture2D" path="res://ui/nav_buttons/button_pressed.png" id="2_pressed"]
+
+[sub_resource type="StyleBoxFlat" id="panel"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.8, 0.765, 0.67, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.48, 0.45, 0.38, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="pad"]
+bg_color = Color(0.66, 0.63, 0.55, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.42, 0.36, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="grip"]
+content_margin_left = 8.0
+content_margin_right = 8.0
+bg_color = Color(0.72, 0.685, 0.6, 1)
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(0.56, 0.53, 0.46, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxTexture" id="key"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+texture = ExtResource("1_normal")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="key_down"]
+content_margin_left = 6.0
+content_margin_top = 9.0
+content_margin_right = 6.0
+content_margin_bottom = 3.0
+texture = ExtResource("2_pressed")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxEmpty" id="none"]
+
+[resource]
+Button/colors/font_color = Color(0.92, 0.9, 0.85, 1)
+Button/colors/font_hover_color = Color(0.92, 0.9, 0.85, 1)
+Button/colors/font_pressed_color = Color(1, 0.86, 0.45, 1)
+Button/colors/font_hover_pressed_color = Color(1, 0.86, 0.45, 1)
+Button/colors/font_focus_color = Color(0.92, 0.9, 0.85, 1)
+Button/font_sizes/font_size = 22
+Button/styles/normal = SubResource("key")
+Button/styles/hover = SubResource("key")
+Button/styles/pressed = SubResource("key_down")
+Button/styles/hover_pressed = SubResource("key_down")
+Button/styles/focus = SubResource("none")
+Button/styles/disabled = SubResource("key")
+Label/colors/font_color = Color(0.4, 0.37, 0.31, 1)
+Label/font_sizes/font_size = 18
+PanelContainer/styles/panel = SubResource("panel")
+TouchGrip/base_type = &"PanelContainer"
+TouchGrip/styles/panel = SubResource("grip")
+TouchPad/base_type = &"Panel"
+TouchPad/styles/panel = SubResource("pad")

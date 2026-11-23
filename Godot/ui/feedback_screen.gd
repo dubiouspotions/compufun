@@ -1,11 +1,12 @@
 class_name FeedbackScreen
 extends CanvasLayer
-## F9 (or Cmd+9) feedback, for us only: it works in a run from the editor, not in an exported game. F9 stops
+## F9 (or Cmd+9) feedback, for us only: it works in debug builds, not in a release export. F9 stops
 ## the game and shows a screenshot. The player draws on it, types a note and picks Bug or Idea.
-## The report goes to <repo>/feedback/<time>_<name>/: shot.png (with the marks) and report.json
-## (the note, the marks and what is under them, the Game state, the room and the build). With
-## "Send to GitHub" ticked, it also makes a GitHub issue (GitHubIssues): the screenshot goes to the
-## branch "feedback", and the board's own workflow adds the issue to the board.
+## The report goes to <repo>/feedback/<time>_<name>/ in a checkout, else user://feedback/: shot.png
+## (with the marks) and report.json (the note, the marks and what is under them, the Game state, the
+## room and the build). With "Send to GitHub" ticked, it also makes a GitHub issue (GitHubIssues):
+## the screenshot goes to the branch "feedback", and the board's own workflow adds the issue to the
+## board.
 
 const HINT: String = "Draw on the picture: circle or underline what you mean."
 const NO_SHOT_HINT: String = "No screenshot (a headless run?). The report saves without one."
@@ -28,9 +29,10 @@ const ACCENTS: Dictionary = {
 	"í": "i", "ï": "i", "ó": "o", "ô": "o", "ö": "o", "ø": "o", "ú": "u", "ü": "u", "ñ": "n", "ç": "c",
 }
 
-## The folder for the reports. Empty: the feedback/ folder at the root of the repo.
+## The folder for the reports. Empty: the feedback/ folder at the root of the repo, or
+## user://feedback/ where there is no checkout.
 @export var output_dir: String = ""
-## The GitHub repo for the issues, as owner/name. Empty: read it from git's remote "origin".
+## The GitHub repo for the issues, as owner/name. Empty: GitHubIssues.repo_slug().
 @export var github_repo: String = ""
 
 var _shot: Image
@@ -73,7 +75,7 @@ func _input(event: InputEvent) -> void:
 	if key == null or not key.pressed or key.echo:
 		return
 	if key.is_action_pressed(&"feedback") and not is_open():
-		if OS.has_feature("editor"):
+		if OS.is_debug_build():
 			open()
 	elif is_open() and key.keycode == KEY_ESCAPE:
 		close()
@@ -216,7 +218,7 @@ func _save(kind: String) -> void:
 		"camera": _camera_info(),
 		"open_screens": _open_screens(),
 		"build": {
-			"commit": GitHubIssues.git(["rev-parse", "--short", "HEAD"]),
+			"commit": GitHubIssues.git(["rev-parse", "--short", "HEAD"]) if GitHubIssues.in_checkout() else BuildInfo.commit(),
 			"branch": GitHubIssues.git(["rev-parse", "--abbrev-ref", "HEAD"]),
 			"godot": Engine.get_version_info().string,
 			"os": OS.get_name(),
@@ -245,7 +247,7 @@ func _save(kind: String) -> void:
 	if _send.button_pressed:
 		_start_send(report, folder)
 	else:
-		_show_toast("Report saved: feedback/%s" % folder.get_file())
+		_show_toast("Report saved: %s" % _shown(folder))
 
 
 ## The points of [param stroke] from 0 to 1, at most MAX_REPORT_POINTS of them.
@@ -277,11 +279,11 @@ func _show_toast(text: String, seconds: float = TOAST_SECONDS) -> void:
 
 func _start_send(report: Dictionary, folder: String) -> void:
 	if _sending:
-		_show_toast("Still sending the last report; this one is saved in feedback/%s." % folder.get_file(), 6.0)
+		_show_toast("Still sending the last report; this one is saved in %s." % _shown(folder), 6.0)
 		return
 	var token := GitHubIssues.read_token()
 	if token.has("error"):
-		_on_sent(token)
+		_on_sent(token, folder)
 		return
 	var shot := ""
 	var shot_error := ""
@@ -302,13 +304,13 @@ func _start_send(report: Dictionary, folder: String) -> void:
 	_show_toast("Sending the report to GitHub...", 0.0)
 	var result := await _send_to_github(github, folder, shot, shot_error, _issue_title(report), _issue_body(report))
 	_sending = false
-	_on_sent(result)
+	_on_sent(result, folder)
 
 
-func _on_sent(result: Dictionary) -> void:
+func _on_sent(result: Dictionary, folder: String) -> void:
 	if result.has("error"):
 		push_error("F9 report: not sent to GitHub: %s" % result["error"])
-		_show_toast("Not sent to GitHub: %s. The report is saved in feedback/." % String(result["error"]).get_slice("\n", 0), 10.0)
+		_show_toast("Not sent to GitHub: %s. The report is saved in %s." % [String(result["error"]).get_slice("\n", 0), _shown(folder)], 10.0)
 		return
 	var url: String = result["url"]
 	var text := "Issue #%s created" % url.get_file()
@@ -552,15 +554,22 @@ func _open_screens() -> Array[String]:
 
 
 func _output_dir() -> String:
-	return output_dir if output_dir != "" else GitHubIssues.repo_dir().path_join("feedback")
+	if output_dir != "":
+		return output_dir
+	if GitHubIssues.in_checkout():
+		return GitHubIssues.repo_dir().path_join("feedback")
+	return ProjectSettings.globalize_path("user://feedback")
 
 
-## The first name from git config user.name, in lowercase ASCII, for the folder name.
+## [param folder] (a report's) as the toasts name it: from feedback/, or from user:// where it is.
+func _shown(folder: String) -> String:
+	var user := ProjectSettings.globalize_path("user://")
+	return "user://" + folder.trim_prefix(user).trim_prefix("/") if folder.begins_with(user) else "feedback/" + folder.get_file()
+
+
+## The first name from GitHubIssues.reporter_name(), in lowercase ASCII, for the folder name.
 func _author() -> String:
-	var full := GitHubIssues.git(["config", "user.name"])
-	if full == "unknown" or full == "":
-		full = OS.get_environment("USER") if OS.has_environment("USER") else OS.get_environment("USERNAME")
-	full = full.to_lower()
+	var full := GitHubIssues.reporter_name().to_lower()
 	for accent: String in ACCENTS:
 		full = full.replace(accent, ACCENTS[accent])
 	var words := full.split(" ", false)

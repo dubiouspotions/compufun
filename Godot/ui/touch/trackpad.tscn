@@ -1,0 +1,62 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/touch/trackpad.gd" id="1_pad"]
+[ext_resource type="Theme" path="res://ui/touch/touch_theme.tres" id="2_theme"]
+[ext_resource type="Script" path="res://ui/touch/movable_panel.gd" id="3_panel"]
+
+[node name="Trackpad" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_pad")
+
+[node name="Panel" type="PanelContainer" parent="." node_paths=PackedStringArray("grip")]
+layout_mode = 0
+offset_right = 308.0
+offset_bottom = 380.0
+mouse_filter = 0
+script = ExtResource("3_panel")
+config_section = "trackpad"
+default_position = Vector2(6, 684)
+grip = NodePath("Box/Bar/Grip")
+
+[node name="Box" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Bar" type="HBoxContainer" parent="Panel/Box"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Grip" type="PanelContainer" parent="Panel/Box/Bar"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+mouse_default_cursor_shape = 13
+theme_type_variation = &"TouchGrip"
+
+[node name="Label" type="Label" parent="Panel/Box/Bar/Grip"]
+layout_mode = 2
+text = "::::  TRACKPAD  ::::"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="KeysButton" type="Button" parent="Panel/Box/Bar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 52)
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "KEYS"
+
+[node name="Pad" type="Panel" parent="Panel/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(288, 300)
+layout_mode = 2
+theme_type_variation = &"TouchPad"

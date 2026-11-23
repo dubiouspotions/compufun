@@ -11,6 +11,9 @@ signal outside_clicked(at: Vector2)
 ## [method has_picture] changed.
 signal picture_changed
 
+## The group of every screen view.
+const GROUP: StringName = &"screen_views"
+
 ## The view marker's screen that opens this view; the room's monitor for it shows the buffer.
 @export var screen: ViewMarker.Screen = ViewMarker.Screen.WIN95
 ## What runs in the screen buffer: a Control of the buffer's size. When its script has a
@@ -56,6 +59,7 @@ var _had_picture: bool = false
 
 
 func _ready() -> void:
+	add_to_group(GROUP)
 	visible = false
 	modulate.a = 0.0
 	set_cursor(game_cursor, Input.CURSOR_ARROW, game_cursor_hotspot)
@@ -78,6 +82,15 @@ func _ready() -> void:
 				_content.connect(changes, _sync, CONNECT_DEFERRED)
 	Game.changed.connect(_sync)
 	_sync()
+	get_tree().node_added.connect(_keep_system_keyboard_away)
+	for child: Node in _buffer.find_children("*", "", true, false):
+		_keep_system_keyboard_away(child)
+
+
+# The touch keyboard types here; the OS keyboard would cover the screen with no way to dismiss it.
+func _keep_system_keyboard_away(node: Node) -> void:
+	if (node is LineEdit or node is TextEdit) and _buffer.is_ancestor_of(node):
+		node.set(&"virtual_keyboard_enabled", false)
 
 
 func _exit_tree() -> void:
@@ -126,6 +139,17 @@ func _gui_input(event: InputEvent) -> void:
 	if _open and click != null and click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
 		accept_event()
 		outside_clicked.emit(click.global_position)
+
+
+## True from [code]set_open(true)[/code] until [code]set_open(false)[/code]: the zoom in and the open
+## view, not the fade out.
+func is_open() -> bool:
+	return _open
+
+
+## The CRT screen that shows the buffer and passes it the mouse.
+func crt_screen() -> CrtScreen:
+	return _screen
 
 
 ## The live picture of the screen buffer, for the 3D monitor.

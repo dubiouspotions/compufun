@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/touch/touch_controls.gd" id="1_touch"]
+[ext_resource type="PackedScene" path="res://ui/touch/trackpad.tscn" id="2_trackpad"]
+[ext_resource type="PackedScene" path="res://ui/touch/keyboard.tscn" id="3_keyboard"]
+[ext_resource type="PackedScene" path="res://ui/touch/debug_strip.tscn" id="4_strip"]
+
+[node name="TouchControls" type="CanvasLayer"]
+layer = 92
+process_mode = 3
+script = ExtResource("1_touch")
+
+[node name="Trackpad" parent="." instance=ExtResource("2_trackpad")]
+
+[node name="Keyboard" parent="." instance=ExtResource("3_keyboard")]
+
+[node name="DebugStrip" parent="." instance=ExtResource("4_strip")]

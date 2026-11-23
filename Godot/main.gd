@@ -53,6 +53,7 @@ func _ready() -> void:
 	_shop.view_requested.connect(Game.go_to_view)
 	_nav.view_requested.connect(Game.go_to_view)
 	_nav.focus_requested.connect(Game.focus_job)
+	_shop.swiped.connect(_on_swiped)
 	_shop.back_strip_hovered.connect(func(on: bool) -> void: _nav.show_back_strip(on, _shop.back_strip_height))
 	_shop.close_requested.connect(_end_of_day.ask)
 	_shop.crashed.connect(func() -> void: Finale.start(get_tree()))  # the pipes end in the finale
@@ -162,19 +163,42 @@ func _unhandled_input(event: InputEvent) -> void:
 	if marker == null:
 		return
 	if event.is_action_pressed(&"turn_left"):
-		_nav.turn(&"left")
+		_turn(&"left")
 	elif event.is_action_pressed(&"turn_right"):
-		_nav.turn(&"right")
+		_turn(&"right")
 	elif event.is_action_pressed(&"look_up") and Game.view == &"Main" and _shop.centred_job() != null:
 		_shop.work_on(_shop.centred_job())
 	elif event.is_action_pressed(&"look_up") and marker.up != &"":
 		Game.go_to_view(marker.up)
 	elif event.is_action_pressed(&"go_back"):
-		_nav.press(&"back")
-		_go_back()
+		_turn(&"back")
 	else:
 		return
 	get_viewport().set_input_as_handled()
+
+
+# A swipe drags the view like a panorama: a finger that moves left turns right. Down leaves a close-up.
+func _on_swiped(direction: Vector2i) -> void:
+	var marker := _shop.view_marker(Game.view)
+	if marker == null:
+		return
+	match direction:
+		Vector2i.LEFT:
+			_turn(&"right")
+		Vector2i.RIGHT:
+			_turn(&"left")
+		Vector2i.DOWN:
+			if marker.back != &"":
+				_turn(&"back")
+
+
+# Turns as the arrow keys and the Back key do: [param direction] is &"left", &"right" or &"back".
+func _turn(direction: StringName) -> void:
+	if direction == &"back":
+		_nav.press(&"back")
+		_go_back()
+	else:
+		_nav.turn(direction)
 
 
 # Zoomed in, a click beside the screen presses the hotspot there (the Degauss button) or leaves.

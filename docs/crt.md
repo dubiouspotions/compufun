@@ -100,6 +100,10 @@ running computer is connected; CompuFunDB: always):
   SubViewport from the container's straight transform, so hover and clicks would disagree under
   the curve. `CrtScreen` pushes the bent events into a free-standing SubViewport, which takes its
   hover from them.
+- **Every pointer goes through `CrtScreen.push_mouse()`.** It takes events in buffer pixels and
+  moves the drawn cursor with them. The bent mouse uses it, and so does the touch trackpad
+  (`ui/touch/trackpad.gd`), which moves the cursor relatively; while the trackpad shows,
+  `takes_touch` is false and the glass ignores fingers.
 - **The shader draws the cursor.** The system cursor hides over the screen; `crt_texel()` draws the
   desktop's cursor into the picture, so it bends, glows, and stays on the screen where the player
   left it. A cursor node in the buffer would sit under Win95's popup menus, which Godot draws on
