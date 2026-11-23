@@ -19,6 +19,11 @@ const _BASELINE := 5.0
 	set(value):
 		text = value
 		queue_redraw()
+## Draws the caption in the gray of disabled text.
+@export var disabled := false:
+	set(value):
+		disabled = value
+		queue_redraw()
 
 
 func _ready() -> void:
@@ -44,4 +49,4 @@ func _draw() -> void:
 	var font_size := get_theme_font_size(&"font_size", &"Label")
 	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 	draw_rect(Rect2(_CAPTION_X - _GAP_BEFORE, 0, _GAP_BEFORE + width + _GAP_AFTER, 2), _palette.face_color)
-	draw_string(font, Vector2(_CAPTION_X, _BASELINE), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, get_theme_color(&"font_color", &"Label"))
+	draw_string(font, Vector2(_CAPTION_X, _BASELINE), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, get_theme_color(&"font_color", &"DisabledLabel" if disabled else &"Label"))
