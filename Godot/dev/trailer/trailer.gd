@@ -1,7 +1,8 @@
 extends Node
 ## A cheesy TV commercial for CompuFun, as if from 1995: a narrator in the game's own voice synth,
-## loud title cards, the latest parts on a turntable (and a budget processor), quick repairs in the
-## shop, customers before and after, and the CompuFun intro to end, with one tiny glitch. It all plays
+## loud title cards, the latest parts on a turntable (and a budget processor), a quick repair in the
+## shop that ends on the computer's Windows 95, customers before and after, a job offer, and the
+## CompuFun intro to end, with one tiny glitch. It all plays
 ## as on an old TV, filling the frame: the trailer renders at 480 lines, a tape layer wobbles and tears
 ## it now and then, and it shows through the game's strong CRT look, almost flat. Record
 ## it with Godot's Movie Maker, then give it tape and TV sound with tools/make_trailer.sh.
@@ -9,14 +10,16 @@ extends Node
 
 const NARRATOR: VoicePerson = preload("res://voices/persons/handsome_dude.tres")
 const SAY_PROBLEMS := "Do you have computer problems?"
-const SAY_PARTS := "We have the latest parts! Graphics cards! Processors! Fans!"
-const SAY_BUDGET := "And budget options, like the Korean B processor!"
+const SAY_PARTS := "Graphics cards! Processors! Fans!"
+const SAY_BUDGET := "Budget options too, like the Korean B!"
 # "Compu fun", not "CompuFun": the dictionary has "compu" (comp-u), and the voice guesses at words it lacks.
 const SAY_COME := "Come by Compu fun. It will be a lot of fun!"
-const SAY_HIRING := "We're looking for employees! It's a chill gig. The week will fly by!"
+const SAY_HIRING := "It's a chill gig. The week will fly by!"
 const MESSAGE_BOX: PackedScene = preload("res://win95/message_box.tscn")
 const SOLITAIRE: PackedScene = preload("res://win95/solitaire/solitaire.tscn")
 const WIN95_SCRIPT := "res://win95/win95.gd"
+const BOOT_SCENE := "res://win95/boot_sequence.tscn"
+const INFO_ICON: Texture2D = preload("res://win95/theme/icons_extracted/message_information_32.png")
 const CLICK_DOWN: SoundSet = preload("res://sounds/mouse_down.tres")
 const CLICK_UP: SoundSet = preload("res://sounds/mouse_up.tres")
 const KEYS: SoundSet = preload("res://sounds/keystroke.tres")
@@ -29,6 +32,9 @@ const MUSIC_UNDER_SFX_DB := -20.0
 const RATCHET_DB := -8.0
 ## "Sigla 2" by sandroperrotta on Pixabay (Pixabay Content License): the music under the commercial.
 const MUSIC: AudioStream = preload("res://dev/trailer/sandroperrotta_sigla_2.mp3")
+## The music plays this much slower than recorded, so that it runs out with the star wipe, before the
+## jingle. The trailer warns with the right value when its shots change length.
+const MUSIC_SPEED := 0.931
 ## The music's volume, and its volume while the narrator speaks, in dB.
 const MUSIC_DB := -10.0
 const MUSIC_UNDER_VOICE_DB := -18.0
@@ -120,11 +126,6 @@ void fragment() {
 }
 """
 
-## The test cut with more Windows 95 (trailer_win95.tscn): after the before and after, the bench
-## screen shows the desktop of a computer, with an error, the Start menu, Solitaire, a fix and the
-## job offer, each in Win95's own windows on that screen. CompuFunDB's shot is left out.
-@export var win95_cut: bool = false
-
 var _tv: SubViewport
 var _cards: CanvasLayer
 var _card: Control
@@ -136,6 +137,8 @@ var _shop_bus: int
 var _music: AudioStreamPlayer
 var _duck: Tween
 var _tape: ShaderMaterial
+## Seconds of play since the trailer started, on the frame clock that Movie Maker records.
+var _clock := 0.0
 
 
 func _ready() -> void:
@@ -158,23 +161,22 @@ func _ready() -> void:
 	limiter.ceiling_db = -1.0
 	AudioServer.add_bus_effect(0, limiter)
 	_music = _sound(MUSIC, MUSIC_DB)
+	_music.pitch_scale = MUSIC_SPEED
 	await _problems()
 	await _angry_faces()
 	await _parts()
 	await _budget()
 	await _repair()
-	await _tested()
-	if win95_cut:
-		_skip_boot()
-		await _before_after()
-		await _win95_desktop()
-	else:
-		await _compufun_db()
-		await _before_after()
+	await _fixed()
+	await _before_after()
 	await _hiring()
 	await _come_by()
 	await _intro_and_glitch()
 	get_tree().quit()
+
+
+func _process(delta: float) -> void:
+	_clock += delta
 
 
 # Everything renders into a TV picture of 480 lines, in the 1920 x 1080 layout, and the window shows
@@ -422,7 +424,7 @@ func _problems() -> void:
 	_portrait("office_girl", &"angry", 1590.0, 820.0, true)
 	_caption("DO YOU HAVE", 96, Vector2(960, 270), Color.WHITE, -3.0)
 	_caption("COMPUTER\nPROBLEMS?", 176, Vector2(960, 560), YELLOW, -5.0, 0.25)
-	await _wait(0.35)
+	await _wait(0.15)
 	await _wait(maxf(_say(SAY_PROBLEMS), 1.6) + 0.35)
 
 
@@ -440,9 +442,8 @@ func _angry_faces() -> void:
 func _parts() -> void:
 	_studio_card(Color("#ff006e"), Color("#3a0ca3"))
 	_caption("THE LATEST PARTS!", 130, Vector2(960, 150), YELLOW, -3.0)
-	_show_part(&"motherboard")
-	var length := maxf(_say(SAY_PARTS), 3.0)
-	var steps: Array = [[0.38, &"gpu", "GRAPHICS CARDS!"], [0.62, &"cpu", "PROCESSORS!"], [0.84, &"fan", "FANS!"]]
+	var length := maxf(_say(SAY_PARTS), 2.4)
+	var steps: Array = [[0.0, &"gpu", "GRAPHICS CARDS!"], [0.4, &"cpu", "PROCESSORS!"], [0.72, &"fan", "FANS!"]]
 	var done := 0.0
 	var shown: Label = null
 	for step: Array in steps:
@@ -452,7 +453,7 @@ func _parts() -> void:
 		if shown != null:
 			shown.queue_free()
 		shown = _caption(step[2], 110, Vector2(960, 880), Color.WHITE, 3.0)
-	await _wait(length - done + 0.3)
+	await _wait(length - done + 0.15)
 
 
 func _budget() -> void:
@@ -462,7 +463,7 @@ func _budget() -> void:
 	var stamp := _caption("KOREAN B", 120, Vector2(1420, 520), Color("#ff2d2d"), 14.0, 0.5)
 	stamp.label_settings.outline_color = Color.WHITE
 	_caption("*Results may vary.", 36, Vector2(1580, 960), Color.WHITE, 0.0, 0.9)
-	await _wait(maxf(_say(SAY_BUDGET), 2.0) + 0.35)
+	await _wait(maxf(_say(SAY_BUDGET), 2.0) + 0.25)
 
 
 # The repair, played with the game's own moves, so each one makes its own sound: the computer lies
@@ -476,28 +477,40 @@ func _repair() -> void:
 	_restore({"day": 1, "phase": "OPEN", "jobs": [job], "focus_slot": 0, "view": "Workview"})
 	var shop_job: Job = Game.jobs[0]
 	_new_card(Color.BLACK, Color.BLACK, true)
-	await _wait(0.3)
-	await _move(func() -> bool: return Game.lay_down(shop_job), "", 0.45)
+	await _wait(0.2)
+	await _move(func() -> bool: return Game.lay_down(shop_job), "", 0.35)
 	for screw in shop_job.panel_screws.size():
 		_sound(_ratchet(), RATCHET_DB)
-		await _move(func() -> bool: return Game.turn_screw(shop_job, screw), "SCREWS!" if screw == 0 else "", 0.4)
-	await _move(func() -> bool: return Game.open_case(shop_job, true), "FAST!", 0.55, YELLOW)
-	await _move(func() -> bool: return Game.take_part(shop_job, FAN), "DUSTY?", 0.6)
-	await _move(func() -> bool: return Game.trash_part(), "TRASH IT!", 0.45, Color("#ff3b6b"))
-	await _move(func() -> bool: return Game.take_new_part(FAN), "BRAND NEW!", 0.5, Color("#80ff72"))
-	await _move(func() -> bool: return Game.put_part(shop_job), "CLICK!", 0.6, YELLOW)
+		await _move(func() -> bool: return Game.turn_screw(shop_job, screw), "SCREWS!" if screw == 0 else "", 0.32)
+	await _move(func() -> bool: return Game.open_case(shop_job, true), "FAST!", 0.45, YELLOW)
+	await _move(func() -> bool: return Game.take_part(shop_job, FAN), "DUSTY?", 0.5)
+	await _move(func() -> bool: return Game.trash_part(), "TRASH IT!", 0.35, Color("#ff3b6b"))
+	await _move(func() -> bool: return Game.take_new_part(FAN), "BRAND NEW!", 0.4, Color("#80ff72"))
+	await _move(func() -> bool: return Game.put_part(shop_job), "CLICK!", 0.5, YELLOW)
 	_sparkle(Vector2(1300, 640), 70.0)
 	_sound(DING, -4.0)
-	await _move(func() -> bool: return Game.open_case(shop_job, false), "", 0.35)
+	await _move(func() -> bool: return Game.open_case(shop_job, false), "", 0.25)
 	for screw in shop_job.panel_screws.size():
 		_sound(_ratchet(), RATCHET_DB)
-		await _move(func() -> bool: return Game.turn_screw(shop_job, screw), "TIGHT!" if screw == 0 else "", 0.35)
-	await _move(func() -> bool: return Game.stand_up(shop_job), "", 0.4)
+		await _move(func() -> bool: return Game.turn_screw(shop_job, screw), "TIGHT!" if screw == 0 else "", 0.28)
+	await _move(func() -> bool: return Game.stand_up(shop_job), "", 0.3)
 	Game.connect_cable(shop_job)
+	get_tree().node_added.connect(_quick_boot)
 	var power := func() -> bool:
 		Game.set_powered(shop_job, true)
 		return shop_job.powered
-	await _move(power, "", 0.3)
+	await _move(power, "", 0.25)
+
+
+# The repaired computer's boot, quick for TV: a short warm-up, which a skip can't cut, and the
+# desktop's parts in quick succession.
+func _quick_boot(node: Node) -> void:
+	if node.scene_file_path != BOOT_SCENE:
+		return
+	node.set(&"warm_up_seconds", 0.5)
+	node.set(&"part_seconds_min", 0.03)
+	node.set(&"part_seconds_max", 0.06)
+	get_tree().node_added.disconnect(_quick_boot)
 
 
 # One move of the repair: a mouse click, the move, and its caption on a new clear card, then a wait.
@@ -542,13 +555,48 @@ func _ratchet() -> AudioStreamWAV:
 	return wav
 
 
-# The bench screen close up as the repaired computer starts, while the keys rattle.
-func _tested() -> void:
+# The repaired computer starts on the bench screen: its BIOS tests it while the keys rattle, a key
+# skips to Windows 95, as a player can, and the desktop shows the Start menu, Solitaire and the fix,
+# in Win95's own windows. A clear card carries the captions.
+func _fixed() -> void:
 	Game.go_to_view(&"Screen")
 	create_tween().tween_property(_music, "volume_db", MUSIC_DB, 0.6)
 	_new_card(Color.BLACK, Color.BLACK, true)
-	_caption("TESTED!", 150, Vector2(1560, 200), Color("#80ff72"), 5.0, 0.5)
-	await _type(1.8)
+	_caption("TESTED!", 150, Vector2(1560, 200), Color("#80ff72"), 5.0, 0.4)
+	await _type(0.9)
+	var win95 := _shown_desktop()
+	var boot: Node = win95.get(&"_boot") if win95 != null else null
+	if not is_instance_valid(boot):
+		push_error("Trailer: the repaired computer is not booting on the bench screen")
+		return
+	boot.set(&"_skipped", true)
+	_new_card(Color.BLACK, Color.BLACK, true)
+	_caption("WINDOWS 95!", 140, Vector2(1520, 200), Color.WHITE, 5.0)
+	var waited := 0.0
+	while win95.get(&"pointer_visible") != true and waited < 5.0:
+		await _wait(0.1)
+		waited += 0.1
+	var start := win95.get_node(^"TaskBar/HBoxContainer/StartButton") as Button
+	start.button_pressed = true
+	_new_card(Color.BLACK, Color.BLACK, true)
+	_caption("EASY!", 160, Vector2(1560, 200), YELLOW, -6.0)
+	await _wait(0.9)
+	start.button_pressed = false
+	var desktop := win95.get_node(^"Desktop") as Control
+	desktop.call(&"open", SOLITAIRE)
+	_new_card(Color.BLACK, Color.BLACK, true)
+	_caption("GAMES!", 160, Vector2(1560, 200), Color("#80ff72"), 6.0)
+	await _wait(0.9)
+	var box: Control = desktop.call(&"open", MESSAGE_BOX, false)
+	box.set(&"error_icon", INFO_ICON)  # good news, so Win95's information icon, not the error
+	box.call(&"show_message", "CompuFun", "Your computer is fixed!")
+	box.size = box.get_combined_minimum_size()
+	box.position = ((desktop.size - box.size) / 2.0).round()
+	_new_card(Color.BLACK, Color.BLACK, true)
+	_caption("FIXED!", 170, Vector2(1560, 200), YELLOW, -5.0)
+	_sparkle(Vector2(1300, 500), 60.0)
+	_sound(DING, -8.0)
+	await _wait(1.1)
 	AudioServer.set_bus_mute(_shop_bus, true)
 
 
@@ -562,16 +610,6 @@ func _type(seconds: float) -> void:
 		done += gap
 
 
-func _compufun_db() -> void:
-	AudioServer.set_bus_mute(_shop_bus, false)
-	var job := {"customer": "res://customers/skater_bro.tres", "problem": "dust_overheat", "slot": 0, "order": 0}
-	_restore({"day": 1, "phase": "OPEN", "jobs": [job], "db_day": 1, "view": "CompuFunDB"})
-	_new_card(Color.BLACK, Color.BLACK, true)
-	_caption("FUN!", 190, Vector2(1580, 220), YELLOW, -8.0, 0.3)
-	await _type(1.3)
-	AudioServer.set_bus_mute(_shop_bus, true)
-
-
 # The Win95 sounds stay out of the trailer: they are Microsoft's. The desktop sets the Win95 bus's own
 # mute, so the bus sends to a silent one instead.
 func _silence_win95() -> void:
@@ -582,53 +620,6 @@ func _silence_win95() -> void:
 	AudioServer.set_bus_send(AudioServer.get_bus_index(Win95Desktop.SOUND_BUS), &"TrailerSilent")
 
 
-# A key skips the boot of the repaired computer, as a player can, behind the next cards.
-func _skip_boot() -> void:
-	var win95 := _shown_desktop()
-	var boot: Node = win95.get(&"_boot") if win95 != null else null
-	if not is_instance_valid(boot):
-		push_error("Trailer: the repaired computer is not booting on the bench screen")
-		return
-	boot.set(&"_skipped", true)
-
-
-# The bench screen close up: the desktop shows an error, the Start menu, Solitaire and the fix, each in
-# Win95's own windows. A clear card on top carries the captions.
-func _win95_desktop() -> void:
-	var win95 := _shown_desktop()
-	if win95 == null:
-		push_error("Trailer: no Windows 95 desktop on the bench screen")
-		return
-	var waited := 0.0
-	while win95.get(&"pointer_visible") != true and waited < 8.0:
-		await _wait(0.1)
-		waited += 0.1
-	AudioServer.set_bus_mute(_shop_bus, false)
-	Game.go_to_view(&"Screen")
-	var desktop := win95.get_node(^"Desktop") as Control
-	var error := _desktop_box(desktop, "SKATE.EXE", "This program has performed an illegal\noperation and will be shut down.", [])
-	_new_card(Color.BLACK, Color.BLACK, true)
-	_caption("CRASHES?", 150, Vector2(1560, 200), Color.WHITE, 5.0, 0.4)
-	await _wait(1.5)
-	error.queue_free()
-	var start := win95.get_node(^"TaskBar/HBoxContainer/StartButton") as Button
-	start.button_pressed = true
-	_new_card(Color.BLACK, Color.BLACK, true)
-	_caption("EASY!", 160, Vector2(1560, 200), YELLOW, -6.0)
-	await _wait(1.1)
-	start.button_pressed = false
-	desktop.call(&"open", SOLITAIRE)
-	_new_card(Color.BLACK, Color.BLACK, true)
-	_caption("GAMES!", 160, Vector2(1560, 200), Color("#80ff72"), 6.0)
-	await _wait(1.2)
-	_desktop_box(desktop, "CompuFun", "Your computer is fixed!", [])
-	_new_card(Color.BLACK, Color.BLACK, true)
-	_caption("FIXED!", 170, Vector2(1560, 200), YELLOW, -5.0)
-	_sparkle(Vector2(1300, 500), 60.0)
-	_sound(DING, -8.0)
-	await _wait(1.3)
-
-
 func _shown_desktop() -> Control:
 	var bench := _main.find_child("BenchScreen", true, false)
 	if bench == null:
@@ -637,19 +628,6 @@ func _shown_desktop() -> Control:
 		if child.get_script() != null and (child.get_script() as Script).resource_path == WIN95_SCRIPT:
 			return child as Control
 	return null
-
-
-# A Win95 message box in the middle of [param desktop]: a message with OK, or a question with
-# [param buttons].
-func _desktop_box(desktop: Control, title: String, text: String, buttons: Array[String]) -> Control:
-	var box: Control = desktop.call(&"open", MESSAGE_BOX, false)
-	if buttons.is_empty():
-		box.call(&"show_message", title, text)
-	else:
-		box.call(&"ask", title, text, buttons)
-	box.size = box.get_combined_minimum_size()
-	box.position = ((desktop.size - box.size) / 2.0).round()
-	return box
 
 
 func _restore(state: Dictionary) -> void:
@@ -663,30 +641,20 @@ func _before_after() -> void:
 		_new_card(Color("#4cc9f0"), Color("#7209b7"))
 		_portrait(who, &"angry", 520.0, 880.0)
 		_caption("BEFORE", 110, Vector2(520, 160), Color("#ff3b6b"), -6.0)
-		await _wait(0.6)
+		await _wait(0.5)
 		_portrait(who, &"happy", 1400.0, 880.0)
 		_caption("AFTER", 110, Vector2(1400, 160), Color("#80ff72"), 6.0)
 		_sparkle(Vector2(1640, 380), 60.0)
 		_sparkle(Vector2(1180, 300), 40.0)
 		_sound(DING, -8.0)
-		await _wait(0.95)
+		await _wait(0.8)
 
 
-# The job offer: on a card, or in the Win95 cut on the bench screen's desktop.
 func _hiring() -> void:
-	var win95 := _shown_desktop() if win95_cut else null
-	if win95 != null:
-		var desktop := win95.get_node(^"Desktop") as Control
-		desktop.call(&"close_all")
-		_desktop_box(desktop, "Help Wanted", "We're looking for employees!\nIt's a chill gig. The week will fly by!", ["Yes!", "No"])
-		_new_card(Color.BLACK, Color.BLACK, true)
-		_caption("NOW HIRING!", 150, Vector2(1500, 200), YELLOW, -5.0)
-	else:
-		_new_card(Color("#2ec4b6"), Color("#011627"))
-		_caption("NOW HIRING!", 190, Vector2(960, 300), YELLOW, -4.0)
-		_caption("It's a chill gig.\nThe week will fly by!", 84, Vector2(960, 680), Color.WHITE, 2.0, 0.4)
-	await _wait(maxf(_say(SAY_HIRING), 3.0) + 0.3)
-	AudioServer.set_bus_mute(_shop_bus, true)
+	_new_card(Color("#2ec4b6"), Color("#011627"))
+	_caption("NOW HIRING!", 190, Vector2(960, 300), YELLOW, -4.0)
+	_caption("It's a chill gig.\nThe week will fly by!", 84, Vector2(960, 680), Color.WHITE, 2.0, 0.4)
+	await _wait(maxf(_say(SAY_HIRING), 2.6) + 0.25)
 
 
 func _come_by() -> void:
@@ -708,6 +676,7 @@ func _come_by() -> void:
 	if _duck != null:
 		_duck.kill()
 	create_tween().tween_property(_music, "volume_db", -60.0, 0.6)  # out before our own jingle
+	_check_music_end(0.6)
 	var grow := create_tween()
 	grow.tween_method(func(r: float) -> void: material.set_shader_parameter(&"radius", r), 0.0, 2.6, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	await grow.finished
@@ -715,6 +684,14 @@ func _come_by() -> void:
 	_card = null
 	_main.queue_free()
 	wipe.queue_free()
+
+
+# Warns when the music does not run out [param fade] seconds from now, with the MUSIC_SPEED that
+# would make it.
+func _check_music_end(fade: float) -> void:
+	var speed := MUSIC.get_length() / (_clock + fade)
+	if absf(speed - MUSIC_SPEED) > 0.01:
+		push_warning("Trailer: the music does not end with the star wipe; set MUSIC_SPEED to %.3f" % speed)
 
 
 # The CompuFun intro with its jingle, and at its end one tiny glitch.
