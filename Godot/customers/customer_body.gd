@@ -164,8 +164,12 @@ func _move_arms(delta: float) -> void:
 
 
 ## Plays one footstep of the Ground under the body, or of [member steps] where there is none. The
-## walk animation calls it when a foot lands.
+## walk animation calls it when a foot lands. A hidden body, or one that has stopped walking, makes
+## no step: when a visitor has left, the shop hides the body and moves it back to the counter, near
+## the player, and the walk's last step on its way to idle would sound there, loud and unmuffled.
 func step() -> void:
+	if not is_visible_in_tree() or _animation.assigned_animation != &"walk":
+		return
 	var ground := Ground.under(global_position, get_tree())
 	if ground == null:
 		steps.play_on(_steps)
