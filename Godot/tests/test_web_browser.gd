@@ -85,3 +85,42 @@ func run() -> void:
 	state.free()
 	desk.queue_free()
 	await process_frame
+
+	await _on_the_activists_desktop()
+
+
+# On his desktop, as the player meets it: home comes from the cache, and an alert is modal.
+func _on_the_activists_desktop() -> void:
+	var state: Node = load(COMPUTER_STATE_PATH).new()
+	state.setup = (load("res://customers/activist_guy.tres") as Customer).computer.win95_setup
+	var desktop: Control = load("res://win95/desktop.gd").new()  # loaded at run time, like ComputerState
+	desktop.computer = state
+	desktop.size = Vector2(640, 480)
+	root.add_child(desktop)
+	var window: Control = desktop.call(&"open", load(BROWSER_PATH))
+	await create_timer(window.splash_seconds + window.contact_seconds + 0.2).timeout
+	check("offline, home shows from the disk cache", [window.url, window.page_title], ["http://home.netscape.com/", "Welcome to Netscape"])
+	check("with its cached picture", window.get_node("%Page").text.contains("[img width=48 height=48]res://win95/netscape/logo_48.png[/img]"), true)
+
+	window.contact_seconds = 0.0
+	window.navigate("www.yahoo.com")
+	var box: Control = window.blocked_by
+	check("an uncached site alerts, and the alert blocks Netscape", [box != null, desktop.call(&"active_window") == box], [true, true])
+	check("centred on it", (box.position + box.size / 2).distance_to(window.position + window.size / 2) < 1.0, true)
+	await process_frame
+	check("its OK button has the keyboard", box.get_viewport().gui_get_focus_owner() == box.get_node("%Buttons").get_child(0), true)
+	desktop.call(&"activate", window)
+	check("raising Netscape raises its alert above it", desktop.call(&"active_window") == box, true)
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = window.get_global_rect().position + Vector2(4, 60)
+	window.call(&"_input", press)
+	check("a press on Netscape goes to the alert", [desktop.call(&"active_window") == box, box.visible], [true, true])
+	var escape := InputEventAction.new()
+	escape.action = &"ui_cancel"
+	escape.pressed = true
+	box.get_node("%Buttons").get_child(0).gui_input.emit(escape)
+	check("Esc closes it, and Netscape takes presses again", [box.visible, window.blocked_by == null, window.url], [false, true, "http://home.netscape.com/"])
+	desktop.free()
+	state.free()

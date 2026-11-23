@@ -48,6 +48,7 @@
 [ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
 [ext_resource type="PackedScene" path="res://win95/web_browser.tscn" id="app_netscape"]
 [ext_resource type="Texture2D" path="res://win95/netscape/logo_32.png" id="icon_netscape"]
+[ext_resource type="Texture2D" path="res://win95/netscape/logo_48.png" id="cached_logo"]
 
 [sub_resource type="Resource" id="Hardware_486"]
 script = ExtResource("hardware_script")
@@ -319,12 +320,96 @@ icon = ExtResource("icon_netscape")
 program = ExtResource("app_netscape")
 modified = "Monday, March 18, 1996 12:00:00 PM"
 
+[sub_resource type="Resource" id="Cache_index"]
+script = ExtResource("2_egn44")
+name = "FAT.DB"
+icon = ExtResource("6_m26x5")
+contents = "http://home.netscape.com/	M0K7Q2RA.HTM
+http://home.netscape.com/images/n_logo.gif	M0K7Q2RB.GIF
+"
+modified = "Thursday, May 30, 1996 10:14:22 PM"
+
+[sub_resource type="Resource" id="Cache_home"]
+script = ExtResource("2_egn44")
+name = "M0K7Q2RA.HTM"
+icon = ExtResource("icon_netscape")
+contents = "<HTML>
+<HEAD><TITLE>Welcome to Netscape</TITLE></HEAD>
+<BODY BGCOLOR=\"#FFFFFF\" TEXT=\"#000000\" LINK=\"#0000FF\" VLINK=\"#FF0000\">
+<CENTER>
+<IMG SRC=\"/images/n_logo.gif\" WIDTH=48 HEIGHT=48 ALT=\"Netscape\">
+<H1>WELCOME TO NETSCAPE</H1>
+<FONT SIZE=2>
+<A HREF=\"/comprod/index.html\">COMPANY &amp; PRODUCTS</A> |
+<A HREF=\"/comprod/mirror/index.html\">SOFTWARE</A> |
+<A HREF=\"/home/internet-search.html\">NET SEARCH</A> |
+<A HREF=\"/escapes/index.html\">DESTINATIONS</A> |
+<A HREF=\"http://merchant.netscape.com/netstore/index.html\">GENERAL STORE</A>
+</FONT>
+</CENTER>
+<HR>
+
+<H3>NAVIGATOR 3.0 BETA: HEAR IT, SEE IT, STEP INSIDE</H3>
+The newest beta of Netscape Navigator plays sound, video and 3D worlds right in the page, with
+no extra programs to set up. <A HREF=\"/comprod/mirror/client_download.html\">Try the beta today</A>.
+
+<H3>BUILD YOUR OWN HOME PAGE WITH NAVIGATOR GOLD</H3>
+Navigator Gold edits web pages as easily as it browses them. Type, drag in a picture, and publish
+your page to the Web in one step. <A HREF=\"/comprod/products/navigator/gold/index.html\">Find out how</A>.
+
+<H3>SUITESPOT: SERVERS FOR YOUR INTRANET</H3>
+Mail, news, catalogs and more, on one family of servers for the web inside your company.
+<A HREF=\"/comprod/server_central/index.html\">Take the tour</A>.
+
+<H3>MORE NEWS</H3>
+<UL>
+<LI><A HREF=\"/newsref/pr/index.html\">JavaScript now works across Navigator on every platform</A>
+<LI><A HREF=\"/comprod/products/navigator/personal/index.html\">Navigator Personal Edition: everything you need to get on the Internet</A>
+<LI><A HREF=\"/comprod/power_pack/index.html\">Power Pack 2.0 adds plug-ins, a virus scanner and more</A>
+</UL>
+<HR>
+
+<B>DOWNLOAD OR PURCHASE NETSCAPE SOFTWARE</B><BR>
+<A HREF=\"/comprod/mirror/client_download.html\">Navigator 2.0</A> -
+<A HREF=\"/comprod/mirror/client_download.html\">Navigator Gold 2.0</A> -
+<A HREF=\"/comprod/mirror/client_download.html\">Navigator 3.0 beta</A> -
+<A HREF=\"http://merchant.netscape.com/netstore/index.html\">Buy at the General Store</A>
+
+<P><B>GENERAL STORE SPECIAL:</B> Netscape coffee mugs and T-shirts, shipped to your door.
+<HR>
+<CENTER><FONT SIZE=2>Copyright &copy; 1996 Netscape Communications Corporation</FONT></CENTER>
+</BODY>
+</HTML>
+"
+modified = "Thursday, May 30, 1996 10:14:22 PM"
+
+[sub_resource type="Resource" id="Cache_logo"]
+script = ExtResource("2_egn44")
+name = "M0K7Q2RB.GIF"
+icon = ExtResource("4_qsrht")
+picture = ExtResource("cached_logo")
+modified = "Thursday, May 30, 1996 10:14:22 PM"
+
+[sub_resource type="Resource" id="Folder_cache"]
+script = ExtResource("2_egn44")
+name = "Cache"
+icon = ExtResource("5_lymrw")
+is_folder = true
+children = Array[Resource]([SubResource("Cache_index"), SubResource("Cache_home"), SubResource("Cache_logo")])
+
+[sub_resource type="Resource" id="Folder_navigator"]
+script = ExtResource("2_egn44")
+name = "Navigator"
+icon = ExtResource("5_lymrw")
+is_folder = true
+children = Array[Resource]([SubResource("Folder_cache")])
+
 [sub_resource type="Resource" id="Folder_netscape"]
 script = ExtResource("2_egn44")
 name = "Netscape"
 icon = ExtResource("5_lymrw")
 is_folder = true
-children = Array[Resource]([SubResource("Program_netscape")])
+children = Array[Resource]([SubResource("Program_netscape"), SubResource("Folder_navigator")])
 
 [sub_resource type="Resource" id="Folder_program_files"]
 script = ExtResource("2_egn44")

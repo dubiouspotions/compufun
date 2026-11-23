@@ -1,7 +1,8 @@
 extends "res://win95/window.gd"
 ## Netscape Navigator 2.0, after screenshots of the real one: the splash, the toolbar, the Location
 ## and directory buttons, the throbber and the menus. It shows HTML 3.2 pages from drive C and its
-## own about: page. No computer in the shop has a modem, so a web address fails as Netscape failed
+## own about: page. No computer in the shop has a modem, so a web address shows the copy in
+## Netscape's disk cache, if there is one, or fails as Netscape failed
 ## offline: meteors fly across the N while it contacts the host, then an alert, and the page on
 ## show stays. No forms, frames, scripts or style sheets: they came later.
 
@@ -21,6 +22,8 @@ enum Item { OPEN_LOCATION = 1, CLOSE, COPY, SELECT_ALL, RELOAD, BACK, FORWARD, H
 @export var meteors := 3
 ## Meteors that cross the N per second, each.
 @export var meteor_speed := 1.5
+## Netscape's disk cache on drive C. Offline, a web page shows from it if it holds a copy.
+@export var cache_folder := "C:\\Program Files\\Netscape\\Navigator\\Cache"
 
 const _MESSAGE := preload("res://win95/message_box.tscn")
 const _ABOUT := """<TITLE>Version 2.0</TITLE><BODY BGCOLOR="#C0C0C0">
@@ -57,6 +60,9 @@ var _load := 0  # counts the pages asked for, so a slow one doesn't replace a ne
 
 func _ready() -> void:
 	super()
+	var desktop := get_parent() as Win95Desktop
+	if desktop != null:
+		_state = desktop.computer
 	_app_title = %TitleBar.title
 	for menu in $VBox/MenuBar.get_children():
 		(menu as PopupMenu).id_pressed.connect(_on_menu.bind(menu))
@@ -248,10 +254,13 @@ func _open(to: String) -> bool:
 			if load != _load:
 				return false
 			_stop_meteors()
-		_fail("Netscape is unable to locate the server: %s\nThe server does not have a DNS entry.\n\nCheck the server name in the Location (URL) and try again." % host)
-		return false
+		var cached := _cached(to)
+		if cached == null:
+			_fail("Netscape is unable to locate the server: %s\nThe server does not have a DNS entry.\n\nCheck the server name in the Location (URL) and try again." % host)
+			return false
+		html = cached.contents
 	url = to
-	var page := render(html, to)
+	var page := render(html, to, _cached_picture)
 	page_title = page.title
 	%TitleBar.title = "%s - [%s]" % [_app_title, page.title if page.title != "" else to.get_file()]
 	_paint(page)
@@ -267,6 +276,27 @@ func _paint(page: Page) -> void:
 	_page.add_theme_color_override(&"default_color", page.text_color)
 	_page.text = page.bbcode
 	_page.scroll_to_line(0)
+
+
+# The copy of [param link] in Netscape's disk cache, from the last time the computer was online, or
+# null. The cache index, FAT.DB, has a line per copy: the URL, a tab and the file name.
+func _cached(link: String) -> Win95File:
+	if _state == null:
+		return null
+	var index := _state.setup.file_at(cache_folder + "\\FAT.DB")
+	if index == null:
+		return null
+	for line in index.contents.split("\n", false):
+		if line.get_slice("\t", 0).strip_edges() == link:
+			var copy := _state.setup.file_at(cache_folder + "\\" + line.get_slice("\t", 1).strip_edges())
+			return copy if copy != null and not copy.is_folder else null
+	return null
+
+
+# The resource path of the cached picture at [param link], or "" when the cache has none.
+func _cached_picture(link: String) -> String:
+	var copy := _cached(link)
+	return copy.picture.resource_path if copy != null and copy.picture != null else ""
 
 
 func _stop_meteors() -> void:
@@ -286,6 +316,7 @@ func _fail(message: String) -> void:
 	var box: Node = desktop.open(_MESSAGE, false)
 	box.closed.connect(box.queue_free)
 	box.show_message(_app_title, message)
+	box.belong_to(self)
 
 
 # Meteors streak from the top right to the bottom left of the N while Netscape contacts a host.
@@ -319,9 +350,11 @@ class Page:
 
 
 ## [param html] as a [Page], its links and pictures read relative to [param base]. Tags outside
-## HTML 3.2, and FORM, are left out; unclosed tags are fine, as browsers allowed.
-static func render(html: String, base: String) -> Page:
-	return _Renderer.new(base).run(html)
+## HTML 3.2, and FORM, are left out; unclosed tags are fine, as browsers allowed. [param pictures]
+## takes a picture's absolute URL and gives the resource path of its texture, or "" for Netscape's
+## broken picture; without it, every picture is broken.
+static func render(html: String, base: String, pictures := Callable()) -> Page:
+	return _Renderer.new(base, pictures).run(html)
 
 
 class _Renderer:
@@ -341,6 +374,7 @@ class _Renderer:
 
 	var page := Page.new()
 	var _base := ""
+	var _pictures := Callable()
 	var _out := PackedStringArray()
 	var _breaks := 0  # the line breaks that the next text starts with
 	var _pre_opened := false  # PRE just opened: a newline right after it doesn't count
@@ -387,8 +421,9 @@ class _Renderer:
 				parts.append(part)
 		return base.substr(0, host_end) + "/".join(parts)
 
-	func _init(base: String) -> void:
+	func _init(base: String, pictures: Callable) -> void:
 		_base = base
+		_pictures = pictures
 
 	func run(html: String) -> Page:
 		var from := 0
@@ -605,6 +640,12 @@ class _Renderer:
 	func _picture(attrs: Dictionary) -> String:
 		if attrs.get("src", "") == "about:logo":
 			return "[img]%s[/img]" % ABOUT_LOGO
+		var path: String = _pictures.call(resolve(_base, attrs.get("src", ""))) if _pictures.is_valid() else ""
+		if path != "":
+			var size := ""
+			if attrs.has("width") and attrs.has("height"):
+				size = " width=%d height=%d" % [str(attrs["width"]).to_int(), str(attrs["height"]).to_int()]
+			return "[img%s]%s[/img]" % [size, path]
 		var alt: String = _decode(attrs.get("alt", "")).replace("\"", "'").replace("]", ")")
 		return "[img tooltip=\"%s\"]%s[/img]" % [alt, BROKEN_PICTURE] if alt != "" else "[img]%s[/img]" % BROKEN_PICTURE
 
