@@ -90,11 +90,8 @@ brief:
 post-it: Windows starts and turns off
 cause: Clogged CPU fan
 symptoms:
-	Hangs and reboots at startup
-		shows: a second into the Windows startup sound, the computer stops answering...
-		category: At startup
-	Computer overheating
-		shows: the fan is full of dust in the Workview
+	Restarts by itself
+	Slow computer
 checks:
 	yes: Dust in the CPU fan
 		shows: in the Workview
@@ -128,7 +125,7 @@ A problem file without a `.tres` is a problem that a writer named before a devel
 errand can name it, and the story check lists it as a problem without mechanics.
 
 A problem that is corruption, as `organ_failure` and `no_parts` are, sets `in_compufun_db = false`
-in its `.tres`: CompuFunDB finds nothing for its symptoms, which still need their categories. With
+in its `.tres`: CompuFunDB finds nothing for its symptoms. With
 `empty_case = true`, as `no_parts` has, the computer comes with every place empty and runs anyway;
 taking the side panel off and putting it back on with its screws in is the repair, and the case
 stays empty.
