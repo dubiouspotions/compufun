@@ -5,15 +5,26 @@ brief:
 	The Skater picks up his defragged computer this evening, with a special dialogue: he is hooked and needs it back.
 
 == drop-off
-(happy) Hi there! No rush at all, I know you're busy.
-+ Wet out there?
-	(happy) Pouring. But the plants are happy, so I'm happy.
-+ So, what's your problem?
-	(problem) My computer starts, and then the whole screen goes blue with white text. Then it restarts.
-	+ Any strange noises?
-		(neutral) Now that you say it, it clicks. Like a little woodpecker inside.
-	- OK, leave it with me. [end]
-		(happy) Thank you so much. Take your time.
+(neutral) Hi there! No rush at all, I know you're busy.
+- Welcome to CompuFun! Wet out there?
+- You seem a bit... moist?
+(happy) It's pouring. But the plants are happy, so I'm happy.
+- So, how can I help you?
+- Anyway, what seems to be the problem?
+(thinking) My computer starts, and then the whole screen goes blue with white text.
+- Ah, the Blue screen of death...
+	(neutral) Wh-what did you say?
+	- Um... nothing! Nothing... I'll take a look at it as soon as possible!
+- Ouch, that's not very good.
+	(problem) That's what I thought too!
+	- Good news is that I'll probably be able to fix it.
+- A very nice clue. I'm sure I can fix it in a jiffy.
+(happy) I'm so relieved! See you soon!
+- Take care out there!
 
 == pick-up
-(happy) No more blue! You're a star.
+(thinking) So, did you get to the bottom of that blue screen?
+- Yep! All fixed now!
+- No more blue!
+(happy) You're a star!
+- Just doing my job. Have a Funtastic day!
