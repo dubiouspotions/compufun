@@ -210,6 +210,19 @@ platform on each push):
 tools/build-voice.sh
 ```
 
+On Windows the script builds with Rust's GNU toolchain, which brings its own MinGW: no Visual
+Studio needed. `Play HumanError.bat` doesn't build: it downloads the Windows library from the
+[`live-voice` release](https://github.com/dubiouspotions/humanerror/releases/tag/live-voice), and
+again whenever `native/chimera_voice` has changed since that was built. After such a change,
+build it on Windows and upload it, from `Godot/voices/live/`:
+
+```sh
+bash ../../../tools/build-voice.sh windows
+git rev-parse HEAD:native/chimera_voice > voice-source.txt   # commit the change first
+powershell -c "Compress-Archive -Force bin, chimera_voice.gdextension, voice-source.txt live-voice-windows.zip"
+gh release upload live-voice live-voice-windows.zip --clobber
+```
+
 **Rendered.** Each customer line plays a WAV in `Godot/voices/`, which [Chimera](https://github.com/jamesondh/chimera-vocal-synth)
 renders from the text, in the body of the customer's `voice` person and the line's voice mood
 (`Godot/voices/moods/<mood>.tres`: speed, pitch and pitch swing). A line without its file is

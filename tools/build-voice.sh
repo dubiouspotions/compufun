@@ -1,7 +1,8 @@
 #!/bin/bash
 # Builds the live voice (native/chimera_voice) into Godot/voices/live/: chimera_voice.wasm for the
 # web, the ChimeraVoice extension for desktop, and the .gdextension that lists the libraries that
-# are there. Without them the game plays the rendered WAVs. Needs Rust (https://rustup.rs).
+# are there. Without them the game plays the rendered WAVs. Needs Rust (https://rustup.rs); on
+# Windows it adds the GNU toolchain, which needs no Visual Studio or MinGW.
 #   tools/build-voice.sh                 wasm and this machine's library
 #   tools/build-voice.sh wasm macos linux windows   any of those (CI builds each on its own OS)
 #   tools/build-voice.sh list            only rewrite the .gdextension from what is in bin/
@@ -39,7 +40,15 @@ for t in "${targets[@]}"; do
 			x86="$(build x86_64-apple-darwin --features godot)/libchimera_voice.dylib"
 			lipo -create "$arm" "$x86" -output "$bin/libchimera_voice.macos.dylib" ;;
 		linux) cp "$(build x86_64-unknown-linux-gnu --features godot)/libchimera_voice.so" "$bin/libchimera_voice.linux.x86_64.so" ;;
-		windows) cp "$(build x86_64-pc-windows-gnu --features godot)/chimera_voice.dll" "$bin/chimera_voice.windows.x86_64.dll" ;;
+		windows)
+			# On Windows, Rust's GNU toolchain links with the MinGW it ships; elsewhere, the system's MinGW.
+			case "$(uname -s)" in
+				Linux | Darwin) ;;
+				*)
+					"$rustup" toolchain install stable-x86_64-pc-windows-gnu --profile minimal --no-self-update >&2
+					export RUSTUP_TOOLCHAIN=stable-x86_64-pc-windows-gnu ;;
+			esac
+			cp "$(build x86_64-pc-windows-gnu --features godot)/chimera_voice.dll" "$bin/chimera_voice.windows.x86_64.dll" ;;
 		list) ;;
 		*) echo "Error: unknown target $t (wasm, macos, linux, windows, list)" >&2; exit 1 ;;
 	esac

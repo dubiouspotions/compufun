@@ -4,10 +4,12 @@ rem Pulls the latest main, imports the project and starts the game.
 rem Git: on the PATH, else GitHub Desktop's (it has LFS), else it offers to install Git with winget.
 rem Godot (MIN_GODOT or newer, mono builds too): %GODOT%, else the path saved in godot-path.txt,
 rem else a search, else it offers to download GODOT_DOWNLOAD, else it asks for the path.
+rem The live voice (ChimeraVoice): VOICE_URL, when it is missing or native/chimera_voice changed.
 set "MIN_GODOT=40702"
 set "MIN_NAME=4.7.2"
 set "GODOT_DOWNLOAD=4.7.2"
 set "GODOT_HOME=%LOCALAPPDATA%\Programs\Godot"
+set "VOICE_URL=https://github.com/dubiouspotions/humanerror/releases/download/live-voice/live-voice-windows.zip"
 cd /d "%~dp0"
 
 rem Stop the game if it runs (from this launcher or the editor), but not the editor itself.
@@ -80,6 +82,8 @@ call :version "!CONSOLE!"
 if !GV! lss %MIN_GODOT% (set "MSG=!GODOT! is too old: this project needs Godot %MIN_NAME% or newer." & goto fail)
 >godot-path.txt echo !GODOT!
 
+call :voice
+
 echo Importing...
 "!CONSOLE!" --headless --path Godot --import
 if errorlevel 1 (set "MSG=The Godot import failed, see above." & goto fail)
@@ -105,6 +109,32 @@ if not exist "%GODOT_HOME%" mkdir "%GODOT_HOME%" || (echo ERROR: cannot make %GO
 tar -xf "!ZIP!" -C "%GODOT_HOME%" || (echo ERROR: cannot unzip !ZIP!. & exit /b 1)
 del "!ZIP!"
 set "GODOT=%GODOT_HOME%\Godot_v%GODOT_DOWNLOAD%-stable_win64.exe"
+exit /b 0
+
+rem Downloads the live voice unless voice-source.txt says it was built from this native/chimera_voice.
+rem A failure is shown, and the game then starts with the voice it has.
+:voice
+set "LIVE=Godot\voices\live"
+set "WANT=" & set "HAVE="
+for /f %%h in ('git rev-parse HEAD:native/chimera_voice') do set "WANT=%%h"
+if not defined WANT (set "VOICE_MSG=git cannot tell which native/chimera_voice this is, see above." & goto voice_fail)
+if exist "%LIVE%\voice-source.txt" set /p HAVE=<"%LIVE%\voice-source.txt"
+if "!HAVE!"=="!WANT!" exit /b 0
+echo Downloading the live voice...
+set "VOICE_ZIP=%TEMP%\live-voice-windows.zip"
+curl.exe -fsSL -o "!VOICE_ZIP!" "%VOICE_URL%" || (set "VOICE_MSG=the download of %VOICE_URL% failed, see above." & goto voice_fail)
+rem Windows' own tar: Git's, if it is on the PATH, reads no zip.
+"%SystemRoot%\System32\tar.exe" -xf "!VOICE_ZIP!" -C "%LIVE%" || (set "VOICE_MSG=cannot unzip it into %LIVE%. If the Godot editor is open, close it: it holds the voice library." & goto voice_fail)
+del "!VOICE_ZIP!"
+set "HAVE="
+set /p HAVE=<"%LIVE%\voice-source.txt"
+if not "!HAVE!"=="!WANT!" (set "VOICE_MSG=the one on GitHub was built from an older native/chimera_voice. A developer updates it, as docs/building-and-testing.md says." & goto voice_fail)
+exit /b 0
+:voice_fail
+echo.
+echo WARNING: no up-to-date live voice: !VOICE_MSG!
+echo The game starts with the live voice it has, or else the rendered voices.
+pause
 exit /b 0
 
 :fail
