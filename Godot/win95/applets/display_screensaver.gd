@@ -1,15 +1,19 @@
 extends PropertyPage
 ## Display > Screen Saver: the screensaver list. Preview plays the chosen screensaver over the whole
-## screen until a key or a click; only 3D Pipes is drawn, the others show black. Apply sets it.
+## screen until a key or a click. Apply sets it.
 
-const _PipesSaver := preload("res://win95/pipes_saver.gd")
+## The screensavers that Preview draws, by the name that Win95 shows: each a script in win95/savers/
+## that extends cover_screen.gd and draws over its whole rect. A name in [member savers] without one
+## shows black.
+const SAVERS: Dictionary[String, Script] = {
+	"3D Pipes": preload("res://win95/savers/3d_pipes.gd"),
+}
+const _COVER := preload("res://win95/cover_screen.gd")
 const _NONE := "(None)"
 
 ## The screensavers that the list offers after (None), by the name that Win95 shows.
 @export var savers: PackedStringArray = ["Blank Screen", "Curves and Colors", "Flying Through Space",
 		"Flying Windows", "Mystify Your Mind", "Scrolling Marquee", "3D Pipes"]
-## The one of [member savers] that Preview draws as pipes.
-@export var pipes: String = "3D Pipes"
 
 var _picked := false
 
@@ -60,7 +64,17 @@ func _play_preview() -> void:
 	if screen == null:
 		push_error("Display > Screen Saver: not on a Win95 screen, so Preview has nowhere to play")
 		return
-	var saver: Control = _PipesSaver.new()
-	saver.set("pipes", _chosen() == pipes)
+	var drawn: Script = SAVERS.get(_chosen())
+	var saver: Control = drawn.new() if drawn != null else _black()
 	saver.set_anchors_preset(Control.PRESET_FULL_RECT)
 	screen.add_child(saver)
+
+
+func _black() -> Control:
+	var cover: Control = _COVER.new()
+	var black := ColorRect.new()
+	black.color = Color.BLACK
+	black.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	black.set_anchors_preset(Control.PRESET_FULL_RECT)
+	cover.add_child(black)
+	return cover
