@@ -3,7 +3,7 @@ extends "res://tests/test.gd"
 ## bleeds onto the counter, and the player may swap the organs for real parts; the problem's flag
 ## says whether they did.
 
-const ORGANS := {&"motherboard": &"heart", &"cpu": &"spleen", &"fan": &"lungs", &"ram_1": &"kidney", &"ram_2": &"kidney", &"gpu": &"liver", &"hard_drive": &"brain"}
+const ORGANS := {&"motherboard": &"heart", &"cpu": &"spleen", &"fan": &"lungs", &"ram_1": &"kidney_left", &"ram_2": &"kidney_right", &"gpu": &"liver", &"hard_drive": &"brain"}
 const REPLACED := &"skater_organs_replaced"
 
 
@@ -68,4 +68,4 @@ func run() -> void:
 	game.turn_screw(job, 0)
 	game.turn_screw(job, 1)
 	check("closed with real parts: fixed, replaced", [job.hardware_fixed, game.flag(REPLACED)], [true, 1])
-	check("the trash holds his organs", Job.pieces_data(game.trashed).slice(-7), ["lungs", "spleen", "kidney", "kidney", "liver", "brain", "heart"])
+	check("the trash holds his organs", Job.pieces_data(game.trashed).slice(-7), ["lungs", "spleen", "kidney_left", "kidney_right", "liver", "brain", "heart"])

@@ -5,14 +5,17 @@
 [ext_resource type="Resource" path="res://parts/heart.tres" id="2_heart"]
 [ext_resource type="Resource" path="res://parts/spleen.tres" id="3_spleen"]
 [ext_resource type="Resource" path="res://parts/lungs.tres" id="4_lungs"]
-[ext_resource type="Resource" path="res://parts/kidney.tres" id="5_kidney"]
+[ext_resource type="Resource" path="res://parts/kidney_left.tres" id="5_kidney"]
+[ext_resource type="Resource" path="res://parts/kidney_right.tres" id="5_kidney_right"]
+[ext_resource type="PackedScene" path="res://props/parts/case_blood.tscn" id="8_blood"]
 [ext_resource type="Resource" path="res://parts/liver.tres" id="6_liver"]
 [ext_resource type="Resource" path="res://parts/brain.tres" id="7_brain"]
 
 [resource]
 script = ExtResource("1_problem")
 short_name = &"organ_failure"
-stand_ins = Array[ExtResource("1_part")]([ExtResource("2_heart"), ExtResource("3_spleen"), ExtResource("4_lungs"), ExtResource("5_kidney"), ExtResource("6_liver"), ExtResource("7_brain")])
+stand_ins = Array[ExtResource("1_part")]([ExtResource("2_heart"), ExtResource("3_spleen"), ExtResource("4_lungs"), ExtResource("5_kidney"), ExtResource("5_kidney_right"), ExtResource("6_liver"), ExtResource("7_brain")])
 replaced_flag = &"skater_organs_replaced"
+case_dressing = ExtResource("8_blood")
 in_compufun_db = false
 drop_off_signs = Array[StringName]([&"blood_puddle"])

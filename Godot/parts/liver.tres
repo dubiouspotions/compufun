@@ -3,9 +3,11 @@
 [ext_resource type="Script" path="res://parts/part.gd" id="1_part"]
 [ext_resource type="PackedScene" path="res://props/parts/liver.tscn" id="2_model"]
 [ext_resource type="Resource" path="res://parts/gpu.tres" id="3_poses"]
+[ext_resource type="Resource" path="res://sounds/squelch.tres" id="4_squelch"]
 
 [resource]
 script = ExtResource("1_part")
 display_name = "Liver"
 model = ExtResource("2_model")
 poses_as = ExtResource("3_poses")
+handle_sound = ExtResource("4_squelch")
