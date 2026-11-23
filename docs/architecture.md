@@ -13,7 +13,7 @@ Godot/               the Godot project: everything the game loads
   export_presets.cfg Web, Windows Desktop, MacOS, Linux; CI exports them by name
   default_bus_layout.tres  the audio buses: Master; Shop, everything heard from the shop (it pans right while the player is in the storage room), fed by Voice for the customers' voices, Win95, Street (muffled until the door opens) and Room (the shop's reverb); Storage, the storage room's reverb
   game.gd            the Game autoload
-  shaders/           psx_world.gdshader, psx_post.gdshader, psx_post_world.tres (the world's post material); pulse_ring.gdshader (the beating ring around a panel screw that can turn)
+  shaders/           psx_world.gdshader (its body in psx_world.gdshaderinc; psx_world_layered.gdshader draws it in the transparent pass, in sorting_offset order), psx_post.gdshader, psx_post_world.tres (the world's post material); pulse_ring.gdshader (the beating ring around a panel screw that can turn)
   shaders/crt_looks/ the CRT looks: the Screen View's (crt.gdshader) and the 3D bench screen's (crt_world.gdshader)
   props/             one scene per placeholder model: crt_monitor, pc_tower, counter, shelf, part_box, ...
   props/parts/       the model of each part: motherboard, cpu, fan, ram, gpu, hard_drive
