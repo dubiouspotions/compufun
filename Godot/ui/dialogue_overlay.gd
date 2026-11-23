@@ -62,9 +62,10 @@ const _MATCH_NEUTRAL_HEIGHT := "young_entrepreneur/portrait_irritated03.png"
 @export_range(0.0, 1.0, 0.01) var choice_fade_seconds: float = 0.18
 ## The delay between one choice fading in and the next, in seconds.
 @export_range(0.0, 0.5, 0.01) var choice_stagger_seconds: float = 0.06
-## The colours of a choice, and of a choice under the mouse.
-@export var choice_color: Color = Color(0.96, 0.95, 0.92)
-@export var choice_hover_color: Color = Color(1.0, 0.82, 0.45)
+## The colours of a choice, the player's words, and of a choice under the mouse, with the keyboard
+## focus or picked.
+@export var choice_color: Color = Color(1.0, 0.86, 0.62)
+@export var choice_hover_color: Color = Color(1.0, 1.0, 1.0)
 ## The colour of a choice that the player already picked in this conversation.
 @export var asked_color: Color = Color(0.6, 0.6, 0.62)
 
@@ -108,6 +109,7 @@ var _reach: float = 0.0
 @onready var _portrait_slot: Panel = %Portrait
 @onready var _portrait: TextureRect = %PortraitTexture
 @onready var _choices: VBoxContainer = %Choices
+@onready var _choices_gap: Control = %ChoicesGap
 @onready var _voice: VoicePlayer = %Voice
 
 
@@ -506,6 +508,7 @@ func _show_choices(offered: Array[Choice]) -> void:
 	for child: Node in _choices.get_children():
 		child.queue_free()
 	_choices.visible = not offered.is_empty()
+	_choices_gap.visible = _choices.visible
 	_picking = false
 	if offered.is_empty():
 		return
@@ -532,6 +535,7 @@ func _choice_button(text: String, action: Callable) -> Button:
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.add_theme_color_override(&"font_color", choice_color)
 	button.add_theme_color_override(&"font_hover_color", choice_hover_color)
+	button.add_theme_color_override(&"font_focus_color", choice_hover_color)
 	button.add_theme_font_override(&"font", _text.get_theme_font(&"font"))
 	button.add_theme_font_size_override(&"font_size", _text.get_theme_font_size(&"font_size"))
 	button.pressed.connect(_press.bind(button, action))

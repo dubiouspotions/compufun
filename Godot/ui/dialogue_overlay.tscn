@@ -65,6 +65,13 @@ theme_override_fonts/font = ExtResource("pixel")
 theme_override_font_sizes/font_size = 32
 autowrap_mode = 3
 
+[node name="ChoicesGap" type="Control" parent="Box/Text"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+mouse_filter = 2
+
 [node name="Choices" type="VBoxContainer" parent="Box/Text"]
 unique_name_in_owner = true
 visible = false
