@@ -216,6 +216,12 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Conversation**: One exchange with a customer: the lines they say, one at a time, and the player's choices. It is a section of an errand's story file; `Game` plays the errand's first one whose trigger and condition match.
 *Avoid:* dialog, dialogue tree, script.
 
+**Call-out**: A line that a customer says outside the dialogue box, in the call-out box at the edge of the screen that points at them (`ui/customer_calling.tscn`): while they wait and the player looks elsewhere, as they leave (`[leaving]`), and while a look has turned the player away.
+*Avoid:* bark, shout, speech bubble.
+
+**Look**: A turn of the player's view that a customer's line asks for before it is said: left to the Left View, right to the Right View or ahead to the Main View (`DialogueLine.look`, `[look left]` in a story file). While a look has turned the player away from the customer, the conversation's lines show in the call-out box.
+*Avoid:* force turn, turn, camera move.
+
 **Name**: A person's name, for use on that person's computer (`Person.name`). Dialogue does not show it.
 *Avoid:* full name, real name, legal name.
 

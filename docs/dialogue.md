@@ -147,6 +147,16 @@ brief: He arrives cheerful; the problem comes out only when asked.
   the customer says it while walking out, outside the dialogue box, as at the end of a visit.
   Leaving lines come last: the box closes before them. A leaving line that the conversation can go
   on after plays in the box, and the story check lists it.
+- `[look left]`, `[look right]` and `[look ahead]` turn the player's view before the line is said:
+  to the Left View (the storage side), the Right View (the work computer) or the Main View (the
+  counter, facing the customer). A look names the view, not a turn, so a look that brings the
+  player back to the customer is always `[look ahead]`. While a look has turned the player away
+  from the customer, the conversation goes on in the call-out box, which points at the customer:
+  each line goes on once its voice ended and the player had time to read it, or on a click. The
+  choices turn the player back to answer; so does facing the customer on their own, and the line
+  goes on in the dialogue box. Turning away on their own hushes the line until they face the
+  customer again. A look works only before a line in the dialogue box: the story check lists one
+  on a `[leaving]` line or on the phone, and a look that is not left, right or ahead.
 - `- text` and `+ text` are the player's choices. Choices in a row make one list; an empty
   line between two choices starts a new list.
   - After a `-` choice's lines, the conversation goes on **below the list**: two branches meet
@@ -183,7 +193,7 @@ files on every push; nobody edits it.
 The files are the outline. The story check lists the missing links: a flag that nothing sets or
 checks, a `+` choice without a line, an errand without a `drop-off`, an errand code whose alternatives can
 all fail, a mood that the person has no portrait for or no voice for, a `[leaving]` line that the
-conversation can go on after, a problem without repair mechanics, a problem file that no errand
+conversation can go on after, a look that is unknown or never turns the view, a problem without repair mechanics, a problem file that no errand
 names:
 
 ```sh
