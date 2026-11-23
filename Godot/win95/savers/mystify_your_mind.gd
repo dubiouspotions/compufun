@@ -8,13 +8,13 @@ extends Saver
 ## The corners of each outline.
 @export_range(2, 8) var corners: int = 4
 ## The copies of each outline on screen: the newest and its trail.
-@export_range(1, 64) var lines: int = 7
+@export_range(1, 64) var lines: int = 5
 ## Moves per second; each move draws a new copy of every outline and drops its oldest.
-@export var steps_per_second: float = 20.0
+@export var steps_per_second: float = 25.0
 ## The speed of a corner in pixels per move, picked from this range at each bounce.
-@export var speed: Vector2 = Vector2(5.0, 12.0)
+@export var speed: Vector2 = Vector2(1.5, 8.0)
 ## The moves that one colour takes to fade into the next.
-@export_range(1, 600) var fade_steps: int = 90
+@export_range(1, 600) var fade_steps: int = 200
 
 
 class Shape:

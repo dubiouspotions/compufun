@@ -19,11 +19,12 @@ func run() -> void:
 				trails.append(shape.get("trail"))
 			check("%s: two shapes" % name, trails.size(), 2)
 		else:
-			trails.append(saver.get("_trail"))
-		var kept: int = saver.get("lines") if saver_script == MYSTIFY else saver.get("length")
+			trails.append(saver.get("_history"))
+		var spacing: int = 1 if saver_script == MYSTIFY else saver.get("spacing")
+		var kept: int = (saver.get("lines") - 1) * spacing + 1
 		var inside := true
 		for trail: Array in trails:
-			check("%s: a full trail of %d copies" % [name, kept], trail.size(), kept)
+			check("%s: a full trail of %d loops" % [name, kept], trail.size(), kept)
 			for copy: PackedVector2Array in trail:
 				for point: Vector2 in copy:
 					inside = inside and Rect2(Vector2.ZERO, saver.size).grow(0.5).has_point(point)
