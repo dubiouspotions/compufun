@@ -96,8 +96,9 @@ symptoms:
 	Computer overheating
 		shows: the fan is full of dust in the Workview
 checks:
-	CPU fan is clean and spins freely
-		shows: in the Workview, the fan is clogged with dust
+	yes: Dust in the CPU fan
+		shows: in the Workview
+	no: CPU fan is clean and spins freely
 hardware steps:
 	Remove the computer shell
 	Remove the fan, throw it in the trash
@@ -116,11 +117,9 @@ The file name is the problem's id, the name of its `problems/<id>.tres`, which h
 - `symptoms`: one per line: every complaint this cause can bring, as a customer would put it, worded
   as other problems word the same complaint ("Slow computer"), so a search offers every likely
   cause. The player searches CompuFunDB for their words.
-- `checks`: one per line: what a working computer does, such as `Boots from C:`. CompuFunDB's CHECK
-  lists the checks of every problem with the symptom searched for, among checks of other problems;
-  the player ticks those that pass, which rules out every cause that needs one of them to fail.
-  `shows:` under a check says how it fails in the game when this is the cause; every check must be
-  something the game shows.
+- `checks`: one per line, `yes:` (true when this is the cause) or `no:` (false). The player ticks
+  what is true. A ticked check rules a cause out when the cause says `no:` to it, or when another
+  cause says `yes:` to it and this one doesn't. `shows:` is how it shows in the game.
 - `hardware steps`, `software steps`: one per line, as CompuFunDB prints them on the cause's fix
   page, which already names the cause.
 - `notes`: for people; the game doesn't read them.

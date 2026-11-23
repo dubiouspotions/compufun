@@ -4,10 +4,11 @@ symptoms:
 	Garbled picture
 	Colours look wrong
 checks:
-	Picture is clean from power-on
-		shows: coloured blocks and torn lines flicker over it
-	GPU heatsink is unmarked
-		shows: in the Workview, the GPU's heatsink is scorched
+	yes: Coloured blocks and torn lines on screen
+		shows: from power-on
+	yes: Scorched GPU heatsink
+		shows: in the Workview
+	no: Picture is clean
 hardware steps:
 	Remove the computer shell
 	Take out the GPU, throw it in the trash

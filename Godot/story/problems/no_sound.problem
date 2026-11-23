@@ -3,7 +3,7 @@ cause: Sound muted
 symptoms:
 	No sound
 checks:
-	Sound is not muted
+	yes: Sound is muted
 		shows: the speaker in the taskbar is crossed out
 software steps:
 	Click the speaker in the taskbar

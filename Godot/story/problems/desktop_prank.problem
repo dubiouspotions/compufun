@@ -3,12 +3,12 @@ cause: Screenshot set as wallpaper
 symptoms:
 	Icons don't open
 checks:
-	Desktop icons open
-		shows: the icons are only part of the wallpaper, a picture of the desktop
-	Wallpaper is not a picture of the desktop
-		shows: Display Properties lists the wallpaper as "prank"
-	Icons are on the desktop
-		shows: a New Folder, mostly off the screen in the bottom right corner, holds them
+	yes: Desktop icons don't open
+		shows: they are part of the wallpaper; My Computer and the Recycle Bin still work
+	yes: Wallpaper is a picture of the desktop
+		shows: Display Properties calls it "prank"
+	yes: Folder of icons hidden in a corner
+		shows: bottom right, mostly off the screen
 software steps:
 	Open the folder hidden in the corner
 	Drag every icon in it onto the desktop

@@ -4,10 +4,12 @@ symptoms:
 	Restarts by itself
 	Slow computer
 checks:
-	Windows stays up after the desktop appears
-		shows: a second after the desktop appears, the sound sags and freezes in a buzz, and the computer reboots
-	CPU fan is clean and spins freely
-		shows: in the Workview, the fan is clogged with dust
+	yes: Freezes with a buzz after the desktop appears
+		shows: a second after the desktop appears, the sound sags into a buzz, then a reboot
+	yes: Dust in the CPU fan
+		shows: in the Workview
+	no: Windows stays up after the desktop appears
+	no: CPU fan is clean and spins freely
 hardware steps:
 	Remove the computer shell
 	Take out the fan, throw it in the trash

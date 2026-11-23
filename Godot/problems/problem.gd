@@ -77,9 +77,11 @@ var symptoms: PackedStringArray = []
 ## How each symptom shows in the game, for people: symptom to text; a symptom without one is
 ## missing. From the problem file.
 var symptom_shows: Dictionary[String, String] = {}
-## What a working computer does, such as "Boots from C:", as CompuFunDB's CHECK lists them; the
-## player marks those that fail. From the problem file.
+## What the player can check on the computer, as CompuFunDB's CHECK lists them; [member check_yes]
+## says which are true when this is the cause. From the problem file.
 var checks: PackedStringArray = []
+## Check to true (yes: in the file) or false (no:).
+var check_yes: Dictionary[String, bool] = {}
 ## How each check fails in the game when this is the cause, for people: check to text. From the
 ## problem file.
 var check_shows: Dictionary[String, String] = {}
@@ -104,6 +106,7 @@ func take_text(from: Problem) -> void:
 	symptoms = from.symptoms.duplicate()
 	symptom_shows = from.symptom_shows.duplicate()
 	checks = from.checks.duplicate()
+	check_yes = from.check_yes.duplicate()
 	check_shows = from.check_shows.duplicate()
 	hardware_steps = from.hardware_steps.duplicate()
 	software_steps = from.software_steps.duplicate()

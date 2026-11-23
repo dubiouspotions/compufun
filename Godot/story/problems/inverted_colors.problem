@@ -3,8 +3,8 @@ cause: Wrong colour scheme
 symptoms:
 	Colours look wrong
 checks:
-	Colour scheme is the usual one
-		shows: Display Properties, Appearance, shows High Contrast Black
+	yes: High contrast colour scheme
+		shows: Display Properties, Appearance: High Contrast Black
 software steps:
 	Right-click the desktop and pick Properties
 	Open the Appearance tab

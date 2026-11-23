@@ -5,10 +5,9 @@ symptoms:
 	Restarts by itself
 	Slow computer
 checks:
-	Windows stays up after the desktop appears
-		shows: it shows a bluescreen 2 s after the desktop appears and reboots 6 s later
-	Runs without a bluescreen
-		shows: "A fatal exception 0E has occurred at 0028:C0002B6F in VXD IOS(01)"
+	yes: Bluescreen after the desktop appears
+		shows: "A fatal exception 0E has occurred", then a reboot 6 s later
+	no: Windows stays up after the desktop appears
 hardware steps:
 	Remove the computer shell
 	Take out the hard drive, throw it in the trash

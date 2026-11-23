@@ -3,10 +3,10 @@ cause: Virus started from StartUp
 symptoms:
 	CD tray opens by itself
 checks:
-	CD tray stays shut
-		shows: while Windows runs, the tray opens and closes every few seconds
-	StartUp holds only known programs
-		shows: a shortcut to BIZOPP.EXE, which is in C:\WINDOWS
+	yes: CD tray opens and closes by itself
+		shows: every few seconds while Windows runs
+	yes: Unknown program in StartUp
+		shows: BIZOPP.EXE, from C:\WINDOWS
 software steps:
 	Get the CompuFun AntiVirus floppy from storage
 	Put it in drive A: and run SETUP.EXE

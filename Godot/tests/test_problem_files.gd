@@ -11,11 +11,13 @@ const RESOURCE: String = "res://problems/%s.tres"
 # A problem's checks, each with how it fails, read and written back as they were.
 func _problem_checks() -> void:
 	var path := PROBLEM_FILE % "bootfloppy"
-	var text := "post-it: Won't start\nsymptoms:\n\tStops at a message\nchecks:\n\tBoots from C:\n\t\tshows: stops at Non-System disk\n\tMemory test passes\n"
+	var text := "post-it: Won't start\nsymptoms:\n\tStops at a message\nchecks:\n\tyes: Floppy in drive A:\n\t\tshows: it sticks out\n\tno: Windows starts\n"
 	var parsed := StoryFormat.parse_problem(text, path)
 	var problem := parsed.value as Problem
-	check("checks parse", [parsed.errors, problem.checks, problem.check_shows], [PackedStringArray(), PackedStringArray(["Boots from C:", "Memory test passes"]), {"Boots from C:": "stops at Non-System disk"}])
+	check("checks parse", [parsed.errors, problem.checks, problem.check_yes, problem.check_shows], [PackedStringArray(), PackedStringArray(["Floppy in drive A:", "Windows starts"]), {"Floppy in drive A:": true, "Windows starts": false}, {"Floppy in drive A:": "it sticks out"}])
 	check("and write back as they were", StoryFormat.write_problem(problem), text)
+	var bare := StoryFormat.parse_problem("post-it: x\nchecks:\n\tWindows starts\n", path).value as Problem
+	check("a check without yes: or no: is a no:", bare.check_yes, {"Windows starts": false})
 	var twice := StoryFormat.parse_problem("post-it: x\nchecks:\n\tA\n\tA\n", path)
 	check("a check twice is an error", twice.errors, PackedStringArray([path + ":4: the check 'A' a second time"]))
 
@@ -38,7 +40,7 @@ func _round_trip() -> void:
 		check("%s parses" % path, parsed.errors, PackedStringArray())
 		check("%s writes back the same text" % path, StoryFormat.write_problem(parsed.value), text)
 	var dust := StoryFormat.parse_problem(FileAccess.get_file_as_string(PROBLEM_FILE % "dust_overheat"), PROBLEM_FILE % "dust_overheat").value as Problem
-	check("a check shows how it fails", dust.check_shows.has("CPU fan is clean and spins freely"), true)
+	check("a check shows how it fails", dust.check_shows.has("Dust in the CPU fan"), true)
 	check("the steps", [dust.hardware_steps.size(), dust.hardware_steps[0], dust.software_steps], [5, "Remove the computer shell", PackedStringArray()])
 	check("text only, named by its file", [dust.short_name, dust.resource_path, dust.broken_part], [&"dust_overheat", PROBLEM_FILE % "dust_overheat", null])
 

@@ -6,8 +6,9 @@ symptoms:
 	Restarts by itself
 	Blue screen
 checks:
-	Passes the BIOS memory test
-		shows: the memory test stops with "Memory test fail", then "System halted"
+	yes: Memory test fails at startup
+		shows: "Memory test fail", then "System halted"
+	no: Windows starts
 hardware steps:
 	Remove the computer shell
 	Swap one RAM module for a new one from storage

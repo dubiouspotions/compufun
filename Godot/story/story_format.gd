@@ -120,7 +120,15 @@ static func write_problem(problem: Problem) -> String:
 	if problem.cause != "":
 		out.append("cause: " + problem.cause)
 	_write_shown(out, "symptoms", problem.symptoms, problem.symptom_shows)
-	_write_shown(out, "checks", problem.checks, problem.check_shows)
+	if not problem.checks.is_empty():
+		var named := PackedStringArray()
+		var shows: Dictionary[String, String] = {}
+		for check: String in problem.checks:
+			var line := ("yes: " if problem.check_yes.get(check, false) else "no: ") + check
+			named.append(line)
+			if problem.check_shows.has(check):
+				shows[line] = problem.check_shows[check]
+		_write_shown(out, "checks", named, shows)
 	for key: String in ["hardware steps", "software steps"]:
 		var steps: PackedStringArray = problem.hardware_steps if key == "hardware steps" else problem.software_steps
 		if not steps.is_empty():
@@ -374,7 +382,15 @@ class _Reader:
 		else:
 			p.cause = fields.get("cause", "")
 		p.symptoms = _read_shown(fields, "symptoms", "symptom", p.symptom_shows)
-		p.checks = _read_shown(fields, "checks", "check", p.check_shows)
+		var shows: Dictionary[String, String] = {}
+		var checks := PackedStringArray()  # built here: a packed array is a copy, not a reference
+		for line: String in _read_shown(fields, "checks", "check", shows):
+			var check := line.trim_prefix("yes:").trim_prefix("no:").strip_edges()  # a bare check is a no:
+			checks.append(check)
+			p.check_yes[check] = line.begins_with("yes:")
+			if shows.has(line):
+				p.check_shows[check] = shows[line]
+		p.checks = checks
 		for key: String in ["hardware steps", "software steps"]:
 			var steps := PackedStringArray()
 			for row: Array in _rows(fields, key):

@@ -3,10 +3,10 @@ cause: Fragmented hard drive
 symptoms:
 	Slow computer
 checks:
-	Windows starts quickly
-		shows: the Windows splash screen lasts three times as long
-	Folders open at once
-		shows: a folder takes 2 seconds to open
+	yes: Windows takes long to start
+		shows: the splash screen lasts three times as long
+	yes: Folders take seconds to open
+		shows: 2 s each
 software steps:
 	Open Start, Programs, Accessories, System Tools, Disk Defragmenter
 	Click Start: it defragments drive C:

@@ -81,7 +81,7 @@ func open_problem(id: StringName) -> void:
 		_add_symptom(symptom, problem.symptom_shows.get(symptom, ""))
 	_clear(_checks)
 	for check: String in problem.checks:
-		_add_check(check, problem.check_shows.get(check, ""))
+		_add_check(check, problem.check_shows.get(check, ""), problem.check_yes.get(check, false))
 	for list: VBoxContainer in [_hardware, _software]:
 		_clear(list)
 		for step: String in (problem.hardware_steps if list == _hardware else problem.software_steps):
@@ -134,6 +134,10 @@ func text() -> String:
 	problem.cause = _cause.text.strip_edges()
 	problem.symptoms = _shown(_symptoms, problem.symptom_shows)
 	problem.checks = _shown(_checks, problem.check_shows)
+	for row: Node in _checks.get_children():
+		var check := (row.get_child(0) as LineEdit).text.strip_edges()
+		if check != "":
+			problem.check_yes[check] = (row.get_child(2) as OptionButton).selected == 0
 	problem.hardware_steps = _steps(_hardware)
 	problem.software_steps = _steps(_software)
 	problem.notes = _notes.text.strip_edges(false, true)
@@ -292,8 +296,17 @@ func _add_symptom(symptom: String = "", shows: String = "") -> void:
 	_add_shown(_symptoms, symptom, shows, "As the customer or the player would put it", "What the player sees or hears")
 
 
-func _add_check(check: String = "", shows: String = "") -> void:
-	_add_shown(_checks, check, shows, "What a working computer does, such as: Boots from C:", "How it fails in the game")
+func _add_check(check: String = "", shows: String = "", yes: bool = true) -> void:
+	_add_shown(_checks, check, shows, "Such as: Bluescreen after the desktop appears", "How it shows in the game")
+	var answer := OptionButton.new()
+	answer.add_item("yes")
+	answer.add_item("no")
+	answer.selected = 0 if yes else 1
+	answer.tooltip_text = "yes: true when this is the cause. no: false when this is the cause."
+	answer.item_selected.connect(func(_i: int) -> void: _changed())
+	var row := _checks.get_child(-1)
+	row.add_child(answer)
+	row.move_child(answer, 2)
 
 
 func _add_shown(list: VBoxContainer, entry: String, shows: String, what_hint: String, how_hint: String) -> void:
@@ -447,8 +460,8 @@ func _right() -> Control:
 	box.add_child(_columns("The symptom", "How it shows in the game"))
 	_symptoms = _rows(box)
 	box.add_child(_add_button("+  Symptom", func() -> void: _add_symptom()))
-	box.add_child(_heading("Checks", "What a working computer does, such as \"Boots from C:\", and how it fails in the game when this is the cause. CompuFunDB lists the checks of every problem with the symptom searched for, among checks of others; the player marks those that fail, and only this problem's checks show its fix. The cause goes in the steps."))
-	box.add_child(_columns("The check", "How it fails in the game"))
+	box.add_child(_heading("Checks", "What the player can check on the computer. yes: true when this is the cause. no: false when this is the cause. A tick in CompuFunDB means true; a cause is ruled out by a ticked no:, or by a ticked yes: of another cause."))
+	box.add_child(_columns("The check", "How it shows in the game"))
 	_checks = _rows(box)
 	box.add_child(_add_button("+  Check", func() -> void: _add_check()))
 	box.add_child(_heading("Hardware steps", "What the player does inside the computer, in order, as CompuFunDB prints it."))

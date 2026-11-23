@@ -2,10 +2,10 @@ class_name CompuFunDB
 extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
 ## SEARCH (the player types words and presses Enter: the symptoms of every Problem that hold them
-## all), CHECK (what a working computer does, from every cause of the symptom picked among a few
-## checks of other problems in the same place: the Game.db_search; the player ticks those that pass)
-## and CAUSES (every Problem with that symptom, by its cause; one that needs a ticked check to fail
-## is ruled out). F prints the selected cause's fix, its steps ending in [member test_step], on the
+## all), CHECK (the checks of every cause of the symptom picked, among a few of other problems in
+## the same place: the Game.db_search; the player ticks what is true on the computer) and CAUSES
+## (every Problem with that symptom, by its cause; a ticked check rules out a cause that says no: to
+## it, or that doesn't say yes: to a check another cause says yes: to). F prints the selected cause's fix, its steps ending in [member test_step], on the
 ## shop's Printer; P prints the checklist. The work computer is slow: a column's entries come in one
 ## at a time, each after a seek of the hard drive, whenever what it shows changes. This screen keeps
 ## only its cursor and the typed words. It reads every Problem file, so its text is never a second
@@ -209,7 +209,7 @@ func _all_entries(column: Column) -> Array[Dictionary]:
 		Column.CHECKS:
 			if search != null:
 				for check: String in search.offered:
-					entries.append({text = check, check = check in search.passed_checks, pick = true})
+					entries.append({text = check, check = check in search.ticked_checks, pick = true})
 		Column.CAUSES:
 			for problem: Problem in _causes():
 				entries.append({text = problem.cause_name(), check = null, pick = _possible(problem), problem = problem})
@@ -253,9 +253,26 @@ func _causes() -> Array[Problem]:
 	return _problems.filter(func(p: Problem) -> bool: return search != null and search.query in p.symptoms)
 
 
-# False once a check that [param problem] needs to fail is ticked as passing.
+# False once a ticked check rules [param problem] out: one it says no: to, or one that another
+# problem says yes: to and it doesn't (a computer has one cause).
 func _possible(problem: Problem) -> bool:
-	return not Array(problem.checks).any(func(c: String) -> bool: return c in Game.db_search.passed_checks)
+	var findings := _findings()
+	for check: String in Game.db_search.ticked_checks:
+		if problem.check_yes.has(check) and not problem.check_yes[check]:
+			return false
+		if not problem.check_yes.has(check) and findings.has(check):
+			return false
+	return true
+
+
+# Every check that some problem says yes: to.
+func _findings() -> Dictionary[String, bool]:
+	var found: Dictionary[String, bool] = {}
+	for problem: Problem in _problems:
+		for check: String in problem.check_yes:
+			if problem.check_yes[check]:
+				found[check] = true
+	return found
 
 
 # Starts the search for [param query]: what to check is the checks of every problem that has it,

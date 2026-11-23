@@ -4,10 +4,12 @@ symptoms:
 	No picture at all
 	Stops before Windows starts
 checks:
-	Shows a picture at power-on
-		shows: the fans run and nothing shows: the CPU is not in its socket
-	Every part sits in its own place
-		shows: in the Workview, parts lie on the places of other parts
+	yes: Fans run but no picture
+	yes: CPU socket is empty
+		shows: in the Workview
+	yes: Parts in the wrong places
+		shows: in the Workview
+	no: Windows starts
 hardware steps:
 	Remove the computer shell
 	Put each part back in its own place

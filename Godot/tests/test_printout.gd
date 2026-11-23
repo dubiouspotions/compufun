@@ -240,8 +240,8 @@ func _check_print_fix() -> void:
 	await process_frame
 	db.set("_hits", PackedStringArray(["Restarts by itself"]))  # as SEARCH found it
 	db.call("_search", "Restarts by itself")
-	for passing: String in ["Passes the BIOS memory test", "Runs without a bluescreen", "CPU fan is clean and spins freely"]:
-		game.mark_check(passing, true)
+	for ticked: String in ["Freezes with a buzz after the desktop appears", "CPU fan is clean and spins freely"]:
+		game.mark_check(ticked, true)
 	var key := InputEventKey.new()
 	key.keycode = KEY_F
 	key.pressed = true

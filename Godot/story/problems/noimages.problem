@@ -4,8 +4,8 @@ symptoms:
 	Can't open pictures
 	Programs won't start
 checks:
-	Programs in C:\WINDOWS start
-		shows: NOTEPAD, WORDPAD, PBRUSH, CALC and others lost their .EXE
+	yes: Programs lost their .EXE
+		shows: in C:\WINDOWS: NOTEPAD, WORDPAD, PBRUSH, CALC and others
 software steps:
 	Open C:\WINDOWS
 	Rename each program that lost its .EXE back to its name with .EXE
