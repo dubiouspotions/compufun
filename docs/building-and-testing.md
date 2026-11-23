@@ -150,7 +150,7 @@ where the game has them: it clicks the open sign, reads each customer's lines an
 choices (at random, from a seed), opens CompuFunDB, marks the symptoms, prints the FIX page with F and
 takes it from the printer, repairs the computer (hardware with Game's part calls, software through
 the computer's own `ComputerState`: the volume, the eject button, Disk Defragmenter overnight, a
-property sheet, a rename, Display Properties), waits for the real boot to test it, clicks the phone
+property sheet, a rename, Display Properties, End Task and a delete), waits for the real boot to test it, clicks the phone
 and closes the shop at the sign. Each morning it checks that `Game.restore(Game.snapshot())` keeps
 the state.
 
