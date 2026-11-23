@@ -54,6 +54,8 @@ func open() -> void:
 	_fill("")
 	_popup.reset_size()
 	var at := get_global_transform_with_canvas() * Vector2(0, size.y)
+	if get_window().is_embedded():  # a picker inside another popup: place the list in the same embedder
+		at += Vector2(get_window().position)
 	_popup.popup(Rect2i(Vector2i(at), Vector2i(maxi(int(size.x), 280), 0)))
 	_search.grab_focus.call_deferred()
 
