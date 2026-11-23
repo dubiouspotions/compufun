@@ -19,6 +19,7 @@ desktop.ini
 
 # The Godot path that Play HumanError.bat found or was given
 /godot-path.txt
+/Godot/voices/live/voice-source.txt
 
 # Written before an export (Godot/build_info.gd)
 /Godot/build_info.txt
