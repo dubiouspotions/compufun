@@ -7,8 +7,279 @@
 [ext_resource type="Texture2D" path="res://win95/applets/system_monitor.png" id="monitor"]
 [ext_resource type="Texture2D" path="res://win95/applets/device_tree.png" id="tree"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/laptop_docking_station_32.png" id="profiles"]
+[ext_resource type="Script" path="res://win95/applets/system_devices.gd" id="devices_page"]
+[ext_resource type="Script" path="res://win95/applets/device.gd" id="device"]
+[ext_resource type="Script" path="res://win95/folder_tree.gd" id="folder_tree"]
 
 [sub_resource type="ButtonGroup" id="view"]
+
+[sub_resource type="AtlasTexture" id="icon_computer"]
+atlas = ExtResource("tree")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="icon_cdrom"]
+atlas = ExtResource("tree")
+region = Rect2(18, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="icon_disk"]
+atlas = ExtResource("tree")
+region = Rect2(18, 32, 16, 16)
+
+[sub_resource type="AtlasTexture" id="icon_display"]
+atlas = ExtResource("tree")
+region = Rect2(18, 48, 16, 16)
+
+[sub_resource type="AtlasTexture" id="icon_floppy"]
+atlas = ExtResource("tree")
+region = Rect2(18, 64, 16, 16)
+
+[sub_resource type="AtlasTexture" id="icon_hdc"]
+atlas = ExtResource("tree")
+region = Rect2(18, 96, 16, 16)
+
+[sub_resource type="AtlasTexture" id="icon_keyboard"]
+atlas = ExtResource("tree")
+region = Rect2(18, 112, 16, 16)
+
+[sub_resource type="AtlasTexture" id="icon_monitor"]
+atlas = ExtResource("tree")
+region = Rect2(18, 128, 16, 16)
+
+[sub_resource type="AtlasTexture" id="icon_mouse"]
+atlas = ExtResource("tree")
+region = Rect2(18, 144, 16, 16)
+
+[sub_resource type="AtlasTexture" id="icon_ports"]
+atlas = ExtResource("tree")
+region = Rect2(18, 176, 16, 16)
+
+[sub_resource type="AtlasTexture" id="icon_sound"]
+atlas = ExtResource("tree")
+region = Rect2(18, 192, 16, 16)
+
+[sub_resource type="AtlasTexture" id="icon_joystick"]
+atlas = ExtResource("tree")
+region = Rect2(37, 224, 16, 16)
+
+[sub_resource type="AtlasTexture" id="icon_system"]
+atlas = ExtResource("tree")
+region = Rect2(18, 240, 16, 16)
+
+[sub_resource type="Resource" id="device_1"]
+script = ExtResource("device")
+name = "GENERIC IDE  ATAPI CD-ROM"
+icon = SubResource("icon_cdrom")
+
+[sub_resource type="Resource" id="device_2"]
+script = ExtResource("device")
+name = "CDROM"
+icon = SubResource("icon_cdrom")
+devices = Array[ExtResource("device")]([SubResource("device_1")])
+
+[sub_resource type="Resource" id="device_3"]
+script = ExtResource("device")
+name = "GENERIC IDE  DISK TYPE47"
+icon = SubResource("icon_disk")
+place = &"hard_drive"
+
+[sub_resource type="Resource" id="device_4"]
+script = ExtResource("device")
+name = "GENERIC NEC  FLOPPY DISK"
+icon = SubResource("icon_floppy")
+
+[sub_resource type="Resource" id="device_5"]
+script = ExtResource("device")
+name = "Disk drives"
+icon = SubResource("icon_disk")
+devices = Array[ExtResource("device")]([SubResource("device_3"), SubResource("device_4")])
+
+[sub_resource type="Resource" id="device_6"]
+script = ExtResource("device")
+name = "S3 Trio32/64 PCI"
+icon = SubResource("icon_display")
+place = &"gpu"
+
+[sub_resource type="Resource" id="device_7"]
+script = ExtResource("device")
+name = "Display adapters"
+icon = SubResource("icon_display")
+devices = Array[ExtResource("device")]([SubResource("device_6")])
+
+[sub_resource type="Resource" id="device_8"]
+script = ExtResource("device")
+name = "Standard Floppy Disk Controller"
+icon = SubResource("icon_floppy")
+problem = true
+
+[sub_resource type="Resource" id="device_9"]
+script = ExtResource("device")
+name = "Floppy disk controllers"
+icon = SubResource("icon_floppy")
+devices = Array[ExtResource("device")]([SubResource("device_8")])
+
+[sub_resource type="Resource" id="device_10"]
+script = ExtResource("device")
+name = "Primary IDE controller (dual fifo)"
+icon = SubResource("icon_hdc")
+
+[sub_resource type="Resource" id="device_11"]
+script = ExtResource("device")
+name = "Secondary IDE controller (dual fifo)"
+icon = SubResource("icon_hdc")
+
+[sub_resource type="Resource" id="device_12"]
+script = ExtResource("device")
+name = "Standard Dual PCI IDE Controller"
+icon = SubResource("icon_hdc")
+
+[sub_resource type="Resource" id="device_13"]
+script = ExtResource("device")
+name = "Hard disk controllers"
+icon = SubResource("icon_hdc")
+devices = Array[ExtResource("device")]([SubResource("device_10"), SubResource("device_11"), SubResource("device_12")])
+
+[sub_resource type="Resource" id="device_14"]
+script = ExtResource("device")
+name = "Standard 101/102-Key or Microsoft Natural Keyboard"
+icon = SubResource("icon_keyboard")
+
+[sub_resource type="Resource" id="device_15"]
+script = ExtResource("device")
+name = "Keyboard"
+icon = SubResource("icon_keyboard")
+devices = Array[ExtResource("device")]([SubResource("device_14")])
+
+[sub_resource type="Resource" id="device_16"]
+script = ExtResource("device")
+name = "Unknown Monitor"
+icon = SubResource("icon_monitor")
+
+[sub_resource type="Resource" id="device_17"]
+script = ExtResource("device")
+name = "Monitor"
+icon = SubResource("icon_monitor")
+devices = Array[ExtResource("device")]([SubResource("device_16")])
+
+[sub_resource type="Resource" id="device_18"]
+script = ExtResource("device")
+name = "Standard Serial Mouse"
+icon = SubResource("icon_mouse")
+problem = true
+
+[sub_resource type="Resource" id="device_19"]
+script = ExtResource("device")
+name = "Mouse"
+icon = SubResource("icon_mouse")
+devices = Array[ExtResource("device")]([SubResource("device_18")])
+
+[sub_resource type="Resource" id="device_20"]
+script = ExtResource("device")
+name = "Communications Port (COM1)"
+icon = SubResource("icon_ports")
+
+[sub_resource type="Resource" id="device_21"]
+script = ExtResource("device")
+name = "Communications Port (COM2)"
+icon = SubResource("icon_ports")
+
+[sub_resource type="Resource" id="device_22"]
+script = ExtResource("device")
+name = "Printer Port (LPT1)"
+icon = SubResource("icon_ports")
+
+[sub_resource type="Resource" id="device_23"]
+script = ExtResource("device")
+name = "Ports (COM & LPT)"
+icon = SubResource("icon_ports")
+devices = Array[ExtResource("device")]([SubResource("device_20"), SubResource("device_21"), SubResource("device_22")])
+
+[sub_resource type="Resource" id="device_24"]
+script = ExtResource("device")
+name = "Creative Labs Sound Blaster"
+icon = SubResource("icon_sound")
+problem = true
+
+[sub_resource type="Resource" id="device_25"]
+script = ExtResource("device")
+name = "Gameport Joystick"
+icon = SubResource("icon_joystick")
+
+[sub_resource type="Resource" id="device_26"]
+script = ExtResource("device")
+name = "Sound, video and game controllers"
+icon = SubResource("icon_sound")
+devices = Array[ExtResource("device")]([SubResource("device_24"), SubResource("device_25")])
+
+[sub_resource type="Resource" id="device_27"]
+script = ExtResource("device")
+name = "CPU cooling fan"
+icon = SubResource("icon_system")
+place = &"fan"
+
+[sub_resource type="Resource" id="device_28"]
+script = ExtResource("device")
+name = "Direct memory access controller"
+icon = SubResource("icon_system")
+
+[sub_resource type="Resource" id="device_29"]
+script = ExtResource("device")
+name = "Intel 82437FX Pentium(r) Processor to PCI bridge"
+icon = SubResource("icon_system")
+
+[sub_resource type="Resource" id="device_30"]
+script = ExtResource("device")
+name = "Numeric data processor"
+icon = SubResource("icon_system")
+place = &"cpu"
+
+[sub_resource type="Resource" id="device_31"]
+script = ExtResource("device")
+name = "PCI bus"
+icon = SubResource("icon_system")
+
+[sub_resource type="Resource" id="device_32"]
+script = ExtResource("device")
+name = "Programmable interrupt controller"
+icon = SubResource("icon_system")
+
+[sub_resource type="Resource" id="device_33"]
+script = ExtResource("device")
+name = "System board"
+icon = SubResource("icon_system")
+place = &"motherboard"
+
+[sub_resource type="Resource" id="device_34"]
+script = ExtResource("device")
+name = "System CMOS/real time clock"
+icon = SubResource("icon_system")
+
+[sub_resource type="Resource" id="device_35"]
+script = ExtResource("device")
+name = "System memory (bank 0)"
+icon = SubResource("icon_system")
+place = &"ram_1"
+
+[sub_resource type="Resource" id="device_36"]
+script = ExtResource("device")
+name = "System memory (bank 1)"
+icon = SubResource("icon_system")
+place = &"ram_2"
+
+[sub_resource type="Resource" id="device_37"]
+script = ExtResource("device")
+name = "System speaker"
+icon = SubResource("icon_system")
+
+[sub_resource type="Resource" id="device_38"]
+script = ExtResource("device")
+name = "System timer"
+icon = SubResource("icon_system")
+
+[sub_resource type="Resource" id="device_39"]
+script = ExtResource("device")
+name = "System devices"
+icon = SubResource("icon_system")
+devices = Array[ExtResource("device")]([SubResource("device_27"), SubResource("device_28"), SubResource("device_29"), SubResource("device_30"), SubResource("device_31"), SubResource("device_32"), SubResource("device_33"), SubResource("device_34"), SubResource("device_35"), SubResource("device_36"), SubResource("device_37"), SubResource("device_38")])
 
 [node name="SystemProperties" instance=ExtResource("sheet")]
 has_apply = false
@@ -110,6 +381,9 @@ text = ""
 visible = false
 custom_minimum_size = Vector2(388, 356)
 layout_mode = 2
+script = ExtResource("devices_page")
+computer_icon = SubResource("icon_computer")
+devices = Array[ExtResource("device")]([SubResource("device_2"), SubResource("device_5"), SubResource("device_7"), SubResource("device_9"), SubResource("device_13"), SubResource("device_15"), SubResource("device_17"), SubResource("device_19"), SubResource("device_23"), SubResource("device_26"), SubResource("device_39")])
 
 [node name="ByType" type="CheckBox" parent="VBox/Body/Column/Tabs/Device Manager"]
 offset_left = 18.0
@@ -137,14 +411,17 @@ offset_left = 17.0
 offset_top = 39.0
 offset_right = 370.0
 offset_bottom = 306.0
-mouse_filter = 2
 theme_type_variation = &"FieldPanel"
 
-[node name="Picture" type="TextureRect" parent="VBox/Body/Column/Tabs/Device Manager/Devices"]
+[node name="Scroll" type="ScrollContainer" parent="VBox/Body/Column/Tabs/Device Manager/Devices"]
 layout_mode = 2
-mouse_filter = 2
-texture = ExtResource("tree")
-stretch_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="DeviceTree" type="Control" parent="VBox/Body/Column/Tabs/Device Manager/Devices/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("folder_tree")
 
 [node name="Properties" type="Button" parent="VBox/Body/Column/Tabs/Device Manager"]
 offset_left = 17.0
