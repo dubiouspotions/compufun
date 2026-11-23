@@ -40,8 +40,13 @@ On an M5 Max with a Retina screen at 120 Hz, day 2, before and after the frame c
   honours it too.
 - **The storage bulb's shadow.** An omni light with a shadow renders its shadow cube (six passes over
   every caster in its range) in every frame, even when nothing moves: the Compatibility renderer keeps
-  no shadow cache. The storage room's hanging bulb is 400 of the Main View's 672 draw calls, about a
-  quarter of its frame. The shop's three ceiling lights have no casters in range and cost nothing.
+  no shadow cache. The storage room's hanging bulb was 400 of the Main View's 672 draw calls, about a
+  quarter of its frame. It now casts its shadow only while the camera sees the storage room
+  (`shadow_bounds`) or in the views that list it (`shadow_views`, the End): the Main View draws 272
+  calls, and its CPU falls from 17 % to 13.5 %. Without the shadow, 60 pixels at the end of the Main
+  View's left shelf change by up to 19 of 255; every other view changes by 3 at most. The shop's three
+  ceiling lights have no casters in range and cost nothing. Give a new light with a shadow the same
+  bounds.
 - **The 3D world** is about half of the Main View's frame (the 480 x 270 world buffer, its lights and
   shadows). The post shader, the two screen buffers and the Pipedream (on day 2) cost little.
 

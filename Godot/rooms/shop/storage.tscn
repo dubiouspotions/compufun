@@ -122,6 +122,8 @@ mesh = SubResource("BoxMesh_side_wall")
 [node name="Light" parent="." instance=ExtResource("5_light")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 3, 0.9)
 off_flag = &"storage_light_off"
+shadow_bounds = AABB(-2.9, -3, -2.5, 3.9, 3.05, 3.2)
+shadow_views = Array[StringName]([&"End"])
 
 [node name="Sign" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.96, 2.2, 0.675)
