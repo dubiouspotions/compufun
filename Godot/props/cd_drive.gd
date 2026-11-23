@@ -1,5 +1,5 @@
 class_name CdDrive
-extends MeshInstance3D
+extends Node3D
 ## A CD-ROM drive on a case front: the bay, its tray, the eject button and the busy light. A press
 ## on a powered drive opens or closes the tray: the button dips, the tray starts after a moment,
 ## travels to its stop and knocks against it, and a closed tray spins the disc up with the light
