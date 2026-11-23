@@ -42,6 +42,8 @@ gh workflow run godot.yml -R dubiouspotions/humanerror -f bump=patch   # or mino
 - `Godot/sounds/computer_pick_up_1.ogg` and `computer_pick_up_2.ogg`: two lifts cut from "Foley_Object_Toolbox_Metal_PickUp_Mono" by Nox_Sound on Freesound (https://freesound.org/people/Nox_Sound/sounds/556647/), CC0.
 - `Godot/sounds/part_take.ogg`: trimmed from "Picking Something Up From A Table" by RutgerMuller on Freesound (https://freesound.org/people/RutgerMuller/sounds/51160/), CC0.
 - `Godot/sounds/part_put.ogg`: trimmed from "Clip In" by slappy13 on Freesound (https://freesound.org/people/slappy13/sounds/151778/), CC0.
+- `Godot/sounds/part_rattle.ogg`: cut from "boxofscrews.wav" by j1987 on Freesound (https://freesound.org/people/j1987/sounds/79382/), CC0. `tools/make_part_sounds.sh` makes it.
+- `Godot/sounds/part_clunk_1.ogg` to `part_clunk_3.ogg`: three drops cut from "R29-08-Small Metal Objects on Metal Tray.wav" by craigsmith on Freesound (https://freesound.org/people/craigsmith/sounds/481935/), CC0. `tools/make_part_sounds.sh` makes them.
 - `Godot/sounds/cable_plug_in.ogg`: trimmed from "Power Cord Plug 1_2" by Joao_Janz on Freesound (https://freesound.org/people/Joao_Janz/sounds/477621/), CC0.
 - `Godot/sounds/cable_plug_out.ogg`: trimmed from "Power Cord Plug 1_1" by Joao_Janz on Freesound (https://freesound.org/people/Joao_Janz/sounds/477628/), CC0.
 - `Godot/sounds/floppy_insert.ogg`: cut from "Inserting 3.5 inch floppy-disk into floppy disk drive" by micropolis on Freesound (https://freesound.org/people/micropolis/sounds/637057/), CC0.

@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="SoundSet" format=3]
 
 [ext_resource type="Script" path="res://sounds/sound_set.gd" id="script"]
-[ext_resource type="AudioStream" path="res://sounds/part_rattle.wav" id="s1"]
+[ext_resource type="AudioStream" path="res://sounds/part_rattle.ogg" id="s1"]
 
 [resource]
 script = ExtResource("script")
 sounds = Array[AudioStream]([ExtResource("s1")])
-volume_db = -6.0
+volume_db = -4.0
 pitch_range = Vector2(0.9, 1.1)
