@@ -3,6 +3,11 @@ class_name DialogueLine
 extends Resource
 ## One line that a customer says, and the mood that they say it in.
 
+## The looks ([member look]) and the view that each turns the player to: left to the storage side,
+## right to the work computer, ahead to the counter, facing the customer. A look names a view, not
+## a turn: "ahead" after "left" turns back.
+const LOOKS: Dictionary[StringName, StringName] = {&"left": &"Left", &"right": &"Right", &"ahead": &"Main"}
+
 @export_multiline var text: String = ""
 ## One of [constant Person.MOODS]; the inspector shows them as a dropdown. It sets the portrait and
 ## the mood of the voice (voices/moods/).
@@ -11,6 +16,11 @@ extends Resource
 @export var effect: VoiceEffect
 ## The customer calls it out while walking out, outside the dialogue box ([leaving] in a story file).
 @export var leaving: bool = false
+## Where the player's view turns before the line is said ([code][look left][/code] in a story file):
+## a key of [constant LOOKS], or empty to stay. While a look has turned the player away from the
+## customer, the conversation goes on in the call-out box. The story check lists a look that is
+## not a key of [constant LOOKS]; the game skips it with an error.
+@export var look: StringName = &""
 
 
 func _validate_property(property: Dictionary) -> void:

@@ -54,7 +54,8 @@ static func flag_index(week: StoryFiles.Week) -> Dictionary:
 ## brings no computer and has no lines at all), an errand code whose alternatives can all fail on
 ## its day, a line's mood that the customer's person has no portrait for or that has no
 ## voices/moods/<mood>.tres, a [leaving] line that the conversation can go on after (it plays in the
-## dialogue box), a problem without repair mechanics (no res://problems/<id>.tres, or one with no
+## dialogue box), a look that is not in DialogueLine.LOOKS or that never turns the view (on a
+## [leaving] line or the phone), a problem without repair mechanics (no res://problems/<id>.tres, or one with no
 ## broken_part, software_check, blocker, missing_part, misplaced or stand_ins), and a problem file
 ## that no errand names.
 static func missing_links(week: StoryFiles.Week) -> PackedStringArray:
@@ -120,6 +121,10 @@ static func _check_errand(errand: Errand, found: PackedStringArray) -> void:
 				found.append("%s (%s): \"%s\" is in the mood %s, which %s has no portrait for." % [errand.file, c.id, line.text.left(40), mood, person.resource_path if person != null else "a customer without a person"])
 			if not Voices.has_mood(mood):
 				found.append("%s (%s): \"%s\" is in the mood %s, which has no voice (%s%s.tres)." % [errand.file, c.id, line.text.left(40), mood, MOODS_DIR, mood])
+			if line.look != &"" and not DialogueLine.LOOKS.has(line.look):
+				found.append("%s (%s): \"%s\" has the look %s, which is not %s." % [errand.file, c.id, line.text.left(40), line.look, " or ".join(PackedStringArray(DialogueLine.LOOKS.keys()))])
+			elif line.look != &"" and (line.leaving or c.trigger == Conversation.Trigger.PHONE):
+				found.append("%s (%s): \"%s\" has the look %s, which turns the view only before a line in the dialogue box, not on a [leaving] line or the phone." % [errand.file, c.id, line.text.left(40), line.look])
 	var arrives := errand.conversations.any(func(c: Conversation) -> bool: return c.trigger == Conversation.Trigger.ARRIVE)
 	if not arrives and not (errand.brings == Errand.Brings.NOTHING and lines == 0):
 		found.append("%s has no drop-off conversation." % errand.file)

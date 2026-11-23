@@ -14,7 +14,7 @@ brief: He arrives cheerful.
 (neutral) Yo! Is this the computer repair shop?
 - Welcome to CompuFun!
 	(happy) Sweet!
-	(neutral) My computer isn't working!
+	(neutral) My computer isn't working! [look right]
 - Did your mom give it away?
 	(angry) Whatever dude.. [effect cambion_glitch]
 
@@ -31,7 +31,7 @@ brief: He arrives cheerful.
 	else
 		(neutral) Nah.
 + Cambion? [if skater_cambion]
-	(happy) It's the rad one. [effect cambion_glitch] [leaving]
+	(happy) It's the rad one. [look ahead] [effect cambion_glitch] [leaving]
 - OK, leave it with me. [end]
 	(happy) Cool.
 (neutral) This line plays after a minus choice that doesn't end.
@@ -78,7 +78,10 @@ func run() -> void:
 	check("if and else", [install.replies.size(), install.replies[0].when.need_flags, install.replies[1].when], [2, [&"skater_new_windows"], null])
 	check("a choice's condition", questions.choices[2].when.need_flags, [&"skater_cambion"])
 	var called: DialogueLine = questions.choices[2].replies[0].lines[0]
-	check("effect and leaving on one line", [called.text, called.effect != null, called.leaving], ["It's the rad one.", true, true])
+	check("look, effect and leaving on one line", [called.text, called.look, called.effect != null, called.leaving], ["It's the rad one.", &"ahead", true, true])
+	check("a look", [talk.choices[0].replies[0].lines[1].text, talk.choices[0].replies[0].lines[1].look, talk.lines[0].look], ["My computer isn't working!", &"right", &""])
+	var odd_look := StoryFormat.parse_errand("customer: skater_bro\n\n== drop-off\n(neutral) Hi. [leaving] [look sideways]\n", "res://story/errands/0101_skater_bro.errand")
+	check("an unknown look parses for the story check, and writes in the written order", [odd_look.errors, (odd_look.value as Errand).conversations[0].lines[0].look, StoryFormat.write_errand(odd_look.value).ends_with("(neutral) Hi. [look sideways] [leaving]\n")], [PackedStringArray(), &"sideways", true])
 	check("end", questions.choices[3].ends, true)
 	check("after the list", questions.then.lines[0].text, "This line plays after a minus choice that doesn't end.")
 	var pickup := errand.conversations[1]

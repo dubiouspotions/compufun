@@ -44,6 +44,17 @@ computer: none
 	(neutral) Later! [leaving]
 	(neutral) Really later! [leaving]
 """)
+	add(week, "0303_hat_guy", """customer: hat_guy
+computer: none
+
+== drop-off
+(neutral) Over there. [look right]
+(neutral) Up there. [look up]
+(neutral) Bye. [look left] [leaving]
+
+== phone
+(neutral) Look! [look ahead]
+""")
 
 	var links := StoryCheck.missing_links(week)
 	var text := "\n".join(links)
@@ -63,7 +74,11 @@ computer: none
 	check("a leaving line that a line follows", text.contains(leaving + "): \"Bye now.\" is [leaving], but the conversation can go on after it, so it plays in the dialogue box."), true)
 	check("a leaving line that its + list follows", text.contains(leaving + " > \"Anything else?\"): \"See you.\" is [leaving]"), true)
 	check("but not the leaving lines that end the conversation", [text.contains("\"Later!\""), text.contains("Really later!")], [false, false])
-	check("no other links", links.size(), 10)
+	var looks := "res://story/errands/0303_hat_guy.errand (0303/"
+	check("a look that is not left, right or ahead", text.contains(looks + "drop-off/1): \"Up there.\" has the look up, which is not left or right or ahead."), true)
+	check("a look that never turns the view", [text.contains(looks + "drop-off/1): \"Bye.\" has the look left, which turns the view only"), text.contains(looks + "phone/1): \"Look!\" has the look ahead, which turns the view only")], [true, true])
+	check("but not a look before a line in the box", text.contains("Over there."), false)
+	check("no other links", links.size(), 13)
 
 	var index := StoryCheck.flag_index(week)
 	check("who sets pat_told", index[&"pat_told"]["set_by"], PackedStringArray([drop_off + " > \"Did you install anything?\")"]))
