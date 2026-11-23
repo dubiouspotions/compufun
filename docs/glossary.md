@@ -13,8 +13,11 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Export preset**: One named entry in `Godot/export_presets.cfg` (`Web`, `Windows Desktop`, `MacOS`, `Linux`) that CI and `export.sh` export by name.
 *Avoid:* target, platform build.
 
-**Deploy**: Uploading the exported builds to itch.io, which CI does from the `deploy` branch or a manual run.
-*Avoid:* release, publish.
+**Release**: One version of the game that CI tagged `vX.Y.Z`, built, signed and deployed, started by hand with a bump of the major, minor or patch number.
+*Avoid:* publish, ship.
+
+**Deploy**: Uploading the exported builds to itch.io, which CI does as part of a release.
+*Avoid:* publish.
 
 ## Game
 

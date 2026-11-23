@@ -23,7 +23,7 @@ Concept:
 3. To play the latest `main` without the editor, double-click `Play HumanError.app` (macOS) or `Play HumanError.bat` (Windows). It stashes any local changes (`git stash pop` brings them back), pulls, imports and starts the game. Git with LFS comes from [GitHub Desktop](https://desktop.github.com) if there is no other; Windows can also install Git with winget. Without Godot 4.7.2 or newer (the .NET build works too), it offers to download 4.7.2.
 4. To export locally, run `./export.sh all` (or `web`, `mac`, `windows`, `linux`) from `Godot/`. It needs the 4.7.2 export templates.
 
-Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actions. Pushing to `deploy`, or a manual run, also uploads them to itch.io.
+Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actions. A release, started by hand, bumps the version and uploads the builds to itch.io ([Releasing](docs/building-and-testing.md#releasing)).
 
 ## Documentation
 
