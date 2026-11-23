@@ -2,7 +2,9 @@ post-it: Can't hear sounds
 symptoms:
 	Sound is muted
 		shows: the volume is muted in Windows
-		category: In Windows
+checks:
+	Volume is on
+		shows: the volume is muted in Windows
 software steps:
 	Connect the VGA cable to the computer
 	Switch it on and wait for Windows to start

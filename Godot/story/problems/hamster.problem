@@ -5,7 +5,11 @@ symptoms:
 		category: At startup
 	Computer overheating
 		shows: the fan is covered by a dead hamster
-		category: On the computer
+checks:
+	Windows stays up after the desktop appears
+		shows: a second after the desktop appears, the sound sags and freezes in a buzz, and it reboots
+	Nothing in the CPU fan
+		shows: a dead hamster lies on the fan in the Workview
 hardware steps:
 	Remove the computer shell
 	Take out the hamster, throw it in the trash

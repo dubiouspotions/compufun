@@ -3,7 +3,11 @@ symptoms:
 	CD-tray keeps on opening and closing
 		category: On the computer
 	If connected to the internet the mouse moves on its own
-		category: In Windows
+checks:
+	CD tray stays shut
+		shows: while Windows runs, the tray opens and closes every few seconds
+	StartUp holds only the customer's programs
+		shows: a shortcut to BIZOPP.EXE, which is in C:\WINDOWS
 software steps:
 	Run antivirus
 notes:

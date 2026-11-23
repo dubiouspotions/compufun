@@ -43,18 +43,12 @@ func _check_game() -> void:
 	check("a restore without a search starts empty", [game.db_search, game.db_day], [null, 0])
 
 
-# Two problems with one symptom get checks of their own for the test: the problem files have none yet.
+# The two problems with "Computer overheating" get checks of their own, so the test doesn't hang on the files' wording.
 func _check_screen() -> void:
 	var dust: Problem = load("res://problems/dust_overheat.tres")
 	var hamster: Problem = load("res://problems/hamster.tres")
-	var gpu: Problem = load("res://problems/gpu_overheating.tres")
-	var bad_ram: Problem = load("res://problems/bad_ram.tres")
-	var no_sound: Problem = load("res://problems/no_sound.tres")
 	dust.checks = ["Windows stays up", "CPU fan is clean"]
 	hamster.checks = ["Windows stays up", "Nothing blocks the CPU fan"]
-	gpu.checks = ["Picture is clean"]
-	bad_ram.checks = ["Memory test passes"]
-	no_sound.checks = ["Volume is on"]
 	check("a fresh day, CompuFunDB on", game.restore({"day": 1, "db_day": 1}), "")
 	var db: Control = load("res://compufun_db/compufun_db.tscn").instantiate()  # untyped: CompuFunDB names Game
 	db.set("hdd_seek", null)
@@ -92,15 +86,16 @@ func _check_screen() -> void:
 	var right: Array[String] = ["Windows stays up", "CPU fan is clean", "Nothing blocks the CPU fan"]
 	var others: Array = search.offered.filter(func(c: String) -> bool: return c not in right)
 	check("the checks of both problems are offered", right.all(func(c: String) -> bool: return c in search.offered), true)
-	check("with the other hardware checks, not the software one", others.duplicate().map(func(c: String) -> bool: return c in ["Picture is clean", "Memory test passes"]), [true, true])
+	var hardware := _hardware_checks()
+	check("with 2 to 5 checks of other hardware problems", [others.size() >= 2 and others.size() <= 5, others.all(func(c: String) -> bool: return c in hardware)], [true, true])
 	check("no fix before a mark", _texts(db, FIXES), [])
 
 	game.mark_check("Windows stays up", true)
 	game.mark_check("CPU fan is clean", true)
 	check("the dust problem's checks show its fix alone", _texts(db, FIXES).count("Test the computer"), 1)
-	game.mark_check("Picture is clean", true)
+	game.mark_check(others[0], true)
 	check("a wrong mark hides it", _texts(db, FIXES), [])
-	game.mark_check("Picture is clean", false)
+	game.mark_check(others[0], false)
 
 	var printer: Node3D = load("res://props/printer.tscn").instantiate()
 	printer.add_to_group(&"printer")
@@ -111,6 +106,16 @@ func _check_screen() -> void:
 	printer.queue_free()
 	check("Esc leaves", _press(db, KEY_ESCAPE), false)
 	db.queue_free()
+
+
+# The checks of every problem with a hardware part, but those of the two problems searched for.
+func _hardware_checks() -> Array[String]:
+	var checks: Array[String] = []
+	for file: String in ResourceLoader.list_directory("res://problems/"):
+		var problem := load("res://problems/" + file) as Problem if file.ends_with(".tres") else null
+		if problem != null and problem.location != Problem.Location.SOFTWARE and problem.short_name not in [&"dust_overheat", &"hamster"]:
+			checks.append_array(problem.checks)
+	return checks
 
 
 func _texts(db: Control, column: int) -> Array:

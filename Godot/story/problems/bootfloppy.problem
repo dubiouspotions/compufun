@@ -3,7 +3,9 @@ symptoms:
 	Non-System disk error at startup
 		category: At startup
 	Floppy in drive A:
-		category: On the computer
+checks:
+	Boots from C:
+		shows: it stops at "Non-System disk or disk error"
 software steps:
 	Eject the floppy from drive A:
 	Press a key, or restart, with no floppy in A:

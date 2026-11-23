@@ -1,7 +1,9 @@
 post-it: Computer's colours have changed
 symptoms:
 	Window colours changed drastically
-		category: In Windows
+checks:
+	Colour scheme is the usual one
+		shows: Display Properties, Appearance, shows another scheme
 software steps:
 	Right-click the desktop and pick Properties
 	Open the Appearance tab

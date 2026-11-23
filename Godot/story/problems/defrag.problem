@@ -8,7 +8,11 @@ symptoms:
 		category: In Windows
 	Folders open slowly
 		shows: a folder takes about 2 seconds to open
-		category: In Windows
+checks:
+	Windows starts quickly
+		shows: the Windows splash screen lasts three times as long
+	Folders open at once
+		shows: a folder takes 2 seconds to open
 software steps:
 	Go to settings
 	Start defrag

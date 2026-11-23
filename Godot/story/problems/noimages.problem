@@ -11,7 +11,9 @@ symptoms:
 		category: From the customer
 	Start menu shortcut broken
 		shows: an error message, or a corrupted link, when following the Start menu link to the image program
-		category: In Windows
+checks:
+	Programs start
+		shows: the programs in C:\WINDOWS, such as NOTEPAD, WORDPAD, PBRUSH and CALC, lost their .EXE
 software steps:
 	Open the Windows folder
 	Add ".exe" back to every program

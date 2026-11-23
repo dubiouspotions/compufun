@@ -5,7 +5,11 @@ symptoms:
 		category: At startup
 	GPU overheating
 		shows: the GPU's heatsink is scorched in the Workview
-		category: On the computer
+checks:
+	Picture is clean
+		shows: from the moment the computer starts, coloured blocks and torn lines flicker over the picture
+	GPU heatsink is unmarked
+		shows: the GPU's heatsink is scorched in the Workview
 hardware steps:
 	Remove the computer shell
 	Remove the GPU, throw it in the trash
