@@ -1,0 +1,68 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/close_program.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="PackedScene" path="res://win95/shut_down.tscn" id="shut_down"]
+
+[node name="CloseProgram" type="PanelContainer"]
+theme = ExtResource("theme")
+script = ExtResource("script")
+shut_down = ExtResource("shut_down")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Close Program"
+show_help = true
+
+[node name="Body" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Rows" type="VBoxContainer" parent="VBox/Body"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Programs" type="ItemList" parent="VBox/Body/Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 130)
+layout_mode = 2
+
+[node name="Warning" type="Label" parent="VBox/Body/Rows"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+text = "WARNING: Pressing CTRL+ALT+DEL again will restart your computer. You will lose unsaved information in all programs that are running."
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="VBox/Body/Rows"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 6
+
+[node name="EndTask" type="Button" parent="VBox/Body/Rows/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+theme_type_variation = &"DefaultButton"
+text = "End Task"
+
+[node name="ShutDown" type="Button" parent="VBox/Body/Rows/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+text = "Shut Down"
+
+[node name="Cancel" type="Button" parent="VBox/Body/Rows/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+text = "Cancel"

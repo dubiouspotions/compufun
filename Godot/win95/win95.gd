@@ -14,6 +14,10 @@ const _GpuArtifacts := preload("res://win95/gpu_artifacts.gd")
 const _FOLDER := preload("res://win95/folder_window.tscn")
 const _PROPERTIES := preload("res://win95/properties_window.tscn")
 const _MESSAGE := preload("res://win95/message_box.tscn")
+const _CLOSE_PROGRAM := preload("res://win95/close_program.tscn")
+## The keys that open Close Program with Ctrl+Alt: Del, End as Remote Desktop sends it, and
+## Backspace for keyboards without Del. A Windows host keeps Ctrl+Alt+Del to itself.
+const _CLOSE_PROGRAM_KEYS: Array[Key] = [KEY_DELETE, KEY_END, KEY_BACKSPACE]
 const _BIN_EMPTY := preload("res://win95/theme/icons/recycle_bin_empty_32.png")
 const _BIN_FULL := preload("res://win95/theme/icons/recycle_bin_full_32.png")
 const _COVER := preload("res://win95/cover_screen.gd")
@@ -162,6 +166,21 @@ func _enter_tree() -> void:
 func _exit_tree() -> void:
 	get_tree().node_added.disconnect(_on_node_added)
 
+
+# Ctrl+Alt+Del on the desktop opens Close Program, and pressed again restarts the computer.
+func _input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if key == null or not key.pressed or key.echo or not (key.ctrl_pressed and key.alt_pressed) or key.keycode not in _CLOSE_PROGRAM_KEYS:
+		return
+	if not (_state.is_on and pointer_visible):
+		return
+	get_viewport().set_input_as_handled()
+	for window in _desktop.windows():
+		if window.scene_file_path == _CLOSE_PROGRAM.resource_path:
+			window.call(&"restart")
+			return
+	var dialog: Node = _desktop.open(_CLOSE_PROGRAM, false)
+	dialog.closed.connect(dialog.queue_free)
 
 
 # The computer is on the VGA cable, so its picture is on the bench screen and its sound card reaches the speakers.

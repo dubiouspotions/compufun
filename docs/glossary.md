@@ -248,6 +248,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **File in use**: The program file of a running background task, or a folder that holds one (`ComputerState.in_use`). Win95 refuses to delete, rename or move it with a sharing violation.
 *Avoid:* locked file, open file.
 
+**Close Program**: The Win95 dialog that Ctrl+Alt+Del opens (`win95/close_program.tscn`): the open windows and the background tasks, with End Task, Shut Down and Cancel. Ctrl+Alt+Del again restarts the computer. Ctrl+Alt+End and Ctrl+Alt+Backspace open it too.
+*Avoid:* task manager, Ctrl+Alt+Del menu.
+
 **Corruption sign**: One of Cambion's changes to the shop, such as the blue logo (`CorruptionSign`, `corruption/<id>.tscn`). It shows while its flag `sign_<id>` is set and its feature switch `enabled` is on.
 *Avoid:* effect, glitch, event.
 
