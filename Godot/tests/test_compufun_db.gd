@@ -115,6 +115,7 @@ func _check_screen() -> void:
 	check("a new search reads them in again, not there at once", [_texts(db, CHECKS), _texts(db, CAUSES)], [[], []])
 	await create_timer(0.3).timeout
 	check("one entry at a time, CHECK first", [_texts(db, CHECKS).size(), _texts(db, CAUSES).size()], [1, 0])
+	check("only CHECK's header spins meanwhile", [db.call("_busy", CHECKS), db.call("_busy", CAUSES)], [true, false])
 	db.set("hit_seconds", Vector2.ZERO)
 	db.call("_search", "Restarts by itself")
 	game.mark_check(FREEZES, true)

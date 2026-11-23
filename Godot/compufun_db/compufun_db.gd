@@ -616,13 +616,17 @@ func _load(column: Column, key: String) -> void:
 
 # True while the computer reads CHECK or CAUSES in.
 func _loading() -> bool:
-	return [Column.CHECKS, Column.CAUSES].any(_busy)
+	return [Column.CHECKS, Column.CAUSES].any(func(c: Column) -> bool: return _loaded[c] < _all_entries(c).size())
 
 
 # True while the computer reads [param column] in: SEARCH while it searches, the others until all
-# their entries show.
+# their entries show; CAUSES only once CHECK is done, as it waits until then.
 func _busy(column: Column) -> bool:
-	return _searching if column == Column.SEARCH else _loaded[column] < _all_entries(column).size()
+	if column == Column.SEARCH:
+		return _searching
+	if column == Column.CAUSES and _busy(Column.CHECKS):
+		return false
+	return _loaded[column] < _all_entries(column).size()
 
 
 # The hard drive seeks for [param seconds]; false when [param still] stops holding meanwhile (another
@@ -914,7 +918,7 @@ func _paint() -> void:
 	_paint_field()
 	for column: int in Column.size():
 		if _busy(column as Column):  # a spinner at the header's end while the column reads in
-			_put(_spans[column].y, FRAME_ROWS[0] + 1, "|/-\\"[_spin % 4], bright_color)
+			_put(_spans[column].y - 1, FRAME_ROWS[0] + 1, "|/-\\"[_spin % 4], bright_color)  # a cell clear of the border
 	if _offline():
 		_put(30, 15, " OFFLINE: LINE IN USE ", bright_color, bar_color)
 		_bar(28, " CompuFunDB", "", bar_color)
