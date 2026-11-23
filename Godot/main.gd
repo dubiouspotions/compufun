@@ -4,6 +4,15 @@ extends Node
 ## The dev tools (F3); the folder is left out of exports, so a shipped game has none.
 const DEV_MENU: String = "res://dev/dev_menu.tscn"
 
+## While true, the visitor's conversation waits to start: no dialogue box, no call-out, no Skip
+## tutorial button. The loading screen holds it until its zoom is part way, so that the first line
+## comes as the shop comes into view.
+var talk_held: bool = false:
+	set(value):
+		talk_held = value
+		if is_node_ready():
+			_sync_talk()
+
 ## The Game.arrival whose conversation started; it starts when the player first faces the visitor.
 var _dialogue_for: int = -1
 ## A look of the conversation turned the player away from the visitor, and they haven't faced the
@@ -21,6 +30,7 @@ var _hovered_beside_screen: Hotspot
 @onready var _end_of_day: EndOfDay = %EndOfDay
 @onready var _phone: PhoneCall = %PhoneCall
 @onready var _printout: CarriedPrintout = %CarriedPrintout
+@onready var _skip_tutorial: Button = %SkipTutorial
 @onready var _world: SubViewportContainer = $World
 @onready var _world_buffer: SubViewport = $World/WorldBuffer
 
@@ -52,6 +62,7 @@ func _ready() -> void:
 	work_screen.picture_changed.connect(func() -> void: _shop.work_computer_running = work_screen.has_picture())
 	_shop.work_computer_running = work_screen.has_picture()
 	_dialogue.finished.connect(Game.dialogue_finished)
+	_skip_tutorial.pressed.connect(Game.skip_before_opening)
 	_dialogue.looked.connect(_look)
 	_calling.line_read.connect(_on_line_read)
 	Game.changed.connect(_sync)
@@ -198,7 +209,8 @@ func _sync() -> void:
 # a look of its own turned the player away; otherwise the visitor calls out that they wait.
 func _sync_talk() -> void:
 	var marker := _shop.view_marker(Game.view)
-	var talking := Game.visitor_state == Game.VisitorState.TALKING
+	var talking := Game.visitor_state == Game.VisitorState.TALKING and not talk_held
+	_skip_tutorial.visible = Game.can_skip_before_opening() and not talk_held
 	var facing := talking and marker != null and marker.faces_customer
 	if facing or not talking or _dialogue_for != Game.arrival:
 		_led_away = false

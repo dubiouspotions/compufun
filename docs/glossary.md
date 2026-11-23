@@ -69,6 +69,8 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Open sign**: The sign that hangs in the shop window (`props/open_sign.tscn`). The player, inside, reads OPEN while the shop is open, and CLOSED while it is closed. When the shop opens or closes, it turns over on its strings. Each day starts with the shop closed: the player clicks the sign to open the shop, and no customer comes in until then. A customer whose errand comes before opening (day 1's middle manager) is already at the counter as the day starts; the sign takes clicks once they are out the door, and shakes then. Later the player clicks it again to close the shop for the night, which takes clicks only once every customer of the day has come in and the last visitor has walked out. While the sign takes clicks, a yellow outline pulses around it.
 *Avoid:* closed sign, shop sign.
 
+**Tutorial**: Day 1's first visit: the middle manager, already at the counter before the shop opens, explains the job (errand `0101`). The game holds his first line until the start-of-game logo has zoomed part way, and a Skip tutorial button jumps past his talk to the closed shop, ready to open.
+
 **Poster**: A paper picture on a shop wall (`props/poster.tscn`); each one sets its picture and size in the inspector. The shop has the "It's not a bug" poster on the front wall and the commercial poster on the right wall (`Room/CommercialPoster`).
 *Avoid:* ad, advert, sign.
 

@@ -1140,6 +1140,26 @@ func hang_up() -> void:
 	changed.emit()
 
 
+## True while the visitor who came before opening ([member Errand.before_opening], day 1's tutorial)
+## talks in the CLOSED shop, so [method skip_before_opening] can send them away.
+func can_skip_before_opening() -> bool:
+	return phase == Phase.CLOSED and visitor_state == VisitorState.TALKING and errand != null and errand.before_opening
+
+
+## Jumps past the talk of the visitor who came before opening, to where it leaves the player: nobody
+## in, and the shop ready to open. The jump ([member jump]) shows it at once, without the walk out.
+## Flags that the conversation sets as it starts are set already; those of replies that the player
+## would have picked stay unset. Does nothing unless [method can_skip_before_opening].
+func skip_before_opening() -> void:
+	if not can_skip_before_opening():
+		return
+	var state := snapshot()
+	state.merge({"visitor": "", "visit": "NONE", "visitor_state": "NONE"}, true)
+	var refused := restore(state)
+	if refused != "":
+		push_error("Game.skip_before_opening: the state without %s was refused: %s" % [_who(visitor), refused])
+
+
 ## True when the shop can open: the day started, the shop is CLOSED, and nobody is in it (a visitor
 ## who came before opening is OUTSIDE once they are out the door).
 func can_open() -> bool:
