@@ -32,9 +32,6 @@ const MUSIC_UNDER_SFX_DB := -20.0
 const RATCHET_DB := -8.0
 ## "Sigla 2" by sandroperrotta on Pixabay (Pixabay Content License): the music under the commercial.
 const MUSIC: AudioStream = preload("res://dev/trailer/sandroperrotta_sigla_2.mp3")
-## The music plays this much slower than recorded, so that it runs out with the star wipe, before the
-## jingle. The trailer warns with the right value when its shots change length.
-const MUSIC_SPEED := 0.931
 ## The music's volume, and its volume while the narrator speaks, in dB.
 const MUSIC_DB := -10.0
 const MUSIC_UNDER_VOICE_DB := -18.0
@@ -144,12 +141,15 @@ var _tape: ShaderMaterial
 var _clock := 0.0
 
 ## What a cut sets in its _init(): who narrates and in which mood, whether the tape tears now and then,
-## and the TV's colour: how grey (0 to 1), and its tint.
+## the TV's colour: how grey (0 to 1), and its tint, and the speed of the music: slower than recorded,
+## so that it runs out with the star wipe, before the jingle. The trailer warns with the right speed
+## when a cut's shots change length.
 var narrator: VoicePerson = NARRATOR
 var narrator_mood: StringName = &"happy"
 var tears := true
 var grey := 0.0
 var tint := Color.WHITE
+var music_speed := 0.931
 
 
 func _ready() -> void:
@@ -182,7 +182,7 @@ func _process(delta: float) -> void:
 # The cut's shots, in order; the trailer quits after them.
 func _shots() -> void:
 	_music = _sound(MUSIC, MUSIC_DB)
-	_music.pitch_scale = MUSIC_SPEED
+	_music.pitch_scale = music_speed
 	await _problems()
 	await _angry_faces()
 	await _parts()
@@ -576,10 +576,18 @@ func _ratchet() -> AudioStreamWAV:
 	return wav
 
 
-# The repaired computer starts on the bench screen: its BIOS tests it while the keys rattle, a key
-# skips to Windows 95, as a player can, and the desktop shows the Start menu, Solitaire and the fix,
-# in Win95's own windows. A clear card carries the captions.
+# The repaired computer starts on the bench screen and shows Windows 95 (see _boot_to_windows and
+# _tour).
 func _fixed() -> void:
+	var win95 := await _boot_to_windows()
+	if win95 != null:
+		await _tour(win95)
+
+
+# The bench screen close up as the repaired computer starts: its BIOS tests it while the keys rattle,
+# and a key skips to Windows 95, as a player can. Returns the desktop, or null, with an error, when the
+# computer is not booting.
+func _boot_to_windows() -> Control:
 	Game.go_to_view(&"Screen")
 	create_tween().tween_property(_music, "volume_db", MUSIC_DB, 0.6)
 	_new_card(Color.BLACK, Color.BLACK, true)
@@ -589,7 +597,7 @@ func _fixed() -> void:
 	var boot: Node = win95.get(&"_boot") if win95 != null else null
 	if not is_instance_valid(boot):
 		push_error("Trailer: the repaired computer is not booting on the bench screen")
-		return
+		return null
 	boot.set(&"_skipped", true)
 	_new_card(Color.BLACK, Color.BLACK, true)
 	_caption("WINDOWS 95!", 140, Vector2(1520, 200), Color.WHITE, 5.0)
@@ -597,6 +605,13 @@ func _fixed() -> void:
 	while win95.get(&"pointer_visible") != true and waited < 5.0:
 		await _wait(0.1)
 		waited += 0.1
+	return win95
+
+
+# The desktop shows the Start menu, Solitaire and the fix, in Win95's own windows. A clear card carries
+# the captions.
+func _tour(win95: Control) -> void:
+	AudioServer.set_bus_mute(_shop_bus, false)
 	var start := win95.get_node(^"TaskBar/HBoxContainer/StartButton") as Button
 	start.button_pressed = true
 	_new_card(Color.BLACK, Color.BLACK, true)
@@ -608,17 +623,28 @@ func _fixed() -> void:
 	_new_card(Color.BLACK, Color.BLACK, true)
 	_caption("GAMES!", 160, Vector2(1560, 200), Color("#80ff72"), 6.0)
 	await _wait(0.9)
-	var box: Control = desktop.call(&"open", MESSAGE_BOX, false)
-	box.set(&"error_icon", INFO_ICON)  # good news, so Win95's information icon, not the error
-	box.call(&"show_message", "CompuFun", "Your computer is fixed!")
-	box.size = box.get_combined_minimum_size()
-	box.position = ((desktop.size - box.size) / 2.0).round()
+	_desktop_box(desktop, "CompuFun", "Your computer is fixed!", INFO_ICON)  # good news: not the error icon
 	_new_card(Color.BLACK, Color.BLACK, true)
 	_caption("FIXED!", 170, Vector2(1560, 200), YELLOW, -5.0)
 	_sparkle(Vector2(1300, 500), 60.0)
 	_sound(DING, -8.0)
 	await _wait(1.1)
 	AudioServer.set_bus_mute(_shop_bus, true)
+
+
+# A Win95 message box in the middle of [param desktop]. With [param buttons] it asks, with the warning
+# icon; else it tells, with [param icon], or the error icon when that is null.
+func _desktop_box(desktop: Control, title: String, text: String, icon: Texture2D = null, buttons: Array[String] = []) -> Control:
+	var box: Control = desktop.call(&"open", MESSAGE_BOX, false)
+	if icon != null:
+		box.set(&"error_icon", icon)
+	if buttons.is_empty():
+		box.call(&"show_message", title, text)
+	else:
+		box.call(&"ask", title, text, buttons)
+	box.size = box.get_combined_minimum_size()
+	box.position = ((desktop.size - box.size) / 2.0).round()
+	return box
 
 
 # Key presses at a typist's pace for [param seconds].
@@ -707,12 +733,13 @@ func _come_by() -> void:
 	wipe.queue_free()
 
 
-# Warns when the music does not run out [param fade] seconds from now, with the MUSIC_SPEED that
+# Warns when the music does not run out [param fade] seconds from now, with the music_speed that
 # would make it.
 func _check_music_end(fade: float) -> void:
 	var speed := MUSIC.get_length() / (_clock + fade)
-	if absf(speed - MUSIC_SPEED) > 0.01:
-		push_warning("Trailer: the music does not end with the star wipe; set MUSIC_SPEED to %.3f" % speed)
+	if absf(speed - music_speed) > 0.01:
+		push_warning("Trailer: the music does not end with the star wipe; set music_speed in %s's _init() to %.3f"
+			% [(get_script() as Script).resource_path.get_file(), speed])
 
 
 # The CompuFun intro with its jingle, and at its end one tiny glitch.
