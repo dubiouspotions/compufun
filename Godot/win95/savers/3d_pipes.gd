@@ -1,10 +1,7 @@
 extends "res://win95/cover_screen.gd"
-## A screensaver over the whole Win95 screen: black, and with [member pipes] the 3D Pipes: pipes in
-## the Win95 colours grow cell by cell, turn at ball joints, and the screen clears once it is full.
-## Any key or click ends it.
+## The 3D Pipes screensaver: pipes in the Win95 colours grow cell by cell, turn at ball joints, and
+## the screen clears once it is full. Any key or click ends it.
 
-## Draws the pipes; off, the screen stays black.
-var pipes: bool = true
 ## The size of one cell of the pipes' grid, in pixels.
 var cell: int = 24
 ## New pipe segments per second.
@@ -30,8 +27,6 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if not pipes:
-		return
 	_due += delta * speed
 	while _due >= 1.0:
 		_due -= 1.0
