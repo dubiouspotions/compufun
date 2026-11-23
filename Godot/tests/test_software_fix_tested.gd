@@ -32,7 +32,7 @@ func run() -> void:
 	var muted: DbRecord = game.enter_job(game.jobs[0], "Retired accountant: Can't hear sounds")
 	game.mark_symptom(muted, "Sound is muted", true)
 	var hot: DbRecord = game.enter_job(game.jobs[1], "Skater bro: Windows starts and turns off")
-	for symptom: String in ["Hangs and reboots at startup", "Computer overheating"]:
+	for symptom: String in ["Hangs and reboots at startup", "Customer mentions increased heat"]:
 		game.mark_symptom(hot, symptom, true)
 	var db: Control = load("res://compufun_db/compufun_db.tscn").instantiate()  # untyped: CompuFunDB names Game
 	root.add_child(db)

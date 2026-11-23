@@ -92,9 +92,9 @@ symptoms:
 	Hangs and reboots at startup
 		shows: a second into the Windows startup sound, the computer stops answering...
 		category: At startup
-	Computer overheating
-		shows: the fan is full of dust in the Workview
-		category: On the computer
+	Customer mentions increased heat
+		shows: at drop-off, the customer says that the computer was a little hot when he unplugged it
+		category: From the customer
 hardware steps:
 	Remove the computer shell
 	Remove the fan, throw it in the trash

@@ -13,7 +13,7 @@ const TODAY: Dictionary = {
 	"broken_hard_drive": ["Blue screen of death", ["Blue screen at startup", "Hard drive clicks"]],
 	"defrag": ["Mouse glitches", ["Slow to boot", "Mouse pointer jumps", "Folders open slowly"]],
 	"desktop_prank": ["Icons don't open", ["Desktop icons don't respond", "Wallpaper is a picture of the desktop", "Icons are in a folder hidden in a corner"]],
-	"dust_overheat": ["Windows starts and turns off", ["Hangs and reboots at startup", "Computer overheating"]],
+	"dust_overheat": ["Windows starts and turns off", ["Hangs and reboots at startup", "Customer mentions increased heat"]],
 	"email_virus": ["CD-tray keeps on opening and closing", ["CD-tray keeps on opening and closing", "If connected to the internet the mouse moves on its own"]],
 	"gpu_overheating": ["Visual artifacting", ["Visual artifacting on screen", "GPU overheating"]],
 	"hamster": ["Computer smells weird and won't start", ["Hangs and reboots at startup", "Computer overheating"]],
@@ -44,8 +44,8 @@ func _round_trip() -> void:
 		check("%s parses" % path, parsed.errors, PackedStringArray())
 		check("%s writes back the same text" % path, StoryFormat.write_problem(parsed.value), text)
 	var dust := StoryFormat.parse_problem(FileAccess.get_file_as_string(PROBLEM_FILE % "dust_overheat"), PROBLEM_FILE % "dust_overheat").value as Problem
-	check("a symptom shows", dust.symptom_shows["Computer overheating"], "the fan is full of dust in the Workview")
-	check("and has a category", dust.symptom_categories["Computer overheating"], "On the computer")
+	check("a symptom shows", dust.symptom_shows["Customer mentions increased heat"], "at drop-off, the customer says that the computer was a little hot when he unplugged it")
+	check("and has a category", dust.symptom_categories["Customer mentions increased heat"], "From the customer")
 	var categories: Dictionary[String, String] = {}
 	for path: String in files:
 		var problem := StoryFormat.parse_problem(FileAccess.get_file_as_string(path), path).value as Problem
