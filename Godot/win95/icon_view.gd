@@ -196,29 +196,38 @@ func place(item: FileIcon, at: Vector2) -> void:
 
 
 # The flow has just laid out every icon. With any icon placed, as on a Win95 desktop, the placed
-# ones move to their place and the others take the free cells of the grid, column by column.
+# ones move to their place and the others keep their place in the flow while it is free, or else
+# take the free cells of the grid, column by column.
 func _move_placed() -> void:
 	var items := _items()
-	var placed: Array[Rect2] = []
+	var taken: Array[Rect2] = []
 	var cell := Vector2.ZERO
 	for item in items:
 		cell = cell.max(item.size)
 		if item.placed_at != Vector2.ZERO:
 			item.position = item.placed_at
-			placed.append(Rect2(item.placed_at, item.size))
-	if not placed.is_empty() and cell.x > 0.0 and cell.y > 0.0:
+			taken.append(Rect2(item.placed_at, item.size))
+	if not taken.is_empty() and cell.x > 0.0 and cell.y > 0.0:
 		var rows := maxi(1, floori(size.y / cell.y))
 		var next := 0
 		for item in items:
 			if item.placed_at != Vector2.ZERO:
 				continue
+			# An icon that the player saw at (0, 0) can't be placed there, as ZERO means "flows".
+			if _is_free(taken, Rect2(item.position, item.size)):
+				taken.append(Rect2(item.position, item.size))
+				continue
 			while true:
 				var at := Vector2(next / rows * cell.x, next % rows * cell.y)
 				next += 1
-				var free := placed.all(func(rect: Rect2) -> bool: return not rect.intersects(Rect2(at, cell).grow(-1.0)))
-				if free or at.x > size.x:
+				if _is_free(taken, Rect2(at, cell)) or at.x > size.x:
 					item.position = at
+					taken.append(Rect2(at, item.size))
 					break
+
+
+static func _is_free(taken: Array[Rect2], rect: Rect2) -> bool:
+	return taken.all(func(other: Rect2) -> bool: return not other.intersects(rect.grow(-1.0)))
 
 
 ## Removes every icon.

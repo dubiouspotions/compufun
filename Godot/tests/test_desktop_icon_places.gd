@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## A desktop icon stays where the player saw it: moving one icon, or rebooting, leaves the others
-## where they stood after the boot.
+## A desktop icon stays where the player saw it: a change to the setup, moving one icon, or
+## rebooting leaves the others where they stood after the boot.
 
 
 func run() -> void:
@@ -9,6 +9,9 @@ func run() -> void:
 	await process_frame
 	var job := Job.new(load("res://customers/skater_bro.tres"), load("res://problems/dust_overheat.tres"), 0, 0)
 	game.jobs = [job] as Array[Job]
+	var tall := Win95File.new()  # a three-line name makes the grid cells taller than My Computer
+	tall.name = "A name long enough to wrap over three lines.txt"
+	game.setup_for(job).desktop.append(tall)
 	game.set_powered(job, true)
 	await process_frame  # it boots offscreen, as a computer that the cable isn't on
 	game.connect_cable(job)
@@ -21,8 +24,12 @@ func run() -> void:
 	var shown := _places(desktop, setup)
 	check("the boot lines the icons up in columns", [shown["My Computer"], shown["Network Neighborhood"]], [Vector2(0, 0), Vector2(0, 75)])
 
-	var moved: Win95File = setup.desktop.back()
 	var state: Node = desktop.get_node("%ComputerState")
+	state.set_sound(setup.volume, not setup.muted)
+	await create_timer(0.5).timeout
+	check("a change to the setup, such as Mute, moves no icon", _places(desktop, setup), shown)
+
+	var moved: Win95File = setup.desktop.back()
 	state.move_files([moved] as Array[Win95File], setup.desktop, [Vector2(300, 200)] as Array[Vector2])
 	await create_timer(0.5).timeout
 	var after := _places(desktop, setup)
