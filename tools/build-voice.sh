@@ -45,13 +45,19 @@ for t in "${targets[@]}"; do
 	esac
 done
 
-# List only the libraries that exist: Godot reports a listed library that is missing as an error.
-{
-	printf '[configuration]\n\nentry_symbol = "gdext_rust_init"\ncompatibility_minimum = 4.7\nreloadable = false\n\n[libraries]\n\n'
+# List only the libraries that exist: Godot reports a listed library that is missing as an error,
+# and so does a .gdextension that lists none.
+libraries="$(
 	[ -f "$bin/libchimera_voice.macos.dylib" ] && printf 'macos = "res://voices/live/bin/libchimera_voice.macos.dylib"\n'
 	[ -f "$bin/libchimera_voice.linux.x86_64.so" ] && printf 'linux.x86_64 = "res://voices/live/bin/libchimera_voice.linux.x86_64.so"\n'
 	[ -f "$bin/chimera_voice.windows.x86_64.dll" ] && printf 'windows.x86_64 = "res://voices/live/bin/chimera_voice.windows.x86_64.dll"\n'
 	true
-} > "$live/chimera_voice.gdextension"
+)"
 ls -la "$live/chimera_voice.wasm" "$bin" 2>/dev/null | grep -E "chimera_voice" >&2 || true
+if [ -z "$libraries" ]; then
+	rm -f "$live/chimera_voice.gdextension"
+	echo "No libraries in $bin, so no $live/chimera_voice.gdextension" >&2
+	exit 0
+fi
+printf '[configuration]\n\nentry_symbol = "gdext_rust_init"\ncompatibility_minimum = 4.7\nreloadable = false\n\n[libraries]\n\n%s\n' "$libraries" > "$live/chimera_voice.gdextension"
 echo "Wrote $live/chimera_voice.gdextension" >&2
