@@ -31,13 +31,18 @@ func run() -> void:
 	check("closed: nothing lifts", game.take_misplaced(job, cpu), false)
 	game.turn_screw(job, 0)
 	game.turn_screw(job, 1)
-	game.open_case(job, true)
-
 	var case: Node3D = (load("res://rooms/shop/open_case.tscn") as PackedScene).instantiate()
 	case.set(&"job", job)
 	case.set(&"active", true)
 	root.add_child(case)
 	await process_frame
+	game.open_case(job, true)
+	await process_frame
+	var dropping := case.find_children("*", "RigidBody3D", true, false)
+	check("the panel comes off: the five misplaced pieces drop, and none can be taken yet", [dropping.size(), _lying_models(case)], [5, 0])
+	for i: int in ceili(case.get(&"drop_seconds") * FPS) + 5:
+		await physics_frame
+	check("then they freeze where they landed, near where they lie", dropping.map(func(b: RigidBody3D) -> bool: return b.freeze), [true, true, true, true, true])
 	check("the open case shows the five misplaced pieces", _lying_models(case), 5)
 
 	check("a new CPU won't go under the hard drive", [game.take_new_part(cpu), game.put_part(job, cpu)], [true, false])

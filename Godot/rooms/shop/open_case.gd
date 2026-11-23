@@ -37,11 +37,24 @@ const PULSE_RING: Shader = preload("res://shaders/pulse_ring.gdshader")
 @export var misplaced_turn: float = 20.0
 ## How far each piece on a mat pile turns from straight, every other one the other way, in degrees.
 @export var mat_jitter: float = 6.0
+@export_group("Drop")
+## When the side panel comes off, the misplaced pieces drop from this many metres above where they lie
+## and tumble into place under physics, for [member drop_seconds]; then they freeze and can be taken.
+@export var drop_height: float = 0.06
+@export var drop_seconds: float = 1.2
+## The most that a dropping piece spins at the start, in radians per second.
+@export var drop_spin: float = 4.0
+## A piece that ends further than this many metres from where it lies snaps back there.
+@export var drop_slack: float = 0.08
+## Plays when a dropping piece first hits something.
+@export var clunk_sound: SoundSet = preload("res://sounds/part_clunk.tres")
+@export_group("")
 
 ## The job whose computer this is. Set once, before or after the case enters the tree.
 var job: Job:
 	set(value):
 		job = value
+		_was_open = true
 		if is_node_ready():
 			_sync()
 ## True while the player works in this computer: laid down in the Workview. JobComputer sets it.
@@ -53,6 +66,15 @@ var active: bool = false:
 			_sync()
 
 var _shown: Dictionary[StringName, Node3D] = {}
+# The physics layers of the drop: the case, board and pieces that the dropping pieces land on, and
+# the dropping pieces, which pass through each other as they lie overlapping.
+const DROP_GROUND: int = 1 << 9
+const DROP_PIECES: int = 1 << 10
+# The case was open at the last sync; true until a sync saw it closed, so a case that shows open at
+# once (a restore) doesn't drop its pieces.
+var _was_open: bool = true
+# While the misplaced pieces drop: the static bodies that they land on. null otherwise.
+var _drop_ground: Node3D
 # The pieces on the mat, to the pile that each lies on (an index of %Spots) and its model. A new
 # piece goes on the lower pile and stays there.
 var _mat_shown: Dictionary[Piece, Array] = {}
@@ -178,6 +200,10 @@ func _sync() -> void:
 			_shown[part.id()] = _show_model(piece, place)
 		(place.get_node("Hotspot") as Hotspot).set_enabled(active and (Game.can_take(job, part) or Game.can_put(job, part)))
 	_sync_lying()
+	if job.case_open and not _was_open and active:
+		_drop()
+		_sync_lying()  # no piece can be taken while it drops
+	_was_open = job.case_open
 	_sync_mat()
 	for surface: Hotspot in _mat_surfaces:
 		surface.set_enabled(active and Game.hand != null)
@@ -203,7 +229,7 @@ func _sync_lying() -> void:
 			if laid.is_empty():
 				continue
 			_lying[piece] = laid
-		(_lying[piece][1] as Hotspot).set_enabled(active and _can_lift(piece, wanted[piece]))
+		(_lying[piece][1] as Hotspot).set_enabled(active and _drop_ground == null and _can_lift(piece, wanted[piece]))
 
 
 # The model of [param piece] lying on [param place], and its hotspot; [] when it can't show.
@@ -236,6 +262,75 @@ func _lay(piece: Piece, place: Part) -> Array:
 	hotspot.clicked.connect(func(_h: Hotspot) -> void: _lift(piece, place))
 	_watch(hotspot)
 	return [model, hotspot]
+
+
+# The misplaced pieces fall from above where they lie onto the case, the board and the pieces in it,
+# each a rigid body with a box around its model; then they freeze where they landed.
+func _drop() -> void:
+	var pieces := _lying.keys().filter(func(piece: Piece) -> bool: return piece != job.blocker)
+	if pieces.is_empty():
+		return
+	if _drop_ground != null:
+		_drop_ground.queue_free()
+	_drop_ground = Node3D.new()
+	add_child(_drop_ground)
+	for mesh: Node in $Shell.find_children("*", "MeshInstance3D", true, false):
+		_add_box(StaticBody3D.new(), mesh as MeshInstance3D, _drop_ground, DROP_GROUND)
+	for shown: Node3D in _shown.values():
+		_add_box(StaticBody3D.new(), shown, _drop_ground, DROP_GROUND)
+	var bodies: Array[RigidBody3D] = []
+	var rest: Array[Transform3D] = []
+	for piece: Piece in pieces:
+		var model := _lying[piece][0] as Node3D
+		var body := RigidBody3D.new()
+		_add_box(body, model, _places, DROP_PIECES)
+		model.reparent(body)
+		_lying[piece][0] = body
+		rest.append(body.transform)
+		body.position.y += drop_height
+		body.angular_velocity = Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * drop_spin
+		body.contact_monitor = true
+		body.max_contacts_reported = 1
+		body.body_entered.connect(func(_other: Node) -> void:
+			if not body.has_meta(&"landed"):
+				body.set_meta(&"landed", true)
+				clunk_sound.play_at(body), CONNECT_ONE_SHOT)
+		bodies.append(body)
+	var settle := create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	settle.tween_interval(drop_seconds)
+	settle.tween_callback(_settle.bind(bodies, rest))
+
+
+# Freezes the dropped pieces where they landed, or where they lie if they landed too far off.
+func _settle(bodies: Array[RigidBody3D], rest: Array[Transform3D]) -> void:
+	for i: int in bodies.size():
+		var body := bodies[i]
+		if not is_instance_valid(body):
+			continue
+		body.freeze = true
+		if body.position.distance_to(rest[i].origin) > drop_slack:
+			body.transform = rest[i]
+	if is_instance_valid(_drop_ground):
+		_drop_ground.queue_free()
+	_drop_ground = null
+	_sync()
+
+
+# Gives [param body] a box around [param around], where [param around] is, on the drop's
+# [param layer], and adds it to [param parent]. The mouse doesn't hit it.
+func _add_box(body: PhysicsBody3D, around: Node3D, parent: Node3D, layer: int) -> void:
+	var box := Part.bounds(around) if around is not MeshInstance3D else (around as MeshInstance3D).get_aabb()
+	var shape := CollisionShape3D.new()
+	var cube := BoxShape3D.new()
+	cube.size = box.size.max(Vector3.ONE * 0.004)
+	shape.shape = cube
+	shape.position = box.get_center()
+	body.add_child(shape)
+	body.collision_layer = layer
+	body.collision_mask = DROP_GROUND
+	body.input_ray_pickable = false
+	parent.add_child(body)
+	body.global_transform = around.global_transform
 
 
 func _can_lift(piece: Piece, place: Part) -> bool:

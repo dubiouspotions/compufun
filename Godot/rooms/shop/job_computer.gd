@@ -29,6 +29,8 @@ const _HOTSPOT := preload("res://rooms/hotspot.tscn")
 @export var button_hover_color: Color = Color(1.0, 0.84, 0.35)
 ## How long the case takes to tip over onto its side, or back up, in seconds.
 @export var tip_seconds: float = 0.5
+## Plays as the case tips while pieces lie loose in it (Job.misplaced).
+@export var rattle_sound: SoundSet = preload("res://sounds/part_rattle.tres")
 ## The power light's colour while the computer is on, and while it is off.
 @export var power_on_color: Color = Color(0.3, 1.0, 0.3)
 @export var power_off_color: Color = Color(0.08, 0.16, 0.08)
@@ -195,6 +197,8 @@ func _sync_case() -> void:
 	if target != _pose and is_inside_tree():
 		_tip = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN if lying else Tween.EASE_OUT)
 		_tip.tween_method(_set_pose, _pose, target, tip_seconds * absf(target - _pose))
+		if not job.misplaced.is_empty():
+			rattle_sound.play_at(self)
 	else:
 		_set_pose(target)
 	_sync_screwdriver()
