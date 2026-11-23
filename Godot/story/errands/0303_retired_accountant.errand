@@ -5,18 +5,28 @@ brief:
 
 == drop-off
 set sign_no_clippy
-(irritated01) It's me. Again. I'm so sorry.
-+ So, what's your problem?
-	(problem) The sound is gone again. And now the little paperclip in my letters is gone too.
-	(neutral) He always helped me with the tax letters.
-	+ Did you touch the volume?
-		(thinking) No! Well. I might have clicked the little speaker.
-	+ The paperclip?
-		(irritated01) Yes, he sat in the corner and helped. Now there's only an empty note.
-	- OK, leave it with me. [end]
-		(neutral) Thank you. And if you can find the paperclip...
+(neutral) It's me. Again.
+(problem) I'm so sorry.
+- The sound is gone?
+- Don't be sorry. I'm here for you!
+(problem) The sound is gone again. And now the little paperclip in my letters is gone too.
+(neutral) He always helped me with the tax letters.
+- Did you touch the volume?
+	(neutral) No!
+	(problem) Well. I might have clicked the little speaker.
+	- And what about the paperclip?
+- The paperclip?
+(problem) Yes, he sat in the corner and helped. Now there's only an empty note.
+- You mean Clippy? That's weird... I'll take a look.
+	(neutral) Thank you. I kind of miss him...
+	- ... I'll call you with my findings.
 
 == pick-up
-(happy) It plays its little tune again. And the paperclip?
-- I couldn't bring him back. [end]
+(happy) Wow you are fast!
+- Well... Clicking a checkbox once...
+- I sure am!
+(happy) It plays its little tune again!
+(problem) And the paperclip?
+- Honestly - that's super weird. I couldn't bring him back. It shouldn't affect anything though.
 	(neutral) Oh. Well. He had a good run, the little fellow.
+	- Yeah, I've never seen that happen before...
