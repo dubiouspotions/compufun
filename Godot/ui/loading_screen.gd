@@ -4,7 +4,9 @@ extends CanvasLayer
 ## underneath, the logo's letters turn into windows onto it, and the paper zooms in through the
 ## middle of the logo until the game fills the screen.
 
-const GAME_SCENE: String = "res://main.tscn"
+## The scene that the screen loads on a thread and starts under the logo. Set it before the screen
+## enters the tree.
+@export_file("*.tscn") var game_scene: String = "res://main.tscn"
 
 ## When the ink reaches each part of the logo, in step with the jingle's sung syllables: x is the
 ## seconds into the jingle, y how far the ink has drawn in (0 to 1, about the share of the logo's
@@ -71,14 +73,14 @@ func _ready() -> void:
 	if Game.week == null:
 		_fail("the story files have errors:\n" + "\n".join(Game.story_errors))
 		return
-	var err := ResourceLoader.load_threaded_request(GAME_SCENE)
+	var err := ResourceLoader.load_threaded_request(game_scene)
 	if err != OK:
-		_fail("cannot start to load %s: %s" % [GAME_SCENE, error_string(err)])
+		_fail("cannot start to load %s: %s" % [game_scene, error_string(err)])
 
 
 func _process(_delta: float) -> void:
 	var progress: Array = []
-	var status := ResourceLoader.load_threaded_get_status(GAME_SCENE, progress)
+	var status := ResourceLoader.load_threaded_get_status(game_scene, progress)
 	if _start_ms < 0:
 		_start_ms = Time.get_ticks_msec()
 		%Jingle.play()
@@ -96,13 +98,13 @@ func _process(_delta: float) -> void:
 				_show_byline()
 			if _byline_shown and Time.get_ticks_msec() >= _byline_full_ms:
 				_game_started = true
-				var scene := ResourceLoader.load_threaded_get(GAME_SCENE) as PackedScene
+				var scene := ResourceLoader.load_threaded_get(game_scene) as PackedScene
 				if scene == null:
-					_fail("%s loaded, but it is not a scene" % GAME_SCENE)
+					_fail("%s loaded, but it is not a scene" % game_scene)
 					return
 				_reveal(scene)
 		_:
-			_fail("cannot load %s" % GAME_SCENE)
+			_fail("cannot load %s" % game_scene)
 
 
 ## How far the ink has drawn in at [param seconds] into the jingle, from 0 to 1 (see [member draw_keys]).
@@ -143,7 +145,7 @@ func _heard_seconds(wall: float) -> float:
 func _reveal(scene: PackedScene) -> void:
 	var game := scene.instantiate()
 	if game == null:
-		_fail("cannot create %s" % GAME_SCENE)
+		_fail("cannot create %s" % game_scene)
 		return
 	get_tree().root.add_child(game)
 	get_tree().current_scene = game

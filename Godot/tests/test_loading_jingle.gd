@@ -4,9 +4,13 @@ extends "res://tests/test.gd"
 ## of the logo) at 0.77 s, "Fun" (0.64) at 1.35 s, the whole logo at 2.15 s. The byline waits for
 ## the complete logo.
 
+# Not main.tscn: Godot crashes on a quit while its worker threads still load the game (docs/gotchas.md).
+const SMALL_SCENE: String = "res://props/tree_pine.tscn"
+
 
 func run() -> void:
 	var screen: CanvasLayer = (load("res://ui/loading_screen.tscn") as PackedScene).instantiate()
+	screen.set(&"game_scene", SMALL_SCENE)
 	root.add_child(screen)
 	await process_frame
 	await process_frame
@@ -22,6 +26,6 @@ func run() -> void:
 	check("within a syllable the ink eases out: past halfway at half the syllable", ink.call((0.77 + 1.35) / 2.0) > (0.42 + 0.64) / 2.0, true)
 	# Stopped before the load ends, the screen never starts the game: a slow load must not race the test.
 	screen.set_process(false)
-	check("the game loads", ResourceLoader.load_threaded_get("res://main.tscn") is PackedScene, true)  # waits for the load
+	check("the scene loads", ResourceLoader.load_threaded_get(SMALL_SCENE) is PackedScene, true)  # waits for the load
 	screen.queue_free()
 	await process_frame

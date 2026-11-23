@@ -52,6 +52,15 @@ matches what the editor writes. — 2026-10
 **A tool script fails to compile under `godot -s script.gd`.** Scripts that reference an
 autoload don't compile there. Run such a tool as a scene instead. — 2026-10
 
+**A test that loads main.tscn with `load_threaded_request` crashes or hangs on exit, after it
+passed; only on CI.** `load_threaded_get` returns the scene while Godot's worker threads still load
+resources that main.tscn's scripts preload, and a quit during that tears the loader down under them:
+"Bug in ResourceLoader logic", "Resource file not found" with an empty path or "referenced
+non-existent resource" for a file that exists, then SIGSEGV or a hang. It shows with few worker
+threads: CI's runners have 4 cores and run 4 tests at once. Reproduce it with
+`threading/worker_pool/max_threads=2` in a scratch `Godot/override.cfg`. A test loads a small scene
+on a thread instead, as `test_loading_jingle.gd` does. — Godot 4.7.2, 2026-11-23
+
 **A `godot -s` script with a parse error exits 0.** Godot prints the parse error and quits as if
 the script had passed. `tests/run.gd` therefore also requires the line that a passing test
 prints, not only exit code 0. — 2026-11
