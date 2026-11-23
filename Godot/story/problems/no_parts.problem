@@ -1,0 +1,14 @@
+post-it: Take a closer look at the super computer
+symptoms:
+	No parts in the computer
+		shows: opened, the case is empty: no motherboard, CPU, fan, RAM, GPU or hard drive
+		category: On the computer
+	Works without any parts
+		shows: it switches on and boots into Windows, on Cambion
+		category: At startup
+hardware steps:
+	Remove the computer shell
+	Remount the shell
+notes:
+	NO PARTS: no issues, all parts missing, works anyway. The repair is to open the computer and close it again; it stays empty and keeps running.
+	Corruption, which CompuFunDB does not diagnose: it finds nothing for these symptoms.

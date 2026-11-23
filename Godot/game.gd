@@ -729,6 +729,7 @@ func open_case(job: Job, open: bool) -> bool:
 	if open and (not job.lying or job.powered or job.panel_screws.has(true)):
 		return false
 	job.case_open = open
+	job.was_opened = job.was_opened or open
 	changed.emit()
 	return true
 
@@ -1385,6 +1386,7 @@ func restore(state: Dictionary) -> String:
 			return _refuse("job %d: the mat: %s" % [i, mat_pieces])
 		job.mat.assign(mat_pieces)
 		job.case_open = bool(data.get("case_open", false))
+		job.was_opened = bool(data.get("was_opened", job.was_opened or job.case_open))
 		job.lying = job.case_open or bool(data.get("lying", false))
 		if data.has("panel_screws"):
 			var panel: Array = data["panel_screws"]

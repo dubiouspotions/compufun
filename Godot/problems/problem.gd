@@ -52,6 +52,10 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 ## A scene that the open case shows inside it for this visit, whatever the player takes out, such as
 ## blood on the case's floor. Its origin is the case's, with the floor at y 0.01. null for none.
 @export var case_dressing: PackedScene
+## True for a haunted computer, as NO PARTS is: its places start empty (Job.places), yet it runs as
+## if every part were in (Job.has). Its hardware counts as fixed once the player has taken the side
+## panel off and put it back on with its screws in (Job.was_opened), whatever the places hold.
+@export var empty_case: bool = false
 ## False leaves the problem out of CompuFunDB: none of its symptoms or steps shows there.
 @export var in_compufun_db: bool = true
 ## Corruption signs (their ids) that start as the customer sets the computer down, such as blood

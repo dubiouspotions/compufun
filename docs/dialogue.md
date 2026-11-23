@@ -120,6 +120,12 @@ The file name is the problem's id, the name of its `problems/<id>.tres`, which h
 A problem file without a `.tres` is a problem that a writer named before a developer built it: an
 errand can name it, and the story check lists it as a problem without mechanics.
 
+A problem that is corruption, as `organ_failure` and `no_parts` are, sets `in_compufun_db = false`
+in its `.tres`: CompuFunDB finds nothing for its symptoms, which still need their categories. With
+`empty_case = true`, as `no_parts` has, the computer comes with every place empty and runs anyway;
+taking the side panel off and putting it back on with its screws in is the repair, and the case
+stays empty.
+
 ## Conversations
 
 One line per thing; a tab indents. Depth matters, not width.

@@ -30,6 +30,9 @@ var mat: Array[Piece] = []
 var lying: bool = false
 ## The side panel is off. The computer lies open.
 var case_open: bool = false
+## The side panel has come off on this visit (Game.open_case). It fixes an empty case's hardware
+## (Problem.empty_case) once the panel is back on with its screws in.
+var was_opened: bool = false
 ## The id of the part that the BIOS memory test counts.
 const RAM: StringName = &"ram"
 
@@ -40,19 +43,23 @@ const PANEL_SCREWS: int = 2
 ## The screws of the side panel: true while it is in. The panel comes off only when all are out.
 var panel_screws: Array[bool] = []
 ## True when every place holds a piece, none is broken, nothing is in the way ([member blocker]) or
-## misplaced, and the side panel is on with its screws in.
+## misplaced, and the side panel is on with its screws in. For an empty case (Problem.empty_case):
+## when the panel is on with its screws in and [member was_opened], whatever the places hold.
 ## Setting it is for restore, the presets and the debug menu: true repairs the computer, false
 ## breaks the problem's part again, in a random place when several take it.
 var hardware_fixed: bool:
 	get:
 		if case_open or panel_screws.has(false) or blocker != null or not misplaced.is_empty():
 			return false
+		if runs_empty():
+			return was_opened
 		for part: Part in Part.every():
 			if not places.has(part) or places[part].broken:
 				return false
 		return true
 	set(value):
 		_fill(not value)
+		was_opened = value
 		case_open = false
 var software_fixed: bool = false
 ## The computer is switched on.
@@ -120,18 +127,25 @@ func piece(part: Part) -> Piece:
 	return places.get(part)
 
 
+## True when the problem makes the computer run as if every part were in, whatever its places hold
+## (Problem.empty_case).
+func runs_empty() -> bool:
+	return problem != null and problem.empty_case
+
+
 ## The share of the computer's memory that its RAM places hold, 0 to 1. 1 for a computer without
-## RAM places.
+## RAM places, or one that [method runs_empty].
 func memory_share() -> float:
 	var slots := Part.every().filter(func(place: Part) -> bool: return place.piece_part().id() == RAM)
-	if slots.is_empty():
+	if slots.is_empty() or runs_empty():
 		return 1.0
 	return slots.filter(func(place: Part) -> bool: return places.has(place)).size() / float(slots.size())
 
 
-## True when a piece of the part [param part_id] is in, in any place that takes it.
+## True when a piece of the part [param part_id] is in, in any place that takes it, or the computer
+## [method runs_empty].
 func has(part_id: StringName) -> bool:
-	return places.keys().any(func(place: Part) -> bool: return place.piece_part().id() == part_id)
+	return runs_empty() or places.keys().any(func(place: Part) -> bool: return place.piece_part().id() == part_id)
 
 
 ## The first part, in the order that the BIOS checks them, whose absence stops it before it shows a
@@ -160,7 +174,7 @@ func memory_fails() -> bool:
 # in one random place of those that take it, so the player can't learn which; its missing part and
 # its misplaced pieces leave their places (see Problem.missing_part, Problem.misplaced), and its
 # stand-ins take the places of the parts that they pose as, in their order, one per place while
-# they last.
+# they last. An empty case (Problem.empty_case) ends with every place empty, broken or repaired.
 func _fill(break_part: bool) -> void:
 	places.clear()
 	misplaced.clear()
@@ -186,6 +200,8 @@ func _fill(break_part: bool) -> void:
 		for lies_on: Part in misplaced:
 			if places.has(lies_on):
 				push_error("Job: %s puts %s on %s, whose own piece is still in" % [problem.resource_path, misplaced[lies_on].part.id(), lies_on.id()])
+	if runs_empty():
+		places.clear()
 
 
 # Empties the first place that holds a piece of [param part]; false, with an error, when none does.
@@ -224,6 +240,7 @@ func snapshot() -> Dictionary:
 		"cd_tray_open": cd_tray_open,
 		"lying": lying,
 		"case_open": case_open,
+		"was_opened": was_opened,
 		"panel_screws": panel_screws.duplicate(),
 		"parts": places_data(),
 		"blocker": blocker != null,

@@ -121,6 +121,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 **Missing part**: A part that the customer took out: one place that takes it starts empty, and the player takes a new one from the storage (`Problem.missing_part`).
 
+**Empty case**: A haunted computer with every place empty that runs anyway, as the hat guy's does on day 6 (`Problem.empty_case`, problem `no_parts`). Taking the side panel off and putting it back on fixes its hardware; the case stays empty.
+*Avoid:* haunted case, hollow case.
+
 **Hand**: The one piece that the player holds (`Game.hand`). Its model shows low in the view, held in front of the camera, with its name (`rooms/shop/hand.tscn`). The player puts it somewhere by clicking there or by dragging it there.
 *Avoid:* inventory, cursor item.
 

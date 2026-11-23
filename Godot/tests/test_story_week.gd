@@ -12,7 +12,7 @@ const WEEK: Array = [
 	["0701 skater_bro", "0702 top_hat_man", "0703 office_girl", "0703 young_entrepreneur"],
 ]
 ## The hat guy's computer has no parts (corruption, not a problem), and the activist leaves his computer for good.
-const NO_PROBLEM_YET: Array[String] = ["0602 hat_guy", "0603 activist_guy"]
+const NO_PROBLEM_YET: Array[String] = ["0603 activist_guy"]
 
 
 func run() -> void:
