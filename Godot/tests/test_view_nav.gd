@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
 ## The keys between views: Up or W in the Left View enters the storage room, as a click on the
-## storage door does, and Back returns to the Left View. Up or W in the Main View looks up at the
+## storage door does, and Back returns to the Left View; in the Right View they open CompuFunDB, as a
+## click on the work computer does. Up or W in the Main View looks up at the
 ## ceiling with the counter empty, and otherwise opens the Workview on the computer nearest the middle
 ## of the view, as a click on it does. In the Workview, Left on the leftmost computer turns to the test
 ## screen, and Right there turns back. No key or click skips the work computer's
@@ -24,6 +25,13 @@ func run() -> void:
 	var door: Hotspot = _main.get_node("%Shop").find_child("StorageDoor", true, false)
 	door.clicked.emit(door)
 	check("a click on the storage door goes to the same view", game.view, &"Storage")
+
+	game.go_to_view(&"Right")
+	_press(&"look_up")
+	var work_computer: Hotspot = _main.get_node("%Shop").find_child("WorkComputer", true, false)
+	check("Up in the Right View opens the view that a click on the work computer opens", game.view, work_computer.view)
+	_press(&"go_back")
+	check("Back in CompuFunDB returns to the Right View", game.view, &"Right")
 
 	check("the counter is empty", game.jobs.size(), 0)
 	game.go_to_view(&"Main")
