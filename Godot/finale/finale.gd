@@ -68,10 +68,14 @@ const CREDIT: PackedScene = preload("res://finale/credit.tscn")
 @export var credits_fade_seconds: float = 1.5
 ## The seconds after the fade-in before a key starts the game again, so that a stray key does not.
 @export var credits_hold_seconds: float = 1.0
-## The most people in one row of the credits.
+## The most actors in one row of the credits.
 @export var cast_columns: int = 4
-## The share of the window's height that the portraits take, all rows together, 0 to 1.
-@export_range(0.1, 1.0) var cast_height: float = 0.62
+## The share of the window's height that the actors' portraits take, all rows together, 0 to 1.
+@export_range(0.1, 1.0) var cast_height: float = 0.5
+## The most people in one row of Also starring, the people with no actor.
+@export var also_columns: int = 6
+## The share of the window's height that the portraits in Also starring take, all rows together.
+@export_range(0.05, 1.0) var also_height: float = 0.11
 ## How many times smaller the snapshot of the shop behind the credits is than the world buffer;
 ## the bigger, the blurrier.
 @export var backdrop_shrink: int = 8
@@ -140,7 +144,8 @@ func is_blue(thing: GeometryInstance3D) -> bool:
 	return _blue.has(thing)
 
 
-## The people in the credits: each person in [constant PEOPLE] with a neutral portrait.
+## The people in the credits: each person in [constant PEOPLE] with a neutral portrait. Those with an
+## [member Person.actor] star; the others are also starring, by their nickname.
 static func cast() -> Array[Person]:
 	var people: Array[Person] = []
 	for entry: String in ResourceLoader.list_directory(PEOPLE):
@@ -442,8 +447,7 @@ func _snapshot_shop() -> void:
 func _show_credits() -> void:
 	_boot.show_stage(HostBoot.Stage.OFF)
 	(%Thanks as Label).text = text.thanks
-	(%CastHeading as Label).text = text.cast_heading
-	(%Lines as Label).text = text.credits
+	(%AlsoHeading as Label).text = text.also_heading
 	(%Hint as Label).text = text.restart_hint
 	_fill_cast()
 	_credits.modulate.a = 0.0
@@ -452,18 +456,30 @@ func _show_credits() -> void:
 	create_tween().tween_property(_credits, "modulate:a", 1.0, credits_fade_seconds)
 
 
-# Every person in rows of at most cast_columns, the rows as even as they can be.
 func _fill_cast() -> void:
-	var people := cast()
+	var starring: Array[Person] = []
+	var also: Array[Person] = []
+	for person: Person in cast():
+		if person.actor != "":
+			starring.append(person)
+		else:
+			also.append(person)
+	_add_cards(%Cast as VBoxContainer, starring, cast_columns, cast_height, true)
+	_add_cards(%Also as VBoxContainer, also, also_columns, also_height, false)
+	(%AlsoHeading as Label).visible = not also.is_empty()
+
+
+# One card per person, in rows of at most [param columns], the rows as even as they can be. An actor's
+# card shows the actor and the nickname; any other card shows only the nickname.
+func _add_cards(box: VBoxContainer, people: Array[Person], columns: int, height_share: float, actors: bool) -> void:
 	if people.is_empty():
 		return
-	var rows := ceili(people.size() / float(maxi(cast_columns, 1)))
+	var rows := ceili(people.size() / float(maxi(columns, 1)))
 	var per_row := ceili(people.size() / float(rows))
-	var cast_box := %Cast as VBoxContainer
-	var gap := float(cast_box.get_theme_constant(&"separation"))
+	var gap := float(box.get_theme_constant(&"separation"))
 	var screen := get_viewport().get_visible_rect().size
-	var card_width := screen.x * 0.9 / per_row - gap
-	var cell := Vector2(card_width, screen.y * cast_height / rows)
+	var card_width := screen.x * 0.9 / maxi(per_row, cast_columns) - gap
+	var cell := Vector2(card_width, screen.y * height_share / rows)
 	var row: HBoxContainer = null
 	for index: int in people.size():
 		if index % per_row == 0:
@@ -471,7 +487,7 @@ func _fill_cast() -> void:
 			row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			row.alignment = BoxContainer.ALIGNMENT_CENTER
 			row.add_theme_constant_override(&"separation", int(gap))
-			cast_box.add_child(row)
+			box.add_child(row)
 		var person := people[index]
 		var card := CREDIT.instantiate() as Control
 		card.custom_minimum_size.x = card_width
@@ -479,8 +495,11 @@ func _fill_cast() -> void:
 		var portrait := card.get_node("%Portrait") as TextureRect
 		portrait.texture = cut
 		portrait.custom_minimum_size = (cut.get_size() * minf(cell.x / cut.get_width(), cell.y / cut.get_height())).round()
-		(card.get_node("%Actor") as Label).text = person.actor if person.actor != "" else person.nickname
-		(card.get_node("%Role") as Label).text = text.cast_role % person.nickname if person.actor != "" else " "
+		var actor := card.get_node("%Actor") as Label
+		var role := card.get_node("%Role") as Label
+		actor.visible = actors
+		actor.text = person.actor
+		role.text = (text.cast_role % person.nickname) if actors else person.nickname
 		row.add_child(card)
 
 

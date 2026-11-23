@@ -91,26 +91,25 @@ theme_override_fonts/font = ExtResource("7_bold")
 theme_override_font_sizes/font_size = 48
 horizontal_alignment = 1
 
-[node name="CastHeading" type="Label" parent="Credits/Center/Column"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
-theme_override_font_sizes/font_size = 24
-horizontal_alignment = 1
-
 [node name="Cast" type="VBoxContainer" parent="Credits/Center/Column"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 24
 
-[node name="Lines" type="Label" parent="Credits/Center/Column"]
+[node name="AlsoHeading" type="Label" parent="Credits/Center/Column"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
+theme_override_colors/font_color = Color(0.74, 0.72, 0.82, 1)
+theme_override_fonts/font = ExtResource("7_bold")
 theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1
+
+[node name="Also" type="VBoxContainer" parent="Credits/Center/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 24
 
 [node name="Hint" type="Label" parent="Credits/Center/Column"]
 unique_name_in_owner = true
