@@ -254,6 +254,12 @@ func _check_print_fix() -> void:
 	check("with the steps and their boxes", page[-1].ends_with("[ ]"), true)
 	check("the print box shows while it prints", [db.get("_printing"), printer.call("progress") >= 0.0], ["FIX", true])
 	await create_timer(printer.get("line_seconds") * page.size() + printer.get("feed_seconds") + 0.2).timeout
-	check("and goes when the page is out", [db.get("_printing"), printer.call("progress")], ["", -1.0])
+	check("then says the print is complete", [db.get("_print_done"), printer.call("progress")], [true, -1.0])
+	check("a modal box: other keys do nothing", [db.call("_on_key", key), printer.get("_lines")], [true, page])
+	var enter := InputEventKey.new()
+	enter.keycode = KEY_ENTER
+	enter.pressed = true
+	db.call("_on_key", enter)
+	check("Enter presses OK", [db.get("_print_done"), db.get("_printing")], [false, ""])
 	db.queue_free()
 	printer.queue_free()

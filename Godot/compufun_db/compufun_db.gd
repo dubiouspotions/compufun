@@ -36,6 +36,10 @@ enum Column { SEARCH, CHECKS, CAUSES }
 const HEADERS: Array[String] = ["SEARCH", "CHECK", "CAUSES"]
 ## The most characters that the player can type into SEARCH.
 const SEARCH_LENGTH: int = 40
+## The print box over the middle of the screen: its width and its top row, and its OK button.
+const PRINT_BOX_WIDTH: int = 36
+const PRINT_BOX_TOP: int = 12
+const OK_BUTTON: String = "[ OK ]"
 
 ## The text-mode font: one glyph per 8 x 16 cell.
 @export var font: Font = preload("res://compufun_db/fonts/Px437_IBM_VGA_8x16.ttf")
@@ -120,9 +124,11 @@ var _shown_day: int = -1
 ## What the bottom bar says instead of the column's name until the next key or click; empty: nothing.
 var _status: String = ""
 ## The printer that prints the page named [member _printing], while the print box shows over the
-## screen; null when nothing prints.
+## screen; null when nothing prints. Once the page is out, [member _print_done] shows "Print complete"
+## until the player presses its OK.
 var _printer: Printer
 var _printing: String = ""
+var _print_done: bool = false
 # The grid that _draw paints: one character, foreground and background per cell.
 var _chars: PackedStringArray = []
 var _fg: PackedColorArray = []
@@ -446,6 +452,11 @@ func _pause(seconds: float) -> void:
 
 func _on_click(button: InputEventMouseButton) -> void:
 	var cell := Vector2i((button.position / CELL).floor())
+	if _print_done:  # the box is modal: only its OK does anything
+		var ok := _ok_cell()
+		if button.button_index == MOUSE_BUTTON_LEFT and cell.y == ok.y and cell.x >= ok.x and cell.x < ok.x + OK_BUTTON.length():
+			_close_print_box()
+		return
 	var column := _column_at(cell.x)
 	if column < 0 or _starting or _offline():
 		return
@@ -490,6 +501,10 @@ func _on_click(button: InputEventMouseButton) -> void:
 func _on_key(key: InputEventKey) -> bool:
 	if _starting or _offline():
 		return false
+	if _print_done:  # the box is modal: Enter, Space or Esc press its OK, other keys do nothing
+		if key.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE, KEY_ESCAPE]:
+			_close_print_box()
+		return true
 	var typing := _column == Column.SEARCH
 	if key.keycode == KEY_ESCAPE or (not typing and key.is_action(&"go_back") and key.keycode != KEY_DOWN):
 		return false  # main.gd goes back, as the Back button does
@@ -636,31 +651,50 @@ func _print_page(page: PackedStringArray) -> void:
 	set_process(true)
 
 
-# Redraws the print box while the page prints, and takes it away when it is out.
+# Redraws the print box while the page prints; when it is out, the box says so until OK.
 func _process(_delta: float) -> void:
 	if not is_instance_valid(_printer) or _printer.progress() < 0.0:
 		_printer = null
-		_printing = ""
+		_print_done = true
 		set_process(false)
 	queue_redraw()
 
 
-# The print box in the middle of the screen: what prints, and how far, in a bar of blocks.
+# Closes "Print complete".
+func _close_print_box() -> void:
+	_printing = ""
+	_print_done = false
+	queue_redraw()
+
+
+# The print box in the middle of the screen: what prints and how far, in a bar of blocks; then that
+# it is done, with an OK button.
 func _paint_printing() -> void:
-	const WIDTH := 36
-	const TOP := 12
-	var left := (COLUMNS - WIDTH) / 2
-	var inner := WIDTH - 4
-	var done := roundi(_printer.progress() * inner)
-	var rows: PackedStringArray = [
-		"\u2554" + "\u2550".repeat(WIDTH - 2) + "\u2557",
-		"\u2551" + " Print ".rpad(WIDTH - 2) + "\u2551",
-		"\u2551" + (" Printing %s on LPT1..." % _printing).rpad(WIDTH - 2) + "\u2551",
-		"\u2551 " + "\u2588".repeat(done) + "\u2591".repeat(inner - done) + " \u2551",
-		"\u255a" + "\u2550".repeat(WIDTH - 2) + "\u255d",
-	]
+	var left := (COLUMNS - PRINT_BOX_WIDTH) / 2
+	var inner := PRINT_BOX_WIDTH - 4
+	var middle: String
+	var lines: PackedStringArray
+	if _print_done:
+		lines = [" Print complete", " %s printed on LPT1." % _printing]
+		middle = ""
+	else:
+		var done := roundi(_printer.progress() * inner) if _printer != null else inner
+		lines = [" Print", " Printing %s on LPT1..." % _printing]
+		middle = " " + "".rpad(done, "\u2588") + "".rpad(inner - done, "\u2591") + " "  # repeat(0) is an error
+	var rows: PackedStringArray = ["\u2554" + "\u2550".repeat(PRINT_BOX_WIDTH - 2) + "\u2557"]
+	for line: String in lines:
+		rows.append("\u2551" + line.rpad(PRINT_BOX_WIDTH - 2) + "\u2551")
+	rows.append("\u2551" + middle.rpad(PRINT_BOX_WIDTH - 2) + "\u2551")
+	rows.append("\u255a" + "\u2550".repeat(PRINT_BOX_WIDTH - 2) + "\u255d")
 	for i: int in rows.size():
-		_put(left, TOP + i, rows[i], bright_color, bar_color)
+		_put(left, PRINT_BOX_TOP + i, rows[i], bright_color, bar_color)
+	if _print_done:
+		_put(_ok_cell().x, _ok_cell().y, OK_BUTTON, bar_color, bright_color)
+
+
+# The first cell of the print box's OK button.
+func _ok_cell() -> Vector2i:
+	return Vector2i((COLUMNS - OK_BUTTON.length()) / 2, PRINT_BOX_TOP + 3)
 
 
 # The checklist: the symptom searched for, the checks with their ticks, and the causes still possible.

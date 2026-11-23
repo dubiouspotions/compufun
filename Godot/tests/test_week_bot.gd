@@ -351,6 +351,10 @@ func _look_up(job: Job) -> bool:
 	if game.db_day != game.day_number:
 		return true  # it starts up
 	var query := job.problem.symptoms[0]
+	# The screen, not the view marker of the same name.
+	var db: Node = _main.find_children("CompuFunDB", "Control", true, false)[0]
+	if db.get("_print_done"):
+		await _press(KEY_ENTER)  # OK on the last print's "Print complete"
 	for key: Key in [KEY_LEFT, KEY_LEFT]:
 		await _press(key)
 	for i: int in 40:
@@ -358,8 +362,6 @@ func _look_up(job: Job) -> bool:
 	for letter: String in query:
 		await _press(KEY_NONE, letter.unicode_at(0))
 	await _press(KEY_ENTER)
-	# The screen, not the view marker of the same name.
-	var db: Node = _main.find_children("CompuFunDB", "Control", true, false)[0]
 	var waited := now()
 	while db.get("_searching") and now() - waited < SEARCH_SECONDS:
 		await process_frame
