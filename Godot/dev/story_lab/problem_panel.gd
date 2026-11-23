@@ -325,14 +325,6 @@ func _add_shown(list: VBoxContainer, entry: String, shows: String, what_hint: St
 	how.size_flags_stretch_ratio = 1.6
 	how.text_changed.connect(func(_t: String) -> void: _changed())
 	row.add_child(how)
-	var heading := LineEdit.new()
-	heading.text = category
-	heading.placeholder_text = "Its heading in CompuFunDB"
-	heading.tooltip_text = "Where the player meets it, such as At startup or In Windows; CompuFunDB lists the symptom under this heading."
-	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	heading.size_flags_stretch_ratio = 0.6
-	heading.text_changed.connect(func(_t: String) -> void: _changed())
-	row.add_child(heading)
 	_add_row_buttons(row)
 	list.add_child(row)
 

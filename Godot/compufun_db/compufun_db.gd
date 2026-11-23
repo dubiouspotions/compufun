@@ -49,7 +49,8 @@ const OK_BUTTON: String = "[ OK ]"
 @export var dim_color: Color = Color(0.333, 0.333, 0.333)
 ## The CompuFun red of the bars, the headers and the selection.
 @export var bar_color: Color = Color(0.89, 0, 0)
-## The last repair step of every fix, after its hardware and software steps (see Job.tested).
+## The last repair step of every fix but a software-only one, after its hardware and software steps
+## (see Job.tested). A software fix lands on a running Windows, which tests it at once.
 @export var test_step: String = "Test the computer"
 ## How many checks of other problems CompuFunDB mixes into what to check: between x and y.
 @export var decoys: Vector2i = Vector2i(2, 5)
@@ -96,8 +97,7 @@ signal picture_changed
 ## The first and last x of each column's text, inside the frame.
 var _spans: Array[Vector2i] = [Vector2i(1, 24), Vector2i(26, 51), Vector2i(53, 78)]
 var _problems: Array[Problem] = []
-## Every symptom of every problem, once each, by category (see [member check_categories]), then
-## alphabetically.
+## Every symptom of every problem, once each, in the order of the problems.
 var _symptoms: PackedStringArray = []
 var _column: Column = Column.SEARCH
 var _selected: Array[int] = [0, 0, 0]
@@ -165,30 +165,10 @@ func _load_problems() -> void:
 			continue
 		_problems.append(problem)
 		for symptom: String in problem.symptoms:
-			var category: String = problem.symptom_categories.get(symptom, "")
-			if category == "":
-				push_error("CompuFunDB: the symptom '%s' of %s has no 'category:'; CHECK lists it under Other" % [symptom, problem.short_name])
-				category = "Other"
-			if not _categories.has(symptom):
+			if symptom not in _symptoms:
 				_symptoms.append(symptom)
-				_categories[symptom] = category
-			elif _categories[symptom] != category:
-				push_error("CompuFunDB: the symptom '%s' of %s is in the category '%s', but another problem puts it in '%s'" % [symptom, problem.short_name, category, _categories[symptom]])
 	if _problems.is_empty():
 		push_error("CompuFunDB: no Problem files in %s" % PROBLEMS_DIR)
-	var ordered := Array(_symptoms)
-	ordered.sort_custom(func(a: String, b: String) -> bool:
-		var rank_a := _category_rank(_categories[a])
-		var rank_b := _category_rank(_categories[b])
-		return rank_a < rank_b or (rank_a == rank_b and (_categories[a] < _categories[b] or (_categories[a] == _categories[b] and a.naturalnocasecmp_to(b) < 0))))
-	_symptoms = PackedStringArray(ordered)
-
-
-# Where [param category] comes among the CHECK column's headings: its place in check_categories, or
-# after them all.
-func _category_rank(category: String) -> int:
-	var rank := check_categories.find(category)
-	return rank if rank >= 0 else check_categories.size()
 
 
 # The entries of a column that show: CHECK and CAUSES only as far as the computer has read them in.
@@ -736,7 +716,8 @@ func _fix_page(cause: Problem) -> PackedStringArray:
 	var entries: Array[Dictionary] = []
 	var number := _add_steps(entries, "Hardware", cause.hardware_steps, 1)
 	number = _add_steps(entries, "Software", cause.software_steps, number)
-	_add_steps(entries, "Test", PackedStringArray([test_step]), number)
+	if cause.location != Problem.Location.SOFTWARE:
+		_add_steps(entries, "Test", PackedStringArray([test_step]), number)
 	page.append("")
 	for line: Array in _lines(Column.CAUSES, entries):
 		page.append((line[1] as String).strip_edges(false, true))
@@ -745,7 +726,8 @@ func _fix_page(cause: Problem) -> PackedStringArray:
 
 func _heading(title: String) -> PackedStringArray:
 	var page := PackedStringArray(["CompuFunDB 1.0  %s  %s" % [title, _date_text()], ""])
-	page.append_array(_wrap("SEARCH: " + Game.db_search.query, _width(Column.CHECKS)))
+	if Game.db_search != null:
+		page.append_array(_wrap("SEARCH: " + Game.db_search.query, _width(Column.CHECKS)))
 	return page
 
 

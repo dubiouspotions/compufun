@@ -52,7 +52,7 @@ func _errors() -> void:
 		path + ":1: no 'post-it:' text, which the post-it shows",
 		path + ":2: 'shows:' before any symptom",
 		path + ":4: the symptom 'One' a second time",
-		path + ":5: under a symptom go only 'shows:', how it shows in the game, and 'category:', its heading in CompuFunDB",
+		path + ":5: under a symptom goes only 'shows:' and how it shows in the game",
 		path + ":8: a step is one line, with nothing under it",
 		path + ":9: 'software steps:' takes one entry per line, under it",
 		path + ":10: 'colour: red' is not a key here; the keys are post-it, cause, symptoms, checks, hardware steps, software steps, notes",
