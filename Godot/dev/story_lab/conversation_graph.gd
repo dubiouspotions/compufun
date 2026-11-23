@@ -301,10 +301,10 @@ func edit_remembers(reply: Reply) -> void:
 		return
 	var editor := StoryFlagsEditor.make(facts)
 	editor.edit(reply.set_flags)
-	StoryConditionEditor.popup(_near(reply, &"set_flags"), "When this plays, the story remembers:", editor, func() -> void:
+	StoryConditionEditor.popup(_near(reply, &"set_flags"), "When this plays, remember...", editor, func() -> void:
 		var flags := editor.flags()
 		if flags != reply.set_flags:
-			remember(reply, flags))
+			remember(reply, flags), _box_rect(reply))
 
 
 ## Opens the condition editor of [param part], a Choice or an answer of one, under its "only if"
@@ -314,14 +314,14 @@ func edit_condition(part: Resource) -> void:
 		return
 	var editor := StoryConditionEditor.make(facts)
 	editor.edit(part.get(&"when"))
-	var title := "Offer this choice only if:" if part is Choice else "Play this answer only if:"
+	var title := "Offer this choice only if..." if part is Choice else "This answer plays only if..."
 	StoryConditionEditor.popup(_near(part, &"when"), title, editor, func() -> void:
 		var when := editor.condition()
 		if _condition_text(when) == _condition_text(part.get(&"when")):
 			return
 		var problem := set_when(part, when)
 		if problem != "":
-			_status.text = problem)
+			_status.text = problem, _box_rect(part))
 
 
 ## Gives [param reply]'s list a [member Reply.then]: a new box below the list, with one line,
@@ -1192,6 +1192,12 @@ func _near(part: Resource, field: StringName) -> Control:
 		return spot[0]
 	var box: GraphNode = _boxes.get(part)
 	return box if box != null else self
+
+
+# The box of [param part] on the canvas, for a popup to keep clear of; empty without one.
+func _box_rect(part: Resource) -> Rect2:
+	var box: GraphNode = _boxes.get(part)
+	return box.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, box.size) if box != null else Rect2()
 
 
 # [param when] as the story file writes it; "" for null.

@@ -18,8 +18,15 @@ func run() -> void:
 
 	_button(editor, "+ another fact").pressed.emit()
 	var pickers := editor.find_children("*", "StoryFactPicker", true, false)
-	(pickers[pickers.size() - 1] as StoryFactPicker).pick(&"Skater told us")
-	check("a new fact, named in plain words, becomes a flag name", editor.condition().need_flags, [&"skater_cambion", &"skater_told_us"])
+	var picker := pickers[pickers.size() - 1] as StoryFactPicker
+	var search: LineEdit = picker.list_host.find_children("*", "LineEdit", true, false)[0]
+	check("the new fact's search opens in the editor, under its row", [picker.is_open(), editor.is_ancestor_of(search)], [true, true])
+	search.text = "Skater told us"
+	search.text_changed.emit(search.text)
+	var list: ItemList = picker.list_host.find_children("*", "ItemList", true, false)[0]
+	check("the field keeps the writer's words while typing", [search.text, list.get_item_text(0)], ["Skater told us", "New fact: Skater told us"])
+	search.text_submitted.emit(search.text)
+	check("a new fact, named in plain words, becomes a flag name when picked", [editor.condition().need_flags, picker.is_open()], [[&"skater_cambion", &"skater_told_us"], false])
 	check("each change is signalled", said.size(), 1)
 
 	var days: Array = editor.find_children("*", "OptionButton", true, false).filter(func(o: OptionButton) -> bool: return o.item_count == 7)

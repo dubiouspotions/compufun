@@ -10,6 +10,8 @@ signal changed(when: Condition)
 
 const SCENE: String = "res://dev/story_lab/condition_editor.tscn"
 const _IS: PackedStringArray = ["is true", "is not true"]
+# The room around a popup's card that its shadow draws in, in pixels.
+const _SHADOW: float = 16.0
 
 ## The known facts that the fact pickers offer, as flag names. Set it before [method edit].
 var facts: PackedStringArray = []
@@ -78,10 +80,11 @@ func edit(when: Condition) -> void:
 func condition() -> Condition:
 	var when := Condition.new()
 	for row: Node in _rows.get_children():
-		var fact := (row.get_child(0) as StoryFactPicker).fact
+		var line := row.get_child(0)
+		var fact := (line.get_child(0) as StoryFactPicker).fact
 		if fact == &"":
 			continue
-		if (row.get_child(1) as OptionButton).selected == 1:
+		if (line.get_child(1) as OptionButton).selected == 1:
 			when.not_flags.append(fact)
 		else:
 			when.need_flags.append(fact)
@@ -107,47 +110,96 @@ static func describe(when: Condition) -> String:
 	return ", ".join(parts) if not parts.is_empty() else "always"
 
 
-## Opens [param editor] (a condition or "remembers" editor) in a popup under [param near], titled
-## [param title]; calls [param closed] once the writer closes it, by Done or by clicking outside.
-static func popup(near: Control, title: String, editor: Control, closed: Callable) -> void:
+## Opens [param editor] (a condition or "remembers" editor) in a card titled [param title], with Done
+## at its bottom right; calls [param closed] once the writer closes it, by Done or by clicking
+## outside. The card goes below [param avoid] (the box that it edits, in canvas coordinates; empty
+## for [param near]'s own rect), or beside or above it, wherever it fits inside the view.
+static func popup(near: Control, title: String, editor: Control, closed: Callable, avoid: Rect2 = Rect2()) -> void:
 	var panel := PopupPanel.new()
+	panel.transparent_bg = true
+	panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	var room := MarginContainer.new()  # the window's edge around the card, for its shadow
+	for side: String in ["left", "top", "right", "bottom"]:
+		room.add_theme_constant_override("margin_" + side, _SHADOW)
+	panel.add_child(room)
+	var card := PanelContainer.new()
+	var look := StyleBoxFlat.new()
+	look.bg_color = LabUI.CARD
+	look.border_color = LabUI.ACCENT.darkened(0.25)
+	look.set_border_width_all(1)
+	look.set_corner_radius_all(10)
+	look.set_content_margin_all(14)
+	look.shadow_color = Color(0, 0, 0, 0.55)
+	look.shadow_size = 12
+	look.shadow_offset = Vector2(0, 4)
+	card.add_theme_stylebox_override("panel", look)
+	room.add_child(card)
 	var box := VBoxContainer.new()
-	box.custom_minimum_size.x = 380
-	box.add_theme_constant_override("separation", 8)
-	panel.add_child(box)
-	var head := Label.new()
-	head.text = title
-	box.add_child(head)
+	box.custom_minimum_size.x = 400
+	box.add_theme_constant_override("separation", 10)
+	card.add_child(box)
+	box.add_child(LabUI.label(title, 16))
 	box.add_child(editor)
-	var done := Button.new()
-	done.text = "Done"
-	done.size_flags_horizontal = Control.SIZE_SHRINK_END
-	done.pressed.connect(panel.hide)
-	box.add_child(done)
+	var foot := HBoxContainer.new()
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	foot.add_child(spacer)
+	var done := LabUI.button("Done", panel.hide, &"AccentButton")
+	done.custom_minimum_size.x = 90
+	foot.add_child(done)
+	box.add_child(foot)
 	near.add_child(panel)
 	panel.popup_hide.connect(func() -> void:
 		closed.call()
 		panel.queue_free())
-	var at := near.get_global_transform_with_canvas() * Vector2(0, near.size.y)
-	panel.popup(Rect2i(Vector2i(at), Vector2i.ZERO))
+	var around := avoid if avoid.has_area() else near.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, near.size)
+	var bounds := near.get_viewport().get_visible_rect()
+	panel.popup(_spot_for(around, room.get_combined_minimum_size(), bounds))
+	room.minimum_size_changed.connect(func() -> void:
+		if panel.visible:
+			var spot := _spot_for(around, room.get_combined_minimum_size(), bounds)
+			panel.position = spot.position
+			panel.size = spot.size)
+
+
+# Where a window of [param wanted] size goes: below [param around], else to its right, its left
+# or above it, the first that fits in [param bounds]; else below, pushed inside.
+static func _spot_for(around: Rect2, wanted: Vector2, bounds: Rect2) -> Rect2i:
+	var gap := 6.0 - _SHADOW
+	var tries: Array[Vector2] = [
+		Vector2(around.position.x - _SHADOW, around.end.y + gap),
+		Vector2(around.end.x + gap, around.position.y - _SHADOW),
+		Vector2(around.position.x - gap - wanted.x, around.position.y - _SHADOW),
+		Vector2(around.position.x - _SHADOW, around.position.y - gap - wanted.y),
+	]
+	for at: Vector2 in tries:
+		if bounds.encloses(Rect2(at, wanted)):
+			return Rect2i(Vector2i(at), Vector2i(wanted))
+	var pushed := tries[0].clamp(bounds.position, (bounds.end - wanted).max(bounds.position))
+	return Rect2i(Vector2i(pushed), Vector2i(wanted))
 
 
 func _add_row(flag: StringName, negated: bool) -> StoryFactPicker:
-	var row := HBoxContainer.new()
+	var row := VBoxContainer.new()
+	var line := HBoxContainer.new()
+	row.add_child(line)
+	var host := VBoxContainer.new()
+	host.hide()
 	var picker := StoryFactPicker.new()
 	picker.facts = facts
+	picker.list_host = host
 	picker.fact = flag
 	picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	picker.custom_minimum_size.x = 160
 	picker.picked.connect(func(_fact: StringName) -> void: changed.emit(condition()))
-	row.add_child(picker)
+	line.add_child(picker)
 	var is_true := OptionButton.new()
 	for words: String in _IS:
 		is_true.add_item(words)
 	is_true.select(1 if negated else 0)
 	is_true.tooltip_text = "Whether the fact must be true or must not be"
 	is_true.item_selected.connect(func(_index: int) -> void: changed.emit(condition()))
-	row.add_child(is_true)
+	line.add_child(is_true)
 	var cut := Button.new()
 	cut.text = "x"
 	cut.flat = true
@@ -156,7 +208,8 @@ func _add_row(flag: StringName, negated: bool) -> StoryFactPicker:
 		_rows.remove_child(row)
 		row.queue_free()
 		changed.emit(condition()))
-	row.add_child(cut)
+	line.add_child(cut)
+	row.add_child(host)
 	_rows.add_child(row)
 	return picker
 

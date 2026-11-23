@@ -139,7 +139,7 @@ func _set_effect(index: int) -> void:
 func _edit_when() -> void:
 	var editor := StoryConditionEditor.make(facts)
 	editor.edit(_conversation.when)
-	StoryConditionEditor.popup(_when, "This conversation plays only when:", editor, func() -> void:
+	StoryConditionEditor.popup(_when, "This conversation plays only when...", editor, func() -> void:
 		var when := editor.condition()
 		var before := StoryFormat.write_condition(_conversation.when) if _conversation.when != null else ""
 		if (StoryFormat.write_condition(when) if when != null else "") == before:

@@ -175,6 +175,9 @@ func _check_in_place(questions: Reply) -> void:
 	var chip := _find(graph.box_of(questions.choices[2]), func(node: Node) -> bool: return node is Button and node.get(&"text") == "only if skater cambion") as Button
 	chip.pressed.emit()
 	var editor := _find(chip, func(node: Node) -> bool: return node is StoryConditionEditor) as StoryConditionEditor
+	var card := _find(chip, func(node: Node) -> bool: return node is PopupPanel) as PopupPanel
+	var box_rect := graph.box_of(questions.choices[2]).get_global_rect()
+	check("the editor's card stays inside the view and off the box it edits", [graph.get_viewport().get_visible_rect().encloses(Rect2(card.position, card.size)), Rect2(card.position, card.size).grow(-16.0).intersects(box_rect)], [true, false])
 	check("the chip opens the condition editor with its condition", StoryFormat.write_condition(editor.condition()) if editor != null else null, "skater_cambion")
 	var is_true := _find(editor, func(node: Node) -> bool: return node is OptionButton and (node as OptionButton).get_item_text(0) == "is true") as OptionButton
 	is_true.select(1)
