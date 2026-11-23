@@ -7,7 +7,8 @@ extends SceneTree
 ##
 ##   "$GODOT" --path . --resolution 1920x1080 -s res://dev/perf_probe.gd -- [day] [capped] [case ...] [+knob ...]
 ##
-## The cases: main, screen, db, lab (the Story Lab, idle) and lab_edit (typing in it). A knob turns a
+## The cases: main, screen, db, lab (the Story Lab, idle), lab_edit (typing in it), and any other view
+## by its marker's name, such as Left. A knob turns a
 ## part off before measuring, to see what it costs; see _turn().
 
 const MAIN := "res://main.tscn"
@@ -78,6 +79,8 @@ func _case(case_name: String, capped: bool) -> void:
 			game.go_to_view(&"Screen")
 		"db":
 			game.go_to_view(&"CompuFunDB")
+		"Up", "Storage", "Left", "Right", "Trash", "Note", "Workview", "EndUp", "End":
+			game.go_to_view(StringName(case_name))
 		"lab", "lab_edit":
 			game.go_to_view(&"Main")
 			_open_lab()
