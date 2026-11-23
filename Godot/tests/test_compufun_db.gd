@@ -97,6 +97,16 @@ func _check_screen() -> void:
 	check("a wrong mark hides it", _texts(db, FIXES), [])
 	game.mark_check(others[0], false)
 
+	db.set("hit_seconds", Vector2(0.2, 0.2))
+	game.mark_check("CPU fan is clean", false)
+	game.mark_check("CPU fan is clean", true)
+	check("a fix that shows again is read in, not there at once", _texts(db, FIXES), [])
+	await create_timer(0.3).timeout
+	check("one entry at a time", _texts(db, FIXES).size(), 1)
+	db.set("hit_seconds", Vector2.ZERO)
+	game.mark_check("CPU fan is clean", false)
+	game.mark_check("CPU fan is clean", true)
+
 	var printer: Node3D = load("res://props/printer.tscn").instantiate()
 	printer.add_to_group(&"printer")
 	root.add_child(printer)

@@ -2,7 +2,8 @@ class_name CompuFunDB
 extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
 ## SEARCH (the player types words and presses Enter; the work computer is slow, so the symptoms of
-## every Problem that hold them all come in one at a time, each after a seek of the hard drive),
+## every Problem that hold them all come in one at a time, each after a seek of the hard drive, and
+## so do the entries of the other two columns whenever what they show changes),
 ## what to check (the checks of every problem with the symptom picked, among a few checks of
 ## other problems in the same place: the Game.db_search; the player marks those that fail) and what to
 ## fix (the repair steps of each of those problems whose checks are all marked, while no other is,
@@ -105,6 +106,11 @@ var _typed: String = ""
 var _searched: String = ""
 var _hits: PackedStringArray = []
 var _searching: bool = false
+## How many entries of each column the slow computer has read in so far, for CHECK and FIX, and what
+## it read them for (the symptom and the checks offered; the problems whose fix shows): a change
+## reads the column in again, one entry at a time.
+var _loaded: Array[int] = [0, 0, 0]
+var _loaded_key: Array[String] = ["", "", ""]
 ## Counts up with each search, so that a search that a new one replaced stops.
 var _search_count: int = 0
 var _mouse_cell: Vector2i = Vector2i(-1, -1)
@@ -130,6 +136,7 @@ func _ready() -> void:
 	Game.changed.connect(queue_redraw)
 	Game.changed.connect(_check_day)
 	Game.changed.connect(_reconcile)
+	Game.changed.connect(_reload)
 
 
 func _on_mouse_exited() -> void:
@@ -175,8 +182,14 @@ func _category_rank(category: String) -> int:
 	return rank if rank >= 0 else check_categories.size()
 
 
-# An entry of a column: its text, its check box (null: none) and whether the player can pick it.
+# The entries of a column that show: CHECK and FIX only as far as the computer has read them in.
 func _entries(column: Column) -> Array[Dictionary]:
+	var entries := _all_entries(column)
+	return entries if column == Column.SEARCH else entries.slice(0, _loaded[column])
+
+
+# An entry of a column: its text, its check box (null: none) and whether the player can pick it.
+func _all_entries(column: Column) -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
 	var search := Game.db_search
 	match column:
@@ -524,12 +537,13 @@ func _run_search() -> void:
 	_type(_typed)
 	_searched = _typed
 	var count := _search_count
+	var still := func() -> bool: return count == _search_count
 	_searching = true
 	var found := _found(_typed)
-	if not await _read(randf_range(search_seconds.x, search_seconds.y), count):
+	if not await _read(randf_range(search_seconds.x, search_seconds.y), still):
 		return
 	for symptom: String in found:
-		if not await _read(randf_range(hit_seconds.x, hit_seconds.y), count):
+		if not await _read(randf_range(hit_seconds.x, hit_seconds.y), still):
 			return
 		_hits.append(symptom)
 		queue_redraw()
@@ -537,8 +551,39 @@ func _run_search() -> void:
 	queue_redraw()
 
 
-# The hard drive seeks for [param seconds]; false when another search or typing took over meanwhile.
-func _read(seconds: float, count: int) -> bool:
+# Reads CHECK and FIX in again, one entry at a time, when what they show changed: a new search, or
+# marks that show another fix.
+func _reload() -> void:
+	var search := Game.db_search
+	var keys := ["", "", ""]
+	if search != null:
+		keys[Column.CHECKS] = search.query + "\n" + "\n".join(search.offered)
+		keys[Column.FIXES] = ",".join(_matches().map(func(p: Problem) -> String: return p.short_name))
+	for column: Column in [Column.CHECKS, Column.FIXES]:
+		if keys[column] != _loaded_key[column]:
+			_loaded_key[column] = keys[column]
+			_loaded[column] = 0
+			if keys[column] != "":
+				_load(column, keys[column])
+
+
+func _load(column: Column, key: String) -> void:
+	var still := func() -> bool: return _loaded_key[column] == key
+	while still.call() and _loaded[column] < _all_entries(column).size():
+		if not await _read(randf_range(hit_seconds.x, hit_seconds.y), still):
+			return
+		_loaded[column] += 1
+		queue_redraw()
+
+
+# True while the computer reads CHECK or FIX in.
+func _loading() -> bool:
+	return [Column.CHECKS, Column.FIXES].any(func(c: Column) -> bool: return _loaded[c] < _all_entries(c).size())
+
+
+# The hard drive seeks for [param seconds]; false when [param still] stops holding meanwhile (another
+# search, typing, or the column now shows something else).
+func _read(seconds: float, still: Callable) -> bool:
 	var drive := _drive() if hdd_seek != null else null
 	while seconds > 0.0:
 		if drive != null:
@@ -546,7 +591,7 @@ func _read(seconds: float, count: int) -> bool:
 		var wait := minf(seconds, randf_range(seek_seconds.x, seek_seconds.y))
 		seconds -= wait
 		await _pause(wait)
-		if count != _search_count or not is_inside_tree():
+		if not still.call() or not is_inside_tree():
 			return false
 	return true
 
@@ -559,7 +604,7 @@ func _print() -> void:
 
 # Prints the search's FIX steps alone on the shop's Printer; nothing while it has none.
 func _print_fix() -> void:
-	if not _entries(Column.FIXES).is_empty():
+	if not _all_entries(Column.FIXES).is_empty():
 		_print_page(_page("FIX", [Column.FIXES]))
 
 
@@ -579,7 +624,7 @@ func _page(title: String = "CHECKLIST", columns: Array[Column] = [Column.CHECKS,
 	var page := PackedStringArray(["CompuFunDB 1.0  %s  %s" % [title, _date_text()], ""])
 	page.append_array(_wrap("SEARCH: " + Game.db_search.query, _spans[Column.CHECKS].y - _spans[Column.CHECKS].x + 1))
 	for column: Column in columns:
-		var lines := _lines(column, _entries(column))
+		var lines := _lines(column, _all_entries(column))
 		if lines.is_empty():
 			continue
 		page.append_array(PackedStringArray(["", HEADERS[column]]))
@@ -740,7 +785,7 @@ func _paint() -> void:
 	var buttons := _buttons()
 	for text: String in buttons:
 		_put(_button_x(buttons[text], text), FRAME_ROWS[-1], text, bright_color, bar_color)
-	var status := _status if not _status.is_empty() else ("Searching..." if _searching else HEADERS[_column])
+	var status := _status if not _status.is_empty() else ("Searching..." if _searching else ("Reading..." if _loading() else HEADERS[_column]))
 	_bar(28, " %s" % status, count, bar_color)
 	_put(1, 29, "Type Search  \u2191\u2193 Move  \u2190\u2192 Column  Enter Pick  P Print  F Print fix  Esc Leave", text_color)
 
