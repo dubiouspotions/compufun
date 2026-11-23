@@ -75,6 +75,7 @@ func open_file(opened: Win95File, _state: ComputerState) -> void:
 		var box: Node = (get_parent() as Win95Desktop).open(_MESSAGE, false)
 		box.closed.connect(box.queue_free)
 		box.show_message("Media Player", "Cannot play %s. The file is not a valid MIDI file, or it is damaged." % opened.name)
+		box.belong_to(self)
 	else:
 		play()
 	_show_state()

@@ -74,6 +74,7 @@ func _settle(then: Callable) -> void:
 		if button != "Cancel":
 			then.call())
 	box.ask(_app_title, _unsaved_question(_state.path_of(file)))
+	box.belong_to(self)
 
 
 func _retitle() -> void:

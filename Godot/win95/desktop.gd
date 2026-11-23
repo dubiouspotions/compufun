@@ -75,6 +75,9 @@ func activate(window: Control) -> void:
 	if not window.visible:
 		window.call(&"restore")
 	move_child(window, -1)
+	var box: Variant = window.get(&"blocked_by")
+	if is_instance_valid(box) and (box as Control).visible:
+		move_child(box, -1)  # a window that waits on a message box brings the box with it
 	_desktop_active = false
 	_changed()
 

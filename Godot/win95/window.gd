@@ -32,6 +32,10 @@ var is_minimized := false
 ## True while it fills the desktop above the taskbar.
 var is_maximized := false
 
+## The message box that this window waits on (see message_box.gd belong_to), or null. While it is
+## open, a press on the window goes no further and brings the box back.
+var blocked_by: Control
+
 var _outline: ColorRect
 var _drag_offset := Vector2.ZERO
 var _resizing := 0  # the edges that the drag moves
@@ -65,6 +69,10 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	var button := event as InputEventMouseButton
 	if button == null or not button.pressed or not is_visible_in_tree():
+		return
+	if is_instance_valid(blocked_by) and blocked_by.visible and get_global_rect().has_point(button.position) and not _covered_at(button.position):
+		get_viewport().set_input_as_handled()
+		blocked_by.call(&"bring_back")
 		return
 	# The menu's click catcher covers the icon, so the icon's second click arrives here.
 	if _menu != null and _menu.visible and button.double_click and button.button_index == MOUSE_BUTTON_LEFT and %TitleBar.is_on_icon(button.position):
