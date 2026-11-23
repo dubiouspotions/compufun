@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://wmkeym24uu5d"
-path="res://.godot/imported/liberation_serif_regular.ttf-a21d6f0231e1be5e516425f3e4b7948a.fontdata"
+uid="uid://cooyw14kumgd3"
+path="res://.godot/imported/liberation_sans_bold.ttf-edb8cbfdae837efa0c85012e90fd3b54.fontdata"
 
 [deps]
 
-source_file="res://win95/theme/fonts/liberation_serif_regular.ttf"
-dest_files=["res://.godot/imported/liberation_serif_regular.ttf-a21d6f0231e1be5e516425f3e4b7948a.fontdata"]
+source_file="res://win95/theme/fonts/liberation_sans_bold.ttf"
+dest_files=["res://.godot/imported/liberation_sans_bold.ttf-edb8cbfdae837efa0c85012e90fd3b54.fontdata"]
 
 [params]
 

@@ -1,21 +1,22 @@
 extends Saver
-## The Scrolling Marquee screensaver: a line of text scrolls from the right edge to the left across a
-## coloured screen, then starts again. The defaults are Win95's own: "Your text goes here." in magenta
-## Times New Roman (Liberation Serif here) at 24 points, on navy, centred.
+## The Scrolling Marquee screensaver: a line of text scrolls from the right edge to the left, then
+## starts again at a random height. The defaults are Win95's own: "Where do you want to go today?" in
+## red Arial Bold (Liberation Sans Bold here) at 72 points, on black, fast.
 ## Any key, click or mouse move ends it.
 
 ## The text that scrolls.
-var text: String = "Your text goes here."
-var text_colour: Color = Color8(255, 0, 255)
-var background: Color = Color8(0, 0, 128)
-## The text's size in pixels: 24 points at Win95's 96 dots per inch.
-var font_size: int = 32
-## How fast the text moves to the left, in pixels per second.
-var speed: float = 110.0
-## True scrolls each pass at a random height; false keeps it on the screen's middle.
-var random_position: bool = false
+var text: String = "Where do you want to go today?"
+var text_colour: Color = Color8(255, 0, 0)
+var background: Color = Color8(0, 0, 0)
+## The text's size in pixels: 72 points at Win95's 96 dots per inch.
+var font_size: int = 96
+## How fast the text moves to the left, in pixels per second; Win95's fastest, which is its default.
+var speed: float = 370.0
+## True scrolls each pass at a random height, as Win95 does by default; false keeps it on the
+## screen's middle.
+var random_position: bool = true
 
-const _FONT := preload("res://win95/theme/fonts/liberation_serif_regular.ttf")
+const _FONT := preload("res://win95/theme/fonts/liberation_sans_bold.ttf")
 
 ## The left end of the text, in pixels from the screen's left edge.
 var _x: float = INF

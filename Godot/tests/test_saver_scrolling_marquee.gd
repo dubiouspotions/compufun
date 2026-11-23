@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
 ## Scrolling Marquee: Win95's default text enters at the right edge, scrolls left, and starts again
-## once it has left. A key ends it.
+## from the right once it has left. A click ends it.
 
 
 func run() -> void:
@@ -11,15 +11,23 @@ func run() -> void:
 	saver.set_anchors_preset(Control.PRESET_FULL_RECT)
 	screen.add_child(saver)
 	await process_frame
-	check("Win95's default text", saver.get(&"text"), "Your text goes here.")
+	check("Win95's default text", saver.get(&"text"), "Where do you want to go today?")
 	check("it enters at the right edge", saver.get(&"_x"), 640.0)
 	var baseline: float = saver.get(&"_baseline")
-	check("centred: the baseline is near the middle", absf(baseline - 240.0) < 32.0, true)
+	check("the line is on the screen", baseline > 0.0 and baseline <= 480.0, true)
 	await create_timer(1.0).timeout
 	var moved: float = 640.0 - saver.get(&"_x")
 	check("it scrolls left at its speed", absf(moved - saver.get(&"speed")) < 10.0, true)
-	await create_timer(10.0).timeout
-	check("once it has left, it starts again from the right", saver.get(&"_x") > 640.0 - saver.get(&"speed") * 4.0, true)
+	var last: float = saver.get(&"_x")
+	var restarted_at := INF
+	for frame: int in FPS * 10:
+		await process_frame
+		var x: float = saver.get(&"_x")
+		if x > last:
+			restarted_at = x
+			break
+		last = x
+	check("once it has left, it starts again from the right edge", restarted_at, 640.0)
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
