@@ -1,8 +1,7 @@
 post-it: Wants a good-looking screensaver
 cause: No screensaver set
 symptoms:
-	Something stopped working
-	Settings changed
+	Wants a screensaver
 checks:
 	yes: No screensaver set
 		shows: Display Properties, Screen Saver: (None)

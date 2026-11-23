@@ -1,10 +1,8 @@
 post-it: Blue screen of death
 cause: Failing hard drive
 symptoms:
-	Stops before Windows starts
-	Error text at startup
-	Restarts by itself
 	Blue screen
+	Restarts by itself
 	Slow computer
 checks:
 	yes: Bluescreen after the desktop appears

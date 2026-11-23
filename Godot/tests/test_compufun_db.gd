@@ -55,22 +55,22 @@ func _check_screen() -> void:
 	await process_frame
 	check("nothing listed before typing", _texts(db, SEARCH), [])
 	check("right goes nowhere without a search", [_press(db, KEY_RIGHT), db.get("_column")], [true, SEARCH])
-	for letter: String in "STart":
+	for letter: String in "PICture":
 		_type(db, letter)
 	check("typing finds nothing yet", _texts(db, SEARCH), [])
 	_press(db, KEY_ENTER)
 	check("Enter searches, slowly", [db.get("_searching"), _texts(db, SEARCH)], [true, []])
 	await create_timer(0.5).timeout  # the read, then the first hit
 	check("the first symptom found shows alone", _texts(db, SEARCH).size(), 1)
-	await create_timer(0.6).timeout
-	check("then the rest, whatever the case", [_texts(db, SEARCH), db.get("_searching")], [["Stops before Windows starts", "Error text at startup", "Restarts by itself", "Programs won't start"], false])
+	await create_timer(0.4).timeout
+	check("then the rest, whatever the case", [_texts(db, SEARCH), db.get("_searching")], [["Garbled picture", "No picture at all", "Can't open pictures"], false])
 	db.set("search_seconds", Vector2.ZERO)
 	db.set("hit_seconds", Vector2.ZERO)
 	_press(db, KEY_BACKSPACE)
-	check("backspace erases", db.get("_typed"), "STar")
+	check("backspace erases", db.get("_typed"), "PICtur")
 	_press(db, KEY_P)
-	check("P types in SEARCH", db.get("_typed"), "STarp")
-	for i: int in 5:
+	check("P types in SEARCH", db.get("_typed"), "PICturp")
+	for i: int in 7:
 		_press(db, KEY_BACKSPACE)
 	for letter: String in "restarts by":
 		_type(db, letter)

@@ -1,8 +1,8 @@
 post-it: Can't open images
 cause: Programs lost their .EXE
 symptoms:
+	Can't open pictures
 	Programs won't start
-	Something stopped working
 checks:
 	yes: Programs lost their .EXE
 		shows: in C:\WINDOWS: NOTEPAD, WORDPAD, PBRUSH, CALC and others

@@ -1,8 +1,8 @@
 post-it: Computer doesn't start
 cause: Parts in the wrong places
 symptoms:
-	Stops before Windows starts
 	No picture at all
+	Stops before Windows starts
 checks:
 	yes: Fans run but no picture
 	yes: CPU socket is empty

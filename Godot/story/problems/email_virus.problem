@@ -1,9 +1,7 @@
 post-it: CD-tray keeps on opening and closing
 cause: Virus started from StartUp
 symptoms:
-	Slow computer
-	Acts strangely
-	Programs won't start
+	CD tray opens by itself
 checks:
 	yes: CD tray opens and closes by itself
 		shows: every few seconds while Windows runs

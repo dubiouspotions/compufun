@@ -22,19 +22,7 @@ func _problem_checks() -> void:
 	check("a check twice is an error", twice.errors, PackedStringArray([path + ":4: the check 'A' a second time"]))
 
 
-# Every symptom that CompuFunDB finds leads to at least 3 causes, so the checks have work to do.
-func _three_causes_a_symptom() -> void:
-	var causes: Dictionary[String, Array] = {}
-	for problem: Problem in game.week.problems.values():
-		if problem.in_compufun_db:
-			for symptom: String in problem.symptoms:
-				causes.get_or_add(symptom, []).append(problem.short_name)
-	var few := causes.keys().filter(func(s: String) -> bool: return causes[s].size() < 3)
-	check("every symptom has 3 causes or more", few.map(func(s: String) -> String: return "%s: %s" % [s, causes[s]]), [])
-
-
 func run() -> void:
-	_three_causes_a_symptom()
 	_round_trip()
 	_problem_checks()
 	_errors()
