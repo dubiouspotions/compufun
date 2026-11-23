@@ -82,6 +82,15 @@ func _ready() -> void:
 				_content.connect(changes, _sync, CONNECT_DEFERRED)
 	Game.changed.connect(_sync)
 	_sync()
+	get_tree().node_added.connect(_keep_system_keyboard_away)
+	for child: Node in _buffer.find_children("*", "", true, false):
+		_keep_system_keyboard_away(child)
+
+
+# The touch keyboard types here; the OS keyboard would cover the screen with no way to dismiss it.
+func _keep_system_keyboard_away(node: Node) -> void:
+	if (node is LineEdit or node is TextEdit) and _buffer.is_ancestor_of(node):
+		node.set(&"virtual_keyboard_enabled", false)
 
 
 func _exit_tree() -> void:
