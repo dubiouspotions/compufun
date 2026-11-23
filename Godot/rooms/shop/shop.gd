@@ -16,6 +16,9 @@ signal phone_requested
 signal degauss_requested
 ## The mouse came onto the back strip ([param on] true) or left it (see [member back_strip_height]).
 signal back_strip_hovered(on: bool)
+## A finger swiped across the world, and lifted: [param direction] is the way that it moved,
+## Vector2i.LEFT, RIGHT, UP or DOWN. Never for a mouse, nor while the player drags the plug or a part.
+signal swiped(direction: Vector2i)
 
 ## The close-up of the computer in focus.
 const WORKVIEW: StringName = &"Workview"
@@ -34,6 +37,15 @@ const WORKVIEW: StringName = &"Workview"
 ## its release, for the release to drop the plug there. A shorter move is a click: the plug stays in
 ## the hand and follows the mouse until the next click drops it. A turn to another view lays it down.
 @export var plug_drag_threshold: float = 3.0
+## How far a finger may move between touching and lifting and still tap, as a share of the view's
+## height (TapGate). Further, and it clicks nothing.
+@export_range(0.0, 0.2) var tap_slop: float = 0.02
+## How far a finger must move to swipe, as a share of the view's width.
+@export_range(0.0, 1.0) var swipe_distance: float = 0.1
+## The longest that a swipe takes from touch to lift, in seconds; a slower drag doesn't swipe.
+@export var swipe_max_seconds: float = 0.6
+## How many times further than across its axis a finger must move along it to swipe that way.
+@export var swipe_axis_ratio: float = 2.0
 ## How far in front of the Workview camera the post-it comes when the player clicks it, in metres.
 @export var post_it_read_distance: float = 0.2
 ## The seconds that the post-it takes to come up close, and to go back onto the computer.
@@ -100,6 +112,8 @@ var _heard_open: Array[Job] = []
 var _mouse := Vector2(-1.0, -1.0)  # in pixels of the world buffer
 var _press_at := Vector2(-1.0, -1.0)  # where the left button last went down, in pixels of the world buffer
 var _grab_held: bool = false  # from the press that grabbed the plug until its release
+var _swipe_from := Vector2.INF  # where the finger that may swipe touched, in pixels of the world buffer; INF while none
+var _swipe_seconds: float = 0.0  # since that touch
 var _on_back_strip: bool = false
 var _over_post_it: bool = false
 var _read_post_it: PostIt3D  # the post-it up close or on its way there or back, or null
@@ -272,6 +286,7 @@ func _monitor(screen: ViewMarker.Screen) -> CrtMonitor:
 
 
 func _input(event: InputEvent) -> void:
+	TapGate.track(event, tap_slop * get_viewport().get_visible_rect().size.y)
 	var mouse := event as InputEventMouse
 	if mouse != null:
 		_mouse = mouse.position
@@ -280,7 +295,8 @@ func _input(event: InputEvent) -> void:
 		_press_at = button.position
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_swipe_seconds += delta
 	var over := _post_it_at(_mouse)
 	if over != _over_post_it:
 		_over_post_it = over
@@ -297,19 +313,22 @@ func _process(_delta: float) -> void:
 
 
 # A click on the back strip goes back. The plug in the hand follows the mouse. The release that ends
-# a drag, or the next click, plugs it into the computer under the mouse, or lays it down.
+# a drag, or the next click, plugs it into the computer under the mouse, or lays it down. Here, before
+# physics picking: a finger's swipe that started on a hotspot doesn't reach it.
 func _unhandled_input(event: InputEvent) -> void:
-	var press := event as InputEventMouseButton
-	if press != null and press.pressed and press.button_index == MOUSE_BUTTON_LEFT and _post_it_at(press.position):
+	if _swiped(event):
+		get_viewport().set_input_as_handled()
+		return
+	var click: InputEventMouseButton = event as InputEventMouseButton if TapGate.clicks(event) else null
+	if click != null and _post_it_at(click.position):
 		get_viewport().set_input_as_handled()
 		_read(true)
 		return
-	if press != null and press.pressed and press.button_index == MOUSE_BUTTON_LEFT and _back_strip_at(press.position):
+	if click != null and _back_strip_at(click.position):
 		get_viewport().set_input_as_handled()
 		view_requested.emit(view_marker(Game.view).back)
 		return
-	if press != null and press.pressed and press.button_index == MOUSE_BUTTON_LEFT and Game.focus != null \
-			and Game.can_stand_up(Game.focus) and _empty_workview_at(press.position):
+	if click != null and Game.focus != null and Game.can_stand_up(Game.focus) and _empty_workview_at(click.position):
 		get_viewport().set_input_as_handled()  # the standing case must not take this click in picking
 		Game.stand_up(Game.focus)  # as a click on the screwdriver's outline does
 		return
@@ -325,6 +344,34 @@ func _unhandled_input(event: InputEvent) -> void:
 			_end_grab(button.position)
 		return
 	_carry_plug(mouse.position)
+
+
+# Follows a finger on the world from its touch; true when [param event] is the lift that ends a swipe,
+# after [signal swiped] fired.
+func _swiped(event: InputEvent) -> bool:
+	var button := event as InputEventMouseButton
+	if button == null or button.button_index != MOUSE_BUTTON_LEFT or not TouchInput.is_touch(button):
+		return false
+	if button.pressed:
+		_swipe_from = Vector2.INF if _bench.dragging or _hand.is_dragging() else button.position
+		_swipe_seconds = 0.0
+		return false
+	var from := _swipe_from
+	_swipe_from = Vector2.INF
+	if from == Vector2.INF or _bench.dragging or _hand.is_dragging() or _swipe_seconds > swipe_max_seconds:
+		return false
+	var moved := button.position - from
+	var along := moved.abs()
+	var reach := swipe_distance * get_viewport().get_visible_rect().size.x
+	var direction := Vector2i.ZERO
+	if along.x >= reach and along.x >= along.y * swipe_axis_ratio:
+		direction = Vector2i.RIGHT if moved.x > 0.0 else Vector2i.LEFT
+	elif along.y >= reach and along.y >= along.x * swipe_axis_ratio:
+		direction = Vector2i.DOWN if moved.y > 0.0 else Vector2i.UP
+	if direction == Vector2i.ZERO:
+		return false
+	swiped.emit(direction)
+	return true
 
 
 # True when [param at], in pixels of the world buffer, is on the back strip with nothing clickable

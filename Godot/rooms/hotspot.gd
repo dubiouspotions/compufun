@@ -3,7 +3,8 @@ extends Area3D
 ## A thing that the player clicks. Every hotspot is this scene (rooms/hotspot.tscn); the room
 ## decides what a click does from [member action]. The mouse cursor turns into a hand over it.
 
-## The player clicked the hotspot with the left mouse button.
+## The player clicked the hotspot: with the left mouse button's press, or with a finger's tap, on the
+## lift (TapGate).
 signal clicked(hotspot: Hotspot)
 
 enum Action { GO_TO_VIEW, CALL_CUSTOMER, TAKE_PART, TALK_TO_VISITOR }
@@ -27,6 +28,9 @@ const DROP_TARGETS: StringName = &"hotspot_drop_targets"
 ## The player can drag the part in the hand here: dropping it acts as a click (see Hand). Set before
 ## the hotspot enters the tree.
 @export var takes_drop: bool = false
+## The player drags from here (the VGA plug): a finger clicks on the touch, as the mouse does on the
+## press, rather than on the lift.
+var drag_source: bool = false
 
 @onready var _shape: CollisionShape3D = %Shape
 
@@ -95,6 +99,5 @@ func box_ray_distance(from: Vector3, dir: Vector3) -> float:
 
 
 func _on_input_event(_camera: Node, event: InputEvent, _position: Vector3, _normal: Vector3, _shape_index: int) -> void:
-	var mouse := event as InputEventMouseButton
-	if mouse != null and mouse.pressed and mouse.button_index == MOUSE_BUTTON_LEFT:
+	if TapGate.presses(event) if drag_source else TapGate.clicks(event):
 		clicked.emit(self)
