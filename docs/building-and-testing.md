@@ -152,7 +152,7 @@ none. `outline` prints errand files in their written layout.
 The story check reads the files; the **week bot** (`tests/test_week_bot.gd`) plays them. It runs
 `main.tscn` from day 1 to the ending's credits in real game time, with a player's clicks and keys
 where the game has them: it clicks the open sign, reads each customer's lines and clicks their
-choices (at random, from a seed), opens CompuFunDB, marks the symptoms, prints the FIX page with F and
+choices (at random, from a seed), opens CompuFunDB, searches for a symptom, marks the rest, prints the FIX page with F and
 takes it from the printer, repairs the computer (hardware with Game's part calls, software through
 the computer's own `ComputerState`: the volume, the eject button, Disk Defragmenter overnight, a
 property sheet, a rename, Display Properties, End Task and a delete), waits for the real boot to test it, clicks the phone

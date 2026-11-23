@@ -18,8 +18,7 @@ func run() -> void:
 	check("tick a step", [game.tick_printout(5, true), game.printout_ticks], [true, [3, 5]])
 	check("a line without a box takes no tick", [game.tick_printout(2, true), game.printout_ticks], [false, [3, 5]])
 	check("untick", [game.tick_printout(3, false), game.printout_ticks], [true, [5]])
-	var record_marks: Array = game.records.map(func(r: DbRecord) -> Array: return r.ticked_repairs)
-	check("ticks change no record", record_marks, [])
+	check("ticks change no search", game.db_search, null)
 
 	var saved: Dictionary = game.snapshot()
 	game.trash_printout()
@@ -236,14 +235,14 @@ func _check_print_fix() -> void:
 	root.add_child(db)
 	game.restore({"day": 1, "phase": "OPEN", "arrivals": 1, "jobs": [{"customer": "res://customers/skater_bro.tres", "problem": "dust_overheat", "slot": 0}]})
 	game.db_day = game.day_number
-	var record: DbRecord = game.enter_job(game.jobs[0], "Skater bro: Windows starts and turns off")
+	game.search_db("Computer overheating", ["Computer overheating", "Hangs and reboots at startup"])
 	await process_frame
+	db.set("_column", 1)  # CHECK: in SEARCH, F types
 	var key := InputEventKey.new()
 	key.keycode = KEY_F
 	key.pressed = true
 	check("no FIX steps, nothing to print", [db.call("_on_key", key), printer.get("_lines")], [true, PackedStringArray()])
-	game.mark_symptom(record, "Hangs and reboots at startup", true)
-	game.mark_symptom(record, "Customer mentions increased heat", true)
+	game.mark_symptom("Hangs and reboots at startup", true)
 	db.call("_on_key", key)
 	var page: PackedStringArray = printer.get("_lines")
 	check("F prints a FIX page", [page[0].begins_with("CompuFunDB 1.0  FIX  "), "FIX" in page, "CHECK" in page], [true, true, false])

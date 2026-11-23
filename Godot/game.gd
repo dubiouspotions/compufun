@@ -56,7 +56,7 @@ const PROBLEM_PATH: String = "res://problems/%s.tres"
 const ENDINGS_FOLDER: String = "res://endings/"
 ## Snapshot keys that the game no longer has, which [method restore] skips so that old F9 reports
 ## still restore: "stored" held the parts in the storage bin, which no longer takes parts.
-const RETIRED_KEYS: Array[String] = ["stored"]
+const RETIRED_KEYS: Array[String] = ["stored", "records"]
 ## The seconds that a computer runs without a fan on its CPU before it switches itself off; for the
 ## last ALARM_SECONDS of them ([method alarms]), the PC speaker beeps.
 const OVERHEAT_SECONDS: float = 8.0
@@ -118,8 +118,8 @@ var view: StringName = &"Main"
 var flags: Dictionary[StringName, int] = {}
 ## The conversations that have played, by [member Conversation.id], such as "0102/drop-off/1".
 var seen: Dictionary[String, bool] = {}
-## The records that the player made in CompuFunDB, oldest first. They last the whole game.
-var records: Array[DbRecord] = []
+## The player's search in CompuFunDB, until the next one; null before the first.
+var db_search: DbSearch = null
 ## The day on which CompuFunDB last started up (the work computer booted and the modem dialled
 ## up); 0 before its first start-up.
 var db_day: int = 0
@@ -1000,28 +1000,18 @@ func set_tested(job: Job) -> void:
 	changed.emit()
 
 
-## Makes the CompuFunDB record of [param job], with the [param text] that the character types up,
-## and returns it. Fails with an error unless the job is on the counter and has no record yet.
-func enter_job(job: Job, text: String) -> DbRecord:
-	if not _on_counter(job, "enter_job"):
+## Starts a new CompuFunDB search for the symptom [param query], which it marks, with the symptoms
+## [param offered] to look for (they must hold [param query]), and returns it.
+func search_db(query: String, offered: PackedStringArray) -> DbSearch:
+	if query not in offered:
+		push_error("Game.search_db: '%s' is not among the symptoms offered: %s" % [query, offered])
 		return null
-	if record_of(job) != null:
-		push_error("Game.enter_job: the job of %s has a record already" % _who(job.customer))
-		return null
-	var record := DbRecord.new()
-	record.text = text
-	record.job_order = job.order
-	records.append(record)
+	db_search = DbSearch.new()
+	db_search.query = query
+	db_search.offered.assign(offered)
+	db_search.marked_symptoms = [query]
 	changed.emit()
-	return record
-
-
-## The CompuFunDB record of [param job], or null when it has none.
-func record_of(job: Job) -> DbRecord:
-	for record: DbRecord in records:
-		if record.job_order == job.order:
-			return record
-	return null
+	return db_search
 
 
 ## CompuFunDB finished starting up today.
@@ -1030,21 +1020,24 @@ func start_db() -> void:
 	changed.emit()
 
 
-## Marks [param symptom] on [param record] (true), or clears it (false).
-func mark_symptom(record: DbRecord, symptom: String, marked: bool) -> void:
-	if _is_record(record, "mark_symptom"):
-		_set_in(record.marked_symptoms, symptom, marked)
+## Marks [param symptom] of the CompuFunDB search (true), or clears it (false).
+func mark_symptom(symptom: String, marked: bool) -> void:
+	if _searched("mark_symptom"):
+		if symptom not in db_search.offered:
+			push_error("Game.mark_symptom: '%s' is not offered in the search for '%s'" % [symptom, db_search.query])
+			return
+		_set_in(db_search.marked_symptoms, symptom, marked)
 
 
-## Ticks the repair step [param step] on [param record] (true), or unticks it (false).
-func tick_repair(record: DbRecord, step: String, ticked: bool) -> void:
-	if _is_record(record, "tick_repair"):
-		_set_in(record.ticked_repairs, step, ticked)
+## Ticks the repair step [param step] of the CompuFunDB search (true), or unticks it (false).
+func tick_repair(step: String, ticked: bool) -> void:
+	if _searched("tick_repair"):
+		_set_in(db_search.ticked_repairs, step, ticked)
 
 
-func _is_record(record: DbRecord, what: String) -> bool:
-	if record == null or record not in records:
-		push_error("Game.%s: the record is not in CompuFunDB: %s" % [what, record])
+func _searched(what: String) -> bool:
+	if db_search == null:
+		push_error("Game.%s: CompuFunDB has no search" % what)
 		return false
 	return true
 
@@ -1269,7 +1262,7 @@ func snapshot() -> Dictionary:
 		"conversation": String(conversation.id) if conversation != null else "",
 		"flags": flags.duplicate(),
 		"seen": seen.keys(),
-		"records": records.map(func(r: DbRecord) -> Dictionary: return r.snapshot()),
+		"db_search": db_search.snapshot() if db_search != null else {},
 		"db_day": db_day,
 	}
 
@@ -1277,7 +1270,7 @@ func snapshot() -> Dictionary:
 ## Sets the state from [param state], in the format of [method snapshot]. A missing key takes its
 ## value at the start of a day, except that the shop is OPEN: day 1, nobody in the shop, no
 ## arrivals, an empty counter, an empty hand and trash, no printout, no flags, nothing seen, no
-## CompuFunDB records or start-up, the daypart of the arrivals; a missing view keeps the current one.
+## CompuFunDB search or start-up, the daypart of the arrivals; a missing view keeps the current one.
 ## The conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
 ## Keys in [constant RETIRED_KEYS] are ignored, with what they held.
 func restore(state: Dictionary) -> String:
@@ -1470,15 +1463,13 @@ func restore(state: Dictionary) -> String:
 	var new_seen: Dictionary[String, bool] = {}
 	for key: Variant in state.get("seen", []):
 		new_seen[str(key)] = true
-	var new_records: Array[DbRecord] = []
-	var given_records: Variant = state.get("records", [])
-	if not given_records is Array:
-		return _refuse("records is not a list: %s" % given_records)
-	for data: Variant in given_records:
-		var record: Variant = DbRecord.from(data)
-		if record is String:
-			return _refuse(record)
-		new_records.append(record)
+	var new_search: Variant = state.get("db_search", {})
+	if new_search is Dictionary and new_search.is_empty():
+		new_search = null
+	else:
+		new_search = DbSearch.from(new_search)
+		if new_search is String:
+			return _refuse(new_search)
 
 	day = new_day
 	phase = new_phase
@@ -1503,9 +1494,8 @@ func restore(state: Dictionary) -> String:
 	view = StringName(str(state.get("view", view)))
 	flags = new_flags
 	seen = new_seen
-	records = new_records
-	# Past every record too: a record lasts the whole game, and a new job must not take an old one's.
-	_next_order = jobs.reduce(func(top: int, j: Job) -> int: return maxi(top, j.order + 1), records.reduce(func(top: int, r: DbRecord) -> int: return maxi(top, r.job_order + 1), 0))
+	db_search = new_search
+	_next_order = jobs.reduce(func(top: int, j: Job) -> int: return maxi(top, j.order + 1), 0)
 	db_day = maxi(int(state.get("db_day", 0)), 0)
 	arrival += 1
 	jump += 1

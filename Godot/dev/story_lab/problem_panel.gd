@@ -436,7 +436,7 @@ func _right() -> Control:
 	_post_it.placeholder_text = "Such as: Windows starts and turns off"
 	_post_it.text_changed.connect(func(_t: String) -> void: _changed())
 	box.add_child(_post_it)
-	box.add_child(_heading("Symptoms", "What CompuFunDB lists, and how each shows in the game. CompuFunDB's records mark the symptoms by these words."))
+	box.add_child(_heading("Symptoms", "What CompuFunDB lists, and how each shows in the game. The player searches CompuFunDB by these words."))
 	var columns := HBoxContainer.new()
 	var what := LabUI.label("The symptom", 13, LabUI.DIM)
 	what.size_flags_horizontal = Control.SIZE_EXPAND_FILL

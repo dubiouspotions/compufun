@@ -108,12 +108,8 @@ The file name is the problem's id, the name of its `problems/<id>.tres`, which h
 (where it is, the broken part, the check that fixes it). Every key but `post-it` is optional.
 
 - `post-it`: what the customer says is wrong; the post-it shows it.
-- `symptoms`: one per line, as CompuFunDB lists them and its records mark them. Changing one
-  changes what the player marks. `shows:` under a symptom says how it shows in the game, for people.
-  `category:` names the heading that CompuFunDB's CHECK column lists it under: where the player
-  meets it, today From the customer, On the computer, At startup or In Windows, in the order that
-  CompuFunDB's `check_categories` export sets. A symptom that two problems share has the same
-  category in both.
+- `symptoms`: one per line, as CompuFunDB finds and lists them. The player searches them by their words, so
+  a symptom says what the player sees. Changing one changes what the player marks. `shows:` under a symptom says how it shows in the game, for people.
 - `hardware steps`, `software steps`: one per line, as CompuFunDB prints them.
 - `notes`: for people; the game doesn't read them.
 

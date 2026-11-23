@@ -56,7 +56,7 @@ const KNOWN_GAME_METHODS: Array[String] = [
 	"can_return_part", "return_part", "trash_part", "take_from_trash", "connect_cable", "set_powered",
 	"can_power_on", "alarms", "setup_for", "has_floppy", "can_eject", "eject_floppy", "can_insert_floppy", "insert_floppy", "toggle_cd_tray", "set_software_fixed", "set_tested",
 	# CompuFunDB and the printout
-	"enter_job", "record_of", "start_db", "mark_symptom", "tick_repair", "carry_printout", "tick_printout",
+	"search_db", "start_db", "mark_symptom", "tick_repair", "carry_printout", "tick_printout",
 	"trash_printout", "printout_box",
 	# the phone and the end
 	"can_pick_up_phone", "pick_up_phone", "put_down_phone", "can_call", "next_to_call", "call_customer", "rings_out", "hang_up",
@@ -324,10 +324,9 @@ func _cannot_repair(job: Job) -> String:
 
 
 # Looks [param job] up in CompuFunDB as a player does, one step per call: opens it (it starts up once
-# a day and types up the computers on the counter), marks the problem's symptoms, prints the record's
-# FIX page with F and takes it from the printer.
+# a day), types the problem's first symptom into SEARCH and picks it, marks the rest, prints the FIX
+# page with F and takes it from the printer.
 func _look_up(job: Job) -> bool:
-	var record: DbRecord = game.record_of(job)
 	if _printing_since >= 0.0:
 		_doing = [_code(job.errand), "takes the printed fix for %s's computer from the printer" % job.customer.spoken_name()]
 		if not game.printout.is_empty():
@@ -347,17 +346,23 @@ func _look_up(job: Job) -> bool:
 	if game.view != &"CompuFunDB":
 		game.go_to_view(&"CompuFunDB")
 		return true
-	if game.db_day != game.day_number or record == null:
-		return true  # it starts up and types the record up
-	for symptom: String in job.problem.symptoms:
-		game.mark_symptom(record, symptom, true)
-	var listed: Array = game.records.filter(func(r: DbRecord) -> bool: return game.jobs.any(func(j: Job) -> bool: return j.order == r.job_order))
+	if game.db_day != game.day_number:
+		return true  # it starts up
+	var query := job.problem.symptoms[0]
 	for key: Key in [KEY_LEFT, KEY_LEFT]:
 		await _press(key)
-	for i: int in listed.size():
-		await _press(KEY_UP)
-	for i: int in listed.find(record):
-		await _press(KEY_DOWN)
+	for i: int in 40:
+		await _press(KEY_BACKSPACE)
+	for letter: String in query:
+		await _press(KEY_NONE, letter.unicode_at(0))
+	await _press(KEY_ENTER)
+	if game.db_search == null or game.db_search.query != query:
+		_gaps.append("%s: CompuFunDB's SEARCH for '%s' didn't pick it" % [_where(), query])
+		_looked_up[job.order] = true
+		return true
+	for symptom: String in job.problem.symptoms:
+		game.mark_symptom(symptom, true)
+	await _press(KEY_RIGHT)
 	await _press(KEY_F)
 	_printing_since = now()
 	return true
@@ -647,11 +652,12 @@ func _click(at: Vector2) -> void:
 		await process_frame
 
 
-func _press(key: Key) -> void:
+func _press(key: Key, unicode: int = 0) -> void:
 	for pressed: bool in [true, false]:
 		var event := InputEventKey.new()
 		event.keycode = key
 		event.physical_keycode = key
+		event.unicode = unicode
 		event.pressed = pressed
 		Input.parse_input_event(event)
 		Input.flush_buffered_events()
@@ -662,7 +668,7 @@ func _press(key: Key) -> void:
 
 # What must change while the week moves on.
 func _progress() -> Array:
-	return [game.phase, game.day_number, game.arrival, game.visitor_state, game.view, game.records.size(), game.printout.size(),
+	return [game.phase, game.day_number, game.arrival, game.visitor_state, game.view, game.db_search.snapshot() if game.db_search != null else {}, game.printout.size(),
 		game.jobs.map(func(j: Job) -> Array: return [j.order, j.fixed, j.tested])]
 
 

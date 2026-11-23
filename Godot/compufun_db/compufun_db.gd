@@ -1,19 +1,19 @@
 class_name CompuFunDB
 extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
-## the customers (the Game.records of the computers on the counter: a record leaves the list when its
-## computer leaves the counter; New record makes the character type up the next computer on the
-## counter, key by key), what to check (every symptom of every Problem, under the headings of their
-## categories; the player marks what is wrong on the selected record), and what to fix (the repair steps of each problem whose symptoms
-## are all marked, numbered, and ending in [member test_step] if it applies; the player ticks them off). Marking
-## the wrong symptoms leads to the wrong fix. This screen keeps only its cursor and the typing. It
-## reads every Problem file, so its text is never a second copy of the problems.
+## SEARCH (the player types words, and the symptoms of every Problem that hold them all list under
+## it), what to check (the symptoms that go with the one picked, among a few of other problems in the
+## same place: the Game.db_search; the player marks what they find) and what to fix (the repair steps
+## of each problem whose symptoms are all marked, while nothing else is, numbered and ending in
+## [member test_step]; the player ticks them off). This screen keeps only its cursor and the typed
+## words. It reads every Problem file, so its text is never a second copy of the problems.
 ## The first time the player opens it on a day, the work computer boots, the character starts the
 ## program at the DOS prompt and the modem dials up; until then the computer is off. Nothing skips
 ## the start-up; the player can leave meanwhile, and it goes on.
-## Keys: arrows and Tab move, Space or Enter acts, P prints the selected record's checklist on
-## the shop's Printer, F only its FIX steps. The go_back keys but Down leave the view, as the Back
-## button does. The mouse clicks and scrolls.
+## Keys: in SEARCH, letters type and Backspace erases; arrows and Tab move, Enter acts (Space too
+## outside SEARCH), and outside SEARCH, P prints the checklist on the shop's Printer, F only its FIX
+## steps, and the go_back keys but Down leave the view, as the Back button does; Esc always does.
+## The mouse clicks and scrolls.
 
 const PROBLEMS_DIR: String = "res://problems/"
 const COLUMNS: int = 80
@@ -24,14 +24,15 @@ const FRAME_ROWS: Array[int] = [1, 3, 27]
 ## The first and last row of the lists, between the headers and the bottom frame.
 const LIST_TOP: int = 4
 const LIST_BOTTOM: int = 26
-const NEW_RECORD: String = "<New record>"
-## The buttons in the bottom frame, under the CHECK and the FIX column, that do what P and F do.
+## The buttons in the bottom frame, under the CHECK and the FIX column,, that do what P and F do.
 const PRINT_BUTTON: String = "[ PRINT CHECKLIST ]"
 const PRINT_FIX_BUTTON: String = "[ PRINT FIX ]"
 
-enum Column { RECORDS, CHECKS, FIXES }
+enum Column { SEARCH, CHECKS, FIXES }
 
-const HEADERS: Array[String] = ["CUSTOMER", "CHECK", "FIX"]
+const HEADERS: Array[String] = ["SEARCH", "CHECK", "FIX"]
+## The most characters that the player can type into SEARCH.
+const SEARCH_LENGTH: int = 40
 
 ## The text-mode font: one glyph per 8 x 16 cell.
 @export var font: Font = preload("res://compufun_db/fonts/Px437_IBM_VGA_8x16.ttf")
@@ -44,9 +45,8 @@ const HEADERS: Array[String] = ["CUSTOMER", "CHECK", "FIX"]
 ## The last repair step of every problem but a software-only one, after its hardware and software
 ## steps (see Job.tested). A software fix lands on a running Windows, which tests it at once.
 @export var test_step: String = "Test the computer"
-## The order of the CHECK column's headings: each symptom's category, as its problem file names it.
-## A category that this list leaves out comes after these, in alphabetical order.
-@export var check_categories: PackedStringArray = ["From the customer", "On the computer", "At startup", "In Windows"]
+## How many symptoms of other problems CompuFunDB mixes into what to check: between x and y.
+@export var decoys: Vector2i = Vector2i(2, 5)
 ## The sound of each key that the character types.
 @export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
 ## The sound of the space bar; null plays [member keystroke].
@@ -82,19 +82,12 @@ var _problems: Array[Problem] = []
 ## Every symptom of every problem, once each, by category (see [member check_categories]), then
 ## alphabetically.
 var _symptoms: PackedStringArray = []
-## The category of each symptom in [member _symptoms].
-var _categories: Dictionary[String, String] = {}
-var _column: Column = Column.RECORDS
+var _column: Column = Column.SEARCH
 var _selected: Array[int] = [0, 0, 0]
 var _scroll: Array[int] = [0, 0, 0]
-## The Job.order of each record in the first column at the last [method _reconcile], so that the
-## cursor follows its record when the list changes.
-var _listed: Array[int] = []
+## What the player typed into SEARCH.
+var _typed: String = ""
 var _mouse_cell: Vector2i = Vector2i(-1, -1)
-## The record that the character is typing up, or null; [member _shown] of its characters show.
-var _typing: DbRecord
-var _shown: int = 0
-var _next_key: float = 0.0
 ## True from the first opening of a day until the database shows.
 var _starting: bool = false
 ## The DOS screen of the start-up, line by line.
@@ -114,7 +107,6 @@ func _ready() -> void:
 		push_error("CompuFunDB: font is empty")
 	_load_problems()
 	mouse_exited.connect(_on_mouse_exited)
-	set_process(false)
 	Game.changed.connect(queue_redraw)
 	Game.changed.connect(_check_day)
 	Game.changed.connect(_reconcile)
@@ -166,104 +158,97 @@ func _category_rank(category: String) -> int:
 # An entry of a column: its text, its check box (null: none) and whether the player can pick it.
 func _entries(column: Column) -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
+	var search := Game.db_search
 	match column:
-		Column.RECORDS:
-			for record: DbRecord in _records():
-				var text := record.text.left(_shown) + "_" if record == _typing else record.text
-				entries.append({text = text, check = null, pick = true})
-			if _waiting_job() != null and _typing == null:
-				entries.append({text = NEW_RECORD, check = null, pick = true})
+		Column.SEARCH:
+			for symptom: String in _found():
+				entries.append({text = symptom, check = null, pick = true})
 		Column.CHECKS:
-			var record := _record()
-			if record != null:
-				var heading := ""
-				for symptom: String in _symptoms:
-					if _categories[symptom] != heading:
-						heading = _categories[symptom]
-						entries.append({text = "-- %s --" % heading, check = null, pick = false})
-					entries.append({text = symptom, check = symptom in record.marked_symptoms, pick = true})
+			if search != null:
+				for symptom: String in search.offered:
+					entries.append({text = symptom, check = symptom in search.marked_symptoms, pick = true})
 		Column.FIXES:
-			var record := _record()
-			if record != null:
-				for problem: Problem in _matches(record):
-					var number := _add_steps(entries, record, "Hardware", problem.hardware_steps, 1)
-					number = _add_steps(entries, record, "Software", problem.software_steps, number)
-					if problem.location != Problem.Location.SOFTWARE:
-						_add_steps(entries, record, "Test", PackedStringArray([test_step]), number)
+			for problem: Problem in _matches():
+				var number := _add_steps(entries, "Hardware", problem.hardware_steps, 1)
+				number = _add_steps(entries, "Software", problem.software_steps, number)
+				_add_steps(entries, "Test", PackedStringArray([test_step]), number)
 	return entries
 
 
 # Adds a section of numbered steps, the first numbered [param number]; returns the next number.
-func _add_steps(entries: Array[Dictionary], record: DbRecord, title: String, steps: PackedStringArray, number: int) -> int:
+func _add_steps(entries: Array[Dictionary], title: String, steps: PackedStringArray, number: int) -> int:
 	if steps.is_empty():
 		return number
 	entries.append({text = "-- %s --" % title, check = null, pick = false})
 	for step: String in steps:
-		entries.append({text = step, check = step in record.ticked_repairs, pick = true, number = number})
+		entries.append({text = step, check = step in Game.db_search.ticked_repairs, pick = true, number = number})
 		number += 1
 	return number
 
 
-# The record under the first column's cursor, or null on <New record> or while it is typed up.
-func _record() -> DbRecord:
-	var records := _records()
-	var index := _selected[Column.RECORDS]
-	var record: DbRecord = records[index] if index < records.size() else null
-	return record if record != _typing else null
-
-
-# The records of the computers on the counter, oldest first.
-func _records() -> Array[DbRecord]:
-	var on_counter: Array[int] = []
-	for job: Job in Game.jobs:
-		on_counter.append(job.order)
-	var listed: Array[DbRecord] = []
-	for record: DbRecord in Game.records:
-		if record.job_order in on_counter:
-			listed.append(record)
-	return listed
-
-
-# The oldest computer on the counter without a record, or null.
-func _waiting_job() -> Job:
-	var waiting: Job = null
-	for job: Job in Game.jobs:
-		if Game.record_of(job) == null and (waiting == null or job.order < waiting.order):
-			waiting = job
-	return waiting
-
-
-# Types the next key of [member _typing], with its sound, until the record is all there.
-func _process(delta: float) -> void:
-	_next_key -= delta
-	if _next_key > 0.0:
-		return
-	_shown += 1
-	_play_key(_typing.text.substr(_shown - 1, 1) if _typing != null else "")
-	_next_key = randf_range(key_seconds.x, key_seconds.y)
-	if _typing == null or _shown >= _typing.text.length():
-		_typing = null
-		set_process(false)
-		if _waiting_job() != null:
-			_type_up(_waiting_job())
-		else:
-			_column = Column.CHECKS
-			_move(0)
-	queue_redraw()
-
-
-# The problems whose symptoms are all marked on [param record].
-func _matches(record: DbRecord) -> Array[Problem]:
-	var found: Array[Problem] = []
-	for problem: Problem in _problems:
-		if problem.symptoms.is_empty():
-			continue
-		var all_marked := true
-		for symptom: String in problem.symptoms:
-			all_marked = all_marked and symptom in record.marked_symptoms
-		if all_marked:
-			found.append(problem)
+# The symptoms that hold every word typed into SEARCH, whatever the case; none while nothing is typed.
+func _found() -> PackedStringArray:
+	var words := _typed.to_lower().split(" ", false)
+	var found: PackedStringArray = []
+	if words.is_empty():
+		return found
+	for symptom: String in _symptoms:
+		var lower := symptom.to_lower()
+		if Array(words).all(func(word: String) -> bool: return lower.contains(word)):
+			found.append(symptom)
 	return found
+
+
+# The problems whose symptoms are all marked in the search, while no other symptom is: a wrong mark
+# shows no fix.
+func _matches() -> Array[Problem]:
+	var found: Array[Problem] = []
+	var search := Game.db_search
+	if search == null:
+		return found
+	var covered: Array[String] = []
+	for problem: Problem in _problems:
+		if not problem.symptoms.is_empty() and Array(problem.symptoms).all(func(s: String) -> bool: return s in search.marked_symptoms):
+			found.append(problem)
+			covered.append_array(problem.symptoms)
+	if search.marked_symptoms.any(func(s: String) -> bool: return s not in covered):
+		found.clear()
+	return found
+
+
+# Starts the search for [param query]: what to check is the symptoms of every problem that has it,
+# mixed with a few symptoms of other problems in the same place, so the list doesn't give it away.
+func _search(query: String) -> void:
+	var right: Array[String] = []
+	var places: Array[Problem.Location] = []
+	for problem: Problem in _problems:
+		if query in problem.symptoms:
+			places.append(problem.location)
+			for symptom: String in problem.symptoms:
+				if symptom not in right:
+					right.append(symptom)
+	var others: Array[String] = []
+	for problem: Problem in _problems:
+		if query in problem.symptoms or not places.any(func(at: Problem.Location) -> bool: return _same_place(at, problem.location)):
+			continue
+		for symptom: String in problem.symptoms:
+			if symptom not in right and symptom not in others:
+				others.append(symptom)
+	others.shuffle()
+	var offered: Array[String] = right.duplicate()
+	offered.append_array(others.slice(0, randi_range(decoys.x, decoys.y)))
+	offered.shuffle()
+	if Game.search_db(query, offered) == null:
+		return
+	_column = Column.CHECKS
+	for column: Column in [Column.CHECKS, Column.FIXES]:
+		_selected[column] = 0
+		_scroll[column] = 0
+	_move(0)
+
+
+func _same_place(a: Problem.Location, b: Problem.Location) -> bool:
+	return a == b or Problem.Location.BOTH in [a, b]
 
 
 # The screen lines of a column: [entry index, text], with the entries wrapped to the column's width.
@@ -329,13 +314,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-## The player opened the screen: the computer starts up if it hasn't today; then the character
-## types up every computer on the counter that has no record yet.
+## The player opened the screen: the computer starts up if it hasn't today.
 func screen_opened() -> void:
 	if not has_picture():
 		_start_up()
-	elif not _starting and _typing == null and _waiting_job() != null:
-		_type_up(_waiting_job())
 
 
 ## False while the work computer is off: before its first start-up of the day.
@@ -403,7 +385,6 @@ func _start_up() -> void:
 	_dos.clear()
 	_starting = false
 	Game.start_db()
-	screen_opened()
 
 
 func _pause(seconds: float) -> void:
@@ -423,8 +404,11 @@ func _on_click(button: InputEventMouseButton) -> void:
 		return
 	if button.button_index != MOUSE_BUTTON_LEFT:
 		return
-	_finish_typing()
 	_status = ""
+	if cell.y == FRAME_ROWS[0] + 1 and column == Column.SEARCH:  # the field
+		_column = Column.SEARCH
+		queue_redraw()
+		return
 	if cell.y == FRAME_ROWS[-1]:
 		var buttons := _buttons()
 		for text: String in buttons:
@@ -446,17 +430,16 @@ func _on_click(button: InputEventMouseButton) -> void:
 		return
 	_column = column
 	_select(lines[line][0])
-	if column != Column.RECORDS or _record() == null:  # a click on a record only selects it
-		_act()
+	_act()
 	queue_redraw()
 
 
 func _on_key(key: InputEventKey) -> bool:
 	if _starting or _offline():
 		return false
-	if key.is_action(&"go_back") and key.keycode != KEY_DOWN:
-		return false  # main.gd goes back, as the Back button does; the typing goes on
-	_finish_typing()
+	var typing := _column == Column.SEARCH
+	if key.keycode == KEY_ESCAPE or (not typing and key.is_action(&"go_back") and key.keycode != KEY_DOWN):
+		return false  # main.gd goes back, as the Back button does
 	_status = ""
 	match key.keycode:
 		KEY_UP:
@@ -467,30 +450,42 @@ func _on_key(key: InputEventKey) -> bool:
 			_change_column(-1)
 		KEY_RIGHT, KEY_TAB:
 			_change_column(1)
-		KEY_SPACE, KEY_ENTER, KEY_KP_ENTER:
+		KEY_ENTER, KEY_KP_ENTER:
 			_act()
-		KEY_P:
+		KEY_BACKSPACE when typing:
+			_type(_typed.left(-1))
+		KEY_SPACE when not typing:
+			_act()
+		KEY_P when not typing:
 			_print()
-		KEY_F:
+		KEY_F when not typing:
 			_print_fix()
 		_:
-			return false
+			var letter := char(key.unicode) if key.unicode >= 32 else ""
+			if not typing or letter.is_empty() or key.is_command_or_control_pressed() or key.alt_pressed:
+				return false
+			_type((_typed + letter).left(SEARCH_LENGTH))
 	queue_redraw()
 	return true
 
 
-# Prints the selected record's checklist on the shop's Printer.
+# Sets what SEARCH holds: the list under it starts over.
+func _type(text: String) -> void:
+	_typed = text
+	_selected[Column.SEARCH] = 0
+	_scroll[Column.SEARCH] = 0
+
+
+# Prints the search's checklist on the shop's Printer.
 func _print() -> void:
-	var record := _record()
-	if record != null:
-		_print_page(_page(record))
+	if Game.db_search != null:
+		_print_page(_page())
 
 
-# Prints the selected record's FIX steps alone on the shop's Printer; nothing while it has none.
+# Prints the search's FIX steps alone on the shop's Printer; nothing while it has none.
 func _print_fix() -> void:
-	var record := _record()
-	if record != null and not _entries(Column.FIXES).is_empty():
-		_print_page(_page(record, "FIX", [Column.FIXES]))
+	if not _entries(Column.FIXES).is_empty():
+		_print_page(_page("FIX", [Column.FIXES]))
 
 
 func _print_page(page: PackedStringArray) -> void:
@@ -503,11 +498,11 @@ func _print_page(page: PackedStringArray) -> void:
 	_status = "Printing on LPT1"
 
 
-# A printout of [param record]: a heading with [param title], the record, and [param columns] as on
-# screen; a column without lines is left out.
-func _page(record: DbRecord, title: String = "CHECKLIST", columns: Array[Column] = [Column.CHECKS, Column.FIXES]) -> PackedStringArray:
+# A printout of the search: a heading with [param title], the symptom searched for, and [param columns]
+# as on screen; a column without lines is left out.
+func _page(title: String = "CHECKLIST", columns: Array[Column] = [Column.CHECKS, Column.FIXES]) -> PackedStringArray:
 	var page := PackedStringArray(["CompuFunDB 1.0  %s  %s" % [title, _date_text()], ""])
-	page.append_array(_wrap(record.text, _spans[Column.CHECKS].y - _spans[Column.CHECKS].x + 1))
+	page.append_array(_wrap("SEARCH: " + Game.db_search.query, _spans[Column.CHECKS].y - _spans[Column.CHECKS].x + 1))
 	for column: Column in columns:
 		var lines := _lines(column, _entries(column))
 		if lines.is_empty():
@@ -526,7 +521,7 @@ func _date_text() -> String:
 # The buttons that show in the bottom frame, each with the column that it is centred under.
 func _buttons() -> Dictionary[String, Column]:
 	var buttons: Dictionary[String, Column] = {}
-	if _record() != null:
+	if Game.db_search != null:
 		buttons[PRINT_BUTTON] = Column.CHECKS
 		if not _entries(Column.FIXES).is_empty():
 			buttons[PRINT_FIX_BUTTON] = Column.FIXES
@@ -539,8 +534,8 @@ func _button_x(column: Column, text: String) -> int:
 	return span.x + (span.y - span.x + 1 - text.length()) / 2
 
 
-# Acts on the entry under the cursor: <New record> types up the next computer, a record opens its
-# checks, a symptom or a step toggles.
+# Acts on the entry under the cursor: a symptom found picks it for the search, a symptom to check or
+# a step toggles.
 func _act() -> void:
 	var entries := _entries(_column)
 	var index := _selected[_column]
@@ -548,43 +543,13 @@ func _act() -> void:
 		return
 	var entry := entries[index]
 	match _column:
-		Column.RECORDS:
-			if index == _records().size():
-				_type_up(_waiting_job())
-			else:
-				_change_column(1)
+		Column.SEARCH:
+			_search(entry.text)
 		Column.CHECKS:
-			Game.mark_symptom(_record(), entry.text, not entry.check)
+			Game.mark_symptom(entry.text, not entry.check)
 		Column.FIXES:
-			Game.tick_repair(_record(), entry.text, not entry.check)
+			Game.tick_repair(entry.text, not entry.check)
 	queue_redraw()
-
-
-func _type_up(job: Job) -> void:
-	_typing = Game.enter_job(job, _record_text(job))
-	if _typing == null:
-		return
-	_shown = 0
-	_next_key = 0.0
-	_selected[Column.RECORDS] = _records().size() - 1
-	set_process(true)
-
-
-# Shows the rest of the typing at once, and types up the other waiting computers without the keys:
-# the player wants the screen now.
-func _finish_typing() -> void:
-	if _typing == null:
-		return
-	_typing = null
-	set_process(false)
-	var job := _waiting_job()
-	while job != null and Game.enter_job(job, _record_text(job)) != null:
-		job = _waiting_job()
-	_selected[Column.RECORDS] = _records().size() - 1
-
-
-func _record_text(job: Job) -> String:
-	return "%s: %s" % [job.customer.display_name, job.perceived_issue()]
 
 
 # Moves the cursor [param step] entries, past the headings; 0 settles it on an entry.
@@ -600,8 +565,8 @@ func _move(step: int) -> void:
 
 
 func _change_column(step: int) -> void:
-	var column := wrapi(_column + step, 0, Column.size()) as Column
-	if column != Column.RECORDS and _record() == null:
+	var column := clampi(_column + step, 0, Column.size() - 1) as Column
+	if column != Column.SEARCH and Game.db_search == null:
 		return
 	_column = column
 	_move(0)
@@ -609,8 +574,6 @@ func _change_column(step: int) -> void:
 
 # Selects entry [param index] of the current column and scrolls it into view.
 func _select(index: int) -> void:
-	if _column == Column.RECORDS and index != _selected[_column]:
-		_reset_record_columns()
 	_selected[_column] = index
 	var entries := _entries(_column)
 	var lines := _lines(_column, entries)
@@ -633,34 +596,12 @@ func _select(index: int) -> void:
 		_scroll[_column] = last - height + 1
 
 
-func _reset_record_columns() -> void:
-	for column: Column in [Column.CHECKS, Column.FIXES]:
-		_selected[column] = 0
-		_scroll[column] = 0
-
-
-# Keeps the cursors on entries that exist, and in the first column while no record is picked. When
-# the list changes, the cursor follows its record; when that record left, the cursor goes back to
-# the first column, on the record that took its place.
+# Keeps the cursors on entries that exist, and in SEARCH while there is no search.
 func _reconcile() -> void:
-	var listed: Array[int] = []
-	for record: DbRecord in _records():
-		listed.append(record.job_order)
-	if listed != _listed:
-		var index := _selected[Column.RECORDS]
-		var was := _listed[index] if index < _listed.size() else -1
-		if was in listed:
-			_selected[Column.RECORDS] = listed.find(was)
-		elif was >= 0:
-			_column = Column.RECORDS
-			_reset_record_columns()
-		_listed = listed
-	_selected[Column.RECORDS] = clampi(_selected[Column.RECORDS], 0, maxi(_entries(Column.RECORDS).size() - 1, 0))
-	if _record() == null:
-		_column = Column.RECORDS
-	for column: Column in [Column.CHECKS, Column.FIXES]:
-		var size := _entries(column).size()
-		_selected[column] = clampi(_selected[column], 0, maxi(size - 1, 0))
+	if Game.db_search == null:
+		_column = Column.SEARCH
+	for column: int in Column.size():
+		_selected[column] = clampi(_selected[column], 0, maxi(_entries(column as Column).size() - 1, 0))
 
 
 func _column_at(x: int) -> int:
@@ -713,27 +654,33 @@ func _paint() -> void:
 	_frame()
 	for column: int in Column.size():
 		_put(_spans[column].x, FRAME_ROWS[0] + 1, HEADERS[column], bright_color)
+	_paint_field()
 	if _offline():
 		_put(30, 15, " OFFLINE: LINE IN USE ", bright_color, bar_color)
 		_bar(28, " CompuFunDB", "", bar_color)
 		return
-	var record := _record()
 	for column: int in Column.size():
 		_paint_column(column as Column)
-	var count := "Rec %d/%d " % [_selected[Column.RECORDS] + 1, _records().size()] if record != null else "Rec None "
+	var count := "%d found " % _found().size() if not _typed.is_empty() else ""
 	var buttons := _buttons()
 	for text: String in buttons:
 		_put(_button_x(buttons[text], text), FRAME_ROWS[-1], text, bright_color, bar_color)
 	_bar(28, " %s" % (_status if not _status.is_empty() else HEADERS[_column]), count, bar_color)
-	_put(1, 29, "\u2191\u2193 Move  \u2190\u2192 Column  Space Mark  P Print  F Print fix  Esc Leave", text_color)
+	_put(1, 29, "Type Search  \u2191\u2193 Move  \u2190\u2192 Column  Enter Pick  P Print  F Print fix  Esc Leave", text_color)
+
+
+# What the player typed, after the SEARCH header: its end, if it is longer than the column.
+func _paint_field() -> void:
+	var x := _spans[Column.SEARCH].x + HEADERS[Column.SEARCH].length()
+	_put(x, FRAME_ROWS[0] + 1, ":", bright_color)
+	var fg := bright_color if _column == Column.SEARCH else text_color
+	_put(x + 1, FRAME_ROWS[0] + 1, (_typed + ("_" if _column == Column.SEARCH else "")).right(_spans[Column.SEARCH].y - x), fg)
 
 
 func _paint_column(column: Column) -> void:
 	var entries := _entries(column)
 	var lines := _lines(column, entries)
 	var span := _spans[column]
-	if column != Column.RECORDS and _record() == null:
-		return
 	for row: int in LIST_BOTTOM - LIST_TOP + 1:
 		var line := _scroll[column] + row
 		if line >= lines.size():
@@ -742,9 +689,6 @@ func _paint_column(column: Column) -> void:
 		var entry := entries[index]
 		var fg := text_color if entry.pick else dim_color
 		var bg := background
-		if column == Column.RECORDS and index == _selected[column]:
-			fg = bright_color
-			bg = dim_color
 		if column == _column and index == _selected[column]:
 			fg = bright_color
 			bg = bar_color

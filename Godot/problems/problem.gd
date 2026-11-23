@@ -68,7 +68,7 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 
 ## How the customer is affected, in their words. The post-it shows it. From the problem file.
 var perceived_issue: String = ""
-## The symptoms, as CompuFunDB lists them and its records mark them. Their combination is unique to
+## The symptoms, as CompuFunDB finds, lists and marks them. Their combination is unique to
 ## this problem. From the problem file.
 var symptoms: PackedStringArray = []
 ## How each symptom shows in the game, for people: symptom to text; a symptom without one is

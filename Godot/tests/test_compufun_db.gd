@@ -1,118 +1,117 @@
 extends "res://tests/test.gd"
-## A computer on the counter gets one CompuFunDB record; the record, with its marked symptoms and
-## ticked repairs, survives a snapshot and a restore, and a malformed record is refused. The list
-## shows only the records of the computers on the counter, and the cursor follows its record.
+## CompuFunDB's search: typed words list the symptoms that hold them; picking one offers what goes
+## with it among 2 to 5 symptoms of other problems in the same place; only the right marks show the
+## fix. The search, with its marks and ticks, survives a snapshot and a restore, and a malformed one
+## is refused.
 
-const CUSTOMER: String = "res://customers/skater_bro.tres"
 ## CompuFunDB.Column, which a test can't name: CompuFunDB names the Game autoload.
-const RECORDS: int = 0
+const SEARCH: int = 0
 const CHECKS: int = 1
-const OTHERS: Array[String] = ["res://customers/retired_accountant.tres", "res://customers/activist_guy.tres"]
+const FIXES: int = 2
 
 
 func run() -> void:
-	check("a job on the counter", game.restore({"day": 1, "arrivals": 1, "jobs": [{"customer": CUSTOMER, "order": 7}]}), "")
-	var job: Job = game.jobs[0]
-	check("no record yet", game.record_of(job), null)
-	var record: DbRecord = game.enter_job(job, "Skater bro: turns off")
-	check("the record is the job's", game.record_of(job), record)
-	check("the record keeps the job's order", record.job_order, 7)
-	game.mark_symptom(record, "Fan clogged with dust", true)
-	game.mark_symptom(record, "Fan clogged with dust", true)
-	check("a symptom is marked once", record.marked_symptoms, ["Fan clogged with dust"])
-	game.tick_repair(record, "Install the fan", true)
-	game.tick_repair(record, "Install the fan", false)
-	check("a repair unticks", record.ticked_repairs, [])
-	game.tick_repair(record, "Install the fan", true)
+	_check_game()
+	await _check_screen()
 
-	check("CompuFunDB hasn't started up today", game.db_day, 0)
+
+func _check_game() -> void:
+	check("a fresh day", game.restore({"day": 1}), "")
+	check("no search yet", game.db_search, null)
+	var search: DbSearch = game.search_db("Sound is muted", ["Window colours changed drastically", "Sound is muted"])
+	check("the query is marked", [search.query, search.marked_symptoms], ["Sound is muted", ["Sound is muted"]])
+	game.mark_symptom("Window colours changed drastically", true)
+	game.mark_symptom("Window colours changed drastically", true)
+	check("a symptom is marked once", search.marked_symptoms, ["Sound is muted", "Window colours changed drastically"])
+	game.tick_repair("Unmute", true)
+	game.tick_repair("Unmute", false)
+	check("a repair unticks", search.ticked_repairs, [])
+	game.tick_repair("Unmute", true)
+
 	game.start_db()
-	check("start-up is remembered for the day", game.db_day, 1)
 	check("restore the snapshot", game.restore(game.snapshot()), "")
 	check("the start-up day survives", game.db_day, 1)
-	var restored: DbRecord = game.records[0]
-	check("the text survives", restored.text, "Skater bro: turns off")
-	check("the marks survive", restored.marked_symptoms, ["Fan clogged with dust"])
-	check("the ticks survive", restored.ticked_repairs, ["Install the fan"])
-	check("the job still has its record", game.record_of(game.jobs[0]), restored)
+	var restored: DbSearch = game.db_search
+	check("the search survives", [restored.query, restored.offered], ["Sound is muted", ["Window colours changed drastically", "Sound is muted"]])
+	check("the marks and ticks survive", [restored.marked_symptoms, restored.ticked_repairs], [["Sound is muted", "Window colours changed drastically"], ["Unmute"]])
 
-	var refused: String = game.restore({"records": [{"text": "x", "marked_symptoms": "oops"}]})
-	check("a list that is not a list is refused", refused.contains("marked_symptoms of the record 'x' is not a list"), true)
-	check("the refusal keeps the records", game.records[0], restored)
-	check("a restore without records starts empty", game.restore({}), "")
-	check("no records", game.records.size(), 0)
-	check("and no start-up", game.db_day, 0)
-	await _check_picked_up()
+	var refused: String = game.restore({"db_search": {"query": "x", "marked_symptoms": "oops"}})
+	check("a list that is not a list is refused", refused.contains("marked_symptoms of the CompuFunDB search 'x' is not a list"), true)
+	check("the refusal keeps the search", game.db_search, restored)
+	check("the old records are ignored", game.restore({"records": [{"text": "x"}]}), "")
+	check("a restore without a search starts empty", [game.db_search, game.db_day], [null, 0])
 
 
-# A computer that leaves the counter takes its record off the list; Game keeps the record.
-func _check_picked_up() -> void:
-	var jobs: Array = []
-	for i: int in 3:
-		jobs.append({"customer": ([CUSTOMER] + OTHERS)[i], "order": i})
-	check("three jobs", game.restore({"day": 1, "arrivals": 3, "jobs": jobs}), "")
-	for i: int in 3:
-		game.enter_job(game.jobs[i], "record %d" % i)
-	game.start_db()
+func _check_screen() -> void:
+	check("a fresh day, CompuFunDB on", game.restore({"day": 1, "db_day": 1}), "")
 	var db: Control = load("res://compufun_db/compufun_db.tscn").instantiate()  # untyped: CompuFunDB names Game
 	root.add_child(db)
 	await process_frame
-	check("all three listed", _texts(db), ["record 0", "record 1", "record 2"])
-	for key: Key in [KEY_DOWN, KEY_DOWN, KEY_RIGHT]:
+	check("nothing listed before typing", _texts(db, SEARCH), [])
+	check("right goes nowhere without a search", [_press(db, KEY_RIGHT), db.get("_column")], [true, SEARCH])
+	for letter: String in "OVERheat":
+		_type(db, letter)
+	check("the words find symptoms, whatever the case", _texts(db, SEARCH), ["Computer overheating", "GPU overheating"])
+	_press(db, KEY_BACKSPACE)
+	check("backspace erases", db.get("_typed"), "OVERhea")
+	_press(db, KEY_P)
+	check("P types in SEARCH", db.get("_typed"), "OVERheap")
+	for key: Key in [KEY_BACKSPACE, KEY_BACKSPACE, KEY_BACKSPACE, KEY_BACKSPACE, KEY_BACKSPACE, KEY_BACKSPACE, KEY_BACKSPACE, KEY_BACKSPACE]:
 		_press(db, key)
-	check("on the last record's checks", [db.call("_record").text, db.get("_column")], ["record 2", CHECKS])
-	_check_categories(db)
+	for letter: String in "computer over":
+		_type(db, letter)
+	check("every word must be in it", _texts(db, SEARCH), ["Computer overheating"])
+	_press(db, KEY_ENTER)
+	var search: DbSearch = game.db_search
+	check("Enter picks it, the cursor in CHECK", [search.query, db.get("_column")], ["Computer overheating", CHECKS])
+	var right: Array[String] = ["Hangs and reboots at startup", "Computer overheating"]  # dust_overheat and hamster
+	var decoys: Array = search.offered.filter(func(s: String) -> bool: return s not in right)
+	check("every right symptom is offered", right.all(func(s: String) -> bool: return s in search.offered), true)
+	check("with 2 to 5 others", decoys.size() >= 2 and decoys.size() <= 5, true)
+	var hardware := _hardware_symptoms()
+	check("the others are of a hardware problem", decoys.all(func(s: String) -> bool: return s in hardware), true)
+	check("no fix with one mark", _texts(db, FIXES), [])
 
-	_leave(0)
-	check("the first record left the list", _texts(db), ["record 1", "record 2"])
-	check("Game keeps it", game.records.size(), 3)
-	check("the cursor stays on its record and column", [db.call("_record").text, db.get("_column")], ["record 2", CHECKS])
+	game.mark_symptom("Hangs and reboots at startup", true)
+	check("the right marks show the fixes of both problems", _texts(db, FIXES).count("Test the computer"), 2)
+	game.mark_symptom(decoys[0], true)
+	check("a wrong mark hides them", _texts(db, FIXES), [])
+	game.mark_symptom(decoys[0], false)
 
-	_leave(2)
-	check("the selected record left", _texts(db), ["record 1"])
-	check("the cursor goes back to the list, on the record left", [db.call("_record").text, db.get("_column")], ["record 1", RECORDS])
+	var printer: Node3D = load("res://props/printer.tscn").instantiate()
+	printer.add_to_group(&"printer")
+	root.add_child(printer)
+	check("F prints outside SEARCH", _press(db, KEY_F), true)
+	var page: PackedStringArray = printer.get("_lines")
+	check("a FIX page for the search", [page[0].begins_with("CompuFunDB 1.0  FIX  "), page[2], "FIX" in page], [true, "SEARCH: Computer", true])
+	printer.queue_free()
+	check("Esc leaves", _press(db, KEY_ESCAPE), false)
 	db.queue_free()
 
 
-# The CHECK column lists the symptoms under their categories' headings, in check_categories' order,
-# and the cursor and the mouse pass over the headings.
-func _check_categories(db: Control) -> void:
-	var entries: Array = db.call("_entries", CHECKS)
-	var headings: Array = entries.filter(func(entry: Dictionary) -> bool: return not entry.pick).map(func(entry: Dictionary) -> String: return entry.text)
-	check("a heading per category, in order", headings, Array(db.get("check_categories")).map(func(category: String) -> String: return "-- %s --" % category))
-	check("a heading comes first", entries[0].pick, false)
-	check("the cursor settles on the first symptom, under it", db.get("_selected")[CHECKS], 1)
-	var startup: int = entries.find(entries.filter(func(entry: Dictionary) -> bool: return entry.text == "-- At startup --")[0])
-	db.get("_selected")[CHECKS] = startup - 1
-	_press(db, KEY_DOWN)
-	check("Down steps over a heading", db.get("_selected")[CHECKS], startup + 1)
-	_press(db, KEY_UP)
-	check("and Up back over it", db.get("_selected")[CHECKS], startup - 1)
-	var record: DbRecord = db.call("_record")
-	var lines: Array = db.call("_lines", CHECKS, entries)
-	var row: int = lines.map(func(line: Array) -> int: return line[0]).find(startup) - db.get("_scroll")[CHECKS]
-	check("the heading is on screen", row >= 0 and row <= db.LIST_BOTTOM - db.LIST_TOP, true)
-	var click := InputEventMouseButton.new()
-	click.button_index = MOUSE_BUTTON_LEFT
-	click.pressed = true
-	click.position = (Vector2(db.get("_spans")[CHECKS].x, db.LIST_TOP + row) + Vector2(0.5, 0.5)) * db.CELL
-	db.call("_on_click", click)
-	check("a click on a heading marks nothing and leaves the cursor", [record.marked_symptoms.is_empty(), db.get("_selected")[CHECKS]], [true, startup - 1])
+func _hardware_symptoms() -> Array[String]:
+	var symptoms: Array[String] = []
+	for file: String in ResourceLoader.list_directory("res://problems/"):
+		var problem := load("res://problems/" + file) as Problem if file.ends_with(".tres") else null
+		if problem != null and problem.location != Problem.Location.SOFTWARE:
+			symptoms.append_array(problem.symptoms)
+	return symptoms
 
 
-# The computer of job [param order] leaves the counter; its record stays in Game.
-func _leave(order: int) -> void:
-	var state: Dictionary = game.snapshot()
-	state.jobs = state.jobs.filter(func(job: Dictionary) -> bool: return job.order != order)
-	check("job %d leaves" % order, game.restore(state), "")
+func _texts(db: Control, column: int) -> Array:
+	return db.call("_entries", column).map(func(entry: Dictionary) -> String: return entry.text)
 
 
-func _texts(db: Control) -> Array:
-	return db.call("_entries", RECORDS).map(func(entry: Dictionary) -> String: return entry.text)
-
-
-func _press(db: Control, key: Key) -> void:
+func _press(db: Control, key: Key) -> bool:
 	var event := InputEventKey.new()
 	event.keycode = key
+	event.unicode = OS.get_keycode_string(key).to_lower().unicode_at(0) if key >= KEY_A and key <= KEY_Z else 0
+	event.pressed = true
+	return db.call("_on_key", event)
+
+
+func _type(db: Control, letter: String) -> void:
+	var event := InputEventKey.new()
+	event.unicode = letter.unicode_at(0)
 	event.pressed = true
 	db.call("_on_key", event)
