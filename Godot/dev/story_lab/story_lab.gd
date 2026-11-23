@@ -122,6 +122,7 @@ func refresh() -> void:
 	_problems.text = "" if _week.errors.is_empty() else "%d problems in the story files (hover)" % _week.errors.size()
 	_problems.tooltip_text = "\n".join(_week.errors)
 	_errand_panel.flags = flag_names()
+	_day_panel.facts = _errand_panel.flags
 	_drafts_button.text = "Drafts (%d)" % drafts.paths().size()
 	_send_button.disabled = drafts.paths().is_empty()
 	_send_button.tooltip_text = "Make a GitHub issue of your drafts" if not drafts.to_checkout else "Save to checkout is on: commit the files with git instead"

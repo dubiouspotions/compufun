@@ -1,6 +1,6 @@
 class_name StoryDayPanel
 extends PanelContainer
-## The Story Lab's picked day: its weather, warp, the flags it sets as it starts and at closing,
+## The Story Lab's picked day: its weather, warp, the facts it remembers as it starts and at closing,
 ## the corruption signs that start at closing, the waits between customers, and the notes. Each
 ## edit that parses is a new text of the day file, which [signal saved] hands up.
 
@@ -10,14 +10,17 @@ signal saved(path: String, text: String)
 const SIGNS_DIR: String = "res://corruption/"
 const SETTLE_SECONDS: float = 0.4
 
+## The known facts that the "remember" editors offer, as flag names; the Lab sets it from the week.
+var facts: PackedStringArray = []
+
 var _path: String = ""
 var _filling: bool = false
 var _title: Label
 var _weather: ButtonGroup
 var _warp: HSlider
 var _warp_label: Label
-var _on_start: LineEdit
-var _on_close: LineEdit
+var _on_start: StoryFlagsEditor
+var _on_close: StoryFlagsEditor
 var _signs: Dictionary[StringName, Button] = {}
 var _waits: Array[SpinBox] = []
 var _notes: TextEdit
@@ -42,8 +45,10 @@ func show_day(path: String, text: String) -> void:
 	(_weather.get_buttons()[1 if day.rain else 0] as BaseButton).set_pressed_no_signal(true)
 	_warp.set_value_no_signal(day.warp)
 	_warp_label.text = str(snappedf(day.warp, 0.01))
-	_on_start.text = StoryFormat.write_flags(day.set_flags)
-	_on_close.text = StoryFormat.write_flags(day.close_flags)
+	_on_start.facts = facts
+	_on_start.edit(day.set_flags)
+	_on_close.facts = facts
+	_on_close.edit(day.close_flags)
 	for id: StringName in _signs:
 		_signs[id].set_pressed_no_signal(id in day.close_signs)
 	_waits[0].set_value_no_signal(day.first_wait_seconds.x)
@@ -60,10 +65,10 @@ func text() -> String:
 	var lines := PackedStringArray()
 	lines.append("weather: " + ("rain" if _weather.get_pressed_button().get_index() == 1 else "clear"))
 	lines.append("warp: " + str(snappedf(_warp.value, 0.01)))
-	if _on_start.text.strip_edges() != "":
-		lines.append("on start: " + _on_start.text.strip_edges())
-	if _on_close.text.strip_edges() != "":
-		lines.append("on close: " + _on_close.text.strip_edges())
+	if not _on_start.flags().is_empty():
+		lines.append("on start: " + StoryFormat.write_flags(_on_start.flags()))
+	if not _on_close.flags().is_empty():
+		lines.append("on close: " + StoryFormat.write_flags(_on_close.flags()))
 	var signs := PackedStringArray()
 	for id: StringName in _signs:
 		if _signs[id].button_pressed:
@@ -148,8 +153,8 @@ func _build() -> void:
 	_warp_label = LabUI.label("0", 15)
 	_warp_label.custom_minimum_size.x = 48
 	warp_row.add_child(_warp_label)
-	_on_start = _flag_field(left, "On start: flags set as the day starts", "sign_pipedream, skater_cambion=2")
-	_on_close = _flag_field(left, "On close: flags set at closing, that stay", "sign_logo_blue")
+	_on_start = _facts_field(left, "When the day starts, remember...", "Facts that become true or false as the shop opens this day")
+	_on_close = _facts_field(left, "When the shop closes, remember (for the rest of the week)...", "Facts that become true or false at closing, and stay so on the next days")
 	left.add_child(LabUI.label("Waits, in seconds: from the opening to the first customer, and between customers", 14, LabUI.DIM))
 	var waits := HBoxContainer.new()
 	waits.add_theme_constant_override("separation", 8)
@@ -184,8 +189,8 @@ func _build() -> void:
 		var box := Button.new()
 		box.toggle_mode = true
 		box.theme_type_variation = &"ChipButton"
-		box.text = id
-		box.tooltip_text = titles[id]
+		box.text = titles[id] if titles[id] != "" else StoryFactPicker.humanize(id)
+		box.tooltip_text = "Starts at closing and stops the next morning"
 		box.toggled.connect(func(_on: bool) -> void: _apply())
 		flow.add_child(box)
 		_signs[id] = box
@@ -197,10 +202,14 @@ func _build() -> void:
 	right.add_child(_notes)
 
 
-func _flag_field(into: Control, title: String, placeholder: String) -> LineEdit:
-	into.add_child(LabUI.label(title, 14, LabUI.DIM))
-	var field := LineEdit.new()
-	field.placeholder_text = placeholder
-	field.text_changed.connect(func(_t: String) -> void: _settle.start())
+func _facts_field(into: Control, title: String, tip: String) -> StoryFlagsEditor:
+	var heading := LabUI.label(title, 14, LabUI.DIM)
+	heading.tooltip_text = tip
+	heading.mouse_filter = Control.MOUSE_FILTER_PASS
+	into.add_child(heading)
+	var field := StoryFlagsEditor.make(facts)
+	field.changed.connect(func(_flags: Dictionary[StringName, int]) -> void:
+		if not _filling:
+			_apply())
 	into.add_child(field)
 	return field
