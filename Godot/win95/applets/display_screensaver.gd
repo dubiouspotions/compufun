@@ -27,6 +27,9 @@ var _picked := false
 
 
 func _ready() -> void:
+	# A SpinBox's field fits 4 characters by default, which pushes these into their "minutes".
+	for minutes: SpinBox in [$Wait, $StandbyMinutes, $ShutOffMinutes]:
+		minutes.get_line_edit().add_theme_constant_override(&"minimum_character_width", 1)
 	_saver.clear()
 	_saver.add_item(_NONE)
 	for each: String in savers:
