@@ -2,3 +2,26 @@ customer: hat_guy
 problem: hardware_puzzle
 brief:
 	He took one part out and put the others in the wrong places. "I'm fixing it, it'll be super good."
+
+== drop-off
+(neutral) Howdy, partner!
+- Hat guy! I mean, hello, sir!
+- Welcome back! Partner...
+(happy) You will not believe your eyes, fellow hacker, but I'm fixing my computer. It'll be super good!
+- Really now...
+- So what brings you here then?
+(problem) Well... Currently it doesn't start. But it makes no sense whatsoever.
+- Did you change anything?
+- How so?
+(irritated01) I only took out some unnecessary parts and rearranged the rest to my new optimized super flow!
+- ...you did WHAT? Nevermind, I'll take care of it.
+- ...
+(happy) Nice to collab!
+- Yeah. That's the word.
+
+== pick-up
+(neutral) Howdy Hacker! How's our project coming along?
+- "Our project"...?
+- I found the issue and fixed it. Remember that certain hardware parts need to be in their correct place for them to work at all.
+(happy) You're a star!
+- Just [sigh] doing my job.
