@@ -8,7 +8,9 @@
 
 [resource]
 script = ExtResource("4_script")
+name = "Cole Vanderbilt"
 nickname = "Top hat man"
+email = "driftwoodpoint@aol.com"
 portraits = Dictionary[StringName, Texture2D]({
 &"angry": ExtResource("1_angry"),
 &"happy": ExtResource("2_happy"),
