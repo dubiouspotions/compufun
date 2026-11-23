@@ -119,6 +119,10 @@ var _dos: PackedStringArray = []
 var _shown_day: int = -1
 ## What the bottom bar says instead of the column's name until the next key or click; empty: nothing.
 var _status: String = ""
+## The printer that prints the page named [member _printing], while the print box shows over the
+## screen; null when nothing prints.
+var _printer: Printer
+var _printing: String = ""
 # The grid that _draw paints: one character, foreground and background per cell.
 var _chars: PackedStringArray = []
 var _fg: PackedColorArray = []
@@ -131,6 +135,7 @@ func _ready() -> void:
 		push_error("CompuFunDB: font is empty")
 	_load_problems()
 	mouse_exited.connect(_on_mouse_exited)
+	set_process(false)
 	Game.changed.connect(queue_redraw)
 	Game.changed.connect(_check_day)
 	Game.changed.connect(_reconcile)
@@ -626,6 +631,36 @@ func _print_page(page: PackedStringArray) -> void:
 		return
 	printer.print_page(page)
 	_status = "Printing on LPT1"
+	_printer = printer
+	_printing = page[0].get_slice("  ", 1)  # the heading's title: CHECKLIST or FIX
+	set_process(true)
+
+
+# Redraws the print box while the page prints, and takes it away when it is out.
+func _process(_delta: float) -> void:
+	if not is_instance_valid(_printer) or _printer.progress() < 0.0:
+		_printer = null
+		_printing = ""
+		set_process(false)
+	queue_redraw()
+
+
+# The print box in the middle of the screen: what prints, and how far, in a bar of blocks.
+func _paint_printing() -> void:
+	const WIDTH := 36
+	const TOP := 12
+	var left := (COLUMNS - WIDTH) / 2
+	var inner := WIDTH - 4
+	var done := roundi(_printer.progress() * inner)
+	var rows: PackedStringArray = [
+		"\u2554" + "\u2550".repeat(WIDTH - 2) + "\u2557",
+		"\u2551" + " Print ".rpad(WIDTH - 2) + "\u2551",
+		"\u2551" + (" Printing %s on LPT1..." % _printing).rpad(WIDTH - 2) + "\u2551",
+		"\u2551 " + "\u2588".repeat(done) + "\u2591".repeat(inner - done) + " \u2551",
+		"\u255a" + "\u2550".repeat(WIDTH - 2) + "\u255d",
+	]
+	for i: int in rows.size():
+		_put(left, TOP + i, rows[i], bright_color, bar_color)
 
 
 # The checklist: the symptom searched for, the checks with their ticks, and the causes still possible.
@@ -821,6 +856,8 @@ func _paint() -> void:
 		_put(_button_x(buttons[text], text), FRAME_ROWS[-1], text, bright_color, bar_color)
 	var status := _status if not _status.is_empty() else ("Searching..." if _searching else ("Reading..." if _loading() else HEADERS[_column]))
 	_bar(28, " %s" % status, count, bar_color)
+	if _printing != "":
+		_paint_printing()
 	_put(1, 29, "Type Search  \u2191\u2193 Move  \u2190\u2192 Column  Enter Pick  P Checklist  F Fix  Esc Leave", text_color)
 
 

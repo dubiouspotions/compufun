@@ -56,6 +56,13 @@ func print_page(lines: PackedStringArray) -> void:
 	_tween.tween_callback(_hotspot.set_enabled.bind(not _lines.is_empty()))
 
 
+## How far the page that prints is, 0 to 1, its form feed included; -1 while the printer is idle.
+func progress() -> float:
+	if _tween == null or not _tween.is_running():
+		return -1.0
+	return clampf(_tween.get_total_elapsed_time() / (_lines.size() * line_seconds + feed_seconds), 0.0, 1.0)
+
+
 ## Gives the finished page to the player to carry (Game.carry_printout); it leaves the printer. False,
 ## and the page stays, while a page prints, when no page is there, or while the player carries one.
 func take_page() -> bool:

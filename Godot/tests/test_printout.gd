@@ -252,5 +252,8 @@ func _check_print_fix() -> void:
 	var page: PackedStringArray = printer.get("_lines")
 	check("F prints the fix of the cause under the cursor", [page[0].begins_with("CompuFunDB 1.0  FIX  "), page[5], "CHECK" in page], [true, "Clogged CPU fan", false])
 	check("with the steps and their boxes", page[-1].ends_with("[ ]"), true)
+	check("the print box shows while it prints", [db.get("_printing"), printer.call("progress") >= 0.0], ["FIX", true])
+	await create_timer(printer.get("line_seconds") * page.size() + printer.get("feed_seconds") + 0.2).timeout
+	check("and goes when the page is out", [db.get("_printing"), printer.call("progress")], ["", -1.0])
 	db.queue_free()
 	printer.queue_free()
