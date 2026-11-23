@@ -20,6 +20,7 @@ back = ExtResource("back_png")
 voice = ExtResource("voice")
 name = "Sam Hilton"
 nickname = "Office girl"
+actor = "Elli Hägg"
 email = "sam.hilton@utsa.edu"
 portraits = Dictionary[StringName, Texture2D]({
 &"angry": ExtResource("2_cfflx"),

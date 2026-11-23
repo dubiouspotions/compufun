@@ -13,6 +13,9 @@ const MOODS: Array[StringName] = [
 @export var name: String = ""
 ## What the dialogue calls them. Empty until set; dialogue then uses the customer's display name.
 @export var nickname: String = ""
+## The real name of whoever was photographed, as the credits show it. Empty shows only the
+## [member nickname] there.
+@export var actor: String = ""
 ## The address on this person's own computer. Dialogue never shows it.
 @export var email: String = ""
 ## The cut-out portraits, keyed by mood. Empty in the wireframe.

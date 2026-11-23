@@ -226,7 +226,10 @@ bullets or other separators, so that tools can parse every glossary the same way
 *Avoid:* force turn, turn, camera move.
 
 **Name**: A person's name, for use on that person's computer (`Person.name`). Dialogue does not show it.
-*Avoid:* full name, real name, legal name.
+*Avoid:* full name, legal name.
+
+**Actor**: The real name of whoever was photographed for a person (`Person.actor`). The credits show it, with the person's nickname under it.
+*Avoid:* real name, cast member.
 
 **Nickname**: What the dialogue calls a person (`Person.nickname`). While it is empty, dialogue uses the customer's display name.
 *Avoid:* alias, handle, screen name.

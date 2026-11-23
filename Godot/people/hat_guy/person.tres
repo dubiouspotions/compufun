@@ -19,6 +19,7 @@ back = ExtResource("back_png")
 voice = ExtResource("voice")
 name = "Jose Garcia"
 nickname = "Hat guy"
+actor = "Mascoll Silverstolpe"
 email = "big_fish@yahoo.com"
 portraits = Dictionary[StringName, Texture2D]({
 &"angry": ExtResource("2_ebrk7"),

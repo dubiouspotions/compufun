@@ -16,6 +16,7 @@ relief_pose = &"angry"
 back = ExtResource("back_png")
 voice = ExtResource("voice")
 nickname = "Middle manager"
+actor = "milestone"
 portraits = Dictionary[StringName, Texture2D]({
 &"angry": ExtResource("2_angry"),
 &"bye": ExtResource("3_bye"),

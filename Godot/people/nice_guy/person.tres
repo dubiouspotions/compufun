@@ -12,6 +12,7 @@ script = ExtResource("5_script")
 voice = ExtResource("voice")
 name = "Matthew Williams"
 nickname = "Nice guy"
+actor = "Nevyn Bengtsson"
 email = "mattwill@yahoo.ca"
 portraits = Dictionary[StringName, Texture2D]({
 &"happy": ExtResource("2_happy"),
