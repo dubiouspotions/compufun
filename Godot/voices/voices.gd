@@ -150,8 +150,9 @@ static func chimera_problem(chimera: String) -> String:
 static func render(line: DialogueLine, voice: String, chimera: String) -> String:
 	var path := path_of(line, voice)
 	var shape := mood(line.mood)
+	# OS.execute with output runs a shell, which splits an argument at a double quote; quotes aren't spoken.
 	var arguments := ["render", "text", ProjectSettings.globalize_path(path).trim_suffix(".wav"),
-		line.text.replace("\n", " "), voice, "%.3f" % shape.rate, "%.3f" % shape.pitch, "%.3f" % shape.swing]
+		line.text.replace("\n", " ").replace("\"", ""), voice, "%.3f" % shape.rate, "%.3f" % shape.pitch, "%.3f" % shape.swing]
 	var output: Array = []
 	var code := OS.execute(chimera, arguments, output, true)
 	if code != 0 or not FileAccess.file_exists(path):
