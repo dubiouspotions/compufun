@@ -17,13 +17,14 @@ func run() -> void:
 
 	var errors: PackedStringArray = game.load_story(drafts({"res://story/errands/0598_nobody.errand": "customer: nobody_at_all\n"}))
 	check("a broken draft returns its error, naming the file", errors.size() == 1 and errors[0].begins_with("res://story/errands/0598_nobody.errand:1:"), true)
-	check("and the week that plays stays", [game.week == week, game.snapshot() == before], [true, true])
+	check("and the week that plays stays, with no drafts", [game.week == week, game.snapshot() == before, game.story_drafts], [true, true, {}])
 	check("the errors are kept for the screen", game.story_errors, errors)
 
 	var day_text := FileAccess.get_file_as_string(DAY_1)
 	var rainy := day_text.replace("weather: clear", "weather: rain") if day_text.contains("weather: clear") else "weather: rain\n" + day_text
 	check("a good draft loads", game.load_story(drafts({DAY_1: rainy})), PackedStringArray())
 	check("it plays at once, in the same day", [game.week != week, game.day.rain, game.day_number, game.phase], [true, true, 1, GAME.Phase.OPEN])
+	check("the game knows which drafts it plays", game.story_drafts, drafts({DAY_1: rainy}))
 
 	var shows := "customer: hat_guy\nproblem: dust_overheat\ncomputer: shows\n\n== drop-off\n(neutral) Look.\n\n== pick-up\n(neutral) Bye.\n"
 	check("an errand that shows its computer loads", game.load_story(drafts({SHOWS: shows})), PackedStringArray())

@@ -214,6 +214,7 @@ func _save(kind: String) -> void:
 		"author": author,
 		"marks": marks,
 		"game": Game.snapshot(),
+		"story_drafts": Game.story_drafts,
 		"camera": _camera_info(),
 		"open_screens": _open_screens(),
 		"build": {
@@ -402,12 +403,24 @@ func _issue_body(report: Dictionary) -> String:
 		"| Phase | %s |" % game["phase"],
 		"| Day | %s |" % game["day"],
 		"| Visitor | %s |" % String(game["visitor"]).get_file(),
-		"| Jobs | %s |" % ", ".join(PackedStringArray((game["jobs"] as Array).map(func(j: Dictionary) -> String: return "%s (slot %d)" % [j["problem"], j["slot"]]))),
+		"| Jobs | %s |" % ", ".join(PackedStringArray((game["jobs"] as Array).map(func(j: Dictionary) -> String: return "%s (slot %d)" % [j.get("errand", j.get("problem", "?")), j["slot"]]))),
 		"| Focus, cable | slot %d, slot %d |" % [game["focus_slot"], game["connected_slot"]],
 		"| Marks | %s |" % ("; ".join(hits) if not hits.is_empty() else "none"),
 		"| Build | %s on %s, Godot %s, %s |" % [build["commit"], build["branch"], build["godot"], build["os"]],
-		"", "<details><summary>report.json</summary>", "", "```json", JSON.stringify(report, "  "), "```", "", "</details>",
 	]
+	var drafts: Dictionary = report.get("story_drafts", {})
+	if not drafts.is_empty():
+		lines.append_array(["", "**The game played the writer's Story Lab drafts.** Write these files before reproducing:", ""])
+		for path: String in drafts:
+			var text := String(drafts[path])
+			if text == "":
+				lines.append("- `%s`: removed" % path)
+				continue
+			var fence := "```"
+			while text.contains(fence):
+				fence += "`"
+			lines.append_array(["<details><summary><code>%s</code></summary>" % path, "", fence, text.trim_suffix("\n"), fence, "", "</details>"])
+	lines.append_array(["", "<details><summary>report.json</summary>", "", "```json", JSON.stringify(report, "  "), "```", "", "</details>"])
 	return "\n".join(lines)
 
 

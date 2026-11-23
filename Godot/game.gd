@@ -67,6 +67,9 @@ var week: StoryFiles.Week
 ## The errors of the story files at the last [method load_story], one "path:line: what" each;
 ## empty when the week loaded.
 var story_errors: PackedStringArray = []
+## The Story Lab drafts that the week plays, res:// path to text ("" removes the file); empty for
+## the story files as they are.
+var story_drafts: Dictionary[String, String] = {}
 var day: Day
 ## How far down the day's errand codes ([method Day.codes]) today has come, 0 to their number:
 ## each code before it came in, or stays away for good ([method is_gone], or no alternative
@@ -307,6 +310,8 @@ func load_story(drafts: Dictionary[String, String] = {}) -> PackedStringArray:
 			if refused != "":
 				week = playing
 				errors.append("The game can't go on in the new week, so it plays the old one: " + refused)
+		if week == loaded:
+			story_drafts = drafts.duplicate()
 	story_errors = errors
 	return errors
 
