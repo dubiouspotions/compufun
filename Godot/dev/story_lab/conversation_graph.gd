@@ -38,6 +38,21 @@ signal edited
 ## The condition of a new answer, selected in its editor at once.
 @export var new_flag: StringName = &"new_flag"
 
+## Where the conversation goes after a choice's answer.
+enum After {
+	GO_ON, ## On below the list that the choice is in (a - choice).
+	ASK_AGAIN, ## Back to the same list, with this choice greyed (a + choice).
+	END, ## The conversation ends.
+}
+
+## The words for each [enum After], as the choice's dropdown shows them.
+const AFTER_WORDS: PackedStringArray = ["Go on below", "Ask the other questions again", "End the conversation"]
+const AFTER_TIPS: PackedStringArray = [
+	"After the answer, the conversation goes on below this list",
+	"After the answer, the player picks from this list again; this choice shows greyed",
+	"After the answer, the conversation ends",
+]
+
 ## The known facts (flag names) that the condition editors offer; the Lab sets it from the week.
 var facts: PackedStringArray = []
 
@@ -210,15 +225,20 @@ func add_answer(choice: Choice) -> Reply:
 	return answer
 
 
-## Turns [param choice] from - (goes on below its list) to + (returns to its list) to [end] and back.
+## Turns [param choice] from going on below its list to asking again to ending, and back.
 func cycle_mark(choice: Choice) -> void:
-	if choice.ends:
-		choice.ends = false
-	elif choice.returns:
-		choice.returns = false
-		choice.ends = true
-	else:
-		choice.returns = true
+	set_after(choice, ((after_of(choice) + 1) % After.size()) as After)
+
+
+## Where the conversation goes after [param choice]'s answer.
+static func after_of(choice: Choice) -> After:
+	return After.END if choice.ends else (After.ASK_AGAIN if choice.returns else After.GO_ON)
+
+
+## Makes the conversation go to [param after] once [param choice]'s answer has played.
+func set_after(choice: Choice, after: After) -> void:
+	choice.ends = after == After.END
+	choice.returns = after == After.ASK_AGAIN
 	_changed(choice)
 
 
@@ -749,13 +769,21 @@ func _choice_box(choice: Choice, reply: Reply, index: int) -> GraphNode:
 	box.add_child(chips)
 	var only := _chip("only if " + StoryConditionEditor.describe(choice.when), true) if choice.when != null else null
 	_spot(chips, only, choice, &"when", StoryFormat.write_condition(choice.when) if choice.when != null else "", func(said: String) -> String: return set_condition(choice, said))
-	var mark := Button.new()
-	mark.text = "end" if choice.ends else ("+" if choice.returns else "-")
-	mark.tooltip_text = "Ends the conversation after the answer." if choice.ends else ("Returns to this list after the answer." if choice.returns else "Goes on below this list after the answer.")
-	mark.custom_minimum_size = Vector2(36, 0)
-	mark.disabled = _read_only
-	mark.pressed.connect(func() -> void: cycle_mark(choice))
-	box.get_titlebar_hbox().add_child(mark)
+	var after_row := HBoxContainer.new()
+	after_row.add_child(_label("After the answer:", 11, ink))
+	var after := OptionButton.new()
+	after.add_theme_font_size_override(&"font_size", 11)
+	for i: int in AFTER_WORDS.size():
+		after.add_item(AFTER_WORDS[i], i)
+		after.set_item_tooltip(i, AFTER_TIPS[i])
+	after.select(after_of(choice))
+	after.tooltip_text = AFTER_TIPS[after_of(choice)]
+	after.disabled = _read_only
+	after.focus_mode = Control.FOCUS_NONE
+	after.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	after.item_selected.connect(func(index: int) -> void: set_after(choice, index as After))
+	after_row.add_child(after)
+	box.add_child(after_row)
 	if not _read_only:
 		_menu(box, _choice_menu(choice))
 	return box

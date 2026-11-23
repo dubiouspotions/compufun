@@ -69,6 +69,15 @@ func run() -> void:
 	await _check_file("an end mark")
 	graph.cycle_mark(choice)
 	check("end becomes -", [choice.returns, choice.ends], [false, false])
+	await process_frame
+	var after := _find(graph.box_of(choice), func(node: Node) -> bool: return node is OptionButton and (node as OptionButton).get_item_text(0) == "Go on below") as OptionButton
+	for pick: Array in [[1, true, false], [2, false, true], [0, false, false]]:
+		after.select(pick[0])
+		after.item_selected.emit(pick[0])
+		check("\"%s\" sets returns and ends" % after.get_item_text(pick[0]), [choice.returns, choice.ends], [pick[1], pick[2]])
+		await process_frame
+		after = _find(graph.box_of(choice), func(node: Node) -> bool: return node is OptionButton and (node as OptionButton).get_item_text(0) == "Go on below") as OptionButton
+		check("and the dropdown shows it", after.selected, pick[0])
 
 	var answer := graph.add_answer(choice)
 	check("the only answer becomes the else", [choice.replies.size(), choice.replies[0] == answer, answer.when.need_flags, choice.replies[1].when], [2, true, [graph.new_flag], null])
@@ -108,7 +117,7 @@ func run() -> void:
 	await process_frame
 	check("a list that loses its last choice takes in what came below it", [issue.choices.size(), issue.then], [4, null])
 	await _check_file("a folded list")
-	check("every edit emitted edited", edits, 24)
+	check("every edit emitted edited", edits, 27)
 
 	await _check_in_place(questions)
 

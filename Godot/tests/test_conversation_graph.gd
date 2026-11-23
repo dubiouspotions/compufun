@@ -64,7 +64,7 @@ func run() -> void:
 	check("a box for every reply and choice", boxes.filter(func(part: Resource) -> bool: return graph.box_of(part) == null), [])
 	check("no other boxes", graph.get_children().filter(func(node: Node) -> bool: return node is GraphNode).size(), boxes.size())
 	check("the greeting box has its line", _texts(graph.box_of(talk)).has("Yo! What's up! Is this the computer repair shop?"), true)
-	check("a choice box shows its mark", _texts(graph.box_of(questions.choices[0])).has("+"), true)
+	check("a choice box says in words what comes after its answer", _texts(graph.box_of(questions.choices[0])).has("Ask the other questions again"), true)
 	check("a condition chip", _texts(graph.box_of(questions.choices[2])).has("only if skater cambion"), true)
 	check("a flags chip", _texts(graph.box_of(questions.choices[0].replies[0])).has("remembers: skater new windows"), true)
 	check("if and else answers are boxes with chips", [_texts(graph.box_of(install.replies[0])).has("only if skater new windows"), _texts(graph.box_of(install.replies[1])).has("otherwise")], [true, true])
