@@ -359,23 +359,10 @@ static func is_program_name(file_name: String) -> bool:
 	return file_name.get_extension().to_lower() in ["exe", "com"]
 
 
-## The extensions that the app in [param program] opens: its root's `opens`, from the scene or
-## else from the root script's default. Reads it without making the app's scene.
+## The extensions that the app in [param program] opens: its root's `opens` (see
+## Win95File.root_property).
 static func opens_of(program: PackedScene) -> Array:
-	var state := program.get_state()
-	var script: Script
-	for i in state.get_node_property_count(0):
-		var property := state.get_node_property_name(0, i)
-		if property == &"opens":
-			return state.get_node_property_value(0, i)
-		if property == &"script":
-			script = state.get_node_property_value(0, i)
-	if script == null:
-		return []
-	var bare: Object = script.new()  # get_property_default_value returns null outside the editor (docs/gotchas.md)
-	var opens: Variant = bare.get(&"opens")
-	if bare is Node:
-		bare.free()
+	var opens: Variant = Win95File.root_property(program, &"opens")
 	return opens if opens is Array else []
 
 

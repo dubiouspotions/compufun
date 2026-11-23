@@ -1,4 +1,4 @@
-extends BackgroundTask
+extends Virus
 ## BIZOPP.EXE, the virus of the email_virus problem (VirusCheck): while it runs on a computer that
 ## is on, it opens or closes the CD-ROM drive's tray (Game.toggle_cd_tray) every few seconds. It
 ## stops itself once its file is off the desktop and drive C.

@@ -147,6 +147,31 @@ func eject_floppy() -> void:
 	floppy_files.clear()
 
 
+## Deletes for good, from the desktop and drive C at any depth, every file that [param doomed] (a
+## [code]func(file: Win95File) -> bool[/code]) holds true for, and every shortcut in the StartUp
+## folder whose target is such a file, as an antivirus cleans a virus off. Running tasks are the
+## caller's to end. Returns how many files it deleted, shortcuts not counted.
+func remove_files(doomed: Callable) -> int:
+	var startup := file_at(STARTUP_PATH)
+	if startup != null:
+		startup.children.assign(startup.children.filter(func(item: Win95File) -> bool:
+			var target := file_at(item.target) if item.target != "" else null
+			return target == null or not doomed.call(target)))
+	return _remove_from(desktop, doomed) + _remove_from(drive_c, doomed)
+
+
+static func _remove_from(container: Array, doomed: Callable) -> int:
+	var removed := 0
+	for i in range(container.size() - 1, -1, -1):
+		var file: Win95File = container[i]
+		if doomed.call(file):
+			container.remove_at(i)
+			removed += 1
+		else:
+			removed += _remove_from(file.children, doomed)
+	return removed
+
+
 ## The file or folder at [param path], or null. The path starts at drive C or the desktop, with
 ## backslashes, and ignores case as Win95 does: "C:\WINDOWS\SYSTEM.INI", "Desktop\todo.txt".
 func file_at(path: String) -> Win95File:

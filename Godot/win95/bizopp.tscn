@@ -5,3 +5,4 @@
 [node name="Bizopp" type="Node"]
 script = ExtResource("script")
 task_name = "Bizopp"
+virus_name = "Bizopp.A"

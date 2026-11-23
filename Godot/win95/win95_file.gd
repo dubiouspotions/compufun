@@ -51,3 +51,37 @@ func size_in_bytes() -> int:
 		var row := (picture.get_width() * 3 + 3) & ~3  # rows pad to 4 bytes
 		return 54 + row * picture.get_height()
 	return contents.to_utf8_buffer().size() + contents.count("\n")
+
+
+## The value of [param property] on [param program]'s root: as the scene sets it, else the root
+## script's default; null when the root has no such property. Reads it without making the scene.
+static func root_property(program: PackedScene, property: StringName) -> Variant:
+	var state := program.get_state()
+	var script: Script
+	for i in state.get_node_property_count(0):
+		var property_name := state.get_node_property_name(0, i)
+		if property_name == property:
+			return state.get_node_property_value(0, i)
+		if property_name == &"script":
+			script = state.get_node_property_value(0, i)
+	if script == null:
+		return null
+	var bare: Object = script.new()  # get_property_default_value returns null outside the editor (docs/gotchas.md)
+	var value: Variant = bare.get(property)
+	if bare is Node:
+		bare.free()
+	return value
+
+
+## True when the root script of [param program] is [param base] or extends it. Reads the scene
+## without making it.
+static func root_extends(program: PackedScene, base: Script) -> bool:
+	var state := program.get_state()
+	for i in state.get_node_property_count(0):
+		if state.get_node_property_name(0, i) == &"script":
+			var script: Script = state.get_node_property_value(0, i)
+			while script != null:
+				if script == base:
+					return true
+				script = script.get_base_script()
+	return false

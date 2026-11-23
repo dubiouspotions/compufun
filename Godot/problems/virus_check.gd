@@ -38,13 +38,9 @@ func apply_break(setup: Win95Setup) -> void:
 	startup.children.append(shortcut)
 
 
-## Deletes every copy of the virus and its StartUp shortcut for good.
+## Deletes every copy of the virus, and each StartUp shortcut to one, for good.
 func apply_fix(setup: Win95Setup) -> void:
-	for top: Array in [setup.desktop, setup.drive_c]:
-		_remove(top)
-	var startup := setup.file_at(Win95Setup.STARTUP_PATH)
-	if startup != null:
-		startup.children.assign(startup.children.filter(func(item: Win95File) -> bool: return item.name.nocasecmp_to(startup_name) != 0))
+	setup.remove_files(_is_virus)
 
 
 func is_fixed(setup: Win95Setup) -> bool:
@@ -87,12 +83,3 @@ func _find(container: Array, path: String) -> String:
 		if inside != "":
 			return inside
 	return ""
-
-
-func _remove(container: Array) -> void:
-	for i in range(container.size() - 1, -1, -1):
-		var file: Win95File = container[i]
-		if _is_virus(file):
-			container.remove_at(i)
-		else:
-			_remove(file.children)

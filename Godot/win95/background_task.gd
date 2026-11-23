@@ -22,15 +22,7 @@ var computer: ComputerState
 ## True when [param program]'s scene root is a BackgroundTask, so it runs without a window. Reads
 ## the scene without making it.
 static func runs_in_background(program: PackedScene) -> bool:
-	var state := program.get_state()
-	for i in state.get_node_property_count(0):
-		if state.get_node_property_name(0, i) == &"script":
-			var script: Script = state.get_node_property_value(0, i)
-			while script != null:
-				if script == BackgroundTask:
-					return true
-				script = script.get_base_script()
-	return false
+	return Win95File.root_extends(program, BackgroundTask)
 
 
 ## Starts the task on [param state], once it is in the tree. A subclass that overrides it calls
