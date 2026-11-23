@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## Repairs Dust Overheat through the Game API, as the wiki page Hardware Repair says: laying it down,
-## the side panel and its screws, the real order, one piece in the hand, the storage, the trash,
-## power, and a restore.
+## the side panel and its screws, the real order, one piece in the hand, the mat, the storage, the
+## trash, power, and a restore.
 
 const GAME := preload("res://game.gd")
 
@@ -68,24 +68,30 @@ func run() -> void:
 	check("the old fan goes in the trash", [game.trash_part(), game.hand], [true, null])
 	check("nothing to throw away", game.trash_part(), false)
 	check("the CPU comes out now", game.take_part(job, cpu), true)
-	game.trash_part()
+	check("the CPU goes on the mat", [game.put_on_mat(job), job.mat.size(), game.hand], [true, 1, null])
 	check("the GPU comes out freely: only the panel is screwed", game.take_part(job, gpu), true)
-	game.trash_part()
+	game.put_on_mat(job)
 	check("the RAM sits on the motherboard too", game.take_part(job, board), false)
 	for slot: Part in [Part.named(&"ram_1"), Part.named(&"ram_2")]:
 		game.take_part(job, slot)
-		game.trash_part()
+		game.put_on_mat(job)
 	check("the motherboard comes out last", game.take_part(job, board), true)
 	check("an empty place: no power", game.can_power_on(job), false)
-	game.trash_part()
-	check("the trash keeps them, the last one on top", Job.pieces_data(game.trashed), ["fan!", "cpu", "gpu", "ram", "ram", "motherboard"])
-	game.take_new_part(cpu)
+	game.put_on_mat(job)  # the mat: [cpu, gpu, ram, ram, motherboard]
+	game.take_from_mat(job, 0)
 	check("the CPU can't go in before the motherboard", game.put_part(job), false)
-	game.return_part(cpu)
-	check("the motherboard comes back out of the trash and goes in", [game.take_from_trash(), game.hand.part, game.put_part(job)], [true, board, true])
-	for each: Part in [Part.named(&"ram"), Part.named(&"ram"), gpu, cpu]:
-		check("then the %s" % each.id(), [game.take_from_trash(), game.hand.part, game.put_part(job)], [true, each, true])
-	check("all back in, the broken fan left in the trash", [job.places.size(), Job.pieces_data(game.trashed)], [6, ["fan!"]])
+	game.put_on_mat(job)  # [gpu, ram, ram, motherboard, cpu]
+	game.take_from_mat(job, 3)
+	check("taken back from the mat: the motherboard", game.hand.part, board)
+	check("the motherboard goes in", game.put_part(job), true)
+	game.take_from_mat(job, 3)
+	check("then the CPU", [game.hand.part, game.put_part(job)], [cpu, true])
+	game.take_from_mat(job, 0)
+	check("then the GPU", [game.hand.part, game.put_part(job)], [gpu, true])
+	for i in 2:
+		game.take_from_mat(job, 0)
+		game.put_part(job)
+	check("then the RAM, and the mat is empty", [job.piece(Part.named(&"ram_2")) != null, job.mat.size()], [true, 0])
 	check("a new fan from the storage", [game.take_new_part(fan), game.hand.broken], [true, false])
 	check("not into another part's box", game.return_part(cpu), false)
 	check("back into its own box", [game.return_part(fan), game.hand], [true, null])
@@ -106,7 +112,7 @@ func run() -> void:
 	game.set_powered(job, true)
 	check("it switches on again", job.powered, true)
 
-	# A snapshot keeps the pieces, the case, the hand and the trash; a restore gives them back.
+	# A snapshot keeps the pieces, the mat, the case and the hand; a restore gives them back.
 	game.go_to_view(&"Workview")
 	check("laying it down switches it off", [game.lay_down(job), job.powered], [true, false])
 	game.turn_screw(job, 0)
@@ -114,28 +120,16 @@ func run() -> void:
 	game.open_case(job, true)
 	game.take_part(job, fan)
 	check("a fan that was in a computer doesn't go back in its box", game.return_part(fan), false)
-	game.trash_part()
+	game.put_on_mat(job)
 	game.take_new_part(gpu)
 	var saved: Dictionary = game.snapshot()
-	check("the snapshot names the pieces", [saved["jobs"][0]["parts"].size(), saved["trashed"], saved["hand"]], [6, ["fan!", "fan"], ["gpu+"]])
+	check("the snapshot names the pieces", [saved["jobs"][0]["parts"].size(), saved["jobs"][0]["mat"], saved["hand"]], [6, ["fan"], ["gpu+"]])
 	game.trash_part()
 	check("restore", game.restore(saved), "")
 	check("a restore keeps it lying", game.jobs[0].lying, true)
 	var back: Job = game.jobs[0]
-	check("restored", [back.case_open, back.piece(fan), Job.pieces_data(game.trashed), game.hand.part, game.hand.unused], [true, null, ["fan!", "fan"], gpu, true])
+	check("restored", [back.case_open, back.piece(fan), back.mat.size(), game.hand.part, game.hand.unused], [true, null, 1, gpu, true])
 	check("the panel's screws restored", back.panel_screws, [false, false])
-
-	# An older report has pieces on a job's mat: they go in the trash, on top, and an unused one can
-	# still go back into its box.
-	var old_report: Dictionary = saved.duplicate(true)
-	old_report["jobs"][0]["mat"] = ["cpu!", "ram+"]
-	old_report["hand"] = []
-	check("an old report with a mat restores", game.restore(old_report), "")
-	check("its mat is in the trash", [Job.pieces_data(game.trashed), game.snapshot()["jobs"][0].has("mat")], [["fan!", "fan", "cpu!", "ram+"], false])
-	check("the unused RAM goes back into its box", [game.take_from_trash(), game.return_part(Part.named(&"ram"))], [true, true])
-	old_report["jobs"][0]["mat"] = ["toaster"]
-	check("a mat with an unknown part: refused", game.restore(old_report).contains("job 0: the mat:"), true)
-	back = game.jobs[0]
 	saved["jobs"][0]["parts"]["cpu"] = "fan"
 	check("a fan in the CPU's place: refused", game.restore(saved).contains("takes cpu, not fan"), true)
 

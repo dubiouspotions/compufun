@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
 ## When a computer leaves the counter, the computers right of it shift left: the counter holds them
-## oldest first from slot 0, and the focus, the cable and the open case go with them.
+## oldest first from slot 0, and the focus, the cable, the open case and its mat go with them.
 
 const SKATER: String = "res://customers/skater_bro.tres"
 const ACCOUNTANT: String = "res://customers/retired_accountant.tres"
@@ -19,13 +19,13 @@ func run() -> void:
 	shop.queue_free()
 
 
-# The skater's computer in slot 0 leaves; the accountant's (in focus, lying open, its fan out)
+# The skater's computer in slot 0 leaves; the accountant's (in focus, lying open, a fan on its mat)
 # and the activist's (on the cable) slide one slot left.
 func _left_one_leaves(shop: Node3D) -> void:
 	var open_parts := {"cpu": "cpu", "gpu": "gpu", "hard_drive": "hard_drive", "motherboard": "motherboard", "ram_1": "ram", "ram_2": "ram"}
 	check("restore three computers, the skater picks up", game.restore({"day": 1, "arrivals": 3, "jobs": [
 		{"customer": SKATER, "problem": "dust_overheat", "slot": 0, "order": 0, "hardware_fixed": true, "software_fixed": true},
-		{"customer": ACCOUNTANT, "problem": "no_sound", "slot": 1, "order": 1, "case_open": true, "panel_screws": [false, false], "parts": open_parts},
+		{"customer": ACCOUNTANT, "problem": "no_sound", "slot": 1, "order": 1, "case_open": true, "panel_screws": [false, false], "parts": open_parts, "mat": ["fan"]},
 		{"customer": ACTIVIST, "problem": "bad_ram", "slot": 2, "order": 2, "powered": true},
 	], "focus_slot": 1, "connected_slot": 2, "visitor": SKATER, "visit": "PICKUP", "visitor_state": "TALKING", "view": "Main"}), "")
 	await create_timer(0.5).timeout
@@ -33,9 +33,9 @@ func _left_one_leaves(shop: Node3D) -> void:
 	var activist: Job = game.jobs[2]
 	game.dialogue_finished()
 	check("slot, order", [slots(), accountant.order, activist.order], [["Retired accountant@0", "Activist guy@1"], 1, 2])
-	check("focus, cable and open case stay with their computers",
-			[game.focus == accountant, game.connected == activist, accountant.lying, accountant.case_open, accountant.places.size(), activist.powered],
-			[true, true, true, true, 6, true])
+	check("focus, cable, open case and mat stay with their computers",
+			[game.focus == accountant, game.connected == activist, accountant.lying, accountant.case_open, Job.pieces_data(accountant.mat), activist.powered],
+			[true, true, true, true, ["fan"], true])
 	check("the snapshot names the new slots", [game.snapshot()["focus_slot"], game.snapshot()["connected_slot"]], [0, 1])
 	await process_frame
 	var accountant_pc := computer_of(shop, accountant)
@@ -47,9 +47,9 @@ func _left_one_leaves(shop: Node3D) -> void:
 	var plug: Node3D = shop.find_child("Bench", true, false).get_node("%Plug")
 	var socket: Node3D = activist_pc.cable_socket()
 	check("the cable's plug is in the activist's socket", plug.global_position.distance_to(socket.global_position) < 0.001, true)
-	var panel: Node3D = accountant_pc.get_node("OpenCase/Panel")
+	var mat: Node3D = accountant_pc.get_node("OpenCase/Mat")
 	var slot0: Node3D = shop.find_child("Slot0", true, false)
-	check("the side panel moved with the accountant's computer", absf(panel.global_position.x - slot0.global_position.x) < 0.5, true)
+	check("the mat moved with the accountant's computer", absf(mat.global_position.x - slot0.global_position.x) < 0.5, true)
 
 
 # The office girl's computer in the middle leaves: the hat guy's stays in slot 0, the entrepreneur's

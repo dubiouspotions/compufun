@@ -1,7 +1,7 @@
 class_name OpenCase
 extends Node3D
 ## A job's computer lying on its side (wiki: Hardware Repair): the side panel on with its two screws,
-## or the open case with its pieces and the panel leaning against its back (PanelOff),
+## or the open case with its pieces and the mat and the panel leaning against its back (PanelOff),
 ## where a click puts it back on. It draws the job from Game on every change and acts through Game.
 ## What the player can use now has a thin pulsing outline, and a screw or an empty screw hole that
 ## can turn a beating ring; where the piece in the hand or a screw can go shows a see-through ghost of
@@ -51,6 +51,7 @@ var active: bool = false:
 			_sync()
 
 var _shown: Dictionary[StringName, Node3D] = {}
+var _mat_shown: Array[Node3D] = []
 # Panel screw index to [screw head, hotspot, pulse ring, empty hole].
 var _screws: Array[Array] = []
 var _screw_ring: ShaderMaterial
@@ -70,6 +71,9 @@ var _driver_materials: Array[StandardMaterial3D] = []
 var _lying: Dictionary[Piece, Array] = {}
 
 @onready var _places: Node3D = %Places
+@onready var _spots: Node3D = %Spots
+# Left and right of the screwdriver's outline, so that no part lies on it.
+@onready var _mat_surfaces: Array[Node] = %MatSurfaces.get_children()
 @onready var _eye: Marker3D = %Eye
 @onready var _panel: MeshInstance3D = %Panel
 @onready var _panel_hotspot: Hotspot = %PanelHotspot
@@ -103,6 +107,13 @@ func _ready() -> void:
 			var hotspot := place.get_node("Hotspot") as Hotspot
 			hotspot.clicked.connect(_on_place_clicked.bind(part).unbind(1))
 			_watch(hotspot)
+	for i: int in _spots.get_child_count():
+		var spot := _spots.get_child(i).get_node("Hotspot") as Hotspot
+		spot.clicked.connect(_on_spot_clicked.bind(i).unbind(1))
+		_watch(spot)
+	for surface: Hotspot in _mat_surfaces:
+		surface.clicked.connect(func(_h: Hotspot) -> void: Game.put_on_mat(job))
+		_watch(surface)
 	_panel_hotspot.clicked.connect(func(_h: Hotspot) -> void: Game.open_case(job, not job.case_open))
 	_watch(_panel_hotspot)
 	if _panel_screws.get_child_count() != Job.PANEL_SCREWS:
@@ -115,7 +126,7 @@ func _ready() -> void:
 
 ## Gives the outside of the case (the side panel and the front) the case material, the case front
 ## and the stickers of [param computer], as PcTower.dress does for the upright tower; null keeps plain
-## beige plastic and the classic front. The left side lies on the work mat, so its stickers don't show.
+## beige plastic and the classic front. The left side lies on the mat, so its stickers don't show.
 func dress(computer: Computer) -> void:
 	var case_material: Material = computer.case_material if computer != null else null
 	if case_material != null:
@@ -125,7 +136,8 @@ func dress(computer: Computer) -> void:
 	Sticker.stick(computer.stickers if computer != null else ([] as Array[Sticker]), _sticker_faces)
 
 
-## Where the Workview camera looks from at this lying computer, in world space.
+## Where the Workview camera looks from at this lying computer, in world space: high enough for the
+## case and the mat to both show.
 func eye_transform() -> Transform3D:
 	return _eye.global_transform
 
@@ -162,6 +174,15 @@ func _sync() -> void:
 			_shown[part.id()] = _show_model(piece, place)
 		(place.get_node("Hotspot") as Hotspot).set_enabled(active and (Game.can_take(job, part) or Game.can_put(job, part)))
 	_sync_lying()
+	for shown: Node3D in _mat_shown:
+		shown.queue_free()
+	_mat_shown.clear()
+	for i: int in job.mat.size():
+		_mat_shown.append(_show_model(job.mat[i], _spot(i)))
+	for i: int in _spots.get_child_count():
+		(_spots.get_child(i).get_node("Hotspot") as Hotspot).set_enabled(active and Game.hand == null and i < job.mat.size())
+	for surface: Hotspot in _mat_surfaces:
+		surface.set_enabled(active and Game.hand != null)
 	if _hovered != null and not _hovered.input_ray_pickable:
 		_on_hover(_hovered, -1, false)
 	_sync_highlights()
@@ -228,6 +249,10 @@ func _lift(piece: Piece, place: Part) -> void:
 		Game.take_blocker(job)
 	else:
 		Game.take_misplaced(job, place)
+
+
+func _spot(index: int) -> Node3D:
+	return _spots.get_child(mini(index, _spots.get_child_count() - 1)) as Node3D
 
 
 func _show_model(piece: Piece, where: Node3D) -> Node3D:
@@ -323,6 +348,12 @@ func _sync_highlights() -> void:
 	for laid: Array in _lying.values():
 		if (laid[1] as Hotspot).input_ray_pickable:
 			_highlight(laid[0], laid[1])
+	for i: int in _mat_shown.size():
+		var spot_hotspot := _spot(i).get_node("Hotspot") as Hotspot
+		if spot_hotspot.input_ray_pickable:
+			_highlight(_mat_shown[i], spot_hotspot)
+	if _hovered in _mat_surfaces and Game.hand != null:  # the mat is wide: a ghost only where the player points
+		_add_ghost(Game.hand.part.model, _spot(job.mat.size()), _hovered)
 	if _panel_hotspot.input_ray_pickable:
 		_highlight(_panel, _panel_hotspot)
 	for i: int in _screws.size():
@@ -452,3 +483,7 @@ func _on_place_clicked(part: Part) -> void:
 		Game.take_part(job, part)
 	else:
 		Game.put_part(job, part)
+
+
+func _on_spot_clicked(index: int) -> void:
+	Game.take_from_mat(job, index)

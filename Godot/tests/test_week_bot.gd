@@ -52,7 +52,7 @@ const KNOWN_GAME_METHODS: Array[String] = [
 	"offered", "reply_to", "choose", "go_on", "matching_conversation", "coming", "go_to_view",
 	# the repair
 	"focus_job", "job_beside", "lay_down", "can_stand_up", "stand_up", "open_case", "turn_screw", "can_turn",
-	"can_take", "take_part", "can_put", "put_part", "take_new_part", "can_take_blocker", "take_blocker", "can_take_misplaced", "take_misplaced",
+	"can_take", "take_part", "can_put", "put_part", "take_new_part", "can_take_blocker", "take_blocker", "can_take_misplaced", "take_misplaced", "put_on_mat", "take_from_mat",
 	"can_return_part", "return_part", "trash_part", "take_from_trash", "connect_cable", "set_powered",
 	"can_power_on", "setup_for", "has_floppy", "can_eject", "eject_floppy", "set_software_fixed", "set_tested",
 	# CompuFunDB and the printout
@@ -407,12 +407,12 @@ func _turn_screws(job: Job, out: bool) -> void:
 			_fail("screw %d won't turn %s" % [i, "out" if out else "in"])
 
 
-# Lifts the misplaced pieces onto the trash, puts a new piece from the storage in each place whose
-# part is missing, and the lifted pieces from the trash in their own places.
+# Lifts the misplaced pieces onto the mat, puts a new piece from the storage in each place whose
+# part is missing, and the lifted pieces from the mat in their own places.
 func _rearrange(job: Job) -> void:
 	var lifted := 0
 	for place: Part in job.misplaced.keys():
-		if not (game.take_misplaced(job, place) and game.trash_part()):
+		if not (game.take_misplaced(job, place) and game.put_on_mat(job)):
 			_fail("the %s misplaced on %s won't come off" % [job.misplaced[place].part.id(), place.id()])
 			return
 		lifted += 1
@@ -422,7 +422,7 @@ func _rearrange(job: Job) -> void:
 				_fail("a new %s for the missing one won't go in" % place.piece_part().id())
 				return
 	for i: int in lifted:
-		if not (game.take_from_trash() and game.put_part(job)):
+		if not (game.take_from_mat(job, job.mat.size() - 1) and game.put_part(job)):
 			_fail("the lifted %s won't go in its own place" % (game.hand.part.id() if game.hand != null else "piece"))
 			return
 

@@ -780,6 +780,26 @@ func put_part(job: Job, place: Part = null) -> bool:
 	return true
 
 
+## Lays the piece in the hand on the mat of [param job].
+func put_on_mat(job: Job) -> bool:
+	if not _on_counter(job, "put_on_mat") or hand == null:
+		return false
+	job.mat.append(hand)
+	hand = null
+	changed.emit()
+	return true
+
+
+## Takes the piece at [param index] on the mat of [param job] into the empty hand.
+func take_from_mat(job: Job, index: int) -> bool:
+	if not _on_counter(job, "take_from_mat") or hand != null or index < 0 or index >= job.mat.size():
+		return false
+	hand = job.mat[index]
+	job.mat.remove_at(index)
+	changed.emit()
+	return true
+
+
 ## Takes a new piece of [param part] from its box in the storage into the empty hand.
 func take_new_part(part: Part) -> bool:
 	if part == null:
@@ -1164,8 +1184,7 @@ func snapshot() -> Dictionary:
 ## arrivals, an empty counter, an empty hand and trash, no printout, no flags, nothing seen, no
 ## CompuFunDB records or start-up, the daypart of the arrivals; a missing view keeps the current one.
 ## The conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
-## Keys in [constant RETIRED_KEYS] are ignored, with what they held. The pieces on a job's "mat",
-## which older reports carry, go in the trash on top of "trashed", job by job, so none is lost.
+## Keys in [constant RETIRED_KEYS] are ignored, with what they held.
 func restore(state: Dictionary) -> String:
 	var known := snapshot()
 	for key: Variant in state:
@@ -1203,7 +1222,6 @@ func restore(state: Dictionary) -> String:
 			new_flags[StringName(str(key))] = int(given_flags[key])
 
 	var new_jobs: Array[Job] = []
-	var from_mats: Array[Piece] = []
 	var slots: Array[int] = []
 	var given_jobs: Array = state.get("jobs", [])
 	if given_jobs.size() > MAX_JOBS:
@@ -1270,7 +1288,7 @@ func restore(state: Dictionary) -> String:
 		var mat_pieces: Variant = Job.pieces_from(data.get("mat", []))
 		if mat_pieces is String:
 			return _refuse("job %d: the mat: %s" % [i, mat_pieces])
-		from_mats.append_array(mat_pieces)
+		job.mat.assign(mat_pieces)
 		job.case_open = bool(data.get("case_open", false))
 		job.lying = job.case_open or bool(data.get("lying", false))
 		if data.has("panel_screws"):
@@ -1372,7 +1390,7 @@ func restore(state: Dictionary) -> String:
 	calling = new_calling
 	phone_off_hook = new_off_hook
 	hand = hand_pieces[0] if not hand_pieces.is_empty() else null
-	trashed.assign(trashed_pieces + from_mats)
+	trashed.assign(trashed_pieces)
 	printout = new_printout[0]
 	printout_ticks.assign(new_printout[1])
 	visitor = new_visitor

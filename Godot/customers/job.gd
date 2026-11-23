@@ -23,6 +23,8 @@ var blocker: Piece
 ## The pieces that lie askew on places that don't take them (Problem.misplaced), keyed by that place,
 ## which holds no piece of its own while one lies on it.
 var misplaced: Dictionary[Part, Piece] = {}
+## The pieces that the player took out and put down on the mat beside the computer.
+var mat: Array[Piece] = []
 ## The computer lies on its side, the side panel up, in every view: the player laid it down in the
 ## Workview and hasn't stood it up again. Always true while [member case_open].
 var lying: bool = false
@@ -186,6 +188,7 @@ func snapshot() -> Dictionary:
 		"parts": places_data(),
 		"blocker": blocker != null,
 		"misplaced": misplaced_data(),
+		"mat": Job.pieces_data(mat),
 	}
 	if errand != null and errand.file != "":
 		data["errand"] = errand.file_name()

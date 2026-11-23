@@ -1,7 +1,7 @@
 class_name Piece
 extends RefCounted
-## One real part: which Part it is, and whether it is broken. It sits in a computer, is in the
-## player's hand, or lies in the trash.
+## One real part: which Part it is, and whether it is broken. It sits in a computer, lies on a job's
+## mat, or is in the player's hand.
 
 const PSX_WORLD: Shader = preload("res://shaders/psx_world.gdshader")
 

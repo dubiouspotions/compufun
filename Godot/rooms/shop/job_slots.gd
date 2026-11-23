@@ -12,7 +12,7 @@ signal floppy_clicked(job: Job)
 ## The player clicked the screwdriver beside the computer of [param job], or its outline.
 signal screwdriver_clicked(job: Job)
 ## The computer of [param job] moved toward its job's slot: on every frame of its slide, and once
-## more where it stops. Everything on it (the open case, the post-it, the cable's socket, the Workview's
+## more where it stops. Everything on it (the mat, the post-it, the cable's socket, the Workview's
 ## eye) moved with it.
 signal computer_moved(job: Job)
 

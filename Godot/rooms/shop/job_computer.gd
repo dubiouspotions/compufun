@@ -74,8 +74,9 @@ var _floppy_drives: Array[Node] = []
 @onready var _post_it_anchor: Node3D = $PostItAnchor
 @onready var _open_case: OpenCase = %OpenCase
 @onready var _front: Area3D = %Front
-# Off the lying case once it leans against the back.
+# Off the lying case: the panel once it leans against the back, and the mat with its pieces.
 @onready var _case_panel: Node3D = $OpenCase/Panel
+@onready var _case_mat: Node3D = $OpenCase/Mat
 @onready var _screwdriver: Node3D = %Screwdriver
 @onready var _screwdriver_outline: Sprite3D = %ScrewdriverOutline
 @onready var _screwdriver_hotspot: Hotspot = %ScrewdriverHotspot
@@ -240,7 +241,7 @@ func _fit_outline() -> void:
 
 
 func _visible_bounds() -> AABB:
-	var loose: Array[Node3D] = [_outline]
+	var loose: Array[Node3D] = [_outline, _case_mat]
 	if job.case_open:
 		loose.append(_case_panel)
 	var bounds := AABB()

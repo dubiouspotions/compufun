@@ -58,7 +58,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _the_end: TheEnd = %TheEnd
 @onready var _hand: Hand = %Hand
 
-## Plays when a part comes into the player's hand, and when it leaves it (put in, back in its tray, in the trash).
+## Plays when a part comes into the player's hand, and when it leaves it (put in, on the mat, away).
 @export var part_take_sound: SoundSet = preload("res://sounds/part_take.tres")
 @export var part_put_sound: SoundSet = preload("res://sounds/part_put.tres")
 ## Plays at a computer's socket when the keyboard cable goes in, and when it comes out.
