@@ -25,6 +25,9 @@ const IDS: Array[StringName] = [&"motherboard", &"cpu", &"fan", &"ram_1", &"ram_
 ## of another part and works like it, as Skater Bro's heart does for the motherboard: that part. Its
 ## pieces go in the places that take that part. null for a real part.
 @export var poses_as: Part
+## Plays instead of the shop's usual sound as a piece of this part comes into or leaves the hand, such
+## as a squelch; null for the usual sound.
+@export var handle_sound: SoundSet
 ## A loop that plays from a computer while a piece of this part is in it, such as a heartbeat. It
 ## must loop (edit/loop_mode in its .import). null for none.
 @export var sound: AudioStream

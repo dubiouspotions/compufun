@@ -46,6 +46,9 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 ## A flag that is 1 while none of the [member stand_ins] is in the computer, after the player took
 ## them out, and 0 while one is. Empty for none.
 @export var replaced_flag: StringName = &""
+## A scene that the open case shows inside it for this visit, whatever the player takes out, such as
+## blood on the case's floor. Its origin is the case's, with the floor at y 0.01. null for none.
+@export var case_dressing: PackedScene
 ## False leaves the problem out of CompuFunDB: none of its symptoms or steps shows there.
 @export var in_compufun_db: bool = true
 ## Corruption signs (their ids) that start as the customer sets the computer down, such as blood

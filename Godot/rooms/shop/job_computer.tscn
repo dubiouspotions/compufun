@@ -113,3 +113,4 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
 script = ExtResource("hum")
 volume_db = -14.0
 unit_size = 1.5
+from_clock = true

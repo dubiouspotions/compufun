@@ -528,14 +528,19 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 				Game.return_part(hotspot.part)
 
 
+# The sound of [param piece] coming into or leaving the hand: its part's own, else [param usual].
+func _handle_sound(piece: Piece, usual: SoundSet) -> SoundSet:
+	return piece.part.handle_sound if piece.part.handle_sound != null else usual
+
+
 # Plays the sound of each hand and cable change since the last sync, whatever made it, unless the
 # state [param jumped] there.
 func _play_changes(jumped: bool) -> void:
 	if Game.hand != _heard_hand and not jumped:
 		if _heard_hand == null:
-			part_take_sound.play_at(_hand)
+			_handle_sound(Game.hand, part_take_sound).play_at(_hand)
 		elif Game.hand == null:
-			part_put_sound.play_at(_hand)
+			_handle_sound(_heard_hand, part_put_sound).play_at(_hand)
 	_heard_hand = Game.hand
 	if Game.connected != _heard_cable and not jumped:
 		var old_socket := _job_slots.cable_socket(_heard_cable) if _heard_cable != null and _heard_cable in Game.jobs else null

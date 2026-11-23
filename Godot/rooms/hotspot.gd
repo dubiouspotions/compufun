@@ -17,8 +17,13 @@ const DROP_TARGETS: StringName = &"hotspot_drop_targets"
 ## For TAKE_PART: the part that a click takes from the storage into the empty hand, or that an unused
 ## piece in the hand goes back to (see [method Game.return_part]).
 @export var part: Part
-## The size of the clickable box, in metres. It applies when the game runs.
-@export var size: Vector3 = Vector3(0.5, 0.5, 0.5)
+## The size of the clickable box, in metres. It applies when the game runs, and at once when it
+## changes while the game runs.
+@export var size: Vector3 = Vector3(0.5, 0.5, 0.5):
+	set(value):
+		size = value
+		if is_node_ready():
+			(_shape.shape as BoxShape3D).size = value
 ## The player can drag the part in the hand here: dropping it acts as a click (see Hand). Set before
 ## the hotspot enters the tree.
 @export var takes_drop: bool = false

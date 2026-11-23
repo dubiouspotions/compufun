@@ -95,6 +95,11 @@ var _fading: Tween
 var _driver_materials: Array[StandardMaterial3D] = []
 # The pieces that lie on a place that isn't theirs (Job.blocker, Job.misplaced), to [model, hotspot].
 var _lying: Dictionary[Piece, Array] = {}
+# Each place's hotspot as the scene has it: [position, size]. A stand-in's hotspot fits its model.
+var _place_hotspots: Dictionary[Part, Array] = {}
+# The problem's case dressing (Problem.case_dressing), and the problem that it is for.
+var _dressing: Node3D
+var _dressing_for: Problem
 
 @onready var _places: Node3D = %Places
 @onready var _spots: Node3D = %Spots
@@ -131,6 +136,7 @@ func _ready() -> void:
 		var place := _place(part)
 		if place != null:
 			var hotspot := place.get_node("Hotspot") as Hotspot
+			_place_hotspots[part] = [hotspot.position, hotspot.size]
 			hotspot.clicked.connect(_on_place_clicked.bind(part).unbind(1))
 			_watch(hotspot)
 	for i: int in _spots.get_child_count():
@@ -197,7 +203,11 @@ func _sync() -> void:
 			_shown.erase(part.id())
 			shown = null
 		if piece != null and shown == null:
-			_shown[part.id()] = _show_model(piece, place)
+			shown = _show_model(piece, place)
+			_shown[part.id()] = shown
+			_fit_hotspot(part, shown if piece.part.poses_as != null else null)
+		elif piece == null:
+			_fit_hotspot(part, null)
 		(place.get_node("Hotspot") as Hotspot).set_enabled(active and (Game.can_take(job, part) or Game.can_put(job, part)))
 	_sync_lying()
 	if job.case_open and not _was_open and active:
@@ -207,6 +217,7 @@ func _sync() -> void:
 	_sync_mat()
 	for surface: Hotspot in _mat_surfaces:
 		surface.set_enabled(active and Game.hand != null)
+	_sync_dressing()
 	if _hovered != null and not _hovered.input_ray_pickable:
 		_on_hover(_hovered, -1, false)
 	_sync_highlights()
@@ -407,6 +418,32 @@ func _lay_flat(model: Node3D, height: float, index: int) -> float:
 	return height + box.size.y
 
 
+# Fits the hotspot of the place [param part] around [param model], a stand-in that lies elsewhere
+# than the part it poses as; null puts the hotspot back as the scene has it.
+func _fit_hotspot(part: Part, model: Node3D) -> void:
+	var hotspot := _place(part).get_node("Hotspot") as Hotspot
+	var home: Array = _place_hotspots[part]
+	var box := Part.bounds(model) if model != null else AABB(home[0] - home[1] / 2.0, home[1])
+	hotspot.size = box.size
+	hotspot.position = box.get_center()
+
+
+func _sync_dressing() -> void:
+	var problem := job.problem
+	if problem == _dressing_for:
+		return
+	_dressing_for = problem
+	if _dressing != null:
+		_dressing.queue_free()
+		_dressing = null
+	if problem != null and problem.case_dressing != null:
+		_dressing = problem.case_dressing.instantiate() as Node3D
+		if _dressing == null:
+			push_error("OpenCase: the case dressing of %s is not a Node3D scene" % problem.resource_path)
+			return
+		add_child(_dressing)
+
+
 func _show_model(piece: Piece, where: Node3D) -> Node3D:
 	var model := piece.make_model()
 	if model == null:
@@ -496,7 +533,7 @@ func _sync_highlights() -> void:
 		if job.piece(part) != null:
 			_highlight(_shown.get(part.id()), hotspot)
 		elif Game.hand != null:
-			_add_ghost(Game.hand.part.model, place, hotspot)
+			_add_ghost(part.piece_part().model, place, hotspot)  # the hardware that belongs there, whatever the hand holds
 	for laid: Array in _lying.values():
 		if (laid[1] as Hotspot).input_ray_pickable:
 			_highlight(laid[0], laid[1])
