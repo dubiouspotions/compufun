@@ -46,6 +46,7 @@
 [ext_resource type="PackedScene" path="res://rooms/shop/sound_zones.tscn" id="sound_zones"]
 [ext_resource type="PackedScene" path="res://rooms/shop/work_cables.tscn" id="work_cables"]
 [ext_resource type="Texture2D" path="res://materials/textures/funtastic_sticker.png" id="funtastic_sticker"]
+[ext_resource type="Texture2D" path="res://materials/textures/trash_poster.png" id="trash_poster"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_v1ium"]
 size = Vector3(8, 0.1, 7.6)
@@ -565,6 +566,11 @@ view = &"Note"
 transform = Transform3D(0.9945219, 0.104528464, 0, -0.104528464, 0.9945219, 0, 0, 0, 1, -0.9, 0.78, -0.923)
 texture = ExtResource("funtastic_sticker")
 size = Vector2(0.63, 0.168)
+
+[node name="TrashPoster" parent="Room" instance=ExtResource("23_poster")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16, 0.73, -0.922)
+texture = ExtResource("trash_poster")
+size = Vector2(0.38, 0.3325)
 
 [node name="CorruptionSigns" type="Node" parent="."]
 script = ExtResource("corruption_signs")
