@@ -3,13 +3,18 @@ extends CorruptionSign
 ## on the right wall) leave the wall like the cards of the Solitaire win, one after the other in
 ## [member order]: each shakes on the wall, turns to face the counter, drops to the floor between the counter and
 ## the door, bounces lower and lower towards the other side of the shop, and leaves a still copy of
-## itself at every step, lit like the room. Stage 1 plays it, and the night waits for it
+## itself at every step, lit like the room. As in the Solitaire win, each copy draws over every copy
+## before it, nearer or not; the room still hides them. Stage 1 plays it, and the night waits for it
 ## ([method busy]); then it sets stage 2: the sheets stay on the floor, the trail behind them. Stage
 ## 0 hangs them back on the wall.
 
 const SHEETS: StringName = &"solitaire_posters"
 ## A fall that never reaches the floor stops after this many steps.
 const MAX_STEPS: int = 1000
+## How much nearer than the copy before it each copy sorts, in metres: more than the shop is deep.
+const LAYER_METRES: float = 100.0
+const _PSX_WORLD := preload("res://shaders/psx_world.gdshader")
+const _PSX_LAYERED := preload("res://shaders/psx_world_layered.gdshader")
 
 ## The names of the sheets in the order they fall. A sheet of the group that is not named falls last.
 @export var order: Array[StringName] = [&"SignLeft", &"CommercialPoster", &"Sign"]
@@ -47,6 +52,9 @@ var _paths: Array = []  # one Array[Transform3D] per sheet
 var _fallen: bool = false
 var _step: int = 0
 var _clock: float = 0.0
+var _copies: int = 0
+# Each sheet material's twin in the transparent pass, where sorting_offset orders the copies.
+var _layered: Dictionary[Material, Material] = {}
 
 @onready var _trail: Node3D = %Trail
 
@@ -191,7 +199,9 @@ func _leave_copy(meshes: Array[MeshInstance3D]) -> void:
 	for mesh: MeshInstance3D in meshes:
 		var copy := MeshInstance3D.new()
 		copy.mesh = mesh.mesh
-		copy.material_override = mesh.material_override
+		copy.material_override = _layered_material(mesh)
+		copy.sorting_offset = _copies * LAYER_METRES
+		_copies += 1
 		copy.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		_trail.add_child(copy)
 		copy.global_transform = mesh.global_transform
@@ -200,3 +210,20 @@ func _leave_copy(meshes: Array[MeshInstance3D]) -> void:
 func _remove_copies() -> void:
 	for copy: Node in _trail.get_children():
 		copy.queue_free()
+	_copies = 0
+	_layered.clear()  # a logo may have changed its art since
+
+
+# [param mesh]'s material in the transparent pass; its own material, which can't layer, when it isn't psx_world.
+func _layered_material(mesh: MeshInstance3D) -> Material:
+	var material := mesh.material_override
+	if not _layered.has(material):
+		var psx := material as ShaderMaterial
+		if psx == null or psx.shader != _PSX_WORLD:
+			push_error("posters_bounce: %s has no psx_world material, so its trail can't draw over the earlier copies" % mesh.get_path())
+			_layered[material] = material
+		else:
+			var layered := psx.duplicate() as ShaderMaterial
+			layered.shader = _PSX_LAYERED
+			_layered[material] = layered
+	return _layered[material]
