@@ -5,7 +5,7 @@ extends CanvasLayer
 ## The report goes to <repo>/feedback/<time>_<name>/: shot.png (with the marks) and report.json
 ## (the note, the marks and what is under them, the Game state, the room and the build). With
 ## "Send to GitHub" ticked, it also makes a GitHub issue (GitHubIssues): the screenshot goes to the
-## branch "feedback", and the issue joins the project board.
+## branch "feedback", and the board's own workflow adds the issue to the board.
 
 const HINT: String = "Draw on the picture: circle or underline what you mean."
 const NO_SHOT_HINT: String = "No screenshot (a headless run?). The report saves without one."
@@ -32,8 +32,6 @@ const ACCENTS: Dictionary = {
 @export var output_dir: String = ""
 ## The GitHub repo for the issues, as owner/name. Empty: read it from git's remote "origin".
 @export var github_repo: String = ""
-## The number of the GitHub project (the board) that a new issue joins. 0: no board.
-@export var github_project: int = 4
 
 var _shot: Image
 var _strokes: Array[PackedVector2Array] = []
@@ -299,7 +297,7 @@ func _start_send(report: Dictionary, folder: String) -> void:
 			if err != OK:
 				shot_error = "cannot write %s: %s" % [shot, error_string(err)]
 				shot = ""
-	var github := GitHubIssues.new(self, token["token"], github_repo, github_project, "HumanError-F9")
+	var github := GitHubIssues.new(self, token["token"], github_repo, "HumanError-F9")
 	_sending = true
 	_show_toast("Sending the report to GitHub...", 0.0)
 	var result := await _send_to_github(github, folder, shot, shot_error, _issue_title(report), _issue_body(report))
@@ -317,9 +315,6 @@ func _on_sent(result: Dictionary) -> void:
 	if result.get("image_error", "") != "":
 		push_warning("F9 report: the issue has no screenshot: %s" % result["image_error"])
 		text += ", without the screenshot"
-	if result.get("board_error", "") != "":
-		push_warning("F9 report: the issue is not on the board: %s" % result["board_error"])
-		text += ", but not on the board (the token needs Projects: read and write)"
 	print("F9 report sent: %s" % url)
 	_show_toast(text, 6.0)
 

@@ -9,8 +9,6 @@ signal sent(text: String, ok: bool)
 
 ## The GitHub repo as owner/name; "" reads it from git's remote origin.
 var github_repo: String = ""
-## The board that the issue joins; 0 joins none.
-var github_project: int = 4
 
 var _drafts: StoryDrafts
 var _files: Label
@@ -53,7 +51,7 @@ func _send_now() -> void:
 	if token.has("error"):
 		_done("Not sent: %s. Your drafts stay." % token["error"], false)
 		return
-	var github := GitHubIssues.new(self, token["token"], github_repo, github_project, "HumanError-StoryLab")
+	var github := GitHubIssues.new(self, token["token"], github_repo, "HumanError-StoryLab")
 	var files := StoryIssue.files(_drafts)
 	_sending = true
 	_send.disabled = true
@@ -66,9 +64,6 @@ func _send_now() -> void:
 		_done("Not sent: %s. Your drafts stay." % String(result["error"]).get_slice("\n", 0), false)
 		return
 	var text := "Issue #%s created" % String(result["url"]).get_file()
-	if result["board_error"] != "":
-		push_warning("Story Lab: the issue is not on the board: %s" % result["board_error"])
-		text += ", but not on the board (the token needs Projects: read and write)"
 	print("Story Lab sent: %s" % result["url"])
 	_note.text = ""
 	_done(text + ". Your drafts stay until main has them.", true)

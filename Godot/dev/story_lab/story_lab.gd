@@ -9,8 +9,6 @@ const CUSTOMERS_DIR: String = "res://customers/"
 
 ## The GitHub repo that Send makes the issue in, as owner/name; "" reads git's remote origin.
 @export var github_repo: String = ""
-## The number of the GitHub project (the board) that the issue joins; 0 joins none.
-@export var github_project: int = 4
 
 ## True: edits go straight into res://story/ in the checkout, and no drafts play (the Dev menu's
 ## Save to checkout).
@@ -415,7 +413,6 @@ func _build() -> void:
 	add_child(_drafts_panel)
 	_send_panel = StorySendPanel.new()
 	_send_panel.github_repo = github_repo
-	_send_panel.github_project = github_project
 	_send_panel.sent.connect(func(text: String, ok: bool) -> void: _say(text, not ok))
 	add_child(_send_panel)
 	_customers = PopupMenu.new()
