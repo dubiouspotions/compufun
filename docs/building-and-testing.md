@@ -179,7 +179,7 @@ does with the new thing, or decide that a week doesn't need it, then add the nam
 ## Voices
 
 **Layers.** A line's voice is three layers, each over the one below (`Voices.layer`): the
-`VoicePerson` of the customer's person (`voices/persons/`, one per person), the `VoiceMood` of the line's mood (`voices/moods/`)
+`VoicePerson` of the customer's person (`voices/persons/`, one per person), the `VoiceMood` of the line's voice mood (`voices/moods/`)
 and a `VoiceEffect` (`voices/effects/`) of the line or its conversation. Make all three in the
 Voice Lab (Dev menu, F3 or Cmd+3); a story file gives an effect to a conversation or a line. An effect has a
 base, an alternate and a curve over the line that says how much of the alternate plays at each
@@ -202,7 +202,7 @@ tools/build-voice.sh
 ```
 
 **Rendered.** Each customer line plays a WAV in `Godot/voices/`, which [Chimera](https://github.com/jamesondh/chimera-vocal-synth)
-renders from the text, in the body of the customer's `voice` person and the line's mood
+renders from the text, in the body of the customer's `voice` person and the line's voice mood
 (`Godot/voices/moods/<mood>.tres`: speed, pitch and pitch swing). A line without its file is
 silent, and a debug run warns about it. Conversations that every customer shares, such as what
 they say while they wait, live in `Godot/customers/conversations/`; they are rendered in each

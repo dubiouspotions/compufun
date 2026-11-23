@@ -24,8 +24,9 @@ story/bible/customers.md
   `people/<name>/person.tres`). Their mechanics are code; the Story Lab shows their text. A
   problem's mechanics stay in `problems/<id>.tres`, and its text is in its problem file.
 - **Moods:** a line picks a mood, which picks the portrait (`Person.portraits`) and the voice
-  (`voices/moods/<mood>.tres`). A person has the moods that it has portraits for. A mood without
-  a voice mood file speaks as neutral, and the story check lists it.
+  (`voices/moods/<mood>.tres`), unless the line has its own voice mood (`[voice mood]`). A person
+  has the moods that it has portraits for. A voice mood without a file speaks as neutral, and the
+  story check lists it.
 
 ## A day: `story/days/day_<n>.day`
 
@@ -143,7 +144,9 @@ brief: He arrives cheerful; the problem comes out only when asked.
 ```
 
 - `(mood) text` is a customer line. Without a mood it is neutral. `[effect name]` at the end
-  gives it its own voice effect (`voices/effects/<name>.tres`). `[leaving]` makes it a call-out:
+  gives it its own voice effect (`voices/effects/<name>.tres`). `[voice mood]` speaks it in another
+  voice mood than its portrait's (`voices/moods/<mood>.tres`), for a portrait used outside its own
+  mood. `[leaving]` makes it a call-out:
   the customer says it while walking out, outside the dialogue box, as at the end of a visit.
   Leaving lines come last: the box closes before them. A leaving line that the conversation can go
   on after plays in the box, and the story check lists it.
@@ -192,7 +195,7 @@ files on every push; nobody edits it.
 
 The files are the outline. The story check lists the missing links: a flag that nothing sets or
 checks, a `+` choice without a line, an errand without a `drop-off`, an errand code whose alternatives can
-all fail, a mood that the person has no portrait for or no voice for, a `[leaving]` line that the
+all fail, a mood that the person has no portrait for, a voice mood that a line speaks in and that has no voice, a `[leaving]` line that the
 conversation can go on after, a look that is unknown or never turns the view, a problem without repair mechanics, a problem file that no errand
 names:
 

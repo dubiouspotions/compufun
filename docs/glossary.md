@@ -175,8 +175,11 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Bible**: The prose of the story that the game doesn't read: the lore, the cast and the end (`story/bible/`).
 *Avoid:* lore doc, storyline page.
 
-**Mood**: How a customer says a line: it picks the person's portrait and the voice mood (`voices/moods/<mood>.tres`). A person has the moods that it has portraits for.
+**Mood**: How a customer says a line: it picks the person's portrait, and the voice mood unless the line has its own. A person has the moods that it has portraits for.
 *Avoid:* pose, emotion, expression.
+
+**Voice mood**: How a line sounds, apart from its picture: a `VoiceMood` in `voices/moods/<mood>.tres` (speed, pitch and more). A line speaks in its mood's voice mood, or in its own (`DialogueLine.voice_mood`, `[voice mood]` in a story file) when a portrait is used outside its own mood.
+*Avoid:* voice pose, tone.
 
 **Story Lab**: The panel in the running game (Dev menu, F4) that edits the story files: the week, the errands and their conversations, as a graph or as text, and plays a conversation in place.
 *Avoid:* Dialogue tab, Week tab, story editor, dialogue editor.

@@ -56,6 +56,7 @@ notes:
 
 
 func run() -> void:
+	_check_voice_mood()
 	var parsed := StoryFormat.parse_errand(ERRAND, "res://story/errands/0101_skater_bro.errand")
 	check("the errand parses", parsed.errors, PackedStringArray())
 	var errand := parsed.value as Errand
@@ -114,3 +115,17 @@ func _check_errors(label: String, errors: PackedStringArray, expected: Array) ->
 	for i: int in mini(errors.size(), expected.size()):
 		found.append(errors[i].contains(expected[i]))
 	check("%s errors: %s" % [label, errors], [errors.size(), found], [expected.size(), expected.map(func(_e: String) -> bool: return true)])
+
+
+# [voice mood] speaks a line in another voice mood than its portrait's, written only when it differs.
+func _check_voice_mood() -> void:
+	const PATH := "res://story/errands/0101_skater_bro.errand"
+	var text := "customer: skater_bro\n\n== drop-off\n(happy) Ha! [look left] [voice angry] [effect cambion_glitch]\n(happy) Hi [voice happy]\n(problem) Hm [effect cambion_glitch] [voice thinking]\n"
+	var parsed := StoryFormat.parse_errand(text, PATH)
+	check("[voice mood] parses", parsed.errors, PackedStringArray())
+	var lines := (parsed.value as Errand).conversations[0].lines
+	check("a line's own voice mood", [lines[0].mood, lines[0].voice_mood, lines[0].voice()], [&"happy", &"angry", &"angry"])
+	check("the same voice mood as its mood is no voice mood of its own", [lines[1].voice_mood, lines[1].voice()], [&"", &"happy"])
+	var written := StoryFormat.write_errand(parsed.value as Errand)
+	check("written after the look, before the effect, and only where it differs", written, "customer: skater_bro\n\n== drop-off\n(happy) Ha! [look left] [voice angry] [effect cambion_glitch]\n(happy) Hi\n(problem) Hm [voice thinking] [effect cambion_glitch]\n")
+	check("and it reads back the same", StoryFormat.write_errand(StoryFormat.parse_errand(written, PATH).value as Errand), written)

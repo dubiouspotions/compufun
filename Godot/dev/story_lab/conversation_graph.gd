@@ -1395,7 +1395,7 @@ func _same(a: Reply, b: Reply) -> bool:
 	if a.lines.size() != b.lines.size() or a.choices.size() != b.choices.size():
 		return false
 	for i: int in a.lines.size():
-		if a.lines[i].text != b.lines[i].text or a.lines[i].mood != b.lines[i].mood:
+		if a.lines[i].text != b.lines[i].text or a.lines[i].mood != b.lines[i].mood or a.lines[i].voice_mood != b.lines[i].voice_mood:
 			return false
 	for i: int in a.choices.size():
 		var x := a.choices[i]

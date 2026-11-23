@@ -412,6 +412,9 @@ func _complete() -> void:
 	elif RegEx.create_from_string("\\[effect [a-z0-9_]*$").search(before) != null:
 		options = LabUI.resource_names("res://voices/effects/")
 		suffix = "]"
+	elif RegEx.create_from_string("\\[voice [a-z0-9_]*$").search(before) != null:
+		options = LabUI.resource_names(Voices.MOODS_DIR)
+		suffix = "]"
 	elif RegEx.create_from_string("\\[[a-z]*$").search(before) != null:
 		options = PackedStringArray(["if ", "once]", "effect ", "leave ", "back "] if before.begins_with("==") else ["if ", "end]"])
 	elif RegEx.create_from_string("(^\\t*(set|if) |\\[if )[^\\]]*$").search(before) != null:

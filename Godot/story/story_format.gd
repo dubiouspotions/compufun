@@ -177,6 +177,8 @@ static func _write_block(out: PackedStringArray, reply: Reply, depth: int) -> vo
 		var said: String = "%s(%s) %s" % [tabs, line.mood, line.text]
 		if line.look != &"":
 			said += " [look %s]" % line.look
+		if line.voice() != line.mood:
+			said += " [voice %s]" % line.voice_mood
 		if line.effect != null:
 			said += " [effect %s]" % _stem(line.effect)
 		if line.leaving:
@@ -588,18 +590,22 @@ class _Reader:
 		if mood != null:
 			line.mood = StringName(mood.get_string(1))
 			text = text.substr(mood.get_end())
-		var tag := RegEx.create_from_string("\\s*\\[(effect [a-z0-9_]+|look [a-z0-9_]+|leaving)\\]$")
+		var tag := RegEx.create_from_string("\\s*\\[(effect [a-z0-9_]+|look [a-z0-9_]+|voice [a-z0-9_]+|leaving)\\]$")
 		var found := tag.search(text)
 		while found != null:
 			if found.get_string(1) == "leaving":
 				line.leaving = true
 			elif found.get_string(1).begins_with("look "):
 				line.look = StringName(found.get_string(1).substr(5))
+			elif found.get_string(1).begins_with("voice "):
+				line.voice_mood = StringName(found.get_string(1).substr(6))
 			else:
 				line.effect = _load(EFFECTS_DIR, found.get_string(1).substr(7), token.line, "voice effect") as VoiceEffect
 			text = text.substr(0, found.get_start())
 			found = tag.search(text)
 		line.text = text
+		if line.voice_mood == line.mood:
+			line.voice_mood = &""
 		if text == "":
 			_error(token.line, "a line without text")
 		return line
