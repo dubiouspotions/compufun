@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="Part" format=3]
+[gd_resource type="Resource" script_class="FloppyDisk" format=3]
 
-[ext_resource type="Script" path="res://parts/part.gd" id="1_part"]
+[ext_resource type="Script" path="res://parts/floppy_disk.gd" id="1_part"]
 [ext_resource type="PackedScene" path="res://props/floppy_disk.tscn" id="2_model"]
 
 [resource]

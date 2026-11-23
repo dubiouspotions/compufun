@@ -36,6 +36,12 @@ const IDS: Array[StringName] = [&"motherboard", &"cpu", &"fan", &"ram_1", &"ram_
 @export var sound: AudioStream
 
 
+## A new instance of [member model], dressed as this part shows it, such as a FloppyDisk's label;
+## null when the part has no model.
+func instantiate_model() -> Node3D:
+	return model.instantiate() as Node3D if model != null else null
+
+
 ## The part's id, from its file name, such as &"cpu".
 func id() -> StringName:
 	return StringName(resource_path.get_file().get_basename())

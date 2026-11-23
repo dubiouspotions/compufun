@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="FloppyDisk" format=3]
+
+[ext_resource type="Script" path="res://parts/floppy_disk.gd" id="1_part"]
+[ext_resource type="PackedScene" path="res://props/floppy_disk.tscn" id="2_model"]
+[ext_resource type="Texture2D" path="res://materials/textures/antivirus_label.png" id="3_label"]
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="4_file"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/computer_install_software_32.png" id="5_setup_icon"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/document_text_32.png" id="6_text_icon"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/file_unknown_32.png" id="7_unknown_icon"]
+
+[sub_resource type="Resource" id="setup"]
+script = ExtResource("4_file")
+name = "SETUP.EXE"
+icon = ExtResource("5_setup_icon")
+modified = "Monday, March 4, 1996 10:00:00 AM"
+
+[sub_resource type="Resource" id="readme"]
+script = ExtResource("4_file")
+name = "README.TXT"
+icon = ExtResource("6_text_icon")
+contents = "CompuFun AntiVirus 1.0
+======================
+
+TO INSTALL
+Put this disk in drive A:. Open My Computer, then 3 1/2 Floppy (A:),
+and double-click SETUP.EXE. Setup copies the scanner to
+C:\\Program Files\\CompuFun AntiVirus.
+
+TO SCAN
+Double-click CompuFun AntiVirus on the desktop, or click Start,
+Programs, CompuFun AntiVirus. Click Scan Now. If the scanner finds
+a virus, click Clean.
+
+Scan every computer that comes through the shop.
+A clean computer is a happy customer!
+
+CompuFun Software Division, 1996
+"
+modified = "Monday, March 4, 1996 10:00:00 AM"
+
+[sub_resource type="Resource" id="packed"]
+script = ExtResource("4_file")
+name = "AV.EX_"
+icon = ExtResource("7_unknown_icon")
+modified = "Monday, March 4, 1996 10:00:00 AM"
+
+[resource]
+script = ExtResource("1_part")
+label = ExtResource("3_label")
+files = Array[ExtResource("4_file")]([SubResource("setup"), SubResource("readme"), SubResource("packed")])
+display_name = "CompuFun AntiVirus"
+model = ExtResource("2_model")

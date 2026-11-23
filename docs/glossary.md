@@ -128,6 +128,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Computer mouse**: The part that the ceiling mouse drops (`parts/mouse.tres`). No computer has a place for it. Always say *computer mouse* for the part, so it never means the animal.
 *Avoid:* mouse (alone), peripheral.
 
+**Floppy disk**: A 3.5" disk that goes into a computer's drive A: and comes out of it into the hand (`FloppyDisk`, a part that no place takes): its label (`FloppyDisk.label`) and the files on it. The generic one (`parts/floppy.tres`) is the bootfloppy problem's; the CompuFun AntiVirus disk (`parts/antivirus_floppy.tres`) comes from its box in the Storage View.
+*Avoid:* diskette, floppy (alone in code).
+
 **Ceiling mouse**: The easter egg, off for now (`CeilingMouse.enabled`): the animal in the hole above the player that squeaks and drops the computer mouse, once in the whole game (`CeilingMouse`, the flag `ceiling_mouse`).
 *Avoid:* rat, the mouse (alone).
 

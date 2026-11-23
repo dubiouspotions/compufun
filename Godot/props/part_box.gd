@@ -47,7 +47,7 @@ func _show() -> void:
 	if part.model == null:
 		push_error("PartBox %s: %s has no model" % [get_path(), part.resource_path])
 		return
-	var probe := part.model.instantiate() as Node3D
+	var probe := part.instantiate_model()
 	var box := Part.bounds(probe)
 	probe.free()
 	var fit := minf(1.0, minf(inside.x / maxf(box.size.x, 0.001), inside.y / maxf(box.size.z, 0.001)))
@@ -62,7 +62,7 @@ func _show() -> void:
 	for i: int in shown_count:
 		var at := i % per_layer
 		var cell := Vector2(at % columns + 0.5 - columns * 0.5, floorf(float(at) / columns) + 0.5 - rows * 0.5)
-		var model := part.model.instantiate() as Node3D
+		var model := part.instantiate_model()
 		model.scale = Vector3.ONE * fit
 		model.rotation.y = deg_to_rad(random.randf_range(-jumble_degrees, jumble_degrees))
 		model.position = Vector3(cell.x * size.x, floorf(float(i) / per_layer) * size.y, cell.y * size.z)

@@ -26,7 +26,7 @@ func make_model() -> Node3D:
 	if part.model == null:
 		push_error("Piece: %s has no model" % part.resource_path)
 		return null
-	var model := part.model.instantiate() as Node3D
+	var model := part.instantiate_model()
 	var broken_look := model.get_node_or_null(^"Broken") as Node3D
 	if broken_look != null:
 		broken_look.visible = broken

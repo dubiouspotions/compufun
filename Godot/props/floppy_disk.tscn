@@ -1,8 +1,10 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://props/floppy_disk.gd" id="0_script"]
 [ext_resource type="Material" path="res://materials/dark_plastic.tres" id="1_body"]
 [ext_resource type="Material" path="res://materials/paper.tres" id="2_label"]
 [ext_resource type="Material" path="res://materials/floppy_label.tres" id="3_flag"]
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="4_psx"]
 
 [sub_resource type="BoxMesh" id="Disk"]
 size = Vector3(0.09, 0.0033, 0.094)
@@ -13,7 +15,17 @@ size = Vector3(0.07, 0.0004, 0.026)
 [sub_resource type="QuadMesh" id="Flag"]
 size = Vector2(0.02, 0.02)
 
+[sub_resource type="QuadMesh" id="Print"]
+size = Vector2(0.068, 0.024)
+
+[sub_resource type="ShaderMaterial" id="PrintMaterial"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("4_psx")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)
+
 [node name="FloppyDisk" type="Node3D"]
+script = ExtResource("0_script")
 
 [node name="Disk" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.00165, 0)
@@ -29,3 +41,9 @@ mesh = SubResource("Label")
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -0.022, 0.0039, 0.031)
 material_override = ExtResource("3_flag")
 mesh = SubResource("Flag")
+
+[node name="Print" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.0039, 0.031)
+visible = false
+material_override = SubResource("PrintMaterial")
+mesh = SubResource("Print")
