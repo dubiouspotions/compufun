@@ -4,6 +4,8 @@ symptoms:
 	Stops before Windows starts
 	Error text at startup
 	No sound
+	Can't open pictures
+	Programs won't start
 checks:
 	no: Windows starts
 	yes: Memory test passes

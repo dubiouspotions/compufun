@@ -3,6 +3,7 @@ cause: Programs lost their .EXE
 symptoms:
 	Can't open pictures
 	Programs won't start
+	Icons don't open
 checks:
 	no: Programs start
 		shows: in C:\WINDOWS: NOTEPAD, WORDPAD, PBRUSH, CALC and others

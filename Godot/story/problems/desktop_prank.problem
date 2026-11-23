@@ -2,6 +2,8 @@ post-it: Icons don't open
 cause: Screenshot set as wallpaper
 symptoms:
 	Icons don't open
+	Can't open pictures
+	Programs won't start
 checks:
 	no: Desktop icons open
 	yes: Picture is clean

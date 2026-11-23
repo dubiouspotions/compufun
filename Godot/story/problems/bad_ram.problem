@@ -6,6 +6,8 @@ symptoms:
 	Restarts by itself
 	Blue screen
 	No sound
+	Can't open pictures
+	Programs won't start
 checks:
 	no: Windows starts
 	no: Memory test passes

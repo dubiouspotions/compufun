@@ -63,7 +63,7 @@ func _check_screen() -> void:
 	await create_timer(0.5).timeout  # the read, then the first hit
 	check("the first symptom found shows alone", _texts(db, SEARCH).size(), 1)
 	await create_timer(0.4).timeout
-	check("then the rest, whatever the case", [_texts(db, SEARCH), db.get("_searching")], [["Garbled picture", "No picture at all", "Can't open pictures"], false])
+	check("then the rest, whatever the case", [_texts(db, SEARCH), db.get("_searching")], [["Can't open pictures", "Garbled picture", "No picture at all"], false])
 	db.set("search_seconds", Vector2.ZERO)
 	db.set("hit_seconds", Vector2.ZERO)
 	_press(db, KEY_BACKSPACE)

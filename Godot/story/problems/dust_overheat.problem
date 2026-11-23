@@ -3,6 +3,9 @@ cause: Faulty CPU fan
 symptoms:
 	Restarts by itself
 	Slow computer
+	Can't open pictures
+	Programs won't start
+	Icons don't open
 checks:
 	yes: Windows starts
 	yes: Memory test passes

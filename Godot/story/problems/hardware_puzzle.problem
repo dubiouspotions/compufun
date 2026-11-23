@@ -4,6 +4,8 @@ symptoms:
 	No picture at all
 	Stops before Windows starts
 	No sound
+	Can't open pictures
+	Programs won't start
 checks:
 	no: Windows starts
 	no: Shows a picture at power-on
