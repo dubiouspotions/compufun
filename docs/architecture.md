@@ -90,4 +90,5 @@ Do not change these without the team:
 - **The Godot project is in `Godot/`, not the repo root.** Docs, CI and art sources stay out of Godot's import scan. CI's `working-directory` and artifact paths assume it.
 - **GL Compatibility renderer.** The web export needs it. Forward+ breaks the web build.
 - **`textures/vram_compression/import_etc2_astc=true`.** The macOS export is universal (arm64) and needs ETC2/ASTC textures. Without it, the macOS export fails.
+- **`application/run/max_fps=60`.** V-Sync alone draws 120 frames a second or more on fast screens, which doubles the load (docs/performance.md).
 - **The names of the export presets** (`Web`, `Windows Desktop`, `MacOS`, `Linux`). CI exports them by name.
