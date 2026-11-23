@@ -59,7 +59,14 @@ func run() -> void:
 	check("the credits come after the error", await _until(finale, &"credits", 4.0), true)
 	check("the error stays its error_seconds", now() - error_shown >= finale.get("error_seconds"), true)
 	var people: Array = finale.call("cast")
-	check("the credits show every person with a portrait", [people.size() > 3, finale.get_node("%Cast").get_child_count()], [true, people.size()])
+	var shown: Array[String] = []
+	for row: Node in finale.get_node("%Cast").get_children():
+		for card: Node in row.get_children():
+			shown.append((card.get_node("%Actor") as Label).text)
+	check("the credits show every person with a portrait", [people.size() > 3, shown.size()], [true, people.size()])
+	check("each by their real name, or their nickname where it is not known",
+			people.all(func(person: Person) -> bool: return shown.has(person.actor if person.actor != "" else person.nickname)), true)
+	check("some real names are known", people.any(func(person: Person) -> bool: return person.actor != ""), true)
 	check("the credits thank the player", (finale.get_node("%Thanks") as Label).text, (finale.get("text") as FinaleText).thanks)
 	_press_key(KEY_SPACE, " ")
 	check("a key while the credits fade in does not end them", [finale.call("stage"), finale.call("is_playing")], [&"credits", true])

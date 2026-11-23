@@ -21,8 +21,10 @@ extends Resource
 @export_multiline var linux_error: String = ""
 ## The heading of the credits.
 @export var thanks: String = ""
-## The line above the row of portraits.
+## The line above the portraits.
 @export var cast_heading: String = ""
+## The line under a portrait's real name; %s is the person's nickname.
+@export var cast_role: String = "as %s"
 ## The credits under the portraits.
 @export_multiline var credits: String = ""
 ## The line at the bottom of the credits.

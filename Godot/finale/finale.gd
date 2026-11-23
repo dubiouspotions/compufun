@@ -15,6 +15,7 @@ enum HostChoice { AUTO, WINDOWS, MACOS, LINUX, CAMBION }
 const LOADING_SCREEN := "res://ui/loading_screen.tscn"
 const PEOPLE := "res://people/"
 const MESSAGE_BOX: PackedScene = preload("res://win95/message_box.tscn")
+const CREDIT: PackedScene = preload("res://finale/credit.tscn")
 
 ## The text of the error boxes, the fake restart and the credits.
 @export var text: FinaleText
@@ -67,6 +68,13 @@ const MESSAGE_BOX: PackedScene = preload("res://win95/message_box.tscn")
 @export var credits_fade_seconds: float = 1.5
 ## The seconds after the fade-in before a key starts the game again, so that a stray key does not.
 @export var credits_hold_seconds: float = 1.0
+## The most people in one row of the credits.
+@export var cast_columns: int = 4
+## The share of the window's height that the portraits take, all rows together, 0 to 1.
+@export_range(0.1, 1.0) var cast_height: float = 0.62
+## How many times smaller the snapshot of the shop behind the credits is than the world buffer;
+## the bigger, the blurrier.
+@export var backdrop_shrink: int = 8
 
 var _playing: bool = false
 var _skip: bool = false
@@ -132,7 +140,7 @@ func is_blue(thing: GeometryInstance3D) -> bool:
 	return _blue.has(thing)
 
 
-## The people in the credits: each person in [constant PEOPLE] with a name and a neutral portrait.
+## The people in the credits: each person in [constant PEOPLE] with a neutral portrait.
 static func cast() -> Array[Person]:
 	var people: Array[Person] = []
 	for entry: String in ResourceLoader.list_directory(PEOPLE):
@@ -143,7 +151,7 @@ static func cast() -> Array[Person]:
 		if person == null:
 			push_error("Finale: %s is not a Person" % path)
 			continue
-		if person.name != "" and person.portraits.get(&"neutral") != null:
+		if person.portraits.get(&"neutral") != null:
 			people.append(person)
 	return people
 
@@ -185,6 +193,7 @@ func play() -> void:
 			_lights[light] = light.light_energy if light.visible and light.light_energy > 0.0 else 1.0
 	_flickering = true
 	await _wait(settle_seconds)
+	_snapshot_shop()
 	_holding_still = true
 	await _wait(maxf(flicker_seconds - settle_seconds, 0.0))
 	_start_wave()
@@ -416,6 +425,19 @@ func _crash() -> void:
 	_chord.play()
 
 
+# The shop as it was before the end, for behind the credits. Headless draws nothing, so it stays black.
+func _snapshot_shop() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var image := _buffer.get_texture().get_image()
+	if image == null or image.is_empty():
+		push_error("Finale: cannot read the shop from %s for the credits" % _buffer.get_path())
+		return
+	var shrink := maxi(backdrop_shrink, 1)
+	image.resize(maxi(image.get_width() / shrink, 1), maxi(image.get_height() / shrink, 1), Image.INTERPOLATE_TRILINEAR)
+	(%Backdrop as TextureRect).texture = ImageTexture.create_from_image(image)
+
+
 # The credits fade in over the black of the restart, so the frozen shop never shows between them.
 func _show_credits() -> void:
 	_boot.show_stage(HostBoot.Stage.OFF)
@@ -423,31 +445,43 @@ func _show_credits() -> void:
 	(%CastHeading as Label).text = text.cast_heading
 	(%Lines as Label).text = text.credits
 	(%Hint as Label).text = text.restart_hint
-	var row := %Cast as HBoxContainer
-	var people := cast()
-	var width := minf(170.0, get_viewport().get_visible_rect().size.x * 0.9 / maxf(people.size(), 1.0) - row.get_theme_constant(&"separation"))
-	for person: Person in people:
-		var column := VBoxContainer.new()
-		column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var portrait := TextureRect.new()
-		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		portrait.texture = _cut_to_person(person.portraits[&"neutral"])
-		portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		portrait.custom_minimum_size = Vector2(width, width * 1.5)
-		var label := Label.new()
-		label.text = person.name
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.custom_minimum_size.x = width
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		label.add_theme_font_size_override(&"font_size", 20)
-		column.add_child(portrait)
-		column.add_child(label)
-		row.add_child(column)
+	_fill_cast()
 	_credits.modulate.a = 0.0
 	_credits.show()
 	_credits_from = _clock + credits_fade_seconds + credits_hold_seconds
 	create_tween().tween_property(_credits, "modulate:a", 1.0, credits_fade_seconds)
+
+
+# Every person in rows of at most cast_columns, the rows as even as they can be.
+func _fill_cast() -> void:
+	var people := cast()
+	if people.is_empty():
+		return
+	var rows := ceili(people.size() / float(maxi(cast_columns, 1)))
+	var per_row := ceili(people.size() / float(rows))
+	var cast_box := %Cast as VBoxContainer
+	var gap := float(cast_box.get_theme_constant(&"separation"))
+	var screen := get_viewport().get_visible_rect().size
+	var card_width := screen.x * 0.9 / per_row - gap
+	var cell := Vector2(card_width, screen.y * cast_height / rows)
+	var row: HBoxContainer = null
+	for index: int in people.size():
+		if index % per_row == 0:
+			row = HBoxContainer.new()
+			row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			row.alignment = BoxContainer.ALIGNMENT_CENTER
+			row.add_theme_constant_override(&"separation", int(gap))
+			cast_box.add_child(row)
+		var person := people[index]
+		var card := CREDIT.instantiate() as Control
+		card.custom_minimum_size.x = card_width
+		var cut := _cut_to_person(person.portraits[&"neutral"])
+		var portrait := card.get_node("%Portrait") as TextureRect
+		portrait.texture = cut
+		portrait.custom_minimum_size = (cut.get_size() * minf(cell.x / cut.get_width(), cell.y / cut.get_height())).round()
+		(card.get_node("%Actor") as Label).text = person.actor if person.actor != "" else person.nickname
+		(card.get_node("%Role") as Label).text = text.cast_role % person.nickname if person.actor != "" else " "
+		row.add_child(card)
 
 
 # The portrait cut to the person in it: the pictures have wide transparent margins.

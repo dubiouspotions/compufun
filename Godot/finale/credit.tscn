@@ -1,0 +1,40 @@
+[gd_scene format=3]
+
+[ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="1_bold"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_regular.ttf" id="2_regular"]
+
+[node name="Credit" type="VBoxContainer"]
+size_flags_vertical = 8
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="Portrait" type="TextureRect" parent="."]
+unique_name_in_owner = true
+texture_filter = 1
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Actor" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.97, 0.94, 0.86, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.6)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_fonts/font = ExtResource("1_bold")
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1
+
+[node name="Role" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.74, 0.72, 0.82, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.6)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_fonts/font = ExtResource("2_regular")
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
