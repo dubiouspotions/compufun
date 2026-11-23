@@ -39,7 +39,8 @@ const WORKVIEW: StringName = &"Workview"
 ## The seconds that the post-it takes to come up close, and to go back onto the computer.
 @export var post_it_read_seconds: float = 0.3
 ## The phone's outline while the mouse is over it and a click calls (Game.can_call), and how far
-## the outline stands out from it, in metres.
+## the outline stands out from it, in metres. While a click calls and the mouse is elsewhere, the
+## outline pulses as the Open sign's does (OpenSign.pulse_color).
 @export var phone_hover_color: Color = Color(0.75, 0.9, 1.0)
 @export var phone_outline_width: float = 0.01
 
@@ -127,6 +128,8 @@ var _read_tween: Tween
 var _view_hotspots: Array[Hotspot] = []  # GO_TO_VIEW hotspots, off in their own view so the back strip and the cursor see past them
 var _phone_hovered: bool = false
 var _phone_outline: StandardMaterial3D
+var _phone_pulse_outline: StandardMaterial3D
+var _phone_pulse: Tween
 
 
 func _ready() -> void:
@@ -157,6 +160,8 @@ func _ready() -> void:
 	_open_sign.open_requested.connect(Game.open_shop)
 	_open_sign.close_requested.connect(close_requested.emit)
 	_phone_outline = Hotspot.outline_material(phone_hover_color, phone_outline_width)
+	_phone_pulse_outline = Hotspot.outline_material(_open_sign.pulse_color, phone_outline_width)
+	_phone_pulse_outline.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_phone_hotspot.mouse_entered.connect(_set_phone_hovered.bind(true))
 	_phone_hotspot.mouse_exited.connect(_set_phone_hovered.bind(false))
 	Game.changed.connect(_sync)
@@ -616,7 +621,15 @@ func _set_phone_hovered(on: bool) -> void:
 
 
 func _sync_phone() -> void:
-	_phone_body.material_overlay = _phone_outline if _phone_hovered and not Game.phone_off_hook and Game.can_call() else null
+	var callable := not Game.phone_off_hook and Game.can_call()
+	_phone_body.material_overlay = null if not callable else (_phone_outline if _phone_hovered else _phone_pulse_outline)
+	if callable == (_phone_pulse != null):
+		return
+	if _phone_pulse != null:
+		_phone_pulse.kill()
+		_phone_pulse = null
+	if callable:
+		_phone_pulse = Hotspot.pulse(_phone_pulse_outline, _open_sign.pulse_low, _open_sign.pulse_seconds, self)
 
 
 ## The progress ratio of the customer path where it passes under the door bell.

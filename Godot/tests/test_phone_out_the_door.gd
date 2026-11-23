@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## The phone works as soon as the visitor who walks out passes the door (OUTSIDE), before they are out
-## of sight; a call goes on when they leave the scene, and the hover outline shows only while the phone
-## works.
+## of sight; a call goes on when they leave the scene, and the outline (hovered or pulsing) shows only
+## while the phone works.
 
 const GAME := preload("res://game.gd")
 const WALK_SECONDS: float = 2.0
@@ -31,8 +31,9 @@ func run() -> void:
 	while game.visitor_state == GAME.VisitorState.WALKING_OUT and now() < WALK_SECONDS * 4.0:
 		await process_frame
 	check("out the door, the phone works and the hovered phone is outlined", [game.visitor_state, game.visitor != null, game.can_call(), phone.input_ray_pickable, body.material_overlay != null], [GAME.VisitorState.OUTSIDE, true, true, true, true])
+	check("in light blue", body.material_overlay, shop.get("_phone_outline"))
 	phone.mouse_exited.emit()
-	check("the outline goes with the mouse", body.material_overlay == null, true)
+	check("without the mouse, it pulses like the Open sign", body.material_overlay, shop.get("_phone_pulse_outline"))
 	phone.mouse_entered.emit()
 
 	game.call_customer(job)
