@@ -66,6 +66,7 @@ var _graph_view: Control
 var _empty: Control
 var _play: Button
 var _graph: Node
+var _header: StoryConversationHeader
 var _settle: Timer
 var _field_settle: Timer
 
@@ -370,7 +371,7 @@ func _remove_shown_conversation() -> void:
 
 func _show_graph() -> void:
 	for child: Node in _graph_view.get_children():
-		if child != _graph:
+		if child != _graph and child != _header:
 			child.queue_free()
 	if _graph == null:
 		var scene := load(GRAPH) as PackedScene
@@ -379,12 +380,14 @@ func _show_graph() -> void:
 			return
 		_graph = scene.instantiate()
 		if _graph is Control:
-			(_graph as Control).set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			(_graph as Control).size_flags_vertical = Control.SIZE_EXPAND_FILL
 		_graph_view.add_child(_graph)
 		_graph.connect(&"edited", func() -> void: _apply(StoryFormat.write_errand(_errand), true))
 	if _errand != null and _tab < _errand.conversations.size():
 		_graph.set(&"facts", flags)
 		_graph.call(&"show_conversation", _errand.conversations[_tab], _errand.customer)
+		_header.facts = flags
+		_header.show_conversation(_errand.conversations[_tab])
 
 
 # --- Completion
@@ -641,9 +644,16 @@ func _right() -> Control:
 			_code.set_caret_line(line)
 			_code.grab_focus())
 	_text_view.add_child(_errors)
-	_graph_view = Control.new()
+	_graph_view = VBoxContainer.new()
 	_graph_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	body.add_child(_graph_view)
+	_header = StoryConversationHeader.make()
+	_header.edited.connect(func() -> void:
+		_apply(StoryFormat.write_errand(_errand), true)
+		_fill_tabs()
+		for button: BaseButton in _tab_group.get_buttons():
+			button.set_pressed_no_signal(button.get_index() == _tab))
+	_graph_view.add_child(_header)
 	_empty = CenterContainer.new()
 	_empty.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	body.add_child(_empty)

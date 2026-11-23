@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://dev/story_lab/conversation_header.gd" id="1_header"]
+
+[node name="ConversationHeader" type="VBoxContainer"]
+script = ExtResource("1_header")

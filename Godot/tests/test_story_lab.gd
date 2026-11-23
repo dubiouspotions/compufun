@@ -240,7 +240,7 @@ func _opening_an_errand_shows_its_own_conversations(lab: Control) -> void:
 	check("picking a fact there makes the errand come only when it holds", [panel.errand().when.need_flags, "when: skater_told_us" in String(panel.get("_text"))], [[&"skater_told_us"], true])
 	lab.call("open_errand", SKATER)
 	await process_frame
-	var graph: Node = graph_view.get_child(0)
+	var graph: Node = graph_view.find_children("*", "GraphEdit", false, false)[0]
 	check("an errand with conversations shows its graph again", [empty.visible, graph_view.visible, play.disabled], [false, true, false])
 	check("the graph shows this errand's drop-off", graph.call("box_of", panel.errand().conversations[0]) != null, true)
 	computer = (panel.get("_computer") as ButtonGroup).get_buttons().map(func(b: BaseButton) -> bool: return b.button_pressed)

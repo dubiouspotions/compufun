@@ -698,11 +698,6 @@ func _reply_box(reply: Reply) -> GraphNode:
 		head_row.add_child(_branch("Add a choice the player can say after these lines", func() -> void: _open_spot_later(add_choice(reply), &"text")))
 	box.add_child(head_row)
 	box.set_slot(0, reply != _conversation, 0, arrow_color, true, 0, arrow_color)
-	if reply == _conversation:
-		var brief := _label(_conversation.brief, 12, faint_ink) if _conversation.brief != "" else null
-		if brief != null:
-			brief.custom_minimum_size.x = box_width - 24
-		_spot(head, brief, _conversation, &"brief", _conversation.brief, func(text: String) -> String: return edit_text(_conversation, text))
 	if parent is Choice:
 		var only := "only if " + StoryConditionEditor.describe(reply.when) if reply.when != null else "otherwise"
 		if reply.when != null or (parent as Choice).replies.size() > 1:
@@ -1138,9 +1133,7 @@ func _reply_menu(reply: Reply) -> Array[Array]:
 		items.append(["Only if...", func() -> void: _open_spot(reply, &"when")])
 	if not reply.choices.is_empty() and reply.then == null:
 		items.append(["Go on below the list", func() -> void: _open_spot_later(go_on_below(reply).lines[0], &"text")])
-	if reply == _conversation:
-		items.append(["Brief...", func() -> void: _open_spot(reply, &"brief")])
-	else:
+	if reply != _conversation:
 		items.append(["Delete", func() -> void: _ask_delete(reply)])
 	return items
 

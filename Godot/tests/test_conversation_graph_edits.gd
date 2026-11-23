@@ -165,10 +165,7 @@ func _check_in_place(questions: Reply) -> void:
 	check("a list that goes on below has no + then...", _then_under(answer.choices[0]), null)
 	await _check_file("the add buttons")
 
-	check("no brief, no note", _find(graph.box_of(talk), func(node: Node) -> bool: return node is Label and node.get(&"text") == "He wants help.") != null, true)
-	graph.edit_text(talk, "")
-	await process_frame
-	check("an empty brief shows nothing", _find(graph.box_of(talk), func(node: Node) -> bool: return node is Label and String(node.get(&"text")).contains("brief")), null)
+	check("the brief shows in the header above the graph, not in a box", _find(graph.box_of(talk), func(node: Node) -> bool: return node is Label and node.get(&"text") == "He wants help."), null)
 
 
 # The "+ then..." button right under the list whose last choice is [param last], or null.
