@@ -35,6 +35,8 @@ const PULSE_RING: Shader = preload("res://shaders/pulse_ring.gdshader")
 ## pieces on every other place lean the other way.
 @export var misplaced_tilt: float = 8.0
 @export var misplaced_turn: float = 20.0
+## How far each piece on a mat pile turns from straight, every other one the other way, in degrees.
+@export var mat_jitter: float = 6.0
 
 ## The job whose computer this is. Set once, before or after the case enters the tree.
 var job: Job:
@@ -51,7 +53,9 @@ var active: bool = false:
 			_sync()
 
 var _shown: Dictionary[StringName, Node3D] = {}
-var _mat_shown: Array[Node3D] = []
+# The pieces on the mat, to the pile that each lies on (an index of %Spots) and its model. A new
+# piece goes on the lower pile and stays there.
+var _mat_shown: Dictionary[Piece, Array] = {}
 # Panel screw index to [screw head, hotspot, pulse ring, empty hole].
 var _screws: Array[Array] = []
 var _screw_ring: ShaderMaterial
@@ -72,7 +76,7 @@ var _lying: Dictionary[Piece, Array] = {}
 
 @onready var _places: Node3D = %Places
 @onready var _spots: Node3D = %Spots
-# Left and right of the screwdriver's outline, so that no part lies on it.
+# Left and right of the screwdriver's outline, so that no part lies on it, and within the slot.
 @onready var _mat_surfaces: Array[Node] = %MatSurfaces.get_children()
 @onready var _eye: Marker3D = %Eye
 @onready var _panel: MeshInstance3D = %Panel
@@ -174,13 +178,7 @@ func _sync() -> void:
 			_shown[part.id()] = _show_model(piece, place)
 		(place.get_node("Hotspot") as Hotspot).set_enabled(active and (Game.can_take(job, part) or Game.can_put(job, part)))
 	_sync_lying()
-	for shown: Node3D in _mat_shown:
-		shown.queue_free()
-	_mat_shown.clear()
-	for i: int in job.mat.size():
-		_mat_shown.append(_show_model(job.mat[i], _spot(i)))
-	for i: int in _spots.get_child_count():
-		(_spots.get_child(i).get_node("Hotspot") as Hotspot).set_enabled(active and Game.hand == null and i < job.mat.size())
+	_sync_mat()
 	for surface: Hotspot in _mat_surfaces:
 		surface.set_enabled(active and Game.hand != null)
 	if _hovered != null and not _hovered.input_ray_pickable:
@@ -251,8 +249,67 @@ func _lift(piece: Piece, place: Part) -> void:
 		Game.take_misplaced(job, place)
 
 
-func _spot(index: int) -> Node3D:
-	return _spots.get_child(mini(index, _spots.get_child_count() - 1)) as Node3D
+# Piles the mat's pieces, each on the one below, and lets a click on a pile take its top piece.
+func _sync_mat() -> void:
+	for piece: Piece in _mat_shown.keys():
+		if piece not in job.mat:
+			(_mat_shown[piece][1] as Node3D).queue_free()
+			_mat_shown.erase(piece)
+	var heights: Array[float] = []
+	heights.resize(_spots.get_child_count())
+	heights.fill(0.0)
+	for piece: Piece in job.mat:
+		if not _mat_shown.has(piece):
+			var next := _next_pile()
+			_mat_shown[piece] = [next, _show_model(piece, _spots.get_child(next))]
+		var pile: int = _mat_shown[piece][0]
+		heights[pile] = _lay_flat(_mat_shown[piece][1], heights[pile], job.mat.find(piece))
+	for pile: int in _spots.get_child_count():
+		(_spots.get_child(pile).get_node("Hotspot") as Hotspot).set_enabled(active and Game.hand == null and _top(pile) >= 0)
+
+
+# The pile with the fewest pieces, the first on a tie.
+func _next_pile() -> int:
+	var counts: Array[int] = []
+	counts.resize(_spots.get_child_count())
+	counts.fill(0)
+	for shown: Array in _mat_shown.values():
+		counts[shown[0]] += 1
+	return counts.find(counts.min())
+
+
+# The index in Job.mat of the top piece on [param pile]; -1 for an empty pile.
+func _top(pile: int) -> int:
+	for i: int in range(job.mat.size() - 1, -1, -1):
+		var shown: Array = _mat_shown.get(job.mat[i], [])
+		if not shown.is_empty() and shown[0] == pile:
+			return i
+	return -1
+
+
+# The height of the top of [param pile].
+func _pile_height(pile: int) -> float:
+	var height := 0.0
+	for shown: Array in _mat_shown.values():
+		var model := shown[1] as Node3D
+		if shown[0] == pile and model != null:
+			height = maxf(height, model.position.y + Part.bounds(model).end.y)
+	return height
+
+
+# Lays [param model] on its pile at [param height], its long side from front to back so that it stays
+# within the slot, turned a little by [param index]; returns the height of its top.
+func _lay_flat(model: Node3D, height: float, index: int) -> float:
+	if model == null:
+		return height
+	model.rotation = Vector3.ZERO
+	model.position = Vector3.ZERO
+	var box := Part.bounds(model)
+	var yaw := (PI / 2.0 if box.size.x > box.size.z else 0.0) + deg_to_rad(mat_jitter * (1.0 if index % 2 == 0 else -1.0))
+	model.rotation.y = yaw
+	var centre := Basis(Vector3.UP, yaw) * box.get_center()
+	model.position = Vector3(-centre.x, height - box.position.y, -centre.z)
+	return height + box.size.y
 
 
 func _show_model(piece: Piece, where: Node3D) -> Node3D:
@@ -348,12 +405,16 @@ func _sync_highlights() -> void:
 	for laid: Array in _lying.values():
 		if (laid[1] as Hotspot).input_ray_pickable:
 			_highlight(laid[0], laid[1])
-	for i: int in _mat_shown.size():
-		var spot_hotspot := _spot(i).get_node("Hotspot") as Hotspot
-		if spot_hotspot.input_ray_pickable:
-			_highlight(_mat_shown[i], spot_hotspot)
+	for pile: int in _spots.get_child_count():
+		var spot_hotspot := _spots.get_child(pile).get_node("Hotspot") as Hotspot
+		var top := _top(pile)
+		if spot_hotspot.input_ray_pickable and top >= 0:
+			_highlight(_mat_shown[job.mat[top]][1], spot_hotspot)
 	if _hovered in _mat_surfaces and Game.hand != null:  # the mat is wide: a ghost only where the player points
-		_add_ghost(Game.hand.part.model, _spot(job.mat.size()), _hovered)
+		var pile := _next_pile()
+		_add_ghost(Game.hand.part.model, _spots.get_child(pile), _hovered)
+		if not _ghosts.is_empty():
+			_lay_flat(_ghosts.back(), _pile_height(pile), job.mat.size())
 	if _panel_hotspot.input_ray_pickable:
 		_highlight(_panel, _panel_hotspot)
 	for i: int in _screws.size():
@@ -485,5 +546,7 @@ func _on_place_clicked(part: Part) -> void:
 		Game.put_part(job, part)
 
 
-func _on_spot_clicked(index: int) -> void:
-	Game.take_from_mat(job, index)
+func _on_spot_clicked(pile: int) -> void:
+	var top := _top(pile)
+	if top >= 0:
+		Game.take_from_mat(job, top)

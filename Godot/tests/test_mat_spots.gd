@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
-## On the mat in front of the open computer, no part lies on the screwdriver's dashed outline, and the
-## mat takes no click there: every part on every mat spot, and both halves of the mat, stay beside it.
+## On the mat in front of the open computer, no part lies on the screwdriver's dashed outline or in the
+## next computer's slot, and the mat takes no click on the outline: the pieces on its piles, and both
+## halves of the mat, stay beside it.
 
 
 func run() -> void:
@@ -31,16 +32,26 @@ func run() -> void:
 		var rect := Rect2(at.x - surface.size.x / 2.0, at.z - surface.size.z / 2.0, surface.size.x, surface.size.z)
 		check("%s of the mat is off the outline" % surface.name, rect.intersects(outline_rect), false)
 
-	var on_outline: Array[String] = []
-	for spot: Node3D in open_case.get_node("%Spots").get_children():
-		for name: String in ["cpu", "fan", "gpu", "hard_drive", "ram"]:
-			var model := ((load("res://parts/%s.tres" % name) as Part).model as PackedScene).instantiate() as Node3D
-			spot.add_child(model)
-			for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
-				var box := open_case.global_transform.affine_inverse() * mesh.global_transform * mesh.get_aabb()
-				if Rect2(box.position.x, box.position.z, box.size.x, box.size.z).intersects(outline_rect):
-					on_outline.append("%s on %s" % [name, spot.name])
-			model.free()
-	check("no part on a mat spot lies on the outline", on_outline, [] as Array[String])
+	var slots: Node3D = (load("res://rooms/shop/job_slots.tscn") as PackedScene).instantiate()
+	var half_slot := absf((slots.get_node("%Slots/Slot1") as Node3D).position.x - (slots.get_node("%Slots/Slot0") as Node3D).position.x) / 2.0
+	slots.free()
+	for name: String in ["cpu", "fan", "gpu", "hard_drive", "ram", "gpu"]:
+		game.take_new_part(load("res://parts/%s.tres" % name))
+		game.put_on_mat(job)
+	await process_frame
+	var off: Array[String] = []
+	var shown := 0
+	for model: Node in open_case.get_node("%Spots").find_children("*", "Node3D", true, false):
+		if not model.has_meta(&"piece"):
+			continue
+		shown += 1
+		for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+			var box := open_case.global_transform.affine_inverse() * mesh.global_transform * mesh.get_aabb()
+			if Rect2(box.position.x, box.position.z, box.size.x, box.size.z).intersects(outline_rect):
+				off.append("%s on the outline" % (model.get_meta(&"piece") as Piece).part.id())
+			if box.position.x < -half_slot or box.end.x > half_slot:
+				off.append("%s in the next slot" % (model.get_meta(&"piece") as Piece).part.id())
+	check("six pieces show on the mat", shown, 6)
+	check("every piece on the mat lies off the outline and within its slot", off, [] as Array[String])
 	computer.queue_free()
 	await process_frame
