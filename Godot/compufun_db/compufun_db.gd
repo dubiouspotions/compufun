@@ -661,12 +661,13 @@ func _process(_delta: float) -> void:
 	queue_redraw()
 
 
-# Closes "Print complete" and clears the search, ready for the next.
+# Closes "Print complete"; after a fix, clears the search, ready for the next. A checklist leaves it.
 func _close_print_box() -> void:
+	if _printing == "FIX":
+		_type("")
+		_column = Column.SEARCH
 	_printing = ""
 	_print_done = false
-	_type("")
-	_column = Column.SEARCH
 	queue_redraw()
 
 

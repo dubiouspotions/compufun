@@ -271,6 +271,15 @@ func _check_print_fix() -> void:
 	enter.pressed = true
 	db.call("_on_key", enter)
 	check("Enter presses OK", [db.get("_print_done"), db.get("_printing")], [false, ""])
-	check("and clears the search", [db.get("_typed"), db.get("_hits"), db.get("_column"), db.call("_entries", 2)], ["", PackedStringArray(), 0, []])
+	check("and, after a fix, clears the search", [db.get("_typed"), db.get("_hits"), db.get("_column"), db.call("_entries", 2)], ["", PackedStringArray(), 0, []])
+	db.set("_hits", PackedStringArray(["Restarts by itself"]))
+	db.call("_search", "Restarts by itself")
+	var p := InputEventKey.new()
+	p.keycode = KEY_P
+	p.pressed = true
+	db.call("_on_key", p)
+	await create_timer(printer.get("line_seconds") * (printer.get("_lines") as PackedStringArray).size() + printer.get("feed_seconds") + 0.2).timeout
+	db.call("_on_key", enter)
+	check("after a checklist the search stays", [db.get("_print_done"), db.get("_hits"), game.db_search.query], [false, PackedStringArray(["Restarts by itself"]), "Restarts by itself"])
 	db.queue_free()
 	printer.queue_free()
