@@ -765,6 +765,9 @@ func _paint_column(column: Column) -> void:
 		var entry := entries[index]
 		var fg := text_color if entry.pick else dim_color
 		var bg := background
+		if column == Column.SEARCH and Game.db_search != null and entry.text == Game.db_search.query:
+			fg = bright_color  # the symptom picked stays marked while the player works in the other columns
+			bg = dim_color
 		if column == _column and index == _selected[column]:
 			fg = bright_color
 			bg = bar_color
