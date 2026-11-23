@@ -75,17 +75,23 @@ func repo() -> String:
 	return _repo
 
 
-## Makes the issue with [param title] and [param body] (Markdown), labelled with [param label]
-## ({"name", "color", "description"}; made when the repo lacks it), and puts it on the board.
+## The label of an F9 report. The issue builder builds every open issue that has it.
+const FEEDBACK_LABEL: Dictionary = {"name": "feedback", "color": "FBCA04", "description": "F9 report from the game"}
+
+## Makes the issue with [param title] and [param body] (Markdown), labelled with [param labels]
+## (each {"name", "color", "description"}; made when the repo lacks it), and puts it on the board.
 ## Returns {"url", "board_error"} with board_error "" when it joined the board (or there is none),
 ## or {"error"} when there is no issue.
-func create_issue(title: String, body: String, label: Dictionary) -> Dictionary:
+func create_issue(title: String, body: String, labels: Array[Dictionary]) -> Dictionary:
 	if _repo == "":
 		return {"error": "cannot find the GitHub repo: set it, or check git's remote origin"}
-	var made := await api(HTTPClient.METHOD_POST, "/repos/%s/labels" % _repo, label)
-	if made["code"] != 422 and made.has("error"):  # 422: the label exists.
-		return {"error": "cannot make the label %s: %s" % [label["name"], made["error"]]}
-	var created := await api(HTTPClient.METHOD_POST, "/repos/%s/issues" % _repo, {"title": title, "body": body, "labels": [label["name"]]})
+	var names: Array[String] = []
+	for label: Dictionary in labels:
+		var made := await api(HTTPClient.METHOD_POST, "/repos/%s/labels" % _repo, label)
+		if made["code"] != 422 and made.has("error"):  # 422: the label exists.
+			return {"error": "cannot make the label %s: %s" % [label["name"], made["error"]]}
+		names.append(label["name"])
+	var created := await api(HTTPClient.METHOD_POST, "/repos/%s/issues" % _repo, {"title": title, "body": body, "labels": names})
 	if created.has("error"):
 		return {"error": "cannot create the issue: %s" % created["error"]}
 	var result := {"url": String(created["data"]["html_url"]), "board_error": ""}

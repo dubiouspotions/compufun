@@ -163,7 +163,7 @@ Edit the text, then run the story check and the tests that cover the change
 [building-and-testing.md](building-and-testing.md)); `git rm` the files it lists as unused, and
 commit the `.wav` and `.wav.import` files with the text.
 
-A writer's change arrives as a GitHub issue with the label `story`: the Story Lab's **Send**. Its
+A writer's change arrives as a GitHub issue with the labels `story` and `feedback`: the Story Lab's **Send**. The issue builder builds every `feedback` issue; a note that starts with `[test]` adds `test`, and the builder leaves those. Its
 body holds each changed file whole and its diff against the commit that the writer started from.
 Apply it: where `main` changed the same lines since, merge by hand and say so on the issue. A new
 rule of how the story plays is a design change: it goes on the wiki page first.

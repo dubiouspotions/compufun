@@ -337,7 +337,7 @@ func _send_to_github(github: GitHubIssues, folder: String, shot: String, shot_er
 		picture = "![screenshot](%s)" % image
 	elif image_error != "":
 		picture = "_No screenshot: %s_" % image_error.get_slice("\n", 0)
-	var result := await github.create_issue(title, body.replace("%IMAGE%", picture), {"name": "feedback", "color": "FBCA04", "description": "F9 report from the game"})
+	var result := await github.create_issue(title, body.replace("%IMAGE%", picture), [GitHubIssues.FEEDBACK_LABEL])
 	if not result.has("error"):
 		result["image_error"] = image_error
 	return result

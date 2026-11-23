@@ -178,6 +178,9 @@ func _the_issue_has_each_file_and_its_diff() -> void:
 		{"path": "res://story/days/day_3.day", "text": "", "old": DAY_TEXT, "commit": "c0ffee"},
 	]
 	check("the title names the codes and days", StoryIssue.title(changed, "The skater cheers\nmore"), "Story: 0101, day 3: The skater cheers")
+	var names := func(note: String) -> Array: return StoryIssue.labels(note).map(func(l: Dictionary) -> String: return l["name"])
+	check("Send labels story and feedback, so the issue builder builds it", names.call("More lines"), ["story", "feedback"])
+	check("a note that starts with [test] adds test, which the builder leaves", names.call(" [Test] trying Send"), ["story", "feedback", "test"])
 	var body := StoryIssue.body(changed, "The skater cheers", "Ada")
 	check("the body starts with the note", body.begins_with("The skater cheers\n"), true)
 	check("it names the writer", "by Ada" in body, true)
