@@ -52,6 +52,13 @@ const AFTER_TIPS: PackedStringArray = [
 	"After the answer, the player picks from this list again; this choice shows greyed",
 	"After the answer, the conversation ends",
 ]
+## The words for each look ([constant DialogueLine.LOOKS]) and for none, as a line's dropdown shows them.
+const LOOK_WORDS: Dictionary[StringName, String] = {
+	&"": "(no look)",
+	&"left": "First, the player looks left (the storage room)",
+	&"right": "First, the player looks right (the work computer)",
+	&"ahead": "First, the player looks ahead (back at him)",
+}
 
 ## The known facts (flag names) that the condition editors offer; the Lab sets it from the week.
 var facts: PackedStringArray = []
@@ -360,6 +367,13 @@ func move_answer(choice: Choice, from: int, to: int) -> String:
 ## Makes [param line] speak with [param effect], or with its conversation's effect for null.
 func set_line_effect(line: DialogueLine, effect: VoiceEffect) -> void:
 	line.effect = effect
+	_changed(_owner_of(line))
+
+
+## Turns the player's view to [param look] before [param line]: a key of [constant DialogueLine.LOOKS],
+## or empty for none.
+func set_line_look(line: DialogueLine, look: StringName) -> void:
+	line.look = look
 	_changed(_owner_of(line))
 
 
@@ -855,6 +869,7 @@ func _line_row(reply: Reply, index: int) -> Control:
 	var text := _label(line.text, 14, ink)
 	_spot(words, text, line, &"text", line.text, func(said: String) -> String: return edit_text(line, said))
 	words.add_child(_line_effect(line))
+	words.add_child(_line_look(line))
 	row.add_child(words)
 	row.add_child(_icon_button(_play_icon(), "Play this line", _play.bind(line)))
 	if not _read_only:
@@ -1019,6 +1034,29 @@ func _line_effect(line: DialogueLine) -> OptionButton:
 			return
 		set_line_effect(line, chosen))
 	return effect
+
+
+# The small dropdown of where the player looks before [param line]; a look that the game doesn't know
+# shows in red until the writer picks another.
+func _line_look(line: DialogueLine) -> OptionButton:
+	var looks: Array[StringName] = [&""]
+	looks.append_array(DialogueLine.LOOKS.keys())
+	var known := looks.has(line.look)
+	if not known:
+		looks.append(line.look)
+	var look := OptionButton.new()
+	look.flat = true
+	look.focus_mode = Control.FOCUS_NONE
+	look.add_theme_font_size_override(&"font_size", 10)
+	look.add_theme_color_override(&"font_color", faint_ink if known else error_color)
+	look.tooltip_text = "Where the player looks before the customer says this line. Turned away from the customer, the line shows in the call-out box."
+	for each: StringName in looks:
+		look.add_item(LOOK_WORDS.get(each, "First, the player looks %s, which the game doesn't know" % each))
+	look.select(looks.find(line.look))
+	look.disabled = _read_only
+	look.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	look.item_selected.connect(func(index: int) -> void: set_line_look(line, looks[index]))
+	return look
 
 
 # Whether [param data] is a dragged [param kind] of the list of [param list].

@@ -121,6 +121,7 @@ func run() -> void:
 
 	await _check_in_place(questions)
 	await _check_effect_and_answers(questions)
+	await _check_look(questions)
 
 
 # A line's own effect from its dropdown, and dragging a choice's answers into another order.
@@ -244,6 +245,21 @@ func _find(under: Node, matches: Callable) -> Node:
 
 
 # Fails unless the errand's story file parses without errors and writes the same text again.
+# A line's look from its dropdown, in plain words, and the tag it writes.
+func _check_look(questions: Reply) -> void:
+	var line := questions.choices[0].replies[0].lines[0]
+	var look := _find(graph.box_of(questions.choices[0].replies[0]), func(node: Node) -> bool: return node is OptionButton and (node as OptionButton).get_item_text(0) == "(no look)") as OptionButton
+	var words: Array[String] = []
+	for i: int in look.item_count:
+		words.append(look.get_item_text(i))
+	check("a line's look dropdown, in plain words", [look.selected, words], [0, ["(no look)", "First, the player looks left (the storage room)", "First, the player looks right (the work computer)", "First, the player looks ahead (back at him)"]])
+	look.select(1)
+	look.item_selected.emit(1)
+	check("its dropdown turns the player's view before the line", line.look, &"left")
+	check("the file says it as a tag", StoryFormat.write_errand(errand).contains(line.text + " [look left]"), true)
+	await _check_file("a line's look")
+
+
 func _check_file(after: String) -> void:
 	await process_frame
 	var written := StoryFormat.write_errand(errand)
