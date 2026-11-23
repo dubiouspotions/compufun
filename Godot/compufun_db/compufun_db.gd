@@ -126,6 +126,8 @@ func _load_problems() -> void:
 		if problem == null:
 			push_error("CompuFunDB: %s%s is not a Problem" % [PROBLEMS_DIR, file])
 			continue
+		if not problem.in_compufun_db:
+			continue
 		_problems.append(problem)
 		for symptom: String in problem.symptoms:
 			if symptom not in _symptoms:

@@ -731,7 +731,7 @@ func take_misplaced(job: Job, part: Part) -> bool:
 ## it, the computer is off, the case is open, the place is empty with nothing misplaced on it, and the
 ## part that it sits on is in.
 func can_put(job: Job, part: Part) -> bool:
-	if hand == null or hand.part != part.piece_part() or job.powered or not job.case_open or job.piece(part) != null or job.misplaced.has(part):
+	if hand == null or not hand.part.fits(part) or job.powered or not job.case_open or job.piece(part) != null or job.misplaced.has(part):
 		return false
 	return part.sits_on == null or job.piece(part.sits_on) != null
 
@@ -758,6 +758,7 @@ func take_part(job: Job, part: Part) -> bool:
 		return false
 	hand = job.places[part]
 	job.places.erase(part)
+	_sync_replaced(job)
 	changed.emit()
 	return true
 
@@ -775,6 +776,7 @@ func put_part(job: Job, place: Part = null) -> bool:
 	job.places[place] = hand
 	hand.unused = false
 	hand = null
+	_sync_replaced(job)
 	changed.emit()
 	return true
 
@@ -797,6 +799,15 @@ func take_from_mat(job: Job, index: int) -> bool:
 	job.mat.remove_at(index)
 	changed.emit()
 	return true
+
+
+# Sets the problem's replaced flag (Problem.replaced_flag) of [param job]: 1 while none of the
+# problem's stand-ins is in the computer.
+func _sync_replaced(job: Job) -> void:
+	if job.problem == null or job.problem.replaced_flag == &"":
+		return
+	var left := job.places.values().any(func(each: Piece) -> bool: return each.part in job.problem.stand_ins)
+	_put_flag(job.problem.replaced_flag, 0 if left else 1)
 
 
 ## Takes a new piece of [param part] from its box in the storage into the empty hand.
@@ -1265,7 +1276,7 @@ func restore(state: Dictionary) -> String:
 				if pieces is String:
 					return _refuse("job %d: %s" % [i, pieces])
 				var each: Piece = pieces[0]
-				if each.part != place.piece_part():
+				if not each.part.fits(place):
 					return _refuse("job %d: the place %s takes %s, not %s" % [i, place_id, place.piece_part().id(), each.part.id()])
 				job.places[place] = each
 		if data.has("misplaced") or data.has("parts"):
@@ -1603,6 +1614,9 @@ func _drop_off(from: Errand) -> Job:
 			jobs.append(job)
 			if focus == null:
 				focus = job
+			if from.problem != null:
+				for id: StringName in from.problem.drop_off_signs:
+					_put_flag(sign_flag(id), slot + 1)
 			return job
 	push_error("Game: %s dropped off a computer, but the counter is full" % _who(from.customer))
 	return null

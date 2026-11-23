@@ -39,6 +39,19 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 ## breaks up in coloured blocks and torn lines while the computer runs, 0 (not at all) to 1, until
 ## the hardware is fixed.
 @export_range(0.0, 1.0) var screen_artifacts: float = 0.0
+## Stand-ins that are in the computer instead of the parts that they pose as ([member Part.poses_as]),
+## one in every place that takes such a part, as Skater Bro's organs are. They work like those
+## parts, so the hardware counts as fixed with them in.
+@export var stand_ins: Array[Part] = []
+## A flag that is 1 while none of the [member stand_ins] is in the computer, after the player took
+## them out, and 0 while one is. Empty for none.
+@export var replaced_flag: StringName = &""
+## False leaves the problem out of CompuFunDB: none of its symptoms or steps shows there.
+@export var in_compufun_db: bool = true
+## Corruption signs (their ids) that start as the customer sets the computer down, such as blood
+## seeping out under it: each flag sign_<id> is set to the counter slot + 1, so that the sign can show
+## at that slot.
+@export var drop_off_signs: Array[StringName] = []
 ## How the problem breaks the computer's Win95 setup and when that is fixed; null when the problem
 ## has no software part.
 @export var software_check: SoftwareCheck

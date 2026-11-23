@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://rooms/shop/open_case.tscn" id="9_open"]
 [ext_resource type="PackedScene" path="res://props/screwdriver.tscn" id="screwdriver"]
 [ext_resource type="Texture2D" path="res://props/screwdriver_outline.png" id="screwdriver_outline"]
+[ext_resource type="Script" path="res://sounds/hum.gd" id="hum"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_outline"]
 resource_local_to_scene = true
@@ -105,3 +106,10 @@ texture = ExtResource("screwdriver_outline")
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0.27)
 size = Vector3(0.17, 0.03, 0.04)
+
+[node name="PartSound" type="AudioStreamPlayer3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+script = ExtResource("hum")
+volume_db = -14.0
+unit_size = 1.5

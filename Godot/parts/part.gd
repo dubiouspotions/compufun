@@ -21,6 +21,13 @@ const IDS: Array[StringName] = [&"motherboard", &"cpu", &"fan", &"ram_1", &"ram_
 ## For a place: the part whose pieces go in it, when that is another part, as a RAM slot takes RAM.
 ## null: this part's own pieces.
 @export var takes: Part
+## For a stand-in (Problem.stand_ins), a part that no place takes but that sits in a computer instead
+## of another part and works like it, as Skater Bro's heart does for the motherboard: that part. Its
+## pieces go in the places that take that part. null for a real part.
+@export var poses_as: Part
+## A loop that plays from a computer while a piece of this part is in it, such as a heartbeat. It
+## must loop (edit/loop_mode in its .import). null for none.
+@export var sound: AudioStream
 
 
 ## The part's id, from its file name, such as &"cpu".
@@ -31,6 +38,12 @@ func id() -> StringName:
 ## The part whose pieces go in this place (see [member takes]).
 func piece_part() -> Part:
 	return takes if takes != null else self
+
+
+## True when a piece of this part goes in the place [param place]: the place takes this part, or this
+## part poses as the part that the place takes (see [member poses_as]).
+func fits(place: Part) -> bool:
+	return place.piece_part() == self or (poses_as != null and place.piece_part() == poses_as)
 
 
 ## True when a computer has a place that takes this part.

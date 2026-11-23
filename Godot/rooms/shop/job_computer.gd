@@ -87,6 +87,8 @@ var _floppy_drives: Array[Node] = []
 @onready var _screwdriver: Node3D = %Screwdriver
 @onready var _screwdriver_outline: Sprite3D = %ScrewdriverOutline
 @onready var _screwdriver_hotspot: Hotspot = %ScrewdriverHotspot
+# Plays the sound of a part in the computer that has one (Part.sound), such as a heart.
+@onready var _part_sound: Hum = %PartSound
 
 
 func _ready() -> void:
@@ -206,6 +208,16 @@ func _sync_case() -> void:
 	_front.input_ray_pickable = working and not lying  # swallows clicks on the front, so they don't lay it down
 	_sync_floppy(working, lying)
 	_sync_outline()
+	_sync_part_sound()
+
+
+func _sync_part_sound() -> void:
+	var sounding := job.places.values().filter(func(each: Piece) -> bool: return each.part.sound != null)
+	var sound: AudioStream = (sounding[0] as Piece).part.sound if not sounding.is_empty() else null
+	if _part_sound.stream != sound:
+		_part_sound.on = false
+		_part_sound.stream = sound
+	_part_sound.on = sound != null
 
 
 # The eject button sticks out while a floppy is in, and pulses where the player works and can eject.

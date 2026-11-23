@@ -155,15 +155,18 @@ func memory_fails() -> bool:
 
 # Puts a piece in every place. When [param break_part] is true, the problem's broken part breaks,
 # in one random place of those that take it, so the player can't learn which; its missing part and
-# its misplaced pieces leave their places (see Problem.missing_part, Problem.misplaced).
+# its misplaced pieces leave their places (see Problem.missing_part, Problem.misplaced), and its
+# stand-ins take the places of the parts that they pose as.
 func _fill(break_part: bool) -> void:
 	places.clear()
 	misplaced.clear()
 	var broken_part: Part = problem.broken_part if problem != null else null
 	var takers := Part.every().filter(func(place: Part) -> bool: return place.piece_part() == broken_part)
 	var bad: Part = takers.pick_random() if break_part and not takers.is_empty() else null
+	var stand_ins: Array[Part] = problem.stand_ins if break_part and problem != null else ([] as Array[Part])
 	for place: Part in Part.every():
-		places[place] = Piece.new(place.piece_part(), place == bad)
+		var standing_in := stand_ins.filter(func(each: Part) -> bool: return each.poses_as == place.piece_part())
+		places[place] = Piece.new(standing_in[0] if not standing_in.is_empty() else place.piece_part(), place == bad)
 	blocker = Piece.new(problem.blocker, false) if break_part and problem != null and problem.blocker != null else null
 	panel_screws.assign(Job.all_in(PANEL_SCREWS))
 	if break_part and problem != null:
