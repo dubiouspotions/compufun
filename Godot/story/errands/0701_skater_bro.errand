@@ -3,4 +3,4 @@ problem: organ_failure
 brief:
 	Noticeably corrupted. His voice is strange, and he walks in very slowly with the computer. As he sets it down, a little blood seeps out under it. "I upgraded the computer, I just want to check the function." Inside, his organs have replaced the parts: kidneys (RAM), heart (motherboard), lungs (fan), liver (GPU), brain (hard drive), spleen (CPU); CompuFunDB doesn't list that symptom. It works: plain Cambion, nothing odd in Windows. He leaves it. Throwing the organs away and putting in new parts works too, but when the player calls, nobody answers. Blood stays on the counter for the rest of the game.
 
-== phone [if skater_organs_replaced]
+== phone [if skater_organs_replaced] [effect cambion_glitch]

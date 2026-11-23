@@ -11,7 +11,7 @@ brief:
 (happy) It's pouring. But the plants are happy, so I'm happy.
 - So, how can I help you?
 - Anyway, what seems to be the problem?
-(thinking) My computer starts, and then the whole screen goes blue with white text.
+(problem) My computer starts, and then the whole screen goes blue with white text.
 - Ah, the Blue screen of death...
 	(neutral) Wh-what did you say?
 	- Um... nothing! Nothing... I'll take a look at it as soon as possible!
@@ -23,7 +23,7 @@ brief:
 - Take care out there!
 
 == pick-up
-(thinking) So, did you get to the bottom of that blue screen?
+(problem) So, did you get to the bottom of that blue screen?
 - Yep! All fixed now!
 - No more blue!
 (happy) You're a star!
