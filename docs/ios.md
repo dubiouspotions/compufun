@@ -1,9 +1,21 @@
 # iOS
 
 The game runs on iOS from the `iOS` export preset: the iPhone, the iPhone Duo (folded and unfolded)
-and the iPad simulators show the shop, the customers, the dialogue and the Screen View. Nobody has
-run it on a device yet, so its speed there is unknown. This page holds the build steps and what a
-real port still needs.
+and the iPad simulators show the shop, the customers, the dialogue and the Screen View, and an
+iPhone Duo (A20 Pro) holds 60 frames a second. This page holds the build steps and what a real port
+still needs.
+
+## Build for a device
+
+Export as below, then build with `-sdk iphoneos DEVELOPMENT_TEAM=M4Q2TE45WT` and install with
+`xcrun devicectl device install app --device <udid> <app>`. The export has no entitlements, so the
+team's wildcard development profile signs it. `codesign` needs the login keychain: an agent session
+in launchd's Background session gets `errSecInternalComponent` and has to build from the GUI session.
+
+On the A20 Pro the game draws 60 frames a second (16.7 ms) on OpenGL ES over Metal, with a few
+seconds of dips while it loads and compiles its shaders. `--print-fps --log-file user://perf.log`
+writes the frame rate to `Documents/perf.log`, which `devicectl device copy from --domain-type
+appDataContainer` fetches.
 
 ## Build for the simulator
 
@@ -53,7 +65,7 @@ Export into an empty folder: an export over an old one logs errors about the ass
 
 | Gap | Size |
 | --- | --- |
-| Device run: speed, heat, first-launch shader compile; signing with team `M4Q2TE45WT` | 0.5 day |
+| Device: heat over a whole week's play, the frame rate in the Screen View and the storage room, older iPhones | 0.5 day |
 | Right-click as a long press (`win95/mouse_input.gd`): context menus, Close Program. The Email Virus fix needs Close Program | 0.5 day |
 | Hover: hotspot outlines show only under the mouse, which is how the player finds things. Pulse them on a tap that hits nothing, or always | 0.5 to 1 day |
 | CompuFunDB scrolls only with the wheel or the keys: drag to scroll, or tappable arrows | 0.5 day |
