@@ -57,6 +57,25 @@ func _save(setup: Win95Setup, shot: DesktopScreenshot) -> void:
 	windows.children.append(file)
 
 
+## Puts the old wallpaper back, takes the icons out of the folder onto the desktop, and deletes the
+## folder once it is empty.
+func apply_fix(setup: Win95Setup) -> void:
+	var shot := setup.desktop_screenshot
+	if shot == null:
+		return
+	if setup.wallpaper == shot:
+		setup.wallpaper = shot.wallpaper
+	for file: Win95File in shot.icons:
+		if setup.desktop.has(file):
+			continue
+		for folder: Win95File in setup.desktop:
+			folder.children.erase(file)
+		setup.desktop.append(file)
+	for folder: Win95File in setup.desktop.duplicate():
+		if folder.is_folder and folder.name == folder_name and folder.children.is_empty():
+			setup.desktop.erase(folder)  # in place: the Recycle Bin remembers this Array
+
+
 func is_fixed(setup: Win95Setup) -> bool:
 	var shot := setup.desktop_screenshot
 	return shot == null or (setup.wallpaper != shot and shot.icons.all(func(file: Win95File) -> bool: return setup.desktop.has(file)))

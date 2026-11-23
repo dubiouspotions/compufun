@@ -28,10 +28,28 @@ where git >nul 2>&1 || (set "MSG=Git is still not found. Close this window and t
 git lfs version >nul 2>&1 || (set "MSG=Git LFS is missing: https://git-lfs.com" & goto fail)
 git lfs install --local --skip-repo >nul || (set "MSG=Cannot set up Git LFS in %CD%." & goto fail)
 
+rem A pull that stopped half-way (a rebase, a merge, a stash that clashed) blocks the next one: undo it,
+rem and stash its unmerged files as they are, conflict markers and all.
+for %%o in (rebase merge cherry-pick) do git %%o --abort >nul 2>&1
+git diff --name-only --diff-filter=U >"%TEMP%\humanerror-unmerged.txt" || (set "MSG=Cannot list the unmerged files, see above." & goto fail)
+for %%z in ("%TEMP%\humanerror-unmerged.txt") do if %%~zz gtr 0 git add --pathspec-from-file="%TEMP%\humanerror-unmerged.txt" || (set "MSG=Cannot take up the unmerged files, see above." & goto fail)
+del "%TEMP%\humanerror-unmerged.txt"
+
 for /f "delims=" %%b in ('git rev-parse --abbrev-ref HEAD') do set "BRANCH=%%b"
 if not "!BRANCH!"=="main" (set "MSG=You are on the branch '!BRANCH!', not main. Switch to main first." & goto fail)
+rem Local changes, untracked files too, go to the stash and stay there, so the game is always main.
+set "DIRTY="
+for /f "delims=" %%s in ('git status --porcelain') do set "DIRTY=1"
+if defined DIRTY (
+	git stash push --include-untracked -m "Play HumanError %DATE% %TIME%" || (set "MSG=Cannot stash the local changes, see above." & goto fail)
+	echo Your local changes are in the git stash: git stash pop brings them back.
+)
 echo Pulling the latest main...
-git pull --rebase --autostash || (set "MSG=git pull failed, see above." & goto fail)
+git pull --rebase || (
+	git rebase --abort >nul 2>&1
+	set "MSG=git pull failed, see above, and the checkout is back as it was. A local commit that clashes with main needs a developer."
+	goto fail
+)
 
 if not defined GODOT if exist godot-path.txt set /p GODOT=<godot-path.txt
 if not defined GODOT (

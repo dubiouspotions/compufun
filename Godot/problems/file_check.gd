@@ -35,6 +35,46 @@ func apply_break(setup: Win95Setup) -> void:
 		file.name = broken_name
 
 
+## Renames the file back and puts [member healthy_line] back (see [method fixed_contents]).
+func apply_fix(setup: Win95Setup) -> void:
+	var file := broken_file(setup)
+	if file == null:
+		push_error("FileCheck: %s is not on the computer, also not as %s, so the fix has nothing to fix" % [path, broken_name])
+		return
+	file.name = healthy_name()
+	file.contents = fixed_contents(file.contents)
+
+
+## The file that the break left: at [member path], or renamed to [member broken_name]; null when
+## neither is on the computer.
+func broken_file(setup: Win95Setup) -> Win95File:
+	var file := setup.file_at(path)
+	if file == null and broken_name != "":
+		file = setup.file_at(path.substr(0, path.rfind("\\") + 1) + broken_name)
+	return file
+
+
+## The file's name when it is healthy: the last part of [member path].
+func healthy_name() -> String:
+	return path.substr(path.rfind("\\") + 1)
+
+
+## [param contents] with [member healthy_line] back in place of [member broken_line], or at the end
+## when no broken line is there; unchanged when the healthy line is in, or there is none.
+func fixed_contents(contents: String) -> String:
+	var lines := contents.split("\n")
+	if healthy_line == "" or Array(lines).any(_is_healthy):
+		return contents
+	var replaced := false
+	for i in lines.size():
+		if broken_line != "" and lines[i].strip_edges().nocasecmp_to(broken_line.strip_edges()) == 0:
+			lines[i] = healthy_line
+			replaced = true
+	if not replaced:
+		lines.append(healthy_line)
+	return "\n".join(lines)
+
+
 func is_fixed(setup: Win95Setup) -> bool:
 	var file := setup.file_at(path)
 	if file == null:

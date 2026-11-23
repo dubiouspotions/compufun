@@ -425,10 +425,15 @@ func set_flag(flag_name: StringName, value: int = 1) -> void:
 
 
 func _put_flag(flag_name: StringName, value: int) -> void:
+	put_flag(flags, flag_name, value)
+
+
+## Sets [param flag_name] to [param value] in [param into], as the story sets a flag: 0 clears it.
+static func put_flag(into: Dictionary[StringName, int], flag_name: StringName, value: int) -> void:
 	if value == 0:
-		flags.erase(flag_name)
+		into.erase(flag_name)
 	else:
-		flags[flag_name] = value
+		into[flag_name] = value
 
 
 ## The choices of [param reply] that the player can say now: their condition matches, and one of
@@ -1199,6 +1204,8 @@ func restore(state: Dictionary) -> String:
 		if not bool(data.get("blocker", true)):
 			job.blocker = null
 		job.software_fixed = bool(data.get("software_fixed", false))
+		# The same visit as before keeps its broken running copy, which the player may have fixed since.
+		job.broken = jobs.any(func(j: Job) -> bool: return j.order == job.order and j.customer == owner and j.broken)
 		job.powered = bool(data.get("powered", false))
 		if data.has("parts"):
 			var given_places: Variant = data["parts"]
@@ -1330,12 +1337,13 @@ func restore(state: Dictionary) -> String:
 	visitor_state = new_visitor_state
 	leaving_lines = []
 	_pickup = new_pickup
-	_next_order = jobs.reduce(func(top: int, j: Job) -> int: return maxi(top, j.order + 1), 0)
 	_restart_wait()
 	view = StringName(str(state.get("view", view)))
 	flags = new_flags
 	seen = new_seen
 	records = new_records
+	# Past every record too: a record lasts the whole game, and a new job must not take an old one's.
+	_next_order = jobs.reduce(func(top: int, j: Job) -> int: return maxi(top, j.order + 1), records.reduce(func(top: int, r: DbRecord) -> int: return maxi(top, r.job_order + 1), 0))
 	db_day = maxi(int(state.get("db_day", 0)), 0)
 	arrival += 1
 	jump += 1

@@ -17,3 +17,10 @@ func run() -> void:
 	check("as tall as the portrait at the scale", absf(box.size.y - image.get_height() * scale) < 0.05, true)
 	check("it bulges both ways, at most the depth", [box.position.z >= -0.12 * 0.8 - 0.001, box.end.z <= 0.12 + 0.001, box.size.z > 0.1], [true, true, true])
 	check("Skater Bro has a back", person.back != null, true)
+	# make_portrait_backs.py draws each back at the size of the portrait that the relief shows.
+	for folder: String in DirAccess.get_directories_at("res://people"):
+		var someone: Person = load("res://people/%s/person.tres" % folder)
+		if someone.back != null:
+			var portrait: Texture2D = someone.portraits.get(someone.relief_pose)
+			check("%s's back fits its %s portrait" % [folder, someone.relief_pose], someone.back.get_size(),
+				portrait.get_size() if portrait != null else Vector2.ZERO)

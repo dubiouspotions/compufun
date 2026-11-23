@@ -144,6 +144,33 @@ none. `outline` prints errand files in their written layout.
 "$GODOT" --headless -s res://dev/story.gd -- outline [code]        # the errand files, such as 0102
 ```
 
+The story check reads the files; the **week bot** (`tests/test_week_bot.gd`) plays them. It runs
+`main.tscn` from day 1 to the ending's credits in real game time, with a player's clicks and keys
+where the game has them: it clicks the open sign, reads each customer's lines and clicks their
+choices (at random, from a seed), opens CompuFunDB, marks the symptoms, prints the FIX page with F and
+takes it from the printer, repairs the computer (hardware with Game's part calls, software through
+the computer's own `ComputerState`: the volume, the eject button, Disk Defragmenter overnight, a
+property sheet, a rename, Display Properties), waits for the real boot to test it, clicks the phone
+and closes the shop at the sign. Each morning it checks that `Game.restore(Game.snapshot())` keeps
+the state.
+
+It fails on an error, when nothing changes for two minutes of game time (a softlock: a customer who
+never comes, a test that never passes, a night that never ends, a click that lands nowhere), and when
+the week doesn't reach its credits. It names the day, the errand code, its step and the snapshot. The
+missing links that the story check lists, and what they cause, it only reports, so CI stays green
+while the writers fill them: run it alone to read what became of every errand, such as "0601: never
+came: Young entrepreneur's computer from 0401 is still in the shop". CI runs seed 1; other seeds take
+other branches, about 25 s each.
+
+**When you add to the game, teach the bot.** It fails when Game gets a public method, an enum value
+(phase, visit, visitor state, daypart, `Errand.Brings`, `Conversation.Trigger`, `Problem.Location`)
+or a `SoftwareCheck` type that it doesn't list in its `KNOWN_*` constants. Make it do what a player
+does with the new thing, or decide that a week doesn't need it, then add the name.
+
+```sh
+"$GODOT" --headless --fixed-fps 60 -s res://tests/test_week_bot.gd -- 1 2 3   # the seeds
+```
+
 ## Voices
 
 **Layers.** A line's voice is three layers, each over the one below (`Voices.layer`): the

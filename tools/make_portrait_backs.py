@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Asks an image model (codex image_gen on the ChatGPT plan, or Gemini) to draw each person from
-behind, from their neutral portrait, for the back of the photo relief body. It writes Godot/people/<name>/back.png: the drawing, at the portrait's size, cut to the
-portrait's outline mirrored (seen from behind, the outline is the front's mirror image), so the back
-always fits the front. The raw answers go to the folder given by --raw, for review.
+behind, from the portrait that their photo relief shows (relief_pose in person.tres, else neutral),
+for the back of the photo relief body. It writes Godot/people/<name>/back.png: the drawing, at the
+portrait's size, cut to the portrait's outline mirrored (seen from behind, the outline is the front's
+mirror image), so the back always fits the front. The raw answers go to the folder given by --raw,
+for review.
 
 Usage: make_portrait_backs.py --raw <folder> [--backend codex|gemini] [--only name,name] [--force]
 codex: the logged-in codex CLI makes the image (about a minute each, on the ChatGPT plan).
@@ -143,6 +145,14 @@ def fill_from_neighbours(canvas, mask, solid, rounds=16):
     return Image.fromarray(colour.clip(0, 255).astype(np.uint8))
 
 
+def relief_pose(name):
+    """The pose whose portrait the person's photo relief shows: Person.relief_pose in person.tres,
+    which Godot leaves out while it is the default, neutral."""
+    with open(os.path.join(PEOPLE, name, "person.tres")) as f:
+        found = re.search(r'^relief_pose = &"([^"]+)"$', f.read(), re.MULTILINE)
+    return found.group(1) if found else "neutral"
+
+
 def mirrored_mask(alpha):
     """The front's outline mirrored about the middle of its opaque part, as the back sees it."""
     box = alpha.getbbox()
@@ -178,17 +188,28 @@ def main():
     elif shutil.which("codex") is None:
         sys.exit("codex is not on the PATH; install and log in to the codex CLI, or use --backend gemini")
     os.makedirs(args.raw, exist_ok=True)
-    names = sorted(n for n in os.listdir(PEOPLE) if os.path.isfile(os.path.join(PEOPLE, n, "portrait_neutral.png")))
+    names = sorted(n for n in os.listdir(PEOPLE) if os.path.isfile(os.path.join(PEOPLE, n, "person.tres")))
     if args.only:
-        names = [n for n in names if n in args.only.split(",")]
+        wanted = args.only.split(",")
+        unknown = [n for n in wanted if n not in names]
+        if unknown:
+            sys.exit("no %s/<name>/person.tres for: %s" % (os.path.relpath(PEOPLE), ", ".join(unknown)))
+        names = [n for n in names if n in wanted]
     failed = []
     for name in names:
         target = os.path.join(PEOPLE, name, "back.png")
         raw_path = os.path.join(args.raw, "%s_raw.png" % name)
+        portrait = os.path.join(PEOPLE, name, "portrait_%s.png" % relief_pose(name))
+        if not os.path.isfile(portrait):
+            # Without --only, a person with no portraits yet (a placeholder) is no failure.
+            print("%s: %s: no %s" % (name, "FAILED" if args.only else "skipped", os.path.relpath(portrait)))
+            if args.only:
+                failed.append(name)
+            continue
         if os.path.exists(target) and not args.force and not args.reuse_raw:
             print("%s: has a back.png, skipped" % name)
             continue
-        front = Image.open(os.path.join(PEOPLE, name, "portrait_neutral.png")).convert("RGBA")
+        front = Image.open(portrait).convert("RGBA")
         big = front.resize((front.width * UPSCALE, front.height * UPSCALE), Image.LANCZOS)
         flat = Image.new("RGB", big.size, BACKGROUND)
         flat.paste(big, mask=big.split()[3])
@@ -211,7 +232,7 @@ def main():
         back = fit_to_outline(fit(drawn, big.size), big_mask).resize(front.size, Image.LANCZOS)
         back.putalpha(mask)
         back.save(target)
-        print("%s: wrote %s" % (name, os.path.relpath(target)))
+        print("%s: wrote %s from %s" % (name, os.path.relpath(target), os.path.basename(portrait)))
     if failed:
         sys.exit("failed: %s" % ", ".join(failed))
 

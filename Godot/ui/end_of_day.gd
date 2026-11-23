@@ -39,7 +39,7 @@ var _sequence: Tween
 @onready var _panel: PanelContainer = %Panel
 @onready var _buffer: SubViewport = %Buffer
 @onready var _center: CenterContainer = %Center
-@onready var _black: ColorRect = %Black
+@onready var _black: SubViewportContainer = %Black
 @onready var _title: Label = %Title
 @onready var _master: int = AudioServer.get_bus_index(&"Master")
 

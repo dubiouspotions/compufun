@@ -73,11 +73,33 @@ fi
 "$git" lfs version >/dev/null 2>&1 || fail "Git LFS is missing. Install GitHub Desktop (desktop.github.com), or run: brew install git-lfs"
 out="$("$git" -C "$repo" lfs install --local --skip-repo 2>&1)" || fail "Cannot set up Git LFS in $repo: $out"
 
-branch="$("$git" -C "$repo" rev-parse --abbrev-ref HEAD 2>&1)" || fail "$repo is not a git checkout: $branch"
-[ "$branch" = "main" ] || fail "You are on the branch '$branch', not main. Switch to main first."
-out="$("$git" -C "$repo" pull --rebase --autostash 2>&1)" || fail "git pull failed:
+# A pull that stopped half-way (a rebase, a merge, a stash that clashed) blocks the next one: undo it,
+# and stash its unmerged files as they are, conflict markers and all.
+for op in rebase merge cherry-pick; do
+	"$git" -C "$repo" "$op" --abort >/dev/null 2>&1
+done
+unmerged="$("$git" -C "$repo" diff --name-only --diff-filter=U 2>&1)" || fail "Cannot list the unmerged files in $repo: $unmerged"
+if [ -n "$unmerged" ]; then
+	out="$(cd "$repo" && echo "$unmerged" | "$git" add --pathspec-from-file=- 2>&1)" || fail "Cannot take up the unmerged files in $repo:
 
 $(echo "$out" | tail -15)"
+fi
+
+branch="$("$git" -C "$repo" rev-parse --abbrev-ref HEAD 2>&1)" || fail "$repo is not a git checkout: $branch"
+[ "$branch" = "main" ] || fail "You are on the branch '$branch', not main. Switch to main first."
+# Local changes, untracked files too, go to the stash and stay there, so the game is always main.
+if [ -n "$("$git" -C "$repo" status --porcelain)" ]; then
+	out="$("$git" -C "$repo" stash push --include-untracked -m "Play HumanError $(date '+%Y-%m-%d %H:%M')" 2>&1)" || fail "Cannot stash the local changes in $repo:
+
+$(echo "$out" | tail -15)"
+	osascript -e 'display notification "Your local changes are in the git stash: git stash pop brings them back." with title "Play HumanError"' >/dev/null
+fi
+out="$("$git" -C "$repo" pull --rebase 2>&1)" || {
+	"$git" -C "$repo" rebase --abort >/dev/null 2>&1
+	fail "git pull failed, and $repo is back as it was. A local commit that clashes with main needs a developer.
+
+$(echo "$out" | tail -15)"
+}
 
 godot=""
 if [ -n "${GODOT:-}" ]; then

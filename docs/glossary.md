@@ -231,5 +231,5 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Trigger layer**: Whatever sets a corruption sign's flag: for now only the F2 Signs tab; later the days, the conversations or a story script.
 *Avoid:* scheduler, director.
 
-**Photo relief**: The 3D customer's upper body made from the neutral portrait (`PhotoRelief`): the photo on the front, the person seen from behind (`Person.back`) on the back.
+**Photo relief**: The 3D customer's upper body made from one portrait (`PhotoRelief`): the photo on the front, the person seen from behind (`Person.back`) on the back. The portrait is the person's **relief pose** (`Person.relief_pose`), neutral by default, and the back is drawn from the same portrait.
 *Avoid:* billboard, cut-out, sprite.

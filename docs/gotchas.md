@@ -32,6 +32,19 @@ before you commit it. — 2026-11
 `[gd_scene]` header and a `unique_id=` to each node on first save. Commit that change on its own.
 — 2026-11
 
+**`project.godot` or `default_bus_layout.tres` is modified after you open the project, and the
+diff changes nothing.** Godot 4.7.2 rewrites a file into the form it saves. It moves `config/icon`
+below the boot splash, drops `command_or_control_autoremap:false` (false is the default), stamps
+a `uid=` on the bus layout, and drops a reverb's `wet = 0.5` (also the default). Commit that form
+once. Putting the old text back makes the same diff return the next time the editor saves.
+— 2026-11-22
+
+**One icon's `.import` switches to VRAM compression and mipmaps.** `keys_windows_flag_48.png` is
+the floppy label, so the editor treats it as a 3D texture. Detect 3D was still "VRAM Compressed",
+the default on the extracted icons, and that setting reimports the picture the first time it is
+used on a 3D surface. Set `detect_3d/compress_to=0` (Disabled), as the other textures on a 3D
+surface do, and leave the compression lossless. — 2026-11-22
+
 **A data file saved from a headless script loses its `uid=` references.** `ResourceSaver.save`
 drops them. Write them back from each referenced file's header or `.import`, so the file
 matches what the editor writes. — 2026-10
@@ -146,3 +159,7 @@ the shop's walls, floor and counter are. — 2026-11
 snap moves every vertex by up to half a pixel of the world buffer; on a counter top seen at a
 grazing angle that is about 1 cm of depth. Make a layer at least 1 cm thick, as the work mat is.
 — 2026-11
+
+**A node with `psx_post` (or any canvas shader that writes `COLOR`) ignores its `modulate`, so a
+fade on it pops.** The modulate is in `COLOR` in `vertex()`; `fragment()` replaces it. `psx_post`
+passes it on in a varying; a new canvas shader that should fade must do the same. — 2026-11

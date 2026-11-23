@@ -1,7 +1,7 @@
 extends VBoxContainer
-## The Presets tab of the debug menu: buttons that set a Game state at once. Computer problems has
-## one button per problem in [constant PROBLEMS_FOLDER], made from the data; Moments are the
-## hand-written states in [constant MOMENTS]. A preset is in the format of Game.snapshot(); "Copy
+## The Presets tab of the debug menu: buttons that set a Game state at once. Days has the start and
+## the end of each day, and Computer problems one button per problem in [constant PROBLEMS_FOLDER],
+## both made from the data; Moments are the hand-written states in [constant MOMENTS]. A preset is in the format of Game.snapshot(); "Copy
 ## state" copies the current one, so a new moment is a paste. Missing keys start the day fresh (see
 ## Game.restore()). A job names its errand by file name, or a customer and a problem when the story
 ## has no errand with that problem.
@@ -19,7 +19,6 @@ const STAND_INS: Dictionary[StringName, Array] = {
 ## Who brings a problem that neither a day nor [constant STAND_INS] names.
 const FALLBACK: Array = ["res://customers/skater_bro.tres", 1]
 const MOMENTS: Dictionary[String, Dictionary] = {
-	"Day 1 starts": {"day": 1, "phase": "CLOSED"},
 	"Skater bro at the counter": {"day": 1, "arrivals": 2, "visitor": "res://customers/skater_bro.tres",
 			"visit": "DROP_OFF", "visitor_state": "TALKING"},
 	"Skater bro's computer, ready to call": {"day": 1, "arrivals": 2, "focus_slot": 0,
@@ -30,13 +29,50 @@ const MOMENTS: Dictionary[String, Dictionary] = {
 	"Day 1 over, two computers overnight": {"day": 1, "phase": "DAY_OVER", "arrivals": 4,
 			"jobs": [{"errand": "0102_skater_bro", "slot": 0},
 				{"errand": "0103_retired_accountant", "slot": 1, "order": 1}]},
-	"Day 7, ready to close for the end": {"day": 7},
 	"The end": {"day": 7, "phase": "ENDED"},
 }
 const HEADER_COLOR := Color(1.0, 0.84, 0.35)
 const HINT_COLOR := Color(0.7, 0.7, 0.7)
 
 var _status: Label
+
+
+## Two presets per day of the week, by button text: the closed morning, and the open shop with every
+## errand of the day come and gone, ready to close. Each holds the flags that the week sets before
+## it: the days' [member Day.set_flags] and [member Day.close_flags], and the flags of each drop-off
+## conversation that plays. The flags of a reply depend on the player's choices, so they are left out.
+static func day_presets() -> Dictionary[String, Dictionary]:
+	var presets: Dictionary[String, Dictionary] = {}
+	if Game.week == null:
+		return presets
+	var flags: Dictionary[StringName, int] = {}
+	for day: Day in Game.week.days:
+		_put_flags(flags, day.set_flags)
+		presets["Day %d starts" % day.number] = {"day": day.number, "phase": "CLOSED", "flags": flags.duplicate()}
+		for code: String in day.codes():
+			var errand := _first_met(day.alternatives(code), day.number, flags) as Errand
+			if errand == null:
+				continue
+			var arrive := _first_met(errand.conversations.filter(func(c: Conversation) -> bool: return c.trigger == Conversation.Trigger.ARRIVE), day.number, flags) as Conversation
+			if arrive != null:
+				_put_flags(flags, arrive.set_flags)
+		presets["Day %d, ready to close" % day.number] = {"day": day.number, "arrivals": day.codes().size(), "flags": flags.duplicate()}
+		_put_flags(flags, day.close_flags)
+	return presets
+
+
+# The first of [param candidates] (each with a Condition in `when`) that may play on day [param number] with [param flags].
+static func _first_met(candidates: Array, number: int, flags: Dictionary[StringName, int]) -> Resource:
+	for each: Resource in candidates:
+		var when: Condition = each.get("when")
+		if when == null or when.is_met(number, flags):
+			return each
+	return null
+
+
+static func _put_flags(flags: Dictionary[StringName, int], sets: Dictionary[StringName, int]) -> void:
+	for flag_name: StringName in sets:
+		Game.put_flag(flags, flag_name, sets[flag_name])
 
 
 ## One preset per problem in [constant PROBLEMS_FOLDER], by its button text: the customer's computer
@@ -79,6 +115,7 @@ static func _bringer(problem: Problem) -> Array:
 
 func _ready() -> void:
 	add_theme_constant_override(&"separation", 8)
+	_add_section("Days", "The start of each day, and its end with every errand done, with the flags that the days and drop-offs set before it.", day_presets())
 	var problems := problem_presets()
 	_add_section("Computer problems", "One per problem file: hardware opens in the Workview, software booted in the Screen View.", problems)
 	_add_section("Moments", "Hand-written states. Copy state, then paste a new one into MOMENTS.", MOMENTS)

@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" path="res://people/middle_manager/back.png" id="back_png"]
 [resource]
 script = ExtResource("7_script")
+relief_pose = &"angry"
 back = ExtResource("back_png")
 voice = ExtResource("voice")
 nickname = "Middle manager"
