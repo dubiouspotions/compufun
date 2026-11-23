@@ -16,6 +16,9 @@ signal screwdriver_clicked(computer: JobComputer)
 ## (Game.can_eject, Game.can_insert_floppy).
 signal floppy_clicked(computer: JobComputer)
 
+## The group of every computer on the counter.
+const GROUP: StringName = &"job_computers"
+
 ## The outline colour while the mouse or the dragged plug is over the computer.
 @export var hover_color: Color = Color(0.75, 0.9, 1.0)
 ## How far the outline stands out from the case and everything on it, in metres.
@@ -96,6 +99,10 @@ var _cd_drives: Array[Node] = []
 @onready var _part_sound: Hum = %PartSound
 # Plays instead of the fans while the computer runs with a part that has one (Part.running_sound).
 @onready var _running_sound: Hum = %RunningSound
+
+
+func _enter_tree() -> void:
+	add_to_group(GROUP)
 
 
 func _ready() -> void:
@@ -198,6 +205,11 @@ func cable_socket() -> Node3D:
 ## computer in focus in the Workview too, where its hotspot takes no clicks.
 func ray_distance(from: Vector3, dir: Vector3) -> float:
 	return _hotspot.box_ray_distance(from, dir)
+
+
+## True while the mouse is over the case and a click on it would open the Workview on it.
+func is_hovered() -> bool:
+	return _hovered and _hotspot.input_ray_pickable
 
 
 ## Stops taking clicks, before the computer leaves the counter.

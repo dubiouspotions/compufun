@@ -4,8 +4,9 @@ extends Control
 ## bottom left, clear of the part in the hand on the right. A click on it raises the page: the player
 ## holds it up on the right side of the view, readable, and keeps playing beside it. A click on a
 ## line with a check box ticks or unticks it, and a click on the trash can throws the page away. A
-## click outside the page, or Esc, lowers it, and does nothing else. A page just picked up comes up
-## raised. Beside
+## click on a computer on the counter lowers the page and goes on to the computer, which opens the
+## Workview on it. A click elsewhere outside the page, or Esc, lowers it, and does nothing else. A page
+## just picked up comes up raised. Beside
 ## an open screen (see [method lay_out_around]) the page is always up, right of the screen and leaving
 ## it uncovered. Only the trash can takes the page (TrashCan); while the player carries one, a try to
 ## take another hops the corner.
@@ -90,7 +91,7 @@ func lay_out_around(screen: Rect2, buttons: Array[Rect2]) -> void:
 
 
 # _input, before the buttons, the screens and the hotspots: a click outside the raised page only lowers it,
-# or throws it in the trash can under the mouse.
+# or throws it in the trash can under the mouse, or lowers it and goes on to the computer under the mouse.
 func _input(event: InputEvent) -> void:
 	var click := event as InputEventMouseButton
 	if click == null or not click.pressed or click.button_index not in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
@@ -102,6 +103,9 @@ func _input(event: InputEvent) -> void:
 	var can := get_tree().get_first_node_in_group(TrashCan.GROUP) as TrashCan
 	if click.button_index == MOUSE_BUTTON_LEFT and can != null and can.is_hovered():
 		can.throw_printout()
+	elif click.button_index == MOUSE_BUTTON_LEFT and get_tree().get_nodes_in_group(JobComputer.GROUP).any(func(computer: JobComputer) -> bool: return computer.is_hovered()):
+		lower()
+		return  # unhandled, so the click goes on to the computer
 	else:
 		lower()
 	get_viewport().set_input_as_handled()

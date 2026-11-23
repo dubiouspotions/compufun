@@ -44,6 +44,7 @@ func run() -> void:
 	await _check_close_up()
 	await _check_trash_can()
 	await _check_trash_raised()
+	await _check_computer_raised()
 
 
 # The finished page at the printer goes to the player and leaves the printer.
@@ -222,4 +223,44 @@ func _check_trash_raised() -> void:
 	game.trash_part()
 	carried.queue_free()
 	can.queue_free()
+	await process_frame
+
+
+# While the page is raised, a left click on a computer on the counter lowers the page and goes on to
+# the computer, which opens the Workview on it; on the computer in the Workview it only lowers the page.
+func _check_computer_raised() -> void:
+	var job := Job.new(load("res://customers/skater_bro.tres"), load("res://problems/dust_overheat.tres"), 0, 0)
+	game.jobs = [job] as Array[Job]
+	var computer: Node3D = load("res://rooms/shop/job_computer.tscn").instantiate()  # untyped: JobComputer names Game
+	computer.set(&"job", job)
+	root.add_child(computer)
+	var behind := Control.new()  # a stand-in for the world view, which passes clicks on to the hotspots
+	var behind_clicks: Array[int] = [0]
+	behind.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and (event as InputEventMouseButton).pressed:
+			behind_clicks[0] += 1)
+	root.add_child(behind)
+	behind.size = behind.get_viewport_rect().size
+	var carried: Control = load("res://ui/carried_printout.tscn").instantiate()  # untyped: CarriedPrintout names Game
+	root.add_child(carried)
+	game.carry_printout(PAGE)
+	await process_frame
+	var hotspot: Node = computer.get_node("%Hotspot")
+	hotspot.mouse_entered.emit()
+	carried.call("raise")
+	_click_at(Vector2(4.0, 4.0))
+	check("a click on a computer lowers the page and goes on to it", [carried.call("is_raised"), game.printout, behind_clicks[0]], [false, PAGE, 1])
+	carried.call("raise")
+	_click_at(Vector2(4.0, 4.0), MOUSE_BUTTON_RIGHT)
+	check("a right click there only lowers the page", [carried.call("is_raised"), behind_clicks[0]], [false, 1])
+	game.focus_job(job)
+	game.go_to_view(&"Workview")
+	carried.call("raise")
+	_click_at(Vector2(4.0, 4.0))
+	check("on the computer in the Workview, a click only lowers the page", [carried.call("is_raised"), behind_clicks[0]], [false, 1])
+	game.trash_printout()
+	game.jobs = [] as Array[Job]
+	carried.queue_free()
+	behind.queue_free()
+	computer.queue_free()
 	await process_frame
