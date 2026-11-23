@@ -120,6 +120,32 @@ func run() -> void:
 	check("every edit emitted edited", edits, 27)
 
 	await _check_in_place(questions)
+	await _check_effect_and_answers(questions)
+
+
+# A line's own effect from its dropdown, and dragging a choice's answers into another order.
+func _check_effect_and_answers(questions: Reply) -> void:
+	var line := questions.choices[0].replies[0].lines[0]
+	var effect := _find(graph.box_of(questions.choices[0].replies[0]), func(node: Node) -> bool: return node is OptionButton and (node as OptionButton).get_item_text(0) == "Conversation's voice") as OptionButton
+	check("a line speaks with its conversation's effect", [effect.selected, line.effect], [0, null])
+	for i: int in effect.item_count:
+		if effect.get_item_text(i) == "cambion_glitch":
+			effect.select(i)
+			effect.item_selected.emit(i)
+	check("its dropdown gives it its own", line.effect.resource_path, "res://voices/effects/cambion_glitch.tres")
+	await _check_file("a line's own effect")
+
+	var install := questions.choices[1]
+	var answer := graph.add_answer(install)
+	await process_frame
+	var first := install.replies[0]
+	check("moving the else from last is refused", [graph.move_answer(install, install.replies.size() - 1, 0) != "", install.replies[0]], [true, first])
+	check("moving an if answer works", [graph.move_answer(install, 1, 0), install.replies[0]], ["", answer])
+	await process_frame
+	var box := graph.box_of(install.replies[1])
+	var grip := _find(box, func(node: Node) -> bool: return node is Label and node.get(&"text") == "::") as Label
+	check("an answer box has a drag handle when its choice has several", grip != null, true)
+	await _check_file("moved answers")
 
 
 # Edits a line and a chip as a writer does: double-click, type, Enter; and adds with the buttons.

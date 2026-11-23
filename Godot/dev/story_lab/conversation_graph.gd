@@ -345,6 +345,24 @@ func move_line(reply: Reply, from: int, to: int) -> void:
 
 
 ## Moves the choice at [param from] of [param reply]'s list to [param to].
+## Moves the answer at [param from] of [param choice] to [param to]. Returns "" or, when the move
+## would put the answer that plays when no condition holds anywhere but last, why not, in words.
+func move_answer(choice: Choice, from: int, to: int) -> String:
+	if not _answer_move_ok(choice, from, to):
+		return "The answer that plays when no condition holds stays last."
+	var answer := choice.replies[from]
+	choice.replies.remove_at(from)
+	choice.replies.insert(to, answer)
+	_changed(answer)
+	return ""
+
+
+## Makes [param line] speak with [param effect], or with its conversation's effect for null.
+func set_line_effect(line: DialogueLine, effect: VoiceEffect) -> void:
+	line.effect = effect
+	_changed(_owner_of(line))
+
+
 func move_choice(reply: Reply, from: int, to: int) -> void:
 	var choice := reply.choices[from]
 	reply.choices.remove_at(from)
@@ -714,6 +732,14 @@ func _reply_box(reply: Reply) -> GraphNode:
 	head.custom_minimum_size.y = 6
 	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head_row.add_child(head)
+	if not _read_only and parent is Choice and (parent as Choice).replies.size() > 1:
+		var choice := parent as Choice
+		var index := choice.replies.find(reply)
+		head_row.add_child(_grip(StoryConditionEditor.describe(reply.when), {"kind": &"answer", "list": choice, "index": index}))
+		head_row.move_child(head_row.get_child(head_row.get_child_count() - 1), 0)
+		box.set_drag_forwarding(Callable(),
+			func(at: Vector2, data: Variant) -> bool: return _can_drop(at, data, &"answer", choice) and _answer_move_ok(choice, data["index"], index),
+			func(_at: Vector2, data: Variant) -> void: move_answer(choice, data["index"], index))
 	if not _read_only:
 		head_row.add_child(_branch("Add a choice the player can say after these lines", func() -> void: _open_spot_later(add_choice(reply), &"text")))
 	box.add_child(head_row)
@@ -828,8 +854,7 @@ func _line_row(reply: Reply, index: int) -> Control:
 	words.add_theme_constant_override(&"separation", 0)
 	var text := _label(line.text, 14, ink)
 	_spot(words, text, line, &"text", line.text, func(said: String) -> String: return edit_text(line, said))
-	if line.effect != null:
-		words.add_child(_label("effect: " + line.effect.resource_path.get_file().get_basename(), 10, faint_ink))
+	words.add_child(_line_effect(line))
 	row.add_child(words)
 	row.add_child(_icon_button(_play_icon(), "Play this line", _play.bind(line)))
 	if not _read_only:
@@ -955,8 +980,49 @@ func _grip(text: String, data: Dictionary) -> Label:
 	return grip
 
 
+# Whether moving [param choice]'s answer at [param from] to [param to] keeps the answer that plays
+# when no condition holds last.
+func _answer_move_ok(choice: Choice, from: int, to: int) -> bool:
+	var order := choice.replies.duplicate()
+	var moved: Reply = order.pop_at(from)
+	order.insert(to, moved)
+	for i: int in order.size() - 1:
+		if (order[i] as Reply).when == null:
+			return false
+	return true
+
+
+# The small dropdown of [param line]'s own voice effect.
+func _line_effect(line: DialogueLine) -> OptionButton:
+	var effect := OptionButton.new()
+	effect.flat = true
+	effect.focus_mode = Control.FOCUS_NONE
+	effect.add_theme_font_size_override(&"font_size", 10)
+	effect.add_theme_color_override(&"font_color", faint_ink)
+	effect.tooltip_text = "How this line sounds: the conversation's voice effect, or one of its own"
+	effect.add_item("Conversation's voice")
+	for name: String in LabUI.resource_names(Voices.EFFECTS_DIR):
+		effect.add_item(name)
+		if line.effect != null and line.effect.resource_path.get_file().get_basename() == name:
+			effect.select(effect.item_count - 1)
+	effect.disabled = _read_only
+	effect.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	effect.item_selected.connect(func(index: int) -> void:
+		if index == 0:
+			set_line_effect(line, null)
+			return
+		var path := Voices.EFFECTS_DIR + effect.get_item_text(index) + ".tres"
+		var chosen := load(path) as VoiceEffect
+		if chosen == null:
+			push_error("Story Lab: %s doesn't load as a VoiceEffect" % path)
+			_status.text = "The voice effect %s doesn't load." % effect.get_item_text(index)
+			return
+		set_line_effect(line, chosen))
+	return effect
+
+
 # Whether [param data] is a dragged [param kind] of the list of [param list].
-func _can_drop(_at: Vector2, data: Variant, kind: StringName, list: Reply) -> bool:
+func _can_drop(_at: Vector2, data: Variant, kind: StringName, list: Resource) -> bool:
 	return data is Dictionary and (data as Dictionary).get("kind") == kind and (data as Dictionary).get("list") == list
 
 
