@@ -48,7 +48,7 @@ Godot/               the Godot project: everything the game loads
   win95/solitaire/   Solitaire: the rules (klondike.gd), the window, the table and the card pictures
   compufun_db/       CompuFunDB, the DOS database on the work computer, its VGA font, and the work computer's boot (a 386)
   dev/               the Dev menu, the Voice Lab and story.gd (prints the story check); no export contains it
-  dev/story_lab/     the Story Lab (F4): story_lab.tscn, the week board, the problems (problem_panel.gd), the drafts (story_drafts.gd), the issue that Send makes
+  dev/story_lab/     the Story Lab (F4): story_lab.tscn, the week board, the problems (problem_panel.gd), the corruption signs and where the week starts them (sign_panel.gd), the drafts (story_drafts.gd), the issue that Send makes
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 native/chimera_voice/  the live voice in Rust: wasm for the web, the ChimeraVoice extension for desktop
 feedback/            the F9 reports (outside Godot, so Godot does not import them)
