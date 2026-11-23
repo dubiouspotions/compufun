@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
 ## Game.runs_cambion reads the flag <customer>_runs_cambion: in such a computer the Calculator answers
-## every sum with the corruption sign calc_666's number, and clearing the flag uninstalls Cambion.
+## every sum with the corruption sign calc_666's number, and clearing the flag uninstalls Cambion. Day 1
+## installs it in the skater bro's computer and starts the sign.
 
 const CAMBION_RESULT_META: StringName = &"win95_cambion_result"  # calculator.gd's; preloading it needs Game
 
@@ -24,6 +25,11 @@ func run() -> void:
 	game.set_flag(&"skater_bro_runs_cambion")
 	check("another customer's computer adds up", _sum(calculator), "2")
 	root.remove_meta(CAMBION_RESULT_META)
+
+	game.set_flag(&"skater_bro_runs_cambion", 0)
+	game.start_day(game.day_of(1))
+	check("day 1 installs Cambion in his computer and starts calc_666",
+			[game.runs_cambion(skater), game.flag(game.sign_flag(&"calc_666"))], [true, 1])
 
 
 func _sum(calculator: Node) -> String:
