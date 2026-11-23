@@ -1,8 +1,10 @@
 class_name StoryLabBoard
 extends HBoxContainer
-## The Story Lab's week: a column per day with its weather and warp, and a card per errand in the
-## order the customers come in. Alternatives (errands with one errand code) stack in one dashed
-## card. Cards drag to another day or place, or onto a card to become its alternative.
+## The Story Lab's week: a column per day with its weather and warp, and its errand cards in the order
+## the customers come in, each under its band (the time of day that Game.daypart_of gives it).
+## Alternatives (errands with one errand code) stack in one dashed card. Cards drag to another day,
+## place or band, or onto a card to become its alternative; customers drag in from
+## [method customer_strip] to make a new errand.
 
 ## The writer clicked the card of the errand file [param path].
 signal errand_picked(path: String)
@@ -12,14 +14,34 @@ signal day_picked(day: int)
 signal add_requested(day: int)
 ## The writer dropped the errand file [param path] on day [param day] at place [param index] (0 is
 ## the first, in the order before the move), or with [param alternative] onto the errands at that
-## place.
-signal errand_dropped(path: String, day: int, index: int, alternative: bool)
+## place. [param before_opening] is true when it lands in place 0 of the Before opening band.
+signal errand_dropped(path: String, day: int, index: int, alternative: bool, before_opening: bool)
+## The writer dropped [param customer] (a file name in customers/, without .tres) on day
+## [param day] for a new errand at place [param index] (0 is the first; the errands from there move
+## down), coming before opening with [param before_opening].
+signal customer_dropped(customer: String, day: int, index: int, before_opening: bool)
+
+## The parts of a day column, in the order of the day.
+enum Band {
+	BEFORE_OPENING, ## Place 01, when it says comes: before opening.
+	MORNING, ## Game.Daypart.MORNING as the customer comes in.
+	MIDDAY, ## Game.Daypart.MIDDAY.
+	AFTERNOON, ## Game.Daypart.AFTERNOON.
+	AT_CLOSING, ## The day's on close flags and close signs; no errand comes then.
+}
 
 const DAYS: int = 7
 const PORTRAIT_SIZE: int = 44
+const BAND_NAMES: PackedStringArray = ["Before opening", "Morning", "Midday", "Afternoon", "At closing"]
+const CUSTOMERS_DIR: String = "res://customers/"
+const GAME := preload("res://game.gd")  # the script, not the autoload: tests compile this before autoloads exist
 
 var _hinted: PanelContainer
 var _hinted_style: StyleBox
+## The shown week, from [method groups].
+var _days: Array = []
+var _cards: Dictionary = {}
+var _sign_titles: Dictionary[StringName, String] = {}
 
 
 ## The errand files in [param paths] by day and place: for each day 1 to 7 (index 0 to 6), its
@@ -56,24 +78,8 @@ static func code_of(path: String) -> String:
 ## [param index] of [param days] (from [method groups]), or with [param alternative] into the
 ## errands at that place, and number both days' errands again from 01 without gaps.
 static func moves(days: Array, path: String, day: int, index: int, alternative: bool) -> Dictionary[String, String]:
-	var after: Array = days.duplicate(true)
+	var after := _moved(days, path, day, index, alternative)
 	var from_day := code_of(path).substr(0, 2).to_int()
-	var from_groups: Array = after[from_day - 1]
-	for g: int in from_groups.size():
-		var group: Array = from_groups[g]
-		if path not in group:
-			continue
-		group.erase(path)
-		if group.is_empty():
-			from_groups.remove_at(g)
-			if from_day == day and g < index:
-				index -= 1
-		break
-	var to_groups: Array = after[day - 1]
-	if alternative and index < to_groups.size():
-		to_groups[index].append(path)
-	else:
-		to_groups.insert(clampi(index, 0, to_groups.size()), [path])
 	var renames: Dictionary[String, String] = {}
 	var taken: Dictionary[String, bool] = {}
 	for d: int in ([from_day, day] if from_day != day else [day]):
@@ -93,6 +99,133 @@ static func moves(days: Array, path: String, day: int, index: int, alternative: 
 	return renames
 
 
+# [param days] with [param path] moved as [method moves] moves it; "" is a new errand.
+static func _moved(days: Array, path: String, day: int, index: int, alternative: bool) -> Array:
+	var after: Array = days.duplicate(true)
+	var from_day := code_of(path).substr(0, 2).to_int()
+	if from_day >= 1 and from_day <= DAYS:
+		var from_groups: Array = after[from_day - 1]
+		for g: int in from_groups.size():
+			var group: Array = from_groups[g]
+			if path not in group:
+				continue
+			group.erase(path)
+			if group.is_empty():
+				from_groups.remove_at(g)
+				if from_day == day and g < index:
+					index -= 1
+			break
+	var to_groups: Array = after[day - 1]
+	if alternative and index < to_groups.size():
+		to_groups[index].append(path)
+	else:
+		to_groups.insert(clampi(index, 0, to_groups.size()), [path])
+	return after
+
+
+## The band of each place of [param day_groups] (one day of [method groups]) whose errands are in
+## [param cards] (path to {"errand": Errand}), by the game's rule, Game.daypart_of: BEFORE_OPENING
+## for place 01 when one of its errands comes before opening, else MORNING, MIDDAY or AFTERNOON.
+## [param moving] comes after opening whatever its file says; a path without a card is a new errand
+## that leaves its computer.
+static func bands(day_groups: Array, cards: Dictionary, moving: String = "") -> Array[Band]:
+	var day := Day.new()
+	for g: int in day_groups.size():
+		for path: String in day_groups[g]:
+			var stand_in := Errand.new()
+			stand_in.code = "01%02d" % (g + 1)
+			var errand: Errand = cards[path]["errand"] if cards.has(path) else null
+			if errand != null:
+				stand_in.brings = errand.brings
+				stand_in.before_opening = errand.before_opening and path != moving
+			day.errands.append(stand_in)
+	var found: Array[Band] = []
+	for g: int in day_groups.size():
+		if g == 0 and day.alternatives("0101").any(func(each: Errand) -> bool: return each.before_opening):
+			found.append(Band.BEFORE_OPENING)
+		else:
+			found.append(Band[GAME.Daypart.find_key(GAME.daypart_of(day, g + 1))])
+	return found
+
+
+## The place on day [param day] of [param days] (0 is the first, in the order before the move) that
+## puts the errand file [param path] in [param band]: the first place where [method bands] gives it
+## that band, or the end of the day. "" is a new errand that leaves its computer. BEFORE_OPENING is
+## place 0; the other bands never take place 0 from an errand that comes before opening.
+static func place_for(days: Array, cards: Dictionary, day: int, band: Band, path: String = "") -> int:
+	var day_groups: Array = days[day - 1]
+	if band == Band.BEFORE_OPENING:
+		return 0
+	var first := 1 if not day_groups.is_empty() and bands(day_groups, cards, path)[0] == Band.BEFORE_OPENING else 0
+	for index: int in range(first, day_groups.size() + 1):
+		var after: Array = _moved(days, path, day, index, false)[day - 1]
+		for g: int in after.size():
+			if path in after[g]:
+				if bands(after, cards, path)[g] == band:
+					return index
+				break
+	return day_groups.size()
+
+
+## What happens at closing on [param day], in plain words, one line each: its on close flags and
+## close signs. [param sign_titles] names the corruption signs by id (StoryDayPanel.signs()).
+static func closing_words(day: Day, sign_titles: Dictionary[StringName, String]) -> PackedStringArray:
+	var words := PackedStringArray()
+	if day == null:
+		return words
+	for flag: StringName in day.close_flags:
+		var value: int = day.close_flags[flag]
+		if String(flag).begins_with("sign_"):
+			var title := _sign_title(StringName(String(flag).trim_prefix("sign_")), sign_titles)
+			words.append(("From now on: " if value != 0 else "Stops: ") + title)
+		elif value == 0:
+			words.append("Forgets " + StoryFactPicker.humanize(flag))
+		else:
+			words.append("Remembers " + StoryFactPicker.humanize(flag) + ("" if value == 1 else " = %d" % value))
+	for id: StringName in day.close_signs:
+		words.append("Until morning: " + _sign_title(id, sign_titles))
+	return words
+
+
+static func _sign_title(id: StringName, sign_titles: Dictionary[StringName, String]) -> String:
+	var title: String = sign_titles.get(id, "")
+	return title if title != "" else StoryFactPicker.humanize(id)
+
+
+## A row of every customer in customers/ (face and name) that drags onto the board: dropped on a
+## day or a band, it asks for a new errand there ([signal customer_dropped]).
+static func customer_strip() -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	row.add_child(LabUI.label("Customers", 13, LabUI.DIM))
+	for name: String in LabUI.resource_names(CUSTOMERS_DIR):
+		var customer := load(CUSTOMERS_DIR + name + ".tres") as Customer
+		if customer == null:
+			push_error("Story Lab: %s%s.tres doesn't load as a Customer" % [CUSTOMERS_DIR, name])
+		var chip := PanelContainer.new()
+		chip.add_theme_stylebox_override("panel", LabUI.box(LabUI.RAISED, 8, 2))
+		chip.mouse_default_cursor_shape = Control.CURSOR_DRAG
+		chip.mouse_filter = Control.MOUSE_FILTER_STOP
+		chip.tooltip_text = "%s\nDrag onto a day or a time of day for a new errand." % name
+		var shown := customer.spoken_name() if customer != null else name
+		var drag := func(_at: Vector2) -> Variant:
+			var preview := LabUI.chip(shown, LabUI.TEXT, 15)
+			preview.add_theme_stylebox_override("normal", LabUI.box(LabUI.HOVER, 8, 4))
+			chip.set_drag_preview(preview)
+			return {"story_customer": name}
+		chip.set_drag_forwarding(drag, Callable(), Callable())
+		var inside := HBoxContainer.new()
+		inside.add_theme_constant_override("separation", 6)
+		inside.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		chip.add_child(inside)
+		inside.add_child(portrait(customer, 28))
+		var label := LabUI.label(shown, 13)
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		inside.add_child(label)
+		row.add_child(chip)
+	return row
+
+
 ## Shows [param days] (Day 1 to 7) with the errand files of [param cards]: path to
 ## {"errand": Errand, "problems": PackedStringArray (parse errors and missing links), "draft": bool}.
 ## [param selected] is the open errand's path, [param drafted_days] the days with a draft.
@@ -101,11 +234,14 @@ func show_week(days: Array[Day], cards: Dictionary, selected: String, drafted_da
 		remove_child(child)
 		child.queue_free()
 	_hinted = null
+	if _sign_titles.is_empty():
+		_sign_titles = StoryDayPanel.signs()
 	add_theme_constant_override("separation", 10)
-	var day_groups := groups(PackedStringArray(cards.keys()))
+	_cards = cards
+	_days = groups(PackedStringArray(cards.keys()))
 	for d: int in DAYS:
 		var day: Day = days[d] if d < days.size() else null
-		add_child(_column(d + 1, day, day_groups[d], cards, selected, (d + 1) in drafted_days))
+		add_child(_column(d + 1, day, _days[d], cards, selected, (d + 1) in drafted_days))
 
 
 func _notification(what: int) -> void:
@@ -125,7 +261,9 @@ func _column(number: int, day: Day, day_groups: Array, cards: Dictionary, select
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 6)
 	column.add_child(box)
-	box.add_child(_header(number, day, drafted))
+	var head := _header(number, day, drafted)
+	head.set_drag_forwarding(Callable(), _can_drop_end, _drop_end.bind(number, day_groups.size()))
+	box.add_child(head)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -133,18 +271,76 @@ func _column(number: int, day: Day, day_groups: Array, cards: Dictionary, select
 	box.add_child(scroll)
 	var list := VBoxContainer.new()
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	list.add_theme_constant_override("separation", 6)
+	list.add_theme_constant_override("separation", 4)
 	scroll.add_child(list)
-	for g: int in day_groups.size():
-		var group: Array = day_groups[g]
-		if group.size() == 1:
-			list.add_child(_card(group[0], cards[group[0]], selected, number, g))
-		else:
-			list.add_child(_alternatives(group, cards, selected, number, g))
+	var placed := bands(day_groups, cards)
+	for band: Band in [Band.BEFORE_OPENING, Band.MORNING, Band.MIDDAY, Band.AFTERNOON]:
+		var section := _band(number, band)
+		var cards_box: VBoxContainer = section.get_child(0)
+		for g: int in day_groups.size():
+			if placed[g] != band:
+				continue
+			var group: Array = day_groups[g]
+			if group.size() == 1:
+				cards_box.add_child(_card(group[0], cards[group[0]], selected, number, g, section, band))
+			else:
+				cards_box.add_child(_alternatives(group, cards, selected, number, g, section, band))
+		if cards_box.get_child_count() == 1:
+			var empty := LabUI.label("drop here", 11, Color(LabUI.DIM, 0.6))
+			empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			empty.clip_text = true
+			cards_box.add_child(empty)
+		list.add_child(section)
+	list.add_child(_closing(day))
 	var add := LabUI.button("+  Errand", func() -> void: add_requested.emit(number), &"FlatButton")
 	add.tooltip_text = "Add an errand at the end of day %d" % number
 	box.add_child(add)
 	return column
+
+
+# A band's drop target, holding its title; its cards go into its child VBoxContainer.
+func _band(number: int, band: Band) -> PanelContainer:
+	var section := PanelContainer.new()
+	section.name = BAND_NAMES[band].to_pascal_case()
+	section.add_theme_stylebox_override("panel", _band_style(false))
+	section.set_drag_forwarding(Callable(), _can_drop_band.bind(section), _drop_band.bind(number, band))
+	var cards_box := VBoxContainer.new()
+	cards_box.add_theme_constant_override("separation", 6)
+	section.add_child(cards_box)
+	cards_box.add_child(LabUI.label(BAND_NAMES[band], 11, LabUI.DIM))
+	return section
+
+
+# At closing: the day's on close flags and close signs. It stops drops: no errand comes then.
+func _closing(day: Day) -> Control:
+	var section := PanelContainer.new()
+	section.name = "AtClosing"
+	section.mouse_filter = Control.MOUSE_FILTER_STOP
+	section.add_theme_stylebox_override("panel", _band_style(false))
+	var lines := VBoxContainer.new()
+	lines.add_theme_constant_override("separation", 2)
+	lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	section.add_child(lines)
+	lines.add_child(LabUI.label(BAND_NAMES[Band.AT_CLOSING], 11, LabUI.DIM))
+	var words := closing_words(day, _sign_titles)
+	if words.is_empty():
+		words.append("Nothing happens")
+	for line: String in words:
+		var label := LabUI.label(line, 12, LabUI.CHANGED if line != "Nothing happens" else Color(LabUI.DIM, 0.6))
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.custom_minimum_size.x = 40
+		lines.add_child(label)
+	section.tooltip_text = "Edit them in the day: click its header."
+	return section
+
+
+func _band_style(hint: bool) -> StyleBoxFlat:
+	var style := LabUI.box(Color(LabUI.HOVER, 0.5) if hint else Color(LabUI.FIELD, 0.5), 6, 3)
+	style.content_margin_left = 4
+	style.content_margin_right = 4
+	style.border_color = LabUI.ACCENT
+	style.set_border_width_all(2 if hint else 0)
+	return style
 
 
 func _header(number: int, day: Day, drafted: bool) -> Control:
@@ -211,7 +407,7 @@ func _weather_icon(rain: bool) -> Control:
 	return icon
 
 
-func _alternatives(group: Array, cards: Dictionary, selected: String, day: int, index: int) -> Control:
+func _alternatives(group: Array, cards: Dictionary, selected: String, day: int, index: int, section: PanelContainer, band: Band) -> Control:
 	var frame := PanelContainer.new()
 	var empty := StyleBoxEmpty.new()
 	empty.set_content_margin_all(6)
@@ -226,24 +422,24 @@ func _alternatives(group: Array, cards: Dictionary, selected: String, day: int, 
 	frame.add_child(box)
 	box.add_child(LabUI.label("%s: the first that matches comes" % StoryLabBoard.code_of(group[0]), 11, LabUI.DIM))
 	for path: String in group:
-		box.add_child(_card(path, cards[path], selected, day, index))
+		box.add_child(_card(path, cards[path], selected, day, index, section, band))
 	return frame
 
 
-func _card(path: String, info: Dictionary, selected: String, day: int, index: int) -> Control:
+func _card(path: String, info: Dictionary, selected: String, day: int, index: int, section: PanelContainer, band: Band) -> Control:
 	var errand: Errand = info["errand"]
 	var problems: PackedStringArray = info["problems"]
 	var card := PanelContainer.new()
 	card.add_theme_stylebox_override("panel", _card_style(path == selected, ""))
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	card.tooltip_text = "%s\nDrag to another day or place, or onto a card to make an alternative." % path.get_file()
+	card.tooltip_text = "%s\nDrag to another day, place or time of day, or onto a card to make an alternative." % path.get_file()
 	card.gui_input.connect(func(event: InputEvent) -> void:
 		var click := event as InputEventMouseButton
 		# On release: picking rebuilds the board, which frees the card before a drag can start.
 		if click != null and not click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
 			errand_picked.emit(path))
-	card.set_drag_forwarding(_drag.bind(path, errand), _can_drop.bind(card), _drop.bind(card, day, index))
+	card.set_drag_forwarding(_drag.bind(path, errand), _can_drop.bind(card, section), _drop.bind(card, day, index, band))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -383,26 +579,67 @@ func _zone(card: Control, at: Vector2) -> String:
 	return "before" if share < 0.3 else ("after" if share > 0.7 else "alternative")
 
 
-func _can_drop(at: Vector2, data: Variant, card: PanelContainer) -> bool:
-	if not (data is Dictionary and data.has("story_errand")):
+# A customer dropped on a card goes into the card's band.
+func _can_drop(at: Vector2, data: Variant, card: PanelContainer, section: PanelContainer) -> bool:
+	if not _dragged(data):
 		return false
+	if data.has("story_customer"):
+		return _can_drop_band(at, data, section)
 	_hint(card, _card_style(false, _zone(card, at)))
 	return true
 
 
-func _drop(at: Vector2, data: Variant, card: PanelContainer, day: int, index: int) -> void:
+func _drop(at: Vector2, data: Variant, card: PanelContainer, day: int, index: int, band: Band) -> void:
+	if data.has("story_customer"):
+		_drop_band(at, data, day, band)
+		return
 	var zone := _zone(card, at)
 	_hint(null, null)
-	errand_dropped.emit(data["story_errand"], day, index + (1 if zone == "after" else 0), zone == "alternative")
+	var place := index + (1 if zone == "after" else 0)
+	errand_dropped.emit(data["story_errand"], day, place, zone == "alternative", band == Band.BEFORE_OPENING and place == 0)
+
+
+func _can_drop_band(_at: Vector2, data: Variant, section: PanelContainer) -> bool:
+	if not _dragged(data):
+		return false
+	_hint(section, _band_style(true))
+	return true
+
+
+func _drop_band(_at: Vector2, data: Variant, day: int, band: Band) -> void:
+	drop_in(data, day, band)
+
+
+## Drops [param data], a drag of the board ({"story_errand": path}) or of [method customer_strip]
+## ({"story_customer": name}), into [param band] of day [param day] (1 to 7), at the place that
+## [method place_for] gives: emits [signal errand_dropped] or [signal customer_dropped].
+func drop_in(data: Dictionary, day: int, band: Band) -> void:
+	_hint(null, null)
+	if band == Band.AT_CLOSING:
+		push_error("Story Lab: %s dropped at closing on day %d, where no errand comes" % [data, day])
+		return
+	var path: String = data.get("story_errand", "")
+	var place := place_for(_days, _cards, day, band, path)
+	if path != "":
+		errand_dropped.emit(path, day, place, false, band == Band.BEFORE_OPENING)
+	else:
+		customer_dropped.emit(data["story_customer"], day, place, band == Band.BEFORE_OPENING)
 
 
 func _can_drop_end(_at: Vector2, data: Variant) -> bool:
 	_hint(null, null)
-	return data is Dictionary and data.has("story_errand")
+	return _dragged(data)
 
 
 func _drop_end(_at: Vector2, data: Variant, day: int, count: int) -> void:
-	errand_dropped.emit(data["story_errand"], day, count, false)
+	if data.has("story_customer"):
+		customer_dropped.emit(data["story_customer"], day, count, false)
+	else:
+		errand_dropped.emit(data["story_errand"], day, count, false, false)
+
+
+static func _dragged(data: Variant) -> bool:
+	return data is Dictionary and (data.has("story_errand") or data.has("story_customer"))
 
 
 # Shows [param style] on [param card] while a drop over it is possible; null puts it back.

@@ -1305,7 +1305,7 @@ func restore(state: Dictionary) -> String:
 	if new_phase == Phase.ENDED and day_of(number + 1) != null:
 		return _refuse("ENDED is only for the last day, and day %d has a next day" % number)
 	var evening: bool = new_phase == Phase.DAY_OVER or new_phase == Phase.ENDED
-	var default_daypart := String(Daypart.find_key(Daypart.EVENING if evening else _daypart_of(new_day, new_arrivals)))
+	var default_daypart := String(Daypart.find_key(Daypart.EVENING if evening else daypart_of(new_day, new_arrivals)))
 	var new_daypart: Variant = _enum_value(Daypart, state.get("daypart", default_daypart), "daypart")
 	if new_daypart is String:
 		return _refuse(new_daypart)
@@ -1575,7 +1575,7 @@ func _try_arrival() -> bool:
 	if next < 0 or not _arrival_due():
 		return false
 	arrivals = next + 1
-	daypart = _daypart_of(day, arrivals)
+	daypart = daypart_of(day, arrivals)
 	_set_visitor(coming(next), Visit.DROP_OFF)
 	return true
 
@@ -1780,7 +1780,7 @@ static func _id_of(who: Customer) -> String:
 ## The daypart of [param on_day] after [param count] arrivals: morning until the second customer
 ## who brings a computer, then midday, then afternoon. Errand codes at the start of the day whose
 ## alternatives all bring nothing (day 1's tutorial) come in the morning and don't count.
-static func _daypart_of(on_day: Day, count: int) -> Daypart:
+static func daypart_of(on_day: Day, count: int) -> Daypart:
 	var visits_first := 0
 	for code: String in on_day.codes():
 		if on_day.alternatives(code).any(func(each: Errand) -> bool: return each.brings != Errand.Brings.NOTHING):
