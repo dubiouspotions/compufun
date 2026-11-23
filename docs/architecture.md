@@ -51,7 +51,7 @@ Godot/               the Godot project: everything the game loads
   win95/netscape/    Netscape Navigator's pictures (web_browser.tscn is the browser): the logo, the toolbar icons, the splash
   compufun_db/       CompuFunDB, the DOS database on the work computer, its VGA font, and the work computer's boot (a 386)
   dev/               the Dev menu, the Voice Lab, story.gd (prints the story check), story_week_page.gd (the wiki's "The Week") and perf_probe.gd (what a frame costs, docs/performance.md); only the iOS export carries it, while iOS builds stay team-only
-  dev/trailer/       the trailer: a cheesy 1995 TV commercial for CompuFun, recorded with Movie Maker (tools/make_trailer.sh)
+  dev/trailer/       the trailer: a cheesy 1995 TV commercial for CompuFun (trailer.tscn) and a deadpan one (trailer_bleak.tscn), recorded with Movie Maker (tools/make_trailer.sh)
   dev/story_lab/     the Story Lab (F4): story_lab.tscn, the week board, the problems (problem_panel.gd), the corruption signs and where the week starts them (sign_panel.gd; sign_starts.gd edits a start that the week board moves), the call-outs (call_outs_panel.gd), the drafts (story_drafts.gd), the issue that Send makes
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)
 ios/                 the Xcode project for iOS, as the Godot export writes it: only its text is committed; ci_scripts/ci_post_clone.sh exports the rest on Xcode Cloud (docs/ios.md)

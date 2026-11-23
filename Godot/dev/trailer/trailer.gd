@@ -93,6 +93,8 @@ shader_type canvas_item;
 uniform sampler2D screen : hint_screen_texture, filter_linear;
 uniform float tear = 0.0;
 uniform float seed = 0.0;
+uniform float grey = 0.0;
+uniform vec4 tint : source_color = vec4(1.0);
 float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233)) + seed) * 43758.5453); }
 void fragment() {
 	vec2 uv = SCREEN_UV;
@@ -105,6 +107,7 @@ void fragment() {
 	uv.x += tear * step(0.9, hash(vec2(floor(uv.y * 40.0), frame))) * (hash(vec2(line, 3.0)) - 0.3) * 0.06;
 	vec3 c = texture(screen, uv).rgb;
 	c = mix(c, vec3(hash(vec2(uv.x * 900.0, line + frame * 17.0))), band * 0.3 + tear * 0.08);
+	c = mix(c, vec3(dot(c, vec3(0.299, 0.587, 0.114))), grey) * tint.rgb;
 	COLOR = vec4(c, 1.0);
 }
 """
@@ -140,6 +143,14 @@ var _tape: ShaderMaterial
 ## Seconds of play since the trailer started, on the frame clock that Movie Maker records.
 var _clock := 0.0
 
+## What a cut sets in its _init(): who narrates and in which mood, whether the tape tears now and then,
+## and the TV's colour: how grey (0 to 1), and its tint.
+var narrator: VoicePerson = NARRATOR
+var narrator_mood: StringName = &"happy"
+var tears := true
+var grey := 0.0
+var tint := Color.WHITE
+
 
 func _ready() -> void:
 	_font = SystemFont.new()
@@ -160,6 +171,16 @@ func _ready() -> void:
 	var limiter := AudioEffectHardLimiter.new()
 	limiter.ceiling_db = -1.0
 	AudioServer.add_bus_effect(0, limiter)
+	await _shots()
+	get_tree().quit()
+
+
+func _process(delta: float) -> void:
+	_clock += delta
+
+
+# The cut's shots, in order; the trailer quits after them.
+func _shots() -> void:
 	_music = _sound(MUSIC, MUSIC_DB)
 	_music.pitch_scale = MUSIC_SPEED
 	await _problems()
@@ -172,11 +193,6 @@ func _ready() -> void:
 	await _hiring()
 	await _come_by()
 	await _intro_and_glitch()
-	get_tree().quit()
-
-
-func _process(delta: float) -> void:
-	_clock += delta
 
 
 # Everything renders into a TV picture of 480 lines, in the 1920 x 1080 layout, and the window shows
@@ -198,7 +214,10 @@ func _build_tv() -> void:
 	_tape.shader.code = TAPE
 	tape.material = _tape
 	tape_layer.add_child(tape)
-	_tear_now_and_then()
+	_tape.set_shader_parameter(&"grey", grey)
+	_tape.set_shader_parameter(&"tint", tint)
+	if tears:
+		_tear_now_and_then()
 	var glass := CanvasLayer.new()
 	glass.layer = 200
 	add_child(glass)
@@ -252,12 +271,14 @@ func _wait(seconds: float) -> void:
 func _say(text: String) -> float:
 	var line := DialogueLine.new()
 	line.text = text
-	line.mood = &"happy"
-	var wav := Voices.say_live(line, NARRATOR, null)
+	line.mood = narrator_mood
+	var wav := Voices.say_live(line, narrator, null)
 	if wav == null:
 		push_error("Trailer: the narrator can't say \"%s\"; build the voice with tools/build-voice.sh" % text)
 		return 1.5
 	_sound(wav)
+	if _music == null:
+		return wav.get_length()
 	# The music steps back under the voice, and comes back after it.
 	if _duck != null:
 		_duck.kill()
