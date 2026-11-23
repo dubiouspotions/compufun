@@ -58,6 +58,8 @@ const OK_BUTTON: String = "[ OK ]"
 @export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
 ## The sound of the space bar; null plays [member keystroke].
 @export var space_bar: SoundSet = preload("res://sounds/keystroke_space.tres")
+## The seconds that SEARCH's cursor stays on, and then off.
+@export var cursor_blink_seconds: float = 0.5
 ## The seconds between two keys, picked between x and y for each key.
 @export var key_seconds: Vector2 = Vector2(0.03, 0.09)
 @export_group("Search")
@@ -129,6 +131,8 @@ var _status: String = ""
 var _printer: Printer
 var _printing: String = ""
 var _print_done: bool = false
+## SEARCH's cursor shows, for this half of its blink.
+var _cursor_on: bool = true
 # The grid that _draw paints: one character, foreground and background per cell.
 var _chars: PackedStringArray = []
 var _fg: PackedColorArray = []
@@ -146,6 +150,14 @@ func _ready() -> void:
 	Game.changed.connect(_check_day)
 	Game.changed.connect(_reconcile)
 	Game.changed.connect(_reload)
+	var blink := Timer.new()
+	blink.wait_time = cursor_blink_seconds
+	blink.timeout.connect(func() -> void:
+		_cursor_on = not _cursor_on
+		if _column == Column.SEARCH:
+			queue_redraw())
+	add_child(blink)
+	blink.start()
 
 
 func _on_mouse_exited() -> void:
@@ -901,7 +913,8 @@ func _paint_field() -> void:
 	var x := _spans[Column.SEARCH].x + HEADERS[Column.SEARCH].length()
 	_put(x, FRAME_ROWS[0] + 1, ":", bright_color)
 	var fg := bright_color if _column == Column.SEARCH else text_color
-	_put(x + 1, FRAME_ROWS[0] + 1, (_typed + ("_" if _column == Column.SEARCH else "")).right(_spans[Column.SEARCH].y - x), fg)
+	var cursor := "_" if _column == Column.SEARCH and _cursor_on else " "  # blinks, to draw the eye to the field
+	_put(x + 1, FRAME_ROWS[0] + 1, (_typed + cursor).right(_spans[Column.SEARCH].y - x), fg)
 
 
 func _paint_column(column: Column) -> void:
