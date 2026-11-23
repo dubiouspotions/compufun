@@ -81,6 +81,28 @@ func run() -> void:
 	(win95.get("_boot") as Node).finished.emit()
 	check("after the fix a boot runs nothing", _task_names(state), [])
 	check("StartUp's dangling shortcut says so", _front(desktop).get_node("%TitleBar").title, "Problem with Shortcut")
+	_front(desktop).call(&"close")
+
+	var shift_esc := _ctrl_alt(KEY_ESCAPE)
+	shift_esc.alt_pressed = false
+	shift_esc.shift_pressed = true
+	root.push_input(shift_esc)
+	check("Ctrl+Shift+Esc opens Close Program", _front(desktop).get_node("%TitleBar").title, "Close Program")
+	root.push_input(shift_esc.duplicate())
+	await process_frame
+	check("pressed again, it doesn't restart", [job.powered, _close_programs(desktop)], [true, 1])
+	_front(desktop).get_node("%Cancel").pressed.emit()
+	await process_frame
+	var right_click := InputEventMouseButton.new()
+	right_click.button_index = MOUSE_BUTTON_RIGHT
+	right_click.pressed = false
+	(win95.get_node(^"TaskBar") as Control).gui_input.emit(right_click)
+	check("a right-click on the taskbar opens a menu", (win95.get("_context") as Node).get(&"visible"), true)
+	(win95.get("_context") as Node).call(&"hide")  # as a click on the item does
+	win95.call(&"_on_action", &"close_program")
+	check("whose Close Program... opens it", [_front(desktop).get_node("%TitleBar").title, _close_programs(desktop)], ["Close Program", 1])
+	_front(desktop).get_node("%Cancel").pressed.emit()
+	await process_frame
 
 	root.push_input(_ctrl_alt(KEY_END))
 	check("Ctrl+Alt+End opens Close Program too", _front(desktop).get_node("%TitleBar").title, "Close Program")
@@ -102,6 +124,10 @@ func _fast(program: PackedScene) -> PackedScene:
 	fast.pack(task)
 	task.free()
 	return fast
+
+
+func _close_programs(desktop: Node) -> int:
+	return (desktop.call(&"windows") as Array).filter(func(w: Node) -> bool: return w.visible and w.has_method(&"program_names")).size()
 
 
 func _task_names(state: Node) -> Array:

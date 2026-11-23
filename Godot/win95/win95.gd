@@ -139,6 +139,7 @@ func _ready() -> void:
 	_context = ContextMenu.new()
 	add_child(_context)
 	_context.chosen.connect(_on_action)
+	_taskbar.gui_input.connect(_on_taskbar_input)
 	# desktop_icons.tscn's icons are the template; the setup's files show them (Win95File.system).
 	for template: FileIcon in _icons.get_children():
 		_system_icons[template.name] = [template.opens, template.stub]
@@ -167,20 +168,45 @@ func _exit_tree() -> void:
 	get_tree().node_added.disconnect(_on_node_added)
 
 
-# Ctrl+Alt+Del on the desktop opens Close Program, and pressed again restarts the computer.
+# Ctrl+Alt+Del on the desktop opens Close Program, and pressed again restarts the computer. NT's
+# Ctrl+Shift+Esc opens it too, as Windows hosts keep Ctrl+Alt+Del for themselves.
 func _input(event: InputEvent) -> void:
 	var key := event as InputEventKey
-	if key == null or not key.pressed or key.echo or not (key.ctrl_pressed and key.alt_pressed) or key.keycode not in _CLOSE_PROGRAM_KEYS:
+	if key == null or not key.pressed or key.echo or not (_state.is_on and pointer_visible):
 		return
-	if not (_state.is_on and pointer_visible):
+	var reboot_keys := key.ctrl_pressed and key.alt_pressed and key.keycode in _CLOSE_PROGRAM_KEYS
+	if not reboot_keys and not (key.ctrl_pressed and key.shift_pressed and key.keycode == KEY_ESCAPE):
 		return
 	get_viewport().set_input_as_handled()
+	var open := _close_program()
+	if open != null and reboot_keys:
+		open.call(&"restart")
+	elif open == null:
+		_open_close_program()
+
+
+func _close_program() -> Node:
 	for window in _desktop.windows():
 		if window.scene_file_path == _CLOSE_PROGRAM.resource_path:
-			window.call(&"restart")
-			return
+			return window
+	return null
+
+
+func _open_close_program() -> void:
+	var open := _close_program()
+	if open != null:
+		_desktop.activate(open)
+		return
 	var dialog: Node = _desktop.open(_CLOSE_PROGRAM, false)
 	dialog.closed.connect(dialog.queue_free)
+
+
+# A right-click on the taskbar offers Close Program, as NT 4.0's taskbar offers Task Manager.
+func _on_taskbar_input(event: InputEvent) -> void:
+	var click := event as InputEventMouseButton
+	if click != null and click.button_index == MOUSE_BUTTON_RIGHT and not click.pressed and _state.is_on and pointer_visible:
+		_context_view = null
+		_context.open(click.global_position, [ContextMenu.item("Close Program...", &"close_program")] as Array[ContextMenu.Entry])
 
 
 # The computer is on the VGA cable, so its picture is on the bench screen and its sound card reaches the speakers.
@@ -745,6 +771,9 @@ func _entries(specs: Array) -> Array[ContextMenu.Entry]:
 
 
 func _on_action(id: StringName) -> void:
+	if id == &"close_program":
+		_open_close_program()
+		return
 	var view := _context_view
 	if not is_instance_valid(view):
 		return
