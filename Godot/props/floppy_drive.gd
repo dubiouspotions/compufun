@@ -2,8 +2,9 @@ class_name FloppyDrive
 extends MeshInstance3D
 ## A 3.5" floppy drive on a case front: the slot, and below its right end the eject button, which
 ## sticks out while a floppy is in and is flush with the slot while the drive is empty. The floppy
-## sticks out of the slot while it is in, with its label; it slides in, and slides out when it is ejected. A case front
-## names its drive Floppy (see PcTower.floppy_drive). JobComputer sets its state from Game.
+## sticks out of the slot while it is in, with its label; it slides in, and slides out when it is
+## ejected. A case front names its drive Floppy (see PcTower.floppy_drive). JobComputer sets its
+## state from Game.
 
 ## How far the eject button sticks out of the slot's face while a floppy is in, in metres.
 @export var eject_travel: float = 0.005

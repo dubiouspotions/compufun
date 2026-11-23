@@ -50,5 +50,5 @@ modified = "Monday, March 4, 1996 10:00:00 AM"
 script = ExtResource("1_part")
 label = ExtResource("3_label")
 files = Array[ExtResource("4_file")]([SubResource("setup"), SubResource("readme"), SubResource("packed")])
-display_name = "CompuFun AntiVirus"
+display_name = "AntiVirus"
 model = ExtResource("2_model")
