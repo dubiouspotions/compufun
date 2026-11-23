@@ -1,7 +1,6 @@
 extends "res://tests/test.gd"
 ## CompuFunDB's search: Enter lists the symptoms that hold the typed words, one at a time; picking
-## one offers the checks of every cause of it among checks of other problems in the same place, and
-## lists those causes; a check ticked as passing rules out the causes that need it to fail, and F
+## one offers the checks of every cause of it, and lists those causes; a check ticked as passing rules out the causes that need it to fail, and F
 ## prints the selected cause's fix. The search, with its ticks, survives a snapshot and a restore,
 ## and a malformed one is refused.
 
@@ -87,10 +86,7 @@ func _check_screen() -> void:
 	check("picking it again keeps the search and its ticks", [game.db_search, search.ticked_checks, db.get("_column")], [search, [search.offered[0]], CHECKS])
 	game.mark_check(search.offered[0], false)
 	var right: Array[String] = ["Memory test fails at startup", "Windows starts", "Bluescreen after the desktop appears", "Windows stays up after the desktop appears", FREEZES, "Dust in the CPU fan", FAN, "Something lies on the CPU fan"]
-	var others: Array = search.offered.filter(func(c: String) -> bool: return c not in right)
-	check("the checks of all four problems are offered", right.all(func(c: String) -> bool: return c in search.offered), true)
-	var hardware := _hardware_checks()
-	check("with 2 to 5 checks of other hardware problems", [others.size() >= 2 and others.size() <= 5, others.all(func(c: String) -> bool: return c in hardware)], [true, true])
+	check("CHECK lists the checks of its causes, and no others, in their order", search.offered, right)
 	check("its four causes, by name", _texts(db, CAUSES), ["Bad RAM module", "Failing hard drive", "Clogged CPU fan", "Blocked CPU fan"])
 	check("all possible before a tick", _possible(db), [true, true, true, true])
 
@@ -146,15 +142,6 @@ func _check_screen() -> void:
 	check("Esc leaves", _press(db, KEY_ESCAPE), false)
 	db.queue_free()
 
-
-# The checks of every problem with a hardware part, but those of the four that restart by themselves.
-func _hardware_checks() -> Array[String]:
-	var checks: Array[String] = []
-	for file: String in ResourceLoader.list_directory("res://problems/"):
-		var problem := load("res://problems/" + file) as Problem if file.ends_with(".tres") else null
-		if problem != null and problem.location != Problem.Location.SOFTWARE and problem.short_name not in [&"dust_overheat", &"hamster", &"broken_hard_drive", &"bad_ram"]:
-			checks.append_array(problem.checks)
-	return checks
 
 
 func _possible(db: Control) -> Array:

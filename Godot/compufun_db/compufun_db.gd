@@ -2,8 +2,7 @@ class_name CompuFunDB
 extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
 ## SEARCH (the player types words and presses Enter: the symptoms of every Problem that hold them
-## all), CHECK (the checks of every cause of the symptom picked, among a few of other problems in
-## the same place: the Game.db_search; the player ticks what is true on the computer) and CAUSES
+## all), CHECK (the checks of every cause of the symptom picked: the Game.db_search; the player ticks what is true on the computer) and CAUSES
 ## (every Problem with that symptom, by its cause; a ticked check rules out a cause that says no: to
 ## it, or that doesn't say yes: to a check another cause says yes: to). F prints the selected cause's fix, its steps ending in [member test_step], on the
 ## shop's Printer; P prints the checklist. The work computer is slow: a column's entries come in one
@@ -52,8 +51,6 @@ const OK_BUTTON: String = "[ OK ]"
 ## The last repair step of every fix but a software-only one, after its hardware and software steps
 ## (see Job.tested). A software fix lands on a running Windows, which tests it at once.
 @export var test_step: String = "Test the computer"
-## How many checks of other problems CompuFunDB mixes into what to check: between x and y.
-@export var decoys: Vector2i = Vector2i(2, 5)
 ## The sound of each key that the character types.
 @export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
 ## The sound of the space bar; null plays [member keystroke].
@@ -277,28 +274,15 @@ func _findings() -> Dictionary[String, bool]:
 	return found
 
 
-# Starts the search for [param query]: what to check is the checks of every problem that has it,
-# mixed with a few checks of other problems in the same place, so the list doesn't give it away.
+# Starts the search for [param query]: what to check is the checks of every problem that has it, in
+# the order of the problems.
 func _search(query: String) -> void:
-	var right: Array[String] = []
-	var places: Array[Problem.Location] = []
+	var offered: Array[String] = []
 	for problem: Problem in _problems:
 		if query in problem.symptoms:
-			places.append(problem.location)
 			for check: String in problem.checks:
-				if check not in right:
-					right.append(check)
-	var others: Array[String] = []
-	for problem: Problem in _problems:
-		if query in problem.symptoms or not places.any(func(at: Problem.Location) -> bool: return _same_place(at, problem.location)):
-			continue
-		for check: String in problem.checks:
-			if check not in right and check not in others:
-				others.append(check)
-	others.shuffle()
-	var offered: Array[String] = right.duplicate()
-	offered.append_array(others.slice(0, randi_range(decoys.x, decoys.y)))
-	offered.shuffle()
+				if check not in offered:
+					offered.append(check)
 	if Game.search_db(query, offered) == null:
 		return
 	_column = Column.CHECKS
@@ -307,9 +291,6 @@ func _search(query: String) -> void:
 		_scroll[column] = 0
 	_move(0)
 
-
-func _same_place(a: Problem.Location, b: Problem.Location) -> bool:
-	return a == b or Problem.Location.BOTH in [a, b]
 
 
 # The screen lines of a column: [entry index, text], with the entries wrapped to the column's width.

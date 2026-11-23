@@ -1,7 +1,7 @@
 class_name DbSearch
 extends RefCounted
 ## The search in CompuFunDB: the symptom that the player picked, the checks that CompuFunDB offered
-## (those of its possible causes among a few others, in the order shown) and the checks that the
+## (those of its possible causes, in the order shown) and the checks that the
 ## player ticked as true on the computer, as the Problems spell them. Game holds it; change it
 ## through Game, which emits Game.changed.
 
