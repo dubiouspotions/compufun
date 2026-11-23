@@ -22,6 +22,7 @@
 [ext_resource type="Resource" path="res://parts/gpu.tres" id="22_gpu"]
 [ext_resource type="Resource" path="res://parts/hard_drive.tres" id="22_hard_drive"]
 [ext_resource type="Resource" path="res://parts/ram.tres" id="22_ram"]
+[ext_resource type="Resource" path="res://parts/antivirus_floppy.tres" id="22_antivirus_floppy"]
 [ext_resource type="PackedScene" path="res://props/poster.tscn" id="poster"]
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_korea.png" id="sticker_korea"]
 
@@ -367,6 +368,10 @@ mesh = SubResource("BoxMesh_ram_riser")
 [node name="Box_ram" parent="Parts" instance=ExtResource("21_box")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.82, -0.17)
 part = ExtResource("22_ram")
+
+[node name="Box_antivirus_floppy" parent="Parts" instance=ExtResource("21_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.32, 0.75, -0.17)
+part = ExtResource("22_antivirus_floppy")
 
 [node name="BinRack" parent="Parts" instance=ExtResource("13_bin_rack")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.93, -0.4)
