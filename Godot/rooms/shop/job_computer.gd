@@ -67,6 +67,8 @@ var _tip: Tween
 var _upright: Dictionary[Node3D, Transform3D] = {}
 ## Over the eject button of the case front's floppy drive; null for a front without one.
 var _floppy_hotspot: Hotspot
+## Over the eject button of the case front's CD-ROM drive; null for a front without one.
+var _cd_hotspot: Hotspot
 ## The upright case front's floppy drive and the lying case's; empty for a front without one.
 var _floppy_drives: Array[Node] = []
 
@@ -111,8 +113,9 @@ func _ready() -> void:
 	_post_it.job = job
 	_open_case.job = job
 	_floppy_hotspot = _make_floppy_hotspot()
+	_cd_hotspot = _make_cd_hotspot()
 	_floppy_drives = find_children("*", "FloppyDrive", true, false)
-	for node: Node3D in [_tower, _power_light, _power_hotspot, _cable_socket, _hotspot, _post_it_anchor, _floppy_hotspot]:
+	for node: Node3D in [_tower, _power_light, _power_hotspot, _cable_socket, _hotspot, _post_it_anchor, _floppy_hotspot, _cd_hotspot]:
 		if node != null:
 			_upright[node] = node.transform
 	_pose = 1.0 if job.lying else 0.0
@@ -122,24 +125,39 @@ func _ready() -> void:
 	_sync_power()
 
 
-# A hotspot over the floppy drive's eject button, standing out in front of the Front area so it wins the click.
 func _make_floppy_hotspot() -> Hotspot:
 	var drive := _tower.floppy_drive()
-	var box := drive.eject_button.mesh as BoxMesh if drive != null else null
-	if box == null:
+	if drive == null or not drive.eject_button.mesh is BoxMesh:
 		if Game.has_floppy(job):
 			push_error("JobComputer: %s has a floppy in A: but its case front has no FloppyDrive named Floppy, with a box EjectButton, to eject it from" % job.customer.resource_path)
 		return null
-	var local := global_transform.affine_inverse() * drive.eject_button.global_transform
+	var hotspot := _button_hotspot(drive.eject_button)
+	hotspot.clicked.connect(func(_h: Hotspot) -> void: floppy_clicked.emit(self))
+	hotspot.mouse_entered.connect(func() -> void: drive.hovered = true)
+	hotspot.mouse_exited.connect(func() -> void: drive.hovered = false)
+	return hotspot
+
+
+# A press opens or closes the tray while the computer runs; off, only the button clicks.
+func _make_cd_hotspot() -> Hotspot:
+	var drive := _tower.cd_drive()
+	if drive == null:
+		return null
+	var hotspot := _button_hotspot(drive.eject_button)
+	hotspot.clicked.connect(func(_h: Hotspot) -> void: drive.press(job.powered))
+	hotspot.highlight_on_hover(drive.eject_button, button_hover_color)
+	return hotspot
+
+
+# A hotspot over a box-shaped button on the case front, standing out in front of the Front area so it wins the click.
+func _button_hotspot(button: MeshInstance3D) -> Hotspot:
+	var local := global_transform.affine_inverse() * button.global_transform
 	var hotspot := _HOTSPOT.instantiate() as Hotspot
-	hotspot.size = box.size * local.basis.get_scale() + Vector3(0.016, 0.024, 0.0)
+	hotspot.size = (button.mesh as BoxMesh).size * local.basis.get_scale() + Vector3(0.016, 0.024, 0.0)
 	hotspot.size.z = 0.05
 	var basis := local.basis.orthonormalized()
 	hotspot.transform = Transform3D(basis, local.origin + basis.z * hotspot.size.z / 2.0)
 	add_child(hotspot)
-	hotspot.clicked.connect(func(_h: Hotspot) -> void: floppy_clicked.emit(self))
-	hotspot.mouse_entered.connect(func() -> void: drive.hovered = true)
-	hotspot.mouse_exited.connect(func() -> void: drive.hovered = false)
 	return hotspot
 
 
@@ -171,8 +189,9 @@ func ray_distance(from: Vector3, dir: Vector3) -> float:
 func disable() -> void:
 	_hotspot.set_enabled(false)
 	_power_hotspot.set_enabled(false)
-	if _floppy_hotspot != null:
-		_floppy_hotspot.set_enabled(false)
+	for button: Hotspot in [_floppy_hotspot, _cd_hotspot]:
+		if button != null:
+			button.set_enabled(false)
 
 
 func _set_hovered(on: bool) -> void:
@@ -209,6 +228,8 @@ func _sync_case() -> void:
 	_hotspot.set_enabled(not working)  # in the Workview the screwdriver, the screws and the panel take the clicks
 	_front.input_ray_pickable = working and not lying  # swallows clicks on the front, so they don't lay it down
 	_sync_floppy(working, lying)
+	if _cd_hotspot != null:
+		_cd_hotspot.set_enabled(not lying)
 	_sync_outline()
 	_sync_part_sound()
 

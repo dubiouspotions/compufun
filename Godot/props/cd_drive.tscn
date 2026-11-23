@@ -1,0 +1,64 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://props/cd_drive.gd" id="1_script"]
+[ext_resource type="Material" path="res://materials/metal.tres" id="2_metal"]
+[ext_resource type="Material" path="res://materials/dark_plastic.tres" id="3_dark"]
+[ext_resource type="Material" path="res://materials/red_plastic.tres" id="4_red"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_bay"]
+size = Vector3(0.15, 0.035, 0.006)
+
+[sub_resource type="BoxMesh" id="BoxMesh_front"]
+size = Vector3(0.11, 0.009, 0.004)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bed"]
+size = Vector3(0.106, 0.004, 0.12)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_well"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.0012
+radial_segments = 24
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Material_well"]
+albedo_color = Color(0.06, 0.06, 0.07, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_button"]
+size = Vector3(0.014, 0.006, 0.006)
+
+[sub_resource type="BoxMesh" id="BoxMesh_light"]
+size = Vector3(0.005, 0.003, 0.004)
+
+[node name="CdDrive" type="MeshInstance3D"]
+material_override = ExtResource("2_metal")
+mesh = SubResource("BoxMesh_bay")
+script = ExtResource("1_script")
+
+[node name="Tray" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.012, 0.004, 0.002)
+
+[node name="Front" type="MeshInstance3D" parent="Tray"]
+material_override = ExtResource("3_dark")
+mesh = SubResource("BoxMesh_front")
+
+[node name="Bed" type="MeshInstance3D" parent="Tray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0015, -0.062)
+material_override = ExtResource("3_dark")
+mesh = SubResource("BoxMesh_bed")
+
+[node name="Well" type="MeshInstance3D" parent="Tray/Bed"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0016, 0.004)
+material_override = SubResource("Material_well")
+mesh = SubResource("CylinderMesh_well")
+
+[node name="EjectButton" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, -0.007, 0.002)
+material_override = ExtResource("3_dark")
+mesh = SubResource("BoxMesh_button")
+
+[node name="BusyLight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.054, 0.007, 0.002)
+material_override = ExtResource("4_red")
+mesh = SubResource("BoxMesh_light")

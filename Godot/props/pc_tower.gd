@@ -61,10 +61,19 @@ func dress(computer: Computer) -> void:
 
 ## The 3.5" floppy drive on the case front, the front's FloppyDrive named Floppy; null for a front without one.
 func floppy_drive() -> FloppyDrive:
+	return _on_front(^"Floppy") as FloppyDrive
+
+
+## The CD-ROM drive on the case front, the front's CdDrive named CdRom; null for a front without one.
+func cd_drive() -> CdDrive:
+	return _on_front(^"CdRom") as CdDrive
+
+
+func _on_front(path: NodePath) -> Node:
 	for front: Node in _front.get_children():
-		var drive := front.get_node_or_null(^"Floppy") as FloppyDrive
-		if drive != null:
-			return drive
+		var node := front.get_node_or_null(path)
+		if node != null:
+			return node
 	return null
 
 
