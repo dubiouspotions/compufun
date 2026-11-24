@@ -133,6 +133,8 @@ func apply(setup: Win95Setup) -> void:
 		else:
 			_take_fields(file, files[path])
 		file.is_folder = files[path].is_folder
+	if settings.has(&"recently_opened"):
+		setup.open_recent()  # after the files: it names them
 	var gone := unmailed.map(_mail_key)
 	setup.emails.assign(setup.emails.filter(func(e: Email) -> bool: return _mail_key(e) not in gone))
 	var keys := setup.emails.map(_mail_key)
