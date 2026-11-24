@@ -79,7 +79,7 @@ func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) ->
 			generator.mix_rate = MIX_RATE
 			generator.buffer_length = 0.25
 			stream = generator
-			play()
+			_start()
 			_owner = self
 			_drained_at = 0
 			set_process(true)
@@ -91,7 +91,7 @@ func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) ->
 	# A rendered file is fixed; playing it a touch higher or lower is the variation it can have.
 	pitch_scale = pitch / mood.pitch
 	stream = file
-	play()
+	_start()
 	return file.get_length() / pitch_scale
 
 
@@ -215,3 +215,9 @@ static func _dictionary() -> String:
 	if text.is_empty():
 		push_error("VoicePlayer: %s did not unzip" % path)
 	return text
+
+
+# Plays the stream; started while the tree is paused, it waits for the unpause (docs/gotchas.md).
+func _start() -> void:
+	play()
+	stream_paused = not can_process()

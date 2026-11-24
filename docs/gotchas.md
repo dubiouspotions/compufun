@@ -160,6 +160,12 @@ that got the press, after the mouse moves; a press that rebuilds it (a card that
 and the board redraws) frees that control first, and the drag never starts. Act on the release
 instead (`StoryLabBoard._card`). — 2026-11
 
+**An AudioStreamPlayer started while the tree is paused plays anyway.** Godot sets
+`stream_paused` on its players as the tree pauses, and clears it as it unpauses; a `play()` in
+between starts a playback that nothing paused. Under the Story Lab, every saved edit restores the
+paused game, which started the customer at the counter speaking again. Set
+`stream_paused = not can_process()` after `play()` (`VoicePlayer._start`). — 2026-11
+
 **A headless test drags only with `relative` set, and drops at the real mouse.** The viewport adds
 up each motion's `relative` to pass its drag threshold, so pushed motions without it never start a
 drag. The position that `_can_drop_data` and `_drop_data` get comes from the real mouse, which a
