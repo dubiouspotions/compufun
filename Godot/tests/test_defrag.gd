@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## Disk Defragmenter on the skater's fragmented drive (errand 0403, day 4) runs until the afternoon of
 ## the next day (Win95Setup.defrag_days, defrag_daypart), or the evening when no afternoon comes;
-## switched off, it stops. Its window estimates when it finishes.
+## switched off, it stops. Its window estimates when it finishes, and the case churns meanwhile.
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run time: it names the Game autoload
 const DEFRAG_PATH := "res://win95/defrag.tscn"
@@ -54,6 +54,23 @@ func run() -> void:
 	game.start_next_day()
 	game.daypart = GAME.Daypart.AFTERNOON
 	check("switched off, it stops and stays fragmented", [setup.defragmenting, setup.fragmented, game.jobs[0].software_fixed], [false, true, false])
+	state.queue_free()
+	await process_frame
+
+	var computer: Node3D = load("res://rooms/shop/job_computer.tscn").instantiate()
+	state = await _defragmenting()
+	computer.set("job", game.jobs[0])
+	root.add_child(computer)
+	var drive: AudioStreamPlayer3D = computer.get_node("%DefragDrive")
+	for i in 60:
+		await process_frame
+	check("the case churns while it defragments, quietly, in the sound zones", [drive.stream in (load("res://sounds/defrag_seek.tres") as SoundSet).sounds, drive.volume_db <= -30.0, drive.area_mask & SoundSet.SOUND_ZONES != 0], [true, true, true])
+	state.get("setup").defragmenting = false
+	drive.stop()
+	for i in 60:
+		await process_frame
+	check("and stops when the run ends", drive.playing, false)
+	computer.queue_free()
 	state.queue_free()
 	await process_frame
 

@@ -35,6 +35,11 @@ const _HOTSPOT := preload("res://rooms/hotspot.tscn")
 @export var tip_seconds: float = 0.5
 ## Plays as the case tips while pieces lie misplaced in it (Job.misplaced).
 @export var rattle_sound: SoundSet = preload("res://sounds/part_rattle.tres")
+## The hard drive churning while Disk Defragmenter runs on this computer, a seek at a time from
+## inside the case; null is silent.
+@export var defrag_seek: SoundSet = preload("res://sounds/defrag_seek.tres")
+## The seconds between two seeks of [member defrag_seek], picked between x and y.
+@export var defrag_seek_seconds: Vector2 = Vector2(0.12, 0.7)
 ## The power light's colour while the computer is on, and while it is off.
 @export var power_on_color: Color = Color(0.3, 1.0, 0.3)
 @export var power_off_color: Color = Color(0.08, 0.16, 0.08)
@@ -99,6 +104,8 @@ var _cd_drives: Array[Node] = []
 @onready var _part_sound: Hum = %PartSound
 # Plays instead of the fans while the computer runs with a part that has one (Part.running_sound).
 @onready var _running_sound: Hum = %RunningSound
+@onready var _defrag_drive: AudioStreamPlayer3D = %DefragDrive
+@onready var _defrag_timer: Timer = %DefragTimer
 
 
 func _enter_tree() -> void:
@@ -135,6 +142,7 @@ func _ready() -> void:
 			_upright[node] = node.transform
 	_pose = 1.0 if job.lying else 0.0
 	Game.changed.connect(_sync_case)
+	_defrag_timer.timeout.connect(_churn)
 	(_outline.material_override as StandardMaterial3D).albedo_color = hover_color
 	_sync_case()
 	_sync_power()
@@ -261,6 +269,14 @@ func _sync_case() -> void:
 		drive.set_open(job.cd_tray_open)
 	_sync_outline()
 	_sync_part_sound()
+
+
+# One seek of the hard drive while Disk Defragmenter runs here, then the wait for the next.
+func _churn() -> void:
+	var setup: Win95Setup = Game.setups.get(job.customer.computer)
+	if defrag_seek != null and job.powered and setup != null and setup.defragmenting:
+		defrag_seek.play_on(_defrag_drive)
+	_defrag_timer.start(randf_range(defrag_seek_seconds.x, defrag_seek_seconds.y))
 
 
 func _sync_part_sound() -> void:
