@@ -5,6 +5,7 @@ extends "res://tests/test.gd"
 
 const WIN95 := "res://win95/win95.tscn"  # loaded at run time: its scripts name the Game autoload
 const OFFICE_WINDOW := "res://win95/office/office_window.tscn"
+const WORD_PATH := "C:\\Program Files\\Microsoft Office\\Office\\WINWORD.EXE"
 
 
 func run() -> void:
@@ -30,6 +31,7 @@ func run() -> void:
 	var boot: Node = win95.get("_boot")
 	if is_instance_valid(boot):
 		await boot.finished
+		await create_timer(1.0).timeout  # the boot plays the startup sound after finished
 	var state: Node = win95.get_node("ComputerState")
 	var desktop: Control = win95.get_node("Desktop")
 	running = state.setup
@@ -71,6 +73,9 @@ func run() -> void:
 	root.remove_child(win95)
 	win95.free()
 
+	_on_every_customer()
+	await _the_office_girls_documents()
+
 
 # A computer with Windows' stock Start menu, one document, Office, the Shortcut Bar and Bob's name.
 func _office_setup() -> Win95Setup:
@@ -93,3 +98,56 @@ func _office_setup() -> Win95Setup:
 	setup.recently_opened = ["C:\\My Documents\\Letter.doc"]
 	setup.registered_owner = "Bob"
 	return setup
+
+
+# Every customer's computer has Word in C:\Program Files and the Start menu, and .doc goes to Word.
+func _on_every_customer() -> void:
+	for path in DirAccess.get_files_at("res://customers"):
+		var customer := load("res://customers/" + path) as Customer if path.ends_with(".tres") else null
+		if customer == null or customer.computer == null or customer.computer.win95_setup == null:
+			continue
+		var setup := customer.computer.win95_setup.copy()
+		var word := setup.file_at(WORD_PATH)
+		check("%s has Word, in the Start menu too" % path, [word != null and (load("res://win95/computer_state.gd") as GDScript).call(&"is_runnable", word), setup.file_at("C:\\WINDOWS\\Start Menu\\Programs\\Microsoft Word").target], [true, WORD_PATH])
+		var state: Node = load("res://win95/computer_state.gd").new()
+		state.setup = setup
+		var for_doc: Array = state.programs_for("doc")
+		check("%s opens .doc in Word before WordPad" % path, [for_doc[0].name, for_doc.size()], ["WINWORD.EXE", 2])
+		state.free()
+
+
+# Her documents open in Word from Explorer, Start > Documents and the Shortcut Bar's computer.
+func _the_office_girls_documents() -> void:
+	var customer: Customer = load("res://customers/office_girl.tres")
+	var job := Job.new(customer, Problem.new(), 0, 0)
+	job.powered = true
+	var win95: Control = (load(WIN95) as PackedScene).instantiate()
+	win95.get_node("ComputerState").job = job
+	root.add_child(win95)
+	await process_frame
+	var boot: Node = win95.get("_boot")
+	if is_instance_valid(boot):
+		await boot.finished
+		await create_timer(1.0).timeout  # the boot plays the startup sound after finished
+	var state: Node = win95.get_node("ComputerState")
+	var desktop: Node = win95.get_node("Desktop")
+	var invitation: Win95File = state.setup.file_at("C:\\My Documents\\Midsummer party.doc")
+	check("her invitation holds its RTF file's text", invitation.contents, FileAccess.get_file_as_string("res://customers/office_girl/documents/midsummer_party.doc"))
+	check("Start > Documents starts with it", state.setup.recent_documents, [invitation])
+	var bar: Variant = state.tasks()[0].bar if not state.tasks().is_empty() else null
+	check("her Shortcut Bar runs", bar != null, true)
+	win95.open_file(invitation)
+	var word: Control = desktop.active_window()
+	check("it opens in Word", [word.scene_file_path, word.get_node("%TitleBar").title], ["res://win95/office/word.tscn", "Microsoft Word - Midsummer party.doc"])
+	check("as text that reads", word.document_text().contains("Strawberry cake"), true)
+	var file_menu: PopupMenu = word.get_node("%File")
+	file_menu.about_to_popup.emit()
+	var items: Array[String] = []
+	for i in file_menu.item_count:
+		items.append(file_menu.get_item_text(i))
+	check("Word's File menu lists it above Exit", items.slice(items.find("Exit") - 2), ["1 Midsummer party", "", "Exit"])
+	word.show_properties()
+	var sheet: Control = word.blocked_by
+	check("its Properties: her Summary and Word's Template", [sheet.get_node("%Author").text, sheet.get_node("%Company").text, sheet.get_node("%Template").text], ["Sam Hilton", "Harbour Import AB", "Normal"])
+	root.remove_child(win95)
+	win95.free()

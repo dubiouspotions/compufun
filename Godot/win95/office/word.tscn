@@ -8,6 +8,7 @@
 
 [node name="Word" instance=ExtResource("base")]
 script = ExtResource("script")
+template_name = "Normal"
 
 [node name="TitleBar" parent="VBox" index="0"]
 title = "Microsoft Word"
