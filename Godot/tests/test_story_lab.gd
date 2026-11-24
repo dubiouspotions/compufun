@@ -91,8 +91,11 @@ func _board_lists_the_week(lab: Control) -> void:
 
 
 func _moving_a_card_renames_through_drafts(lab: Control, drafts: StoryDrafts) -> void:
+	var patch := "set volume: 41\n"
+	check("the office girl's visit has a setup patch", lab.call("store", "res://story/computers/0201_office_girl.setup", patch), "")
 	check("the move succeeds", lab.call("move_errand", NICE, 2, 0, false), "")
 	var texts := drafts.texts()
+	check("her patch moves with her visit", [texts.get("res://story/computers/0202_office_girl.setup"), drafts.text("res://story/computers/0201_office_girl.setup")], [patch, ""])
 	check("the moved errand has its new code", texts.get(ERRANDS + "0201_nice_guy.errand"), "customer: nice_guy\n")
 	check("the errand it went before moves down", texts.get(ERRANDS + "0202_office_girl.errand"), "customer: office_girl\nproblem: no_sound\n")
 	check("the old files are gone", [texts.has(NICE), texts.has(OFFICE)], [false, false])

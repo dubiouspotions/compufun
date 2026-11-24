@@ -257,7 +257,7 @@ func move_errand(path: String, day: int, index: int, alternative: bool, before_o
 		texts[moved_to] = with_daypart(texts.get(moved_to, drafts.text(path)), daypart)
 	if renames.is_empty() and texts.is_empty():
 		return ""
-	var failures := PackedStringArray([drafts.rename(renames)])
+	var failures := PackedStringArray([drafts.rename(renames.merged(_patch_moves(renames)))])
 	for moved: String in texts:
 		failures.append(drafts.put(moved, texts[moved]))
 		if drafts.has_unfinished(moved):
@@ -272,6 +272,16 @@ func move_errand(path: String, day: int, index: int, alternative: bool, before_o
 	_after_store()
 	_say("Moved %s to %s." % [path.get_file(), moved_to.get_file()])
 	return ""
+
+
+# The setup patches of the errands in [param renames], which are named after them, to their new names.
+func _patch_moves(renames: Dictionary[String, String]) -> Dictionary[String, String]:
+	var moves: Dictionary[String, String] = {}
+	for old: String in renames:
+		var patch := SetupPatch.DIR + old.get_file().get_basename() + ".setup"
+		if drafts.text(patch) != "":
+			moves[patch] = SetupPatch.DIR + renames[old].get_file().get_basename() + ".setup"
+	return moves
 
 
 ## Adds an errand for [param customer] (a file name in customers/, without .tres) on day [param day]

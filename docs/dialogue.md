@@ -221,7 +221,7 @@ brief: The skater gets bored fast.
 
 What a customer did on their computer (wiki: "Lived-in computers"). `<customer>.setup` goes on the
 setup of `customers/<customer>.tres` as the game makes its running copy; `<code>_<customer>.setup`,
-named like its errand, goes on as that visit's job starts, before the problem's break. The Story
+named like its errand (moving the errand on the week board renames it too), goes on as that visit's job starts, before the problem's break. The Story
 Lab's Computers tab writes them from the real Win95 (Save patch); this is the text it writes.
 
 ```
