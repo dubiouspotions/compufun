@@ -70,7 +70,9 @@ func compose(computer: ComputerState) -> void:
 		if _computer != null:
 			_computer.send_email(fields[0].text, fields[1].text, %Body.text)
 		close())
-	%Toolbar.move_child(send, 0)
+	for other: Node in %Toolbar.get_children():
+		if other != send and other is CanvasItem:
+			(other as CanvasItem).hide()  # reading a mail's buttons: a new one has nothing to reply to
 	fields[0].grab_focus.call_deferred()
 
 

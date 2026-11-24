@@ -132,7 +132,8 @@ func _move_selected() -> void:
 	menu.id_pressed.connect(func(id: int) -> void: _computer.move_email(email, id as Email.Folder))
 	menu.popup_hide.connect(menu.queue_free)
 	add_child(menu)
-	menu.popup(Rect2i(Vector2i(get_global_mouse_position()), Vector2i.ZERO))
+	menu.reset_size()
+	menu.popup(Rect2i(Vector2i(get_global_rect().get_center()) - menu.size / 2, Vector2i.ZERO))  # where Exchange's Move dialog opens
 
 
 func _mark_all_read() -> void:

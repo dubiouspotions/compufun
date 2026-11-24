@@ -43,8 +43,9 @@ func run() -> void:
 	window.get_node("%Body").text = "See you at noon."
 	(window.find_child("ToEdit", true, false) as LineEdit).text = "Kent <kent@modemlandia.se>"
 	(window.find_child("SubjectEdit", true, false) as LineEdit).text = "Lunch"
-	var send: Button = window.get_node("%Toolbar").get_child(0)
-	check("a new message has Send first", send.tooltip_text, "Send")
+	var shown: Array = window.get_node("%Toolbar").get_children().filter(func(n: Node) -> bool: return n is CanvasItem and n.visible)
+	check("a new message has only Send", shown.map(func(n: Node) -> String: return n.get("tooltip_text")), ["Send"])
+	var send: Button = shown[0]
 	send.pressed.emit()
 	var new: Email = setup.emails.back()
 	check("Send puts it in Sent Items, from the computer's sender", [new.folder, new.from, new.to, new.subject, new.body, new.read],
