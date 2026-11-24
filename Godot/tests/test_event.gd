@@ -21,6 +21,7 @@ func run() -> void:
 	_no_event_without_the_computer()
 	_from_the_drop_off_until_done()
 	_restore_and_play()
+	await _he_rises_where_the_player_looks()
 
 
 func _the_format() -> void:
@@ -118,3 +119,40 @@ func _restore_and_play() -> void:
 	check("the Story Lab plays the event", game.play_errand(skater, Conversation.Trigger.EVENT), "")
 	check("he pops up behind his computer", [game.visitor_state, game.jobs.size(), game.jobs[0].done], [GAME.VisitorState.POPPING_UP, 1, false])
 
+
+# The shop: a turn back to the Main view lets him rise only once the view faces the counter, and in
+# the Workview of every counter slot his face is in the frame.
+func _he_rises_where_the_player_looks() -> void:
+	var shop: Node = load("res://rooms/shop/shop.tscn").instantiate()
+	root.add_child(shop)
+	await process_frame
+	var camera: Camera3D = shop.get_node("%Camera")
+	var body: Node3D = shop.get_node("%CustomerBody")
+	var spot: Node3D = shop.get_node("%PopUpSpot")
+	var head_height: float = shop.get("head_height")
+	var left := MORNING.duplicate()
+	left["view"] = "Left"
+	check("restore day 5 in the morning, looking left", game.restore(left), "")
+	await create_timer(0.5).timeout
+	game.skip_wait()
+	game.go_to_view(&"Main")
+	check("a turn back once due lets him pop up", game.visitor_state, GAME.VisitorState.POPPING_UP)
+	await process_frame
+	await process_frame
+	check("while the view turns, he stays down behind the counter", body.global_position.y < spot.global_position.y - 0.5, true)
+	await create_timer(float(shop.get("turn_seconds")) + float(shop.get("pop_up_seconds")) + 0.1).timeout
+	var head := body.global_position + Vector3.UP * head_height
+	check("once it faces the counter, he is up and in view", [is_equal_approx(body.global_position.y, spot.global_position.y), camera.is_position_in_frustum(head)], [true, true])
+
+	for slot: int in GAME.MAX_JOBS:
+		var open := MORNING.duplicate(true)
+		open.merge({"focus_slot": slot, "view": "Workview", "jobs": [{"errand": SKATER, "slot": slot, "case_open": true}]}, true)
+		game.set_process(false)  # the open case would let him in at once
+		check("restore the open case in slot %d, in the Workview" % slot, game.restore(open), "")
+		await create_timer(1.0).timeout
+		var face: Vector3 = shop.call("_peek_spot") + Vector3.UP * head_height
+		var at := camera.unproject_position(face) / Vector2(shop.get_viewport().get_visible_rect().size)
+		check("slot %d: his face is in the Workview's frame, at its top right" % slot, [camera.is_position_in_frustum(face), at.x > 0.5, at.y < 0.5], [true, true, true])
+	game.set_process(true)
+	shop.queue_free()
+	await process_frame

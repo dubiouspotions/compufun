@@ -132,6 +132,7 @@ var _pop_up_arrival: int = -1
 var _walk_tween: Tween
 var _calling: bool = false
 var _camera_tween: Tween
+var _camera_seconds: float = 0.0
 var _stab_shake: Tween
 # The jobs whose case was open at the last sync.
 var _heard_open: Array[Job] = []
@@ -569,6 +570,7 @@ func _move_camera(view_name: StringName) -> void:
 		_camera.view_fov = marker.fov
 		return
 	var seconds := marker.turn_seconds if marker.turn_seconds > 0.0 else turn_seconds
+	_camera_seconds = seconds
 	_camera_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_parallel()
 	_camera_tween.tween_property(_camera, "global_position", marker.global_position, seconds)
 	_camera_tween.tween_property(_camera, "quaternion", marker.global_basis.get_rotation_quaternion(), seconds)
@@ -609,7 +611,8 @@ func _walk_in() -> void:
 
 
 # The customer of an event rises behind the counter at the PopUpSpot, the view and the body shake,
-# and after a moment they step to their place at the counter.
+# and after a moment they step to their place at the counter. The rise waits until the view has
+# turned, so the player sees it.
 func _pop_up() -> void:
 	_pop_up_arrival = Game.arrival
 	if _walk_tween != null:
@@ -619,6 +622,8 @@ func _pop_up() -> void:
 	var top := _pop_up_spot.global_position if Game.view != WORKVIEW else _peek_spot()
 	_body.global_position = top + Vector3.DOWN * pop_up_depth
 	_walk_tween = create_tween()
+	if _camera_tween != null and _camera_tween.is_running():
+		_walk_tween.tween_interval(maxf(_camera_seconds - _camera_tween.get_total_elapsed_time(), 0.0))
 	_walk_tween.tween_property(_body, "global_position", top, pop_up_seconds).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_walk_tween.tween_callback(_shake_view.bind(pop_up_shake_metres, pop_up_shake_seconds))
 	# A wobble, not a shift: the body walks whenever it moves across the ground.
