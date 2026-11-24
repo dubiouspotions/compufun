@@ -396,6 +396,7 @@ func _apply_look() -> void:
 	var setup := _state.setup
 	if _on_cable():
 		_apply_palette(setup.palette)
+	(_desktop.get_node(^"DesktopColour") as ColorRect).color = setup.desktop_color
 	_background.texture = setup.wallpaper
 	var shot := setup.wallpaper as DesktopScreenshot
 	if shot != null and not shot.taken:

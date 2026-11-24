@@ -16,7 +16,10 @@ const _DESKTOP_SHORTCUTS: Array[Win95File] = [
 
 ## "Windows theme": the system colours. The default is the stock Win95 palette.
 @export var palette: Win95Palette = preload("res://win95/theme/palette.tres")
+## Null shows only [member desktop_color].
 @export var wallpaper: Texture2D = preload("res://win95/wallpapers/win95-default.png")
+## The colour of the desktop around and under the wallpaper; Win95's teal by default.
+@export var desktop_color: Color = Color(0, 0.5019608, 0.5019608)
 ## Display > Screen Saver: the screensaver by the name that the list shows, such as "3D Pipes";
 ## empty for none.
 @export var screensaver: String = ""
