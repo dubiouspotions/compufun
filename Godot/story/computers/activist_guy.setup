@@ -1,0 +1,93 @@
+# His computer before day 1 (Friday, May 31, 1996). His research hides in his newsletter folder.
+delete C:\My Documents\from Kev.txt
+
+folder C:\NEWSLTR
+	icon: res://win95/theme/icons/folder_closed_32.png
+	modified: Thursday, May 30, 1996 11:20:09 PM
+
+file C:\NEWSLTR\ISSUE14.DOC
+	icon: res://win95/office/icons/word_document_32.png
+	modified: Thursday, May 30, 1996 10:47:31 PM
+	contents:
+		{\rtf1\ansi\deff0{\fonttbl{\f0\froman Times New Roman;}}\f0\fs20
+		\qc\b\fs36 ELM PARK NEWS\b0\fs20\par
+		\qc\i Friends of Elm Park. Issue 14, June 1996.\i0\par
+		\ql\par
+		\b\fs24 The vote is June 12\b0\fs20\par
+		The city council votes on June 12 on paving Elm Park for a 300-car parking lot. Come to the meeting at 7 pm in the council chamber. Bring a neighbour. Bring a chair; they never have enough.\par
+		\par
+		\b\fs24 437 and counting\b0\fs20\par
+		Sign the petition at the library or at CompuFun's counter. Every name counts on June 12.\par
+		\par
+		\b\fs24 A parking lot is not a park\b0\fs20\par
+		Elm Park has an old elm, a pond with three ducks, and the only shade on Main Street. A parking lot has 300 cars and no shade. The council says the town needs the parking. We say the town needs somewhere to park itself.\par
+		\par
+		\b\fs24 Classifieds\b0\fs20\par
+		FOR SALE: Bake sale leftovers. Marge has them. Ask nicely.\par
+		WANTED: Floppy disks labelled "update" by hand, 13 disks in a set. Will pay $5 a set. Ask Bob.\par
+		\par
+		\i The newsletter doesn't write itself. Write to Bob: bob@aol.com\i0\par
+		}
+
+file C:\NEWSLTR\BUILDS.TXT
+	icon: res://win95/theme/icons/document_text_32.png
+	modified: Thursday, May 30, 1996 11:20:09 PM
+	contents:
+		BUILD NUMBERS SEEN
+		updated 05/30/96
+
+		ver         machine                    how it got there
+		----------  -------------------------  -----------------------------------
+		4.00.950    mine                       retail, hologram. installed 10/21/95
+		4.00.950    library, front desk        retail
+		4.00.950    tarnhelm                   retail
+		4.00.1111   tarnhelm's work            OEM, came on the machine
+		4.06.6612   fl0ppyjoe's cousin         floppies, swap meet, $5 a set
+		4.06.6612   quill's shop, a customer   13 floppies, "update" and a number
+		4.06.6612   3rd town (#oddbuilds)      owner doesn't remember installing it
+
+		- MS never shipped a 4.06.
+		- SETUP is 1.4M bigger than retail. what's in the 1.4?
+		- 6612 calc: any sum = 666. calc.exe same size as retail, different date.
+		- need a set of the floppies. ad in issue 14.
+
+mail
+	from: Kev <DoomKev@aol.com>
+	to: craig@mainstreet-online.net
+	subject: can i borrow ur computer
+	sent: 1996-05-25 10:12
+	read: true
+	body:
+		hi uncle bob
+
+		can i borrow ur computer saturday? mine is too slow for doom 2. mom says urs is the fastest one in the family.
+
+		i wont touch anything else. promise
+
+		kev
+
+mail
+	from: craig@mainstreet-online.net
+	to: Kev <DoomKev@aol.com>
+	subject: Re: can i borrow ur computer
+	sent: 1996-05-25 10:40
+	folder: sent
+	read: true
+	body:
+		No.
+
+mail
+	from: Marge <marge.h@aol.com>
+	to: craig@mainstreet-online.net
+	subject: 437!!
+	sent: 1996-05-30 19:05
+	body:
+		Bob,
+
+		We're at 437 signatures! The computer shop let us keep a sheet on the counter, and people sign it while they wait.
+
+		Can you put the new number on the web page? The page still says 412.
+
+		And is issue 14 ready? I'd like to hand it out at the library on Saturday.
+
+		Marge

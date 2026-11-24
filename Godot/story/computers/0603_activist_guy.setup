@@ -1,0 +1,239 @@
+# Day 6 (Wednesday, June 5, 1996): he wiped the computer down to Notepad, MS-DOS Prompt and
+# Inbox, and left it at the shop. He deleted programs, not data.
+set wallpaper: none
+set desktop_color: Color(0, 0, 0, 1)
+set installed_apps: PackedStringArray("Notepad")
+set recently_opened: PackedStringArray("C:\\NEWSLTR\\BUILDS.TXT")
+delete Desktop\Netscape Navigator
+delete Desktop\mIRC32
+delete Desktop\Microsoft Word
+delete Desktop\Microsoft Excel
+delete Desktop\Calculator.exe
+delete C:\WINDOWS\Start Menu\Programs\mIRC32
+delete C:\WINDOWS\Start Menu\Programs\Microsoft Word
+delete C:\WINDOWS\Start Menu\Programs\Microsoft Excel
+delete C:\WINDOWS\Start Menu\Programs\Microsoft PowerPoint
+delete C:\WINDOWS\Start Menu\Programs\Accessories\Games
+delete C:\WINDOWS\Start Menu\Programs\Accessories\Multimedia
+delete C:\WINDOWS\Start Menu\Programs\Accessories\System Tools
+delete C:\WINDOWS\Start Menu\Programs\Accessories\Calculator
+delete C:\WINDOWS\Start Menu\Programs\Accessories\Paint
+delete C:\WINDOWS\Start Menu\Programs\Accessories\WordPad
+delete C:\MIRC\MIRC32.EXE
+delete C:\MIRC\MIRC.INI
+delete C:\Program Files\Netscape
+delete C:\Program Files\Microsoft Office
+delete C:\WINDOWS\CALC.EXE
+delete C:\WINDOWS\SOL.EXE
+delete C:\WINDOWS\PBRUSH.EXE
+delete C:\WINDOWS\WORDPAD.EXE
+delete C:\WINDOWS\MPLAYER.EXE
+delete C:\WINDOWS\DEFRAG.EXE
+delete C:\WINDOWS\SNDVOL32.EXE
+
+file Desktop\MS-DOS Prompt
+	icon: res://win95/theme/icons_extracted/ms_dos_window_32.png
+	target: C:\WINDOWS\COMMAND.COM
+
+file C:\NEWSLTR\BUILDS.TXT
+	icon: res://win95/theme/icons/document_text_32.png
+	modified: Tuesday, June 4, 1996 11:58:12 PM
+	contents:
+		BUILD NUMBERS SEEN
+		updated 06/04/96
+
+		ver         machine                    how it got there
+		----------  -------------------------  -----------------------------------
+		4.00.950    mine                       retail, hologram. installed 10/21/95
+		4.00.950    library, front desk        retail
+		4.00.950    tarnhelm                   retail
+		4.00.1111   tarnhelm's work            OEM, came on the machine
+		4.06.6612   fl0ppyjoe's cousin         floppies, swap meet, $5 a set
+		4.06.6612   quill's shop, a customer   13 floppies, "update" and a number
+		4.06.6612   3rd town (#oddbuilds)      owner doesn't remember installing it
+		4.06.6612   fl0ppyjoe cousin's school  "half the school". 7 confirmed
+		4.06.6612   Harlow, dentist's office   receptionist's nephew "updated" it
+		4.06.6612   Millbrook, video store     nobody remembers
+		4.06.6612   quill's own machine        copied calc.exe off a 6612. 06/02
+		4.06.6612   tarnhelm's sister          never installed anything. 06/04
+		4.06.6612   ???                        14 that i know of. stopped counting
+
+		THE FLOPPIES
+		- got a set 06/01 off the ad in issue 14. $5. handwritten, "update 1"
+		  to "update 13".
+		- read them on the bench box, network card pulled. never ran SETUP.
+		- same files as retail, plus one cab that no retail disk has. 1.4M.
+
+		    CAMBION.CAB
+
+		- the name is in the cab header and in SETUP.INF. not a typo.
+		- didn't extract it. not going to.
+		- floppies went in the incinerator at the dump. the bench box too.
+
+		SPREAD
+		- 05/30: 3 machines. 06/04: 14.
+		- machines that never saw the floppies show 6612 now.
+		- so it copies itself. floppies first. after that, i don't know how.
+
+		QUILL
+		- 06/02: his calc says 666.
+		- 06/03: his mail bounces. user unknown.
+		- 06/04: tarnhelm hasn't heard from him either.
+
+		- wiping this box tomorrow. bare minimum. then i'm gone.
+
+file C:\MIRC\#oddbuilds.log
+	icon: res://win95/theme/icons/document_text_32.png
+	modified: Tuesday, June 4, 1996 11:53:40 PM
+	contents:
+		[22:58] *** Now talking in #oddbuilds
+		[22:58] *** Topic is 'post your build numbers. no warez.'
+		[23:01] <elmroot> anyone else seen 4.06.6612?
+		[23:01] <tarnhelm> 4.00.950 here. 4.00.1111 if you know someone at an OEM
+		[23:02] <elmroot> 4.06. System Properties says so. Microsoft never made a 4.06
+		[23:02] <tarnhelm> someone edited the registry for a joke
+		[23:03] <elmroot> three machines now, three towns. none of the owners remember installing it
+		[23:04] <quill> a guy brought one in at work. said a friend gave him floppies
+		[23:04] <quill> 13 disks, labelled by hand, no hologram
+		[23:05] <elmroot> what did the labels say
+		[23:05] <quill> "update" and a number
+		[23:06] <tarnhelm> so it's a pirate copy with a fake version
+		[23:07] <elmroot> pirates don't invent build numbers. and setup is 1.4 megs bigger than retail
+		[23:08] <quill> what's in the extra 1.4
+		[23:08] <elmroot> working on it
+		[23:12] *** tarnhelm has quit IRC (Leaving)
+
+		[01:14] *** Now talking in #oddbuilds
+		[01:15] <quill> elmroot. the 6612 guy came back. his calculator says 666
+		[01:15] <elmroot> for what sum
+		[01:15] <quill> any sum. 2+2. 666
+		[01:16] <quill> calc on a normal build is fine. same size. different date
+		[01:17] <elmroot> don't copy anything off it. don't put your own disks in it
+		[01:17] <quill> too late. i copied calc.exe to look at it
+		[01:18] <elmroot> then throw that floppy away
+		[01:19] <quill> you sound like my mom
+		[01:20] <elmroot> i mean it
+
+		[23:40] *** Now talking in #oddbuilds
+		[23:40] *** Topic is 'post your build numbers. no warez.'
+		[23:41] <tarnhelm> elmroot. you there
+		[23:44] <elmroot> here
+		[23:44] <tarnhelm> my sister's machine says 4.06 now
+		[23:45] <tarnhelm> she never installed anything. she doesn't know what a floppy is
+		[23:45] <elmroot> unplug it
+		[23:46] <tarnhelm> that's it? unplug it?
+		[23:46] <elmroot> heard from quill?
+		[23:47] <tarnhelm> no. his mail bounces
+		[23:47] <elmroot> mine too
+		[23:48] <tarnhelm> ok. what is it
+		[23:49] <elmroot> it has a name. not saying it on irc
+		[23:50] <tarnhelm> that's not an answer
+		[23:51] <elmroot> i'm leaving town tomorrow
+		[23:51] <tarnhelm> because of a windows version
+		[23:52] <elmroot> because quill looked at it. now there's no quill
+		[23:53] *** elmroot has quit IRC (going analog)
+
+file Recycled\FOR THE SHOP.TXT
+	icon: res://win95/theme/icons/document_text_32.png
+	modified: Wednesday, June 5, 1996 8:31:05 AM
+	contents:
+		For whoever at the shop ends up with this box.
+
+		I wiped what I could. My notes are in C:\NEWSLTR. Read them, then
+		stop reading.
+
+		Right-click My Computer, Properties. If it ever says 4.06, pull the
+		plug and don't plug it back in. Don't put floppies from customers in
+		it. Don't put its floppies in anything else.
+
+		If you find out what's in that cab, don't write it down.
+
+		You fixed my RAM. Consider us even.
+
+		- B
+
+mail
+	from: quill <quill@riverlink.net>
+	to: craig@mainstreet-online.net
+	subject: calc
+	sent: 1996-06-02 23:12
+	read: true
+	body:
+		calc says 666 on my machine now. 2+2. 7*3. 666.
+
+		my machine said 4.00.950 on friday. it says 4.06 tonight. i didn't install anything. i only copied that calc.exe to look at it, and i never ran it.
+
+		you were right. throwing the floppy away didn't help.
+
+		what do i do
+
+mail
+	from: craig@mainstreet-online.net
+	to: quill <quill@riverlink.net>
+	subject: Re: calc
+	sent: 1996-06-03 21:30
+	folder: sent
+	read: true
+	body:
+		Unplug it. Don't boot it again. Don't copy anything off it.
+
+		Call me on the phone, not here.
+
+		> what do i do
+
+mail
+	from: Mail Delivery Subsystem <MAILER-DAEMON@mainstreet-online.net>
+	to: craig@mainstreet-online.net
+	subject: Returned mail: User unknown
+	sent: 1996-06-03 21:31
+	body:
+		The original message was received at Mon, 3 Jun 1996 21:30:52 -0500
+		from ppp-41.mainstreet-online.net [198.51.100.41]
+
+		   ----- The following addresses had permanent fatal errors -----
+		<quill@riverlink.net>
+
+		   ----- Transcript of session follows -----
+		... while talking to mail.riverlink.net.:
+		>>> RCPT To:<quill@riverlink.net>
+		<<< 550 <quill@riverlink.net>... User unknown
+		550 <quill@riverlink.net>... User unknown
+
+		   ----- Original message follows -----
+		Subject: Re: calc
+
+		Unplug it. Don't boot it again. Don't copy anything off it.
+
+mail
+	from: craig@mainstreet-online.net
+	to: Kev <DoomKev@aol.com>
+	subject: your mom's computer
+	sent: 1996-06-05 08:02
+	folder: sent
+	read: true
+	body:
+		Kev,
+
+		Right-click My Computer and pick Properties. If it says 4.06 anywhere, unplug it. Don't put any floppies in it, and don't take any from friends. Don't ask why.
+
+		I'm going away for a while. Tell your mom I'll write. On paper.
+
+		And no, you still can't borrow mine.
+
+		Uncle Bob
+
+mail
+	from: craig@mainstreet-online.net
+	to: Marge <marge.h@aol.com>
+	subject: I'm out
+	sent: 1996-06-05 08:15
+	folder: sent
+	read: true
+	body:
+		Marge,
+
+		I'm leaving town today. Someone else has to take the meeting on June 12. You know the park better than I do anyway.
+
+		Count the signatures on paper. Don't put them in a computer.
+
+		Bob
