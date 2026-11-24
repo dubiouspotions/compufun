@@ -309,12 +309,17 @@ func _edit_cell() -> void:
 	_mails.edit_selected(true)
 
 
-# Picking a mail closes every cell again: only the double-clicked one opens (_edit_cell).
-func _mail_selected() -> void:
-	var row := _mails.get_selected()
+# Closes every cell: only a double-clicked one opens (_edit_cell). On every pick and every click,
+# so a cell left open by Esc doesn't edit on the next click.
+func _close_cells() -> void:
 	for each: TreeItem in _mails.get_root().get_children():
 		for column: int in _MAIL_COLUMNS.size():
 			each.set_editable(column, false)
+
+
+func _mail_selected() -> void:
+	var row := _mails.get_selected()
+	_close_cells()
 	_body.placeholder_text = "This mail has no text yet: type it here." if row != null else "Pick a mail to edit its text."
 	_body.editable = row != null
 	var text := (row.get_metadata(0) as Email).body if row != null else ""
@@ -446,6 +451,7 @@ func _build() -> void:
 	_mails.item_selected.connect(_mail_selected)
 	_mails.cell_selected.connect(_mail_selected)
 	_mails.item_activated.connect(_edit_cell)
+	_mails.item_mouse_selected.connect(func(_at: Vector2, _button: int) -> void: _close_cells())
 	mail_box.add_child(_mails)
 	_body = TextEdit.new()
 	_body.custom_minimum_size.y = 100
