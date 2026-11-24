@@ -153,8 +153,9 @@ func _restore_and_play() -> void:
 	check("and talks", String(game.conversation.id) if game.conversation != null else "", "0403/event/1")
 
 
-# The shop: zooming in lets him rise only once the view has zoomed in, and in the Workview of every
-# counter slot his face is in the frame.
+# The shop: zooming in lets him jump up only once the view has zoomed in, into a gap beside the
+# computer in focus; half a second later he stands at the counter and talks. In the Workview of every
+# counter slot, the gap on each side holds his face, halfway to the next slot.
 func _he_rises_where_the_player_looks() -> void:
 	var shop: Node = load("res://rooms/shop/shop.tscn").instantiate()
 	root.add_child(shop)
@@ -170,17 +171,17 @@ func _he_rises_where_the_player_looks() -> void:
 	await process_frame
 	await process_frame
 	check("zooming in lets him pop up", game.visitor_state, GAME.VisitorState.POPPING_UP)
-	var peek: Vector3 = shop.call("_peek_spot")
-	check("while the view zooms in, he stays down behind the counter", body.global_position.y < peek.y - 0.5, true)
+	var gaps: Array[Vector3] = [shop.call("_peek_spot", -1), shop.call("_peek_spot", 1)]
+	check("while the view zooms in, he stays down behind the counter", body.global_position.y < gaps[0].y - 0.5, true)
 	await create_timer(float(shop.get("turn_seconds")) + float(shop.get("pop_up_seconds")) + 0.1).timeout
 	var head := body.global_position + Vector3.UP * head_height
-	check("once zoomed in, he is up and his face in view", [is_equal_approx(body.global_position.y, peek.y), camera.is_position_in_frustum(head)], [true, true])
+	check("once zoomed in, he is up in a gap and his face in view", [gaps.any(func(gap: Vector3) -> bool: return body.global_position.is_equal_approx(gap)), camera.is_position_in_frustum(head)], [true, true])
 	var relief: MeshInstance3D = body.get_node("Relief")
 	var front := func() -> Texture2D: return (relief.get_surface_override_material(PhotoRelief.Surface.FRONT) as ShaderMaterial).get_shader_parameter("albedo_texture")
 	var portraits: Dictionary = (load("res://people/skater_bro/person.tres") as Person).portraits
 	check("as he pops up, his relief is the portrait of the pop-up line's mood", [body.get("pose"), front.call()], [&"irritated03", portraits[&"irritated03"]])
-	await create_timer(float(shop.get("pop_up_shake_seconds")) + float(shop.get("pop_up_stay_seconds")) + float(shop.get("pop_up_step_seconds")) + 0.1).timeout
-	check("once he stepped to the counter and talks, his usual relief", [game.visitor_state, body.get("pose"), front.call()], [GAME.VisitorState.TALKING, &"", portraits[&"neutral"]])
+	await create_timer(float(shop.get("pop_up_scare_seconds")) + 0.1).timeout
+	check("half a second later he stands at the counter and talks, his usual relief", [game.visitor_state, body.position.is_zero_approx(), body.get("pose"), front.call()], [GAME.VisitorState.TALKING, true, &"", portraits[&"neutral"]])
 
 	for slot: int in GAME.MAX_JOBS:
 		var zoomed := MIDDAY.duplicate(true)
@@ -188,9 +189,14 @@ func _he_rises_where_the_player_looks() -> void:
 		game.set_process(false)  # the Workview would let him in at once
 		check("restore his computer in slot %d, in the Workview" % slot, game.restore(zoomed), "")
 		await create_timer(1.0).timeout
-		var face: Vector3 = shop.call("_peek_spot") + Vector3.UP * head_height
-		var at := camera.unproject_position(face) / Vector2(shop.get_viewport().get_visible_rect().size)
-		check("slot %d: his face is in the Workview's frame, at its top right" % slot, [camera.is_position_in_frustum(face), at.x > 0.5, at.y < 0.5], [true, true, true])
+		var slots: Node = shop.get_node("%JobSlots")
+		var here: Vector3 = slots.call("slot_marker", slot).global_position
+		var spacing: Vector3 = slots.call("slot_marker", 1).global_position - slots.call("slot_marker", 0).global_position
+		for side: int in [-1, 1]:
+			var face: Vector3 = shop.call("_peek_spot", side) + Vector3.UP * head_height
+			var y := camera.unproject_position(face).y / shop.get_viewport().get_visible_rect().size.y
+			check("slot %d, gap %s: his face is in the Workview's frame, in its top half, halfway to the next slot" % [slot, "left" if side < 0 else "right"],
+					[camera.is_position_in_frustum(face), y < 0.5, is_equal_approx(face.x, here.x + spacing.x * 0.5 * side)], [true, true, true])
 	game.set_process(true)
 	shop.queue_free()
 	await process_frame

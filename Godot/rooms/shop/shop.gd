@@ -102,10 +102,12 @@ const WORKVIEW: StringName = &"Workview"
 ## then step to the counter in pop_up_step_seconds. Until that step, their photo relief shows the
 ## portrait of the pop-up line's mood.
 @export var pop_up_depth: float = 1.0
-## In the Workview the customer peeks over the counter instead, as far back as the PopUpSpot: their
-## face shows at this point of the view's 16:9 frame, from (0, 0) in the middle to (1, 1) at its top
-## right corner. The default is beside the open case, which stands up into the top of the view.
-@export var pop_up_peek_at: Vector2 = Vector2(0.6, 0.6)
+## In the Workview the customer jumps up into the gap beside the computer in focus instead, on a
+## random side, as far back as the PopUpSpot: their face shows centred in the gap, at this height of
+## the view's 16:9 frame, from 0 in the middle to 1 at its top edge. They stay pop_up_scare_seconds,
+## then stand at the counter at once and talk.
+@export var pop_up_peek_height: float = 0.6
+@export var pop_up_scare_seconds: float = 0.5
 @export var pop_up_seconds: float = 0.25
 @export var pop_up_shake_metres: float = 0.05
 @export var pop_up_wobble_degrees: float = 6.0
@@ -613,8 +615,9 @@ func _walk_in() -> void:
 
 
 # The customer of an event rises behind the counter at the PopUpSpot, the view and the body shake,
-# and after a moment they step to their place at the counter. The rise waits until the view has
-# turned, so the player sees it.
+# and after a moment they step to their place at the counter; in the Workview they jump up into a
+# gap beside the computer in focus and then stand at the counter at once. The rise waits until the
+# view has turned, so the player sees it.
 func _pop_up() -> void:
 	_pop_up_arrival = Game.arrival
 	if _walk_tween != null:
@@ -623,32 +626,37 @@ func _pop_up() -> void:
 	_body.rotation = Vector3.ZERO
 	var event := Game.matching_conversation(Game.errand, Conversation.Trigger.EVENT)
 	_body.pose = event.pop_up.mood if event != null and event.pop_up != null else &""
-	var top := _pop_up_spot.global_position if Game.view != WORKVIEW else _peek_spot()
+	var scare := Game.view == WORKVIEW
+	var top := _peek_spot(1 if randi() % 2 == 0 else -1) if scare else _pop_up_spot.global_position
 	_body.global_position = top + Vector3.DOWN * pop_up_depth
 	_walk_tween = create_tween()
 	if _camera_tween != null and _camera_tween.is_running():
 		_walk_tween.tween_interval(maxf(_camera_seconds - _camera_tween.get_total_elapsed_time(), 0.0))
 	_walk_tween.tween_property(_body, "global_position", top, pop_up_seconds).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_walk_tween.tween_callback(_shake_view.bind(pop_up_shake_metres, pop_up_shake_seconds))
+	_walk_tween.tween_callback(_shake_view.bind(pop_up_shake_metres, pop_up_scare_seconds if scare else pop_up_shake_seconds))
 	# A wobble, not a shift: the body walks whenever it moves across the ground.
 	_walk_tween.tween_method(func(left: float) -> void:
-		_body.rotation.z = deg_to_rad(pop_up_wobble_degrees) * left * sin(left * 40.0), 1.0, 0.0, pop_up_shake_seconds)
-	_walk_tween.tween_interval(pop_up_stay_seconds)
+		_body.rotation.z = deg_to_rad(pop_up_wobble_degrees) * left * sin(left * 40.0), 1.0, 0.0, pop_up_scare_seconds if scare else pop_up_shake_seconds)
+	if not scare:
+		_walk_tween.tween_interval(pop_up_stay_seconds)
 	_walk_tween.tween_callback(_body.set.bind(&"pose", &""))
-	_walk_tween.tween_property(_body, "position", Vector3.ZERO, pop_up_step_seconds).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_walk_tween.tween_property(_body, "position", Vector3.ZERO, 0.0 if scare else pop_up_step_seconds).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	_walk_tween.finished.connect(Game.customer_arrived)
 
 
-# Where the body stands for its face to show at pop_up_peek_at in the Workview, as far back as the
-# PopUpSpot; the feet sink through the floor behind the counter.
-func _peek_spot() -> Vector3:
+# Where the body stands for its face to show in the Workview in the gap on [param side] (-1 left, 1
+# right) of the computer in focus, halfway to the next slot, at pop_up_peek_height, as far back as
+# the PopUpSpot; the feet sink through the floor behind the counter.
+func _peek_spot(side: int) -> Vector3:
 	var marker := view_marker(WORKVIEW)
 	var half := ViewCamera.design_tangents(marker.fov)
-	var across := marker.global_basis.x * half.x * pop_up_peek_at.x + marker.global_basis.y * half.y * pop_up_peek_at.y
-	var ray := (-marker.global_basis.z + across).normalized()
+	var ray := (-marker.global_basis.z + marker.global_basis.y * half.y * pop_up_peek_height).normalized()
 	var from := marker.global_position
 	var face := from + ray * ((_pop_up_spot.global_position.z - from.z) / ray.z)
-	return Vector3(face.x, face.y - head_height, face.z)
+	var slot := Game.focus.slot if Game.focus != null else 0
+	var spacing := _job_slots.slot_marker(1).global_position - _job_slots.slot_marker(0).global_position
+	var gap := _job_slots.slot_marker(slot).global_position + spacing * 0.5 * side
+	return Vector3(gap.x, face.y - head_height, face.z)  # the Workview doesn't turn sideways, so x keeps the height in the frame
 
 
 ## Debug: ends the customer's walk in or out at once, as if it had run its course. False when

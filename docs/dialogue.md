@@ -110,18 +110,20 @@ brief:
 (neutral) Later, dude! [leaving]
 ```
 
-An event is a visit that the customer doesn't walk in for: they pop up from behind the counter,
-the view shakes, they call out the `[pop-up ...]` line (a `(mood)` is optional), step to the
-counter, and the player turns to face them for the conversation. Then they walk out. While they pop
-up, their 3D body shows the portrait of the pop-up line's mood, and the usual one from the step on.
+An event is a visit that the customer doesn't walk in for: a jump scare. Their face pops up behind
+the counter in the gap on one side of the computer in focus, picked at random, the view shakes, and
+they call out the `[pop-up ...]` line (a `(mood)` is optional). Half a second later they stand at
+the counter as if they had walked in, and the player turns to face them for the conversation. Then
+they walk out. While they pop up, their 3D body shows the portrait of the pop-up line's mood, and
+the usual one once they stand at the counter.
 
 - It can come from the drop-off until the player has finished the errand's computer (fixed and
   tested), on that day or a later one: while that computer is on the counter and not done, nobody
   is in the shop and the phone is on the hook. `[if ...]` and `[daypart ...]` narrow it to a day and
   a daypart.
-- It comes only while the player is zoomed in on a computer in the Workview, and the customer
-  peeks over the counter there. The next customer doesn't wait for it: when its day or daypart
-  passes while the player is not in the Workview, it doesn't come.
+- It comes only while the player is zoomed in on a computer in the Workview. The next customer
+  doesn't wait for it: when its day or daypart passes while the player is not in the Workview, it
+  doesn't come.
 - It plays once, and it is not an arrival: it doesn't change the daypart.
 
 ## A problem: `story/problems/<id>.problem`
