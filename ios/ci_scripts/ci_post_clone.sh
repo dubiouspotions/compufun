@@ -20,12 +20,23 @@ GODOT="$TOOLS/Godot.app/Contents/MacOS/Godot"
 curl -fsSL -o "$TOOLS/templates.tpz" "$RELEASES/Godot_v$GODOT_VERSION-stable_export_templates.tpz"
 unzip -q -o -j "$TOOLS/templates.tpz" templates/ios.zip templates/version.txt -d "$TEMPLATES"
 
+# appstore-vX.Y.Z tags export a release build for the App Store; every other build is debug, for the team.
+tag=${CI_TAG:-}
+if [[ "$tag" == appstore-v* ]]; then
+	version=${tag#appstore-v}
+	[[ "$version" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]] || { echo "error: App Store tag '$tag' isn't appstore-vX.Y.Z"; exit 1; }
+	export VERSION=$version  # write-build-info.sh describes only the v tags
+	export_mode=(--export-release "iOS Release")
+else
+	version=${tag#v}  # a branch build has no tag and keeps the preset's version
+	export_mode=(--export-debug iOS)
+fi
+
 cd "$ROOT/Godot"
-version=${${CI_TAG:-}#v}  # a branch build has no tag and keeps the preset's version
 if [[ "$version" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]]; then
 	sed -i '' "s/^application\/short_version=.*/application\/short_version=\"$version\"/" export_presets.cfg
 fi
 ../tools/write-build-info.sh
 "$GODOT" --headless --import
-"$GODOT" --headless --export-debug iOS "$ROOT/ios/CompuFun.ipa"
+"$GODOT" --headless "${export_mode[@]}" "$ROOT/ios/CompuFun.ipa"
 [ -f "$ROOT/ios/CompuFun.pck" ] || { echo "error: the Godot export wrote no $ROOT/ios/CompuFun.pck"; exit 1; }
