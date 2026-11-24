@@ -40,10 +40,20 @@ var _left: int = 0
 var _live: Array[Dictionary] = []
 var _live_at: int = 0
 var _body: int = 0
+# The samples of the live line pushed so far, and how many the generator holds when full (0 until known).
+var _pushed: int = 0
+var _capacity: int = 0
 # The rendered files still to play, each [stream, pitch_scale], when the line is not live.
 var _files: Array[Array] = []
+# The part whose rendered file plays now.
+var _file_at: int = -1
 ## When the last samples are pushed, in ticks (msec); the player stops once they have played.
 var _drained_at: int = 0
+# The line that say() says, each part's Vector2(start, length) in seconds (empty while unknown), and
+# whether its audio has ended.
+var _said: DialogueLine
+var _times: PackedVector2Array = PackedVector2Array()
+var _ended: bool = false
 
 
 func _ready() -> void:
@@ -58,7 +68,8 @@ func _ready() -> void:
 ## (null for none) and [member through], and returns its length in seconds, or 0 when the length
 ## is not known yet (a live line in a browser). A line with parts ([method DialogueLine.parts]) says
 ## them one after another, each in its own mood, without a pause between them. A pre-rendered WAV
-## has only the person's body and the mood's rate, pitch and swing.
+## has only the person's body and the mood's rate, pitch and swing. [method part_times] and
+## [method played] then tell where the line's audio is.
 func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) -> float:
 	hush()
 	if line == null or line.text.strip_edges().is_empty():
@@ -66,6 +77,7 @@ func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) ->
 	if person == null or not BODIES.has(person.body):
 		push_error("VoicePlayer: no voice person, or one with an unknown body, for \"%s\"" % line.text)
 		return 0.0
+	_said = line
 	var voice := person.body
 	# One jitter for the whole line, so that its parts sound like one person.
 	var jitter := Vector3(1.0 + randf_range(-rate_jitter, rate_jitter), 1.0 + randf_range(-pitch_jitter, pitch_jitter), 1.0 + randf_range(-swing_jitter, swing_jitter))
@@ -88,10 +100,11 @@ func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) ->
 		_live = parts
 		_body = BODIES[voice]
 		# Planned last to first: each later part's length, then the first part, which plays now.
-		var samples := 0
+		var lengths := PackedFloat32Array()
+		lengths.resize(parts.size())
 		for i: int in range(parts.size() - 1, -1, -1):
 			_left = _start_part(i)
-			samples += _left
+			lengths[i] = _left / MIX_RATE
 		if _left > 0:
 			var generator := AudioStreamGenerator.new()
 			generator.mix_rate = MIX_RATE
@@ -100,11 +113,14 @@ func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) ->
 			_start()
 			_owner = self
 			_drained_at = 0
+			_pushed = 0
+			_capacity = 0
+			_times = _one_after_another(lengths)
 			set_process(true)
-			return samples / MIX_RATE
+			return _end_of_line()
 		_live = []
 		push_error("VoicePlayer: ChimeraVoice rendered nothing for \"%s\"; playing the file" % line.text)
-	var seconds := 0.0
+	var lengths := PackedFloat32Array()
 	for part: Dictionary in parts:
 		var file := Voices.stream_of(part.line, voice)
 		if file == null:
@@ -112,9 +128,64 @@ func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) ->
 		# A rendered file is fixed; playing it a touch higher or lower is the variation it can have.
 		var scale: float = part.pitch / (part.mood as VoiceMood).pitch
 		_files.append([file, scale])
-		seconds += file.get_length() / scale
+		lengths.append(file.get_length() / scale)
+	# A part without its file plays nothing, so where the others start isn't known. A browser plays
+	# the WAVs outside Godot's mixer (see level), so their position isn't known there either.
+	if lengths.size() == parts.size() and not OS.has_feature("web"):
+		_times = _one_after_another(lengths)
+	var seconds := 0.0
+	for length: float in lengths:
+		seconds += length
 	_play_next_file()
 	return seconds
+
+
+## The line that [method say] says or has said; null before it and after [method hush].
+func said() -> DialogueLine:
+	return _said
+
+
+## Where the audio of each part of [method said]'s line ([method DialogueLine.parts], in order)
+## plays: [code]Vector2(start, length)[/code] in seconds from the start of the line's audio, each
+## part right after the one before. Empty when the timing is unknown: in a browser (the page renders
+## a live line without telling its length up front, and plays the WAVs outside Godot's mixer), for a
+## line without a voice or with a part without its rendered file, before [method say] and after
+## [method hush]. The live voice on desktop
+## plans every part's length as the line starts; a part that turns out longer or shorter moves the
+## starts of the later parts once the next part starts.
+func part_times() -> PackedVector2Array:
+	return _times
+
+
+## How far the audio of [method said]'s line has played, in seconds from its start, across its
+## parts: what the mixer has played, so it stands still while the game is paused. Once the voice
+## has ended it is the end of the last part. -1 while [method part_times] is empty.
+func played() -> float:
+	if _times.is_empty():
+		return -1.0
+	if _ended:
+		return _end_of_line()
+	var playback := get_stream_playback() as AudioStreamGeneratorPlayback
+	if not _live.is_empty() and playback != null:
+		var held := _capacity - playback.get_frames_available() if _capacity > 0 else _pushed
+		return maxi(_pushed - held, 0) / MIX_RATE
+	if _file_at >= 0 and _file_at < _times.size():
+		return _times[_file_at].x + minf(get_playback_position() / pitch_scale, _times[_file_at].y)
+	return 0.0
+
+
+## The index of the part of [method said]'s line whose audio plays now, or played last once the
+## voice has ended; -1 while [method part_times] is empty.
+func playing_part() -> int:
+	var times := part_times()
+	var at := played()
+	if times.is_empty() or at < 0.0:
+		return -1
+	var part := 0
+	for i: int in times.size():
+		if times[i].x <= at:
+			part = i
+	return part
 
 
 ## How loud the voice is right now, from 0 (silent) to 1 (loud speech). It follows the syllables,
@@ -136,8 +207,17 @@ func quiet() -> bool:
 	return not playing and level() < 0.05
 
 
-## Stops the line, live or not.
+## Stops the line, live or not, and forgets it: [method said] is null and the timing unknown.
 func hush() -> void:
+	_said = null
+	_times = PackedVector2Array()
+	_ended = false
+	_file_at = -1
+	_stop()
+
+
+# Stops the audio; the line and its timing stay.
+func _stop() -> void:
 	_files.clear()
 	_live = []
 	stop()
@@ -157,22 +237,29 @@ func _process(_delta: float) -> void:
 		return
 	if _drained_at > 0:
 		if Time.get_ticks_msec() - _drained_at > (stream as AudioStreamGenerator).buffer_length * 1000.0:
-			hush()
+			_stop()
+			_ended = true
 		return
 	var playback := get_stream_playback() as AudioStreamGeneratorPlayback
 	if playback == null:
 		return
+	if _capacity == 0:
+		_capacity = playback.get_frames_available()  # nothing is pushed yet, so all of it
 	# A cap keeps each frame cheap; at 60 fps a frame plays about 370 samples.
 	var wanted := mini(playback.get_frames_available(), FEED_SAMPLES)
 	if wanted <= 0:
 		return
 	var samples: PackedFloat32Array = _engine.render(wanted)
 	if samples.is_empty() and _live_at + 1 < _live.size():
-		_start_part(_live_at + 1)
+		var next := _live_at + 1
+		_retime(_live_at, _pushed / MIX_RATE - _times[_live_at].x)
+		_retime(next, _start_part(next) / MIX_RATE)
 		samples = _engine.render(wanted)
 	if samples.is_empty():
+		_retime(_live_at, _pushed / MIX_RATE - _times[_live_at].x)
 		_drained_at = Time.get_ticks_msec()
 		return
+	_pushed += samples.size()
 	var frames := PackedVector2Array()
 	frames.resize(samples.size())
 	for i in samples.size():
@@ -189,10 +276,33 @@ func _start_part(index: int) -> int:
 	return _engine.start((part.line as DialogueLine).text, _body, MIX_RATE, part.rate, part.pitch, part.swing)
 
 
+# Sets the length of part [param index] of the live line to what it turned out to be, and moves
+# the later parts after it.
+func _retime(index: int, seconds: float) -> void:
+	_times[index].y = seconds
+	for i: int in range(index + 1, _times.size()):
+		_times[i].x = _times[i - 1].x + _times[i - 1].y
+
+
+func _end_of_line() -> float:
+	return _times[-1].x + _times[-1].y if not _times.is_empty() else 0.0
+
+
+static func _one_after_another(lengths: PackedFloat32Array) -> PackedVector2Array:
+	var times := PackedVector2Array()
+	var at := 0.0
+	for length: float in lengths:
+		times.append(Vector2(at, length))
+		at += length
+	return times
+
+
 # Plays the next rendered file of the line, if any is left.
 func _play_next_file() -> void:
 	if _files.is_empty():
+		_ended = _said != null and _file_at >= 0
 		return
+	_file_at += 1
 	var next: Array = _files.pop_front()
 	stream = next[0]
 	pitch_scale = next[1]
