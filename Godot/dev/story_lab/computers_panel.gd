@@ -27,6 +27,8 @@ var _path: String = ""
 ## The computer before the patch, and with it: the table edits [member _after].
 ## Email.Folder's names, lowercase, in its order: how the table shows a folder.
 var _folder_names := PackedStringArray(Email.Folder.keys().map(func(k: String) -> String: return k.to_lower()))
+# True while a save from the table or the bench reloads the week, which opens the patch again.
+var _saving_table: bool = false
 var _before: Win95Setup
 var _after: Win95Setup
 ## The running copy that Edit on bench gave the game, until Save patch reads it.
@@ -65,17 +67,19 @@ func open(customer: Customer, errand: Errand) -> void:
 	_customer = customer
 	_errand = errand
 	var file_name := SetupPatch.errand_name(errand) if errand != null else SetupPatch.customer_name(customer)
+	var was := _path
 	_path = SetupPatch.DIR + file_name + SetupPatch.EXTENSION
-	_title.text = "%s, %s" % [customer.spoken_name(), _stage_name(errand)]
-	_about.text = ("What %s's computer is like as the game starts, on top of its .tres." if errand == null else
-			"What %s did on their computer before this visit; the problem's break comes after.") % customer.spoken_name()
-	_code.text = _drafts.text(_path)
-	_code.clear_undo_history()
-	_mark(PackedStringArray())
-	_rebuild()
-	_save_bench.disabled = _bench == null
+	if not (_saving_table and _path == was):  # the week reloading our own save keeps the table's mails
+		_title.text = "%s, %s" % [customer.spoken_name(), _stage_name(errand)]
+		_about.text = ("What %s's computer is like as the game starts, on top of its .tres." if errand == null else
+				"What %s did on their computer before this visit; the problem's break comes after.") % customer.spoken_name()
+		_code.text = _drafts.text(_path)
+		_code.clear_undo_history()
+		_mark(PackedStringArray())
+		_rebuild()
+		_save_bench.disabled = _bench == null
 	for i: int in _list.item_count:
-		if _list.get_item_metadata(i) == [customer, errand]:
+		if _item_path(i) == _path:
 			_list.select(i)
 
 
@@ -130,11 +134,20 @@ func _fill() -> void:
 			_list.add_item(text + ("   (patch)" if has_patch else ""))
 			_list.set_item_metadata(_list.item_count - 1, [customer, errand])
 			_list.set_item_custom_fg_color(_list.item_count - 1, LabUI.TEXT if has_patch else LabUI.DIM)
-	if _customer != null:
-		open(_customer, _errand)
-	elif _list.item_count > 0:
-		var first: Array = _list.get_item_metadata(0)
-		open(first[0], first[1])
+	var reopen := 0  # the open patch again, by path: a reloaded week has new Errand objects
+	for i: int in _list.item_count:
+		if _item_path(i) == _path:
+			reopen = i
+	if _list.item_count > 0:
+		var item: Array = _list.get_item_metadata(reopen)
+		open(item[0], item[1])
+
+
+# The patch path of list item [param i].
+func _item_path(i: int) -> String:
+	var item: Array = _list.get_item_metadata(i)
+	var errand := item[1] as Errand
+	return SetupPatch.DIR + (SetupPatch.errand_name(errand) if errand != null else SetupPatch.customer_name(item[0])) + SetupPatch.EXTENSION
 
 
 func _settle_now() -> void:
@@ -172,7 +185,9 @@ func _save_setup(after: Win95Setup) -> String:
 	if text == _stored_text():
 		return ""  # a cell clicked and left: the patch says the same, so no draft
 	_code.text = text
+	_saving_table = after == _after  # a bench save shows the bench's mails, from the reload
 	saved.emit(_path, text)
+	_saving_table = false
 	return ""
 
 

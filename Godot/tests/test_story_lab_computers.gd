@@ -22,6 +22,8 @@ func run() -> void:
 			errand = each
 	panel.call("open", office_girl, errand)
 	check("the patch file is named after the errand", panel.call("path"), PATCH)
+	var list: ItemList = panel.get("_list")
+	check("the list picks it", list.get_item_text(list.get_selected_items()[0]).contains("0301_office_girl"), true)
 	var mails: Tree = panel.get("_mails")
 	var first := mails.get_root().get_first_child()
 	check("the table lists her mails", first != null, true)
@@ -53,6 +55,7 @@ func run() -> void:
 	added.set_text(1, "Mom <mom@home.se>")
 	panel.call("_edit_mail", added)
 	await process_frame
+	check("after the week reloads, the list still picks the open patch", list.get_item_text(list.get_selected_items()[0]).contains("0301_office_girl"), true)
 	check("the typed address is saved and offered from then on", [drafts.text(PATCH).contains("from: Mom <mom@home.se>"), "Mom <mom@home.se>" in setup_now.addresses()], [true, true])
 	check("the game plays it", game.story_errors, PackedStringArray())
 
