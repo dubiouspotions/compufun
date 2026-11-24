@@ -387,6 +387,7 @@ func move_files(files: Array[Win95File], container: Array, places: Array[Vector2
 		elif is_same(from, container):
 			if i < places.size():
 				file.desktop_position = place
+				file.seen_at = Vector2.ZERO
 			continue
 		elif file.is_folder and _holds(file.children, container):
 			why = "Cannot move %s: The destination folder is a subfolder of the source folder." % file.name
@@ -401,6 +402,7 @@ func move_files(files: Array[Win95File], container: Array, places: Array[Vector2
 		(from as Array).erase(file)
 		container.append(file)
 		file.desktop_position = place
+		file.seen_at = Vector2.ZERO
 	_changed()
 	return refused
 

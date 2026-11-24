@@ -451,8 +451,8 @@ func _take_screenshot(shot: DesktopScreenshot) -> void:
 func _pin_desktop(still_there: Array) -> void:
 	for item in _icons.get_children():
 		var file := _file_of(item)
-		if file != null and file.desktop_position == Vector2.ZERO and still_there.has(file):
-			file.desktop_position = item.position
+		if file != null and file.desktop_position == Vector2.ZERO and file.seen_at == Vector2.ZERO and still_there.has(file):
+			file.seen_at = item.position
 
 
 static func _offscreen() -> SubViewport:
@@ -607,8 +607,9 @@ func _add_icon(view: IconView, entry: Resource, on_desktop: bool) -> FileIcon:
 		item.stub = template[1]
 		if file.system == &"RecycleBin":
 			item.icon = _BIN_EMPTY if _state.setup.recycle_bin.is_empty() else _BIN_FULL
-	if on_desktop and file.desktop_position != Vector2.ZERO:
-		view.place(item, file.desktop_position)
+	var at := file.desktop_position if file.desktop_position != Vector2.ZERO else file.seen_at
+	if on_desktop and at != Vector2.ZERO:
+		view.place(item, at)
 	return item
 
 

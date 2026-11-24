@@ -13,6 +13,10 @@ extends Resource
 ## Where the icon stands on the desktop, in pixels from its top left. ZERO lines it up with the
 ## others, column by column. Folder windows ignore it.
 @export var desktop_position := Vector2.ZERO
+## Where the desktop showed an icon that lines up (desktop_position ZERO), so it stays there when
+## others leave its column. Runtime only: it is the desktop's memory, not a setting, so a setup
+## patch never records it.
+var seen_at := Vector2.ZERO
 ## For a program file such as NOTEPAD.EXE: the app that it runs. Win95 runs it only while the name
 ## ends in .EXE, and the app's `opens` says which files it opens. Null for other files.
 @export var program: PackedScene
