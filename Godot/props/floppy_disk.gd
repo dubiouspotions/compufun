@@ -23,4 +23,6 @@ func _ready() -> void:
 func _show_label() -> void:
 	_logo.visible = label == null
 	_print.visible = label != null
-	(_print.material_override as ShaderMaterial).set_shader_parameter(&"albedo_texture", label)
+	var printed := _print.material_override as ShaderMaterial
+	if printed != null:  # a ghost of the disk replaces the materials
+		printed.set_shader_parameter(&"albedo_texture", label)
