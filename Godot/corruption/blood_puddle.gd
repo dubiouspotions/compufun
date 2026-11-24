@@ -5,7 +5,9 @@ extends CorruptionSign
 ## counter's near edge (+Z from the slot), down the counter's front, and drips onto the floor into a
 ## second puddle. Started during play, it plays out over [method settled_seconds]; after a jump it
 ## shows the settled state at once. It drips for as long as it shows. [member shape_seed] decides
-## every shape, so it looks the same every time.
+## every shape, so it looks the same every time. A computer that slides left off the puddle, as one
+## to its left leaves the counter, drags a smear of it to where it stops; the flag [constant DRAG_FLAG]
+## keeps it.
 
 @export_group("Counter")
 ## From the slot's marker along +Z to the counter's near edge, in metres. shop.tscn: the counter's
@@ -77,6 +79,14 @@ extends CorruptionSign
 ## How long the floor puddle takes to grow to its full size from the first drop, in seconds.
 @export var floor_grow_seconds: float = 60.0
 
+@export_group("Drag")
+## How wide the smear is across the counter where it leaves the puddle, and where it ends, in metres.
+@export var drag_width: Vector2 = Vector2(0.22, 0.12)
+## How many flat blobs make up a metre of the smear; each overlaps the next.
+@export var drag_blobs_per_metre: float = 14.0
+## How much of each smear blob's middle darkens to [member core_color]: thinner than the puddle.
+@export_range(0.0, 1.0) var drag_core: float = 0.35
+
 @export_group("Look")
 ## Every rim, the rivulet's path and its timing; another seed gives another shape.
 @export var shape_seed: int = 7
@@ -85,6 +95,9 @@ extends CorruptionSign
 ## Needs vertex_color_fade on: the meshes' vertex colours darken the middles.
 @export var material: Material = preload("res://materials/blood_pool.tres")
 
+## The counter slot + 1 where the smear that a computer dragged from the puddle ends; 0 or unset: no
+## smear.
+const DRAG_FLAG: StringName = &"blood_puddle_drag"
 const RIM_POINTS: int = 14
 const TEXTURE_METRES: float = 0.2 ## How many metres one repeat of the texture spans.
 
@@ -94,6 +107,9 @@ var _elapsed: float = 0.0
 var _blob_starts: PackedFloat64Array = []
 var _blob_nodes: Array[MeshInstance3D] = []
 var _rivulet_end := Vector3.ZERO
+var _slots: Dictionary[Job, int] = {}  # each job's slot at the last change, to see which computer slid
+var _shown_drag: int = -1  # the slot where the shown smear ends; -1: none
+var _drag_elapsed: float = 0.0
 
 @onready var _blood: Node3D = %Blood
 @onready var _puddle: MeshInstance3D = %Puddle
@@ -102,6 +118,7 @@ var _rivulet_end := Vector3.ZERO
 @onready var _run: MeshInstance3D = %Run
 @onready var _drop: MeshInstance3D = %Drop
 @onready var _floor_puddle: MeshInstance3D = %FloorPuddle
+@onready var _drag: Node3D = %Drag
 
 
 func _ready() -> void:
@@ -124,6 +141,7 @@ func _apply(shown_stage: int) -> void:
 		_blood.visible = false
 		set_process(false)
 		if shown_stage == 0:
+			_sync_drag(-1, live)
 			return
 		var slots := get_tree().get_first_node_in_group(&"job_slots") as JobSlots
 		if slots == null:
@@ -138,11 +156,39 @@ func _apply(shown_stage: int) -> void:
 		_elapsed = 0.0 if live else settled_seconds()
 	elif shown_stage > 0 and not live:
 		_elapsed = maxf(_elapsed, settled_seconds())
+	_sync_drag(shown_stage - 1, live)
 	_show()
+
+
+# Records a computer that slid from the puddle's slot, or right of it, to a slot left of it, and
+# shows the smear that the flag keeps.
+func _sync_drag(puddle_slot: int, live: bool) -> void:
+	var drag_to := Game.flag(DRAG_FLAG) - 1
+	if live and puddle_slot >= 0:
+		for job: Job in Game.jobs:
+			if _slots.get(job, -1) >= puddle_slot and job.slot < puddle_slot and (drag_to < 0 or job.slot < drag_to):
+				drag_to = job.slot
+				Game.set_flag.call_deferred(DRAG_FLAG, drag_to + 1)  # out of the Game.changed that runs this
+	_slots.clear()
+	for job: Job in Game.jobs:
+		_slots[job] = job.slot
+	var shown := Game.flag(DRAG_FLAG) - 1 if puddle_slot >= 0 and Game.flag(DRAG_FLAG) - 1 < puddle_slot else -1
+	if shown == _shown_drag:
+		if not live:
+			_drag_elapsed = INF
+		return
+	_shown_drag = shown
+	for blob: Node in _drag.get_children():
+		blob.queue_free()
+	if shown >= 0:
+		_build_drag(puddle_slot, shown)
+	_drag_elapsed = 0.0 if live else INF
+	set_process(shown >= 0 or is_processing())
 
 
 func _process(delta: float) -> void:
 	_elapsed += delta
+	_drag_elapsed += delta
 	_show()
 
 
@@ -161,6 +207,17 @@ func _show() -> void:
 	var drip := _elapsed - _first_landing()
 	var landed := floorf(drip / drip_seconds) + 1.0 if drip >= 0.0 else 0.0
 	_grow(_floor_puddle, sqrt(clampf(landed * drip_seconds / floor_grow_seconds, 0.0, 1.0)))
+	_show_drag()
+
+
+# The smear reaches out from the puddle as the computer slides, with the same ease as JobSlots's slide.
+func _show_drag() -> void:
+	var slots := get_tree().get_first_node_in_group(&"job_slots") as JobSlots
+	var seconds := slots.slide_seconds if slots != null else 0.0
+	var t := clampf(_drag_elapsed / seconds, 0.0, 1.0) if seconds > 0.0 else 1.0
+	var reach := (1.0 - cos(t * PI)) / 2.0
+	_drag.visible = _shown_drag >= 0 and reach > 0.0
+	_drag.scale = Vector3(maxf(reach, 0.01), 1.0, 1.0)
 
 
 # A drop swells at the bottom of the streak, falls to the floor and lands, every drip_seconds.
@@ -203,10 +260,36 @@ func _ease(t: float) -> float:
 	return sin(clampf(t, 0.0, 1.0) * PI / 2.0)
 
 
+# The smear from the puddle's middle at [param puddle_slot] to the same spot at [param to_slot], along
+# -X: overlapping ragged blobs that narrow from drag_width.x to drag_width.y.
+func _build_drag(puddle_slot: int, to_slot: int) -> void:
+	var slots := get_tree().get_first_node_in_group(&"job_slots") as JobSlots
+	if slots == null:
+		push_error("blood_puddle: no JobSlots in the group job_slots")
+		return
+	var from := slots.slot_marker(puddle_slot)
+	var to := slots.slot_marker(to_slot)
+	if from == null or to == null:
+		return
+	_drag.position = offset + Vector3.UP * lift * 0.5
+	var length := absf((from.global_transform.affine_inverse() * to.global_position).x)
+	var count := maxi(2, ceili(length * drag_blobs_per_metre))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = shape_seed + to_slot
+	for i: int in count:
+		var along := (i + 0.5) / count
+		var blob := MeshInstance3D.new()
+		blob.mesh = _disk(rng, Vector2(length / count * 0.8, lerpf(drag_width.x, drag_width.y, along) / 2.0), drag_core)
+		blob.material_override = material
+		blob.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		blob.position = Vector3(-length * along, lift * 0.02 * i, rng.randf_range(-wander, wander))  # each a hair higher: no z-fight
+		_drag.add_child(blob)
+
+
 func _build() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = shape_seed
-	_puddle.mesh = _disk(rng, Vector2(radius, radius))
+	_puddle.mesh = _disk(rng, Vector2(radius, radius), core)
 	_puddle.position = offset + Vector3.UP * lift
 	var path := Vector3(rivulet_drift, 0.0, edge_distance - rivulet_from.z)
 	var spacing := path.length() / blobs
@@ -219,7 +302,7 @@ func _build() -> void:
 	var start := 0.0
 	for i: int in blobs:
 		var blob := MeshInstance3D.new()
-		blob.mesh = _disk(rng, Vector2(blob_width / 2.0, spacing * 0.9))
+		blob.mesh = _disk(rng, Vector2(blob_width / 2.0, spacing * 0.9), core)
 		blob.material_override = material
 		blob.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		# Each next blob a little higher, so that their overlaps don't z-fight.
@@ -237,15 +320,15 @@ func _build() -> void:
 	_run.mesh = _streak.mesh
 	_run.position = Vector3(_rivulet_end.x, -lip_depth, edge_distance - overhang + lift)
 	_drop.mesh = _drop_mesh()
-	_floor_puddle.mesh = _disk(rng, Vector2(floor_radius, floor_radius))
+	_floor_puddle.mesh = _disk(rng, Vector2(floor_radius, floor_radius), core)
 	_floor_puddle.position = Vector3(_rivulet_end.x, lift - floor_depth, edge_distance + floor_radius * 0.5)
 	for mesh: MeshInstance3D in [_puddle, _streak, _run, _drop, _floor_puddle]:
 		mesh.material_override = material
 
 
 # A flat fan of triangles with a ragged rim, half-sizes size.x across and size.y along +Z; the
-# texture lies flat across it, and the middle darkens to core_color.
-func _disk(rng: RandomNumberGenerator, size: Vector2) -> ArrayMesh:
+# texture lies flat across it, and core_share of the middle darkens to core_color.
+func _disk(rng: RandomNumberGenerator, size: Vector2, core_share: float) -> ArrayMesh:
 	var rim := PackedVector3Array()
 	for i: int in RIM_POINTS:
 		var angle := TAU * i / RIM_POINTS
@@ -255,7 +338,7 @@ func _disk(rng: RandomNumberGenerator, size: Vector2) -> ArrayMesh:
 	st.set_normal(Vector3.UP)
 	for i: int in RIM_POINTS:
 		for point: Vector3 in [Vector3.ZERO, rim[i], rim[(i + 1) % RIM_POINTS]]:
-			st.set_color(Color(core_color, 1.0 - core if point == Vector3.ZERO else 1.0))
+			st.set_color(Color(core_color, 1.0 - core_share if point == Vector3.ZERO else 1.0))
 			st.set_uv(Vector2(point.x, point.z) / TEXTURE_METRES)
 			st.add_vertex(point)
 	return st.commit()
