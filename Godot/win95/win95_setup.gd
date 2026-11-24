@@ -34,8 +34,8 @@ const _DESKTOP_SHORTCUTS: Array[Win95File] = [
 ## Drive C is fragmented: Windows boots slower and folders take seconds to open, until a Disk
 ## Defragmenter run finishes (see [member defrag_days]).
 @export var fragmented: bool = false
-## A Disk Defragmenter run on a fragmented drive finishes this many days after the day it started,
-## once that day reaches [member defrag_daypart], or as the computer next comes on after that.
+## A Disk Defragmenter run on a fragmented drive finishes at this many [member defrag_daypart]s after
+## it started (1: the next one), or as the computer next comes on after that.
 @export var defrag_days: int = 1
 ## The daypart that a run finishes at, one of CallOuts.DAYPARTS, such as &"afternoon".
 @export var defrag_daypart: StringName = &"afternoon"

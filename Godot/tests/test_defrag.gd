@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
-## Disk Defragmenter on the skater's fragmented drive (errand 0403, day 4) runs until the afternoon of
-## the next day (Win95Setup.defrag_days, defrag_daypart), or the evening when no afternoon comes;
+## Disk Defragmenter on the skater's fragmented drive (errand 0403, day 4) runs until the first
+## afternoon after it starts (Win95Setup.defrag_days, defrag_daypart), or the evening when no afternoon
+## comes;
 ## paused, it stops. Switched off, it keeps its start: it finishes as the computer comes on after the
 ## finish, or else the next boot reopens its window, running; also after End Task on the window, a
 ## Shut Down and a restart, but not after Pause. Its window shows the share of the game's time from the
@@ -96,7 +97,16 @@ func run() -> void:
 	check("Pause stops the run and puts it back at the start", [setup.defragmenting, window.get_node("%Progress").value, window.get_node("%Start").text], [false, 0.0, "Start"])
 	game.start_next_day()
 	window.get_node("%Start").pressed.emit()
-	check("Start runs it again from now", [setup.defragmenting, setup.defrag_started_day, game.defrag_day(setup), window.get_node("%Progress").value], [true, 5, 6, 0.0])
+	check("Start on day 5 in the morning runs it again until that afternoon", [setup.defragmenting, setup.defrag_started_day, game.defrag_day(setup), window.get_node("%Progress").value, window.get_node("%Estimate").text], [true, 5, 5, 0.0, "Estimated time finished: Afternoon today"])
+	game.daypart = GAME.Daypart.MIDDAY
+	window.get_node("%Start").pressed.emit()
+	window.get_node("%Start").pressed.emit()
+	check("paused and started again at midday, it still finishes that afternoon", [setup.defrag_started_daypart, game.defrag_day(setup)], [GAME.Daypart.MIDDAY, 5])
+	game.daypart = GAME.Daypart.AFTERNOON
+	check("and does", [setup.defragmenting, setup.fragmented], [false, false])
+	setup.fragmented = true
+	window.get_node("%Start").pressed.emit()
+	check("started in the afternoon, it runs until the next afternoon", game.defrag_day(setup), 6)
 	window.queue_free()
 	state.queue_free()
 	await process_frame

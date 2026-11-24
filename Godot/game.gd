@@ -232,21 +232,23 @@ func moment() -> float:
 	return moment_of(day_number, daypart)
 
 
-## The day that the Disk Defragmenter run of [param setup] finishes on: the day that it started
-## plus [member Win95Setup.defrag_days].
+## The day that the Disk Defragmenter run of [param setup] finishes on (see [method defrag_finish]).
 func defrag_day(setup: Win95Setup) -> int:
-	return setup.defrag_started_day + setup.defrag_days
+	return floori(defrag_finish(setup))
 
 
-## When the Disk Defragmenter run of [param setup] finishes, as a moment: its [method defrag_day]
-## at its [member Win95Setup.defrag_daypart]. A daypart that isn't one logs an error and finishes
-## at the end of that day.
+## When the Disk Defragmenter run of [param setup] finishes, as a moment: at the
+## [member Win95Setup.defrag_days]th [member Win95Setup.defrag_daypart] after it started, so a run
+## started on day 4 in the afternoon, or on day 5 in the morning, finishes on day 5 in the afternoon.
+## A daypart that isn't one logs an error and finishes at the end of the run's last day.
 func defrag_finish(setup: Win95Setup) -> float:
+	var last_day := setup.defrag_started_day + setup.defrag_days - 1
 	var key := String(setup.defrag_daypart).to_upper()
 	if not Daypart.has(key):
 		push_error("Game.defrag_finish: defrag_daypart '%s' is not a daypart (%s)" % [setup.defrag_daypart, ", ".join(Daypart.keys())])
-		return defrag_day(setup) + 1.0
-	return moment_of(defrag_day(setup), Daypart[key])
+		return last_day + 1.0
+	var finish := moment_of(last_day, Daypart[key])
+	return finish if finish > moment_of(setup.defrag_started_day, setup.defrag_started_daypart as Daypart) else finish + 1.0
 
 
 ## The share of the Disk Defragmenter run of [param setup] that is done by now, 0 to 1: the game's
