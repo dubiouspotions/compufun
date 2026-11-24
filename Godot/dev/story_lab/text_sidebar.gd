@@ -10,7 +10,7 @@ extends VBoxContainer
 signal mood_picked(mood: StringName)
 ## The writer clicked the fact [param flag].
 signal flag_picked(flag: String)
-## The writer pressed Play: the owner shows the line in the game's dialogue box.
+## The writer pressed Play: the owner plays the conversation from the line in the game's dialogue box.
 signal play_pressed
 
 ## The short reference under "How to write it", in plain words. A line that starts with a tab is an
@@ -212,7 +212,7 @@ func _build() -> void:
 	_play = LabUI.button("Play", func() -> void: play_pressed.emit(), &"AccentButton")
 	_play.focus_mode = Control.FOCUS_NONE
 	_play.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	_play.tooltip_text = "Show this line in the game's dialogue box, with its face and voice (Shift+Enter)"
+	_play.tooltip_text = "Play the conversation from this line in the game's dialogue box, choices and all (Shift+Enter)"
 	row.add_child(_play)
 	_above = LabUI.label("", 12, LabUI.DIM)
 	_above.custom_minimum_size.y = 18

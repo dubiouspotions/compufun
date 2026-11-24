@@ -42,12 +42,15 @@ var _status: Label
 ## gone, ready to close. Each holds the flags that the week sets before
 ## it: the days' [member Day.set_flags] and [member Day.close_flags], and the flags of each drop-off
 ## conversation that plays. The flags of a reply depend on the player's choices, so they are left out.
-static func day_presets() -> Dictionary[String, Dictionary]:
+## Made from [param week]; null is the week that plays.
+static func day_presets(week: StoryFiles.Week = null) -> Dictionary[String, Dictionary]:
 	var presets: Dictionary[String, Dictionary] = {}
-	if Game.week == null:
+	if week == null:
+		week = Game.week
+	if week == null:
 		return presets
 	var flags: Dictionary[StringName, int] = {}
-	for day: Day in Game.week.days:
+	for day: Day in week.days:
 		_put_flags(flags, day.set_flags)
 		var start: Dictionary = {"day": day.number, "phase": "CLOSED", "flags": flags.duplicate()}
 		var early: Errand = null
@@ -66,6 +69,14 @@ static func day_presets() -> Dictionary[String, Dictionary]:
 		presets["Day %d, ready to close" % day.number] = {"day": day.number, "arrivals": day.codes().size(), "flags": flags.duplicate()}
 		_put_flags(flags, day.close_flags)
 	return presets
+
+
+## The flags that [param week] has set by the morning of day [param number], as the Days preset
+## "Day N starts" holds them; empty for a day that the week doesn't have.
+static func morning_flags(week: StoryFiles.Week, number: int) -> Dictionary[StringName, int]:
+	var flags: Dictionary[StringName, int] = {}
+	flags.assign(day_presets(week).get("Day %d starts" % number, {}).get("flags", {}))
+	return flags
 
 
 # The first of [param candidates] (each with a Condition in `when`) that may play on day [param number] with [param flags].

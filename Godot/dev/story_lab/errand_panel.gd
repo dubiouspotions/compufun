@@ -11,15 +11,18 @@ signal saved(path: String, text: String)
 ## The unfinished text of the errand file [param path] changed: [param text] is the last good text
 ## with every conversation that doesn't parse yet as the writer has it; "" when none is left.
 signal unfinished_changed(path: String, text: String)
-## The writer asked to see [param line] of [param customer] in the game's dialogue box, under
-## [param conversation]'s voice effect: Shift+Enter or the sidebar's Play in the text view, or a
-## line's Play in the graph. [param line] is null when the cursor has no customer line at or above it.
-signal preview_requested(customer: Customer, line: DialogueLine, conversation: Conversation)
+## The writer asked to play [param conversation] of [param errand] in the game's dialogue box over
+## the Lab (Play in editor): from its start (Play in editor, or the cursor above every customer line;
+## [param from] is null), or from [param from], the customer line at or above the cursor (Shift+Enter
+## or the sidebar's Play in the text view) or a line's Play in the graph. [param errand] is null
+## when none is open. The text view saves first; [method shown_text_parses] says whether it parsed.
+signal play_in_editor_requested(errand: Errand, conversation: Conversation, from: DialogueLine)
 ## The writer asked to remove the errand file [param path].
 signal remove_requested(path: String)
 ## The writer asked to edit the problem [param id] in the Problems section.
 signal edit_problem_requested(id: StringName)
-## The writer asked to play [param errand]'s conversation for [param trigger] in the game.
+## The writer asked to play [param errand]'s conversation for [param trigger] in the game (Play in
+## game).
 signal play_requested(errand: Errand, trigger: Conversation.Trigger)
 ## The writer asked to open the errand file [param path] in story mode ("Full screen").
 signal story_requested(path: String)
@@ -108,6 +111,7 @@ var _sidebar: StoryTextSidebar
 var _graph_view: Control
 var _empty: Control
 var _play: Button
+var _play_here: Button
 var _graph: Node
 var _header: StoryConversationHeader
 var _settle: Timer
@@ -482,7 +486,9 @@ func _show_conversation() -> void:
 		button.disabled = not has
 		button.tooltip_text = why
 	_play.disabled = not has
-	_play.tooltip_text = "Play this conversation in the game; Esc or F4 comes back" if has else why
+	_play.tooltip_text = "Jump the game to this errand and play this conversation there; Esc or F4 comes back" if has else why
+	_play_here.disabled = not has
+	_play_here.tooltip_text = "Play this conversation in the game's dialogue box over the Lab; the game stays as it was" if has else why
 	if has and _view == "Graph":
 		_show_graph()
 
@@ -535,7 +541,7 @@ func _show_graph() -> void:
 			_apply(StoryFormat.write_errand(_errand), true)
 			_keep_unfinished())
 		_graph.connect(&"preview_requested", func(line: DialogueLine) -> void:
-			preview_requested.emit(_errand.customer, line, _shown_conversation()))
+			play_in_editor_requested.emit(_errand, _shown_conversation(), line))
 	if _errand != null and _tab < _errand.conversations.size():
 		_graph.set(&"facts", flags)
 		_graph.call(&"show_conversation", _errand.conversations[_tab], _errand.customer)
@@ -607,17 +613,39 @@ func _on_code_input(event: InputEvent) -> void:
 	if key == null or not key.pressed:
 		return
 	if (key.keycode == KEY_ENTER or key.keycode == KEY_KP_ENTER) and key.shift_pressed:
-		_code.accept_event()  # Shift+Enter previews; it never breaks the line
+		_code.accept_event()  # Shift+Enter plays; it never breaks the line
 		if not key.echo:
-			_preview_at_caret()
+			_play_from_caret()
 		return
 	if key.unicode >= 32 or key.keycode == KEY_BACKSPACE:
 		_offer_completion.call_deferred()
 
 
-func _preview_at_caret() -> void:
+## False while the text of the conversation tab that shows doesn't parse, so it plays only as it
+## last parsed.
+func shown_text_parses() -> bool:
+	return not _pending.has(_tab)
+
+
+func _play_from_caret() -> void:
+	save_now()
+	var conversation := _shown_conversation()
 	var at := _said_at(_code.get_caret_line())
-	preview_requested.emit(_errand.customer if _errand != null else null, at.get("line") as DialogueLine, _shown_conversation())
+	play_in_editor_requested.emit(_errand, conversation, _parsed_line(conversation, at.get("row", -1)) if conversation != null and not at.is_empty() else null)
+
+
+# The line of [param conversation] that customer line [param row] of the text view parsed into: the
+# customer lines are in the text's order, depth first. Its own parse when the text doesn't match.
+func _parsed_line(conversation: Conversation, row: int) -> DialogueLine:
+	var said := 0
+	for at: int in row:
+		if _is_said(at):
+			said += 1
+	var lines := conversation.all_lines()
+	if conversation.pop_up != null:
+		lines.pop_front()
+	var own := StoryFormat.parse_line(_code.get_line(row), _path).value as DialogueLine
+	return lines[said] if said < lines.size() and lines[said].text == own.text else own
 
 
 # The conversation of the tab that shows, as it last parsed; null without one.
@@ -974,10 +1002,13 @@ func _right() -> Control:
 			story_requested.emit(_path))
 	_show_full_screen()
 	bar.add_child(_full_screen)
-	_play = LabUI.button("Play", func() -> void:
+	_play_here = LabUI.button("Play in editor", func() -> void:
+		save_now()
+		play_in_editor_requested.emit(_errand, _shown_conversation(), null), &"AccentButton")
+	bar.add_child(_play_here)
+	_play = LabUI.button("Play in game", func() -> void:
 		save_now()
 		play_requested.emit(_errand, trigger()), &"AccentButton")
-	_play.custom_minimum_size.x = 80
 	bar.add_child(_play)
 	var body := Control.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -1022,7 +1053,7 @@ func _right() -> Control:
 	_sidebar = StoryTextSidebar.new()
 	_sidebar.mood_picked.connect(_set_mood)
 	_sidebar.flag_picked.connect(_insert_flag)
-	_sidebar.play_pressed.connect(_preview_at_caret)
+	_sidebar.play_pressed.connect(_play_from_caret)
 	_text_view.add_child(_sidebar)
 	_graph_view = VBoxContainer.new()
 	_graph_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

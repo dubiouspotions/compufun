@@ -6,7 +6,8 @@ extends GraphEdit
 
 ## The conversation changed in place; the owner writes its story file from it.
 signal edited
-## The writer pressed a line's Play: the owner shows [param line] in the game's dialogue box.
+## The writer pressed a line's Play: the owner plays the conversation from [param line] in the
+## game's dialogue box.
 signal preview_requested(line: DialogueLine)
 
 @export var box_width: float = 280.0
@@ -882,7 +883,7 @@ func _line_row(reply: Reply, index: int) -> Control:
 	words.add_child(_line_effect(line))
 	words.add_child(_line_look(line))
 	row.add_child(words)
-	row.add_child(_icon_button(_play_icon(), "Play this line in the game's dialogue box", func() -> void: preview_requested.emit(line)))
+	row.add_child(_icon_button(_play_icon(), "Play from this line in the game's dialogue box", func() -> void: preview_requested.emit(line)))
 	if not _read_only:
 		row.add_child(_icon_button(_trash_icon(), "Delete line", func() -> void: delete_line(reply, index)))
 	return row

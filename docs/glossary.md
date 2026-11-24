@@ -204,8 +204,11 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Unfinished text**: A writer's text of a story file that doesn't parse yet, kept beside the drafts (`user://story_drafts/unfinished/`, `StoryDrafts.unfinished`) so that a quit doesn't lose it. The game doesn't play it and Send doesn't send it; the Story Lab's text view opens it with its errors, and once it parses it becomes the draft.
 *Avoid:* broken draft, pending text, scratch.
 
-**Line preview**: One customer line shown over the Story Lab in the game's own dialogue box, with its portrait, its typing and its voice (`StoryLinePreview`): Shift+Enter in the text view, or a line's Play. A click, Esc or Shift+Enter closes it.
-*Avoid:* line test, mock dialogue.
+**Play in editor**: The Story Lab plays a conversation in the game's own dialogue box over the Lab, as the game plays it, choices and all, on the flags of the morning of the errand's day, and the paused game stays as it was (`StoryPlayInEditor`). The Play in editor button plays it from its start; Shift+Enter or the sidebar's Play in the text view, and a line's Play in the graph, play it from that line. Esc closes it.
+*Avoid:* line preview, preview, mock dialogue.
+
+**Play in game**: The Story Lab jumps the game to the errand and plays the conversation there (`Game.play_errand`); Esc or F4 goes back to the Lab.
+*Avoid:* Play here.
 
 **Event**: A visit that a customer doesn't walk in for: while their errand's computer is on the counter and not yet done, they pop up from behind the counter and talk (`== event` in the errand's story file, `Game.Visit.EVENT`). It holds the next customer back until it came, and isn't an arrival.
 *Avoid:* jumpscare, special visit, interruption.

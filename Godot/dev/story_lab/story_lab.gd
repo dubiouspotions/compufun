@@ -6,6 +6,8 @@ extends Control
 ## draft (StoryDrafts) that the game plays at once. While the Lab shows, the game is paused.
 
 const CUSTOMERS_DIR: String = "res://customers/"
+## The F2 Days presets, whose morning flags Play in editor plays on.
+const PRESETS := preload("res://ui/debug_presets.gd")
 ## The story check, when the game has one: static missing_links(week) and flag_index(week).
 
 ## The GitHub repo that Send makes the issue in, as owner/name; "" reads git's remote origin.
@@ -71,7 +73,7 @@ var _sign_panel: StorySignPanel
 var _call_outs: StoryCallOutsPanel
 var _sections: ButtonGroup
 var _send_panel: StorySendPanel
-var _preview: StoryLinePreview
+var _editor_play: StoryPlayInEditor
 var _customers: PopupMenu
 var _add_day: int = 0
 
@@ -101,7 +103,7 @@ func _notification(what: int) -> void:
 		if visible:
 			_playing = false
 		elif is_node_ready():
-			_preview.close()
+			_editor_play.close()
 			save_now()
 		_hold(is_visible_in_tree())
 	elif what == NOTIFICATION_WM_CLOSE_REQUEST and is_node_ready():
@@ -142,21 +144,36 @@ func save_now() -> void:
 	_bible.save_now()
 
 
-## Shows [param line] of [param customer] in the game's dialogue box over the Lab, as the game shows
-## it, under [param conversation]'s voice effect; a click, Esc or Shift+Enter closes it. Returns ""
-## or why it can't show, which the status line says.
-func preview_line(customer: Customer, line: DialogueLine, conversation: Conversation) -> String:
-	var reason := "put the cursor on a customer line, or below one" if line == null else _preview.show_line(customer, line, conversation)
-	if reason != "":
-		_say("Nothing to show in the dialogue box: %s." % reason, true)
-		return reason
-	_say("The dialogue box shows the line as the game does. A click, Esc or Shift+Enter closes it.")
-	return ""
+## Plays [param conversation] of [param errand], the open errand's shown one, in the game's dialogue
+## box over the Lab (Play in editor): from its start, or from [param from], one of its lines, through
+## the choices to the end. Conditions see the flags that the week has set by the morning of the
+## errand's day (the F2 Days preset); the game stays as it was. Refuses while the conversation's text
+## doesn't parse. Returns "" or why it can't play, which the status line says.
+func play_in_editor(errand: Errand, conversation: Conversation, from: DialogueLine) -> String:
+	var reason := ""
+	if errand == null:
+		reason = "no errand is open"
+	elif not _errand_panel.shown_text_parses():
+		reason = "the conversation's text doesn't parse yet; fix the marked lines first"
+	else:
+		var day := errand.day_number()
+		var flags := PRESETS.morning_flags(_week, day)
+		reason = _editor_play.play(errand.customer, conversation, from, day, flags)
+		if reason == "":
+			var names: Array = flags.keys()
+			names.sort()
+			_say("Plays %s from %s on day %d's morning flags: %s. A click goes on; Esc stops." % [
+					StoryErrandPanel.TRIGGER_NAMES.get(conversation.trigger, "the conversation").to_lower(),
+					"its start" if from == null else "\"%s\"" % from.text.left(40),
+					day, ", ".join(names) if not names.is_empty() else "none"])
+			return ""
+	_say("Can't play it in the editor: %s." % reason, true)
+	return reason
 
 
-## The preview of a line in the dialogue box (for its state).
-func line_preview() -> StoryLinePreview:
-	return _preview
+## The game's dialogue box over the Lab that Play in editor plays in (for its state).
+func editor_play() -> StoryPlayInEditor:
+	return _editor_play
 
 
 ## Loads the week again from the story files with the drafts over them, and shows it.
@@ -807,7 +824,7 @@ func _build() -> void:
 	_errand_panel = StoryErrandPanel.new()
 	_errand_panel.saved.connect(_store_edit)
 	_errand_panel.unfinished_changed.connect(_store_unfinished)
-	_errand_panel.preview_requested.connect(preview_line)
+	_errand_panel.play_in_editor_requested.connect(play_in_editor)
 	_errand_panel.remove_requested.connect(_remove_errand)
 	_errand_panel.play_requested.connect(play)
 	_errand_panel.edit_problem_requested.connect(open_problem)
@@ -830,8 +847,8 @@ func _build() -> void:
 	_customers = PopupMenu.new()
 	_customers.id_pressed.connect(_add_errand_for)
 	add_child(_customers)
-	_preview = StoryLinePreview.new()
-	add_child(_preview)
+	_editor_play = StoryPlayInEditor.new()
+	add_child(_editor_play)
 
 
 func _top_bar() -> Control:

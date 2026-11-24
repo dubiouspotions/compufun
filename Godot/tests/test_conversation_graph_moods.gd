@@ -1,9 +1,9 @@
 extends "res://tests/test.gd"
 ## The conversation graph's mood picker offers the moods that the customer's person has portraits
-## for, marks those without a voice mood, and sets the line's mood; Play asks for the line's preview.
+## for, marks those without a voice mood, and sets the line's mood; Play asks to play from the line.
 
 const GRAPH := "res://dev/story_lab/conversation_graph.tscn"
-const PLAY := "Play this line in the game's dialogue box"
+const PLAY := "Play from this line in the game's dialogue box"
 const ConversationGraph := preload("res://dev/story_lab/conversation_graph.gd")
 
 var graph: ConversationGraph
@@ -51,7 +51,7 @@ func run() -> void:
 	graph.preview_requested.connect(func(said: DialogueLine) -> void: asked.append(said))
 	var play := _find(graph.box_of(talk), func(node: Node) -> bool: return node is Button and node.get(&"tooltip_text") == PLAY) as Button
 	play.pressed.emit()
-	check("Play asks to show its line in the dialogue box", [asked.size(), asked.has(line)], [1, true])
+	check("Play asks to play from its line in the dialogue box", [asked.size(), asked.has(line)], [1, true])
 	await _check_voice_dropdown(talk, manager)
 
 

@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## The Story Lab's text view: unfinished text that outlives a quit, saving at once, the sidebar
-## (the line's face, the faces, the facts), completion that opens by itself, and the line preview in
-## the game's dialogue box.
+## (the line's face, the faces, the facts) and completion that opens by itself. Its Shift+Enter is in
+## test_story_lab_play_in_editor.gd.
 
 const ERRANDS := "res://story/errands/"
 const SKATER := ERRANDS + "0101_skater_bro.errand"
@@ -10,7 +10,6 @@ const HEADER := "customer: skater_bro\nproblem: dust_overheat\nbrief:\n\tMeet th
 const DROP_OFF := "== drop-off\n(neutral) Yo! Is this the computer repair shop?\n- Welcome to CompuFun!\n\t(happy) Sweet!\n(thinking) So, my computer."
 const PICK_UP := "== pick-up\n(happy) Dude!"
 const BROKEN := "== drop-off\n(neutral) Yo! Is this the computer repair shop?\n- Welcome to CompuFun! [bogus]\n\t(happy) Sweet!\n(thinking) So, my computer."
-const PLAY := "Play this line in the game's dialogue box"
 
 var drafts: StoryDrafts
 var lab: Control  # untyped: StoryLab names the Game autoload, which a test script compiled under -s can't
@@ -44,8 +43,6 @@ func run() -> void:
 	await _the_sidebar_follows_the_cursor()
 	_a_face_sets_the_mood_in_one_undo_step()
 	await _typing_opens_the_completion()
-	await _shift_enter_shows_the_line_in_the_dialogue_box()
-	await _the_graph_play_shows_the_same_preview()
 	lab.queue_free()
 	await process_frame
 
@@ -201,44 +198,6 @@ func _typing_opens_the_completion() -> void:
 	check("it closes when nothing matches", code.get_code_completion_selected_index(), -1)
 	code.text = DROP_OFF
 	panel.save_now()
-
-
-func _shift_enter_shows_the_line_in_the_dialogue_box() -> void:
-	var preview: Control = lab.call("line_preview")
-	code.grab_focus()
-	code.set_caret_line(2)
-	code.set_caret_column(4)
-	var shift_enter := _key(KEY_ENTER, "")
-	shift_enter.shift_pressed = true
-	root.push_input(shift_enter)
-	await process_frame
-	var person: Person = (load("res://customers/skater_bro.tres") as Customer).person
-	var shown := preview.call("shown_line") as DialogueLine
-	var face: TextureRect = preview.find_children("PortraitTexture", "TextureRect", true, false)[0]
-	check("Shift+Enter on a choice shows the line above in the dialogue box", [preview.visible, shown.text if shown != null else "", face.texture], [true, "Yo! Is this the computer repair shop?", person.portraits[&"neutral"]])
-	check("and leaves the text and the cursor as they were", [code.text, code.get_caret_line(), code.get_caret_column()], [DROP_OFF, 2, 4])
-	root.push_input(_key(KEY_ESCAPE, ""))
-	await process_frame
-	check("Esc closes it, and the Lab stays", [preview.visible, lab.visible, code.text], [false, true, DROP_OFF])
-	code.set_caret_line(3)
-	(sidebar.get("_play") as Button).pressed.emit()
-	check("the sidebar's Play shows the same preview", (preview.call("shown_line") as DialogueLine).text if (preview.call("shown_line") as DialogueLine) != null else "", "Sweet!")
-	root.push_input(shift_enter.duplicate() as InputEvent)
-	await process_frame
-	check("Shift+Enter again closes it, without a new line", [preview.visible, code.text], [false, DROP_OFF])
-
-
-func _the_graph_play_shows_the_same_preview() -> void:
-	panel.show_view("Graph")
-	await process_frame
-	var graph: GraphEdit = panel.find_children("*", "GraphEdit", true, false)[0]
-	var talk := panel.errand().conversations[0]
-	var play: Button = graph.call("box_of", talk).find_children("*", "Button", true, false).filter(func(b: Button) -> bool: return b.tooltip_text == PLAY)[0]
-	play.pressed.emit()
-	var preview: Control = lab.call("line_preview")
-	check("the graph's Play shows its line in the same preview", [preview.visible, (preview.call("shown_line") as DialogueLine).text if (preview.call("shown_line") as DialogueLine) != null else ""], [true, talk.lines[0].text])
-	preview.call("close")
-	panel.show_view("Text")
 
 
 func _caret(line: int, column: int) -> void:

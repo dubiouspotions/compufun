@@ -151,9 +151,17 @@ func _unhandled_input(event: InputEvent) -> void:
 func _on_click(event: InputEvent) -> void:
 	if not is_visible_in_tree() or _lines.is_empty():
 		return
-	var click: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
-	if click or event.is_action_pressed(&"ui_accept"):
+	var pressed: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	if pressed or event.is_action_pressed(&"ui_accept"):
 		get_viewport().set_input_as_handled()
+		_advance()
+
+
+## Goes on as a click does while the box shows: the rest of a line that types, else the next line,
+## the choices or the end; choices wait for a pick. Nothing happens while the overlay is hidden or
+## before [method start].
+func click() -> void:
+	if is_visible_in_tree() and not _lines.is_empty():
 		_advance()
 
 
@@ -166,9 +174,11 @@ func _snap(share: float) -> float:
 	return roundf(share / step) * step
 
 
-## Starts [param conversation] of [param customer] at the first line. A null or empty
-## conversation shows the error in the box, so the player can still go on.
-func start(customer: Customer, conversation: Conversation) -> void:
+## Starts [param conversation] of [param customer] at the first line, or shows [param walk], a walk
+## of [param conversation], from where it is (the Story Lab plays from a line, on sandbox flags).
+## Without a walk, a null or empty conversation shows the error in the box, so the player can still
+## go on.
+func start(customer: Customer, conversation: Conversation, walk: ConversationWalk = null) -> void:
 	if customer == null:
 		push_error("DialogueOverlay.start: no customer")
 		return
@@ -178,7 +188,11 @@ func start(customer: Customer, conversation: Conversation) -> void:
 	_pending = []
 	_line = 0
 	_name.text = customer.spoken_name()
-	if conversation == null or conversation.lines.is_empty():
+	if walk != null:
+		_walk = walk
+		_lines = walk.lines()
+		_voiced = true
+	elif conversation == null or conversation.lines.is_empty():
 		var message := ("%s has no conversation for day %d and flags %s" % [customer.resource_path,
 				Game.day_number, Game.flags]) if conversation == null else (
 				"%s: the conversation '%s' has no lines" % [customer.resource_path, conversation.id])
@@ -194,6 +208,7 @@ func start(customer: Customer, conversation: Conversation) -> void:
 	_rise_portrait()
 	if _lines.is_empty():
 		_text.type_out("")
+		_show_portrait(_NEUTRAL)
 		_go_on.call_deferred()  # only leaving lines; deferred out of the Game.changed that started it
 		return
 	_show_line()

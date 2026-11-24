@@ -18,4 +18,4 @@ Said walking out; leaving lines come last.
 Sets facts as its lines start.
 	if skater_cambion
 First under a choice, if and else pick the answer whose facts hold.
-Shift+Enter: the line in the dialogue box. Ctrl+Space: what fits here.
+Shift+Enter: play from this line in the dialogue box. Ctrl+Space: what fits here.
