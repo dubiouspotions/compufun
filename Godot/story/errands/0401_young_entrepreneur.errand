@@ -2,3 +2,23 @@ customer: young_entrepreneur
 problem: email_virus
 brief:
 	As he sets the computer down, its CD tray goes out and in. He says the mouse moves by itself when he dials up with the modem; the player can't test that, he only tells it. Asked more, he admits an email with a "business opportunity" that he answered. The game doesn't push the emails, but this is the first hint to read them.
+
+== drop-off
+(neutral) Hello. New day, new obstacles to overcome on the path to success.
+- Oh, I can see your computer is acting up again.
+- That is not normal behavior.
+(problem) Yeah. I mean, I can't concentrate when the CD tray is going in and out all the time. And every time I connect to the internet the mouse moves around by itself.
+- That sounds really weird. Did you change anything lately?
+(thinking) I didn't change a thing! Except maybe my future. I got this email with an excellent business opportunity so I'm now waiting to hear back from them.
+- Sounds like you will have a brilliant future...
+- Maybe an email virus then...
+(neutral) Well, I trust you to take care of it!
+(irritated01) And as I like to say: Time is money!
+- I know, I know.
+
+== pick-up
+(irritated02) Now let's hope this was the last time I get interrupted on my mission for greatness.
+- Fingers crossed.
+- Just don't click on things you do not know what they are and you'll be fine.
+(happy) Nice chatting with you but I have no time to waste! See you at the after work!
+- ... when is it even?
