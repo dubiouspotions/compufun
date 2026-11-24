@@ -10,7 +10,7 @@ in the same commit as the code. The design, what the parts are and why, is on th
 ```
 Godot/               the Godot project: everything the game loads
   main.tscn          the game: the world viewport, the UI layer, the F9 layer (run/main_scene)
-  export_presets.cfg Web, Windows Desktop, MacOS, Linux; CI exports them by name. iOS (docs/ios.md) exports an Xcode project
+  export_presets.cfg Web, Windows Desktop, MacOS, Linux; CI exports them by name. iOS and iOS Release (docs/ios.md) export an Xcode project
   default_bus_layout.tres  the audio buses: Master; Shop, everything heard from the shop (it pans right while the player is in the storage room), fed by Voice for the customers' voices, Win95, Street (muffled until the door opens) and Room (the shop's reverb); Storage, the storage room's reverb
   game.gd            the Game autoload
   shaders/           psx_world.gdshader (its body in psx_world.gdshaderinc; psx_world_layered.gdshader draws it in the transparent pass, in sorting_offset order), psx_post.gdshader, psx_post_world.tres (the world's post material); pulse_ring.gdshader (the beating ring around a panel screw that can turn)
@@ -50,7 +50,7 @@ Godot/               the Godot project: everything the game loads
   win95/solitaire/   Solitaire: the rules (klondike.gd), the window, the table and the card pictures
   win95/netscape/    Netscape Navigator's pictures (web_browser.tscn is the browser): the logo, the toolbar icons, the splash
   compufun_db/       CompuFunDB, the DOS database on the work computer, its VGA font, and the work computer's boot (a 386)
-  dev/               the Dev menu, the Voice Lab, story.gd (prints the story check), story_week_page.gd (the wiki's "The Week") and perf_probe.gd (what a frame costs, docs/performance.md); only the iOS export carries it, while iOS builds stay team-only
+  dev/               the Dev menu, the Voice Lab, story.gd (prints the story check), story_week_page.gd (the wiki's "The Week") and perf_probe.gd (what a frame costs, docs/performance.md); only the team's iOS export carries it, not iOS Release (the App Store)
   dev/trailer/       the trailers, three cuts of a 1996 TV commercial for CompuFun: trailer.tscn (cheerful), trailer_win95.tscn (more Windows 95), trailer_bleak.tscn (deadpan); docs/trailers.md
   dev/story_lab/     the Story Lab (F4): story_lab.tscn, the week board, the problems (problem_panel.gd), the corruption signs and where the week starts them (sign_panel.gd; sign_starts.gd edits a start that the week board moves), the call-outs (call_outs_panel.gd), the drafts (story_drafts.gd), the issue that Send makes
   tests/             headless tests of the Game API: test.gd (the base), test_*.gd, run.gd (runs them all)

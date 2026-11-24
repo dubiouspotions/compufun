@@ -22,14 +22,32 @@ appDataContainer` fetches.
 `ios/` holds the Xcode project's text, so that Xcode Cloud finds the project and its scheme; the
 export fills in the rest (`ios/.gitignore`). Before each build, `ios/ci_scripts/ci_post_clone.sh`
 pulls the LFS files, downloads Godot and its iOS template, writes the build info, takes the version
-from the release tag (`v0.9.3` -> 0.9.3), and exports a debug build, so testers keep the debug tools.
-Xcode Cloud sets the build number and signs. Re-export into `ios/` when the preset changes, and
-commit what changed.
+from the tag and exports. The tag picks the build:
 
-To set up the workflow (only Xcode's wizard can create the product): open
-`ios/CompuFun.xcodeproj`, Product > Xcode Cloud > Create Workflow, connect the dubiouspotions GitHub
-organisation, start on tag changes matching `v*`, action Archive (iOS) with TestFlight (Internal
-Testing Only), and post-action TestFlight Internal Testing to the group Dubious Potions.
+- **`v0.9.3`: the team's TestFlight.** A debug export of the `iOS` preset, version 0.9.3, with the
+  debug strip, F2, F9 and `dev/` (the Dev menu, the Voice Lab, the Story Lab).
+- **`appstore-v1.0.0`: the App Store.** A release export of the `iOS Release` preset, version 1.0.0.
+  The preset leaves out `dev/`, `tests/` and the story bible, and a release build has no debug
+  strip, F2, F9 or Skip (`OS.is_debug_build()`).
+
+The two presets differ only in those files; `tests/test_ios_presets.gd` fails when they drift, so
+change both together. Xcode Cloud sets the build number and signs. Re-export into `ios/` when the
+preset changes, and commit what changed.
+
+To set up the workflows (only Xcode's GUI can create them): open `ios/CompuFun.xcodeproj`,
+Product > Xcode Cloud > Create Workflow, connect the dubiouspotions GitHub organisation, start on
+tag changes matching `v*`, action Archive (iOS) with TestFlight (Internal Testing Only), and
+post-action TestFlight Internal Testing to the group Dubious Potions. The App Store workflow is the
+same, but starts on tags beginning with `appstore-v` and archives for TestFlight and App Store.
+
+To cut an App Store build, tag the commit and push the tag:
+
+```sh
+git tag appstore-v1.0.0 && git push origin appstore-v1.0.0
+```
+
+The build lands in App Store Connect under version 1.0, next to any team build of the same version.
+Submit the one from the App Store workflow: a team build carries the debug tools.
 
 ## Build for the simulator
 
@@ -50,6 +68,9 @@ xcodebuild -project ../ios/CompuFun.xcodeproj -scheme CompuFun -sdk iphonesimula
 ```
 
 Export outside `Godot/`: Godot imports whatever lies inside the project, Xcode's output included.
+
+For the App Store build, build the template with `target=template_release`, export with
+`--export-release "iOS Release"` and copy `libgodot.ios.template_release.arm64.simulator.a`.
 
 - **The simulator can't judge speed.** Godot builds simulator templates without Metal or Vulkan
   (`platform/ios/detect.py`), and the simulator runs OpenGL ES in software on the CPU
@@ -128,7 +149,6 @@ and run with `--resolution 2034x1398`, `2622x1206` or `2360x1640`.
 | Hover: hotspot outlines show only under the mouse, which is how the player finds things. Pulse them on a tap that hits nothing, or always | 0.5 to 1 day |
 | Small fixes: the printout trash's `is_hovered()` (`carried_printout.gd:99`) | 0.5 day |
 | Phone Screen View: the Win95 desktop is too small to read or tap on a phone (below) | 2 to 4 days, design |
-| CI job: export, archive, TestFlight upload | 1 day |
 
 How big the Win95 desktop shows (the screen buffer at 2x in the 16:9 frame; Apple asks for 44 pt
 touch targets and about 11 pt text):
@@ -155,7 +175,7 @@ assets replaced.
 - **The debug strip:** in a debug build on touch, buttons in the top-left corner send F2, F3, F4,
   F9 and Cmd+N (`ui/touch/debug_strip.gd`). F3 and F4 show only where `dev/` is in the build.
 - **The iOS preset carries `dev/`**, so its builds have the Dev menu, the Voice Lab and the Story
-  Lab. Keep iOS builds within the team.
+  Lab. Keep its builds within the team; the App Store gets the `iOS Release` preset ("Xcode Cloud").
 - **The token goes in by hand.** The F2 GitHub tab saves the issues token and the reporter name in
   `user://github.cfg` on the device, and shows only the token's last 4 characters. Paste copies the
   token from the clipboard. Check reads the repo with it and shows the HTTP status and GitHub's
