@@ -1,7 +1,7 @@
 extends CorruptionSign
-## Clippy is gone from every computer: Word and Excel never show the Office Assistant, Help fails as
-## Office 97 does without him, and every WordPad shows his empty frame, as a computer with the
-## NoClippy problem does (wiki: In-world - Corruption Signs).
+## Clippy is gone from every computer: the Office Assistant's window in Word and Excel comes, talks
+## and answers as before, but shows no paper clip, and every WordPad shows his empty frame, as a
+## computer with the NoClippy problem does (wiki: In-world - Corruption Signs).
 
 const _WORDPAD := preload("res://win95/wordpad.gd")
 const _ASSISTANT := preload("res://win95/office/assistant/assistant.gd")

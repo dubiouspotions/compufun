@@ -2,7 +2,7 @@ extends "res://tests/test.gd"
 ## The Office Assistant (win95/office/assistant/) in Word and Excel: he comes in and welcomes the player once
 ## per computer, offers help with a new letter that starts with "Dear", answers Help, shows a tip from
 ## tips.txt, keeps his options, hides until Help calls him back, and once corruption/no_clippy has
-## taken him he stays away and Help fails as Office 97 does without him.
+## taken him his window, balloons and menu work as before with no paper clip in it.
 
 const WORD := "res://win95/office/word.tscn"
 const EXCEL := "res://win95/office/excel.tscn"
@@ -90,26 +90,37 @@ func run() -> void:
 	check("until Help calls him back", [second_helper.is_showing(), second_helper.balloon() != null], [true, true])
 	second.close()
 
+	var clip: Control = helper.get_node("%Clip")
+	check("before the sign, the paper clip shows", clip.visible, true)
 	var sign: Node = load("res://corruption/no_clippy.tscn").instantiate()
 	root.add_child(sign)
 	sign.call(&"_apply", 1)
-	check("no_clippy takes him from the open Word", helper.is_showing(), false)
+	check("no_clippy takes the paper clip from the open Word", clip.visible, false)
 	word.help_requested.emit()
-	var box := _window(desktop, "message_box.tscn")
-	check("Help then falls back on Windows Help", [box.get_node("%TitleBar").title, box.get_node("%Text").text] if box != null else [],
-			["Windows Help", "Cannot find the wdmain8.hlp file. Do you want to try to find this file yourself?"])
-	for button: Button in box.get_node("%Buttons").get_children():
-		if button.text == "No":
-			button.pressed.emit()
-	await process_frame
-	box = _window(desktop, "message_box.tscn")
-	check("which can't find Word's Help file", box.get_node("%Text").text if box != null else "",
-			"Cannot find the wdmain8.hlp Help file. Check to see that the file exists on your disk. If it doesn't, you need to reinstall it.")
+	await _seconds(1.0)
+	balloon = helper.balloon()
+	check("Help brings his window back, empty", [helper.is_showing(), clip.visible], [true, false])
+	check("and it answers", balloon.text().begins_with("What would you like to do?") if balloon != null else false, true)
+	balloon.press("Tips")
+	balloon = helper.balloon()
+	check("and shows tips", _ASSISTANT.TIP_OPENERS.any(func(opener: String) -> bool: return balloon.text().begins_with(opener)), true)
+	balloon.press("Close")
+	helper.call(&"_open_menu", Vector2(600, 440))
+	check("his right-click menu opens", (helper.get(&"_menu") as Window).visible, true)
+	(helper.get(&"_menu") as Window).hide()
+	helper.call(&"_on_menu_chosen", &"animate")
+	await _seconds(2.0)
+	check("Animate! leaves the frame empty", clip.visible, false)
+	helper.call(&"_on_menu_chosen", &"options")
+	dialog = _window(desktop, "assistant_options.tscn")
+	check("and Options opens", dialog != null, true)
+	(dialog.get_node("%Ok") as Button).pressed.emit()
 	var later: OfficeWindow = desktop.open(load(WORD), false)
-	await _seconds(helper.arrive_delay + 0.5)
-	check("and he never comes to a Word opened after", (later.get_node("%AssistantLayer").get_child(0) as Control).call(&"is_showing"), false)
+	var later_helper: Control = later.get_node("%AssistantLayer").get_child(0)
+	await _seconds(helper.arrive_delay + 1.0)
+	check("a Word opened after shows his window, empty", [later_helper.is_showing(), (later_helper.get_node("%Clip") as Control).visible], [true, false])
 	sign.call(&"_apply", 0)
-	check("the sign gives him back when it ends", root.get_meta(_WORDPAD.ASSISTANT_TAKEN_META, false), false)
+	check("the sign gives him back when it ends", [root.get_meta(_WORDPAD.ASSISTANT_TAKEN_META, false), clip.visible], [false, true])
 	sign.queue_free()
 	desktop.queue_free()
 	await process_frame

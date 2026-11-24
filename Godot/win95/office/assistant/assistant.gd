@@ -3,8 +3,8 @@ extends Control
 ## 97 app (OfficeWindow.assistant). He comes in soon after the app opens, welcomes the player once per
 ## computer, moves now and then, lights his bulb with a tip from tips.txt, offers help with a letter
 ## that starts with "Dear", answers Help, and hides from his right-click menu or his X. Once Cambion
-## has taken him (corruption/no_clippy) he never comes, and Help fails as Office 97 does without
-## him. docs/win95-reference.md, "Office Assistant", has what the reference shows.
+## has taken him (corruption/no_clippy) his window, balloons and menu work as before, but the paper
+## clip never shows in it. docs/win95-reference.md, "Office Assistant", has what the reference shows.
 
 ## The group of every assistant; corruption/no_clippy.gd calls _sync_assistant on it.
 const GROUP: StringName = &"win95_office_assistants"
@@ -23,11 +23,6 @@ const ANIMATIONS: Dictionary[StringName, Array] = {
 }
 ## The animations that he plays now and then by himself.
 const IDLE: Array[StringName] = [&"Blink", &"Blink", &"LookDown", &"LookAround", &"Turn"]
-## The file that Help looks for once the assistant is gone, by app; this install has no Help.
-const HELP_FILES: Dictionary[String, String] = {
-	"Microsoft Word": "wdmain8.hlp",
-	"Microsoft Excel": "C:\\PROGRAM FILES\\MICROSOFT OFFICE\\OFFICE\\XLMAIN8.HLP",
-}
 ## What the tip balloon says before the tip; Office 97 picks one.
 const TIP_OPENERS: Array[String] = ["Check out today's tip:", "Tip of the day:", "Today's tip is:"]
 ## His options, as the Options tab names them, with Office 97's defaults. Only tip_at_startup (and
@@ -41,12 +36,9 @@ const OPTIONS: Dictionary[StringName, bool] = {
 
 const _WORDPAD := preload("res://win95/wordpad.gd")
 const _BALLOON := preload("res://win95/office/assistant/balloon.gd")
-const _MESSAGE := preload("res://win95/message_box.tscn")
 const _OPTIONS_DIALOG := preload("res://win95/office/assistant/assistant_options.tscn")
 const _BULB_LIT := preload("res://win95/office/assistant/bulb_lit.png")
 const _BULB_UNLIT := preload("res://win95/office/assistant/bulb_unlit.png")
-const _QUESTION := preload("res://win95/theme/icons_extracted/message_question_32.png")
-const _INFORMATION := preload("res://win95/theme/icons_extracted/message_info_32.png")
 const _POSE := "res://win95/office/assistant/clippy_%s.png"
 const _MEMORY_META: StringName = &"office_assistant"
 const _LETTER := "^\\s*Dear[\\s,:]"
@@ -83,26 +75,27 @@ func _ready() -> void:
 	%Frame.gui_input.connect(_on_frame_input)
 	%Bar.gui_input.connect(_on_bar_input)
 	resized.connect(_place)
+	_sync_assistant()
 
 
-## Joins [param app]: listens to its Help and its edits, and comes in unless he is hidden or gone.
+## Joins [param app]: listens to its Help and its edits, and comes in unless he is hidden.
 func attach(app: OfficeWindow) -> void:
 	window = app
 	window.help_requested.connect(_on_help)
 	window.document_edited.connect(_on_edited)
-	if _gone() or _memory()[&"hidden"]:
+	if _memory()[&"hidden"]:
 		return
 	var arrival := Timer.new()
 	arrival.one_shot = true
 	arrival.timeout.connect(func() -> void:
 		arrival.queue_free()
-		if not _gone() and not %Frame.visible:
+		if not %Frame.visible:
 			_arrive(_greet))
 	add_child(arrival)
 	arrival.start(arrive_delay)
 
 
-## True while he is on screen.
+## True while his window is on screen, with or without the paper clip in it.
 func is_showing() -> bool:
 	return %Frame.visible
 
@@ -183,18 +176,7 @@ func reset_tips() -> void:
 
 
 func _sync_assistant() -> void:
-	if _gone():
-		_close_balloon()
-		if _menu != null:
-			_menu.hide()
-		if _animation != null:
-			_animation.kill()
-		%Frame.hide()
-		_idle.stop()
-
-
-func _gone() -> bool:
-	return is_inside_tree() and get_tree().root.get_meta(_WORDPAD.ASSISTANT_TAKEN_META, false)
+	%Clip.visible = not get_tree().root.get_meta(_WORDPAD.ASSISTANT_TAKEN_META, false)
 
 
 # What he remembers on this computer: kept on the desktop, so every Office app shares it.
@@ -346,9 +328,6 @@ func _on_picked(id: StringName) -> void:
 
 
 func _on_help() -> void:
-	if _gone():
-		_help_without_assistant()
-		return
 	_memory()[&"hidden"] = false
 	if %Frame.visible:
 		_offer_help()
@@ -356,34 +335,9 @@ func _on_help() -> void:
 		_arrive(_offer_help)
 
 
-# Office 97 without its assistant falls back on Windows Help, which can't find the app's Help file.
-func _help_without_assistant() -> void:
-	var help_file: String = HELP_FILES.get(window.app_title(), "wdmain8.hlp")
-	var box := _message_box()
-	if box == null:
-		return
-	var answers: Array[String] = ["Yes", "No"]
-	box.ask("Windows Help", "Cannot find the %s file. Do you want to try to find this file yourself?" % help_file,
-			answers, _QUESTION)
-	box.answered.connect(func(_answer: String) -> void:
-		var told := _message_box()
-		if told != null:
-			told.inform("Windows Help", "Cannot find the %s Help file. Check to see that the file exists on your disk. If it doesn't, you need to reinstall it." % help_file, _INFORMATION))
-
-
-func _message_box() -> Node:
-	var desktop := window.get_parent() as Win95Desktop
-	if desktop == null:
-		push_error("Office Assistant: %s is not on a Win95Desktop, so Help has nowhere to show its message" % window.app_title())
-		return null
-	var box: Node = desktop.open(_MESSAGE, false)
-	box.closed.connect(box.queue_free)
-	return box
-
-
 # Only in a new document: a letter that the player opens and edits is no news to him.
 func _on_edited() -> void:
-	if _letter_offered or _gone() or not %Frame.visible or window.file != null:
+	if _letter_offered or not %Frame.visible or window.file != null:
 		return
 	if _letter.search(window.document_text()) != null:
 		_offer_letter()

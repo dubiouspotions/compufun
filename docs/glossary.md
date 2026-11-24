@@ -286,7 +286,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Office frame**: The window that every Office 97 app on a customer's computer shares (`win95/office/office_window.tscn`): the title, Office's File menu, the Standard and Formatting toolbars, the status bar and the Office Assistant's layer. Word and Excel are scenes that inherit it.
 *Avoid:* Office shell, Office window, chrome.
 
-**Office Assistant**: The paper clip with eyes in the corner of an Office app (`win95/office/assistant/`), Office 97's Clippit, his frames cut from screenshots of Office 97: he welcomes, offers help with a letter, shows tips and answers Help. The story calls him Clippy; from day 3 Cambion has taken him (`corruption/no_clippy`), and Help fails.
+**Office Assistant**: The paper clip with eyes in the corner of an Office app (`win95/office/assistant/`), Office 97's Clippit, his frames cut from screenshots of Office 97: he welcomes, offers help with a letter, shows tips and answers Help. The story calls him Clippy; from day 3 Cambion has taken him (`corruption/no_clippy`): his window still comes and talks, but it is empty.
 *Avoid:* Clippit (except in his own Gallery), helper, paperclip.
 
 **Control Panel**: The Win95 folder that lists the applets of every `.CPL` file in `C:\WINDOWS\SYSTEM` of the running copy; Fonts and Printers are applets of MAIN.CPL too. It opens from My Computer and from Start > Settings.
