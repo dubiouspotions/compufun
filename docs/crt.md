@@ -6,6 +6,7 @@ bench screen (the Screen View) and the work computer (CompuFunDB).
 | Part | What it does |
 | --- | --- |
 | `shaders/crt.gdshader` | The CRT look of a close-up: curve, scanlines, mask, glow, convergence, focus, ghosting, noise, glass reflection, colour. |
+| `shaders/crt_glow.gdshader` | The close-up's glow, once per buffer pixel, into a viewport that `CrtScreen` makes beside the buffer. |
 | `shaders/crt_world.gdshader` | A 3D monitor's screen: the same curve and light, without the mask and scanlines. |
 | `shaders/psx.gdshaderinc` | The PSX dither and colour cut, shared by `psx_post` and the close-up's glass border. |
 | `shaders/crt.gdshaderinc` | What both share: the curve (`crt_bend`), the tube's face, the tube's state and the software cursor. |
@@ -87,7 +88,10 @@ running computer is connected; CompuFunDB: always):
   at 2 screen pixels per line beat into moire bands. From 2.5x (a Retina laptop shows about 3.5x)
   they follow the picture's rows with a smooth profile (`picture_lines`). In between they fade out.
 - **Sharp bilinear sampling.** At `softness` 0 and 2x the picture is pixel-exact; where the curve
-  stretches it, only the pixel edges blend.
+  stretches it, only the pixel edges blend. The texture unit does the blend in one read, so the
+  `Screen` node's `texture_filter` must stay Linear: the Compatibility renderer takes a sampler's
+  filter from the node, not from the uniform's hint. Under the cursor the shader blends the four
+  texels itself, because it draws the cursor into each texel.
 - **The glass around the picture is drawn like the world.** Outside the lit picture, the close-up
   draws the glass at the centre of each world-buffer pixel (`world_pixel`), with `psx_post`'s
   dither and colour cut (`psx.gdshaderinc`), so its rounded corners step like the 3D bezel beside
@@ -112,5 +116,12 @@ running computer is connected; CompuFunDB: always):
   writes its own alpha would pop the overlay off at the end of the zoom.
 - **Functions don't take `TEXTURE`.** A headless compile, as in CI's export, rejects it; the
   shaders read the buffer through their `screen_texture` uniform.
-- **Cost:** one pass at the Screen View's size, 4 texel fetches per sample (12 with convergence)
-  plus 12 for the glow and 1 for the ghost.
+- **The glow is rendered once per buffer pixel.** `crt_glow.gdshader` averages 12 texels of a disc
+  around each of the buffer's 640 x 480 pixels into a viewport that `CrtScreen` makes; the look
+  reads it with one filtered read. A glow worked out for every window pixel cost four times as many
+  reads in 1080p and twelve times on a Retina screen. The glow viewport renders after the buffer in
+  the same frame, because it enters the tree after it at the same depth, so the cursor's glow
+  never trails. It takes `glow_radius` from the look when the screen starts.
+- **Cost:** one pass at the Screen View's size, one texel read per sample (three with
+  convergence), one for the glow and one for the ghost; plus the glow's pass, 12 reads per buffer
+  pixel. On an M1 in 1080p, the look takes about 1.2 ms of GPU per frame (docs/performance.md).
