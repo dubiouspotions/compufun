@@ -1,0 +1,29 @@
+# Her daughter Lily's computer, before day 2 (Saturday, June 1, 1996). Mr. Nibbles the hamster is
+# missing, and the computer has started to smell.
+set palette: res://win95/theme/schemes/lilac.tres
+
+file Desktop\MR NIBBLES.TXT
+	icon: res://win95/theme/icons/document_text_32.png
+	modified: Friday, May 31, 1996 7:12:40 PM
+	contents:
+		MR. NIBBLES' DIARY
+		by Lily, age 9
+
+		Monday: Mr. Nibbles ran in his wheel 100 times. I counted.
+		Tuesday: Mr. Nibbles ate a sunflower seed AND a raisin.
+		Wednesday: Mr. Nibbles is missing!!!! Mom says he will turn up.
+		Thursday: Still missing. Mom made a poster. The computer smells funny.
+		Friday: Mom says we take the computer to the shop tomorrow.
+
+mail
+	from: Dad <p.anderson@aol.com>
+	to: Lily <lily.a@hotmail.com>
+	subject: Hi pumpkin
+	sent: 1996-05-30 20:15
+	read: true
+	body:
+		Hi pumpkin,
+
+		I'll call you on Sunday. I'm sure Mr. Nibbles is hiding somewhere warm.
+
+		Dad

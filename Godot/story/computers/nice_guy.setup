@@ -1,0 +1,54 @@
+# Matthew Williams, before day 5 (Tuesday, June 4, 1996). Plants, rain, and his mother's cactus.
+set palette: res://win95/theme/schemes/spruce.tres
+set wallpaper: res://win95/wallpapers/forest.png
+
+file Desktop\plants.txt
+	icon: res://win95/theme/icons/document_text_32.png
+	modified: Sunday, June 2, 1996 10:31:17 AM
+	contents:
+		PLANTS - watering
+
+		Monstera (living room)   Sundays
+		Fern (bathroom)          when it droops
+		Basil x3 (kitchen)       every day. It's basil.
+		Tomatoes (balcony)       every morning, unless it rains
+		Cactus from Mom          never. Mom says never.
+
+file C:\My Documents\letter to Mom.txt
+	icon: res://win95/theme/icons/document_text_32.png
+	modified: Sunday, June 2, 1996 11:02:45 AM
+	contents:
+		Dear Mom,
+
+		It has rained all week, so the tomatoes are happy and so am I.
+
+		The cactus is doing great. I have left it alone, as instructed.
+
+		Love,
+		Matt
+
+mail
+	from: Mom <joan.williams@yahoo.ca>
+	to: Matthew Williams <mattwill@yahoo.ca>
+	subject: the cactus
+	sent: 1996-06-01 09:12
+	read: true
+	body:
+		Matthew,
+
+		Don't water the cactus.
+
+		Love,
+		Mom
+
+mail
+	from: Matthew Williams <mattwill@yahoo.ca>
+	to: Mom <joan.williams@yahoo.ca>
+	subject: Re: the cactus
+	sent: 1996-06-01 09:40
+	folder: sent
+	read: true
+	body:
+		I haven't, Mom. I promise.
+
+		Matt

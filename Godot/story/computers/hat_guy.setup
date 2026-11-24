@@ -1,0 +1,43 @@
+# Jose Garcia, before day 3 (Sunday, June 2, 1996). His own tips foreshadow days 3, 5 and 6.
+set palette: res://win95/theme/schemes/desert.tres
+set wallpaper: res://people/hat_guy/portrait_happy.png
+
+file Desktop\TIPS.TXT
+	icon: res://win95/theme/icons/document_text_32.png
+	modified: Tuesday, May 28, 1996 9:05:33 PM
+	contents:
+		JOSE'S COMPUTER TIPS
+		(for cousin Rafa, who keeps calling me)
+
+		1. Long program names slow Windows down. Shorten them.
+		2. ".EXE" is decoration. Windows knows a program when it sees one.
+		3. When a box pops up, click it away. That's just Windows talking.
+		4. More parts, more heat. Take out what you don't need.
+		5. Wear a hat when you work on a computer. Static.
+
+mail
+	from: Rafa <rafa_g@hotmail.com>
+	to: Jose Garcia <big_fish@yahoo.com>
+	subject: help!!
+	sent: 1996-05-30 19:44
+	read: true
+	body:
+		Jose,
+
+		I did tip 2 and now my computer starts but every program is gone. Can you come over?
+
+		Rafa
+
+mail
+	from: Jose Garcia <big_fish@yahoo.com>
+	to: Rafa <rafa_g@hotmail.com>
+	subject: Re: help!!
+	sent: 1996-05-30 20:02
+	folder: sent
+	read: true
+	body:
+		Rafa,
+
+		You did it wrong. Read the tips again, slowly. Then call me.
+
+		Jose
