@@ -1,7 +1,8 @@
 extends "res://tests/test.gd"
-## The software problems: Noimages breaks and fixes every program's file name, a defrag finishes overnight
-## only while the computer stays on, an overheating computer hangs and reboots, and apply_fix undoes the
-## break of every software problem in the week, on the computer that brings it.
+## The software problems: Noimages breaks and fixes the file names of NOTEPAD, WORDPAD, PBRUSH and
+## CALC and leaves the other programs alone, a defrag finishes overnight only while the computer stays
+## on, an overheating computer hangs and reboots, and apply_fix undoes the break of every software
+## problem in the week, on the computer that brings it.
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run time: it names the Game autoload
 
@@ -15,8 +16,10 @@ func run() -> void:
 		exes.append(file(each + ".EXE"))
 	setup.drive_c = [folder("WINDOWS", exes)]
 	noimages.software_check.apply_break(setup)
-	check("Noimages takes .EXE off every program", [setup.file_at("C:\\WINDOWS\\PBRUSH.EXE"), setup.file_at("C:\\WINDOWS\\NOTEPAD") != null], [null, true])
-	for each: String in programs.slice(1):
+	var stripped := programs.filter(func(each: String) -> bool: return setup.file_at("C:\\WINDOWS\\" + each) != null)
+	check("Noimages takes .EXE off exactly four programs", stripped, ["NOTEPAD", "WORDPAD", "PBRUSH", "CALC"])
+	check("the others keep it", programs.slice(4).all(func(each: String) -> bool: return setup.file_at("C:\\WINDOWS\\%s.EXE" % each) != null), true)
+	for each: String in stripped.slice(1):
 		setup.file_at("C:\\WINDOWS\\" + each).name = each + ".EXE"
 	check("one program still without .EXE: not fixed", noimages.software_check.is_fixed(setup), false)
 	setup.file_at("C:\\WINDOWS\\NOTEPAD").name = "NOTEPAD.EXE"

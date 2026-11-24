@@ -25,34 +25,9 @@ script = ExtResource("file_check")
 path = "C:\\WINDOWS\\CALC.EXE"
 broken_name = "CALC"
 
-[sub_resource type="Resource" id="Resource_r1flu"]
-script = ExtResource("file_check")
-path = "C:\\WINDOWS\\EXCHNG32.EXE"
-broken_name = "EXCHNG32"
-
-[sub_resource type="Resource" id="Resource_m52ss"]
-script = ExtResource("file_check")
-path = "C:\\WINDOWS\\SNDVOL32.EXE"
-broken_name = "SNDVOL32"
-
-[sub_resource type="Resource" id="Resource_y4p5y"]
-script = ExtResource("file_check")
-path = "C:\\WINDOWS\\DEFRAG.EXE"
-broken_name = "DEFRAG"
-
-[sub_resource type="Resource" id="Resource_rjski"]
-script = ExtResource("file_check")
-path = "C:\\WINDOWS\\SOL.EXE"
-broken_name = "SOL"
-
-[sub_resource type="Resource" id="Resource_4uoyp"]
-script = ExtResource("file_check")
-path = "C:\\WINDOWS\\MPLAYER.EXE"
-broken_name = "MPLAYER"
-
 [sub_resource type="Resource" id="Resource_26jf0"]
 script = ExtResource("4_nnbs1")
-checks = Array[ExtResource("2_vf5b8")]([SubResource("Resource_25qj5"), SubResource("Resource_xbcot"), SubResource("Resource_8bvmm"), SubResource("Resource_wpt2c"), SubResource("Resource_r1flu"), SubResource("Resource_m52ss"), SubResource("Resource_y4p5y"), SubResource("Resource_rjski"), SubResource("Resource_4uoyp")])
+checks = Array[ExtResource("2_vf5b8")]([SubResource("Resource_25qj5"), SubResource("Resource_xbcot"), SubResource("Resource_8bvmm"), SubResource("Resource_wpt2c")])
 
 [resource]
 script = ExtResource("problem")
