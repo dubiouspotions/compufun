@@ -62,6 +62,8 @@ ffmpeg -i /tmp/clip.avi -vf scale=1280:-2 -c:v libx264 -pix_fmt yuv420p -crf 20 
 Movie Maker renders every frame at the fixed rate, however slowly, so the clip never stutters.
 Delete the script afterwards: `run.gd` runs only `test_*.gd`, but it should not be committed.
 
+**The trailers** are recorded the same way, by one command per cut: see [trailers.md](trailers.md).
+
 ## Tests
 
 `Godot/tests/` holds headless tests that play the game through the `Game` API and check its state.

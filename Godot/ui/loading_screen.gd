@@ -9,6 +9,10 @@ extends CanvasLayer
 ## enters the tree.
 @export_file("*.tscn") var game_scene: String = "res://main.tscn"
 
+## Off, the screen loads no game: the jingle plays from the first frame, the logo and the byline draw
+## in, and the screen stays. For a trailer's end card.
+@export var reveal_game: bool = true
+
 ## When the ink reaches each part of the logo, in step with the jingle's sung syllables: x is the
 ## seconds into the jingle, y how far the ink has drawn in (0 to 1, about the share of the logo's
 ## width). "Com" is sung from 0.10 s, "pu" from 0.77 s and "Fun" from 1.35 s to 2.15 s; in the logo,
@@ -76,6 +80,8 @@ func _ready() -> void:
 	if Game.week == null:
 		_fail("the story files have errors:\n" + "\n".join(Game.story_errors))
 		return
+	if not reveal_game:
+		return
 	var err := ResourceLoader.load_threaded_request(game_scene)
 	if err != OK:
 		_fail("cannot start to load %s: %s" % [game_scene, error_string(err)])
@@ -89,6 +95,13 @@ func _process(delta: float) -> void:
 		return
 	var progress: Array = []
 	var drawn_in: float = draw_keys[draw_keys.size() - 1].x if not draw_keys.is_empty() else 0.0
+	if not reveal_game:
+		if _since_jingle < 0.0:
+			_since_jingle = 0.0
+			%Jingle.play()
+		if _draw() >= drawn_in + byline_after_seconds and not _byline_shown:
+			_show_byline()
+		return
 	match ResourceLoader.load_threaded_get_status(game_scene, progress):
 		ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 			_logo.set_shader_parameter("outline_progress", progress[0] if not progress.is_empty() else 0.0)

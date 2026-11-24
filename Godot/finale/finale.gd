@@ -492,7 +492,7 @@ func _add_cards(box: VBoxContainer, people: Array[Person], columns: int, height_
 		var person := people[index]
 		var card := CREDIT.instantiate() as Control
 		card.custom_minimum_size.x = card_width
-		var cut := _cut_to_person(person.portraits[&"neutral"])
+		var cut := cut_to_person(person.portraits[&"neutral"])
 		var portrait := card.get_node("%Portrait") as TextureRect
 		portrait.texture = cut
 		portrait.custom_minimum_size = (cut.get_size() * minf(cell.x / cut.get_width(), cell.y / cut.get_height())).round()
@@ -504,8 +504,8 @@ func _add_cards(box: VBoxContainer, people: Array[Person], columns: int, height_
 		row.add_child(card)
 
 
-# The portrait cut to the person in it: the pictures have wide transparent margins.
-static func _cut_to_person(portrait: Texture2D) -> Texture2D:
+## The portrait cut to the person in it: the pictures have wide transparent margins. The trailers use it too.
+static func cut_to_person(portrait: Texture2D) -> Texture2D:
 	var image := portrait.get_image()
 	if image == null:
 		push_error("Finale: cannot read the portrait %s" % portrait.resource_path)
