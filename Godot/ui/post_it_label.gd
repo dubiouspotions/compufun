@@ -3,7 +3,8 @@ extends Control
 ## The post-it that the player reads in the Workview, written in sharp UI text over the 3D paper (a
 ## PostIt3D with text_3d off) and following it as the camera moves: the perceived issue; "Needs
 ## testing" next to the 3D exclamation mark while the computer is fixed but not tested; then the
-## prompt to call the customer next to the 3D check.
+## prompt to call the customer next to the 3D check; once a call about it rang out, "Failed to
+## pickup" next to the 3D X.
 
 # The paper's width in pixels at which the lines break, once per text: large, so that whole font
 # sizes don't move a break. Every size shows those lines, and only the font size changes.
@@ -29,6 +30,8 @@ var job: Job:
 @onready var _pickup_text: String = _pickup.text  # before it is broken into lines
 @onready var _testing: Label = %Testing
 @onready var _testing_text: String = _testing.text
+@onready var _failed: Label = %Failed
+@onready var _failed_text: String = _failed.text
 
 
 func _ready() -> void:
@@ -87,6 +90,7 @@ func _break_lines(issue: String) -> void:
 	_issue.text = issue
 	_pickup.text = _pickup_text
 	_testing.text = _testing_text
+	_failed.text = _failed_text
 	var paper := Vector2(LAYOUT_WIDTH, LAYOUT_WIDTH)
 	var font_size := _largest_fitting(paper, true, roundi(LAYOUT_WIDTH * font_fraction))
 	for label: Label in _labels():
@@ -102,9 +106,11 @@ func _break_lines(issue: String) -> void:
 
 func _sync() -> void:
 	_break_lines(job.perceived_issue() if job != null else "")
-	_pickup.visible = job != null and job.done
-	_testing.visible = job != null and job.fixed and not job.tested
+	var failed := job != null and job.unanswered
+	_pickup.visible = job != null and job.done and not failed
+	_testing.visible = job != null and job.fixed and not job.tested and not failed
+	_failed.visible = failed
 
 
 func _labels() -> Array[Label]:
-	return [_issue, _pickup, _testing]
+	return [_issue, _pickup, _testing, _failed]

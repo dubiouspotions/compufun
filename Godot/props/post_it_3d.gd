@@ -2,7 +2,8 @@ class_name PostIt3D
 extends Node3D
 ## The post-it stuck on a computer on the counter: the job's perceived issue; an orange exclamation
 ## mark and "Needs testing" while it is fixed but not tested; then a green check and the prompt to
-## call the customer.
+## call the customer; once a call about it rang out (Job.unanswered), a black X and "Failed to
+## pickup" instead.
 
 ## False hides the 3D text, for a post-it that PostItLabel writes on in sharp UI text.
 @export var text_3d: bool = true:
@@ -30,6 +31,8 @@ var font: Font:
 @onready var _pickup: Label3D = %Pickup
 @onready var _testing: Node3D = %Testing
 @onready var _testing_text: Label3D = %TestingText
+@onready var _failed: Node3D = %Failed
+@onready var _failed_text: Label3D = %FailedText
 @onready var _paper: MeshInstance3D = %Paper
 
 
@@ -45,12 +48,15 @@ func _ready() -> void:
 
 func _sync() -> void:
 	_issue.text = job.perceived_issue() if job != null else ""
-	_done.visible = job != null and job.done
+	var failed := job != null and job.unanswered
+	_done.visible = job != null and job.done and not failed
 	_issue.visible = text_3d
 	_pickup.visible = text_3d
-	_testing.visible = job != null and job.fixed and not job.tested
+	_testing.visible = job != null and job.fixed and not job.tested and not failed
 	_testing_text.visible = text_3d
-	for label: Label3D in [_issue, _pickup, _testing_text]:
+	_failed.visible = failed
+	_failed_text.visible = text_3d
+	for label: Label3D in [_issue, _pickup, _testing_text, _failed_text]:
 		label.font = font
 
 
