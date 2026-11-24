@@ -9,6 +9,9 @@ extends HBoxContainer
 
 ## The writer clicked the card of the errand file [param path].
 signal errand_picked(path: String)
+## The writer double-clicked the card of the errand file [param path]; its first click already
+## emitted [signal errand_picked].
+signal errand_double_clicked(path: String)
 ## The writer clicked the header of day [param day], 1 to 7.
 signal day_picked(day: int)
 ## The writer asked for a new errand at the end of day [param day].
@@ -46,6 +49,8 @@ const GAME := preload("res://game.gd")  # the script, not the autoload: tests co
 
 var _hinted: PanelContainer
 var _hinted_style: StyleBox
+## True from a double-click's press to its release: the release opens the errand full.
+var _double_click: bool = false
 ## The shown week, from [method groups].
 var _days: Array = []
 var _cards: Dictionary = {}
@@ -285,8 +290,9 @@ static func _sign_chip_box(text: String, font_size: int, width: int) -> PanelCon
 
 
 ## A row of every customer in customers/ (face and name) that drags onto the board: dropped on a
-## day or a band, it asks for a new errand there ([signal customer_dropped]).
-static func customer_strip() -> Control:
+## day or a band, it asks for a new errand there ([signal customer_dropped]). A click on a chip calls
+## [param picked] with the customer (a file name in customers/, without .tres).
+static func customer_strip(picked: Callable) -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	row.add_child(LabUI.label("Customers", 13, LabUI.DIM))
@@ -298,7 +304,8 @@ static func customer_strip() -> Control:
 		chip.add_theme_stylebox_override("panel", LabUI.box(LabUI.RAISED, 8, 2))
 		chip.mouse_default_cursor_shape = Control.CURSOR_DRAG
 		chip.mouse_filter = Control.MOUSE_FILTER_STOP
-		chip.tooltip_text = "%s\nDrag onto a day or a time of day for a new errand." % customer_name
+		chip.name = customer_name
+		chip.tooltip_text = "%s\nClick for their errands. Drag onto a day or a time of day for a new errand." % customer_name
 		var shown := customer.spoken_name() if customer != null else customer_name
 		var drag := func(_at: Vector2) -> Variant:
 			var preview := LabUI.chip(shown, LabUI.TEXT, 15)
@@ -306,6 +313,11 @@ static func customer_strip() -> Control:
 			chip.set_drag_preview(preview)
 			return {"story_customer": customer_name}
 		chip.set_drag_forwarding(drag, Callable(), Callable())
+		chip.gui_input.connect(func(event: InputEvent) -> void:
+			var click := event as InputEventMouseButton
+			# On release, as a card acts: what the click opens rebuilds the Lab.
+			if click != null and not click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
+				picked.call(customer_name))
 		var inside := HBoxContainer.new()
 		inside.add_theme_constant_override("separation", 6)
 		inside.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -316,6 +328,17 @@ static func customer_strip() -> Control:
 		inside.add_child(label)
 		row.add_child(chip)
 	return row
+
+
+## Outlines the chip of [param customer] (a file name in customers/) in [param strip], from
+## [method customer_strip]; "" outlines none.
+static func highlight_customer(strip: Control, customer: String) -> void:
+	for chip: Node in strip.get_children():
+		if chip is PanelContainer:
+			var style := LabUI.box(LabUI.RAISED if chip.name != customer else Color(LabUI.ACCENT, 0.3), 8, 2)
+			style.border_color = LabUI.ACCENT
+			style.set_border_width_all(2 if chip.name == customer else 0)
+			(chip as PanelContainer).add_theme_stylebox_override("panel", style)
 
 
 ## Shows [param days] (Day 1 to 7) with the errand files of [param cards]: path to
@@ -577,11 +600,18 @@ func _card(path: String, info: Dictionary, selected: String, day: int, index: in
 	card.add_theme_stylebox_override("panel", _card_style(path == selected, ""))
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	card.tooltip_text = "%s\nDrag to another day, place or time of day, or onto a card to make an alternative." % path.get_file()
+	card.tooltip_text = "%s\nDouble-click to open it full. Drag to another day, place or time of day, or onto a card to make an alternative." % path.get_file()
 	card.gui_input.connect(func(event: InputEvent) -> void:
 		var click := event as InputEventMouseButton
+		if click == null or click.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if click.pressed:
+			_double_click = click.double_click
 		# On release: picking rebuilds the board, which frees the card before a drag can start.
-		if click != null and not click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
+		elif _double_click:
+			_double_click = false
+			errand_double_clicked.emit(path)
+		else:
 			errand_picked.emit(path))
 	card.set_drag_forwarding(_drag.bind(path, errand), _can_drop.bind(card, section), _drop.bind(card, day, index, band, path))
 	var stack := VBoxContainer.new()

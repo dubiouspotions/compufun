@@ -1,14 +1,19 @@
 class_name StoryLab
 extends Control
 ## The Story Lab (Dev menu, F4 or Cmd+4): writers edit the story files (docs/dialogue.md) in the
-## running game. On top, the week board; below, the picked errand or day. Every edit that parses is
-## a draft (StoryDrafts) that the game plays at once. While the Lab shows, the game is paused.
+## running game. On top, the week board; below, the picked errand or day. In story mode the errand
+## fills the window instead, beside a list of its customer's errands. Every edit that parses is a
+## draft (StoryDrafts) that the game plays at once. While the Lab shows, the game is paused.
 
 const CUSTOMERS_DIR: String = "res://customers/"
 ## The story check, when the game has one: static missing_links(week) and flag_index(week).
 
 ## The GitHub repo that Send makes the issue in, as owner/name; "" reads git's remote origin.
 @export var github_repo: String = ""
+## The week board's height in pixels as the Lab opens; the writer drags the line under it.
+@export var board_height: int = 480
+## The least height in pixels that the writer can drag the week board to.
+@export var board_min_height: int = 220
 
 ## True: edits go straight into res://story/ in the checkout, and no drafts play (the Dev menu's
 ## Save to checkout).
@@ -33,6 +38,7 @@ var _week: StoryFiles.Week
 ## Errand file path to {"errand": Errand, "problems": PackedStringArray, "draft": bool}.
 var _cards: Dictionary = {}
 var _selected: String = ""
+var _story_mode: bool = false
 var _holding: bool = false
 ## True while the Lab is hidden for Play: Esc brings it back.
 var _playing: bool = false
@@ -45,6 +51,9 @@ var _frozen: Dictionary[SubViewport, SubViewport.UpdateMode] = {}
 var _covered: Array[CanvasItem] = []
 
 var _board: StoryLabBoard
+var _customer_strip: Control
+var _sign_strip: Control
+var _back: Button
 var _status: Label
 var _problems: Label
 var _lower: Control
@@ -80,7 +89,7 @@ func _ready() -> void:
 	elif not changed_on_main.is_empty():
 		_say("Main changed %d files since you edited them: open Drafts to compare." % changed_on_main.size(), true)
 	else:
-		_say("Click an errand to open it. Drag a card to move it.")
+		_say("Click an errand to open it, double-click to open it full. Drag a card to move it.")
 	_hold(is_visible_in_tree())
 
 
@@ -107,6 +116,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_drafts_panel.hide()
 		elif _send_panel.visible:
 			_send_panel.hide()
+		elif _story_mode:
+			show_timeline()
 		else:
 			hide()
 		get_viewport().set_input_as_handled()
@@ -146,6 +157,7 @@ func refresh() -> void:
 	_send_button.tooltip_text = "Make a GitHub issue of your drafts" if not drafts.to_checkout else "Save to checkout is on: commit the files with git instead"
 	if _selected == "" and _errand_panel.visible:
 		_show_lower(_hint)
+	_show_mode()
 
 
 ## The errand files on the board: path to {"errand", "problems", "draft"}.
@@ -322,6 +334,8 @@ func play(errand: Errand, trigger: Conversation.Trigger) -> String:
 func show_section(section: String) -> void:
 	for button: BaseButton in _sections.get_buttons():
 		button.set_pressed_no_signal((button as Button).text == section)
+	_story_mode = false
+	_show_mode()
 	_week_view.visible = section == "Week"
 	_problem_panel.visible = section == "Problems"
 	_sign_panel.visible = section == "Signs"
@@ -358,7 +372,38 @@ func problem_panel() -> StoryProblemPanel:
 	return _problem_panel
 
 
-## Opens the errand file [param path] below the board.
+## Opens the errand file [param path] in story mode: the errand fills the window, beside its
+## customer's errands, and the board and the signs hide. It stays until [method show_timeline],
+## Esc or a section button.
+func open_story(path: String) -> void:
+	_story_mode = true
+	open_errand(path)
+
+
+## True while story mode shows.
+func story_mode() -> bool:
+	return _story_mode
+
+
+## Leaves story mode for the week board, with the same errand open below it.
+func show_timeline() -> void:
+	_story_mode = false
+	_show_mode()
+
+
+## Opens the earliest errand (by errand code) of [param customer], a file name in customers/
+## without .tres, in story mode. Returns "" or why not.
+func open_customer(customer: String) -> String:
+	var paths := _errands_of(customer).keys()
+	if paths.is_empty():
+		var who := load(CUSTOMERS_DIR + customer + ".tres") as Customer
+		return "%s has no errand yet: drag them onto a day." % (who.spoken_name() if who != null else customer)
+	paths.sort()
+	open_story(paths[0])
+	return ""
+
+
+## Opens the errand file [param path], below the board or, in story mode, full.
 func open_errand(path: String) -> void:
 	_selected = path
 	refresh()
@@ -433,11 +478,48 @@ func _show_lower(shown: Control) -> void:
 
 
 func _remove_errand(path: String) -> void:
+	var customer := _customer_of(path) if _story_mode else ""
 	if store(path, "") == "":
 		_selected = ""
 		_show_lower(_hint)
 		refresh()
+		if customer != "":
+			open_customer(customer)  # none left: the week view stays
 		_say("Removed %s. Discard its draft to bring it back." % path.get_file())
+
+
+# Story mode while it has an errand to show, else the week view.
+func _show_mode() -> void:
+	_story_mode = _story_mode and _selected != ""
+	_sign_strip.visible = not _story_mode
+	_board.visible = not _story_mode
+	_back.visible = _story_mode
+	_errand_panel.story_mode = _story_mode
+	var customer := _customer_of(_selected) if _story_mode else ""
+	StoryLabBoard.highlight_customer(_customer_strip, customer)
+	if _story_mode:
+		_errand_panel.show_errands(_errands_of(customer), _selected)
+
+
+# The customer of the errand file [param path] (a file name in customers/), or "".
+func _customer_of(path: String) -> String:
+	var errand: Errand = _cards[path]["errand"] if _cards.has(path) else null
+	return errand.customer.resource_path.get_file().get_basename() if errand != null and errand.customer != null else ""
+
+
+# The errands of [param customer] on the board: path to Errand.
+func _errands_of(customer: String) -> Dictionary:
+	var found := {}
+	for path: String in _cards:
+		if _customer_of(path) == customer:
+			found[path] = _cards[path]["errand"]
+	return found
+
+
+func _pick_customer(customer: String) -> void:
+	var failed := open_customer(customer)
+	if failed != "":
+		_say(failed, true)
 
 
 func _drafts_changed() -> void:
@@ -602,20 +684,35 @@ func _build() -> void:
 	_bible.hide()
 	page.add_child(_bible)
 	_board = StoryLabBoard.new()
-	_board.custom_minimum_size.y = 480
+	_board.custom_minimum_size.y = board_min_height
 	_board.errand_picked.connect(open_errand)
+	_board.errand_double_clicked.connect(open_story)
 	_board.errand_dropped.connect(move_errand)
 	_board.customer_dropped.connect(add_errand)
 	_board.sign_dropped.connect(move_sign)
 	_board.sign_picked.connect(open_sign)
 	_board.add_requested.connect(_add_errand)
 	_board.day_picked.connect(open_day)
-	_week_view.add_child(StoryLabBoard.customer_strip())
-	_week_view.add_child(StoryLabBoard.sign_strip())
-	_week_view.add_child(_board)
+	var strip_row := HBoxContainer.new()
+	_week_view.add_child(strip_row)
+	_customer_strip = StoryLabBoard.customer_strip(_pick_customer)
+	_customer_strip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	strip_row.add_child(_customer_strip)
+	_back = LabUI.button("Back to timeline", show_timeline, &"AccentButton")
+	_back.tooltip_text = "The week board, with this errand open below it (Esc)"
+	_back.hide()
+	strip_row.add_child(_back)
+	_sign_strip = StoryLabBoard.sign_strip()
+	_week_view.add_child(_sign_strip)
+	var split := VSplitContainer.new()
+	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	split.split_offset = board_height  # the board's height: it doesn't expand
+	split.add_theme_constant_override("autohide", 0)  # show the grabber, so writers find the line
+	_week_view.add_child(split)
+	split.add_child(_board)
 	_lower = Control.new()
 	_lower.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_week_view.add_child(_lower)
+	split.add_child(_lower)
 	_hint = LabUI.label("Click an errand card to open it, or a day's header for its weather, warp, signs and notes.", 16, LabUI.DIM)
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -624,6 +721,9 @@ func _build() -> void:
 	_errand_panel.remove_requested.connect(_remove_errand)
 	_errand_panel.play_requested.connect(play)
 	_errand_panel.edit_problem_requested.connect(open_problem)
+	_errand_panel.story_requested.connect(open_story)
+	_errand_panel.timeline_requested.connect(show_timeline)
+	_errand_panel.errand_picked.connect(open_errand)
 	_day_panel = StoryDayPanel.new()
 	_day_panel.saved.connect(_store_edit)
 	for shown: Control in [_hint, _errand_panel, _day_panel]:

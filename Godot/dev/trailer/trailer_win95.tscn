@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://dev/trailer/trailer_win95.gd" id="1_win95"]
+
+[node name="TrailerWin95" type="Node"]
+script = ExtResource("1_win95")

@@ -72,9 +72,9 @@ At 60 fps, day 2, on a 1080p screen (CPU is a share of one core):
 
 | Case | CPU | GPU |
 | --- | --- | --- |
-| Main View | 44 % | 17 % |
-| Screen View | 45 % | 31 % |
-| CompuFunDB | 39 % | 33 % |
+| Main View | 45 % | 16 % |
+| Screen View | 43 % | 24 % |
+| CompuFunDB | 32 % | 24 % |
 | Story Lab, idle | 10 % | 1 % |
 
 - **The GL driver.** The main thread spends most of its time in Apple's OpenGL, which translates every
@@ -84,9 +84,11 @@ At 60 fps, day 2, on a 1080p screen (CPU is a share of one core):
 - **The screen buffers** update only while something draws them (`UPDATE_WHEN_VISIBLE`): the 3D monitor
   or the Screen View. A monitor out of sight costs nothing, and its first frame back in view can show
   its last picture for one frame.
-- **The GPU** is busy 1.2 ms per frame in the Main View and 3.8 ms in the Screen View and CompuFunDB
-  (Metal System Trace). The CRT look is 2.4 ms of that, its glow 1.1 ms; it is per-pixel work, so a
-  Retina screen with about three times the pixels pays it about three times.
+- **The GPU** is busy 1.2 ms per frame in the Main View, and 2.6 ms in the Screen View and 2.4 ms in
+  CompuFunDB (Metal System Trace). The CRT look took 2.4 ms of the Screen View's 3.8 before its
+  sharp samples read once and its glow moved to its own pass (docs/crt.md); it now takes about
+  1.2 ms. It is per-pixel work, so a Retina screen with about three times the pixels pays it about
+  three times.
 - **The post shader** skips its search for the nearest Windows colour while `windows_shades` is 0, which
   it is until the warp drifts the colours; it is the only per-pixel pass over the whole window, so a
   Retina screen pays it 2.7 times over.

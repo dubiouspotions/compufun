@@ -11,6 +11,7 @@ extends TextureRect
 ## The group of every CRT screen.
 const GROUP: StringName = &"crt_screens"
 const _BENT: Array[StringName] = [&"curvature_x", &"curvature_y", &"underscan", &"corner_radius"]
+const _GLOW_SHADER: Shader = preload("res://shaders/crt_glow.gdshader")
 
 ## The picture to show; it gets the mouse and, while this node is visible, the keys.
 @export var buffer: SubViewport
@@ -74,9 +75,32 @@ func _ready() -> void:
 		push_error("CrtScreen %s: no tube" % get_path())
 		return
 	tube.add_look(material)
+	_add_glow(material as ShaderMaterial)
 	for uniform in _BENT:
 		_near[uniform] = _param(material, uniform)
 	_set_cursor(arrow_cursor)
+
+
+# Renders the look's glow once per buffer pixel (shaders/crt_glow.gdshader), in a viewport that
+# Godot renders after the buffer, because it enters the tree later at the same depth.
+func _add_glow(look: ShaderMaterial) -> void:
+	if _param(look, &"glow") <= 0.0:
+		return
+	var glow := SubViewport.new()
+	glow.size = buffer.size
+	glow.disable_3d = true
+	glow.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+	var light := ShaderMaterial.new()
+	light.shader = _GLOW_SHADER
+	light.set_shader_parameter(&"screen_texture", buffer.get_texture())
+	light.set_shader_parameter(&"glow_radius", _param(look, &"glow_radius"))
+	var disc := ColorRect.new()
+	disc.size = Vector2(buffer.size)
+	disc.material = light
+	glow.add_child(disc)
+	add_child(glow, false, Node.INTERNAL_MODE_BACK)
+	look.set_shader_parameter(&"glow_texture", glow.get_texture())
+	tube.add_look(light)  # the cursor glows too
 
 
 ## Where the mouse points in [member buffer], in its pixels.
