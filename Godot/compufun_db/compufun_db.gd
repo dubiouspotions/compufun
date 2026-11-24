@@ -12,10 +12,11 @@ extends Control
 ## The first time the player opens it on a day, the work computer boots, the character starts the
 ## program at the DOS prompt and the modem dials up; until then the computer is off. Nothing skips
 ## the start-up; the player can leave meanwhile, and it goes on.
-## Keys: in SEARCH, letters type, Backspace erases, and Enter searches, or picks a symptom found for
-## the words as typed; arrows and Tab move; Enter and Space tick a check or print the cause under the
-## cursor; outside SEARCH, P and F print, and the go_back keys but Down leave the view, as the Back
-## button does; Esc always does. The mouse clicks and scrolls.
+## Keys: while SEARCH's field is active, letters type, Backspace erases, and Enter searches, or picks a
+## symptom found for the words as typed; arrows and Tab move; Enter and Space tick a check or print the
+## cause under the cursor; elsewhere, P and F print, and the go_back keys but Down leave the view, as
+## the Back button does; Esc always does. The mouse clicks and scrolls; a click on the field activates
+## it, and a click anywhere else on the screen deactivates it.
 
 const PROBLEMS_DIR: String = "res://problems/"
 const COLUMNS: int = 80
@@ -110,6 +111,8 @@ var _problems: Array[Problem] = []
 ## Every symptom of every problem, once each, in the order of the problems.
 var _symptoms: PackedStringArray = []
 var _column: Column = Column.SEARCH
+## SEARCH's field takes the letters while the cursor is in SEARCH; false after a click anywhere else.
+var _field_active: bool = true
 var _selected: Array[int] = [0, 0, 0]
 var _scroll: Array[int] = [0, 0, 0]
 ## What the player typed into SEARCH.
@@ -170,7 +173,7 @@ func _ready() -> void:
 	blink.wait_time = cursor_blink_seconds
 	blink.timeout.connect(func() -> void:
 		_cursor_on = not _cursor_on
-		if _column == Column.SEARCH:
+		if _typing():
 			queue_redraw())
 	add_child(blink)
 	blink.start()
@@ -473,8 +476,14 @@ func _on_click(button: InputEventMouseButton) -> void:
 		if button.button_index == MOUSE_BUTTON_LEFT and cell.y == ok.y and cell.x >= ok.x and cell.x < ok.x + OK_BUTTON.length():
 			_close_print_box()
 		return
+	if _starting or _offline():
+		return
 	var column := _column_at(cell.x)
-	if column < 0 or _starting or _offline():
+	var on_field := column == Column.SEARCH and cell.y == FRAME_ROWS[0] + 1
+	if button.button_index == MOUSE_BUTTON_LEFT:
+		_field_active = on_field
+		queue_redraw()
+	if column < 0:
 		return
 	if button.button_index == MOUSE_BUTTON_WHEEL_UP or button.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 		var step := -1 if button.button_index == MOUSE_BUTTON_WHEEL_UP else 1
@@ -485,7 +494,7 @@ func _on_click(button: InputEventMouseButton) -> void:
 	if button.button_index != MOUSE_BUTTON_LEFT:
 		return
 	_status = ""
-	if cell.y == FRAME_ROWS[0] + 1 and column == Column.SEARCH:  # the field
+	if on_field:
 		_column = Column.SEARCH
 		queue_redraw()
 		return
@@ -523,7 +532,7 @@ func _on_key(key: InputEventKey) -> bool:
 		if key.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE, KEY_ESCAPE]:
 			_close_print_box()
 		return true
-	var typing := _column == Column.SEARCH
+	var typing := _typing()
 	if key.keycode == KEY_ESCAPE or (not typing and key.is_action(&"go_back") and key.keycode != KEY_DOWN):
 		return false  # main.gd goes back, as the Back button does
 	_status = ""
@@ -691,6 +700,7 @@ func _close_print_box() -> void:
 	if _printing == "FIX":
 		_type("")
 		_column = Column.SEARCH
+		_field_active = true
 	_printing = ""
 	_print_done = false
 	queue_redraw()
@@ -864,6 +874,11 @@ func _reconcile() -> void:
 		_selected[column] = clampi(_selected[column], 0, maxi(_entries(column as Column).size() - 1, 0))
 
 
+# True while the letters that the player presses type into SEARCH.
+func _typing() -> bool:
+	return _column == Column.SEARCH and _field_active
+
+
 func _column_at(x: int) -> int:
 	for column: int in _spans.size():
 		if x >= _spans[column].x and x <= _spans[column].y:
@@ -939,8 +954,8 @@ func _paint() -> void:
 func _paint_field() -> void:
 	var x := _spans[Column.SEARCH].x + HEADERS[Column.SEARCH].length()
 	_put(x, FRAME_ROWS[0] + 1, ":", bright_color)
-	var fg := bright_color if _column == Column.SEARCH else text_color
-	var cursor := "_" if _column == Column.SEARCH and _cursor_on else " "  # blinks, to draw the eye to the field
+	var fg := bright_color if _typing() else text_color
+	var cursor := "_" if _typing() and _cursor_on else " "  # blinks, to draw the eye to the field
 	_put(x + 1, FRAME_ROWS[0] + 1, (_typed + cursor).right(_spans[Column.SEARCH].y - x), fg)
 
 

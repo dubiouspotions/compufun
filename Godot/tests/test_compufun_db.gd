@@ -1,7 +1,8 @@
 extends "res://tests/test.gd"
 ## CompuFunDB: a symptom picked lists its causes' checks and the causes; a ticked no: rules a cause
 ## out; F prints the picked cause's fix. The search survives a snapshot and a restore. With
-## filter_search, SEARCH lists every symptom and narrows the list as the player types.
+## filter_search, SEARCH lists every symptom and narrows the list as the player types. A click outside
+## SEARCH's field stops the letters typing into it, until a click on the field.
 
 ## CompuFunDB.Column, which a test can't name: CompuFunDB names the Game autoload.
 const CHECKS: int = 1
@@ -58,6 +59,15 @@ func run() -> void:
 	check("typing narrows the list at once", [_texts(db, 0), db.get("_searching")], [["No sound"], false])
 	_press(db, KEY_ENTER)
 	check("Enter picks", [game.db_search.query, db.get("_column")], ["No sound", CHECKS])
+
+	db.set("_column", 0)
+	db.call("_type", "")
+	_click(db, Vector2i(10, 20))  # below the list
+	_letter(db, "p")
+	check("after a click outside the field, letters don't type", [db.get("_typed"), _texts(db, 0).size()], ["", (db.get("_symptoms") as PackedStringArray).size()])
+	_click(db, Vector2i(10, 2))  # the field
+	_letter(db, "p")
+	check("a click on the field takes the letters again", db.get("_typed"), "p")
 	db.queue_free()
 
 
@@ -67,6 +77,21 @@ func _possible(db: Control) -> Array:
 
 func _texts(db: Control, column: int) -> Array:
 	return db.call("_entries", column).map(func(entry: Dictionary) -> String: return entry.text)
+
+
+func _letter(db: Control, letter: String) -> void:
+	var key := InputEventKey.new()
+	key.unicode = letter.unicode_at(0)
+	key.pressed = true
+	db.call("_on_key", key)
+
+
+func _click(db: Control, cell: Vector2i) -> void:
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = true
+	event.position = (Vector2(cell) + Vector2(0.5, 0.5)) * Vector2(8, 16)
+	db.call("_on_click", event)
 
 
 func _press(db: Control, key: Key) -> void:
