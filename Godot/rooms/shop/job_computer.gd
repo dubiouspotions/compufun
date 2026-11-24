@@ -157,7 +157,7 @@ func _make_floppy_hotspot() -> Hotspot:
 		return null
 	var hotspot := _button_hotspot(drive)
 	hotspot.clicked.connect(func(_h: Hotspot) -> void: floppy_clicked.emit(self))
-	hotspot.mouse_entered.connect(func() -> void: drive.hovered = true)
+	hotspot.mouse_entered.connect(func() -> void: drive.hovered = drive.usable)
 	hotspot.mouse_exited.connect(func() -> void: drive.hovered = false)
 	return hotspot
 
@@ -309,7 +309,7 @@ func _sync_floppy(working: bool, lying: bool) -> void:
 	if _floppy_hotspot == null:
 		return
 	var usable := (Game.can_eject(job) or Game.can_insert_floppy(job)) and working and not lying
-	_floppy_hotspot.set_enabled(usable)
+	_floppy_hotspot.set_enabled((floppy_in or Game.can_insert_floppy(job)) and working and not lying)  # with a full hand, an eject shakes the hand
 	var upright := _tower.floppy_drive()
 	upright.usable = usable
 	if not usable:

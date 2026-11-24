@@ -9,6 +9,9 @@ extends Node3D
 ## The player can drag the part out of the hand: dropped on a hotspot that takes a drop
 ## ([member Hotspot.takes_drop]) it acts as a click there; dropped anywhere else it goes back into the
 ## hand. A click on the part that doesn't drag reaches the room behind it.
+##
+## When the player tries to take another piece (Game.hand_refused), the part shakes sideways: the hand
+## must be emptied first.
 
 ## Where the part is held on screen: x from -1 (left edge) to 1 (right edge), y from -1 (bottom) to
 ## 1 (top).
@@ -36,6 +39,13 @@ extends Node3D
 @export_range(0.02, 1.0) var dragged_size: float = 0.12
 ## How far the mouse moves, in pixels of the world buffer, before a press on the part becomes a drag.
 @export var drag_threshold: float = 3.0
+## How long one [method shake] lasts, in seconds.
+@export_range(0.05, 2.0, 0.05) var shake_seconds: float = 0.4
+## How far a [method shake] first moves the part to each side, as a share of the height of the view's
+## 16:9 frame; the swings die out.
+@export_range(0.0, 0.2) var shake_width: float = 0.03
+## How many times a [method shake] swings the part back and forth.
+@export_range(1.0, 10.0) var shake_swings: float = 3.0
 
 var _held: Piece
 var _time: float = 0.0
@@ -48,6 +58,8 @@ var _press: InputEventMouseButton  # the press on the part, while the button is 
 var _dragging: bool = false
 var _mouse: Vector2  # in pixels of the world buffer
 var _passing: bool = false
+var _shake_progress: float = 1.0  # 0 to 1 through a shake; 1 at rest
+var _shaking: Tween
 
 @onready var _camera: ViewCamera = get_parent() as ViewCamera
 @onready var _holder: Node3D = %Holder
@@ -60,7 +72,21 @@ func _ready() -> void:
 		push_error("Hand: the parent %s is not a ViewCamera" % get_parent().get_path())
 		return
 	Game.changed.connect(_sync)
+	Game.hand_refused.connect(shake)
 	_sync()
+
+
+## Shakes the part sideways for [member shake_seconds]. A shake while one runs starts it over.
+func shake() -> void:
+	if _shaking != null:
+		_shaking.kill()
+	_shaking = create_tween()
+	_shaking.tween_property(self, "_shake_progress", 1.0, shake_seconds).from(0.0)
+
+
+## True while a [method shake] runs.
+func is_shaking() -> bool:
+	return _shaking != null and _shaking.is_running()
 
 
 ## True while the player drags the part out of the hand.
@@ -95,7 +121,8 @@ func _process(delta: float) -> void:
 		at = Vector2(_mouse.x - view.x * 0.5, view.y * 0.5 - _mouse.y) * (2.0 * half_picture.y / view.y) + Vector2.ONE * dragged_size * 0.6 * height
 		if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):  # released over the UI, which kept the release
 			_drop(_mouse)
-	position = Vector3(at.x + drift * sway * height, at.y + bob * sway * height - _lowered * below, -distance)
+	var jolt := shake_width * sin(TAU * shake_swings * _shake_progress) * (1.0 - _shake_progress)
+	position = Vector3(at.x + (drift * sway + jolt) * height, at.y + bob * sway * height - _lowered * below, -distance)
 	scale = Vector3.ONE * height
 	_holder.scale = Vector3.ONE * (dragged_size / shown_size if _dragging else 1.0)
 	_name.visible = not _dragging

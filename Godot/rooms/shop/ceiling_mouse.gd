@@ -167,7 +167,7 @@ func _start_peek() -> void:
 # mouse, which then peeks again on the next look.
 func _land() -> void:
 	_carried.visible = false
-	if stage() == Stage.SQUEAKING and Game.take_new_part(part):
+	if stage() == Stage.SQUEAKING and Game.hand == null and Game.take_new_part(part):
 		Game.set_flag(FLAG, Stage.DROPPED)
 
 

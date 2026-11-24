@@ -8,6 +8,9 @@ extends Node
 signal changed
 ## Emitted when the player tries to take a page from the printer while they carry one; nothing changed.
 signal printout_refused
+## Emitted when the player tries to take a piece that would come into an empty hand while the hand
+## holds one; nothing changed.
+signal hand_refused
 
 enum Phase {
 	IDLE, ## No day has started.
@@ -750,10 +753,10 @@ func can_eject(job: Job) -> bool:
 ## Ejects the floppy from drive A: of [param job]'s computer into the hand, as a click on the drive's
 ## eject button does, so the next boot gets past "Non-System disk". The hand gets the disk that went
 ## in (Win95Setup.floppy_disk), as it went in, so it can go back in its box; or, for the boot floppy
-## of a problem, the generic floppy (parts/floppy.tres). Does nothing unless [method can_eject]. The
-## job must be on the counter.
+## of a problem, the generic floppy (parts/floppy.tres). Does nothing unless [method can_eject], and
+## emits [signal hand_refused] when only the piece in the hand stops it. The job must be on the counter.
 func eject_floppy(job: Job) -> void:
-	if not _on_counter(job, "eject_floppy") or not can_eject(job):
+	if not _on_counter(job, "eject_floppy") or _refused_full(has_floppy(job)) or not can_eject(job):
 		return
 	var setup := setup_for(job)
 	var disk: FloppyDisk = setup.floppy_disk if setup.floppy_disk != null else Part.named(&"floppy") as FloppyDisk
@@ -799,6 +802,7 @@ func can_power_on(job: Job) -> bool:
 
 # --- Hardware repair (wiki: Hardware Repair). Each move returns false and changes nothing when the
 # --- rules forbid it: that is a normal moment of play, not an error. A job must be on the counter.
+# --- A take that only the piece in the hand stops also emits hand_refused.
 
 ## Lifts the side panel off [param job] (true) or puts it back on (false). The panel comes off only
 ## when the computer lies, is off and the panel's screws are out; it goes back on with its screws out.
@@ -814,9 +818,10 @@ func open_case(job: Job, open: bool) -> bool:
 
 
 ## True when the piece in the place [param part] can come out of [param job] into the empty hand: the
-## computer is off, the case is open, the piece is in, and no piece sits on it.
-func can_take(job: Job, part: Part) -> bool:
-	if hand != null or job.powered or not job.case_open or job.piece(part) == null:
+## computer is off, the case is open, the piece is in, and no piece sits on it. With [param ignore_hand],
+## a piece in the hand doesn't count: true when the piece would come out once the hand is empty.
+func can_take(job: Job, part: Part, ignore_hand: bool = false) -> bool:
+	if (hand != null and not ignore_hand) or job.powered or not job.case_open or job.piece(part) == null:
 		return false
 	if job.blocker != null and job.blocker.part.sits_on == part:
 		return false
@@ -827,15 +832,15 @@ func can_take(job: Job, part: Part) -> bool:
 
 
 ## True when the player can take what lies in the way in [param job] (Job.blocker) into the empty
-## hand: the computer is off and open.
-func can_take_blocker(job: Job) -> bool:
-	return job.blocker != null and hand == null and not job.powered and job.case_open
+## hand: the computer is off and open. [param ignore_hand] as in [method can_take].
+func can_take_blocker(job: Job, ignore_hand: bool = false) -> bool:
+	return job.blocker != null and (hand == null or ignore_hand) and not job.powered and job.case_open
 
 
 ## Takes what lies in the way in [param job] into the hand (see [method can_take_blocker]). It never
 ## goes back in: the trash or the mat takes it.
 func take_blocker(job: Job) -> bool:
-	if not _on_counter(job, "take_blocker") or not can_take_blocker(job):
+	if not _on_counter(job, "take_blocker") or _refused_full(can_take_blocker(job, true)) or not can_take_blocker(job):
 		return false
 	hand = job.blocker
 	job.blocker = null
@@ -844,15 +849,16 @@ func take_blocker(job: Job) -> bool:
 
 
 ## True when the player can lift the piece that lies misplaced on the place [param part] of
-## [param job] (Job.misplaced) into the empty hand: the computer is off and open.
-func can_take_misplaced(job: Job, part: Part) -> bool:
-	return job.misplaced.has(part) and hand == null and not job.powered and job.case_open
+## [param job] (Job.misplaced) into the empty hand: the computer is off and open. [param ignore_hand]
+## as in [method can_take].
+func can_take_misplaced(job: Job, part: Part, ignore_hand: bool = false) -> bool:
+	return job.misplaced.has(part) and (hand == null or ignore_hand) and not job.powered and job.case_open
 
 
 ## Lifts the misplaced piece off the place [param part] of [param job] into the hand (see
 ## [method can_take_misplaced]). It goes in its own place like any piece, and never back on a wrong one.
 func take_misplaced(job: Job, part: Part) -> bool:
-	if not _on_counter(job, "take_misplaced") or not can_take_misplaced(job, part):
+	if not _on_counter(job, "take_misplaced") or _refused_full(can_take_misplaced(job, part, true)) or not can_take_misplaced(job, part):
 		return false
 	hand = job.misplaced[part]
 	job.misplaced.erase(part)
@@ -887,7 +893,7 @@ func turn_screw(job: Job, index: int) -> bool:
 
 ## Takes the piece of [param part] out of [param job] into the hand (see [method can_take]).
 func take_part(job: Job, part: Part) -> bool:
-	if not _on_counter(job, "take_part") or not can_take(job, part):
+	if not _on_counter(job, "take_part") or _refused_full(can_take(job, part, true)) or not can_take(job, part):
 		return false
 	hand = job.places[part]
 	job.places.erase(part)
@@ -924,9 +930,10 @@ func put_on_mat(job: Job) -> bool:
 	return true
 
 
-## Takes the piece at [param index] on the mat of [param job] into the empty hand.
+## Takes the piece at [param index] on the mat of [param job] into the empty hand. With a piece in
+## the hand it takes none and emits [signal hand_refused].
 func take_from_mat(job: Job, index: int) -> bool:
-	if not _on_counter(job, "take_from_mat") or hand != null or index < 0 or index >= job.mat.size():
+	if not _on_counter(job, "take_from_mat") or index < 0 or index >= job.mat.size() or _refused_full(true):
 		return false
 	hand = job.mat[index]
 	job.mat.remove_at(index)
@@ -943,12 +950,13 @@ func _sync_replaced(job: Job) -> void:
 	_put_flag(job.problem.replaced_flag, 0 if left else 1)
 
 
-## Takes a new piece of [param part] from its box in the storage into the empty hand.
+## Takes a new piece of [param part] from its box in the storage into the empty hand. With a piece in
+## the hand it takes none and emits [signal hand_refused].
 func take_new_part(part: Part) -> bool:
 	if part == null:
 		push_error("Game.take_new_part: no part")
 		return false
-	if hand != null:
+	if _refused_full(true):
 		return false
 	hand = Piece.new(part, false, true)
 	changed.emit()
@@ -975,7 +983,8 @@ func trash_part() -> bool:
 	return _put_in(trashed)
 
 
-## Takes the piece on top of the trash back into the empty hand.
+## Takes the piece on top of the trash back into the empty hand. With a piece in the hand it takes
+## none and emits [signal hand_refused].
 func take_from_trash() -> bool:
 	return _take_from(trashed)
 
@@ -1040,10 +1049,18 @@ func _put_in(pile: Array[Piece]) -> bool:
 
 
 func _take_from(pile: Array[Piece]) -> bool:
-	if hand != null or pile.is_empty():
+	if pile.is_empty() or _refused_full(true):
 		return false
 	hand = pile.pop_back()
 	changed.emit()
+	return true
+
+
+# Emits hand_refused and returns true when the hand holds a piece and an empty hand would take (takes).
+func _refused_full(takes: bool) -> bool:
+	if hand == null or not takes:
+		return false
+	hand_refused.emit()
 	return true
 
 

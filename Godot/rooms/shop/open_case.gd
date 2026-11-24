@@ -217,7 +217,7 @@ func _sync() -> void:
 			_fit_hotspot(part, shown if piece.part.poses_as != null else null)
 		elif piece == null:
 			_fit_hotspot(part, null)
-		(place.get_node("Hotspot") as Hotspot).set_enabled(active and (Game.can_take(job, part) or Game.can_put(job, part)))
+		(place.get_node("Hotspot") as Hotspot).set_enabled(active and (Game.can_take(job, part, true) or Game.can_put(job, part)))
 	_sync_lying()
 	if job.case_open and not _was_open and active:
 		_drop()
@@ -249,7 +249,7 @@ func _sync_lying() -> void:
 			if laid.is_empty():
 				continue
 			_lying[piece] = laid
-		(_lying[piece][1] as Hotspot).set_enabled(active and _drop_ground == null and _can_lift(piece, wanted[piece]))
+		(_lying[piece][1] as Hotspot).set_enabled(active and _drop_ground == null and _can_lift(piece, wanted[piece], true))
 
 
 # The model of [param piece] lying on [param place], and its hotspot; [] when it can't show.
@@ -353,8 +353,8 @@ func _add_box(body: PhysicsBody3D, around: Node3D, parent: Node3D, layer: int) -
 	body.global_transform = around.global_transform
 
 
-func _can_lift(piece: Piece, place: Part) -> bool:
-	return Game.can_take_blocker(job) if piece == job.blocker else Game.can_take_misplaced(job, place)
+func _can_lift(piece: Piece, place: Part, ignore_hand: bool = false) -> bool:
+	return Game.can_take_blocker(job, ignore_hand) if piece == job.blocker else Game.can_take_misplaced(job, place, ignore_hand)
 
 
 func _lift(piece: Piece, place: Part) -> void:
@@ -565,12 +565,13 @@ func _sync_highlights() -> void:
 		if hotspot == null or not hotspot.input_ray_pickable:
 			continue
 		if job.piece(part) != null:
-			_highlight(_shown.get(part.id()), hotspot, job.piece(part).broken)
+			if Game.hand == null:  # with a full hand a click only shakes it
+				_highlight(_shown.get(part.id()), hotspot, job.piece(part).broken)
 		elif Game.hand != null:
 			_add_ghost(part.piece_part().model, place, hotspot)  # the hardware that belongs there, whatever the hand holds
 	for piece: Piece in _lying:
 		var laid: Array = _lying[piece]
-		if (laid[1] as Hotspot).input_ray_pickable:
+		if (laid[1] as Hotspot).input_ray_pickable and Game.hand == null:
 			_highlight(laid[0], laid[1], piece.broken)
 	for pile: int in _spots.get_child_count():
 		var spot_hotspot := _spots.get_child(pile).get_node("Hotspot") as Hotspot
@@ -713,7 +714,7 @@ func _set_driver_alpha(alpha: float) -> void:
 
 
 func _on_place_clicked(part: Part) -> void:
-	if Game.can_take(job, part):
+	if Game.can_take(job, part, true):
 		Game.take_part(job, part)
 	else:
 		Game.put_part(job, part)

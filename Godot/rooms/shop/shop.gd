@@ -167,7 +167,7 @@ func _ready() -> void:
 	_job_slots.computer_moved.connect(_on_computer_moved)
 	_job_slots.power_clicked.connect(func(job: Job) -> void: Game.set_powered(job, not job.powered))
 	_job_slots.floppy_clicked.connect(func(job: Job) -> void:
-		if Game.can_eject(job):
+		if Game.has_floppy(job):
 			Game.eject_floppy(job)
 		else:
 			Game.insert_floppy(job))
@@ -730,10 +730,8 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 		Hotspot.Action.POWER_WORK_COMPUTER:
 			work_power_requested.emit()
 		Hotspot.Action.TAKE_PART:
-			if Game.hand == null:
+			if not Game.return_part(hotspot.part):
 				Game.take_new_part(hotspot.part)
-			else:
-				Game.return_part(hotspot.part)
 
 
 # The sound of [param piece] coming into or leaving the hand: its part's own, else [param usual].

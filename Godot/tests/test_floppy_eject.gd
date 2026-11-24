@@ -1,7 +1,8 @@
 extends "res://tests/test.gd"
 ## In the Workview, the eject button of the floppy drive sticks out and pulses while a floppy is in A:,
 ## and a click on it ejects the floppy (Game.eject_floppy) and lets the button in; with the floppy in
-## the hand a click puts it back (Game.insert_floppy); on an empty drive with an empty hand the button
+## the hand a click puts it back (Game.insert_floppy); with another part in the hand a click shakes that
+## part and leaves the floppy in, and the button doesn't pulse; on an empty drive with an empty hand the button
 ## is flush and a click on it does nothing. In the Main view the drive takes no click and doesn't pulse.
 
 var _shop: Node3D
@@ -35,6 +36,14 @@ func run() -> void:
 	_click(at)
 	await create_timer(0.3).timeout
 	check("a click puts it back in", [game.has_floppy(job), game.hand, job.software_fixed, _out(drive)], [true, null, false, true])
+	game.take_new_part(load("res://parts/fan.tres"))
+	await process_frame
+	check("with a fan in the hand, the drive takes the click but doesn't pulse", [_shop.hotspot_at(at) == hotspot, drive.eject_button.material_overlay == null], [true, true])
+	_click(at)
+	await create_timer(0.1).timeout
+	check("a click shakes the fan and leaves the floppy in", [game.has_floppy(job), game.hand.part.id(), _shop.get_node("%Hand").call("is_shaking")], [true, &"fan", true])
+	game.trash_part()
+	await process_frame
 	_click(at)
 	await create_timer(0.3).timeout
 	game.trash_part()
