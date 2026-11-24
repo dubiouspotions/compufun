@@ -37,9 +37,9 @@ func run() -> void:
 	await process_frame
 	check("facing him again, the box says the same line", [_box.visible, _said()], [true, "...so as mentioned I'm off for vacation. I'll need you to mind the store for me until I'm back."])
 
-	await _click_box_until("It's that old machine: Just boot it up every morning.")
-	check("[look right] turns the view to the work computer, and the line shows in the call-out box", [game.view, _box.visible, _calling.visible, _calling_line()], [&"Right", false, true, "It's that old machine: Just boot it up every morning."])
-	var next := "Oh, and for a smoothbrain like you - I'd recommend printing the checklist!"
+	await _click_box_until("You find it over there on your right, in the office area.")
+	check("[look right] turns the view to the work computer, and the line shows in the call-out box", [game.view, _box.visible, _calling.visible, _calling_line()], [&"Right", false, true, "You find it over there on your right, in the office area."])
+	var next := "It's that old machine: Just boot it up every morning."
 	var waited := 0.0
 	while _calling_line() != next and waited < 30.0:
 		await create_timer(0.5).timeout
@@ -52,11 +52,14 @@ func run() -> void:
 	await _click_box_until("Connect the customers computer to the testing screen here on the counter and press power to solve software issues.")
 	check("[look ahead] while facing him keeps the view", [game.view, _box.visible], [&"Main", true])
 
-	await _click_box_until("Just pop in there and grab what you need")
-	check("[look left] turns the view to the storage side, the line in the call-out box", [game.view, _box.visible, _calling_line()], [&"Left", false, "Just pop in there and grab what you need"])
+	await _click_box_until("The storage is that closet to the left:")
+	check("[look left] turns the view to the storage side, the line in the call-out box", [game.view, _box.visible, _calling_line()], [&"Left", false, "The storage is that closet to the left:"])
 	_calling.call(&"_on_click", _left_click())
 	await process_frame
-	check("a click on the call-out box goes on, and [look ahead] brings the view back to him", [game.view, _box.visible, _calling.visible, _said()], [&"Main", true, false, "You got all that!?"])
+	check("a click on the call-out box goes on in it", [game.view, _calling_line()], [&"Left", "Just pop in there and grab what you need"])
+	_calling.call(&"_on_click", _left_click())
+	await process_frame
+	check("the next click goes on, and [look ahead] brings the view back to him", [game.view, _box.visible, _calling.visible, _said()], [&"Main", true, false, "You got all that!?"])
 	(_box.get_node("%LineLabel") as TypedLabel).finish()
 	_box.call(&"_on_click", _left_click())
 	await process_frame

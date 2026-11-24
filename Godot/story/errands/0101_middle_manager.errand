@@ -6,22 +6,23 @@ brief:
 
 == drop-off
 (neutral) ...so as mentioned I'm off for vacation. I'll need you to mind the store for me until I'm back.
-(trust) And you'd better not rat to the suits up at corporate that I'm away. [voice irritated03]
+(trust) And you'd better not rat me out to the suits up at corporate that I'm away. I DESERVE the week off! [voice irritated03]
 (angry) I'm trusting you here! [voice thinking]
 (neutral) The job is a piece of cake:
-(explanation) Customers come in. They tell you what's wrong with their computer. They leave. You fix it. They come back to pick it up: [voice problem]
-(neutral) Bish-bash-bosh. Job's done.
-(trust) Even a invertebrate like you can do it. [voice angry]
+(explanation) Customers come in. They tell you what's wrong with their computer. They leave. [voice problem]
+(explanation) You fix it. You call them. They come back to pick it up. [voice problem]
+(neutral) Bish-bash-bosh. Job's done!
+(trust) EVEN A INVERTEBRATE LIKE YOU CAN DO IT! [voice angry]
 (explanation) You don't even need to know anything about computers! [voice happy]
 (explanation) Just input the symptoms of the customers computer in the CompuFun Database and it'll give you step by step instructions. [voice thinking]
-(explanation) You find it over there on your right, in the office area. [voice problem]
-(neutral) It's that old machine: Just boot it up every morning. [look right]
+(explanation) You find it over there on your right, in the office area. [look right] [voice problem]
+(neutral) It's that old machine: Just boot it up every morning.
 (neutral) Oh, and for a smoothbrain like you - I'd recommend printing the checklist!
 (neutral) Connect the customers computer to the testing screen here on the counter and press power to solve software issues. [look ahead]
 (explanation) If the problem is hardware. Open up the chassi with the screwdriver on the counter. [voice irritated01]
 (angry) Just chuck any broken parts in the office trashcan and then head into the storage to get replacement parts.
-(explanation) The storage is that closet to the left: [voice problem]
-(neutral) Just pop in there and grab what you need [look left]
+(explanation) The storage is that closet to the left: [look left] [voice problem]
+(neutral) Just pop in there and grab what you need
 (trust) You got all that!? [look ahead] [voice angry]
 - Uhm..
 - Well..
@@ -33,4 +34,4 @@ brief:
 (angry) If you have any issues or problems.. [voice irritated01]
 (trust) DON'T BOTHER ME ABOUT THEM! [voice angry]
 (bye) I'll be on the playa, specifically not thinking of you or FUGGING CompuFun! [voice irritated02]
-(bye) See ya sucker! Adios! [voice happy]
+(bye) See ya in seven days sucker! Adios! [voice happy]
