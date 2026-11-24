@@ -29,7 +29,7 @@ const SEARCH_SECONDS: float = 30.0
 const DEFAULT_SEEDS: Array[int] = [1]
 ## Errors that come from a missing link that dev/story.gd lists, by a part of their text: reported,
 ## not failed, so that the writers' gaps don't fail every push.
-const STORY_GAPS: Array[String] = ["has no conversation for day", "\" portrait"]
+const STORY_GAPS: Array[String] = ["\" portrait"]
 
 ## What the bot knows how to play. When the game gets something new here, the bot fails until it is
 ## taught: make it do what a player does with the new thing (or decide that a player doesn't), then

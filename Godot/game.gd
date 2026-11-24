@@ -1990,9 +1990,9 @@ func _set_visitor(visiting: Errand, why: Visit) -> void:
 
 
 ## Picks what the TALKING visitor says, and remembers that it played. A pickup visitor with no
-## PICKUP conversation says a line of [constant THANKS]. A visitor who brings no computer, or who
-## popped up for an event, and has nothing to say goes at once. A conversation without lines or
-## choices sets its flags and is nothing to say.
+## PICKUP conversation says a line of [constant THANKS]. Any other visitor with nothing to say goes
+## at once, as after [method dialogue_finished]: a drop-off leaves its computer on the counter. A
+## conversation without lines or choices sets its flags and is nothing to say.
 func _start_talk() -> void:
 	leaving_lines = []
 	var trigger := {Visit.PICKUP: Conversation.Trigger.PICKUP, Visit.EVENT: Conversation.Trigger.EVENT}.get(visit, Conversation.Trigger.ARRIVE) as Conversation.Trigger
@@ -2003,7 +2003,7 @@ func _start_talk() -> void:
 		conversation = _thanks(visitor)
 		if conversation == null:
 			_leave()
-	elif conversation == null and (visit == Visit.EVENT or (errand != null and errand.brings == Errand.Brings.NOTHING)):
+	elif conversation == null:
 		_leave()
 
 

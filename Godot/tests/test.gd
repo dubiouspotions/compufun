@@ -36,8 +36,8 @@ func check(label: String, actual: Variant, expected: Variant) -> void:
 
 
 ## Day [param number] with one errand per [code][customer, problem][/code] pair in [param errands],
-## in order, with the errand codes of their places; a third item is the errand's conversations. The
-## first errand is morning, the second midday and the rest afternoon. The first customer comes in at
+## in order, with the errand codes of their places; a third item is the errand's conversations, else
+## it has a drop-off of one line. The first errand is morning, the second midday and the rest afternoon. The first customer comes in at
 ## once, and each next one a minute after the last left.
 func make_day(number: int, errands: Array) -> Day:
 	var d := Day.new()
@@ -46,14 +46,23 @@ func make_day(number: int, errands: Array) -> Day:
 		var errand := Errand.new()
 		errand.customer = pair[0]
 		errand.problem = pair[1]
-		if pair.size() > 2:
-			errand.conversations.assign(pair[2])
 		errand.code = "%02d%02d" % [number, d.errands.size() + 1]
+		errand.conversations.assign(pair[2] if pair.size() > 2 else [_hello(errand.code)])
 		errand.daypart = CallOuts.DAYPARTS[mini(d.errands.size(), 2)]
 		d.errands.append(errand)
 	d.first_wait_seconds = Vector2.ZERO
 	d.gap_seconds = Vector2(60.0, 60.0)
 	return d
+
+
+# A drop-off of one line, so that the customer talks until dialogue_finished().
+static func _hello(code: String) -> Conversation:
+	var line := DialogueLine.new()
+	line.text = "Hello."
+	var hello := Conversation.new()
+	hello.id = StringName(code + "/drop-off/1")
+	hello.lines = [line]
+	return hello
 
 
 ## Day [param number] of the week from the story files, with only the errands that bring a computer

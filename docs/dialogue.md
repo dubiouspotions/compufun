@@ -97,8 +97,8 @@ brief:
   (`customers/conversations/hello.tres`). The phone says every line through a telephone
   (`voices/effects/telephone.tres`), over the line's own voice effect. A `phone` without lines rings out: nobody
   answers, nobody comes, and the computer stays on the counter (as `0703_skater_bro`'s does once
-  `skater_organs_replaced` is set). The phone calls the customers who answer first, and never calls about a computer again once its call rang out. A drop-off without lines sets its flags and says nothing, so a customer without a
-  computer leaves at once.
+  `skater_organs_replaced` is set). The phone calls the customers who answer first, and never calls about a computer again once its call rang out. A drop-off without lines sets its flags and says nothing, as a missing one does: the customer
+  leaves their computer, if they bring one, and goes at once.
 
 ### Events: `== event`
 

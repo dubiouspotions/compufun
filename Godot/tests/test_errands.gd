@@ -108,6 +108,13 @@ func _brings_nothing() -> void:
 	check("a drop-off without lines sets its flags, and she goes at once", [game.flag(&"sign_pipedream"), game.visitor_state, game.conversation], [1, GAME.VisitorState.WALKING_OUT, null])
 	game.customer_left()
 
+	game.restore({"day": 2, "phase": "CLOSED"})
+	game.start_day(day_of(2, [errand("0201_skater_bro", "customer: skater_bro\nproblem: dust_overheat\n\n== phone\n(neutral) Hello?\n")]))
+	game.open_shop()
+	game.customer_arrived()
+	check("without a drop-off, he leaves his computer and goes at once", [game.visitor_state, game.conversation, game.jobs.map(func(j: Job) -> String: return j.errand.code)], [GAME.VisitorState.WALKING_OUT, null, ["0201"]])
+	game.customer_left()
+
 	var leaves := errand("0201_office_girl", "customer: office_girl\nproblem: dust_overheat\n\n== drop-off\n(neutral) Fix it.\n")
 	var visits := errand("0202_office_girl", "customer: office_girl\ncomputer: none\n\n== drop-off\n(neutral) Is it done?\n")
 	game.restore({"day": 2, "phase": "CLOSED"})
