@@ -563,15 +563,15 @@ transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.965
 [node name="WallShelf" parent="Room" instance=ExtResource("wall_shelf")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4.0, 0, -3.4)
 
-[node name="TapedNote" parent="Room" instance=ExtResource("taped_note")]
+[node name="TapedNote" parent="Room" instance=ExtResource("taped_note") groups=["solitaire_posters"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 0.76, -0.921)
 
-[node name="FuntasticSticker" parent="Room" instance=ExtResource("23_poster")]
+[node name="FuntasticSticker" parent="Room" instance=ExtResource("23_poster") groups=["solitaire_posters"]]
 transform = Transform3D(0.9945219, 0.104528464, 0, -0.104528464, 0.9945219, 0, 0, 0, 1, -0.9, 0.78, -0.923)
 texture = ExtResource("funtastic_sticker")
 size = Vector2(0.63, 0.168)
 
-[node name="TrashPoster" parent="Room" instance=ExtResource("23_poster")]
+[node name="TrashPoster" parent="Room" instance=ExtResource("23_poster") groups=["solitaire_posters"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16, 0.73, -0.922)
 texture = ExtResource("trash_poster")
 size = Vector2(0.38, 0.3325)

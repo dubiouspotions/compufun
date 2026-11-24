@@ -4,9 +4,10 @@ extends CorruptionSign
 ## [member order]: each shakes on the wall, turns to face the counter, drops to the floor between the counter and
 ## the door, bounces lower and lower towards the other side of the shop, and leaves a still copy of
 ## itself at every step, lit like the room. As in the Solitaire win, each copy draws over every copy
-## before it, nearer or not; the room still hides them. Stage 1 plays it, and the night waits for it
-## ([method busy]); then it sets stage 2: the sheets stay on the floor, the trail behind them. Stage
-## 0 hangs them back on the wall.
+## before it, nearer or not; the room still hides them. Once they are down, the sheets in
+## [member fade_order] (the signs on the counter front) follow while the night fades out. Stage 1 plays
+## it, and the night waits for the first sheets ([method busy]); then it sets stage 2: the sheets stay
+## on the floor, the trail behind them. Stage 0 hangs them back in their places.
 
 const SHEETS: StringName = &"solitaire_posters"
 ## A fall that never reaches the floor stops after this many steps.
@@ -20,6 +21,15 @@ const _PSX_LAYERED := preload("res://shaders/psx_world_layered.gdshader")
 @export var order: Array[StringName] = [&"SignLeft", &"CommercialPoster", &"Sign"]
 ## The seconds from one sheet's start to the next one's.
 @export var stagger_seconds: float = 2.5
+## The names of the sheets that fall after all the others have landed, in this order, while the night
+## fades out: the night doesn't wait for them. Each shakes while the sheets before them land, and the
+## first leaves its place as the last of them lands.
+@export var fade_order: Array[StringName] = [&"FuntasticSticker", &"TrashPoster", &"TapedNote"]
+## The seconds from one sheet's start to the next one's, in [member fade_order].
+@export var fade_stagger_seconds: float = 0.3
+## The line where the sheets in [member fade_order] bounce: z in the shop, in metres, just in front of
+## the counter.
+@export var fade_lane_z: float = -0.85
 ## The seconds that a sheet shakes on the wall before it falls.
 @export var shake_seconds: float = 1.0
 ## The widest tilt of the shake, in degrees; it grows to this from nothing.
@@ -47,8 +57,10 @@ const _PSX_LAYERED := preload("res://shaders/psx_world_layered.gdshader")
 
 var _sheets: Array[Node3D] = []
 var _homes: Array[Transform3D] = []
-var _meshes: Array = []  # one Array[MeshInstance3D] per sheet
+var _meshes: Array = []  # one Array[GeometryInstance3D] per sheet: its meshes and labels
 var _paths: Array = []  # one Array[Transform3D] per sheet
+var _starts: Array[int] = []  # the trail step where each sheet starts to shake
+var _night_step: int = 0  # the trail step from which the night needn't wait
 var _fallen: bool = false
 var _step: int = 0
 var _clock: float = 0.0
@@ -64,17 +76,18 @@ func _ready() -> void:
 		_sheets.append(node as Node3D)
 	if _sheets.is_empty():
 		push_error("posters_bounce: nothing in the group %s" % SHEETS)
-	for name_of: StringName in order:
+	for name_of: StringName in order + fade_order:
 		if not _sheets.any(func(sheet: Node3D) -> bool: return sheet.name == name_of):
-			push_error("posters_bounce: no %s in the group %s, from order" % [name_of, SHEETS])
+			push_error("posters_bounce: no %s in the group %s, from order or fade_order" % [name_of, SHEETS])
 	_sheets.sort_custom(func(a: Node3D, b: Node3D) -> bool: return _rank(a) < _rank(b))
 	for sheet: Node3D in _sheets:
 		_homes.append(sheet.global_transform)
-		var meshes: Array[MeshInstance3D] = []
+		var meshes: Array[GeometryInstance3D] = []
 		if sheet is MeshInstance3D:
 			meshes.append(sheet as MeshInstance3D)
-		for mesh: Node in sheet.find_children("*", "MeshInstance3D", true, false):
-			meshes.append(mesh as MeshInstance3D)
+		for mesh: Node in sheet.find_children("*", "GeometryInstance3D", true, false):
+			if mesh is MeshInstance3D or mesh is Label3D:
+				meshes.append(mesh as GeometryInstance3D)
 		_meshes.append(meshes)
 	set_process(false)
 	super()
@@ -82,12 +95,16 @@ func _ready() -> void:
 
 func _rank(sheet: Node3D) -> int:
 	var at := order.find(sheet.name)
-	return at if at >= 0 else order.size()
+	if at >= 0:
+		return at
+	at = fade_order.find(sheet.name)
+	return order.size() + 1 + at if at >= 0 else order.size()
 
 
-## True while the sheets fall: the night waits for it.
+## True while the sheets fall, until the last sheet before [member fade_order] lands: the night waits
+## for it.
 func busy() -> bool:
-	return stage() == 1
+	return stage() == 1 and _step < _night_step
 
 
 func _apply(shown_stage: int) -> void:
@@ -113,8 +130,8 @@ func _process(delta: float) -> void:
 		var falling := false
 		for index: int in _sheets.size():
 			var path: Array = _paths[index]
-			var since := _step * trail_step - index * stagger_seconds
-			var on_path := _step - roundi((index * stagger_seconds + shake_seconds) / trail_step)
+			var since := (_step - _starts[index]) * trail_step
+			var on_path := _step - _starts[index] - _shake_steps()
 			if on_path < 0:
 				_sheets[index].global_transform = _shaken(index, maxf(since, 0.0))
 				falling = true
@@ -140,10 +157,24 @@ func _fall() -> void:
 	_remove_copies()
 	_place(false)
 	_paths = _sheets.map(_path_of)
+	_starts.clear()
+	_night_step = 0
+	var faded := 0
+	for index: int in _sheets.size():
+		if fade_order.has(_sheets[index].name):  # _rank sorts these last, so _night_step is final here
+			_starts.append(_night_step - _shake_steps() + roundi(faded * fade_stagger_seconds / trail_step))
+			faded += 1
+		else:
+			_starts.append(roundi(index * stagger_seconds / trail_step))
+			_night_step = maxi(_night_step, _starts[index] + _shake_steps() + (_paths[index] as Array).size())
 	_fallen = false
 	_step = -1
 	_clock = trail_step
 	set_process(true)
+
+
+func _shake_steps() -> int:
+	return roundi(shake_seconds / trail_step)
 
 
 # Where [param sheet] is at each trail step, from its place on the wall to where it stays on the floor.
@@ -155,7 +186,8 @@ func _path_of(sheet: Node3D) -> Array[Transform3D]:
 	var drop := maxf(home.origin.y - bottom - floor_height, 0.01)
 	var to_floor := (jump_speed + sqrt(jump_speed * jump_speed + 2.0 * gravity * drop)) / gravity
 	var side := 1.0 if home.origin.x < 0.0 else -1.0
-	var speed := Vector3(side * side_speed, jump_speed, (lane_z - home.origin.z) / to_floor)
+	var lane := fade_lane_z if fade_order.has(sheet.name) else lane_z
+	var speed := Vector3(side * side_speed, jump_speed, (lane - home.origin.z) / to_floor)
 	var at := home.origin
 	var left := bounces
 	var points: Array[Transform3D] = []
@@ -165,7 +197,7 @@ func _path_of(sheet: Node3D) -> Array[Transform3D]:
 		var landed := at.y - bottom <= floor_height and speed.y < 0.0
 		if landed:
 			at.y = floor_height + bottom
-			at.z = lane_z
+			at.z = lane
 			speed.z = 0.0
 			speed.y *= -bounce
 		var turned := from.slerp(Quaternion.IDENTITY, minf(points.size() * trail_step / turn_seconds, 1.0))
@@ -181,7 +213,7 @@ func _path_of(sheet: Node3D) -> Array[Transform3D]:
 func _bottom_of(sheet: Node3D) -> float:
 	var lowest := 0.0
 	var to_local := sheet.global_transform.affine_inverse()
-	for mesh: MeshInstance3D in _meshes[_sheets.find(sheet)]:
+	for mesh: GeometryInstance3D in _meshes[_sheets.find(sheet)]:
 		lowest = minf(lowest, ((to_local * mesh.global_transform) * mesh.get_aabb()).position.y)
 	return -lowest * sheet.global_basis.get_scale().y
 
@@ -195,11 +227,17 @@ func _place(fallen: bool) -> void:
 			_sheets[index].global_transform = _path_of(_sheets[index])[-1]
 
 
-func _leave_copy(meshes: Array[MeshInstance3D]) -> void:
-	for mesh: MeshInstance3D in meshes:
-		var copy := MeshInstance3D.new()
-		copy.mesh = mesh.mesh
-		copy.material_override = _layered_material(mesh)
+func _leave_copy(meshes: Array[GeometryInstance3D]) -> void:
+	for mesh: GeometryInstance3D in meshes:
+		if not mesh.is_visible_in_tree():
+			continue
+		var copy: GeometryInstance3D
+		if mesh is Label3D:  # a label draws in the transparent pass on its own
+			copy = mesh.duplicate(0) as Label3D
+		else:
+			copy = MeshInstance3D.new()
+			(copy as MeshInstance3D).mesh = (mesh as MeshInstance3D).mesh
+			copy.material_override = _layered_material(mesh as MeshInstance3D)
 		copy.sorting_offset = _copies * LAYER_METRES
 		_copies += 1
 		copy.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -214,13 +252,18 @@ func _remove_copies() -> void:
 	_layered.clear()  # a logo may have changed its art since
 
 
-# [param mesh]'s material in the transparent pass; its own material, which can't layer, when it isn't psx_world.
+# [param mesh]'s material in the transparent pass; its own material, which can't layer, when it is
+# neither psx_world nor a BaseMaterial3D.
 func _layered_material(mesh: MeshInstance3D) -> Material:
-	var material := mesh.material_override
+	var material := mesh.get_active_material(0)
 	if not _layered.has(material):
 		var psx := material as ShaderMaterial
-		if psx == null or psx.shader != _PSX_WORLD:
-			push_error("posters_bounce: %s has no psx_world material, so its trail can't draw over the earlier copies" % mesh.get_path())
+		if material is BaseMaterial3D:
+			var blended := material.duplicate() as BaseMaterial3D
+			blended.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			_layered[material] = blended
+		elif psx == null or psx.shader != _PSX_WORLD:
+			push_error("posters_bounce: %s has neither a psx_world nor a BaseMaterial3D material, so its trail can't draw over the earlier copies" % mesh.get_path())
 			_layered[material] = material
 		else:
 			var layered := psx.duplicate() as ShaderMaterial

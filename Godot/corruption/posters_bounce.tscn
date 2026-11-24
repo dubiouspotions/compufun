@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 title = "The logos and a poster bounce off the walls like the Solitaire win"
 timing = 2
-description = "When the player closes the shop on day 5, the logo on the left wall, the poster on the right wall and last the logo over the door, 2.5 s apart, each shake on the wall, turn to face the counter and bounce across the shop between the counter and the door, leaving a trail of copies lit like the room, each drawn over the ones before it. The night waits for them. Then they stay on the floor (2); the next day they hang on the walls again."
+description = "When the player closes the shop on day 5, the logo on the left wall, the poster on the right wall and last the logo over the door, 2.5 s apart, each shake on the wall, turn to face the counter and bounce across the shop between the counter and the door, leaving a trail of copies lit like the room, each drawn over the ones before it. The night waits for them. As the last one lands and the night fades out, the FUNtastic sticker, the TRASH poster and the taped note on the counter front follow, 0.3 s apart, bouncing along the front of the counter. Then they stay on the floor (2); the next day they are back in their places."
 hint = "Close the shop on day 5. Then stage 2."
 stages = 2
 
