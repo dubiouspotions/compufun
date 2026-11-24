@@ -72,7 +72,7 @@ Main (Node)                              the main buffer: the window
 ├─ UI (CanvasLayer)
 │  ├─ the UI screens
 │  ├─ ScreenView (screen_view.tscn: follows the bench screen, fades in for the Screen View)
-│  │  ├─ ScreenBuffer (SubViewport, 640 × 480)  the screen buffer: updates always, embeds sub-windows
+│  │  ├─ ScreenBuffer (SubViewport, 640 × 480)  the screen buffer: updates while something draws it, embeds sub-windows
 │  │  │  └─ BenchScreen (ui/bench_screen.tscn)
 │  │  │     ├─ NoSignal (win95/no_signal.tscn), while the VGA cable hangs free
 │  │  │     └─ win95/win95.tscn         the connected job's desktop; each job has one, the others run in a viewport that draws nothing, their Win95 sounds silent
