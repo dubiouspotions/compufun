@@ -10,6 +10,9 @@ extends CorruptionSign
 ## camera's right and up.
 @export var offset: Vector2 = Vector2(0.18, 0.12)
 
+## How long after a click the next customer comes in, in seconds of open shop.
+@export var next_customer_seconds: float = 6.0
+
 @onready var _close: Button = %Close
 
 var _shop: Shop
@@ -18,7 +21,7 @@ var _world: SubViewportContainer
 
 func _ready() -> void:
 	_close.visible = false
-	_close.pressed.connect(Game.dismiss_visitor)
+	_close.pressed.connect(func() -> void: Game.dismiss_visitor(next_customer_seconds))
 	_shop = _find_shop()
 	# Right before drawing, after the camera tween moved: the [x] never lags behind the head.
 	RenderingServer.frame_pre_draw.connect(_follow)

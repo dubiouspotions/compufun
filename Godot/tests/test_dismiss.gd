@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
 ## Game.dismiss_visitor, the [x] of the corruption sign customer_x: the visitor vanishes at once with
-## their computers, never comes in again, and the day still ends.
+## their computers, never comes in again, the next customer comes the given seconds later, and the
+## day still ends.
 
 const GAME := preload("res://game.gd")
 const SKATER: String = "res://customers/skater_bro.tres"
@@ -18,12 +19,12 @@ func run() -> void:
 	game.open_shop()
 	check("the skater walks in", game.visitor == skater, true)
 	game.customer_arrived()
-	game.dismiss_visitor()
+	game.dismiss_visitor(6.0)
 	check("gone at once, no computer left", [game.visitor, game.visitor_state, game.jobs.size()], [null, GAME.VisitorState.NONE, 0])
 	check("gone for good, by flag", [game.is_gone(skater), game.flag(&"gone_skater_bro")], [true, 1])
 	check("he counts as come in", game.arrivals, 1)
 
-	game.dismiss_visitor()
+	game.dismiss_visitor(6.0)
 	check("with nobody in, nothing changes", [game.visitor, game.arrivals, game.is_gone(entrepreneur)], [null, 1, false])
 	tick(61.0)
 	game.customer_arrived()
@@ -64,10 +65,25 @@ func run() -> void:
 	var older := {"customer": SKATER, "slot": 2}
 	check("restore a pickup", game.restore({"day": 1, "arrivals": 2, "jobs": [fixed, older, {"customer": ENTREPRENEUR, "problem": "no_sound", "slot": 1}],
 			"focus_slot": 0, "connected_slot": 2, "visitor": SKATER, "visit": "PICKUP", "visitor_state": "TALKING"}), "")
-	game.dismiss_visitor()
+	game.dismiss_visitor(6.0)
 	check("both his computers gone, focus and cable free", [slots(), game.focus, game.connected, game.visitor], [["Young entrepreneur@0"], null, null, null])
 	check("nobody to call for his computer", game.can_call(), false)
 
+	# The next customer comes the given seconds after the [x], not a whole gap later.
+	check("an empty counter", game.restore({"day": 1}), "")
+	game.start_day(make_day(4, [[hat_guy, dust], [entrepreneur, quiet], [accountant, quiet]]))
+	game.open_shop()
+	game.customer_arrived()
+	game.dialogue_finished()
+	game.customer_left()
+	tick(61.0)
+	game.customer_arrived()
+	check("the entrepreneur talks, the hat guy's computer is in", [game.visitor, slots()], [entrepreneur, ["Hat guy@0"]])
+	game.dismiss_visitor(6.0)
+	tick(5.9)
+	check("nobody comes within the 6 s", game.visitor, null)
+	tick(0.2)
+	check("the next customer walks in after 6 s", [game.visitor, game.visitor_state], [accountant, GAME.VisitorState.WALKING_IN])
 
 
 ## The jobs on the counter as "<customer>@<slot>", oldest first.

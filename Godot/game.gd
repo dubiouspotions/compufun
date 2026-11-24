@@ -543,8 +543,10 @@ func day_of(number: int) -> Day:
 ## Sends the visitor away for good, as the [x] of the corruption sign customer_x does: they vanish
 ## at once, with every computer of theirs on the counter, and never come in again, also not on a
 ## later day or for a pickup ([method is_gone]); the flag gone_<customer file name> records it.
-## Fails with an error when nobody is in.
-func dismiss_visitor() -> void:
+## The next customer who can come in comes after [param next_customer_seconds] of open shop, in place
+## of [member Day.gap_seconds]; with an empty counter, [member Day.idle_wait_seconds] when that is
+## shorter. Fails with an error when nobody is in.
+func dismiss_visitor(next_customer_seconds: float) -> void:
 	if visitor == null:
 		push_error("Game.dismiss_visitor: nobody is in the shop")
 		return
@@ -553,6 +555,7 @@ func dismiss_visitor() -> void:
 		_take_off_counter(job)
 	_pickup = null
 	_set_visitor(null, Visit.NONE)
+	_wait = next_customer_seconds
 	changed.emit()
 
 
