@@ -35,6 +35,7 @@
 [ext_resource type="Resource" path="res://win95/theme/schemes/rose.tres" id="scheme_rose"]
 [ext_resource type="Script" path="res://win95/win95_setup.gd" id="36_40syd"]
 [ext_resource type="Texture2D" path="res://customers/office_girl/daisies.png" id="wallpaper_daisies"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/bitmap_32.png" id="icon_bitmap"]
 [ext_resource type="Resource" path="res://people/office_girl/person.tres" id="42_o3bf6"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="43_itl7v"]
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_asset_tag.png" id="sticker_asset_tag"]
@@ -230,12 +231,19 @@ icon = ExtResource("31_nibve")
 program = ExtResource("32_sedmj")
 modified = "Tuesday, July 11, 1995 9:50:00 AM"
 
+[sub_resource type="Resource" id="Bmp_flowers_hearts"]
+script = ExtResource("5_nkk1v")
+name = "Flowers & Hearts.bmp"
+icon = ExtResource("icon_bitmap")
+picture = ExtResource("wallpaper_daisies")
+modified = "Monday, February 12, 1996 12:47:31 PM"
+
 [sub_resource type="Resource" id="Resource_jhvqk"]
 script = ExtResource("5_nkk1v")
 name = "Windows"
 icon = ExtResource("33_60txt")
 is_folder = true
-children = Array[Resource]([ExtResource("10_3wj3f"), ExtResource("11_bc12k"), SubResource("Resource_qy2mo"), SubResource("Resource_bmk2r"), SubResource("Resource_b1b40"), SubResource("Resource_lgjwy"), SubResource("Resource_uur7o"), SubResource("Resource_mb216"), SubResource("Resource_nh1ww"), SubResource("Resource_wks7q"), SubResource("Resource_pj17p"), SubResource("Resource_c1dl0"), SubResource("Resource_4fm27"), SubResource("Resource_gwwso")])
+children = Array[Resource]([ExtResource("10_3wj3f"), ExtResource("11_bc12k"), SubResource("Resource_qy2mo"), SubResource("Resource_bmk2r"), SubResource("Resource_b1b40"), SubResource("Resource_lgjwy"), SubResource("Resource_uur7o"), SubResource("Resource_mb216"), SubResource("Resource_nh1ww"), SubResource("Resource_wks7q"), SubResource("Resource_pj17p"), SubResource("Resource_c1dl0"), SubResource("Resource_4fm27"), SubResource("Resource_gwwso"), SubResource("Bmp_flowers_hearts")])
 
 [sub_resource type="Resource" id="Resource_rh5qv"]
 script = ExtResource("5_nkk1v")
