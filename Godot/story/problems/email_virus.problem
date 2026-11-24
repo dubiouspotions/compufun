@@ -10,7 +10,8 @@ checks:
 	no: StartUp holds only known programs
 		shows: BIZOPP.EXE, from C:\WINDOWS
 software steps:
-	Install CompuFun AntiVirus from its floppy
-	Scan and clean
+	Put a CompuFun AntiVirus floppy from the storage room in the floppy drive
+	Double-click My Computer, 3½ Floppy (A:), SETUP.EXE; click Next
+	Double-click CompuFun AntiVirus on the desktop; click Scan Now, then Clean
 notes:
 	Broken part: OS

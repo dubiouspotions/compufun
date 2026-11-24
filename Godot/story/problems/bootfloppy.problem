@@ -15,8 +15,8 @@ checks:
 	no: Drive A: is empty
 		shows: sticks out of the drive; the eject button pulses
 software steps:
-	Eject the floppy
-	Restart
+	Press the eject button on the floppy drive
+	Switch the computer off and on again
 notes:
 	Error message when booting "Non-System disk or disk error
 	Replace and press any key when ready"

@@ -20,8 +20,8 @@ checks:
 hardware steps:
 	Open case
 	Swap one RAM module for a new one
-	Power on and watch the memory test
-	If it still fails, put that module back and swap the other
+	Switch it on and watch the memory test on the test screen
+	If it still fails, switch it off, put that module back and swap the other
 	Trash the bad module
 	Close case
 notes:

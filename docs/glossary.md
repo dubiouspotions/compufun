@@ -36,7 +36,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Post-it**: The repair ticket on a computer on the counter: the perceived issue, and a green check once the computer is fixed and tested. Each computer wears one (`props/post_it_3d.tscn`). It sits on the front of the case, below the power button, standing or lying. In the Workview, `ui/post_it_label.tscn` writes its text in sharp UI text over the paper.
 *Avoid:* ticket, note.
 
-**Tested**: A fixed computer whose Windows desktop the player has seen stay up, for the problem's `hangs_after` seconds (`Job.tested`). Breaking the computer again clears it. Only a fixed and tested computer is done: its post-it shows the check, and the player can call its customer. CompuFunDB ends every repair but a software-only one with the step "Test the computer": a software fix lands on a running Windows, which tests it at once.
+**Tested**: A fixed computer whose Windows desktop the player has seen stay up, for the problem's `hangs_after` seconds (`Job.tested`). Breaking the computer again clears it. Only a fixed and tested computer is done: its post-it shows the check, and the player can call its customer. CompuFunDB ends every repair but a software-only one with the Test step, "Connect it, switch it on and watch Windows stay up": a software fix lands on a running Windows, which tests it at once.
 *Avoid:* checked, verified.
 
 **CompuFunDB**: The database on the work computer. The player searches it for a symptom, ticks the checks that are true on the computer, which rules causes out, and prints the fix of the cause they pick. It reads every `Problem` file; `Game` holds the search (`DbSearch`).

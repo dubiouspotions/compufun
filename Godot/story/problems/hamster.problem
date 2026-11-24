@@ -19,7 +19,7 @@ checks:
 	yes: Every part sits in its own place
 hardware steps:
 	Open case
-	Clear the CPU fan
+	Take out anything stuck on the CPU fan
 	Replace it if it is dirty or broken
 	Close case
 notes:

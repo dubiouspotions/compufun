@@ -8,6 +8,6 @@ checks:
 	no: Colours look normal
 		shows: Display Properties, Appearance: High Contrast Black
 software steps:
-	Display Properties, Appearance
-	Pick Windows Standard
-	Apply
+	Right-click the desktop, click Properties, then the Appearance tab
+	Pick Windows Standard under Scheme
+	Click Apply

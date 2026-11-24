@@ -12,6 +12,6 @@ checks:
 	no: Icons are on the desktop
 		shows: bottom right, mostly off the screen
 software steps:
-	Open the folder in the corner
-	Drag the icons to the desktop
-	Change the wallpaper
+	Double-click the folder in the corner of the desktop
+	Drag the icons in it out onto the desktop
+	Right-click the desktop, click Properties, pick a Wallpaper, click OK

@@ -63,7 +63,7 @@ const GROUP: StringName = &"compufun_db"
 @export var bar_color: Color = Color(0.89, 0, 0)
 ## The last repair step of every fix but a software-only one, after its hardware and software steps
 ## (see Job.tested). A software fix lands on a running Windows, which tests it at once.
-@export var test_step: String = "Test the computer"
+@export var test_step: String = "Connect it, switch it on and watch Windows stay up"
 ## The sound of each key that the character types.
 @export var keystroke: SoundSet = preload("res://sounds/keystroke.tres")
 ## The sound of the space bar; null plays [member keystroke].

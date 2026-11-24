@@ -29,5 +29,6 @@ func run() -> void:
 	var software: PackedStringArray = db.call("_fix_page", load("res://problems/no_sound.tres"))
 	check("the software fix has no Test step", [software.has("-- Test --"), software[-1].contains(db.get("test_step"))], [false, false])
 	var hardware: PackedStringArray = db.call("_fix_page", load("res://problems/dust_overheat.tres"))
-	check("the hardware fix ends in it", [hardware.has("-- Test --"), hardware[-1].contains(db.get("test_step"))], [true, true])
+	var test := " ".join(hardware.slice(hardware.find("-- Test --") + 1)).replace("[ ]", "")
+	check("the hardware fix ends in it", [hardware.has("-- Test --"), " ".join(test.split(" ", false)).ends_with(db.get("test_step"))], [true, true])
 	db.queue_free()

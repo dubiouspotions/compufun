@@ -8,7 +8,7 @@ checks:
 		shows: the speaker in the taskbar is crossed out
 software steps:
 	Connect the monitor
-	Start Windows
-	Untick Mute on the taskbar speaker
+	Switch it on and wait for Windows
+	Click the speaker by the clock; untick Mute
 notes:
 	NOTE - ONLY DUPLICATE ISSUE
