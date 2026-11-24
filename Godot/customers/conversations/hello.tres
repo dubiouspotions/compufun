@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Conversation" format=3]
+
+[ext_resource type="Script" path="res://customers/conversation.gd" id="cv"]
+[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="dl"]
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("dl")
+text = "Hello?"
+
+[resource]
+script = ExtResource("cv")
+id = &"hello"
+trigger = 2
+lines = Array[ExtResource("dl")]([SubResource("line_1")])

@@ -83,7 +83,9 @@ brief:
 - **Conversations** start with `==` and the trigger: `drop-off` (the customer arrives),
   `pick-up` (they come back for the computer, on any later day), `phone` (the player calls) and
   `event` (they pop up behind the counter; below). A trigger can have several; the first whose condition matches plays. Without a match, a pick-up
-  is a short thanks and a phone call a "Hello?". A `phone` without lines rings out: nobody
+  is a short thanks (`customers/conversations/thanks.tres`) and a phone call a "Hello?"
+  (`customers/conversations/hello.tres`). The phone says every line through a telephone
+  (`voices/effects/telephone.tres`), over the line's own voice effect. A `phone` without lines rings out: nobody
   answers, nobody comes, and the computer stays on the counter (as `0701_skater_bro`'s does once
   `skater_organs_replaced` is set). The phone calls the customers who answer first. A drop-off without lines sets its flags and says nothing, so a customer without a
   computer leaves at once.
