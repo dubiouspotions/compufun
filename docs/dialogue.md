@@ -23,8 +23,8 @@ story/bible/customers.md
 
 - **The file name of an errand starts with its errand code.** `0101` is day 1, the first errand;
   `0503` is day 5, the third. The name after it is the customer. Two errands
-  with the same code are alternatives: the first, by name, whose `when` matches comes (day 7
-  evening). Moving an errand to another day or place renames its file.
+  with the same code are alternatives: the first, by name, whose `when` matches comes (day 7's
+  `0702`). Moving an errand to another day or place renames its file.
 - **Customers, persons and computers stay resources** (`customers/*.tres`,
   `people/<name>/person.tres`). Their mechanics are code; the Story Lab shows their text. A
   problem's mechanics stay in `problems/<id>.tres`, and its text is in its problem file.
@@ -96,7 +96,7 @@ brief:
   is a short thanks (`customers/conversations/thanks.tres`) and a phone call a "Hello?"
   (`customers/conversations/hello.tres`). The phone says every line through a telephone
   (`voices/effects/telephone.tres`), over the line's own voice effect. A `phone` without lines rings out: nobody
-  answers, nobody comes, and the computer stays on the counter (as `0701_skater_bro`'s does once
+  answers, nobody comes, and the computer stays on the counter (as `0703_skater_bro`'s does once
   `skater_organs_replaced` is set). The phone calls the customers who answer first, and never calls about a computer again once its call rang out. A drop-off without lines sets its flags and says nothing, so a customer without a
   computer leaves at once.
 

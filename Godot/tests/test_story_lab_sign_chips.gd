@@ -19,7 +19,7 @@ func _the_committed_starts_show_where_they_start() -> void:
 		shown.append(_where(spot))
 	shown.sort()
 	var expected := PackedStringArray([
-		"blood_puddle on 0701_skater_bro.errand, locked",
+		"blood_puddle on 0703_skater_bro.errand, locked",
 		"calc_666 day 1 BEFORE_OPENING",
 		"customer_x day 6 MORNING",
 		"customer_x=0 day 7 MORNING",
@@ -27,7 +27,7 @@ func _the_committed_starts_show_where_they_start() -> void:
 		"logo_cambion day 6 AT_CLOSING",
 		"no_clippy on 0303_retired_accountant.errand",
 		"pointer_escape day 3 MORNING",
-		"pointer_escape=0 day 6 MORNING",
+		"pointer_escape=0 day 7 AT_CLOSING",
 		"posters_bounce day 5 AT_CLOSING",
 		"win_phone day 7 MORNING",
 	])
@@ -35,7 +35,7 @@ func _the_committed_starts_show_where_they_start() -> void:
 	check("each start of the committed week shows in its band or on its card", shown, expected)
 	var board := _board(lab)
 	check("day 1's on start chip sits in Before opening", board.get_child(0).find_child("BeforeOpening", true, false).find_child("Sign_calc_666", true, false) != null, true)
-	var locked: Control = _card(board, 7, "0701_skater_bro.errand").find_child("Sign_blood_puddle", true, false)
+	var locked: Control = _card(board, 7, "0703_skater_bro.errand").find_child("Sign_blood_puddle", true, false)
 	check("the problem's sign shows on its card, and doesn't drag", [locked != null, locked.mouse_filter if locked != null else -1], [true, Control.MOUSE_FILTER_STOP])
 	lab.queue_free()
 	await process_frame

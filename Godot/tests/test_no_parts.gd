@@ -1,5 +1,5 @@
 extends "res://tests/test.gd"
-## NO PARTS: on day 6 the hat guy's computer has an empty case and runs anyway. Opening it and
+## NO PARTS: on day 7 the hat guy's computer has an empty case and runs anyway. Opening it and
 ## closing it again fixes the hardware; it stays empty and keeps running. His other visits keep
 ## their parts.
 
@@ -11,7 +11,7 @@ func run() -> void:
 		{"errand": "0302_hat_guy", "slot": 0}, {"errand": "0501_hat_guy", "slot": 1}]}), "")
 	check("day 3 is whole, day 5 only rearranged (hardware_puzzle)", [game.jobs[0].places.size(), game.jobs[0].runs_empty(), game.jobs[1].misplaced.is_empty(), game.jobs[1].runs_empty()], [7, false, false, false])
 
-	check("restore day 6's errand", game.restore({"day": 6, "jobs": [{"errand": "0602_hat_guy", "slot": 0}]}), "")
+	check("restore day 7's errand", game.restore({"day": 7, "jobs": [{"errand": "0701_hat_guy", "slot": 0}]}), "")
 	var job: Job = game.jobs[0]
 	check("its problem is no_parts, its case empty, not fixed", [job.problem, job.places.size(), job.hardware_fixed, job.done], [no_parts, 0, false, false])
 	check("it switches on, and nothing stops the BIOS", [game.can_power_on(job), job.post_fault(), job.memory_share(), job.memory_fails()], [true, Job.Fault.NONE, 1.0, false])

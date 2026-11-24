@@ -8,8 +8,8 @@ const WEEK: Array = [
 	["0301 office_girl", "0302 hat_guy", "0303 retired_accountant"],
 	["0401 young_entrepreneur", "0402 attractive_guy", "0403 skater_bro"],
 	["0501 hat_guy", "0502 office_girl", "0503 nice_guy"],
-	["0601 young_entrepreneur", "0602 hat_guy", "0603 activist_guy"],
-	["0701 skater_bro", "0702 top_hat_man", "0703 office_girl", "0703 young_entrepreneur"],
+	["0601 young_entrepreneur", "0602 top_hat_man", "0603 activist_guy"],
+	["0701 hat_guy", "0702 office_girl", "0702 young_entrepreneur", "0703 skater_bro"],
 ]
 ## The hat guy's computer has no parts (corruption, not a problem), and the activist leaves his computer for good.
 const NO_PROBLEM_YET: Array[String] = ["0603 activist_guy"]

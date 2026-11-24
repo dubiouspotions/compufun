@@ -1,6 +1,6 @@
 customer: young_entrepreneur
 computer: none
-daypart: afternoon
+daypart: midday
 when: not gone_young_entrepreneur
 brief:
 	The Young entrepreneur was not deleted: he comes in the Office girl's place, without a computer, as a special dialogue event now with glitched voice. What happens is open. An idea, not decided: he stands in front of the player, and when they turn to fetch parts he is there too, and when they look right...
