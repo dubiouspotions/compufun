@@ -32,7 +32,7 @@ const _MessageBox := preload("res://win95/message_box.gd")
 ## The days whose title glitches on the black screen, a hint of Cambion.
 @export var glitch_days: PackedInt32Array = [3]
 ## How many short glitches the title has while it shows.
-@export_range(0, 10) var glitch_count: int = 3
+@export_range(0, 10) var glitch_count: int = 1
 ## How long one glitch lasts, in seconds.
 @export var glitch_seconds: float = 0.08
 ## The characters a glitch swaps into the title.
