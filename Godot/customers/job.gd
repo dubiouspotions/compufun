@@ -142,6 +142,14 @@ func runs_empty() -> bool:
 	return problem != null and problem.empty_case
 
 
+## True when a new piece of the problem's unwanted part is in, and the problem gives such a piece a
+## Win95 setup of its own (Problem.new_part_setup): the computer runs that setup instead of its own.
+func runs_new_part() -> bool:
+	if problem == null or problem.unwanted_part == null or problem.new_part_setup == null:
+		return false
+	return places.keys().any(func(place: Part) -> bool: return place.piece_part() == problem.unwanted_part and not places[place].unwanted)
+
+
 ## The share of the computer's memory that its RAM places hold, 0 to 1. 1 for a computer without
 ## RAM places, or one that [method runs_empty].
 func memory_share() -> float:

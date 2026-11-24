@@ -274,7 +274,7 @@ func _sync_case() -> void:
 
 # One seek of the hard drive while Disk Defragmenter runs here, then the wait for the next.
 func _churn() -> void:
-	var setup: Win95Setup = Game.setups.get(job.customer.computer)
+	var setup := Game.running_setup(job)
 	if defrag_seek != null and job.powered and setup != null and setup.defragmenting:
 		defrag_seek.play_on(hard_drive)
 	_defrag_timer.start(randf_range(defrag_seek_seconds.x, defrag_seek_seconds.y))

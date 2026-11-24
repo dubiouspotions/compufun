@@ -56,7 +56,7 @@ const KNOWN_GAME_METHODS: Array[String] = [
 	"focus_job", "job_beside", "lay_down", "can_stand_up", "stand_up", "open_case", "turn_screw", "can_turn",
 	"can_take", "take_part", "can_put", "put_part", "take_new_part", "can_take_blocker", "take_blocker", "can_take_misplaced", "take_misplaced", "put_on_mat", "take_from_mat",
 	"can_return_part", "return_part", "trash_part", "connect_cable", "set_powered",
-	"can_power_on", "alarms", "setup_for", "has_floppy", "can_eject", "eject_floppy", "can_insert_floppy", "insert_floppy", "toggle_cd_tray", "set_software_fixed", "set_tested",
+	"can_power_on", "alarms", "setup_for", "running_setup", "has_floppy", "can_eject", "eject_floppy", "can_insert_floppy", "insert_floppy", "toggle_cd_tray", "set_software_fixed", "set_tested",
 	# CompuFunDB and the printout
 	"search_db", "start_db", "mark_check", "carry_printout", "tick_printout",
 	"trash_printout", "printout_box",

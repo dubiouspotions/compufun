@@ -3,7 +3,8 @@ extends Node
 ## The live Win95 state of one job's computer. ScreenView makes one desktop per job, at the job's
 ## first connection, and keeps it while the cable is on another computer. Its setup is the
 ## computer's running copy from Game.setup_for, which outlives this node: a power cycle or a return
-## visit keeps the player's changes. It follows the job's power.
+## visit keeps the player's changes. It follows the job's power, and takes the running copy again
+## while the power is off.
 
 ## The power came on, or the computer rebooted. [member setup] is ready: rebuild everything from it.
 signal booted
@@ -645,6 +646,8 @@ func adopt(heir: Job) -> void:
 
 
 func _sync() -> void:
+	if not is_on:
+		setup = Game.setup_for(job)  # a swapped part can bring its own setup (Problem.new_part_setup)
 	if setup != null and setup.floppy_in_a != _floppy_in_a:
 		_floppy_in_a = setup.floppy_in_a
 		changed.emit()

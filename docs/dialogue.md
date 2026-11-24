@@ -176,7 +176,10 @@ taking the side panel off and putting it back on with its screws in is the repai
 stays empty.
 
 A problem with `unwanted_part`, as `replace_hard_drive` has, is a swap that the customer asked for:
-the part works and runs, but the hardware is fixed only once a new piece of it is in.
+the part works and runs, but the hardware is fixed only once a new piece of it is in. With
+`new_part_setup`, a new piece brings that Win95 setup, as `replace_hard_drive` brings a clean install
+(`win95/clean_install.tres`): the computer runs it while the new piece is in, and its own setup, with
+every patch, while the old piece is.
 
 ## Symptom keywords: `story/symptoms.keywords`
 

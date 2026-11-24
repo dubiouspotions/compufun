@@ -2,8 +2,10 @@
 
 [ext_resource type="Script" path="res://problems/problem.gd" id="1_problem"]
 [ext_resource type="Resource" path="res://parts/hard_drive.tres" id="2_hard_drive"]
+[ext_resource type="Resource" path="res://win95/clean_install.tres" id="3_clean_install"]
 
 [resource]
 script = ExtResource("1_problem")
 short_name = &"replace_hard_drive"
 unwanted_part = ExtResource("2_hard_drive")
+new_part_setup = ExtResource("3_clean_install")

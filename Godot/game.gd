@@ -173,6 +173,9 @@ var jump: int = 0
 ## game, also through [method restore], so a customer who comes back brings the computer as the
 ## player left it. Use [method setup_for].
 var setups: Dictionary[Computer, Win95Setup] = {}
+## The running copy of the Win95 setup that a new piece brings (Problem.new_part_setup), per computer,
+## made at its first boot with that piece in. It lasts like [member setups]. Use [method setup_for].
+var new_part_setups: Dictionary[Computer, Win95Setup] = {}
 
 ## The number of the day, 1 to 7, or 0 before the first day.
 var day_number: int:
@@ -277,7 +280,7 @@ func defrag_due(setup: Win95Setup) -> bool:
 ## and a run that starts already due (ComputerState.start_defrag) call it.
 func finish_due_defrags() -> void:
 	for job in jobs:
-		var setup: Win95Setup = setups.get(job.customer.computer)
+		var setup := running_setup(job)
 		if setup == null or not job.powered or not setup.defragmenting or not defrag_due(setup):
 			continue
 		setup.defragmenting = false
@@ -521,10 +524,14 @@ func play_errand(to_play: Errand, trigger: Conversation.Trigger = Conversation.T
 				state["daypart"] = String(event.daypart).to_upper()
 	var computer := target.customer.computer
 	var running: Win95Setup = setups.get(computer)
+	var running_new: Win95Setup = new_part_setups.get(computer)
 	setups.erase(computer)  # it arrives as the week makes it, with the patches as they are now
+	new_part_setups.erase(computer)
 	var refused := restore(state)
 	if refused != "" and running != null:
 		setups[computer] = running
+	if refused != "" and running_new != null:
+		new_part_setups[computer] = running_new
 	if refused == "" and visitor_state == VisitorState.TALKING and errand != target:
 		errand = target  # another alternative of the same customer matched first
 		_start_talk()
@@ -756,11 +763,17 @@ func fix(location: Problem.Location) -> void:
 ## The running copy of [param job]'s Win95 setup, or null when its computer has none. The first
 ## call for a computer copies its Win95Setup with the customer's start patch (SetupPatch); the first
 ## call for a job puts on the setup patches of the customer's errands up to the job's, then breaks
-## the copy as the job's problem says, on top of what earlier visits left.
+## the copy as the job's problem says, on top of what earlier visits left. While a new piece with a
+## setup of its own is in ([method Job.runs_new_part]), it is a copy of that setup instead, made at
+## the first call and kept in [member new_part_setups], with no patches or break on it.
 func setup_for(job: Job) -> Win95Setup:
 	var computer := job.customer.computer
 	if computer == null or computer.win95_setup == null:
 		return null
+	if job.runs_new_part():
+		if not new_part_setups.has(computer):
+			new_part_setups[computer] = job.problem.new_part_setup.copy()
+		return new_part_setups[computer]
 	var patches: Dictionary[String, SetupPatch] = week.patches if week != null else {}
 	var setup: Win95Setup = setups.get(computer)
 	var made := setup == null
@@ -774,6 +787,12 @@ func setup_for(job: Job) -> Win95Setup:
 		if job.software_check() != null:
 			job.software_check().apply_break(setup)
 	return setup
+
+
+## The running copy that [param job]'s computer runs now (see [method setup_for]), or null when it
+## hasn't made one yet. Unlike setup_for, it makes none.
+func running_setup(job: Job) -> Win95Setup:
+	return new_part_setups.get(job.customer.computer) if job.runs_new_part() else setups.get(job.customer.computer)
 
 
 ## Switches [param job] on or off. The screen shows the [member connected] job while it is on.
@@ -1390,6 +1409,7 @@ func ending() -> StringName:
 ## The view goes back to [param view].
 func reboot(view_name: StringName = &"Main") -> void:
 	setups.clear()
+	new_part_setups.clear()
 	var refused := restore({"day": 1, "phase": "CLOSED", "view": String(view_name)})
 	if refused != "":
 		push_error("Game.reboot: " + refused)
@@ -1443,7 +1463,7 @@ func snapshot() -> Dictionary:
 # and stops it on the other computers on the counter; then finishes the runs that are due.
 func _restore_defrags(runs: Dictionary[Job, Array]) -> void:
 	for job in jobs:
-		var setup: Win95Setup = setup_for(job) if runs.has(job) else setups.get(job.customer.computer)
+		var setup: Win95Setup = setup_for(job) if runs.has(job) else running_setup(job)
 		if setup == null:
 			continue
 		setup.defragmenting = runs.has(job)
@@ -1456,7 +1476,7 @@ func _restore_defrags(runs: Dictionary[Job, Array]) -> void:
 # [param job]'s snapshot, with "defrag_started" ([day, "DAYPART"]) while its Disk Defragmenter runs.
 func _job_snapshot(job: Job) -> Dictionary:
 	var data := job.snapshot()
-	var setup: Win95Setup = setups.get(job.customer.computer)
+	var setup := running_setup(job)
 	if setup != null and setup.defragmenting:
 		data["defrag_started"] = [setup.defrag_started_day, String(Daypart.find_key(setup.defrag_started_daypart))]
 	return data

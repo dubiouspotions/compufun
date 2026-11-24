@@ -18,6 +18,11 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 ## the computer runs and looks like any other ([member Piece.unwanted]), and the hardware is fixed only
 ## once a new piece is in its place. null for none.
 @export var unwanted_part: Part
+## The Win95 setup that a new piece of [member unwanted_part] brings, as a freshly installed hard
+## drive does: while one is in, the computer runs its own copy of this setup (Game.setup_for), and it
+## runs its own setup again once the unwanted piece is back. null keeps the computer's setup whatever
+## piece is in.
+@export var new_part_setup: Win95Setup
 ## Something in the computer that doesn't belong there, such as a hamster on the fan: a Part that no
 ## place takes, lying on the part that it sits on, which doesn't come out until it is out. The
 ## hardware is fixed only once it is out. null for none.
