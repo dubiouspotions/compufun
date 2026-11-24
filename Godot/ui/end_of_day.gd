@@ -54,7 +54,8 @@ func _ready() -> void:
 	_sync()
 
 
-## Shows the question: in the panel, or in the Win95 message box from [member win95_from_warp] on.
+## Shows the question: in the panel, or in the Win95 message box, without its chord, from
+## [member win95_from_warp] on.
 ## Yes closes the shop through [method Game.close_shop]; No, Esc on the panel, or the X of the
 ## message box leaves it open, as does a change of [member Game.view] away from the view it was asked in.
 func ask() -> void:

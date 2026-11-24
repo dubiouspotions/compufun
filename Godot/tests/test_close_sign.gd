@@ -70,6 +70,8 @@ func run() -> void:
 	check("restore day 4", game.restore({"day": 4, "arrivals": day_4.codes().size()}), "")
 	end_of_day.call("ask")
 	check("day 4 asks in a Win95 message box", [panel.visible, win95.visible], [false, true])
+	var sounds := end_of_day.find_children("*", "AudioStreamPlayer", true, false)
+	check("the message box asks silently: the sign is enough", sounds.size(), 0)
 	game.go_to_view(&"Right")
 	check("leaving the view closes the message box too", [win95.visible, game.phase], [false, game.Phase.OPEN])
 	sign.queue_free()
