@@ -21,10 +21,13 @@ var touch_mode: bool = false:
 
 var _lifted: CanvasLayer
 var _lifted_from: Vector2
+# Only a display with an on-screen keyboard is asked for its height; elsewhere asking warns.
+var _has_virtual_keyboard: bool = DisplayServer.has_feature(DisplayServer.FEATURE_VIRTUAL_KEYBOARD)
 
 
 func _process(_delta: float) -> void:
-	_lift_above_keyboard()
+	if _has_virtual_keyboard:
+		_lift_above_keyboard()
 
 
 # Moves the layer of the focused text field up by as much as the OS keyboard covers of it (F9's
