@@ -86,6 +86,19 @@ var _trouser_arrays: Array
 var _trouser_swing: PackedFloat32Array
 var _swung: Vector2 = Vector2(INF, INF)
 
+## The mood whose portrait the photo relief shows now instead of the person's relief_pose, such as
+## the mood of an event's pop-up line; empty shows the relief_pose. The person seen from behind
+## (Person.back) is drawn from the relief_pose portrait, so another pose shows its own portrait
+## mirrored and greyed on the back. A pose that the person has no portrait for shows the
+## relief_pose, with an error.
+var pose: StringName = &"":
+	set(value):
+		if value == pose:
+			return
+		pose = value
+		if is_node_ready() and _has_shown:
+			_show_relief(_shown.person if _shown != null else null)
+
 ## True while the body carries a computer in. The shop sets it for a drop-off.
 var carrying: bool = false:
 	set(value):
@@ -218,7 +231,12 @@ func show_customer(customer: Customer) -> void:
 # Shows the person's photo relief in place of the modelled upper body, or the modelled body when
 # there is no relief to show.
 func _show_relief(person: Person) -> void:
-	var portrait := _relief_portrait(person)
+	var own_pose := pose == &"" or person == null or pose == person.relief_pose
+	if not own_pose and not person.portraits.has(pose):
+		push_error("CustomerBody: %s has no portrait for the pose %s; the relief shows its relief_pose" % [person.resource_path, pose])
+		own_pose = true
+	var portrait: Texture2D = _relief_portrait(person) if own_pose else person.portraits[pose]
+	var behind: Texture2D = person.back if own_pose and person != null else null
 	var shown := photo_relief and portrait != null
 	_relief.visible = shown
 	var torso_too := true
@@ -226,13 +244,13 @@ func _show_relief(person: Person) -> void:
 		var image := portrait.get_image()
 		var relief_scale := relief_head_width / PhotoRelief.head_width(image)
 		var bottom := relief_top - image.get_height() * relief_scale
-		_relief.mesh = PhotoRelief.build(image, person.back.get_image() if person.back != null else null, relief_scale, relief_depth)
+		_relief.mesh = PhotoRelief.build(image, behind.get_image() if behind != null else null, relief_scale, relief_depth)
 		_relief.position = Vector3(0.0, bottom, 0.0)
 		_relief.set_surface_override_material(PhotoRelief.Surface.FRONT, _relief_material(portrait, Color.WHITE))
-		var back := _relief_material(person.back, Color.WHITE) if person.back != null else _relief_material(portrait, Color(0.78, 0.78, 0.78))
+		var back := _relief_material(behind, Color.WHITE) if behind != null else _relief_material(portrait, Color(0.78, 0.78, 0.78))
 		_relief.set_surface_override_material(PhotoRelief.Surface.BACK, back)
 		@warning_ignore("incompatible_ternary")
-		_relief.set_surface_override_material(PhotoRelief.Surface.HEAD_BACK, back if person.back != null else _plain_head_back())
+		_relief.set_surface_override_material(PhotoRelief.Surface.HEAD_BACK, back if behind != null else _plain_head_back())
 		# A portrait cut at the chest leaves the modelled torso to fill the gap down to the trousers.
 		torso_too = bottom >= waist_height - 0.02
 	for part: StringName in MODELLED_UPPER_BODY:

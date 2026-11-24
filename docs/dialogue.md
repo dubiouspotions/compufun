@@ -109,7 +109,8 @@ brief:
 
 An event is a visit that the customer doesn't walk in for: they pop up from behind the counter,
 the view shakes, they call out the `[pop-up ...]` line (a `(mood)` is optional), step to the
-counter, and the player turns to face them for the conversation. Then they walk out.
+counter, and the player turns to face them for the conversation. Then they walk out. While they pop
+up, their 3D body shows the portrait of the pop-up line's mood, and the usual one from the step on.
 
 - It comes at any time from the drop-off until the player has finished the errand's computer
   (fixed and tested), on that day or a later one: while that computer is on the counter and not

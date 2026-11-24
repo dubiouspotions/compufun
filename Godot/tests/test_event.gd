@@ -143,6 +143,12 @@ func _he_rises_where_the_player_looks() -> void:
 	await create_timer(float(shop.get("turn_seconds")) + float(shop.get("pop_up_seconds")) + 0.1).timeout
 	var head := body.global_position + Vector3.UP * head_height
 	check("once it faces the counter, he is up and in view", [is_equal_approx(body.global_position.y, spot.global_position.y), camera.is_position_in_frustum(head)], [true, true])
+	var relief: MeshInstance3D = body.get_node("Relief")
+	var front := func() -> Texture2D: return (relief.get_surface_override_material(PhotoRelief.Surface.FRONT) as ShaderMaterial).get_shader_parameter("albedo_texture")
+	var portraits: Dictionary = (load("res://people/skater_bro/person.tres") as Person).portraits
+	check("as he pops up, his relief is the portrait of the pop-up line's mood", [body.get("pose"), front.call()], [&"irritated03", portraits[&"irritated03"]])
+	await create_timer(float(shop.get("pop_up_shake_seconds")) + float(shop.get("pop_up_stay_seconds")) + float(shop.get("pop_up_step_seconds")) + 0.1).timeout
+	check("once he stepped to the counter and talks, his usual relief", [game.visitor_state, body.get("pose"), front.call()], [GAME.VisitorState.TALKING, &"", portraits[&"neutral"]])
 
 	for slot: int in GAME.MAX_JOBS:
 		var open := MORNING.duplicate(true)

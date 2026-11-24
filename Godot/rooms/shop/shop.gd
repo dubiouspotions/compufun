@@ -99,7 +99,8 @@ const WORKVIEW: StringName = &"Workview"
 ## An event's pop-up (Game.VisitorState.POPPING_UP): the customer rises from pop_up_depth metres below
 ## the PopUpSpot marker in pop_up_seconds, the view jolts by pop_up_shake_metres and the body
 ## wobbles by up to pop_up_wobble_degrees over pop_up_shake_seconds; they stay pop_up_stay_seconds,
-## then step to the counter in pop_up_step_seconds.
+## then step to the counter in pop_up_step_seconds. Until that step, their photo relief shows the
+## portrait of the pop-up line's mood.
 @export var pop_up_depth: float = 1.0
 ## In the Workview the customer peeks over the counter instead, as far back as the PopUpSpot: their
 ## face shows at this point of the view's 16:9 frame, from (0, 0) in the middle to (1, 1) at its top
@@ -543,6 +544,7 @@ func _sync() -> void:
 			# A restore can end a walk or a pop-up halfway; its tween must not reach Game.
 			if _walk_tween != null:
 				_walk_tween.kill()
+			_body.pose = &""
 			_body.rotation = Vector3.ZERO
 			_body.position = Vector3.ZERO
 			_follow.progress_ratio = 1.0
@@ -619,6 +621,8 @@ func _pop_up() -> void:
 		_walk_tween.kill()
 	_follow.progress_ratio = 1.0
 	_body.rotation = Vector3.ZERO
+	var event := Game.matching_conversation(Game.errand, Conversation.Trigger.EVENT)
+	_body.pose = event.pop_up.mood if event != null and event.pop_up != null else &""
 	var top := _pop_up_spot.global_position if Game.view != WORKVIEW else _peek_spot()
 	_body.global_position = top + Vector3.DOWN * pop_up_depth
 	_walk_tween = create_tween()
@@ -630,6 +634,7 @@ func _pop_up() -> void:
 	_walk_tween.tween_method(func(left: float) -> void:
 		_body.rotation.z = deg_to_rad(pop_up_wobble_degrees) * left * sin(left * 40.0), 1.0, 0.0, pop_up_shake_seconds)
 	_walk_tween.tween_interval(pop_up_stay_seconds)
+	_walk_tween.tween_callback(_body.set.bind(&"pose", &""))
 	_walk_tween.tween_property(_body, "position", Vector3.ZERO, pop_up_step_seconds).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	_walk_tween.finished.connect(Game.customer_arrived)
 
