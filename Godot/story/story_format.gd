@@ -37,6 +37,10 @@ const _DEFAULT_FIRST_WAIT: Vector2 = Vector2(5.0, 8.0)
 const _DEFAULT_GAP: Vector2 = Vector2(20.0, 40.0)
 const _DEFAULT_IDLE_WAIT: float = 4.0
 
+## What a line of a conversation is, by how it starts after its indent (docs/dialogue.md): a
+## customer line, a "-" or "+" choice, "set", "if" or "else".
+enum LineKind { SAID, CHOICE, SET, IF, ELSE }
+
 
 ## The errand in [param text], read from [param path], whose file name gives its errand code. Its
 ## problem is the one in [param problems] by id, else the cached res://problems/<id>.tres, else a
@@ -45,6 +49,29 @@ static func parse_errand(text: String, path: String, problems: Dictionary[String
 	var reader := _Reader.new(text, path)
 	reader._problems = problems
 	return reader.errand()
+
+
+## The customer line [param text], "(mood) words [tags]" without its indent, read from [param path]:
+## a DialogueLine, and the errors as "path:1: what".
+static func parse_line(text: String, path: String) -> Parsed:
+	var reader := _Reader.new(text, path)
+	var result := Parsed.new()
+	result.value = reader._said({text = text.strip_edges(), line = 0})
+	result.errors = reader._sorted_errors()
+	return result
+
+
+## The kind of [param text], a line of a conversation without its indent.
+static func line_kind(text: String) -> LineKind:
+	if text.begins_with("- ") or text.begins_with("+ "):
+		return LineKind.CHOICE
+	if text.begins_with("set "):
+		return LineKind.SET
+	if text.begins_with("if "):
+		return LineKind.IF
+	if text == "else":
+		return LineKind.ELSE
+	return LineKind.SAID
 
 
 ## The problem file in [param text], read from [param path] (story/problems/<id>.problem): a Problem
@@ -286,8 +313,6 @@ static func _range(seconds: Vector2) -> String:
 class _Reader:
 	extends RefCounted
 
-	enum Kind { LINE, CHOICE, SET, IF, ELSE }
-
 	var _path: String
 	var _lines: PackedStringArray
 	var _errors: PackedStringArray = []
@@ -409,7 +434,7 @@ class _Reader:
 			body += 1
 		_tokenize(body, to)
 		for token: Dictionary in _tokens:
-			if token.kind != Kind.LINE or token.depth != 0:
+			if token.kind != LineKind.SAID or token.depth != 0:
 				_error(token.line, "'%s': a call-out set holds only lines, (mood) text, without indent" % token.text)
 				continue
 			var line := _said(token)
@@ -659,16 +684,7 @@ class _Reader:
 			if text.begins_with(" "):
 				_error(i, "indented with spaces; indent with tabs")
 				text = text.strip_edges()
-			var kind := Kind.LINE
-			if text.begins_with("- ") or text.begins_with("+ "):
-				kind = Kind.CHOICE
-			elif text.begins_with("set "):
-				kind = Kind.SET
-			elif text.begins_with("if "):
-				kind = Kind.IF
-			elif text == "else":
-				kind = Kind.ELSE
-			_tokens.append({depth = depth, kind = kind, text = text, line = i, gap = gap})
+			_tokens.append({depth = depth, kind = StoryFormat.line_kind(text), text = text, line = i, gap = gap})
 			gap = false
 
 	func _peek() -> Dictionary:
@@ -686,18 +702,18 @@ class _Reader:
 				_at += 1
 				continue
 			match token.kind:
-				Kind.SET:
+				LineKind.SET:
 					into.set_flags.merge(_flags(token.text.substr(4), token.line), true)
 					_at += 1
-				Kind.LINE:
+				LineKind.SAID:
 					into.lines.append(_said(token))
 					_at += 1
-				Kind.IF, Kind.ELSE:
+				LineKind.IF, LineKind.ELSE:
 					_error(token.line, "'%s' must start the lines under a choice" % token.text)
 					_at += 1
-				Kind.CHOICE:
+				LineKind.CHOICE:
 					into.choices.append(_choice(depth))
-					while not _peek().is_empty() and _peek().depth == depth and _peek().kind == Kind.CHOICE and not _peek().gap:
+					while not _peek().is_empty() and _peek().depth == depth and _peek().kind == LineKind.CHOICE and not _peek().gap:
 						into.choices.append(_choice(depth))
 					if not _peek().is_empty() and _peek().depth == depth:
 						into.then = Reply.new()
@@ -722,15 +738,15 @@ class _Reader:
 		if next.is_empty() or next.depth <= depth:
 			choice.replies.append(Reply.new())
 			return choice
-		if next.depth == depth + 1 and next.kind in [Kind.IF, Kind.ELSE]:
+		if next.depth == depth + 1 and next.kind in [LineKind.IF, LineKind.ELSE]:
 			var after_else := false
-			while not _peek().is_empty() and _peek().depth == depth + 1 and _peek().kind in [Kind.IF, Kind.ELSE]:
+			while not _peek().is_empty() and _peek().depth == depth + 1 and _peek().kind in [LineKind.IF, LineKind.ELSE]:
 				var branch := _peek()
 				_at += 1
 				if after_else:
 					_error(branch.line, "'%s' after 'else' never plays" % branch.text)
 				var answer := Reply.new()
-				if branch.kind == Kind.IF:
+				if branch.kind == LineKind.IF:
 					answer.when = _condition(branch.text.substr(3), branch.line)
 				else:
 					after_else = true
