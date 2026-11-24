@@ -354,6 +354,7 @@ func _build() -> void:
 	for i: int in _MAIL_COLUMNS.size():
 		_mails.set_column_title(i, _MAIL_COLUMNS[i])
 		_mails.set_column_expand(i, i in [1, 2, 3])
+		_mails.set_column_custom_minimum_width(i, [110, 0, 0, 0, 170, 60][i])
 	_mails.item_edited.connect(func() -> void: _edit_mail(_mails.get_edited()))
 	_mails.item_selected.connect(_mail_selected)
 	mail_box.add_child(_mails)
