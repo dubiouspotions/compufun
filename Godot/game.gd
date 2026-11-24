@@ -412,7 +412,10 @@ func load_story(drafts: Dictionary[String, String] = {}) -> PackedStringArray:
 		var invalid := check_day(d) if errors.is_empty() else ""  # a file that didn't parse fails check_day too
 		if invalid != "":
 			errors.append("%sday_%d.day: %s" % [StoryFiles.DAYS_DIR, d.number, invalid])
-	if errors.is_empty():
+	if errors.is_empty() and week != null and _only_patches_differ(drafts):
+		week.patches = loaded.patches  # a patch only counts as a computer arrives: no restore, nothing restarts
+		story_drafts = drafts.duplicate()
+	elif errors.is_empty():
 		var playing := week
 		week = loaded
 		if day != null:
@@ -426,6 +429,17 @@ func load_story(drafts: Dictionary[String, String] = {}) -> PackedStringArray:
 		week.fill_problems()  # the refused week filled the shared Problem resources already
 	story_errors = errors
 	return errors
+
+
+# True when [param drafts] differ from the ones that play only in setup patches (story/computers/).
+func _only_patches_differ(drafts: Dictionary[String, String]) -> bool:
+	var other := func(d: Dictionary[String, String]) -> Dictionary:
+		var kept := {}
+		for path: String in d:
+			if not path.begins_with(SetupPatch.DIR):
+				kept[path] = d[path]
+		return kept
+	return other.call(drafts) == other.call(story_drafts)
 
 
 ## For the Story Lab's Edit on bench: puts [param customer]'s computer on the counter, with no

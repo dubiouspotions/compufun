@@ -42,6 +42,22 @@ func run() -> void:
 	game.restore({"day": 1})
 	check("without drafts, the files play again", [game.load_story(), game.day_of(1).rain == day_text.contains("weather: rain")], [PackedStringArray(), true])
 
+	var playing: Errand
+	for each: Errand in game.week.errands():
+		if each.file_name().begins_with("01") and each.brings == Errand.Brings.LEAVES:
+			playing = each
+			break
+	check("a customer talks at the counter", game.play_errand(playing), "")
+	var talking: Conversation = game.conversation
+	var job: Job = game.jobs.back() if not game.jobs.is_empty() else null
+	week = game.week
+	var patch := drafts({"res://story/computers/office_girl.setup": "set volume: 41\n"})
+	check("a setup patch alone loads", game.load_story(patch), PackedStringArray())
+	check("into the week that plays, with no restore: the talk and the jobs go on", [game.week == week, game.conversation == talking, game.conversation != null, game.jobs.has(job) if job != null else true], [true, true, true, true])
+	check("the game plays the patch", [game.week.patches.has("office_girl"), game.story_drafts], [true, patch])
+	check("anything else reloads the week", [game.load_story(drafts({DAY_1: rainy})), game.week != week], [PackedStringArray(), true])
+	game.load_story()
+
 
 func drafts(texts: Dictionary) -> Dictionary[String, String]:
 	var typed: Dictionary[String, String] = {}
