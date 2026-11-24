@@ -1,0 +1,188 @@
+set wallpaper: res://win95/wallpapers/red_blocks.png
+set installed_apps: PackedStringArray("Calculator", "Notepad", "Media Player", "Sound Recorder")
+set recently_opened: PackedStringArray("C:\\My Documents\\Investor pitch.ppt", "C:\\My Documents\\Business plan.doc")
+set volume: 60.0
+
+file Desktop\demo final.mid
+	icon: res://win95/theme/icons/multimedia_32.png
+	sound: res://win95/midi/passport.mp3
+	modified: Monday, May 20, 1996 11:48:26 PM
+	after: "Calculator.exe"
+
+file Desktop\demo final 2.mid
+	icon: res://win95/theme/icons/multimedia_32.png
+	sound: res://win95/midi/passport.mp3
+	modified: Sunday, May 26, 1996 12:15:03 AM
+	after: "demo final.mid"
+
+file Desktop\lyrics.txt
+	icon: res://win95/theme/icons/document_text_32.png
+	contents:
+		DIAL TONE HEART (demo final)
+		
+		I call you up at two a.m.
+		The line goes beep, and beep again.
+		You never pick up, you never do.
+		I leave the modem on for you.
+		
+		  Dial tone heart, dial tone heart,
+		  static where we fell apart.
+		  I hear you in the hum, I hear you in the dark,
+		  nothing on the line but my dial tone heart.
+		
+		Verse 2: ??? (Lisa has ideas)
+		Bridge: la la la (FIX THIS)
+		
+	modified: Tuesday, May 28, 1996 1:33:09 AM
+	after: "demo final 2.mid"
+
+file C:\Windows\WIN.INI
+	icon: res://win95/theme/icons/document_config_32.png
+	contents:
+		[windows]
+		load=
+		run=
+		NullPort=None
+		device=
+		
+		[Desktop]
+		TileWallpaper=0
+		WallpaperStyle=0
+		
+		[intl]
+		iCountry=46
+		sCountry=Sweden
+		sLanguage=sve
+		
+		[extensions]
+		txt=notepad.exe ^.txt
+		ini=notepad.exe ^.ini
+		bmp=pbrush.exe ^.bmp
+		
+		[mci extensions]
+		mid=Sequencer
+		wav=WaveAudio
+		
+	modified: Saturday, October 21, 1995 4:04:37 PM
+	after: "SYSTEM"
+
+file C:\Windows\SYSTEM.INI
+	icon: res://win95/theme/icons/document_config_32.png
+	contents:
+		[boot]
+		shell=Explorer.exe
+		system.drv=system.drv
+		drivers=mmsystem.dll power.drv
+		display.drv=pnpdrvr.drv
+		mouse.drv=mouse.drv
+		keyboard.drv=keyboard.drv
+		
+		[boot.description]
+		keyboard.typ=Standard 101/102-Key or Microsoft Natural Keyboard
+		mouse.drv=Standard mouse
+		display.drv=Standard Display Adapter (VGA)
+		
+		[386Enh]
+		ebios=*ebios
+		woafont=dosapp.fon
+		device=*vmouse
+		device=*vshare
+		keyboard=*vkd
+		display=*vdd,*vflatd
+		
+		[drivers]
+		wave=sb16snd.drv
+		midimapper=midimap.drv
+		
+	modified: Saturday, October 21, 1995 3:47:19 PM
+	after: "WIN.INI"
+
+file C:\My Documents\setlist.txt
+	icon: res://win95/theme/icons/document_text_32.png
+	contents:
+		SETLIST - Thursday rehearsal
+		
+		1. Dial Tone Heart
+		2. Farsta Nights
+		3. Save As
+		4. Lisa's song (no name yet)
+		5. General Protection Fault (slow version)
+		6. Dial Tone Heart again, if there's time
+		
+	modified: Monday, May 27, 1996 8:10:41 PM
+
+file C:\My Documents\rehearsal.wav
+	icon: res://win95/theme/icons/multimedia_32.png
+	modified: Saturday, May 18, 1996 6:02:55 PM
+
+file C:\My Documents\Business plan.doc
+	icon: res://win95/office/icons/word_document_32.png
+	contents:
+		{\rtf1\ansi\deff0{\fonttbl{\f0\froman Times New Roman;}}\f0\fs20
+		\qc\b\fs36 BUSINESS PLAN\b0\fs20\par
+		\qc\i Import and export. Mostly import.\i0\par
+		\ql\par
+		\b\fs24 1. The idea\b0\fs20\par
+		Buy things where they are cheap. Sell them where they are not. Repeat.\par
+		\par
+		\b\fs24 2. What we import\b0\fs20\par
+		To be decided. Ideas so far: computers, cutting edge software, sunglasses.\par
+		\par
+		\b\fs24 3. Money\b0\fs20\par
+		Start-up capital: 0 kr. Needed: some.\par
+		Time is money, so every hour saved is profit.\par
+		\par
+		\b\fs24 4. Next steps\b0\fs20\par
+		Get a business computer. Get the software a guy told me about. \ul Think big.\ul0\par
+		}
+		
+	contents_file: res://customers/young_entrepreneur/documents/business_plan.doc
+	summary: {&"title": "BUSINESS PLAN", &"comments": "Time is money!"}
+	modified: Wednesday, May 29, 1996 11:58:02 PM
+
+file C:\My Documents\Investor pitch.ppt
+	icon: res://win95/office/icons/powerpoint_presentation_32.png
+	contents:
+		# The young entrepreneur's pitch. Placeholder for the writers.
+		design: Highvolt
+		
+		slide: Title Slide
+		title: IMPORT & EXPORT
+		text: Mostly import
+		
+		slide: Bulleted List
+		title: The idea
+		text: Buy things where they are cheap
+		text: Sell them where they are not
+		text:   Repeat
+		
+		slide: 2 Column Text
+		title: Why now?
+		text: Time is money
+		text: Money is time
+		right: Cutting edge software
+		right: A business computer
+		
+		slide: Title Only
+		title: Questions?
+		
+	contents_file: res://customers/young_entrepreneur/documents/investor_pitch.ppt
+	summary: {&"title": "IMPORT & EXPORT", &"comments": "Time is money!"}
+	modified: Thursday, May 30, 1996 10:05:44 PM
+
+mail
+	from: Desk 4 <desk4@harbourimport.se>
+	to: Big Ideas Import <ceo@bigideas.se>
+	subject: My screen
+	sent: 1996-06-01 16:40
+	body: Someone has been at my computer. Everything is black and yellow and I can't read a thing! Was it you?
+	read: true
+
+mail
+	folder: sent
+	from: Big Ideas Import <ceo@bigideas.se>
+	to: Desk 4 <desk4@harbourimport.se>
+	subject: Re: My screen
+	sent: 1996-06-01 17:05
+	body: Who, me? Never. Maybe your computer just has style now. :)
+	read: true

@@ -107,7 +107,7 @@ func _on_every_customer() -> void:
 		var customer := load("res://customers/" + path) as Customer if path.ends_with(".tres") else null
 		if customer == null or customer.computer == null or customer.computer.win95_setup == null:
 			continue
-		var setup := customer.computer.win95_setup.copy()
+		var setup := SetupPatch.start(customer, game.week.patches)
 		var word := setup.file_at(WORD_PATH)
 		check("%s has Excel, in the Start menu too" % path, [setup.file_at(EXCEL_PATH) != null and setup.file_at(EXCEL_PATH).program != null, setup.file_at("C:\\WINDOWS\\Start Menu\\Programs\\Microsoft Excel").target], [true, EXCEL_PATH])
 		check("%s has Word, in the Start menu too" % path, [word != null and (load("res://win95/computer_state.gd") as GDScript).call(&"is_runnable", word), setup.file_at("C:\\WINDOWS\\Start Menu\\Programs\\Microsoft Word").target], [true, WORD_PATH])

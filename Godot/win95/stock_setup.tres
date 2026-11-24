@@ -1,0 +1,350 @@
+[gd_resource type="Resource" script_class="Win95Setup" format=3]
+
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="1_j0hbh"]
+[ext_resource type="Script" path="res://win95/applets/applet.gd" id="2_02upx"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/playing_cards_hand_32.png" id="3_ctwjt"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/program_group_32.png" id="4_qak1m"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/disk_drive_box_32.png" id="5_aad0i"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/speaker_loud_32.png" id="6_cqxu4"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/media_devices_32.png" id="7_ergbp"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/calculator_spreadsheet_32.png" id="8_aog53"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/notepad_32.png" id="9_0cjqm"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/crayon_scribble_32.png" id="10_1648j"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/document_pencil_32.png" id="11_x6ehc"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/inbox_32.png" id="12_x4qs2"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/ms_dos_window_32.png" id="13_6msah"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/explorer_32.png" id="14_ikyq1"]
+[ext_resource type="Resource" path="res://win95/applets/display.tres" id="15_8kqom"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/display_properties_32.png" id="16_4hmd7"]
+[ext_resource type="Resource" path="res://win95/applets/regional_settings.tres" id="17_gxalw"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/regional_settings_32.png" id="18_opl7w"]
+[ext_resource type="Resource" path="res://win95/applets/mouse.tres" id="19_th02u"]
+[ext_resource type="Resource" path="res://win95/applets/keyboard.tres" id="20_hre5f"]
+[ext_resource type="Resource" path="res://win95/applets/printers.tres" id="21_wno20"]
+[ext_resource type="Resource" path="res://win95/applets/fonts.tres" id="22_vjy14"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/mouse_32.png" id="23_q2u8j"]
+[ext_resource type="Resource" path="res://win95/applets/system.tres" id="24_1rowu"]
+[ext_resource type="Resource" path="res://win95/applets/add_new_hardware.tres" id="25_cxkx7"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/system_32.png" id="26_x8xbd"]
+[ext_resource type="Resource" path="res://win95/applets/date_time.tres" id="27_uwglv"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/date_time_32.png" id="28_0vovr"]
+[ext_resource type="Resource" path="res://win95/applets/modems.tres" id="29_2h6cn"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/modem_phone_32.png" id="30_8i5fg"]
+[ext_resource type="Resource" path="res://win95/applets/joystick.tres" id="31_152ul"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/joystick_32.png" id="32_pvq8p"]
+[ext_resource type="Resource" path="res://win95/applets/multimedia.tres" id="33_ejgjs"]
+[ext_resource type="Resource" path="res://win95/applets/sounds.tres" id="34_g4k6l"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/multimedia_device_32.png" id="35_k6tl5"]
+[ext_resource type="Resource" path="res://win95/applets/add_remove_programs.tres" id="36_unem0"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/add_remove_programs_32.png" id="37_6jtll"]
+[ext_resource type="Resource" path="res://win95/applets/network.tres" id="38_0bqso"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/network_control_panel_32.png" id="39_vhp40"]
+[ext_resource type="Resource" path="res://win95/applets/passwords.tres" id="40_0o4bm"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons_extracted/keys_grey_32.png" id="41_iis1c"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/folder_closed_32.png" id="42_4ka2k"]
+[ext_resource type="PackedScene" path="res://win95/notepad.tscn" id="43_qgqo1"]
+[ext_resource type="PackedScene" path="res://win95/wordpad.tscn" id="44_ebgpr"]
+[ext_resource type="PackedScene" path="res://win95/paint.tscn" id="45_oawqr"]
+[ext_resource type="PackedScene" path="res://win95/calculator.tscn" id="46_isn8p"]
+[ext_resource type="PackedScene" path="res://win95/inbox.tscn" id="47_pnhbu"]
+[ext_resource type="PackedScene" path="res://win95/volume_control.tscn" id="48_ox0sj"]
+[ext_resource type="PackedScene" path="res://win95/defrag.tscn" id="49_hsul0"]
+[ext_resource type="PackedScene" path="res://win95/solitaire/solitaire.tscn" id="50_wqg7h"]
+[ext_resource type="PackedScene" path="res://win95/ms_dos_prompt.tscn" id="51_kkbaf"]
+[ext_resource type="PackedScene" path="res://win95/media_player.tscn" id="52_u5nuf"]
+[ext_resource type="Script" path="res://win95/email.gd" id="53_vrmuf"]
+[ext_resource type="Resource" path="res://win95/theme/palette.tres" id="54_1f81x"]
+[ext_resource type="Resource" path="res://win95/office/office97.tres" id="55_6vn6x"]
+[ext_resource type="Script" path="res://win95/win95_setup.gd" id="56_m6clq"]
+[ext_resource type="Resource" path="res://win95/office/excel_shortcut.tres" id="57_yntk5"]
+[ext_resource type="Resource" path="res://win95/office/powerpoint_shortcut.tres" id="58_2art2"]
+[ext_resource type="Resource" path="res://win95/office/word_shortcut.tres" id="59_e6sma"]
+[ext_resource type="Texture2D" path="res://win95/wallpapers/win95-default.png" id="60_q5dt4"]
+
+[sub_resource type="Resource" id="Resource_sw0h2"]
+script = ExtResource("1_j0hbh")
+name = "Solitaire"
+icon = ExtResource("3_ctwjt")
+target = "C:\\WINDOWS\\SOL.EXE"
+
+[sub_resource type="Resource" id="Resource_fv453"]
+script = ExtResource("1_j0hbh")
+name = "Games"
+icon = ExtResource("4_qak1m")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_sw0h2")])
+
+[sub_resource type="Resource" id="Resource_6eiua"]
+script = ExtResource("1_j0hbh")
+name = "Disk Defragmenter"
+icon = ExtResource("5_aad0i")
+target = "C:\\WINDOWS\\DEFRAG.EXE"
+
+[sub_resource type="Resource" id="Resource_0ghy5"]
+script = ExtResource("1_j0hbh")
+name = "System Tools"
+icon = ExtResource("4_qak1m")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_6eiua")])
+
+[sub_resource type="Resource" id="Resource_hldhf"]
+script = ExtResource("1_j0hbh")
+name = "Volume Control"
+icon = ExtResource("6_cqxu4")
+target = "C:\\WINDOWS\\SNDVOL32.EXE"
+
+[sub_resource type="Resource" id="Resource_na5yn"]
+script = ExtResource("1_j0hbh")
+name = "Media Player"
+icon = ExtResource("7_ergbp")
+target = "C:\\WINDOWS\\MPLAYER.EXE"
+
+[sub_resource type="Resource" id="Resource_8jf0l"]
+script = ExtResource("1_j0hbh")
+name = "Multimedia"
+icon = ExtResource("4_qak1m")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_hldhf"), SubResource("Resource_na5yn")])
+
+[sub_resource type="Resource" id="Resource_whvue"]
+script = ExtResource("1_j0hbh")
+name = "Calculator"
+icon = ExtResource("8_aog53")
+target = "C:\\WINDOWS\\CALC.EXE"
+
+[sub_resource type="Resource" id="Resource_cawgy"]
+script = ExtResource("1_j0hbh")
+name = "Notepad"
+icon = ExtResource("9_0cjqm")
+target = "C:\\WINDOWS\\NOTEPAD.EXE"
+
+[sub_resource type="Resource" id="Resource_ty84w"]
+script = ExtResource("1_j0hbh")
+name = "Paint"
+icon = ExtResource("10_1648j")
+target = "C:\\WINDOWS\\PBRUSH.EXE"
+
+[sub_resource type="Resource" id="Resource_f4svg"]
+script = ExtResource("1_j0hbh")
+name = "WordPad"
+icon = ExtResource("11_x6ehc")
+target = "C:\\WINDOWS\\WORDPAD.EXE"
+
+[sub_resource type="Resource" id="Resource_f0dju"]
+script = ExtResource("1_j0hbh")
+name = "Accessories"
+icon = ExtResource("4_qak1m")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_fv453"), SubResource("Resource_0ghy5"), SubResource("Resource_8jf0l"), SubResource("Resource_whvue"), SubResource("Resource_cawgy"), SubResource("Resource_ty84w"), SubResource("Resource_f4svg")])
+
+[sub_resource type="Resource" id="Resource_47bcl"]
+script = ExtResource("1_j0hbh")
+name = "StartUp"
+icon = ExtResource("4_qak1m")
+is_folder = true
+
+[sub_resource type="Resource" id="Resource_4hke4"]
+script = ExtResource("1_j0hbh")
+name = "Microsoft Exchange"
+icon = ExtResource("12_x4qs2")
+target = "C:\\WINDOWS\\EXCHNG32.EXE"
+
+[sub_resource type="Resource" id="Resource_flh1j"]
+script = ExtResource("1_j0hbh")
+name = "MS-DOS Prompt"
+icon = ExtResource("13_6msah")
+target = "C:\\WINDOWS\\COMMAND.COM"
+
+[sub_resource type="Resource" id="Resource_xn5ww"]
+script = ExtResource("1_j0hbh")
+name = "Windows Explorer"
+icon = ExtResource("14_ikyq1")
+
+[sub_resource type="Resource" id="Resource_2mo8a"]
+script = ExtResource("1_j0hbh")
+name = "Programs"
+icon = ExtResource("4_qak1m")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_f0dju"), SubResource("Resource_47bcl"), SubResource("Resource_4hke4"), SubResource("Resource_flh1j"), SubResource("Resource_xn5ww")])
+
+[sub_resource type="Resource" id="Resource_jv1er"]
+script = ExtResource("1_j0hbh")
+name = "Start Menu"
+icon = ExtResource("4_qak1m")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_2mo8a")])
+
+[sub_resource type="Resource" id="Resource_i3t8e"]
+script = ExtResource("1_j0hbh")
+name = "DESK.CPL"
+icon = ExtResource("16_4hmd7")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("2_02upx")]([ExtResource("15_8kqom")])
+
+[sub_resource type="Resource" id="Resource_cs5gb"]
+script = ExtResource("1_j0hbh")
+name = "INTL.CPL"
+icon = ExtResource("18_opl7w")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("2_02upx")]([ExtResource("17_gxalw")])
+
+[sub_resource type="Resource" id="Resource_kh3rb"]
+script = ExtResource("1_j0hbh")
+name = "MAIN.CPL"
+icon = ExtResource("23_q2u8j")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("2_02upx")]([ExtResource("19_th02u"), ExtResource("20_hre5f"), ExtResource("21_wno20"), ExtResource("22_vjy14")])
+
+[sub_resource type="Resource" id="Resource_klc6x"]
+script = ExtResource("1_j0hbh")
+name = "SYSDM.CPL"
+icon = ExtResource("26_x8xbd")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("2_02upx")]([ExtResource("24_1rowu"), ExtResource("25_cxkx7")])
+
+[sub_resource type="Resource" id="Resource_qifqn"]
+script = ExtResource("1_j0hbh")
+name = "TIMEDATE.CPL"
+icon = ExtResource("28_0vovr")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("2_02upx")]([ExtResource("27_uwglv")])
+
+[sub_resource type="Resource" id="Resource_4k6u3"]
+script = ExtResource("1_j0hbh")
+name = "MODEM.CPL"
+icon = ExtResource("30_8i5fg")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("2_02upx")]([ExtResource("29_2h6cn")])
+
+[sub_resource type="Resource" id="Resource_mgyiy"]
+script = ExtResource("1_j0hbh")
+name = "JOY.CPL"
+icon = ExtResource("32_pvq8p")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("2_02upx")]([ExtResource("31_152ul")])
+
+[sub_resource type="Resource" id="Resource_v60qd"]
+script = ExtResource("1_j0hbh")
+name = "MMSYS.CPL"
+icon = ExtResource("35_k6tl5")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("2_02upx")]([ExtResource("33_ejgjs"), ExtResource("34_g4k6l")])
+
+[sub_resource type="Resource" id="Resource_66dwx"]
+script = ExtResource("1_j0hbh")
+name = "APPWIZ.CPL"
+icon = ExtResource("37_6jtll")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("2_02upx")]([ExtResource("36_unem0")])
+
+[sub_resource type="Resource" id="Resource_wgmic"]
+script = ExtResource("1_j0hbh")
+name = "NETCPL.CPL"
+icon = ExtResource("39_vhp40")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("2_02upx")]([ExtResource("38_0bqso")])
+
+[sub_resource type="Resource" id="Resource_170br"]
+script = ExtResource("1_j0hbh")
+name = "PASSWORD.CPL"
+icon = ExtResource("41_iis1c")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+applets = Array[ExtResource("2_02upx")]([ExtResource("40_0o4bm")])
+
+[sub_resource type="Resource" id="Resource_2gxpk"]
+script = ExtResource("1_j0hbh")
+name = "SYSTEM"
+icon = ExtResource("42_4ka2k")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_i3t8e"), SubResource("Resource_cs5gb"), SubResource("Resource_kh3rb"), SubResource("Resource_klc6x"), SubResource("Resource_qifqn"), SubResource("Resource_4k6u3"), SubResource("Resource_mgyiy"), SubResource("Resource_v60qd"), SubResource("Resource_66dwx"), SubResource("Resource_wgmic"), SubResource("Resource_170br")])
+
+[sub_resource type="Resource" id="Resource_is7wp"]
+script = ExtResource("1_j0hbh")
+name = "NOTEPAD.EXE"
+icon = ExtResource("9_0cjqm")
+program = ExtResource("43_qgqo1")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_f7aqx"]
+script = ExtResource("1_j0hbh")
+name = "WORDPAD.EXE"
+icon = ExtResource("11_x6ehc")
+program = ExtResource("44_ebgpr")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_mq5ud"]
+script = ExtResource("1_j0hbh")
+name = "PBRUSH.EXE"
+icon = ExtResource("10_1648j")
+program = ExtResource("45_oawqr")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_6nkft"]
+script = ExtResource("1_j0hbh")
+name = "CALC.EXE"
+icon = ExtResource("8_aog53")
+program = ExtResource("46_isn8p")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_00w0j"]
+script = ExtResource("1_j0hbh")
+name = "EXCHNG32.EXE"
+icon = ExtResource("12_x4qs2")
+program = ExtResource("47_pnhbu")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_ngmp3"]
+script = ExtResource("1_j0hbh")
+name = "SNDVOL32.EXE"
+icon = ExtResource("6_cqxu4")
+program = ExtResource("48_ox0sj")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_owmrm"]
+script = ExtResource("1_j0hbh")
+name = "DEFRAG.EXE"
+icon = ExtResource("5_aad0i")
+program = ExtResource("49_hsul0")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_tbibc"]
+script = ExtResource("1_j0hbh")
+name = "SOL.EXE"
+icon = ExtResource("3_ctwjt")
+program = ExtResource("50_wqg7h")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_3cys5"]
+script = ExtResource("1_j0hbh")
+name = "COMMAND.COM"
+icon = ExtResource("13_6msah")
+program = ExtResource("51_kkbaf")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_07krm"]
+script = ExtResource("1_j0hbh")
+name = "MPLAYER.EXE"
+icon = ExtResource("7_ergbp")
+program = ExtResource("52_u5nuf")
+modified = "Tuesday, July 11, 1995 9:50:00 AM"
+
+[sub_resource type="Resource" id="Resource_skb4r"]
+script = ExtResource("1_j0hbh")
+name = "Windows"
+icon = ExtResource("42_4ka2k")
+is_folder = true
+children = Array[Resource]([SubResource("Resource_jv1er"), SubResource("Resource_2gxpk"), SubResource("Resource_is7wp"), SubResource("Resource_f7aqx"), SubResource("Resource_mq5ud"), SubResource("Resource_6nkft"), SubResource("Resource_00w0j"), SubResource("Resource_ngmp3"), SubResource("Resource_owmrm"), SubResource("Resource_tbibc"), SubResource("Resource_3cys5"), SubResource("Resource_07krm")])
+
+[sub_resource type="Resource" id="Resource_0k88x"]
+script = ExtResource("1_j0hbh")
+name = "My Documents"
+icon = ExtResource("42_4ka2k")
+is_folder = true
+
+[resource]
+script = ExtResource("56_m6clq")
+drive_c = Array[ExtResource("1_j0hbh")]([SubResource("Resource_skb4r"), SubResource("Resource_0k88x")])
+installed_apps = PackedStringArray("Calculator", "Notepad")
+start_menu_programs = Array[ExtResource("1_j0hbh")]([ExtResource("57_yntk5"), ExtResource("58_2art2"), ExtResource("59_e6sma")])
+program_files = Array[ExtResource("1_j0hbh")]([ExtResource("55_6vn6x")])
+recently_opened = PackedStringArray()

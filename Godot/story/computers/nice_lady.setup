@@ -1,0 +1,74 @@
+set wallpaper: res://customers/nice_lady/hamsters.png
+set registered_owner: Bob
+
+file C:\Windows\WIN.INI
+	icon: res://win95/theme/icons/document_config_32.png
+	contents:
+		[windows]
+		load=
+		run=
+		NullPort=None
+		device=
+		
+		[Desktop]
+		TileWallpaper=0
+		WallpaperStyle=0
+		
+		[intl]
+		iCountry=46
+		sCountry=Sweden
+		sLanguage=sve
+		
+		[extensions]
+		txt=notepad.exe ^.txt
+		ini=notepad.exe ^.ini
+		bmp=pbrush.exe ^.bmp
+		
+		[mci extensions]
+		mid=Sequencer
+		wav=WaveAudio
+		
+	modified: Saturday, October 21, 1995 4:04:37 PM
+	after: "SYSTEM"
+
+file C:\Windows\SYSTEM.INI
+	icon: res://win95/theme/icons/document_config_32.png
+	contents:
+		[boot]
+		shell=Explorer.exe
+		system.drv=system.drv
+		drivers=mmsystem.dll power.drv
+		display.drv=pnpdrvr.drv
+		mouse.drv=mouse.drv
+		keyboard.drv=keyboard.drv
+		
+		[boot.description]
+		keyboard.typ=Standard 101/102-Key or Microsoft Natural Keyboard
+		mouse.drv=Standard mouse
+		display.drv=Standard Display Adapter (VGA)
+		
+		[386Enh]
+		ebios=*ebios
+		woafont=dosapp.fon
+		device=*vmouse
+		device=*vshare
+		keyboard=*vkd
+		display=*vdd,*vflatd
+		
+		[drivers]
+		wave=sb16snd.drv
+		midimapper=midimap.drv
+		
+	modified: Saturday, October 21, 1995 3:47:19 PM
+	after: "WIN.INI"
+
+file C:\My Documents\from Kev.txt
+	icon: res://win95/theme/icons/document_text_32.png
+	contents:
+		Uncle Bob,
+		
+		Put the 8 megs from my old box in yours. Twice the memory, so it should fly now.
+		
+		- Kev
+		
+	modified: Saturday, April 27, 1996 3:12:05 PM

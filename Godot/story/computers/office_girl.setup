@@ -1,0 +1,245 @@
+set palette: res://win95/theme/schemes/rose.tres
+set wallpaper: res://customers/office_girl/daisies.png
+set recently_opened: PackedStringArray("C:\\My Documents\\Containers May 1996.xls", "C:\\My Documents\\Midsummer party.doc", "C:\\My Documents\\Invoices May 1996.xls")
+set volume: 40.0
+set registered_owner: Sam Hilton
+set registered_organization: Harbour Import AB
+set product_id: 24796-OEM-0004172-61530
+
+file Desktop\to do.txt
+	icon: res://win95/theme/icons/document_text_32.png
+	contents:
+		TO DO
+		
+		- Customs papers for the Rotterdam container!!
+		- Call the freight office about pallet 12 (AGAIN)
+		- Order toner + yellow post-its
+		- Birthday card for Margit, Friday
+		- Water the ficus
+		- Ask Nick about Wednesday :)
+		
+	modified: Friday, May 31, 1996 4:52:10 PM
+	after: "Calculator.exe"
+
+file Desktop\passwords.txt
+	icon: res://win95/theme/icons/document_text_32.png
+	contents:
+		DON'T LOOK!!
+		
+		Windows: sunshine
+		Email: sunshine2
+		Bank: sunshine3
+		
+		Nick set up my computer all safe-like.
+		He says never to write your passwords down,
+		so I hid them here.
+		
+	modified: Monday, April 15, 1996 9:12:44 AM
+	after: "to do.txt"
+
+file C:\Windows\Start Menu\Programs\StartUp\Microsoft Office Shortcut Bar
+	icon: res://win95/office/icons/office_logo_32.png
+	target: C:\Program Files\Microsoft Office\Office\MSOFFICE.EXE
+
+file C:\Windows\WIN.INI
+	icon: res://win95/theme/icons/document_config_32.png
+	contents:
+		[windows]
+		load=
+		run=
+		NullPort=None
+		device=
+		
+		[Desktop]
+		TileWallpaper=0
+		WallpaperStyle=0
+		
+		[intl]
+		iCountry=46
+		sCountry=Sweden
+		sLanguage=sve
+		
+		[extensions]
+		txt=notepad.exe ^.txt
+		ini=notepad.exe ^.ini
+		bmp=pbrush.exe ^.bmp
+		
+		[mci extensions]
+		mid=Sequencer
+		wav=WaveAudio
+		
+	modified: Saturday, October 21, 1995 4:04:37 PM
+	after: "SYSTEM"
+
+file C:\Windows\SYSTEM.INI
+	icon: res://win95/theme/icons/document_config_32.png
+	contents:
+		[boot]
+		shell=Explorer.exe
+		system.drv=system.drv
+		drivers=mmsystem.dll power.drv
+		display.drv=pnpdrvr.drv
+		mouse.drv=mouse.drv
+		keyboard.drv=keyboard.drv
+		
+		[boot.description]
+		keyboard.typ=Standard 101/102-Key or Microsoft Natural Keyboard
+		mouse.drv=Standard mouse
+		display.drv=Standard Display Adapter (VGA)
+		
+		[386Enh]
+		ebios=*ebios
+		woafont=dosapp.fon
+		device=*vmouse
+		device=*vshare
+		keyboard=*vkd
+		display=*vdd,*vflatd
+		
+		[drivers]
+		wave=sb16snd.drv
+		midimapper=midimap.drv
+		
+	modified: Saturday, October 21, 1995 3:47:19 PM
+	after: "WIN.INI"
+
+file C:\My Documents\customs letter.txt
+	icon: res://win95/theme/icons/document_text_32.png
+	contents:
+		Harbour Import AB
+		
+		To: Customs, Port of Stockholm
+		
+		Re: Container HBIU 447120 from Rotterdam
+		
+		Dear Sir or Madam,
+		
+		Our container HBIU 447120 has been held at the port since May 24.
+		The missing invoice is enclosed. Please release the goods at your
+		earliest convenience, as our customer is waiting.
+		
+		Kind regards,
+		
+		Sam Hilton
+		Harbour Import AB
+		
+	modified: Thursday, May 30, 1996 2:31:05 PM
+
+file C:\My Documents\midsummer party.txt
+	icon: res://win95/theme/icons/document_text_32.png
+	contents:
+		MIDSUMMER PARTY (office)
+		
+		- Strawberry cake (me!)
+		- Herring + new potatoes (Margit)
+		- Flower crowns for everyone
+		- Print the song sheets
+		- Ask Nick to bring his guitar??
+		
+	modified: Wednesday, May 29, 1996 12:07:38 PM
+
+file C:\My Documents\Midsummer party.doc
+	icon: res://win95/office/icons/word_document_32.png
+	contents:
+		{\rtf1\ansi\deff0{\fonttbl{\f0\froman Times New Roman;}}\f0\fs20
+		\qc\b\fs40 Midsummer at Harbour Import!\b0\fs20\par
+		\qc\par
+		\qc\fs24 Thursday, June 20, 1996, at 3 o'clock\fs20\par
+		\qc\fs24 In the yard behind the warehouse\fs20\par
+		\ql\par
+		Dear all,\par
+		\par
+		Midsummer is almost here, and the containers can wait for one afternoon. Come and celebrate with us before everyone leaves for the islands!\par
+		\par
+		\b On the table:\b0\par
+		Strawberry cake (Sam)\par
+		Herring and new potatoes (Margit)\par
+		\par
+		Flower crowns for everyone. We sing from the song sheets, and \i maybe\i0  Nick brings his guitar.\par
+		\par
+		Tell me by Monday if you are coming.\par
+		\par
+		Sam\par
+		}
+		
+	contents_file: res://customers/office_girl/documents/midsummer_party.doc
+	summary: {&"title": "Midsummer party", &"author": "Sam Hilton", &"company": "Harbour Import AB"}
+	modified: Thursday, May 30, 1996 4:12:40 PM
+
+file C:\My Documents\Containers May 1996.xls
+	icon: res://win95/office/icons/excel_worksheet_32.png
+	contents:
+		# Harbour Import AB, the containers of May 1996. Placeholder for the writers.
+		A width: 14
+		B width: 12
+		C width: 10
+		D width: 20
+		A1 bold: CONTAINERS, MAY 1996
+		A3 bold underline: Container
+		B3 bold underline: From
+		C3 bold underline: Arrived
+		D3 bold underline: Status
+		A4: HBIU 446981
+		B4: Hamburg
+		C4: '6 May
+		D4: Delivered
+		A5: HBIU 447033
+		B5: Gdansk
+		C5: '13 May
+		D5: Delivered
+		A6: HBIU 447120
+		B6: Rotterdam
+		C6: '24 May
+		D6 bold: Held at customs!
+		A7: HBIU 447215
+		B7: Rotterdam
+		C7: '31 May
+		D7: Expected
+		
+	contents_file: res://customers/office_girl/documents/containers_may_1996.xls
+	summary: {&"title": "Containers", &"author": "Sam Hilton", &"company": "Harbour Import AB"}
+	modified: Friday, May 31, 1996 8:55:10 AM
+
+file C:\My Documents\Invoices May 1996.xls
+	icon: res://win95/office/icons/excel_worksheet_32.png
+	contents:
+		# Harbour Import AB, invoices sent in May 1996. Placeholder for the writers.
+		A width: 22
+		B width: 10
+		C width: 12
+		A1 bold: INVOICES, MAY 1996
+		A3 bold underline: Customer
+		B3 bold underline: Invoice
+		C3 bold underline right: kr
+		A4: Nordic Garden Supply
+		B4: '96-041
+		C4 comma 0: 18450
+		A5: Sundberg Furniture
+		B5: '96-042
+		C5 comma 0: 7200
+		A6: Nordic Garden Supply
+		B6: '96-043
+		C6 comma 0: 3975
+		A8 bold: Total
+		C8 bold comma 0: 29625
+		A10 italic: 96-044 waits for container HBIU 447120.
+		
+	contents_file: res://customers/office_girl/documents/invoices_may_1996.xls
+	summary: {&"title": "Invoices", &"author": "Sam Hilton", &"company": "Harbour Import AB"}
+	modified: Thursday, May 30, 1996 3:02:44 PM
+
+mail
+	folder: sent
+	from: Desk 4 <desk4@harbourimport.se>
+	to: Big Ideas Import <ceo@bigideas.se>
+	subject: My screen
+	sent: 1996-06-01 16:40
+	body: Someone has been at my computer. Everything is black and yellow and I can't read a thing! Was it you?
+	read: true
+
+mail
+	from: Big Ideas Import <ceo@bigideas.se>
+	to: Desk 4 <desk4@harbourimport.se>
+	subject: Re: My screen
+	sent: 1996-06-01 17:05
+	body: Who, me? Never. Maybe your computer just has style now. :)
+	read: true

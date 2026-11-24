@@ -48,7 +48,7 @@ func run() -> void:
 	check("From edits as a dropdown of her addresses, (none) and a new one", [first.get_text(1).split(",")[0], first.get_text(1).split(",")[-1]], ["(none)", "New address..."])
 	var others: Array = []
 	for each: String in ["skater_bro"]:  # his mail is from people she never wrote with
-		var setup: Win95Setup = (load("res://customers/%s.tres" % each) as Customer).computer.win95_setup
+		var setup := SetupPatch.start(load("res://customers/%s.tres" % each), game.week.patches)
 		others.append_array(Array(setup.addresses()))
 	check("his addresses are there to offer", others.has("Kent <kent@modemlandia.se>"), true)
 	check("and offers the other customers' addresses too", others.filter(func(a: String) -> bool: return not a.contains(",")).all(func(a: String) -> bool: return a in first.get_text(1).split(",")), true)

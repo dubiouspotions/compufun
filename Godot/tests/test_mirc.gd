@@ -15,7 +15,7 @@ func run() -> void:
 	for path in DirAccess.get_files_at("res://customers"):
 		var customer := load("res://customers/" + path) as Customer if path.ends_with(".tres") else null
 		if customer != null and customer.computer != null and customer.computer.win95_setup != null:
-			var setup := customer.computer.win95_setup.copy()
+			var setup := SetupPatch.start(customer, game.week.patches)
 			var mirc := setup.file_at("C:\\MIRC\\MIRC32.EXE")
 			var has_mirc := mirc != null and mirc.program == load(MIRC_PATH)
 			check("only the activist has mIRC: %s" % path, has_mirc, path == "activist_guy.tres")

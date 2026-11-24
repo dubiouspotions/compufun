@@ -1,0 +1,204 @@
+set dial_up_name: MainStreet Online
+set dial_up_user: craig
+set dial_up_number: 555-0199
+set registered_owner: Craig
+
+file Desktop\Netscape Navigator
+	icon: res://win95/netscape/logo_32.png
+	target: C:\Program Files\Netscape\NETSCAPE.EXE
+	after: "Calculator.exe"
+
+file Desktop\mIRC32
+	icon: res://win95/mirc/logo_32.png
+	target: C:\MIRC\MIRC32.EXE
+	after: "Netscape Navigator"
+
+file C:\Windows\Start Menu\Programs\mIRC32
+	icon: res://win95/mirc/logo_32.png
+	target: C:\MIRC\MIRC32.EXE
+	after: "Windows Explorer"
+
+folder C:\Program Files\Netscape
+	icon: res://win95/theme/icons/folder_closed_32.png
+	after: ""
+
+file C:\Program Files\Netscape\NETSCAPE.EXE
+	icon: res://win95/netscape/logo_32.png
+	program: res://win95/web_browser.tscn
+	modified: Monday, March 18, 1996 12:00:00 PM
+
+folder C:\Program Files\Netscape\Navigator
+	icon: res://win95/theme/icons/folder_closed_32.png
+
+folder C:\Program Files\Netscape\Navigator\Cache
+	icon: res://win95/theme/icons/folder_closed_32.png
+
+file C:\Program Files\Netscape\Navigator\Cache\FAT.DB
+	icon: res://win95/theme/icons/document_config_32.png
+	contents:
+		http://home.netscape.com/	M0K7Q2RA.HTM
+		http://home.netscape.com/images/n_logo.gif	M0K7Q2RB.GIF
+		
+	modified: Thursday, May 30, 1996 10:14:22 PM
+
+file C:\Program Files\Netscape\Navigator\Cache\M0K7Q2RA.HTM
+	icon: res://win95/netscape/logo_32.png
+	contents:
+		<HTML>
+		<HEAD><TITLE>Welcome to Netscape</TITLE></HEAD>
+		<BODY BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#FF0000">
+		<CENTER>
+		<IMG SRC="/images/n_logo.gif" WIDTH=48 HEIGHT=48 ALT="Netscape">
+		<H1>WELCOME TO NETSCAPE</H1>
+		<FONT SIZE=2>
+		<A HREF="/comprod/index.html">COMPANY &amp; PRODUCTS</A> |
+		<A HREF="/comprod/mirror/index.html">SOFTWARE</A> |
+		<A HREF="/home/internet-search.html">NET SEARCH</A> |
+		<A HREF="/escapes/index.html">DESTINATIONS</A> |
+		<A HREF="http://merchant.netscape.com/netstore/index.html">GENERAL STORE</A>
+		</FONT>
+		</CENTER>
+		<HR>
+		
+		<H3>NAVIGATOR 3.0 BETA: HEAR IT, SEE IT, STEP INSIDE</H3>
+		The newest beta of Netscape Navigator plays sound, video and 3D worlds right in the page, with
+		no extra programs to set up. <A HREF="/comprod/mirror/client_download.html">Try the beta today</A>.
+		
+		<H3>BUILD YOUR OWN HOME PAGE WITH NAVIGATOR GOLD</H3>
+		Navigator Gold edits web pages as easily as it browses them. Type, drag in a picture, and publish
+		your page to the Web in one step. <A HREF="/comprod/products/navigator/gold/index.html">Find out how</A>.
+		
+		<H3>SUITESPOT: SERVERS FOR YOUR INTRANET</H3>
+		Mail, news, catalogs and more, on one family of servers for the web inside your company.
+		<A HREF="/comprod/server_central/index.html">Take the tour</A>.
+		
+		<H3>MORE NEWS</H3>
+		<UL>
+		<LI><A HREF="/newsref/pr/index.html">JavaScript now works across Navigator on every platform</A>
+		<LI><A HREF="/comprod/products/navigator/personal/index.html">Navigator Personal Edition: everything you need to get on the Internet</A>
+		<LI><A HREF="/comprod/power_pack/index.html">Power Pack 2.0 adds plug-ins, a virus scanner and more</A>
+		</UL>
+		<HR>
+		
+		<B>DOWNLOAD OR PURCHASE NETSCAPE SOFTWARE</B><BR>
+		<A HREF="/comprod/mirror/client_download.html">Navigator 2.0</A> -
+		<A HREF="/comprod/mirror/client_download.html">Navigator Gold 2.0</A> -
+		<A HREF="/comprod/mirror/client_download.html">Navigator 3.0 beta</A> -
+		<A HREF="http://merchant.netscape.com/netstore/index.html">Buy at the General Store</A>
+		
+		<P><B>GENERAL STORE SPECIAL:</B> Netscape coffee mugs and T-shirts, shipped to your door.
+		<HR>
+		<CENTER><FONT SIZE=2>Copyright &copy; 1996 Netscape Communications Corporation</FONT></CENTER>
+		</BODY>
+		</HTML>
+		
+	modified: Thursday, May 30, 1996 10:14:22 PM
+
+file C:\Program Files\Netscape\Navigator\Cache\M0K7Q2RB.GIF
+	icon: res://win95/theme/icons/document_text_32.png
+	picture: res://win95/netscape/logo_48.png
+	modified: Thursday, May 30, 1996 10:14:22 PM
+
+folder C:\MIRC
+	icon: res://win95/theme/icons/folder_closed_32.png
+
+file C:\MIRC\MIRC32.EXE
+	icon: res://win95/mirc/logo_32.png
+	program: res://win95/mirc.tscn
+	modified: Saturday, April 27, 1996 12:00:00 PM
+
+file C:\MIRC\MIRC.INI
+	icon: res://win95/theme/icons/document_config_32.png
+	contents:
+		[mirc]
+		user=Craig
+		email=craig@mainstreet.net
+		nick=elmroot
+		anick=elmroot_
+		host=irc.dal.net (DALnet USA)SERVER:irc.dal.net:6667GROUP:3
+		
+		[Servers]
+		sv0=irc.eskimo.com (Efnet USA)SERVER:irc.eskimo.com:6667GROUP:1
+		sv1=us.undernet.org (Undernet USA)SERVER:us.undernet.org:6667GROUP:2
+		sv2=irc.dal.net (DALnet USA)SERVER:irc.dal.net:6667GROUP:3
+		sv3=DALnet: groucho.dal.net (USA)SERVER:groucho.dal.net:6667GROUP:dalnet
+		sv4=DALnet: liberator.dal.net (UK)SERVER:liberator.dal.net:7000GROUP:dalnet
+		sv5=Undernet (Europe)SERVER:eu.undernet.org:6667GROUP:undernet
+		
+		[Files]
+		aliases=aliases.ini
+		popups=popups.ini
+		users=remote.ini
+		variables=remote.ini
+		commands=remote.ini
+		events=remote.ini
+		
+	modified: Thursday, May 30, 1996 1:35:02 AM
+
+file C:\MIRC\#oddbuilds.log
+	icon: res://win95/theme/icons/document_text_32.png
+	contents:
+		[22:58] *** Now talking in #oddbuilds
+		[22:58] *** Topic is 'post your build numbers. no warez.'
+		[23:01] <elmroot> anyone else seen 4.06.6612?
+		[23:01] <tarnhelm> 4.00.950 here. 4.00.1111 if you know someone at an OEM
+		[23:02] <elmroot> 4.06. System Properties says so. Microsoft never made a 4.06
+		[23:02] <tarnhelm> someone edited the registry for a joke
+		[23:03] <elmroot> three machines now, three towns. none of the owners remember installing it
+		[23:04] <quill> a guy brought one in at work. said a friend gave him floppies
+		[23:04] <quill> 13 disks, labelled by hand, no hologram
+		[23:05] <elmroot> what did the labels say
+		[23:05] <quill> "update" and a number
+		[23:06] <tarnhelm> so it's a pirate copy with a fake version
+		[23:07] <elmroot> pirates don't invent build numbers. and setup is 1.4 megs bigger than retail
+		[23:08] <quill> what's in the extra 1.4
+		[23:08] <elmroot> working on it
+		[23:12] *** tarnhelm has quit IRC (Leaving)
+		
+		[01:14] *** Now talking in #oddbuilds
+		[01:15] <quill> elmroot. the 6612 guy came back. his calculator says 666
+		[01:15] <elmroot> for what sum
+		[01:15] <quill> any sum. 2+2. 666
+		[01:16] <quill> calc on a normal build is fine. same size. different date
+		[01:17] <elmroot> don't copy anything off it. don't put your own disks in it
+		[01:17] <quill> too late. i copied calc.exe to look at it
+		[01:18] <elmroot> then throw that floppy away
+		[01:19] <quill> you sound like my mom
+		[01:20] <elmroot> i mean it
+		
+	contents_file: res://customers/activist_guy/mirc_logs/oddbuilds.log
+	modified: Thursday, May 30, 1996 1:20:41 AM
+
+file C:\MIRC\fl0ppyjoe.log
+	icon: res://win95/theme/icons/document_text_32.png
+	contents:
+		[20:31] <fl0ppyjoe> u the guy asking about the 4.06 disks?
+		[20:31] <elmroot> yes. where did yours come from
+		[20:32] <fl0ppyjoe> swap meet at the community center. guy had a box of them. 5 bucks a set
+		[20:32] <elmroot> what did he look like
+		[20:33] <fl0ppyjoe> didnt look. there was a line
+		[20:33] <fl0ppyjoe> sold out in an hour. everyone wanted the new windows
+		[20:34] <elmroot> do you still have the set?
+		[20:35] <fl0ppyjoe> gave it to my cousin. he copied it for half his school
+		[20:35] <elmroot> how many copies
+		[20:36] <fl0ppyjoe> dunno. lots. why
+		[20:37] <elmroot> because it copies itself too
+		[20:38] <fl0ppyjoe> lol ok mulder
+		
+	contents_file: res://customers/activist_guy/mirc_logs/fl0ppyjoe.log
+	modified: Sunday, May 12, 1996 8:38:12 PM
+
+file C:\MIRC\s1mmking.log
+	icon: res://win95/theme/icons/document_text_32.png
+	contents:
+		[21:12] <s1mmking> u wanted 8 megs? 72 pin, 70ns. $40 + shipping
+		[21:12] <elmroot> $40? the stores want 200
+		[21:13] <s1mmking> pulled from office machines. they upgraded. works fine
+		[21:14] <elmroot> tested?
+		[21:14] <s1mmking> uh. sure
+		[21:15] <elmroot> fine. cash to the PO box?
+		[21:15] <s1mmking> yep. ships monday
+		[21:16] <elmroot> deal
+		
+	contents_file: res://customers/activist_guy/mirc_logs/s1mmking.log
+	modified: Tuesday, May 14, 1996 9:16:03 PM

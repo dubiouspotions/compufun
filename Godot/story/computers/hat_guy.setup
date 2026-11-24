@@ -1,0 +1,69 @@
+set installed_apps: PackedStringArray("Calculator", "Notepad", "Media Player", "Sound Recorder")
+set volume: 60.0
+
+file Desktop\me_and_my_hat.bmp
+	icon: res://win95/theme/icons/bitmap_32.png
+	picture: res://people/hat_guy/portrait_happy.png
+	modified: Saturday, May 25, 1996 4:12:09 PM
+	after: "Calculator.exe"
+
+file C:\Windows\WIN.INI
+	icon: res://win95/theme/icons/document_config_32.png
+	contents:
+		[windows]
+		load=
+		run=
+		NullPort=None
+		device=
+		
+		[Desktop]
+		TileWallpaper=0
+		WallpaperStyle=0
+		
+		[intl]
+		iCountry=46
+		sCountry=Sweden
+		sLanguage=sve
+		
+		[extensions]
+		txt=notepad.exe ^.txt
+		ini=notepad.exe ^.ini
+		bmp=pbrush.exe ^.bmp
+		
+		[mci extensions]
+		mid=Sequencer
+		wav=WaveAudio
+		
+	modified: Saturday, October 21, 1995 4:04:37 PM
+	after: "SYSTEM"
+
+file C:\Windows\SYSTEM.INI
+	icon: res://win95/theme/icons/document_config_32.png
+	contents:
+		[boot]
+		shell=Explorer.exe
+		system.drv=system.drv
+		drivers=mmsystem.dll power.drv
+		display.drv=pnpdrvr.drv
+		mouse.drv=mouse.drv
+		keyboard.drv=keyboard.drv
+		
+		[boot.description]
+		keyboard.typ=Standard 101/102-Key or Microsoft Natural Keyboard
+		mouse.drv=Standard mouse
+		display.drv=Standard Display Adapter (VGA)
+		
+		[386Enh]
+		ebios=*ebios
+		woafont=dosapp.fon
+		device=*vmouse
+		device=*vshare
+		keyboard=*vkd
+		display=*vdd,*vflatd
+		
+		[drivers]
+		wave=sb16snd.drv
+		midimapper=midimap.drv
+		
+	modified: Saturday, October 21, 1995 3:47:19 PM
+	after: "WIN.INI"

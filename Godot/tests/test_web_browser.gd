@@ -10,7 +10,7 @@ func run() -> void:
 	for path in DirAccess.get_files_at("res://customers"):
 		var customer := load("res://customers/" + path) as Customer if path.ends_with(".tres") else null
 		if customer != null and customer.computer != null and customer.computer.win95_setup != null:
-			var setup := customer.computer.win95_setup
+			var setup := SetupPatch.start(customer, game.week.patches)
 			var shortcut := setup.file_at("Desktop\\Netscape Navigator")
 			var program := setup.file_at(shortcut.target) if shortcut != null else null
 			check("only the activist has Netscape: %s" % path, program != null and program.program == load(BROWSER_PATH), path == "activist_guy.tres")
@@ -92,7 +92,7 @@ func run() -> void:
 # On his desktop, as the player meets it: home comes from the cache, and an alert is modal.
 func _on_the_activists_desktop() -> void:
 	var state: Node = load(COMPUTER_STATE_PATH).new()
-	state.setup = (load("res://customers/activist_guy.tres") as Customer).computer.win95_setup
+	state.setup = SetupPatch.start(load("res://customers/activist_guy.tres"), game.week.patches)
 	var desktop: Control = load("res://win95/desktop.gd").new()  # loaded at run time, like ComputerState
 	desktop.computer = state
 	desktop.size = Vector2(640, 480)

@@ -6,12 +6,13 @@ extends "res://tests/test.gd"
 func run() -> void:
 	var sam: Customer = load("res://customers/office_girl.tres")
 	var nick: Customer = load("res://customers/young_entrepreneur.tres")
-	var hers := sam.computer.win95_setup
-	var his := nick.computer.win95_setup
+	var hers := SetupPatch.start(sam, game.week.patches)  # as the game starts it
+	var his := SetupPatch.start(nick, game.week.patches)
 	check("registered to her", hers.registered_owner, sam.person.name)
 	check("her own wallpaper, scheme and product id", [hers.wallpaper == his.wallpaper, hers.palette == his.palette, hers.product_id == his.product_id], [false, false, false])
 	var names := func(files: Array[Win95File]) -> Array: return files.map(func(file: Win95File) -> String: return file.name)
-	var shared: Array = names.call(hers.desktop).filter(func(file_name: String) -> bool: return file_name in names.call(his.desktop))
+	var everyones: Array = names.call((load("res://win95/stock_setup.tres") as Win95Setup).copy().desktop)  # My Computer, the Office shortcuts
+	var shared: Array = names.call(hers.desktop).filter(func(file_name: String) -> bool: return file_name in names.call(his.desktop) and file_name not in everyones)
 	check("no desktop file of his", shared, [])
 	check("her own hardware", sam.computer.hardware.bios_id == nick.computer.hardware.bios_id, false)
 

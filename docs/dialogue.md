@@ -219,8 +219,9 @@ brief: The skater gets bored fast.
 
 ## Setup patches: `story/computers/<customer>.setup`, `<code>_<customer>.setup`
 
-What a customer did on their computer (wiki: "Lived-in computers"). `<customer>.setup` goes on the
-setup of `customers/<customer>.tres` as the game makes its running copy; `<code>_<customer>.setup`,
+What a customer did on their computer (wiki: "Lived-in computers"). `<customer>.setup` makes the
+stock Windows install (`win95/stock_setup.tres`, which every customer's `.tres` names) theirs as the
+game makes its running copy: their files, mails, wallpaper, owner and settings; `<code>_<customer>.setup`,
 named like its errand, goes on as that visit's job starts, before the problem's break. Moving the
 errand on the week board renames its patch; removing or discarding the errand removes it. The Story
 Lab's Computers tab writes them from the real Win95 (Save patch); this is the text it writes.
@@ -259,6 +260,8 @@ unmail
   with what is in it. A path starts with `Desktop`, `C:` or `Recycled` (the Recycle Bin). A second
   file of one name in a folder, as two deleted `readme.txt` in the Recycle Bin, is `readme.txt*2`.
 - `#` starts a comment line.
+- A new file can say which file it comes after in its folder, `after: "WIN.INI"` (`""` for first),
+  so it lands there and not at the end, as desktop icons fill the free cells in that order.
 - `file <path>` and `folder <path>` set the fields under it, tab-indented. A file that is there
   keeps the fields left out, so a moved icon is its path and `desktop_position`; a new one has its
   defaults in them. Save patch writes a new file's fields that aren't their defaults. A folder keeps
