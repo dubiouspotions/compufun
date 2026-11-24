@@ -44,9 +44,9 @@ const OK_BUTTON: String = "[ OK ]"
 ## The group of every CompuFunDB screen, for the F2 menu.
 const GROUP: StringName = &"compufun_db"
 
-## SEARCH filters the symptoms as the player types, and lists them all while it is empty, instead
-## of searching slowly on Enter. The F2 World tab switches it.
-@export var filter_search: bool = false:
+## SEARCH filters the symptoms as the player types, and lists them all while it is empty. Off, it
+## searches slowly on Enter instead. The F2 World tab switches it until the game quits.
+@export var filter_search: bool = true:
 	set(value):
 		filter_search = value
 		if is_node_ready():

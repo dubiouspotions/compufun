@@ -1,8 +1,9 @@
 extends "res://tests/test.gd"
 ## CompuFunDB: a symptom picked lists its causes' checks and the causes; a ticked no: rules a cause
 ## out; F prints the picked cause's fix. The search survives a snapshot and a restore. With
-## filter_search, SEARCH lists every symptom and narrows the list as the player types. A click outside
-## SEARCH's field stops the letters typing into it, until a click on the field.
+## filter_search, the default, SEARCH lists every symptom and narrows the list as the player types;
+## off, it searches on Enter. A click outside SEARCH's field stops the letters typing into it, until
+## a click on the field.
 
 ## CompuFunDB.Column, which a test can't name: CompuFunDB names the Game autoload.
 const CAUSES: int = 1
@@ -17,6 +18,8 @@ func run() -> void:
 	db.set("hit_seconds", Vector2.ZERO)
 	root.add_child(db)
 	await process_frame
+	check("the search filters by default", db.get("filter_search"), true)
+	db.set("filter_search", false)
 	check("a keyword finds its symptom", db.call("_found", "audio"), PackedStringArray(["No sound"]))
 	for letter: String in "restarts":
 		var key := InputEventKey.new()
@@ -25,7 +28,7 @@ func run() -> void:
 		db.call("_on_key", key)
 	_press(db, KEY_ENTER)
 	_press(db, KEY_ENTER)
-	check("Enter searches, Enter picks", [game.db_search.query, db.get("_column")], ["Restarts by itself", CHECKS])
+	check("unfiltered, Enter searches, Enter picks", [game.db_search.query, db.get("_column")], ["Restarts by itself", CHECKS])
 	check("its causes; the dust and the hamster are one", _texts(db, CAUSES), ["Faulty graphics card", "Bad RAM module", "Failing hard drive", "Faulty CPU fan"])
 
 	game.mark_check("Windows starts", true)
