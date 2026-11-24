@@ -764,20 +764,26 @@ func _show(listing: Listing, folder_view: IconView.FolderView) -> void:
 	_fill(view)
 
 
-# Reads [param key] in from the disk before it opens: [param seconds] the first time after a boot,
-# [member cached_share] of that after, plus [param bytes] of a document, slower as [method _slowness]
-# says. Meanwhile the computer's drive seeks and the pointer is busy. False when the computer
-# rebooted or went off meanwhile, and nothing opens.
+# Reads [param key] in from the disk before it opens ([method read_disk]): [param seconds] the first
+# time after a boot, [member cached_share] of that after, plus [param bytes] of a document, slower
+# as [method _slowness] says. False when the computer rebooted or went off meanwhile, and nothing opens.
 func _load(key: Variant, seconds: float, bytes: int = 0) -> bool:
-	var run := _runs
 	var time := (seconds * (cached_share if _loaded.has(key) else 1.0) + bytes / disk_bytes_per_second) * _slowness() * load_scale
 	_loaded[key] = true
-	if time <= 0.0:
+	return await read_disk(time)
+
+
+## Reads from this computer's drive for [param seconds], as a program does while it starts (Netscape
+## behind its splash): the drive seeks and the pointer is busy. False when the computer rebooted or
+## went off meanwhile; 0 returns true at once.
+func read_disk(seconds: float) -> bool:
+	if seconds <= 0.0:
 		return true
+	var run := _runs
 	_loads += 1
 	if _loads == 1:
 		pointer_changed.emit()
-	var read := await HardDrive.read_on(_hard_drive(), time, get_tree(), func() -> bool: return run == _runs)
+	var read := await HardDrive.read_on(_hard_drive(), seconds, get_tree(), func() -> bool: return run == _runs)
 	_loads -= 1
 	if _loads == 0:
 		pointer_changed.emit()

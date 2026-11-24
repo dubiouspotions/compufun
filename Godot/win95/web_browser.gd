@@ -217,7 +217,11 @@ func _show_splash() -> void:
 	splash.position = ((desktop.size - splash.size) / 2).floor()
 	splash.show()
 	visible = false
-	await get_tree().create_timer(splash_seconds).timeout
+	var screen: Node = desktop.owner  # win95.gd, whose drive reads while the splash shows
+	if screen != null and screen.has_method(&"read_disk"):
+		await screen.read_disk(splash_seconds)
+	else:
+		await get_tree().create_timer(splash_seconds).timeout
 	splash.queue_free()
 	if is_queued_for_deletion():
 		return
