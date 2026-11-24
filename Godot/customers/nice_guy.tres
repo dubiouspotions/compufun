@@ -194,24 +194,12 @@ icon = ExtResource("31_gltxo")
 is_folder = true
 children = Array[Resource]([ExtResource("8_mbwl2"), ExtResource("9_gha50"), SubResource("Resource_k0ygj"), SubResource("Resource_hdmw2"), SubResource("Resource_x2hfo"), SubResource("Resource_r6wgx"), SubResource("Resource_odtl8"), SubResource("Resource_jr8j4"), SubResource("Resource_mrbor"), SubResource("Resource_t6ad3"), SubResource("Resource_yixom"), SubResource("Resource_usyke"), SubResource("Resource_8qx0p"), SubResource("Resource_8edb5")])
 
-[sub_resource type="Resource" id="Resource_y23vt"]
-script = ExtResource("6_11vfk")
-name = "from Kev.txt"
-icon = ExtResource("32_xsp7n")
-contents = "Uncle Bob,
-
-Put the 8 megs from my old box in yours. Twice the memory, so it should fly now.
-
-- Kev
-"
-modified = "Saturday, April 27, 1996 3:12:05 PM"
-
 [sub_resource type="Resource" id="Resource_eh7mh"]
 script = ExtResource("6_11vfk")
 name = "My Documents"
 icon = ExtResource("31_gltxo")
 is_folder = true
-children = Array[Resource]([SubResource("Resource_y23vt")])
+children = Array[Resource]([])
 
 [sub_resource type="Resource" id="Resource_2r7ut"]
 script = ExtResource("35_6ev7n")

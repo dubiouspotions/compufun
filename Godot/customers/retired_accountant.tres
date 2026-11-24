@@ -197,18 +197,6 @@ icon = ExtResource("5_lymrw")
 is_folder = true
 children = Array[Resource]([ExtResource("start_menu"), ExtResource("system_folder"), SubResource("Resource_4fbej"), SubResource("Resource_irgbr"), SubResource("Program_notepad"), SubResource("Program_wordpad"), SubResource("Program_paint"), SubResource("Program_calculator"), SubResource("Program_inbox"), SubResource("Program_volume_control"), SubResource("Program_defrag"), SubResource("Program_solitaire"), SubResource("Program_ms_dos_prompt"), SubResource("Program_media_player")])
 
-[sub_resource type="Resource" id="Resource_letter"]
-script = ExtResource("2_egn44")
-name = "from Kev.txt"
-icon = ExtResource("4_qsrht")
-contents = "Uncle Bob,
-
-Put the 8 megs from my old box in yours. Twice the memory, so it should fly now.
-
-- Kev
-"
-modified = "Saturday, April 27, 1996 3:12:05 PM"
-
 [sub_resource type="Resource" id="Doc_tax_office"]
 script = ExtResource("2_egn44")
 name = "Letter to the tax office.doc"
@@ -230,7 +218,7 @@ script = ExtResource("2_egn44")
 name = "My Documents"
 icon = ExtResource("5_lymrw")
 is_folder = true
-children = Array[Resource]([SubResource("Resource_letter"), SubResource("Doc_tax_office"), SubResource("Sheet_tax_return")])
+children = Array[Resource]([SubResource("Doc_tax_office"), SubResource("Sheet_tax_return")])
 
 [sub_resource type="Resource" id="Setup_accountant"]
 script = ExtResource("9_86j8n")
