@@ -7,8 +7,8 @@ extends "res://tests/test.gd"
 
 const FakeVoice := preload("res://tests/fake_voice.gd")
 const PATH := "res://story/errands/0603_activist_guy.errand"
-## Two committed lines of the activist, as one line: each part has its rendered voice file.
-const SAID := "(neutral) No worries, dude. (angry) You can keep it - I'm planning on staying away from any tech for the foreseeable future."
+## A line in two parts, for the tests with a fake voice.
+const SAID := "(neutral) No worries, dude. (angry) You can keep it - I'm staying away from tech."
 ## The parts' audio in the tests with a fake voice: 2 s, then 4 s.
 var times := PackedVector2Array([Vector2(0.0, 2.0), Vector2(2.0, 4.0)])
 
@@ -29,19 +29,24 @@ func _conversation(lines: String) -> Conversation:
 
 
 func _voice_player_timing() -> void:
-	var line: DialogueLine = _conversation(SAID).lines[0]
+	var found := _rendered_two_part_line()
+	check("the week has a line in two parts with their voices rendered", found.is_empty(), false)
+	if found.is_empty():
+		return
+	var line: DialogueLine = found["line"]
+	var voice: VoicePerson = found["voice"]
 	var player := VoicePlayer.new()
 	player.rate_jitter = 0.0
 	player.pitch_jitter = 0.0
 	root.add_child(player)
 	await process_frame
 	check("before a line, the timing is unknown", [player.said(), player.part_times(), player.played(), player.playing_part()], [null, PackedVector2Array(), -1.0, -1])
-	var seconds := player.say(line, _activist.voice)
+	var seconds := player.say(line, voice)
 	var times := player.part_times()
 	check("each part starts as the one before ends, and they last as long as the line", [player.said() == line, times.size(), times[0].x, times[1].x, snappedf(times[1].x + times[1].y, 0.001)], [true, 2, 0.0, times[0].y, snappedf(seconds, 0.001)])
 	check("the line plays its first part", player.playing_part(), 0)
 	if not ClassDB.class_exists(&"ChimeraVoice"):
-		var files: Array = line.parts().map(func(p: DialogueLine) -> AudioStream: return Voices.stream_of(p, _activist.voice.body))
+		var files: Array = line.parts().map(func(p: DialogueLine) -> AudioStream: return Voices.stream_of(p, voice.body))
 		check("each part lasts as long as its file", [snappedf(times[0].y, 0.001), snappedf(times[1].y, 0.001)], [snappedf(files[0].get_length(), 0.001), snappedf(files[1].get_length(), 0.001)])
 		player.finished.emit()
 		check("the second file plays the second part", [player.playing_part(), player.played() >= times[1].x], [1, true])
@@ -159,3 +164,32 @@ func _phone_follows_the_voice() -> void:
 	game.hang_up()
 	phone.queue_free()
 	await process_frame
+
+
+# A committed customer line in two or more parts whose parts all have their rendered voice files,
+# with its customer's voice: {"line", "voice"}, or {} when the week has none. Found, not named, so
+# that the writers' edits don't break the test.
+func _rendered_two_part_line() -> Dictionary:
+	var week := StoryFiles.load_week()
+	for day: Day in week.days:
+		for errand: Errand in day.errands:
+			if errand.customer == null or errand.customer.person == null or errand.customer.person.voice == null:
+				continue
+			var voice := errand.customer.person.voice
+			for conversation: Conversation in errand.conversations:
+				for line: DialogueLine in _lines_of(conversation):
+					if line.parts().size() >= 2 and line.parts().all(func(p: DialogueLine) -> bool: return Voices.stream_of(p, voice.body) != null):
+						return {"line": line, "voice": voice}
+	return {}
+
+
+func _lines_of(reply: Reply) -> Array[DialogueLine]:
+	var found: Array[DialogueLine] = []
+	if reply == null:
+		return found
+	found.append_array(reply.lines)
+	for choice: Choice in reply.choices:
+		for answer: Reply in choice.replies:
+			found.append_array(_lines_of(answer))
+	found.append_array(_lines_of(reply.then))
+	return found

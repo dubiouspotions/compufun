@@ -7,19 +7,17 @@ brief:
 (neutral) Dude.
 - What?
 - Are you ok? You look a little...
-(irritated03) Listen. Somethings not adding up here. I suggest you do as I, pack up and leave.
+(irritated03) Listen. The bogon flux around here is off the charts. Do what I'm doing. Pack up and leave.
 - Uuh...
-	(irritated02) I don't have time to stand here and try to explain this to you. I should already be far away from here but I wanted to give you heads up. If you don't want to follow my advice, up to you. But I strongly recommend you get outta here asap.
 - I can't really leave. I promised to take care of the store this week.
-	(irritated02) I don't have time to stand here and try to explain this to you. I should already be far away from here but I wanted to give you heads up. If you don't want to follow my advice, up to you. But I strongly recommend you get outta here asap.
-- What do you mean "not adding up"?
-	(irritated02) Something really fishy is going on and it involves our computers somehow! The signs are everywhere!
-	- Like what?
-		(irritated02) I don't have time to stand here and try to explain this to you. I should already be far away from here but I wanted to give you heads up. If you don't want to follow my advice, up to you. But I strongly recommend you get outta here asap.
+	(irritated02) Forget the store.
+- What do you mean "bogon flux"?
+	(irritated02) It's in the computers. Something's spreading, box to box.
+	- Spreading how?
+		(irritated03) I don't have time to explain. Figure it out.
 	- Yeah, I've been noticing some strange things myself.
-		(irritated02) We're running out of time. I should already be far away from here but I wanted to give you a heads up. If you don't want to follow my advice, up to you. But I strongly recommend you get outta here asap.
-
-- Ok, thanks for the heads up. What about your computer?
-	(neutral) No worries, dude.
-	(angry) You can keep it - I'm planning on staying away from any tech for the foreseeable future.
-	- Ok..? Stay safe, I guess!
+		(irritated01) We're running out of time.
+(irritated02) I would be halfway to the coast by now if I hadn't come by to warn you. Just scram already. (irritated03) Or don't, for all I care!
+- Okay, thanks for the heads up. What about your computer?
+	(neutral) I always help when I can. About the computer... (angry) You can keep it - I'm planning on staying away from any tech for the foreseeable future.
+	- Okay...? Stay safe, I guess!
