@@ -3,13 +3,12 @@ extends Control
 ## The printout that the player carries (Game.printout), in every view: its top peeks in at the
 ## bottom left, clear of the part in the hand on the right. A click on it raises the page: the player
 ## holds it up on the right side of the view, readable, and keeps playing beside it. A click on a
-## line with a check box ticks or unticks it, and a click on the trash can throws the page away. A
-## click on a computer on the counter lowers the page and goes on to the computer, which opens the
-## Workview on it. A click elsewhere outside the page, or Esc, lowers it, and does nothing else. A page
-## just picked up comes up raised. Beside
-## an open screen (see [method lay_out_around]) the page is always up, right of the screen and leaving
-## it uncovered. Only the trash can takes the page (TrashCan); while the player carries one, a try to
-## take another hops the corner.
+## line with a check box ticks or unticks it, a click on its folded corner lowers it, and a
+## click on the trash can throws the page away; other clicks go on to what is under them. A page
+## just picked up comes up raised. While a customer talks, at the counter or on the phone, a raised
+## page is down, and comes back up after. Beside an open screen (see [method lay_out_around]) the page
+## is always up, right of the screen and leaving it uncovered. Only the trash can takes the page
+## (TrashCan); while the player carries one, a try to take another hops the corner.
 
 ## How far the corner rises, in pixels, while the mouse is over it.
 @export var hover_rise: float = 24.0
@@ -53,6 +52,7 @@ func _ready() -> void:
 	_corner.mouse_entered.connect(func() -> void: _corner_paper.position = _corner_rest - Vector2(0.0, hover_rise))
 	_corner.mouse_exited.connect(func() -> void: _corner_paper.position = _corner_rest)
 	_paper.gui_input.connect(_on_paper_input)
+	_paper.mouse_exited.connect(func() -> void: _paper.fold_hovered = false)
 	Game.printout_refused.connect(_hop_corner)
 	get_viewport().size_changed.connect(_layout)
 	Game.changed.connect(_sync)
@@ -66,9 +66,9 @@ func is_raised() -> bool:
 	return _paper.visible
 
 
-## Raises the carried page; does nothing while the player carries none.
+## Raises the carried page; does nothing while the player carries none or a customer talks.
 func raise() -> void:
-	_raised = not Game.printout.is_empty()
+	_raised = not Game.printout.is_empty() and not _talking()
 	_sync()
 
 
@@ -90,30 +90,14 @@ func lay_out_around(screen: Rect2, buttons: Array[Rect2]) -> void:
 	_sync()
 
 
-# _input, before the buttons, the screens and the hotspots: a click outside the raised page only lowers it,
-# or throws it in the trash can under the mouse, or lowers it and goes on to the computer under the mouse.
+# _input, before the hotspots: a left click on the trash can throws the raised page in, even with a part
+# in the hand, which the can would take first.
 func _input(event: InputEvent) -> void:
 	var click := event as InputEventMouseButton
-	if click == null or not click.pressed or click.button_index not in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
-		return
-	if not _raised or _beside.has_area():
-		return
-	if Rect2(Vector2.ZERO, _paper.size).has_point((_paper.make_input_local(click) as InputEventMouseButton).position):
+	if click == null or not click.pressed or click.button_index != MOUSE_BUTTON_LEFT or not is_raised() or _beside.has_area():
 		return
 	var can := get_tree().get_first_node_in_group(TrashCan.GROUP) as TrashCan
-	if click.button_index == MOUSE_BUTTON_LEFT and can != null and can.is_hovered():
-		can.throw_printout()
-	elif click.button_index == MOUSE_BUTTON_LEFT and get_tree().get_nodes_in_group(JobComputer.GROUP).any(func(computer: JobComputer) -> bool: return computer.is_hovered()):
-		lower()
-		return  # unhandled, so the click goes on to the computer
-	else:
-		lower()
-	get_viewport().set_input_as_handled()
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if _raised and is_raised() and not _beside.has_area() and event.is_action_pressed(&"go_back"):
-		lower()
+	if can != null and can.is_hovered() and can.throw_printout():
 		get_viewport().set_input_as_handled()
 
 
@@ -125,11 +109,18 @@ func _on_corner_input(event: InputEvent) -> void:
 
 
 func _on_paper_input(event: InputEvent) -> void:
+	var motion := event as InputEventMouseMotion
+	if motion != null:
+		_paper.fold_hovered = _paper.fold_rect().grow(4.0).has_point(motion.position)
+		return
 	var click := event as InputEventMouseButton
 	if click == null or not click.pressed:
 		return
 	_paper.accept_event()
 	if click.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if _paper.fold_rect().grow(4.0).has_point(click.position):
+		lower()
 		return
 	var line := _boxed_line(_paper.line_at(click.position))
 	if line >= 0:
@@ -163,7 +154,8 @@ func _sync() -> void:
 		_raised = true
 	_carried = Game.printout
 	_raised = _raised and carrying
-	var up := carrying and (_raised or _beside.has_area())
+	var up := carrying and (_raised or _beside.has_area()) and not _talking()
+	_paper.folded = not _beside.has_area()
 	_corner.visible = carrying and not up
 	if up != _paper.visible and carrying:
 		handle_sound.play_at(self)
@@ -175,6 +167,11 @@ func _sync() -> void:
 		paper.ticks = Game.printout_ticks.duplicate()
 	_fit_corner()
 	_layout()
+
+
+# A customer talks, at the counter or on the phone: the page is out of the way.
+func _talking() -> bool:
+	return Game.visitor_state == Game.VisitorState.TALKING or Game.phase == Game.Phase.CALLING
 
 
 # Widens the corner to the tilted page's right edge, so that it clips only the page's bottom.
