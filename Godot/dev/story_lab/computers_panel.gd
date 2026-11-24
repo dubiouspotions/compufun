@@ -69,15 +69,16 @@ func open(customer: Customer, errand: Errand) -> void:
 	var file_name := SetupPatch.errand_name(errand) if errand != null else SetupPatch.customer_name(customer)
 	var was := _path
 	_path = SetupPatch.DIR + file_name + SetupPatch.EXTENSION
-	if not (_saving_table and _path == was):  # the week reloading our own save keeps the table's mails
-		_title.text = "%s, %s" % [customer.spoken_name(), _stage_name(errand)]
-		_about.text = ("What %s's computer is like as the game starts, on top of its .tres." if errand == null else
-				"What %s did on their computer before this visit; the problem's break comes after.") % customer.spoken_name()
+	_title.text = "%s, %s" % [customer.spoken_name(), _stage_name(errand)]
+	_about.text = ("What %s's computer is like as the game starts, on top of its .tres." if errand == null else
+			"What %s did on their computer before this visit; the problem's break comes after.") % customer.spoken_name()
+	if _path != was or _code.text != _drafts.text(_path):  # the week reloading our own save keeps the caret
 		_code.text = _drafts.text(_path)
 		_code.clear_undo_history()
 		_mark(PackedStringArray())
+	if not (_saving_table and _path == was):  # nor does it rebuild the mails that the table just saved
 		_rebuild()
-		_save_bench.disabled = _bench == null
+	_save_bench.disabled = _bench == null
 	for i: int in _list.item_count:
 		if _item_path(i) == _path:
 			_list.select(i)
