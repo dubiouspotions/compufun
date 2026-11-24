@@ -95,6 +95,10 @@ var fixed: bool:
 ## [member Problem.hangs_after] seconds. Game clears it each time the computer stops being fixed.
 var tested: bool = false
 
+## The phone called about this computer and nobody answered (Game.rings_out): the phone never
+## calls about it again.
+var unanswered: bool = false
+
 ## The repair is done: fixed and tested. The post-it shows the check, and the player can call the
 ## customer.
 var done: bool:
@@ -236,6 +240,7 @@ func snapshot() -> Dictionary:
 		"hardware_fixed": hardware_fixed,
 		"software_fixed": software_fixed,
 		"tested": tested,
+		"unanswered": unanswered,
 		"powered": powered,
 		"cd_tray_open": cd_tray_open,
 		"lying": lying,

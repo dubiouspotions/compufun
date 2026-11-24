@@ -1,13 +1,14 @@
 class_name PhoneCall
 extends Control
 ## The phone: the dialogue box with a red rotary phone in it. A click on the phone
-## (Shop.phone_requested) calls the customer of the oldest done (fixed and tested) computer: the
+## (Shop.phone_requested) calls the customer of the computer that Game.next_to_call picks: the
 ## phone rings, the customer answers (their PHONE conversation, or [member greeting]), the player
 ## says [member you_say], and hangs up; then the customer comes for it. A PHONE conversation without
-## lines rings out: [member no_answer] shows, and the call ends. Each line goes on by itself
-## [member auto_advance_seconds] after it ends, or at a click anywhere (or Enter), as in the dialogue. The shop's
-## phone takes clicks only while a computer is done. Off the hook without a call (Game.pick_up_phone), it lists
-## the computers; Esc or "Put down" puts it down. Game refuses both while the shop is closed or someone is in it.
+## lines rings out: [member no_answer] shows, the call ends, and the phone never calls about that
+## computer again. Each line goes on by itself [member auto_advance_seconds] after it ends, or at a
+## click anywhere (or Enter), as in the dialogue. The shop's phone takes clicks only while
+## Game.can_call. Off the hook without a call (Game.pick_up_phone), it lists the computers; Esc or
+## "Put down" puts it down. Game refuses both while the shop is closed or someone is in it.
 
 ## The heading over the customers to call.
 @export var pick_title: String = "Call a customer"
@@ -20,6 +21,8 @@ extends Control
 @export var you_say: String = "Your computer is ready now!"
 ## What shows when nobody answers (Game.rings_out); then the call ends, and nobody comes.
 @export var no_answer: String = "Nobody answers."
+## The status of a computer in the list whose call rang out; the phone doesn't call about it again.
+@export var no_answer_status: String = "no answer"
 ## How long the call takes before the customer answers, in seconds: the dialling, one ring and the
 ## far end's click in sounds/phone_receiver.wav, which ends 0.395 s after that click. The sound
 ## starts a few frames after this timer, so the customer answers about 0.15 s after the click.
@@ -169,10 +172,10 @@ func _show_customers() -> void:
 		if button == null:
 			push_error("PhoneCall: choice_scene %s is not a Button" % choice_scene)
 			return
-		var status := "" if job.done else "untested" if job.fixed else "unfixed"
+		var status := no_answer_status if job.unanswered else "" if job.done else "untested" if job.fixed else "unfixed"
 		for part: Array in [["%Name", job.customer.display_name], ["%Number", number_of(job.customer)], ["%Issue", job.perceived_issue()], ["%Status", status]]:
 			(button.get_node(part[0]) as Label).text = part[1]
-		button.disabled = not (job.done and Game.can_call())
+		button.disabled = not (job.done and not job.unanswered and Game.can_call())
 		button.pressed.connect(Game.call_customer.bind(job))
 		_choices.add_child(button)
 		rows.append(button)

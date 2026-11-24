@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## While a click on the phone would place a call (Game.can_call), its outline pulses in the Open
-## sign's colour and rhythm, light blue under the mouse; otherwise it is dark: with no computer done,
-## off the hook, and while a visitor, also one who pops up for an event, is in the shop.
+## sign's colour and rhythm, light blue under the mouse; otherwise it is dark: with no computer done
+## or only one whose call rang out, off the hook, and while a visitor, also one who pops up for an event, is in the shop.
 
 const GAME := preload("res://game.gd")
 const MIDDAY := {"day": 1, "arrivals": 3, "focus_slot": 0, "view": "Main",
@@ -39,6 +39,12 @@ func run() -> void:
 	check("off the hook: dark", body.material_overlay == null, true)
 	game.put_down_phone()
 	check("back on the hook: it pulses", body.material_overlay, pulse)
+
+	var unanswered := done.duplicate(true)
+	unanswered["jobs"][1]["unanswered"] = true
+	check("restore with his call rung out once", game.restore(unanswered), "")
+	check("nobody left to call: dark, and a click does nothing", [game.can_call(), body.material_overlay == null, phone.input_ray_pickable], [false, true, false])
+	check("restore with his computer done again", game.restore(done), "")
 
 	var event := done.duplicate(true)
 	event.merge({"visitor": "res://customers/skater_bro.tres", "visit": "EVENT", "visitor_state": "POPPING_UP"})

@@ -1104,9 +1104,14 @@ func put_down_phone() -> void:
 	changed.emit()
 
 
-## True when the phone can call: [method can_pick_up_phone], and a computer is done.
+## True when the phone can call: [method can_pick_up_phone], and a computer is done whose customer
+## the phone hasn't called in vain ([member Job.unanswered]).
 func can_call() -> bool:
-	return can_pick_up_phone() and jobs.any(func(j: Job) -> bool: return j.done)
+	return can_pick_up_phone() and jobs.any(_callable)
+
+
+static func _callable(job: Job) -> bool:
+	return job.done and not job.unanswered
 
 
 # True when [param who] is in the shop: a visitor who hasn't walked out the door yet.
@@ -1116,9 +1121,10 @@ static func _in_shop(who: Customer, state: VisitorState) -> bool:
 
 ## The done job on the counter whose customer the phone calls: of those whose customer
 ## [method answers], the one that came in first (lowest [member Job.order]); when nobody answers, the
-## first of all, whose call rings out. null when no computer is done.
+## first of all, whose call rings out. A job whose call rang out once ([member Job.unanswered]) is
+## left out. null when no job is left.
 func next_to_call() -> Job:
-	var done := jobs.filter(func(j: Job) -> bool: return j.done)
+	var done := jobs.filter(_callable)
 	var answering := done.filter(answers)
 	var next: Job = null
 	for job: Job in answering if not answering.is_empty() else done:
@@ -1136,10 +1142,11 @@ func answers(job: Job) -> bool:
 
 ## Calls the customer of [param job], a done computer on the counter, to say it is ready (phase
 ## CALLING; CompuFunDB is offline, as the land-line cuts the modem). The call lasts until
-## [method hang_up]. Fails with an error unless [method can_call] and [param job] is done.
+## [method hang_up]. Fails with an error unless [method can_call], [param job] is done, and no call
+## about it rang out before ([member Job.unanswered]).
 func call_customer(job: Job) -> void:
-	if not can_call() or job not in jobs or not job.done:
-		push_error("Game.call_customer: can't call about %s now (phase %s, visitor %s, fixed %s, tested %s)" % [_who(job.customer) if job != null else "no job", Phase.find_key(phase), _who(visitor) if visitor != null else "none", job.fixed if job != null else false, job.tested if job != null else false])
+	if not can_call() or job not in jobs or not _callable(job):
+		push_error("Game.call_customer: can't call about %s now (phase %s, visitor %s, fixed %s, tested %s, unanswered before %s)" % [_who(job.customer) if job != null else "no job", Phase.find_key(phase), _who(visitor) if visitor != null else "none", job.fixed if job != null else false, job.tested if job != null else false, job.unanswered if job != null else false])
 		return
 	phase = Phase.CALLING
 	calling = job
@@ -1159,8 +1166,9 @@ static func _silent(c: Conversation) -> bool:
 	return c != null and c.lines.is_empty() and c.choices.is_empty()
 
 
-## Ends the call: the called customer comes at once for a PICKUP, unless the call [method rings_out].
-## Fails with an error unless the phone is calling.
+## Ends the call: the called customer comes at once for a PICKUP, unless the call [method rings_out]:
+## then the phone never calls about that computer again ([member Job.unanswered]). Fails with an
+## error unless the phone is calling.
 func hang_up() -> void:
 	if phase != Phase.CALLING or calling == null:
 		push_error("Game.hang_up: the phone isn't calling (phase %s)" % Phase.find_key(phase))
@@ -1172,6 +1180,8 @@ func hang_up() -> void:
 	if answered:
 		_pickup = calling
 		_set_visitor(_pickup.errand, Visit.PICKUP)
+	else:
+		calling.unanswered = true
 	calling = null
 	changed.emit()
 
@@ -1432,6 +1442,7 @@ func restore(state: Dictionary) -> String:
 				return _refuse("job %d: the side panel has %d screws, not %d" % [i, Job.PANEL_SCREWS, panel.size()])
 			job.panel_screws.assign(panel.map(func(v: Variant) -> bool: return bool(v)))
 		job.tested = bool(data.get("tested", job.fixed))  # reports from before the test count fixed as tested
+		job.unanswered = bool(data.get("unanswered", false))
 		if job.powered and not can_power_on(job):
 			return _refuse("job %d: a computer that misses a part can't be on" % i)
 		new_jobs.append(job)
