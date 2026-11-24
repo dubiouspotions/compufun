@@ -47,6 +47,27 @@ func run() -> void:
 		await process_frame
 	check("C,A boots past the floppy in A:", done[0], true)
 
+	var stuck: Control = load("res://win95/boot_sequence.tscn").instantiate()
+	stuck.play_on_start = false
+	stuck.floppy_in_a = true
+	stuck.warm_up_seconds = 0.05
+	stuck.memory_test_seconds = 0.05
+	for property: StringName in [&"line_seconds", &"detect_seconds", &"post_hold_seconds", &"verify_seconds"]:
+		stuck.set(property, 0.01)
+	stuck.power_on_sound = null
+	root.add_child(stuck)
+	stuck.play()
+	while not stuck.get("_awaiting_key"):
+		await process_frame
+	var errors := func() -> int: return stuck.get_node("%Post").text.count("Non-System disk")
+	stuck._gui_input(_key(KEY_LEFT))
+	await process_frame
+	check("the arrow keys turn the view, not answer \"press any key\"", errors.call(), 1)
+	stuck._gui_input(_key(KEY_SPACE))
+	await process_frame
+	check("another key tries the floppy again", errors.call(), 2)
+	stuck.free()
+
 	var bench: Control = load("res://ui/bench_screen.tscn").instantiate()
 	root.add_child(bench)
 	await process_frame
@@ -75,5 +96,6 @@ func run() -> void:
 func _key(keycode: Key) -> InputEventKey:
 	var key := InputEventKey.new()
 	key.keycode = keycode
+	key.physical_keycode = keycode
 	key.pressed = true
 	return key

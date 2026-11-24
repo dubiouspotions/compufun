@@ -11,6 +11,9 @@ extends Control
 signal finished
 signal _any_key
 
+## The world's navigation, which the boot never takes, not even as "any key".
+const _NAVIGATION: Array[StringName] = [&"turn_left", &"turn_right", &"look_up", &"go_back"]
+
 ## A floppy is in drive A:, so after the POST the boot stops on [member disk_error] and every key
 ## tries again; it goes on to Windows once this is false. win95.gd keeps it in step with the
 ## computer's Win95Setup.floppy_in_a.
@@ -132,6 +135,8 @@ func _process(delta: float) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if not (event is InputEventKey or event is InputEventMouseButton) or not event.is_pressed():
 		return
+	if _NAVIGATION.any(event.is_action):
+		return  # the player turns and leaves the view at any stage of the boot
 	if _in_post:  # a real POST ignores every key but DEL; the rest go on, such as Esc out of the view
 		# Backspace too: a Mac keyboard's Delete key is Backspace.
 		if event is InputEventKey and (event as InputEventKey).keycode in [KEY_DELETE, KEY_BACKSPACE]:
