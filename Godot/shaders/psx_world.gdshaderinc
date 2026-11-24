@@ -13,6 +13,9 @@ uniform bool world_uv = false;
 uniform float uv_scale = 1.0;
 /** The part of the texture that the UV square shows: x, y, width, height, in shares of the texture. */
 uniform vec4 uv_rect = vec4(0.0, 0.0, 1.0, 1.0);
+/** On: each triangle shades flat, whatever its vertex normals, so that a mesh can carry smooth
+ * normals for the grown hull of an outline (Hotspot.outline_material). */
+uniform bool flat_normals = false;
 /** The picked colour: the average colour of tint_rect (x, y, width, height) in tint_texture. */
 uniform sampler2D tint_texture : source_color, filter_linear, hint_default_white;
 uniform vec4 tint_rect = vec4(0.15, 0.2, 0.7, 0.7);
@@ -96,6 +99,10 @@ vec3 with_grime(vec3 color) {
 }
 
 void fragment() {
+	if (flat_normals) {
+		vec3 n = normalize(cross(dFdx(VERTEX), dFdy(VERTEX)));
+		NORMAL = dot(n, VERTEX) > 0.0 ? -n : n;  // toward the camera, however the renderer flips y
+	}
 	vec2 uv = mix(plain_uv, affine_uv.xy / affine_uv.z, affine);
 	vec3 picked = albedo_color.rgb;
 	if (tint_from_texture || edge_fade > 0.0 || fill_transparent) {

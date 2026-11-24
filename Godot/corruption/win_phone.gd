@@ -1,8 +1,8 @@
 extends CorruptionSign
 ## Every desk phone (the Body of each Node3D in the group desk_phones, props/phone.tscn: the one on
 ## the counter and the one in the call box) turns into the Windows 95 Modems icon in 3D, a yellow
-## phone on a modem (tools/make_win_phone.gd). Only its look changes: the shop's outline, pulse and
-## clicks stay on the same Body.
+## phone on a modem (tools/make_win_phone.gd). The shop's outline and pulse grow from the Body's
+## mesh, so they take the icon's shape; the clicks work as before.
 
 ## The icon's model, which stands in for the push-button phone's mesh.
 @export var mesh: Mesh

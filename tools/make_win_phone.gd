@@ -1,11 +1,12 @@
 extends SceneTree
 ## Builds the Windows 95 Modems icon (win95/theme/icons_extracted/modem_phone_yellow_32.png) as a
-## low-poly 3D model for the corruption sign win_phone: a yellow phone with a dial on a grey modem
+## low-poly 3D model for the corruption sign win_phone: a yellow push-button phone on a grey modem
 ## with its lights. Writes the atlas, corruption/win_phone/modem_phone.png, in the icon's own colours
 ## and with its row of lights, and the mesh, corruption/win_phone/modem_phone.tres, one surface.
 ## The model stands where props/phone.tscn's push-button phone stands: the front faces +Z, X runs
 ## across, the floor is at Y 0. The icon shows it from the front left; seen from the front, its row
-## of lights reads the other way round.
+## of lights reads the other way round. The normals are smooth, so that the shop's outline, a hull
+## grown along them, stays closed; the material shades it flat (psx_world's flat_normals).
 ## Usage, from Godot/: godot --headless --path . -s ../tools/make_win_phone.gd, then --import.
 
 const ICON_PATH := "res://win95/theme/icons_extracted/modem_phone_yellow_32.png"
@@ -21,9 +22,9 @@ const DARK_GREY := Color8(128, 128, 128)
 const WHITE := Color8(255, 255, 255)
 const BLACK := Color8(0, 0, 0)
 
-## The atlas: the dial on the phone's sloped front, the modem's front with its lights, and one
+## The atlas: the keypad on the phone's sloped front, the modem's front with its lights, and one
 ## solid cell per colour.
-const DIAL := Rect2i(0, 0, 28, 16)
+const KEYPAD := Rect2i(0, 0, 28, 16)
 const LIGHTS := Rect2i(32, 0, 28, 6)
 const CELL := 4
 const CELLS: Array[Color] = [YELLOW, OLIVE, LIGHT_GREY, DARK_GREY, WHITE, BLACK]
@@ -32,7 +33,7 @@ const CELLS_AT := Vector2i(32, 16)
 ## The modem: half its width and depth, and its height.
 const MODEM := Vector3(0.105, 0.032, 0.1)
 ## The phone's body on the modem: half its width and depth at the bottom, and at the top, whose front
-## edge is set back so that the dial's face slopes; its height over the modem.
+## edge is set back so that the keypad's face slopes; its height over the modem.
 const BODY_BOTTOM := Vector2(0.078, 0.07)
 const BODY_TOP := Vector2(0.06, 0.03)
 const BODY_TOP_Z := -0.02
@@ -64,8 +65,7 @@ func _initialize() -> void:
 	_modem()
 	_body()
 	_handset()
-	_st.index()
-	var mesh := _st.commit()
+	var mesh := _smoothed(_st.commit_to_arrays())
 	err = ResourceSaver.save(mesh, MESH_PATH)
 	if err != OK:
 		push_error("make_win_phone: couldn't save %s: %s" % [MESH_PATH, error_string(err)])
@@ -96,7 +96,7 @@ func _draw_atlas(lights: Array[Color]) -> void:
 	_img.fill(YELLOW)
 	for i: int in CELLS.size():
 		_img.fill_rect(Rect2i(CELLS_AT + Vector2i(i * CELL, 0), Vector2i(CELL, CELL)), CELLS[i])
-	_draw_dial()
+	_draw_keypad()
 	_img.fill_rect(LIGHTS, LIGHT_GREY)
 	_img.fill_rect(Rect2i(LIGHTS.position.x, LIGHTS.end.y - 1, LIGHTS.size.x, 1), DARK_GREY)
 	var reversed := lights.duplicate()
@@ -106,23 +106,15 @@ func _draw_atlas(lights: Array[Color]) -> void:
 		_img.fill_rect(Rect2i(start + i * 3, LIGHTS.position.y + 2, 2, 2), reversed[i])
 
 
-# A rotary dial in the middle of the yellow face: an olive ring, white finger holes and a black hub.
-func _draw_dial() -> void:
-	_img.fill_rect(DIAL, YELLOW)
-	var centre := Vector2(DIAL.get_center()) - Vector2(0.5, 0.5)
-	for y: int in range(DIAL.position.y, DIAL.end.y):
-		for x: int in range(DIAL.position.x, DIAL.end.x):
-			var r := Vector2(x, y).distance_to(centre)
-			if r > 6.2 and r <= 7.4:
-				_img.set_pixel(x, y, OLIVE)
-			elif r <= 1.6:
-				_img.set_pixel(x, y, BLACK)
-			elif r <= 2.4:
-				_img.set_pixel(x, y, OLIVE)
-	for i: int in 10:
-		var angle := deg_to_rad(-60.0 + i * 30.0)
-		var at := centre + Vector2(cos(angle), sin(angle)) * 4.4
-		_img.set_pixelv(Vector2i(at.round()), WHITE)
+# The icon's keypad on the yellow face: 3 x 4 white keys, each with an olive side and a black shadow.
+func _draw_keypad() -> void:
+	_img.fill_rect(KEYPAD, YELLOW)
+	for row: int in 4:
+		for column: int in 3:
+			var key := KEYPAD.position + Vector2i(3 + column * 8, 2 + row * 3)
+			_img.fill_rect(Rect2i(key, Vector2i(5, 2)), WHITE)
+			_img.fill_rect(Rect2i(key + Vector2i(5, 0), Vector2i(1, 2)), OLIVE)
+			_img.fill_rect(Rect2i(key + Vector2i(1, 2), Vector2i(5, 1)), BLACK)
 
 
 # --- The mesh --------------------------------------------------------------------------------
@@ -133,7 +125,7 @@ func _modem() -> void:
 
 
 func _body() -> void:
-	_block(_corners(BODY_BOTTOM, MODEM.y, BODY_TOP, MODEM.y + BODY_HEIGHT, BODY_TOP_Z), [OLIVE, DIAL, null, YELLOW, YELLOW, YELLOW])
+	_block(_corners(BODY_BOTTOM, MODEM.y, BODY_TOP, MODEM.y + BODY_HEIGHT, BODY_TOP_Z), [OLIVE, KEYPAD, null, YELLOW, YELLOW, YELLOW])
 
 
 func _handset() -> void:
@@ -185,6 +177,29 @@ func _block(corners: Array[Vector3], paints: Array) -> void:
 			var uv := (Vector2(cell) + Vector2(CELL, CELL) * 0.5) / Vector2(ATLAS_SIZE)
 			uvs = [uv, uv, uv, uv]
 		_polygon(quad, uvs, inside)
+
+
+# The mesh of [param arrays] with each vertex's normal the average of the faces that meet at its
+# position, one vote per face direction.
+func _smoothed(arrays: Array) -> ArrayMesh:
+	var points: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	var faces: Dictionary[Vector3i, Array] = {}
+	for i: int in points.size():
+		var key := Vector3i((points[i] * 100000.0).round())
+		var seen: Array = faces.get_or_add(key, [])
+		if not seen.any(func(n: Vector3) -> bool: return n.is_equal_approx(normals[i])):
+			seen.append(normals[i])
+	for i: int in points.size():
+		var sum := Vector3.ZERO
+		for n: Vector3 in faces[Vector3i((points[i] * 100000.0).round())]:
+			sum += n
+		normals[i] = sum.normalized()
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	var st := SurfaceTool.new()
+	st.create_from_arrays(arrays)
+	st.index()
+	return st.commit()
 
 
 # A convex flat polygon with one normal, facing away from [param inside].

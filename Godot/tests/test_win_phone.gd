@@ -1,7 +1,8 @@
 extends "res://tests/test.gd"
 ## The Late corruption sign win_phone turns every desk phone, the one on the counter and the one in
-## the call box, into the Windows 95 Modems icon in 3D while sign_win_phone is set and the sign is
-## switched on; stage 0, or switching it off, gives the push-button phone back. Day 7 starts it.
+## the call box, into the Windows 95 Modems icon in 3D, whose outline follows its shape, while
+## sign_win_phone is set and the sign is switched on; stage 0, or switching it off, gives the
+## push-button phone back. Day 7 starts it.
 
 
 func run() -> void:
@@ -19,6 +20,8 @@ func run() -> void:
 	check("the Signs list has it, under Late", [sign in shop.get_node("CorruptionSigns").call("every"), sign.get("timing")], [true, 2])
 	check("its model is the icon's", icon.resource_path, "res://corruption/win_phone/modem_phone.tres")
 	check("both phones plain without the flag", [counter.mesh, in_call.mesh], [plain, plain])
+	check("one normal per corner, so the outline grown along them stays closed", _split_corners(icon), 0)
+	check("the material shades it flat all the same", (sign.get("material") as ShaderMaterial).get_shader_parameter(&"flat_normals"), true)
 
 	check("restore day 7 with the flag", game.restore({"day": 7, "phase": "CLOSED", "flags": {"sign_win_phone": 1}}), "")
 	check("on: both phones are the icon", [counter.mesh, in_call.mesh], [icon, icon])
@@ -36,3 +39,19 @@ func run() -> void:
 	call_box.queue_free()
 	shop.queue_free()
 	await process_frame
+
+
+# The corners of [param mesh] where vertices at one position point their normals different ways.
+func _split_corners(mesh: Mesh) -> int:
+	var arrays := mesh.surface_get_arrays(0)
+	var points: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	var first: Dictionary[Vector3i, Vector3] = {}
+	var split: Dictionary[Vector3i, bool] = {}
+	for i: int in points.size():
+		var key := Vector3i((points[i] * 100000.0).round())
+		if not first.has(key):
+			first[key] = normals[i]
+		elif first[key].distance_to(normals[i]) > 0.01:
+			split[key] = true
+	return split.size()
