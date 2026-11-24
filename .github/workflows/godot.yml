@@ -306,7 +306,7 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          ERRORS=$(grep "ERROR" build.log | grep -v "Unable to load fontconfig" | sort -u | sed 's/\\/\\\\/g; s/"/\\"/g') || true
+          ERRORS=$(grep "ERROR" build.log | grep -v -e "Unable to load fontconfig" -e "at exit" | sort -u | sed 's/\\/\\\\/g; s/"/\\"/g') || true
           if [ -n "$ERRORS" ]; then
             count=$(printf '%s\n' "$ERRORS" | wc -l | tr -d ' ')
             run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

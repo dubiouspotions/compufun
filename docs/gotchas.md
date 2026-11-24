@@ -72,6 +72,12 @@ test, every playback that a player stopped during the run is listed too (`AudioS
 with a bare `AudioStreamPlayer` as well. Any other object in the `--verbose` list of leaks is a real
 leak. — 2026-11
 
+**Every headless import and export ends with "3 resources still in use at exit".** The --verbose
+list names `customers/dialogue_line.gd`, `choice.gd` and `reply.gd`: their typed fields refer to
+each other in a cycle (a Reply holds Choices, a Choice holds Replies), and Godot keeps typed
+references between scripts alive, so the cycle outlives the run. It happens only at exit and needs
+no fix; CI's Discord error report skips lines with "at exit". — 2026-11
+
 **An `AudioStreamPlayer3D` ignores the audio bus and the reverb of the `Area3D` that it is in.** Its
 `area_mask` is 0 by default in Godot 4.7, so it finds no area at all. Set it to the sound zones'
 layer (`SoundSet.SOUND_ZONES`, 1) on every 3D player that should sound like its room; a player

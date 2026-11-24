@@ -335,4 +335,5 @@ already has a tag deploys that version again without a bump.
 * *`export.sh` exits 0 when an export fails.* It doesn't check Godot's exit code. Read its
   output for `ERROR`, or check that the build file exists.
 * *Every CI export logs `Unable to load fontconfig`.* The CI image has no system fonts. The
-  Discord error report filters this line out; ignore it in the log.
+  Discord error report filters this line out; ignore it in the log. It also skips Godot's reports
+  of what is still in use "at exit" (gotchas.md).
