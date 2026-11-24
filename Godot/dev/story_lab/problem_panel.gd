@@ -487,7 +487,7 @@ func _right() -> Control:
 	_post_it.placeholder_text = "Such as: Windows starts and turns off"
 	_post_it.text_changed.connect(func(_t: String) -> void: _changed())
 	box.add_child(_post_it)
-	box.add_child(_heading("Cause", "What CompuFunDB calls this cause in its CAUSES column and on the fix it prints, as a service manual would."))
+	box.add_child(_heading("Cause", "What CompuFunDB calls this cause in its POSSIBLE CAUSES column and on the fix it prints, as a service manual would."))
 	_cause = LineEdit.new()
 	_cause.placeholder_text = "Such as: Clogged CPU fan"
 	_cause.text_changed.connect(func(_t: String) -> void: _changed())

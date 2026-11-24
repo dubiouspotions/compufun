@@ -147,7 +147,7 @@ The file name is the problem's id, the name of its `problems/<id>.tres`, which h
 
 - `post-it`: what the customer says is wrong; the post-it shows it.
 - `cause`: what CompuFunDB calls the cause, as a service manual would, such as `Clogged CPU fan`:
-  its CAUSES column and the fix it prints. Without one, CompuFunDB names it by the file name.
+  its POSSIBLE CAUSES column and the fix it prints. Without one, CompuFunDB names it by the file name.
 - `symptoms`: one per line: every complaint this cause can bring, as a customer would put it, worded
   as other problems word the same complaint ("Slow computer"), so a search offers every likely
   cause. The player searches CompuFunDB for their words and their keywords

@@ -2,13 +2,13 @@ class_name CompuFunDB
 extends Control
 ## CompuFunDB on the work computer: a DOS database in text mode, 80 x 30 characters. Three columns:
 ## SEARCH (the player types words and presses Enter: the symptoms of every Problem that hold them
-## all), CHECK (the checks of every cause of the symptom picked: the Game.db_search; the player ticks what is true on the computer) and CAUSES
-## (every Problem with that symptom, by its cause; a ticked check rules out a cause that says no: to
-## it). F prints the selected cause's fix, its steps ending in [member test_step], on the
-## shop's Printer; P prints the checklist. The work computer is slow: a column's entries come in one
-## at a time, each after a seek of the hard drive, whenever what it shows changes. This screen keeps
-## only its cursor and the typed words. It reads every Problem file, so its text is never a second
-## copy of the problems.
+## all), POSSIBLE CAUSES (every Problem with the symptom picked, by its cause; a ticked check rules
+## out a cause that says no: to it) and CHECK (the checks of every such cause: the Game.db_search;
+## the player ticks what is true on the computer). F prints the selected cause's fix, its steps
+## ending in [member test_step], on the shop's Printer; P prints the checklist. The work computer is
+## slow: a column's entries come in one at a time, each after a seek of the hard drive, whenever what
+## it shows changes. This screen keeps only its cursor and the typed words. It reads every Problem
+## file, so its text is never a second copy of the problems.
 ## The first time the player opens it on a day, the work computer boots, the character starts the
 ## program at the DOS prompt and the modem dials up; until then the computer is off. Nothing skips
 ## the start-up; the player can leave meanwhile, and it goes on.
@@ -27,13 +27,14 @@ const FRAME_ROWS: Array[int] = [1, 3, 27]
 ## The first and last row of the lists, between the headers and the bottom frame.
 const LIST_TOP: int = 4
 const LIST_BOTTOM: int = 26
-## The buttons in the bottom frame, under the CHECK and the CAUSES column, that do what P and F do.
+## The buttons in the bottom frame, under the CHECK and the POSSIBLE CAUSES column, that do what P
+## and F do.
 const PRINT_BUTTON: String = "[ PRINT CHECKLIST ]"
 const PRINT_FIX_BUTTON: String = "[ PRINT FIX ]"
 
-enum Column { SEARCH, CHECKS, CAUSES }
+enum Column { SEARCH, CAUSES, CHECKS }
 
-const HEADERS: Array[String] = ["SEARCH", "CHECK", "CAUSES"]
+const HEADERS: Array[String] = ["SEARCH", "POSSIBLE CAUSES", "CHECK"]
 ## The most characters that the player can type into SEARCH.
 const SEARCH_LENGTH: int = 40
 ## The print box over the middle of the screen: its width and its top row, and its OK button.
@@ -618,8 +619,8 @@ func _reload() -> void:
 
 func _load(column: Column, key: String) -> void:
 	var still := func() -> bool: return _loaded_key[column] == key
-	while column == Column.CAUSES and still.call() and _busy(Column.CHECKS) and is_inside_tree():
-		await get_tree().process_frame  # one column at a time: CAUSES after CHECK
+	while column == Column.CHECKS and still.call() and _busy(Column.CAUSES) and is_inside_tree():
+		await get_tree().process_frame  # one column at a time, left to right
 	while still.call() and _loaded[column] < _all_entries(column).size():
 		if not await _read(randf_range(hit_seconds.x, hit_seconds.y), still):
 			return
@@ -633,11 +634,11 @@ func _loading() -> bool:
 
 
 # True while the computer reads [param column] in: SEARCH while it searches, the others until all
-# their entries show; CAUSES only once CHECK is done, as it waits until then.
+# their entries show; CHECK only once CAUSES is done, as it waits until then.
 func _busy(column: Column) -> bool:
 	if column == Column.SEARCH:
 		return _searching
-	if column == Column.CAUSES and _busy(Column.CHECKS):
+	if column == Column.CHECKS and _busy(Column.CAUSES):
 		return false
 	return _loaded[column] < _all_entries(column).size()
 
@@ -746,7 +747,7 @@ func _page() -> PackedStringArray:
 		var lines := _lines(column, entries)
 		if lines.is_empty():
 			continue
-		page.append_array(PackedStringArray(["", HEADERS[column] if column != Column.CAUSES else "POSSIBLE CAUSES"]))
+		page.append_array(PackedStringArray(["", HEADERS[column]]))
 		for line: Array in lines:
 			page.append((line[1] as String).strip_edges(false, true))
 	return page
@@ -812,7 +813,8 @@ func _act() -> void:
 	match _column:
 		Column.SEARCH:
 			if _picked() != null and entry.text == _picked().query:
-				_change_column(1)  # picked already: keep its checks and ticks
+				_column = Column.CHECKS  # picked already: keep its checks and ticks
+				_move(0)
 			else:
 				_search(entry.text)
 		Column.CHECKS:

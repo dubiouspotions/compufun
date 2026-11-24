@@ -5,8 +5,8 @@ extends "res://tests/test.gd"
 ## SEARCH's field stops the letters typing into it, until a click on the field.
 
 ## CompuFunDB.Column, which a test can't name: CompuFunDB names the Game autoload.
-const CHECKS: int = 1
-const CAUSES: int = 2
+const CAUSES: int = 1
+const CHECKS: int = 2
 
 
 func run() -> void:
@@ -39,7 +39,7 @@ func run() -> void:
 	var printer: Node3D = load("res://props/printer.tscn").instantiate()
 	printer.add_to_group(&"printer")
 	root.add_child(printer)
-	_press(db, KEY_RIGHT)
+	_press(db, KEY_LEFT)
 	_press(db, KEY_F)
 	var page: PackedStringArray = printer.get("_lines")
 	check("F prints the picked cause's fix", [page[5], page[-1].begins_with("5. Test the computer")], ["Faulty CPU fan", true])
