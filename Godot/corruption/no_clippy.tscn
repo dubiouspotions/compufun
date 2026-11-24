@@ -5,5 +5,5 @@
 [node name="NoClippy" type="Node"]
 script = ExtResource("1_script")
 title = "Clippy is gone from every computer"
-description = "Every computer's WordPad shows the assistant's frame empty."
-hint = "Open WordPad on a computer."
+description = "Word and Excel never show the Office Assistant, and Help can't find its Help file; every WordPad shows the assistant's frame empty."
+hint = "Open Word or Excel on a computer, or press F1 in it."

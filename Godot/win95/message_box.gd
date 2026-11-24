@@ -33,10 +33,10 @@ func show_message(title: String, text: String, buttons: Array[String] = ["OK"]) 
 	_play(error_sound)
 
 
-## Asks [param text] under the title [param title], with the warning icon and [param buttons]; the
-## first is the default. Listen to [signal answered].
-func ask(title: String, text: String, buttons: Array[String] = ["Yes", "No", "Cancel"]) -> void:
-	_show(title, text, warning_icon, buttons)
+## Asks [param text] under the title [param title], with [param icon] (null: the warning icon) and
+## [param buttons]; the first is the default. Listen to [signal answered].
+func ask(title: String, text: String, buttons: Array[String] = ["Yes", "No", "Cancel"], icon: Texture2D = null) -> void:
+	_show(title, text, icon if icon != null else warning_icon, buttons)
 	_play(question_sound)
 
 

@@ -1,0 +1,17 @@
+# The Office Assistant's tips. Each Office app lights the lightbulb once as it starts, and a click
+# on the bulb shows the next tip, after "Today's tip is:" or the like.
+# One tip per line. A [Word] or [Excel] line starts the tips of that app only; [Office] starts the
+# tips that every app shows. Lines that start with # are notes and never show.
+# The tips without a note are Office 97's own, read from the reference (docs/win95-reference.md).
+
+[Office]
+To undo or repeat several actions at the same time, click the arrow next to the Undo button or Redo button.
+# PLACEHOLDER game hint for the writers: replace or reword.
+A computer that counts up its memory and then stops usually has a bad RAM stick. Try another one.
+# PLACEHOLDER game hint for the writers: replace or reword.
+Stuck on a repair? Search CompuFunDB on the work computer for the symptom, and print the fix.
+
+[Excel]
+To insert subtotals into your list automatically, click any cell in the list, and then click Subtotals on the Data menu.
+Microsoft Excel can open and save the following Lotus file formats: WKS, WK1, FMT, WK3, FM3, and ALL.
+You can view two parts of the same workbook at once. On the Window menu, click Split to see both parts in one window, or click New Window to see each part in its own window.

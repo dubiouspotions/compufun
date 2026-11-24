@@ -35,6 +35,22 @@ Reference shots and notes from it are in `~/Dev/HumanError/scratch/w2/278/` on G
 
 The game's Excel differs on purpose: a leading "=" is text (there are no formulas), Comma Style and a typed "1,234" look the same, and the X and the tick only show. Not confirmed: the Comma Style button's look (assumed to be Currency Style without the "$"), and the X and tick colours outside 16 colours (`excel.gd` uses the reference's 16-colour pixels).
 
+### Office Assistant
+
+Shots in `~/Dev/HumanError/scratch/w4/ref/` on Gideon (`win95/office/assistant/` copies them):
+
+- **Arrival:** the first Office app started on the computer shows "Welcome to Microsoft Word!" (bold), "I'm the Office Assistant, and my job is to help you with this application." and the choices "See key information for upgraders and new users", "Find out about the Office Assistant (That's me!)" and "Start using Microsoft Word". Excel started afterwards shows him with no balloon: the welcome is once per install. The balloon is pale yellow (dithered yellow and white in 16 colours) with a black rounded outline, a tail down to his window, blue ball bullets, and round-ended buttons under an etched line.
+- **Find out about the Office Assistant:** "Hi. I'm your Office Assistant." and four paragraphs (in `assistant.gd`), with the Office Assistant button's picture in the first, and OK, which goes back to the welcome.
+- **Right-click menu:** Hide Assistant, a line, See Tips, Options..., Choose Assistant..., Animate!. Hide Assistant is grey while a balloon shows, See Tips while no tip waits, Options and Choose Assistant while a dialog is open. Hide Assistant, See Tips and Animate! have icons, which the game leaves out.
+- **Hide Assistant** closes his window; F1 brings him back with "What would you like to do?".
+- **Help (F1, the toolbar button, a click on him), without Help installed:** "What would you like to do?", "The Office Assistant cannot currently answer your questions.  Run Setup again to make sure all the necessary Help files are correctly installed.", the choice "See a complete list of help topics", and Tips (grey with no tip waiting), Options and Close.
+- **Letter:** "Dear Sir," and Enter: "It looks like you're writing a letter." / "Would you like help?", "Get help with writing the letter", "Just type the letter without help", Cancel.
+- **Tips:** with Options > "Show the Tip of the Day at startup", each start opens a balloon left of him, with the lightbulb, "Check out today's tip:", "Tip of the day:" or "Today's tip is:" before the tip, and Back and Next grey beside Close. His bulb is yellow while a tip waits and grey after. `tips.txt` has the tips that the reference showed.
+- **Options...:** the "Office Assistant" dialog (? and X) with the tabs Gallery and Options, and OK and Cancel. Gallery: "You can scroll through the different assistants by using the <Back and Next> buttons. When you are finished selecting your assistant, click the OK button.", his picture, a greeting balloon ("Hey, there. What's the word?" or "How's life? All work and no play?"), "Name: Clippit", "Though nothing more than a thin metal wire, Clippit will help find what you need and keep it all together.", <Back and Next>. Options: the groups Assistant capabilities, Show tips about and Other tip options, with the checkboxes and defaults in `assistant.gd` (OPTIONS) and the Reset my tips button.
+- **Without the assistant** (`Actors\CLIPPIT.ACT` renamed): no assistant comes, and F1 opens Windows Help, which can't find the Help file: a "Windows Help" box with the question icon, "Cannot find the wdmain8.hlp file. Do you want to try to find this file yourself?" and Yes and No. No (or Yes, then Cancel in its Open dialog) shows the information icon, "Cannot find the wdmain8.hlp Help file. Check to see that the file exists on your disk. If it doesn't, you need to reinstall it." and OK. Excel names `C:\PROGRAM FILES\MICROSOFT OFFICE\OFFICE\XLMAIN8.HLP` instead.
+
+Not copied: his own animations (Animate! plays long ones, such as curling up into a coil), the Letter Wizard, and choosing another assistant. Our clip is drawn by `tools/make_clippy.py`, not taken from the actor file.
+
 Not confirmed, because the install is minimal or the display has 16 colours: the red spelling squiggles and Tools > "Spelling and Grammar..." (this install has only "Spelling... F7"), the Help balloon with Help installed, and the colours in 256 colours.
 
 ## Licence

@@ -1,0 +1,11 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://win95/property_sheet.tscn" id="sheet"]
+[ext_resource type="Script" path="res://win95/office/assistant/assistant_options.gd" id="script"]
+
+[node name="AssistantOptions" instance=ExtResource("sheet")]
+script = ExtResource("script")
+in_taskbar = false
+
+[node name="TitleBar" parent="VBox" index="0"]
+title = "Office Assistant"

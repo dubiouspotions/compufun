@@ -4,11 +4,13 @@
 [ext_resource type="Theme" path="res://win95/office/office_theme.tres" id="office_theme"]
 [ext_resource type="Script" path="res://win95/office/office_window.gd" id="script"]
 [ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="PackedScene" path="res://win95/office/assistant/assistant.tscn" id="assistant"]
 
 [node name="OfficeWindow" type="PanelContainer"]
 theme = ExtResource("theme")
 script = ExtResource("script")
 resizable = true
+assistant = ExtResource("assistant")
 custom_minimum_size = Vector2(480, 320)
 
 [node name="VBox" type="VBoxContainer" parent="."]
