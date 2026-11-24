@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/win_phone.gd" id="1_sign"]
+[ext_resource type="ArrayMesh" path="res://corruption/win_phone/modem_phone.tres" id="2_mesh"]
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="3_psx"]
+[ext_resource type="Texture2D" path="res://corruption/win_phone/modem_phone.png" id="4_atlas"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_icon"]
+render_priority = 0
+shader = ExtResource("3_psx")
+shader_parameter/albedo_texture = ExtResource("4_atlas")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)
+shader_parameter/world_uv = false
+shader_parameter/uv_scale = 1.0
+
+[node name="WinPhone" type="Node"]
+script = ExtResource("1_sign")
+title = "The phone turns into the Windows 95 Modems icon"
+timing = 2
+description = "The desk phone on the counter is the Modems icon from the Windows 95 Control Panel, in 3D: a yellow phone with a dial on a grey modem with its lights. It works as before, and the call box shows it too. From day 7 until the end."
+hint = "The phone on the counter, in the Main View; and the call box."
+mesh = ExtResource("2_mesh")
+material = SubResource("ShaderMaterial_icon")

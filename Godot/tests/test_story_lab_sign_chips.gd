@@ -27,6 +27,7 @@ func _the_committed_starts_show_where_they_start() -> void:
 		"logo_cambion day 6 AT_CLOSING",
 		"no_clippy on 0303_retired_accountant.errand",
 		"posters_bounce day 5 AT_CLOSING",
+		"win_phone day 7 MORNING",
 	])
 	expected.sort()
 	check("each start of the committed week shows in its band or on its card", shown, expected)
