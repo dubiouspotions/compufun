@@ -326,7 +326,10 @@ static func _fields_text(object: Object, skip: Array, only: Array = []) -> Varia
 		var text: Variant = _encode(value, property)
 		if text == null:
 			return ["%s is %s, which no res:// file holds" % [property.name, value]]
-		if (value is String or value is StringName) and String(value).contains("\n"):
+		if (value is String or value is StringName) and (String(value).strip_edges() != String(value) or String(value).begins_with("\"")):
+			# Spaces or line breaks at an end, which the lines lose, or a leading quote: quoted, escaped.
+			out.append("\t%s: %s" % [property.name, JSON.stringify(String(value))])
+		elif (value is String or value is StringName) and String(value).contains("\n"):
 			out.append("\t%s:" % property.name)
 			for line: String in String(value).split("\n"):
 				out.append("\t\t" + line)
@@ -382,6 +385,11 @@ static func _decode(text: String, property: Dictionary, object: Object) -> Varia
 		if text.to_lower() not in names:
 			return _Bad.new("%s is one of %s, not '%s'" % [property.name, ", ".join(names), text])
 		return names.find(text.to_lower())
+	if property.type in [TYPE_STRING, TYPE_STRING_NAME] and text.begins_with("\""):
+		var quoted: Variant = JSON.parse_string(text)  # a text that a plain line can't keep: see _fields_text
+		if not quoted is String:
+			return _Bad.new("%s: %s is not a quoted text" % [property.name, text])
+		return quoted if property.type == TYPE_STRING else StringName(quoted)
 	match property.type:
 		TYPE_STRING:
 			return text

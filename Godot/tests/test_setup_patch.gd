@@ -29,6 +29,15 @@ func run() -> void:
 	mail.subject = "Lunch?"
 	mail.sent = "1996-05-30 11:02"
 	mail.body = "Friday at noon.\nKent"
+	var typing := Email.new()  # a text being typed: it ends in a space or a line break
+	typing.subject = "Draft"
+	typing.sent = "1996-05-30 11:05"
+	typing.body = "the "
+	after.emails.append(typing)
+	var quoting := typing.duplicate() as Email
+	quoting.subject = "\"Quoted\""
+	quoting.body = "Dear Kent,\n\n"
+	after.emails.append(quoting)
 	after.emails.append(mail)
 
 	var made: Variant = SetupPatch.between(before, after)
@@ -46,6 +55,7 @@ func run() -> void:
 	(parsed.value as SetupPatch).apply(patched)
 	var left: SetupPatch = SetupPatch.between(patched, after)
 	check("the read patch makes the setup into the other: nothing left between them", left.write(), "\n")
+	check("texts with a space or line break at an end, or a leading quote, read back as they were", patched.emails.filter(func(m: Email) -> bool: return m.subject in ["Draft", "\"Quoted\""]).map(func(m: Email) -> Array: return [m.subject, m.body]), [["Draft", "the "], ["\"Quoted\"", "Dear Kent,\n\n"]])
 	check("the letter keeps its tab and its last line break", patched.file_at("C:\\Letters\\letter.txt").contents, letter.contents)
 
 	var converging := SetupPatch.parse("delete Desktop\\gone.txt\nfile C:\\New Folder\\Deep\\a.txt\n\tcontents: hi\n", "test.setup")
