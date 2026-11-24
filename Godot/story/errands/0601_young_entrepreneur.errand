@@ -2,3 +2,22 @@ customer: young_entrepreneur
 problem: gpu_overheating
 brief:
 	The deletion event. A Win95 [x] floats over him all of day 6, also when he picks up, and only that day. A click deletes him: he and his computer vanish (also from the counter) and are never mentioned again, except at the end. His voice glitches with Cambion.
+
+== drop-off
+(irritated02) I didn't think we'd meet again so soon but as you understand there are things hindering my way to the millions.
+- What's wrong this time?
+- Millions? Of... dollars?
+(problem) Just start it and you'll see what's wrong.
+(irritated03) Everything is glitching and it just disturbs my workflow!
+- Okay, I'll take a look!
+(happy) Great! And as I like to say...
+- Time is money. Yeah, I know, I know.
+
+== pick-up
+(angry) Give me that! I have no time to waste! Fame and fortune awaits!
+- Woha! Take it easy man. I've fixed the error.
+- I think I found the issue. It should work now.
+(irritated03) I sure hope so because I have no time for these technical shenanigans trying to deprive me of my glorious future.
+- ...
+(irritated03) TIME IS MONEY!!!
+- ...bye.
