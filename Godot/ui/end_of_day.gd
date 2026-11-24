@@ -35,13 +35,14 @@ const _MessageBox := preload("res://win95/message_box.gd")
 @export_range(0, 10) var glitch_count: int = 1
 ## How long one glitch lasts, in seconds.
 @export var glitch_seconds: float = 0.08
-## The characters a glitch swaps into the title.
+## Which letter of the title glitches, from 0; 0 is the D of "DAY".
+@export var glitch_letter: int = 0
+## The characters a glitch swaps the letter for.
 @export var glitch_chars: String = "#%&@$?/<>"
 
 var _night: bool = false
 var _asked_in: StringName
 var _sequence: Tween
-var _ghost: Label
 
 @onready var _dialog: SubViewportContainer = %Dialog
 @onready var _box: _MessageBox = %MessageBox
@@ -59,10 +60,6 @@ func _ready() -> void:
 	(%Yes as Button).pressed.connect(_on_answered.bind("Yes"))
 	(%No as Button).pressed.connect(_on_answered.bind("No"))
 	set_process(false)
-	_ghost = _title.duplicate() as Label
-	_ghost.self_modulate = Color(1.0, 0.15, 0.2, 0.7)
-	_title.add_sibling(_ghost)
-	_title.get_parent().move_child(_ghost, _title.get_index())
 	Game.changed.connect(_sync)
 	_sync()
 
@@ -134,7 +131,6 @@ func _sync() -> void:
 
 func _play_night() -> void:
 	_title.hide()
-	_ghost.hide()
 	_sequence.tween_interval(dusk_seconds)
 	_sequence.tween_callback(_fade_out_when_quiet)
 
@@ -174,28 +170,20 @@ func _show_title() -> void:
 		_glitch(_title.text)
 
 
-# A few bursts in title_seconds: the title jumps sideways, a red ghost splits off and a letter goes wrong.
+# One letter of the title flickers into a wrong character, glitch_count times in title_seconds.
 func _glitch(text: String) -> void:
 	if glitch_count == 0:
 		return
+	assert(glitch_letter < text.length(), "glitch_letter %d is past the title \"%s\"" % [glitch_letter, text])
 	var tween := create_tween()
 	for i in glitch_count:
-		tween.tween_interval(randf_range(0.2, title_seconds / maxf(glitch_count, 1)))
+		tween.tween_interval(randf_range(0.2, title_seconds / glitch_count))
 		tween.tween_callback(func() -> void:
 			var broken := text
-			var at := randi() % broken.length()
-			broken[at] = glitch_chars[randi() % glitch_chars.length()]
-			_title.text = broken
-			_title.position.x = randi_range(-4, 4)
-			_ghost.text = text
-			_ghost.position.x = _title.position.x + randi_range(2, 5) * (1 if randf() < 0.5 else -1)
-			_ghost.position.y = randi_range(-1, 1)
-			_ghost.show())
+			broken[glitch_letter] = glitch_chars[randi() % glitch_chars.length()]
+			_title.text = broken)
 		tween.tween_interval(glitch_seconds)
-		tween.tween_callback(func() -> void:
-			_title.text = text
-			_title.position = Vector2.ZERO
-			_ghost.hide())
+		tween.tween_callback(func() -> void: _title.text = text)
 
 
 func _set_volume(linear: float) -> void:
