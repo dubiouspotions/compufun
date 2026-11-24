@@ -53,22 +53,20 @@ file C:\NEWSLTR\BUILDS.TXT
 		4.06.6612   3rd town (#oddbuilds)      owner doesn't remember installing it
 		4.06.6612   fl0ppyjoe cousin's school  "half the school". 7 confirmed
 		4.06.6612   Harlow, dentist's office   receptionist's nephew "updated" it
-		4.06.6612   Millbrook, video store     nobody remembers
+		4.06.6612   Millbrook, video store     staff can't remember
 		4.06.6612   quill's own machine        copied calc.exe off a 6612. 06/02
 		4.06.6612   tarnhelm's sister          never installed anything. 06/04
 		4.06.6612   ???                        14 that i know of. stopped counting
 
-		THE FLOPPIES
-		- got a set 06/01 off the ad in issue 14. $5. handwritten, "update 1"
-		  to "update 13".
-		- read them on the bench box, network card pulled. never ran SETUP.
-		- same files as retail, plus one cab that no retail disk has. 1.4M.
+		THE 1.4 (from quill, 06/01)
+		- one cab file. quill had never seen it on a retail disk before.
+		- quill found it in SETUP.INF, listed like part of windows:
 
 		    CAMBION.CAB
 
-		- the name is in the cab header and in SETUP.INF. not a typo.
-		- didn't extract it. not going to.
-		- floppies went in the incinerator at the dump. the bench box too.
+		- quill listed what's inside with extract /d. he didn't extract it.
+		- i haven't seen it myself, and i'm not going to.
+		- a set came off the ad 06/03. didn't open it. incinerator at the dump.
 
 		SPREAD
 		- 05/30: 3 machines. 06/04: 14.
@@ -130,7 +128,7 @@ file C:\MIRC\#oddbuilds.log
 		[23:50] <tarnhelm> that's not an answer
 		[23:51] <elmroot> i'm leaving town tomorrow
 		[23:51] <tarnhelm> because of a windows version
-		[23:52] <elmroot> because quill looked at it. now there's no quill
+		[23:52] <elmroot> because quill looked at it. now quill's gone
 		[23:53] *** elmroot has quit IRC (going analog)
 
 file Recycled\FOR THE SHOP.TXT
@@ -146,11 +144,28 @@ file Recycled\FOR THE SHOP.TXT
 		plug and don't plug it back in. Don't put floppies from customers in
 		it. Don't put its floppies in anything else.
 
-		If you find out what's in that cab, don't write it down.
+		If you ever find that cab, don't open it. quill did.
 
 		You fixed my RAM. Consider us even.
 
 		- B
+
+mail
+	from: quill <quill@riverlink.net>
+	to: craig@mainstreet-online.net
+	subject: found your 1.4
+	sent: 1996-06-01 01:47
+	read: true
+	body:
+		the 6612 guy left his floppies at the shop. couldn't help it.
+
+		the extra 1.4 is one cab file that i've never seen on a retail disk before. setup.inf lists it like it's part of windows:
+
+		CAMBION.CAB
+
+		i listed it with extract /d. i didn't extract anything, and i didn't run anything. you can stop calling me mom.
+
+		whatever it is, it's not a typo.
 
 mail
 	from: quill <quill@riverlink.net>
@@ -161,7 +176,7 @@ mail
 	body:
 		calc says 666 on my machine now. 2+2. 7*3. 666.
 
-		my machine said 4.00.950 on friday. it says 4.06 tonight. i didn't install anything. i only copied that calc.exe to look at it, and i never ran it.
+		my machine said 4.00.950 on friday. it says 4.06 tonight. i didn't install anything. all i did was copy calc.exe and list that cab. i never ran anything.
 
 		you were right. throwing the floppy away didn't help.
 
