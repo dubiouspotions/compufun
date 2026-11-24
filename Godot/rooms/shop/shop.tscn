@@ -602,6 +602,7 @@ back = &"Main"
 [node name="Storage" type="Marker3D" parent="Views"]
 transform = Transform3D(1, 0, 0, 0, 0.9135455, 0.4067366, 0, -0.4067366, 0.9135455, -5.4, 1.55, 0.4)
 script = ExtResource("21_sg8ra")
+right = &"Left"
 back = &"Left"
 fov = 52.0
 

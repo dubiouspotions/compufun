@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
 ## The keys between views: Up or W in the Left View enters the storage room, as a click on the
-## storage door does, and Back returns to the Left View; in the Right View they open CompuFunDB, as a
+## storage door does, and Back, D, the right arrow key and the Right button return to the Left View; in
+## the Right View they open CompuFunDB, as a
 ## click on the work computer does. Up or W in the Main View looks up at the
 ## ceiling with the counter empty, and otherwise opens the Workview on the computer nearest the middle
 ## of the view, as a click on it does. In the Workview, Left on the leftmost computer turns to the test
@@ -21,6 +22,15 @@ func run() -> void:
 	check("Up in the Left View enters the storage room", game.view, &"Storage")
 	_press(&"go_back")
 	check("Back in the storage room returns to the Left View", game.view, &"Left")
+	for key: Key in [KEY_D, KEY_RIGHT]:
+		game.go_to_view(&"Storage")
+		_press_key(key)
+		check("%s in the storage room returns to the Left View" % OS.get_keycode_string(key), game.view, &"Left")
+	game.go_to_view(&"Storage")
+	var right: Button = _main.get_node("%ViewNav").get_node("%RightButton")
+	check("the storage room shows Right", right.visible, true)
+	right.pressed.emit()
+	check("the Right button in the storage room returns to the Left View", game.view, &"Left")
 
 	var door: Hotspot = _main.get_node("%Shop").find_child("StorageDoor", true, false)
 	door.clicked.emit(door)
