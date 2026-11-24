@@ -104,7 +104,8 @@ var _cd_drives: Array[Node] = []
 @onready var _part_sound: Hum = %PartSound
 # Plays instead of the fans while the computer runs with a part that has one (Part.running_sound).
 @onready var _running_sound: Hum = %RunningSound
-@onready var _defrag_drive: AudioStreamPlayer3D = %DefragDrive
+## The hard drive, which seeks while the computer reads (Win95 opening a program) or defragments.
+@onready var hard_drive: HardDrive = %HardDrive
 @onready var _defrag_timer: Timer = %DefragTimer
 
 
@@ -275,7 +276,7 @@ func _sync_case() -> void:
 func _churn() -> void:
 	var setup: Win95Setup = Game.setups.get(job.customer.computer)
 	if defrag_seek != null and job.powered and setup != null and setup.defragmenting:
-		defrag_seek.play_on(_defrag_drive)
+		defrag_seek.play_on(hard_drive)
 	_defrag_timer.start(randf_range(defrag_seek_seconds.x, defrag_seek_seconds.y))
 
 

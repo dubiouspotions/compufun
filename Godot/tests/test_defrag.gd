@@ -61,7 +61,7 @@ func run() -> void:
 	state = await _defragmenting()
 	computer.set("job", game.jobs[0])
 	root.add_child(computer)
-	var drive: AudioStreamPlayer3D = computer.get_node("%DefragDrive")
+	var drive: AudioStreamPlayer3D = computer.get_node("%HardDrive")
 	for i in 60:
 		await process_frame
 	check("the case churns while it defragments, quietly, in the sound zones", [drive.stream in (load("res://sounds/defrag_seek.tres") as SoundSet).sounds, drive.volume_db <= -30.0, drive.area_mask & SoundSet.SOUND_ZONES != 0], [true, true, true])

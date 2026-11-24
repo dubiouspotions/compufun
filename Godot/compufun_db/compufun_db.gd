@@ -431,18 +431,20 @@ func _start_up() -> void:
 
 # The hard drive's player beside the work modem's speaker: dry, on the Shop bus, past the sound
 # zones, whose reverb smears the fast ticks into an echo. null, with an error, without the speaker.
-func _drive() -> AudioStreamPlayer3D:
+func _drive() -> HardDrive:
 	var speaker := _speaker(MODEM_SPEAKER)
 	if speaker == null:
 		return null
-	var drive := speaker.get_node_or_null(^"HardDrive") as AudioStreamPlayer3D
+	var drive := speaker.get_node_or_null(^"HardDrive") as HardDrive
 	if drive == null:
-		drive = AudioStreamPlayer3D.new()
+		drive = HardDrive.new()
 		drive.name = "HardDrive"
 		drive.area_mask = 0
 		drive.bus = &"Shop"
 		drive.unit_size = speaker.unit_size
 		speaker.add_child(drive)
+	drive.seek = hdd_seek
+	drive.seek_seconds = seek_seconds
 	return drive
 
 
@@ -616,16 +618,7 @@ func _busy(column: Column) -> bool:
 # The hard drive seeks for [param seconds]; false when [param still] stops holding meanwhile (another
 # search, typing, or the column now shows something else).
 func _read(seconds: float, still: Callable) -> bool:
-	var drive := _drive() if hdd_seek != null else null
-	while seconds > 0.0:
-		if drive != null:
-			hdd_seek.play_on(drive)  # one player: a tick cuts the last one off rather than doubling it
-		var wait := minf(seconds, randf_range(seek_seconds.x, seek_seconds.y))
-		seconds -= wait
-		await _pause(wait)
-		if not still.call() or not is_inside_tree():
-			return false
-	return true
+	return await HardDrive.read_on(_drive() if hdd_seek != null else null, seconds, get_tree(), func() -> bool: return is_inside_tree() and still.call())
 
 
 # Prints the search's checklist on the shop's Printer.

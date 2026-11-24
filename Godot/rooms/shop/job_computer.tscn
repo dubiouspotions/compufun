@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://rooms/shop/job_computer.gd" id="1_script"]
+[ext_resource type="Script" path="res://sounds/hard_drive.gd" id="hard_drive"]
 [ext_resource type="PackedScene" path="res://props/pc_tower.tscn" id="2_tower"]
 [ext_resource type="PackedScene" path="res://rooms/hotspot.tscn" id="3_hotspot"]
 [ext_resource type="PackedScene" path="res://props/post_it_3d.tscn" id="4_post_it"]
@@ -123,8 +124,9 @@ volume_db = -12.0
 unit_size = 1.5
 from_clock = true
 
-[node name="DefragDrive" type="AudioStreamPlayer3D" parent="."]
+[node name="HardDrive" type="AudioStreamPlayer3D" parent="."]
 unique_name_in_owner = true
+script = ExtResource("hard_drive")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
 unit_size = 1.5
 area_mask = 1
