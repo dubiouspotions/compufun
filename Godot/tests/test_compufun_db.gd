@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
 ## CompuFunDB: a symptom picked lists its causes' checks and the causes; a ticked no: rules a cause
-## out; F prints the picked cause's fix. The search survives a snapshot and a restore.
+## out; F prints the picked cause's fix. The search survives a snapshot and a restore. With
+## filter_search, SEARCH lists every symptom and narrows the list as the player types.
 
 ## CompuFunDB.Column, which a test can't name: CompuFunDB names the Game autoload.
 const CHECKS: int = 1
@@ -42,6 +43,21 @@ func run() -> void:
 	var page: PackedStringArray = printer.get("_lines")
 	check("F prints the picked cause's fix", [page[5], page[-1].begins_with("5. Test the computer")], ["Faulty CPU fan", true])
 	printer.queue_free()
+
+	_press(db, KEY_ESCAPE)  # the print box's OK
+	db.set("_column", 0)  # SEARCH
+	db.call("_type", "")
+	db.set("filter_search", true)
+	var every: Array = _texts(db, 0)
+	check("filtering, an empty SEARCH lists every symptom", [every.size(), every.size() > 3], [(db.get("_symptoms") as PackedStringArray).size(), true])
+	for letter: String in "audio":
+		var key := InputEventKey.new()
+		key.unicode = letter.unicode_at(0)
+		key.pressed = true
+		db.call("_on_key", key)
+	check("typing narrows the list at once", [_texts(db, 0), db.get("_searching")], [["No sound"], false])
+	_press(db, KEY_ENTER)
+	check("Enter picks", [game.db_search.query, db.get("_column")], ["No sound", CHECKS])
 	db.queue_free()
 
 

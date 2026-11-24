@@ -39,6 +39,17 @@ const SEARCH_LENGTH: int = 40
 const PRINT_BOX_WIDTH: int = 36
 const PRINT_BOX_TOP: int = 12
 const OK_BUTTON: String = "[ OK ]"
+## The group of every CompuFunDB screen, for the F2 menu.
+const GROUP: StringName = &"compufun_db"
+
+## SEARCH filters the symptoms as the player types, and lists them all while it is empty, instead
+## of searching slowly on Enter. The F2 World tab switches it.
+@export var filter_search: bool = false:
+	set(value):
+		filter_search = value
+		if is_node_ready():
+			_type(_typed)
+			queue_redraw()
 
 ## The text-mode font: one glyph per 8 x 16 cell.
 @export var font: Font = preload("res://compufun_db/fonts/Px437_IBM_VGA_8x16.ttf")
@@ -142,10 +153,13 @@ var _bg: PackedColorArray = []
 
 
 func _ready() -> void:
+	add_to_group(GROUP)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	if font == null:
 		push_error("CompuFunDB: font is empty")
 	_load_problems()
+	if filter_search:
+		_type(_typed)
 	mouse_exited.connect(_on_mouse_exited)
 	set_process(false)
 	Game.changed.connect(queue_redraw)
@@ -543,7 +557,8 @@ func _on_key(key: InputEventKey) -> bool:
 	return true
 
 
-# Sets what SEARCH holds: what an earlier search found goes, and a search that runs stops.
+# Sets what SEARCH holds: what an earlier search found goes, and a search that runs stops. With
+# [member filter_search], the symptoms that the text finds show at once: all of them for no text.
 func _type(text: String) -> void:
 	_typed = text
 	_search_live = false
@@ -553,6 +568,9 @@ func _type(text: String) -> void:
 	_hits.clear()
 	_selected[Column.SEARCH] = 0
 	_scroll[Column.SEARCH] = 0
+	if filter_search:
+		_searched = text  # so Enter picks rather than searches
+		_hits = _symptoms.duplicate() if text.strip_edges().is_empty() else _found(text)
 
 
 # Searches for the words typed: the symptoms found show one at a time, each after its seek.
@@ -906,7 +924,7 @@ func _paint() -> void:
 		return
 	for column: int in Column.size():
 		_paint_column(column as Column)
-	var count := "%d found " % _hits.size() if not _searched.is_empty() else ""
+	var count := "%d found " % _hits.size() if filter_search or not _searched.is_empty() else ""
 	var buttons := _buttons()
 	for text: String in buttons:
 		_put(_button_x(buttons[text], text), FRAME_ROWS[-1], text, bright_color, bar_color)

@@ -19,6 +19,7 @@ var _outside: Outside
 @onready var _minutes: SpinBox = %MinutesBox
 @onready var _rain: CheckBox = %RainBox
 @onready var _relief: CheckBox = %ReliefBox
+@onready var _db_filter: CheckBox = %DbFilterBox
 @onready var _fps: Label = %FpsLabel
 
 
@@ -31,6 +32,9 @@ func _ready() -> void:
 	_minutes.value_changed.connect(_on_minutes)
 	_rain.toggled.connect(_on_rain)
 	_relief.toggled.connect(_on_relief)
+	_db_filter.toggled.connect(func(on: bool) -> void:
+		for db: Node in get_tree().get_nodes_in_group(CompuFunDB.GROUP):
+			db.set(&"filter_search", on))
 	for button_name: String in FINALE_BUTTONS:
 		(get_node("%" + button_name) as Button).pressed.connect(_play_finale.bind(FINALE_BUTTONS[button_name]))
 
@@ -55,6 +59,10 @@ func toggle() -> void:
 	_relief.disabled = body == null
 	if body != null:
 		_relief.set_pressed_no_signal(body.photo_relief)
+	var db := get_tree().get_first_node_in_group(CompuFunDB.GROUP)
+	_db_filter.disabled = db == null
+	if db != null:
+		_db_filter.set_pressed_no_signal(db.get(&"filter_search"))
 	_outside = get_tree().get_first_node_in_group(&"outside") as Outside
 	var found := _outside != null
 	_slider.editable = found

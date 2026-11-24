@@ -132,6 +132,12 @@ layout_mode = 2
 tooltip_text = "On: customers wear the photo relief of their portrait. Off: the modelled body. Until the game quits."
 text = "Photo relief customers"
 
+[node name="DbFilterBox" type="CheckBox" parent="Panel/Margin/Box/Tabs/World"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "On: CompuFunDB's SEARCH lists every symptom and narrows the list as you type. Off: it searches slowly on Enter. Until the game quits."
+text = "CompuFunDB search filters as you type"
+
 [node name="FinaleRow" type="HBoxContainer" parent="Panel/Margin/Box/Tabs/World"]
 layout_mode = 2
 tooltip_text = "Plays the finale: the shop bluescreens, the computer seems to restart and hang, then the credits. Cmd+N skips a stage."
