@@ -23,6 +23,8 @@ signal document_edited
 enum OfficeFileMenu { OPEN = 10, SAVE_AS, VERSIONS, PAGE_SETUP, PRINT_PREVIEW, PRINT, SEND_TO, PROPERTIES, EXIT, RECENT = 100 }
 
 const _ICONS := "res://win95/office/icons/"
+const _PROPERTIES := preload("res://win95/office/office_properties.tscn")
+const _RECENT_COUNT := 4
 
 ## The name of an untitled document: "Document1" in Word, "Book1" in Excel.
 @export var untitled_name: String = "Document1"
@@ -33,8 +35,15 @@ const _ICONS := "res://win95/office/icons/"
 @export var assistant: PackedScene
 ## Opens filling the desktop, as Office 97 does.
 @export var starts_maximized: bool = true
+## File > Properties > Summary's Template row: "Normal" in Word; empty hides the row, as in Excel.
+@export var template_name: String = ""
+## Office 97's setup registered the types that its apps open to them, so Windows opens those files
+## here even where another program opens them too, as Word took .doc from WordPad
+## (ComputerState.programs_for).
+@export var claims_file_types: bool = true
 
 var _tools: Dictionary[StringName, Button] = {}
+var _untitled: Win95File  # holds an untitled document's Properties
 
 
 func _ready() -> void:
@@ -82,9 +91,34 @@ func add_status_cell(text: String, width: float = 0.0) -> Label:
 	return label
 
 
-## Shows the document's File > Properties. Not built yet: the item carries the stub dot.
+## Shows [param opened], a file in [param state]'s running copy, and notes it among the recent
+## documents that Start > Documents and the File menu list.
+func open_file(opened: Win95File, state: ComputerState) -> void:
+	super(opened, state)
+	state.note_opened(opened)
+
+
+## Shows the document's File > Properties, modal to the window: "Letter Properties", open on Summary.
+## An untitled document's properties last as long as the window.
 func show_properties() -> void:
-	pass
+	var desktop := get_parent() as Win95Desktop
+	if desktop == null:
+		push_error("OfficeWindow %s: not on a Win95Desktop, so it can't show Properties" % _app_title)
+		return
+	var shown := file
+	if shown == null:
+		if _untitled == null:
+			_untitled = Win95File.new()
+			_untitled.name = untitled_name
+			var computer := desktop.computer if _state == null else _state
+			var owner_name := computer.setup.registered_owner if computer != null and computer.setup != null else ""
+			if owner_name != "":
+				_untitled.summary[&"author"] = owner_name  # Office fills Author with the user's name
+		shown = _untitled
+	var location := _state.location_of(file).trim_suffix("\\") if file != null and _state != null else ""
+	var sheet: Node = desktop.open(_PROPERTIES, false)
+	sheet.show_document(shown, shown.name.get_basename() if file != null else untitled_name, location, template_name)
+	sheet.belong_to(self)
 
 
 ## Tells the window, and through it the assistant, that the player changed the document.
@@ -107,9 +141,17 @@ func _formatting_tools() -> Array:
 	return []
 
 
-## The files that the File menu lists above Exit, newest first. None yet.
+## The files that the File menu lists above Exit, newest first: the computer's recent documents
+## that this app opens, at most [constant _RECENT_COUNT], as Office 97 lists 4 by default.
 func _recent_files() -> Array[Win95File]:
-	return []
+	var found: Array[Win95File] = []
+	if _state == null or _state.setup == null:
+		return found
+	var types: Variant = get(&"opens")
+	for recent in _state.setup.recent_documents:
+		if found.size() < _RECENT_COUNT and types is Array and (types as Array).has(recent.name.get_extension().to_lower()) and _state.has_file(recent):
+			found.append(recent)
+	return found
 
 
 ## Adds [param tools] to [param row]: each is [id, tooltip, action] for a button with the icon
@@ -169,7 +211,7 @@ func _build_file_menu() -> void:
 			["Close", FileMenu.CLOSE], [], ["Save", FileMenu.SAVE, KEY_MASK_CTRL | KEY_S], ["Save As...", OfficeFileMenu.SAVE_AS, 0, stub],
 			["Versions...", OfficeFileMenu.VERSIONS, 0, stub], [], ["Page Setup...", OfficeFileMenu.PAGE_SETUP, 0, stub],
 			["Print Preview", OfficeFileMenu.PRINT_PREVIEW, 0, stub], ["Print...", OfficeFileMenu.PRINT, KEY_MASK_CTRL | KEY_P, stub], [],
-			["Send To", OfficeFileMenu.SEND_TO, 0, stub], ["Properties", OfficeFileMenu.PROPERTIES, 0, stub], []]:
+			["Send To", OfficeFileMenu.SEND_TO, 0, stub], ["Properties", OfficeFileMenu.PROPERTIES], []]:
 		if item.is_empty():
 			menu.add_separator()
 			continue
@@ -191,7 +233,7 @@ func _list_recent_files() -> void:
 		exit -= 1
 	var recent := _recent_files()
 	for i: int in recent.size():
-		menu.add_item("%d %s" % [i + 1, recent[i].name], OfficeFileMenu.RECENT + i)
+		menu.add_item("%d %s" % [i + 1, recent[i].name.get_basename()], OfficeFileMenu.RECENT + i)  # Explorer hides the extension, and Office follows
 		menu.set_item_index(menu.item_count - 1, exit + i)
 	if not recent.is_empty():
 		menu.add_separator()

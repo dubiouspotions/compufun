@@ -1,0 +1,371 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://win95/property_sheet.tscn" id="sheet"]
+[ext_resource type="Script" path="res://win95/office/office_properties.gd" id="script"]
+
+[node name="OfficeProperties" instance=ExtResource("sheet")]
+script = ExtResource("script")
+has_apply = false
+
+[node name="TitleBar" parent="VBox" index="0"]
+title = "Document1 Properties"
+
+[node name="General" type="Control" parent="VBox/Body/Column/Tabs"]
+visible = false
+custom_minimum_size = Vector2(347, 371)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 13.0
+offset_top = 11.0
+offset_right = 45.0
+offset_bottom = 43.0
+mouse_filter = 2
+
+[node name="FileName" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 60.0
+offset_top = 18.0
+offset_right = 330.0
+offset_bottom = 34.0
+
+[node name="Rule1" type="HSeparator" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 13.0
+offset_top = 57.0
+offset_right = 334.0
+offset_bottom = 61.0
+mouse_filter = 2
+
+[node name="TypeLabel" type="Label" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 13.0
+offset_top = 82.0
+offset_right = 103.0
+offset_bottom = 98.0
+text = "Type:"
+
+[node name="Type" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 105.0
+offset_top = 82.0
+offset_right = 335.0
+offset_bottom = 98.0
+clip_text = true
+
+[node name="LocationLabel" type="Label" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 13.0
+offset_top = 101.0
+offset_right = 103.0
+offset_bottom = 117.0
+text = "Location:"
+
+[node name="Location" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 105.0
+offset_top = 101.0
+offset_right = 335.0
+offset_bottom = 117.0
+clip_text = true
+
+[node name="SizeLabel" type="Label" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 13.0
+offset_top = 121.0
+offset_right = 103.0
+offset_bottom = 137.0
+text = "Size:"
+
+[node name="Size" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 105.0
+offset_top = 121.0
+offset_right = 335.0
+offset_bottom = 137.0
+clip_text = true
+
+[node name="Rule2" type="HSeparator" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 13.0
+offset_top = 155.0
+offset_right = 334.0
+offset_bottom = 159.0
+mouse_filter = 2
+
+[node name="DosNameLabel" type="Label" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 13.0
+offset_top = 175.0
+offset_right = 103.0
+offset_bottom = 191.0
+text = "MS-DOS name:"
+
+[node name="DosName" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 105.0
+offset_top = 175.0
+offset_right = 335.0
+offset_bottom = 191.0
+clip_text = true
+
+[node name="CreatedLabel" type="Label" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 13.0
+offset_top = 194.0
+offset_right = 103.0
+offset_bottom = 210.0
+text = "Created:"
+
+[node name="Created" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 105.0
+offset_top = 194.0
+offset_right = 335.0
+offset_bottom = 210.0
+clip_text = true
+
+[node name="ModifiedLabel" type="Label" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 13.0
+offset_top = 214.0
+offset_right = 103.0
+offset_bottom = 230.0
+text = "Modified:"
+
+[node name="Modified" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 105.0
+offset_top = 214.0
+offset_right = 335.0
+offset_bottom = 230.0
+clip_text = true
+
+[node name="AccessedLabel" type="Label" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 13.0
+offset_top = 233.0
+offset_right = 103.0
+offset_bottom = 249.0
+text = "Accessed:"
+
+[node name="Accessed" type="Label" parent="VBox/Body/Column/Tabs/General"]
+unique_name_in_owner = true
+offset_left = 105.0
+offset_top = 233.0
+offset_right = 335.0
+offset_bottom = 249.0
+clip_text = true
+
+[node name="Rule3" type="HSeparator" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 13.0
+offset_top = 270.0
+offset_right = 334.0
+offset_bottom = 274.0
+mouse_filter = 2
+
+[node name="AttributesLabel" type="Label" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 13.0
+offset_top = 298.0
+offset_right = 93.0
+offset_bottom = 314.0
+text = "Attributes:"
+
+[node name="Readonly" type="CheckBox" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 100.0
+offset_top = 296.0
+offset_right = 195.0
+offset_bottom = 314.0
+focus_mode = 0
+disabled = true
+text = "Read only"
+
+[node name="Hidden" type="CheckBox" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 199.0
+offset_top = 296.0
+offset_right = 294.0
+offset_bottom = 314.0
+focus_mode = 0
+disabled = true
+text = "Hidden"
+
+[node name="Archive" type="CheckBox" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 100.0
+offset_top = 315.0
+offset_right = 195.0
+offset_bottom = 333.0
+focus_mode = 0
+disabled = true
+text = "Archive"
+
+[node name="System" type="CheckBox" parent="VBox/Body/Column/Tabs/General"]
+offset_left = 199.0
+offset_top = 315.0
+offset_right = 294.0
+offset_bottom = 333.0
+focus_mode = 0
+disabled = true
+text = "System"
+
+[node name="Summary" type="Control" parent="VBox/Body/Column/Tabs"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(347, 371)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="VBox/Body/Column/Tabs/Summary"]
+offset_left = 13.0
+offset_top = 10.0
+offset_right = 73.0
+offset_bottom = 26.0
+text = "Title:"
+
+[node name="Title" type="LineEdit" parent="VBox/Body/Column/Tabs/Summary"]
+unique_name_in_owner = true
+offset_left = 74.0
+offset_top = 9.0
+offset_right = 333.0
+offset_bottom = 29.0
+metadata/summary_key = &"title"
+
+[node name="SubjectLabel" type="Label" parent="VBox/Body/Column/Tabs/Summary"]
+offset_left = 13.0
+offset_top = 37.0
+offset_right = 73.0
+offset_bottom = 53.0
+text = "Subject:"
+
+[node name="Subject" type="LineEdit" parent="VBox/Body/Column/Tabs/Summary"]
+unique_name_in_owner = true
+offset_left = 74.0
+offset_top = 36.0
+offset_right = 333.0
+offset_bottom = 56.0
+metadata/summary_key = &"subject"
+
+[node name="AuthorLabel" type="Label" parent="VBox/Body/Column/Tabs/Summary"]
+offset_left = 13.0
+offset_top = 65.0
+offset_right = 73.0
+offset_bottom = 81.0
+text = "Author:"
+
+[node name="Author" type="LineEdit" parent="VBox/Body/Column/Tabs/Summary"]
+unique_name_in_owner = true
+offset_left = 74.0
+offset_top = 64.0
+offset_right = 333.0
+offset_bottom = 84.0
+metadata/summary_key = &"author"
+
+[node name="ManagerLabel" type="Label" parent="VBox/Body/Column/Tabs/Summary"]
+offset_left = 13.0
+offset_top = 93.0
+offset_right = 73.0
+offset_bottom = 109.0
+text = "Manager:"
+
+[node name="Manager" type="LineEdit" parent="VBox/Body/Column/Tabs/Summary"]
+unique_name_in_owner = true
+offset_left = 74.0
+offset_top = 92.0
+offset_right = 333.0
+offset_bottom = 112.0
+metadata/summary_key = &"manager"
+
+[node name="CompanyLabel" type="Label" parent="VBox/Body/Column/Tabs/Summary"]
+offset_left = 13.0
+offset_top = 122.0
+offset_right = 73.0
+offset_bottom = 138.0
+text = "Company:"
+
+[node name="Company" type="LineEdit" parent="VBox/Body/Column/Tabs/Summary"]
+unique_name_in_owner = true
+offset_left = 74.0
+offset_top = 121.0
+offset_right = 333.0
+offset_bottom = 141.0
+metadata/summary_key = &"company"
+
+[node name="CategoryLabel" type="Label" parent="VBox/Body/Column/Tabs/Summary"]
+offset_left = 13.0
+offset_top = 173.0
+offset_right = 73.0
+offset_bottom = 189.0
+text = "Category:"
+
+[node name="Category" type="LineEdit" parent="VBox/Body/Column/Tabs/Summary"]
+unique_name_in_owner = true
+offset_left = 74.0
+offset_top = 172.0
+offset_right = 333.0
+offset_bottom = 192.0
+metadata/summary_key = &"category"
+
+[node name="KeywordsLabel" type="Label" parent="VBox/Body/Column/Tabs/Summary"]
+offset_left = 13.0
+offset_top = 200.0
+offset_right = 73.0
+offset_bottom = 216.0
+text = "Keywords:"
+
+[node name="Keywords" type="LineEdit" parent="VBox/Body/Column/Tabs/Summary"]
+unique_name_in_owner = true
+offset_left = 74.0
+offset_top = 199.0
+offset_right = 333.0
+offset_bottom = 219.0
+metadata/summary_key = &"keywords"
+
+[node name="SummaryRule" type="HSeparator" parent="VBox/Body/Column/Tabs/Summary"]
+offset_left = 13.0
+offset_top = 153.0
+offset_right = 334.0
+offset_bottom = 157.0
+mouse_filter = 2
+
+[node name="CommentsLabel" type="Label" parent="VBox/Body/Column/Tabs/Summary"]
+offset_left = 13.0
+offset_top = 227.0
+offset_right = 73.0
+offset_bottom = 243.0
+text = "Comments:"
+
+[node name="Comments" type="TextEdit" parent="VBox/Body/Column/Tabs/Summary"]
+unique_name_in_owner = true
+offset_left = 74.0
+offset_top = 226.0
+offset_right = 333.0
+offset_bottom = 281.0
+wrap_mode = 1
+metadata/summary_key = &"comments"
+
+[node name="HyperlinkLabel" type="Label" parent="VBox/Body/Column/Tabs/Summary"]
+offset_left = 13.0
+offset_top = 289.0
+offset_right = 73.0
+offset_bottom = 321.0
+text = "Hyperlink\nbase:"
+
+[node name="HyperlinkBase" type="LineEdit" parent="VBox/Body/Column/Tabs/Summary"]
+unique_name_in_owner = true
+offset_left = 74.0
+offset_top = 295.0
+offset_right = 333.0
+offset_bottom = 315.0
+metadata/summary_key = &"hyperlink_base"
+
+[node name="TemplateLabel" type="Label" parent="VBox/Body/Column/Tabs/Summary"]
+unique_name_in_owner = true
+offset_left = 13.0
+offset_top = 328.0
+offset_right = 73.0
+offset_bottom = 344.0
+text = "Template:"
+
+[node name="Template" type="Label" parent="VBox/Body/Column/Tabs/Summary"]
+unique_name_in_owner = true
+offset_left = 74.0
+offset_top = 328.0
+offset_right = 274.0
+offset_bottom = 344.0
+
+[node name="SavePreview" type="CheckBox" parent="VBox/Body/Column/Tabs/Summary"]
+offset_left = 11.0
+offset_top = 354.0
+offset_right = 211.0
+offset_bottom = 372.0
+focus_mode = 0
+text = "Save preview picture"

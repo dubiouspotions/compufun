@@ -421,12 +421,18 @@ func installed_programs() -> Array[Win95File]:
 
 
 ## The program files on drive C whose app opens files with [param extension] (lower case, no dot),
-## installed or not: a program file that lost its .EXE still claims its files.
+## installed or not: a program file that lost its .EXE still claims its files. Apps whose root sets
+## claims_file_types come first, as Office 97's setup registered .doc to Word over WordPad.
 func programs_for(extension: String) -> Array[Win95File]:
 	var found: Array[Win95File] = []
 	if setup != null and extension != "":
 		_collect_programs(setup.drive_c, func(file: Win95File) -> bool: return opens_of(file.program).has(extension), found)
-	return found
+	var claiming: Array[Win95File] = []
+	var others: Array[Win95File] = []
+	for program in found:
+		(claiming if Win95File.root_property(program.program, &"claims_file_types") == true else others).append(program)
+	claiming.append_array(others)
+	return claiming
 
 
 ## True when [param file] is a program file that Win95 would run: it has a program, and its name

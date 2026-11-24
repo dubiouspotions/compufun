@@ -25,6 +25,10 @@ extends Resource
 ## whose text the running copy (Win95Setup.copy) puts in [member contents], so that writers edit
 ## text instead of the .tres. Empty keeps [member contents]. The export presets must include it.
 @export_file var contents_file: String = ""
+## An Office document's File > Properties > Summary, by field: &"title", &"subject", &"author",
+## &"manager", &"company", &"category", &"keywords", &"comments" and &"hyperlink_base". A missing
+## field is empty. Office keeps it in the file; here it travels with the Win95File.
+@export var summary: Dictionary[StringName, String] = {}
 ## The picture of a .bmp file, which Paint shows and saves. Null for a blank canvas.
 @export var picture: Texture2D
 ## The sound of a .mid file, which Media Player plays: a recording, as Godot plays no MIDI.
