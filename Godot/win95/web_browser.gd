@@ -27,7 +27,7 @@ enum Item { OPEN_LOCATION = 1, CLOSE, COPY, SELECT_ALL, RELOAD, BACK, FORWARD, H
 @export var cache_folder := "C:\\Program Files\\Netscape\\Navigator\\Cache"
 
 const _MESSAGE := preload("res://win95/message_box.tscn")
-const _CONNECT_TO := preload("res://win95/connect_to.tscn")
+const _CONNECT_TO := preload("res://win95/connect_to.gd")
 const _ABOUT := """<TITLE>Version 2.0</TITLE><BODY BGCOLOR="#C0C0C0">
 <CENTER><IMG SRC="about:logo"><BR><B>N E T S C A P E</B>
 <H2>Netscape Navigator (TM)</H2><B>Version 2.0</B><BR>
@@ -251,7 +251,7 @@ func _open(to: String) -> bool:
 		_loading = 0.0
 		set_process(true)
 		%Stop.disabled = false
-		await _go_online()
+		await _CONNECT_TO.autodial(self, _state.setup if _state != null else null, contact_seconds)
 		if load_id != _load:
 			return false
 		_stop_meteors()
@@ -277,22 +277,6 @@ func _paint(page: Page) -> void:
 	_page.add_theme_color_override(&"default_color", page.text_color)
 	_page.text = page.bbcode
 	_page.scroll_to_line(0)
-
-
-# Tries to go online, as Winsock did: on a computer with a dial-up connection, AutoDial's Connect
-# To dialog, modal to Netscape, until the player cancels it; else contact_seconds of trying. It
-# never gets online: no computer on the bench has its modem.
-func _go_online() -> void:
-	var desktop := get_parent() as Win95Desktop
-	if desktop == null or _state == null or _state.setup.dial_up_name == "":
-		if contact_seconds > 0.0:
-			await get_tree().create_timer(contact_seconds).timeout
-		return
-	var dialog: Node = desktop.open(_CONNECT_TO, false)
-	dialog.show_connection(_state.setup)
-	dialog.belong_to(self)
-	await dialog.finished
-	dialog.queue_free()
 
 
 # The copy of [param link] in Netscape's disk cache, from the last time the computer was online, or
