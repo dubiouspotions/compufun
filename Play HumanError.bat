@@ -9,7 +9,7 @@ set "MIN_GODOT=40702"
 set "MIN_NAME=4.7.2"
 set "GODOT_DOWNLOAD=4.7.2"
 set "GODOT_HOME=%LOCALAPPDATA%\Programs\Godot"
-set "VOICE_URL=https://github.com/dubiouspotions/humanerror/releases/download/live-voice/live-voice-windows.zip"
+set "VOICE_URL=https://github.com/dubiouspotions/compufun/releases/download/live-voice/live-voice-windows.zip"
 cd /d "%~dp0"
 
 rem Stop the game if it runs (from this launcher or the editor), but not the editor itself.
@@ -128,7 +128,7 @@ rem Windows' own tar: Git's, if it is on the PATH, reads no zip.
 del "!VOICE_ZIP!"
 set "HAVE="
 set /p HAVE=<"%LIVE%\voice-source.txt"
-if not "!HAVE!"=="!WANT!" (set "VOICE_MSG=the one on GitHub was built from an older native/chimera_voice. A developer updates it, as docs/building-and-testing.md says." & goto voice_fail)
+if not "!HAVE!"=="!WANT!" (set "VOICE_MSG=the one on GitHub was built from another native/chimera_voice. CI uploads a new one after the push that changes it; try again once the godot-ci run is done." & goto voice_fail)
 exit /b 0
 :voice_fail
 echo.

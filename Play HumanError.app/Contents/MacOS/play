@@ -3,6 +3,7 @@
 # Git: one on the PATH that has LFS, else GitHub Desktop's (it has LFS), else it asks for one.
 # Godot: $GODOT, else the first Godot*.app at MIN_GODOT or newer (mono builds too), else it offers
 # to download GODOT_DOWNLOAD into ~/Applications.
+# The live voice (ChimeraVoice): VOICE_URL, when it is missing or native/chimera_voice changed.
 set -u
 # A script-only app starts under Rosetta on Apple Silicon; mono Godot then cannot load the arm64 .NET.
 if [ "$(sysctl -n hw.optional.arm64 2>/dev/null)" = 1 ] && [ "$(uname -m)" != arm64 ]; then
@@ -10,6 +11,7 @@ if [ "$(sysctl -n hw.optional.arm64 2>/dev/null)" = 1 ] && [ "$(uname -m)" != ar
 fi
 MIN_GODOT="4.7.2"
 GODOT_DOWNLOAD="4.7.2"
+VOICE_URL="https://github.com/dubiouspotions/compufun/releases/download/live-voice/live-voice-macos.zip"
 # Finder gives apps a bare PATH; mono Godot needs dotnet on it.
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/local/share/dotnet:$PATH"
 [ -d /usr/local/share/dotnet ] && export DOTNET_ROOT="${DOTNET_ROOT:-/usr/local/share/dotnet}"
@@ -48,6 +50,32 @@ download_godot() {
 	mkdir -p "$1" && rm -rf "$app" && mv "$tmp/Godot.app" "$app" || { echo "cannot move Godot.app to $app" >&2; return 1; }
 	rm -rf "$tmp"
 	echo "$app/Contents/MacOS/Godot"
+}
+
+# Shows the text $1 in a dialog and goes on.
+warn() {
+	osascript -e 'on run argv' -e 'display alert "Play HumanError" message (item 1 of argv) as warning' -e 'end run' "$1" >/dev/null
+}
+
+# Downloads the live voice unless voice-source.txt says it was built from this native/chimera_voice.
+# Prints why it is not up to date on failure.
+update_voice() {
+	local live="$repo/Godot/voices/live" want have tmp out
+	want="$("$git" -C "$repo" rev-parse HEAD:native/chimera_voice 2>&1)" || { echo "git cannot tell which native/chimera_voice this is: $want"; return 1; }
+	have="$(cat "$live/voice-source.txt" 2>/dev/null)"
+	[ "$have" = "$want" ] && return 0
+	osascript -e 'display notification "Downloading the live voice..." with title "Play HumanError"' >/dev/null
+	tmp="$(mktemp -d)" || { echo "cannot make a temporary folder"; return 1; }
+	out="$(curl -fsSL -o "$tmp/voice.zip" "$VOICE_URL" 2>&1)" || { echo "the download of $VOICE_URL failed: $out"; return 1; }
+	out="$(ditto -x -k "$tmp/voice.zip" "$tmp/voice" 2>&1)" || { echo "cannot unzip $VOICE_URL: $out"; return 1; }
+	have="$(cat "$tmp/voice/voice-source.txt" 2>/dev/null)"
+	[ -f "$tmp/voice/bin/libchimera_voice.macos.dylib" ] && [ -n "$have" ] || { echo "$VOICE_URL holds no bin/libchimera_voice.macos.dylib or voice-source.txt"; return 1; }
+	# mv gives the library a new inode, so an open editor keeps the one it has loaded.
+	out="$(mkdir -p "$live/bin" && mv -f "$tmp/voice/bin/libchimera_voice.macos.dylib" "$live/bin/" 2>&1)" || { echo "cannot move the library into $live/bin: $out"; return 1; }
+	out="$(bash "$repo/tools/build-voice.sh" list 2>&1)" || { echo "tools/build-voice.sh list failed: $out"; return 1; }
+	echo "$have" > "$live/voice-source.txt" || { echo "cannot write $live/voice-source.txt"; return 1; }
+	rm -rf "$tmp"
+	[ "$have" = "$want" ] || { echo "the one on GitHub was built from native/chimera_voice $have, not $want. CI uploads a new one after the push that changes it; try again once the godot-ci run is done."; return 1; }
 }
 
 # Stop the game if it runs (from this launcher or the editor), but not the editor itself.
@@ -121,6 +149,10 @@ else
 		rm -f "$err"
 	fi
 fi
+
+why="$(update_voice)" || warn "No up-to-date live voice: $why
+
+The game starts with the live voice it has, or else the rendered voices."
 
 out="$("$godot" --headless --path "$repo/Godot" --import 2>&1)" || fail "The Godot import failed:
 
