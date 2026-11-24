@@ -5,13 +5,17 @@ extends PanelContainer
 ## [member config_path], in the section [member config_section]. Being a STOP control, it takes
 ## every touch on it, so nothing behind it reacts.
 
+## The canvas size that [member default_position] is given in.
+const DESIGN_FRAME := Vector2(1920.0, 1080.0)
+
 ## The file that every panel keeps its place in. Tests point it at their own folder.
 static var config_path: String = "user://touch_controls.cfg"
 
 ## The section of [member config_path] for this panel; each panel needs its own.
 @export var config_section: String = ""
-## Where the panel starts until the player moves it: its top left corner in the parent, in the 1920
-## x 1080 design frame.
+## Where the panel starts until the player moves it: its top left corner in the 1920 x 1080 design
+## frame. In a parent of another size, the panel keeps its share of the free room on each axis, so a
+## panel at the bottom stays at the bottom and a centred one stays centred.
 @export var default_position: Vector2 = Vector2.ZERO
 ## The bar that the player drags the panel by.
 @export var grip: Control
@@ -60,15 +64,24 @@ func _load_position() -> Vector2:
 	var config := ConfigFile.new()
 	var err := config.load(config_path)
 	if err == ERR_FILE_NOT_FOUND:
-		return default_position
+		return _default_place()
 	if err != OK:
 		push_error("MovablePanel %s: can't read %s: %s" % [name, config_path, error_string(err)])
-		return default_position
-	var saved: Variant = config.get_value(config_section, "position", default_position)
+		return _default_place()
+	var saved: Variant = config.get_value(config_section, "position", null)
+	if saved == null:
+		return _default_place()
 	if not saved is Vector2:
 		push_error("MovablePanel %s: [%s] position in %s is %s, not a Vector2" % [name, config_section, config_path, saved])
-		return default_position
+		return _default_place()
 	return saved
+
+
+# default_position, moved to keep its share of the free room in the parent (see default_position).
+func _default_place() -> Vector2:
+	var design_room := DESIGN_FRAME - size
+	var share := (default_position / design_room.max(Vector2.ONE)).clamp(Vector2.ZERO, Vector2.ONE)
+	return (share * (get_parent_area_size() - size)).round()
 
 
 func _clamp() -> void:
