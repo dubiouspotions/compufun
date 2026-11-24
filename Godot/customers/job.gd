@@ -95,8 +95,9 @@ var fixed: bool:
 ## [member Problem.hangs_after] seconds. Game clears it each time the computer stops being fixed.
 var tested: bool = false
 
-## The phone called about this computer and nobody answered (Game.rings_out): the phone never
-## calls about it again.
+## The phone called about this computer and nobody answered (Game.rings_out), or the shop closed
+## with it left without a problem (Game.close_shop): the phone never calls about it, and its post-it
+## says "Failed to pickup".
 var unanswered: bool = false
 
 ## The repair is done: fixed and tested. The post-it shows the check, and the player can call the

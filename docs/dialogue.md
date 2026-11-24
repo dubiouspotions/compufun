@@ -73,7 +73,8 @@ brief:
 ```
 
 - `customer`, `problem`: file names without `.tres` or `.problem`. An errand without a problem is
-  a visit that needs no repair.
+  a visit that needs no repair. A computer left without one is never called about: from the
+  evening its post-it says "Failed to pickup" (as `0603_activist_guy`'s does).
 - `computer`: `leaves` (the default: it stays on the counter), `none` (the customer comes without
   one and leaves when the conversation ends), or `shows` (it stands on the counter while they
   visit, and goes with them).

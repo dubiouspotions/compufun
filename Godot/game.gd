@@ -1247,12 +1247,17 @@ func can_close() -> bool:
 
 ## Closes the shop for the night: DAY_OVER and [constant Daypart.EVENING]. Jobs stay on the counter.
 ## On the last day it is ENDED instead. Starts the day's [member Day.close_signs] and sets its
-## [member Day.close_flags]. Does nothing when [method can_close] is false.
+## [member Day.close_flags]. A computer left without a problem can't be fixed or called about, so its
+## customer never comes back: from now on it counts as [member Job.unanswered]. Does nothing when
+## [method can_close] is false.
 func close_shop() -> void:
 	if not can_close():
 		return
 	phase = Phase.DAY_OVER if has_next_day() else Phase.ENDED
 	daypart = Daypart.EVENING
+	for job: Job in jobs:
+		if job.problem == null:
+			job.unanswered = true
 	for id: StringName in day.close_signs:
 		flags[sign_flag(id)] = 1
 	_set_flags(day.close_flags, "closing day %d" % day.number)

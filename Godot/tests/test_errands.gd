@@ -153,6 +153,9 @@ func _no_problem() -> void:
 	check("it can't be fixed, tested or called about", [job.fixed, job.done, game.can_call(), game.next_to_call()], [false, false, false, null])
 	game.set_tested(job)
 	check("set_tested refuses it", job.tested, false)
+	check("he never comes back for it", job.unanswered, false)
+	game.close_shop()
+	check("so it counts as unanswered once the shop closes", [game.phase, job.unanswered], [GAME.Phase.DAY_OVER, true])
 	game.restore({"day": 6, "phase": "CLOSED"})
 
 
