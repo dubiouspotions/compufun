@@ -10,8 +10,8 @@ import sys
 import zlib
 
 # The 16 colours of a Standard VGA display adapter.
-BLACK, MAROON, OLIVE, TEAL, SILVER = (0, 0, 0), (128, 0, 0), (128, 128, 0), (0, 128, 128), (192, 192, 192)
-WHITE, YELLOW, FUCHSIA = (255, 255, 255), (255, 255, 0), (255, 0, 255)
+BLACK, MAROON, OLIVE, SILVER = (0, 0, 0), (128, 0, 0), (128, 128, 0), (192, 192, 192)
+WHITE, RED, YELLOW, FUCHSIA = (255, 255, 255), (255, 0, 0), (255, 255, 0), (255, 0, 255)
 
 
 class Canvas:
@@ -85,11 +85,12 @@ def sticker():
 
 
 def wallpaper():
-    """Hamsters and sunflower seeds on the desktop's teal, in VGA colours; the fur and the pink are
-    dithers, as 16 colours can't show them."""
-    c = Canvas(128, 128, TEAL)
+    """Hamsters and sunflower seeds on hot pink, in VGA colours; the ground, the fur and the pink are
+    dithers, as 16 colours can't show them. The ground stays dark enough for the white icon names."""
     gold = lambda x, y: YELLOW if (x + y) % 2 else OLIVE
     pink = lambda x, y: FUCHSIA if (x + y) % 2 else WHITE
+    c = Canvas(128, 128, BLACK)
+    c.shape(lambda x, y: True, lambda x, y: FUCHSIA if (x + y) % 2 else RED)
     for cx, cy in ((32, 34), (96, 98)):
         hamster(c, cx, cy, 14, MAROON, gold, WHITE, pink, BLACK)
     for sx, sy, tilt in ((80, 24, 0.5), (106, 42, -0.4), (20, 86, 0.3), (46, 110, -0.6), (68, 66, 0.1)):
