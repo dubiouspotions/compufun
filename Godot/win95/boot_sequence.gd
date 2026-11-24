@@ -99,7 +99,7 @@ var _unshown: Dictionary[CanvasItem, Color] = {}
 var computer: ComputerState
 ## True from the POST's first line to its end: DEL then opens BIOS Setup.
 var _in_post: bool = false
-## DEL was pressed during the POST: it stops, and BIOS Setup opens.
+## DEL was pressed during the POST: BIOS Setup opens once the POST has finished, as on a real board.
 var _entering_setup: bool = false
 var _bios_setup: BiosSetup
 var _own_setup: Win95Setup
@@ -354,10 +354,10 @@ func _count_memory() -> bool:
 ## Waits [param seconds], and longer while the screen is out of the tree; false when the player
 ## skipped meanwhile.
 func _wait(seconds: float) -> bool:
-	if _skipped or _entering_setup:
+	if _skipped:
 		return false
 	await _pause(seconds)
-	return not (_skipped or _entering_setup)
+	return not _skipped
 
 
 func _pause(seconds: float) -> void:

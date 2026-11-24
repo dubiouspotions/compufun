@@ -23,10 +23,12 @@ func run() -> void:
 	while not boot.get("_in_post"):
 		await process_frame
 	boot._gui_input(_key(KEY_DELETE))
+	await process_frame
+	check("DEL doesn't stop the POST", boot.get("_bios_setup"), null)
 	while boot.get("_bios_setup") == null:
 		await process_frame
 	var setup: Control = boot.get("_bios_setup")
-	check("DEL in the POST opens BIOS Setup", setup.is_inside_tree(), true)
+	check("BIOS Setup opens once the POST has finished", [setup.is_inside_tree(), "Secondary Slave" in boot.get_node("%Post").text], [true, true])
 
 	for keycode: Key in [KEY_DOWN, KEY_ENTER, KEY_DOWN, KEY_DOWN, KEY_DOWN, KEY_DOWN, KEY_PAGEUP]:
 		setup._gui_input(_key(keycode))
