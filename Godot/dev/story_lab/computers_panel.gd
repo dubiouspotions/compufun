@@ -488,7 +488,9 @@ func _mail_selected() -> void:
 	_body.editable = row != null and not _is_unmail(row.get_metadata(0))
 	var picked: Email = row.get_metadata(0) if row != null else null
 	var hers := _hers(picked) if picked != null and not _is_unmail(picked) else null
-	var text := (hers.body if hers != null and not _sets(picked, "body") else picked.body) if picked != null else ""
+	var inherited := hers != null and not _sets(picked, "body")
+	_body.add_theme_color_override("font_color", LabUI.DIM if inherited else LabUI.TEXT)  # her own text, dim like her fields
+	var text := (hers.body if inherited else picked.body) if picked != null else ""
 	if _body.text != text:
 		_body.text = text
 
@@ -501,6 +503,7 @@ func _body_changed() -> void:
 		if hers != null and not _sets(mail, "body") and _body.text == hers.body:
 			return  # her text, shown as the mail is picked: nothing changed
 		_set_field(mail, "body", _body.text)
+		_body.add_theme_color_override("font_color", LabUI.TEXT)
 		_mail_pending = true
 		_settle.start()
 
