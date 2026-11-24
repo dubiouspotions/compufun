@@ -6,13 +6,13 @@ brief:
 == drop-off
 (neutral) Hello, sir.
 - Welcome to Compufun! How can I help you?
-	(problem) I'm not sure you can help me, but I have an odd problem with my computer. As you can probably tell, it has started to smell terribly.
+	(problem) I'm not sure you can help me, but I have an odd problem with my daughter's computer. As you can probably tell, it has started to smell terribly.
 - Woha! What is that smell?
 	(problem) I was hoping you could tell me!
 
-- I'll [cough] take a [cough] look.
+- Yeah, that reeks. I'll take a look.
 	(happy) Lovely! I'll check back later, I have some family issues to take care of for now.
-	- [Cough] I'll call you when it's ready for pickup!
+	- I'll call you when it's ready for pickup!
 		(neutral) Thank you, sir. Goodbye!
 		- Have a Funtastic day!
 
@@ -22,7 +22,7 @@ brief:
 	(happy) That's just lovely!
 	- Just one little detail... There seems to have been a dead hamster in your chassi.
 	- Well... About that smell...
-		(problem) Don't tell me something crawled up and died inside my computer because that's what it smelled like!
+		(neutral) Yeah, it really smelled like something crawled up and died inside my daughter's computer!
 		- ...
 - I have both good and bad news for you.
 	(problem) Oh, no. That doesn't sound good. I'm still struggling with our family issues and now this.
@@ -30,8 +30,8 @@ brief:
 	- I'll start with the good news then.
 	- I'll start with the bad news then.
 	(problem) Oh, god. Just tell me already.
-	- Well... About that smell...
-		(problem) Don't tell me something crawled up and died inside my computer because that's what it smelled like!
+	- Well... Did your family own a pet hamster by any chance?
+		(problem) Are you talking about Mr. Nibbles? And what do you mean "OWNED". He's just missi..
 		- ...
 (problem) Oh, no! Poor Mr Nibbles! So THAT'S where he went.
 (neutral) Well, I guess I have two problems less to worry about. Thank you for your help. Goodbye sir.
