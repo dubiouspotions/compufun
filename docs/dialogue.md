@@ -14,6 +14,8 @@ story/errands/0101_skater_bro.errand  one visit: who, which problem, the brief, 
 story/problems/dust_overheat.problem  one computer problem's text: the post-it, symptoms, steps, notes
 story/callouts/everyone.callouts      what every customer calls out while they wait
 story/callouts/skater_bro.callouts    what one customer calls out instead, by day, daypart or flags
+story/computers/office_girl.setup     a customer's computer at the start of the game (SetupPatch)
+story/computers/0301_office_girl.setup  what they did on it before that errand's visit
 story/symptoms.keywords               the words that also find each symptom in CompuFunDB's search
 story/bible/storyline.md              prose that the game doesn't read: the lore, the end, the cast
 story/bible/customers.md
@@ -214,6 +216,57 @@ brief: The skater gets bored fast.
 - The customer says two random lines of a mood, then the next mood's, in the order in which
   each mood first appears in the set: put the calmest first. After the last mood they go round
   the moods from the fourth on, or stay in the last in a set with fewer than five.
+
+## Setup patches: `story/computers/<customer>.setup`, `<code>_<customer>.setup`
+
+What a customer did on their computer (wiki: "Lived-in computers"). `<customer>.setup` goes on the
+setup of `customers/<customer>.tres` as the game makes its running copy; `<code>_<customer>.setup`,
+named like its errand, goes on as that visit's job starts, before the problem's break. The Story
+Lab's Computers tab writes them from the real Win95 (Save patch); this is the text it writes.
+
+```
+reset
+set volume: 40.0
+set wallpaper: res://win95/wallpapers/bubbles.png
+delete Desktop\passwords.txt
+
+folder C:\Letters
+
+file C:\Letters\letter.txt
+	modified: Tuesday, May 28, 1996 9:14:02 PM
+	contents:
+		Dear Kent,
+
+		the printer jams again.
+
+mail
+	from: Kent <kent@modemlandia.se>
+	subject: Lunch?
+	sent: 1996-05-30 11:02
+	body:
+		Friday at noon.
+		Kent
+
+unmail
+	sent: 1996-05-28 21:14
+	subject: Re: invoices
+```
+
+- `reset`, first if at all, throws away what the player did: the computer starts again from its
+  `.tres` and its start patch, then this patch.
+- `set <field>: <value>` sets a field of `Win95Setup`. `delete <path>` deletes a file or folder
+  with what is in it. A path starts with `Desktop`, `C:` or `Recycled` (the Recycle Bin).
+- `file <path>` and `folder <path>` say what the file must be: the fields under it, tab-indented,
+  each `Win95File` field that isn't its default; a field left out takes its default. A folder keeps
+  its children. A text with line breaks is a block: `contents:`, then its lines two tabs deep.
+- `mail` puts a mail, every `Email` field that isn't its default (`folder: inbox`, `read: false`),
+  replacing the mail with the same `sent` and `subject`; `unmail` deletes the mail with that `sent`
+  and `subject`.
+- A resource field (an icon, a picture, a program) names a `res://` file, or `none`. Enums are
+  their names in lower case (`folder: trash`); other values are Godot's (`true`, `Vector2(300, 200)`).
+- A patch converges: deleting what is gone does nothing, and a file in a missing folder makes the
+  folder. A computer gets the patches of all its customer's errands up to the visit, by code, each
+  once, also those of visits where it never booted.
 
 ## Conversations
 

@@ -51,6 +51,9 @@ var recent_documents: Array[Win95File] = []
 ## The screenshot that the desktop prank (DesktopPrankCheck) set as the wallpaper, or null. Only
 ## while the game runs.
 var desktop_screenshot: DesktopScreenshot
+## The errands whose setup patches (SetupPatch) this running copy has, by file name. Only while the
+## game runs.
+var patched: PackedStringArray = []
 ## Every email in every folder; each Email says which folder it is in.
 @export var emails: Array[Email] = []
 ## The programs that the Start menu lists, by their name in the menu.
@@ -234,6 +237,13 @@ static func _read_contents(file: Win95File) -> void:
 		push_error("Win95Setup: couldn't read %s for %s: %s" % [file.contents_file, file.name, error_string(err)])
 		return
 	file.contents = text
+
+
+## Becomes [param other], a running copy too: every field, also the runtime ones.
+func take(other: Win95Setup) -> void:
+	for property: Dictionary in get_property_list():
+		if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			set(property.name, other.get(property.name))
 
 
 ## Puts [param disk] in drive A:, with copies of its files that the computer changes from now on,

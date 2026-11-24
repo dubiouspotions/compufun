@@ -696,16 +696,21 @@ func fix(location: Problem.Location) -> void:
 
 
 ## The running copy of [param job]'s Win95 setup, or null when its computer has none. The first
-## call for a computer copies its Win95Setup; the first call for a job breaks the copy as the job's
-## problem says, on top of what earlier visits left.
+## call for a computer copies its Win95Setup with the customer's start patch (SetupPatch); the first
+## call for a job puts on the setup patches of the customer's errands up to the job's, then breaks
+## the copy as the job's problem says, on top of what earlier visits left.
 func setup_for(job: Job) -> Win95Setup:
 	var computer := job.customer.computer
 	if computer == null or computer.win95_setup == null:
 		return null
+	var patches: Dictionary[String, SetupPatch] = week.patches if week != null else {}
 	var setup: Win95Setup = setups.get(computer)
-	if setup == null:
-		setup = computer.win95_setup.copy()
+	var made := setup == null
+	if made:
+		setup = SetupPatch.start(job.customer, patches)
 		setups[computer] = setup
+	if (made or not job.broken) and week != null:
+		SetupPatch.catch_up(setup, job.customer, job.errand, true, week.errands(), patches)
 	if not job.broken:
 		job.broken = true
 		if job.software_check() != null:

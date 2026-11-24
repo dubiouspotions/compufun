@@ -23,9 +23,19 @@ class Week:
 	var call_outs: Dictionary[StringName, CallOuts] = {}
 	## The words that also find a symptom in CompuFunDB's search, by symptom (story/symptoms.keywords).
 	var keywords: Dictionary[String, PackedStringArray] = {}
+	## The setup patches by file name: a customer's start patch, such as "skater_bro", and an errand's,
+	## such as "0403_skater_bro".
+	var patches: Dictionary[String, SetupPatch] = {}
 	var errors: PackedStringArray = []
 	# The text of each problem file, by id, as it parsed.
 	var _texts: Dictionary[StringName, Problem] = {}
+
+	## Every errand of the week, by day, in errand code order.
+	func errands() -> Array[Errand]:
+		var all: Array[Errand] = []
+		for day: Day in days:
+			all.append_array(day.errands)
+		return all
 
 	## Fills the text of this week's problem files into [member problems]. [method load_week] does
 	## it for a week without errors; call it again to put this week's text back after another week
@@ -61,6 +71,7 @@ static func load_week(drafts: Dictionary[String, String] = {}) -> Week:
 		if errand.day_number() >= 1 and errand.day_number() <= DAYS:
 			week.days[errand.day_number() - 1].errands.append(errand)
 	_load_call_outs(week, drafts)
+	_load_patches(week, drafts)
 	week.errors.append_array(StoryFormat.parse_keywords(_text(KEYWORDS_PATH, drafts, week.errors), KEYWORDS_PATH, week.keywords))
 	if week.errors.is_empty():
 		week.fill_problems()
@@ -78,6 +89,20 @@ static func _load_call_outs(week: Week, drafts: Dictionary[String, String]) -> v
 	var everyone: CallOuts = week.call_outs.get(CallOuts.EVERYONE)
 	if everyone == null or not everyone.sets.any(func(each: CallOuts.Set) -> bool: return each.is_plain()):
 		week.errors.append("%s%s.callouts: missing, or without a '== waiting' set that has no [if] or [daypart]; every customer falls back to it" % [CALL_OUTS_DIR, CallOuts.EVERYONE])
+
+
+# Parses the setup patches into [param week]; each is named after a customer or an errand.
+static func _load_patches(week: Week, drafts: Dictionary[String, String]) -> void:
+	var names: Dictionary[String, bool] = {}
+	for errand: Errand in week.errands():
+		names[errand.file_name()] = true
+	for path: String in files(SetupPatch.DIR, SetupPatch.EXTENSION, drafts):
+		var parsed := SetupPatch.parse(_text(path, drafts, week.errors), path)
+		week.errors.append_array(parsed.errors)
+		var patch_name := path.get_file().get_basename()
+		if not names.has(patch_name) and not ResourceLoader.exists(StoryFormat.CUSTOMERS_DIR + patch_name + ".tres"):
+			week.errors.append("%s: no errand file %s.errand and no customer %s%s.tres has this name" % [path, patch_name, StoryFormat.CUSTOMERS_DIR, patch_name])
+		week.patches[patch_name] = parsed.value as SetupPatch
 
 
 # Parses the problem files into [param week], each with its .tres; a .tres without a problem file is
@@ -107,7 +132,7 @@ static func _load_problems(week: Week, drafts: Dictionary[String, String]) -> vo
 ## over them, sorted by name.
 static func files(dir: String, extension: String, drafts: Dictionary[String, String] = {}) -> PackedStringArray:
 	var found := PackedStringArray()
-	for name: String in DirAccess.get_files_at(dir):
+	for name: String in DirAccess.get_files_at(dir) if DirAccess.dir_exists_absolute(dir) else PackedStringArray():  # git keeps no empty folder
 		if name.ends_with(extension) and drafts.get(dir + name, "-") != "":
 			found.append(dir + name)
 	for path: String in drafts:
