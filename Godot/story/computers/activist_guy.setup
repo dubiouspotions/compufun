@@ -24,9 +24,9 @@ file C:\NEWSLTR\ISSUE14.DOC
 		\par
 		\b\fs24 Classifieds\b0\fs20\par
 		FOR SALE: Bake sale leftovers. Marge has them. Ask nicely.\par
-		WANTED: Floppy disks labelled "update" by hand, 13 disks in a set. Will pay $5 a set. Ask Bob.\par
+		WANTED: Floppy disks labelled "update" by hand, 13 disks in a set. Will pay $5 a set. Ask Craig.\par
 		\par
-		\i The newsletter doesn't write itself. Write to Bob: bob@aol.com\i0\par
+		\i The newsletter doesn't write itself. Write to Craig: anon654@aol.com\i0\par
 		}
 
 file C:\NEWSLTR\BUILDS.TXT
@@ -53,12 +53,12 @@ file C:\NEWSLTR\BUILDS.TXT
 
 mail
 	from: Kev <DoomKev@aol.com>
-	to: craig@mainstreet-online.net
+	to: anon654@aol.com
 	subject: can i borrow ur computer
 	sent: 1996-05-25 10:12
 	read: true
 	body:
-		hi uncle bob
+		hi uncle craig
 
 		can i borrow ur computer saturday? mine is too slow for doom 2. mom says urs is the fastest one in the family.
 
@@ -67,7 +67,7 @@ mail
 		kev
 
 mail
-	from: craig@mainstreet-online.net
+	from: anon654@aol.com
 	to: Kev <DoomKev@aol.com>
 	subject: Re: can i borrow ur computer
 	sent: 1996-05-25 10:40
@@ -78,11 +78,11 @@ mail
 
 mail
 	from: Marge <marge.h@aol.com>
-	to: craig@mainstreet-online.net
+	to: anon654@aol.com
 	subject: 437!!
 	sent: 1996-05-30 19:05
 	body:
-		Bob,
+		Craig,
 
 		We're at 437 signatures! The computer shop let us keep a sheet on the counter, and people sign it while they wait.
 

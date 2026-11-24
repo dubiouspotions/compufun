@@ -148,11 +148,11 @@ file Recycled\FOR THE SHOP.TXT
 
 		You fixed my RAM. Consider us even.
 
-		- B
+		- C
 
 mail
 	from: quill <quill@riverlink.net>
-	to: craig@mainstreet-online.net
+	to: anon654@aol.com
 	subject: found your 1.4
 	sent: 1996-06-01 01:47
 	read: true
@@ -169,7 +169,7 @@ mail
 
 mail
 	from: quill <quill@riverlink.net>
-	to: craig@mainstreet-online.net
+	to: anon654@aol.com
 	subject: calc
 	sent: 1996-06-02 23:12
 	read: true
@@ -183,7 +183,7 @@ mail
 		what do i do
 
 mail
-	from: craig@mainstreet-online.net
+	from: anon654@aol.com
 	to: quill <quill@riverlink.net>
 	subject: Re: calc
 	sent: 1996-06-03 21:30
@@ -197,8 +197,8 @@ mail
 		> what do i do
 
 mail
-	from: Mail Delivery Subsystem <MAILER-DAEMON@mainstreet-online.net>
-	to: craig@mainstreet-online.net
+	from: Mail Delivery Subsystem <MAILER-DAEMON@aol.com>
+	to: anon654@aol.com
 	subject: Returned mail: User unknown
 	sent: 1996-06-03 21:31
 	body:
@@ -220,7 +220,7 @@ mail
 		Unplug it. Don't boot it again. Don't copy anything off it.
 
 mail
-	from: craig@mainstreet-online.net
+	from: anon654@aol.com
 	to: Kev <DoomKev@aol.com>
 	subject: your mom's computer
 	sent: 1996-06-05 08:02
@@ -235,10 +235,10 @@ mail
 
 		And no, you still can't borrow mine.
 
-		Uncle Bob
+		Uncle Craig
 
 mail
-	from: craig@mainstreet-online.net
+	from: anon654@aol.com
 	to: Marge <marge.h@aol.com>
 	subject: I'm out
 	sent: 1996-06-05 08:15
@@ -251,4 +251,4 @@ mail
 
 		Count the signatures on paper. Don't put them in a computer.
 
-		Bob
+		Craig
