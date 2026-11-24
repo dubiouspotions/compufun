@@ -70,7 +70,9 @@ void fragment() {
 	// The pattern follows the pixels of the source picture, so it scales up with the picture.
 	float offset = psx_dither_offset(ivec2(floor(UV / TEXTURE_PIXEL_SIZE)));
 	// The drift dithers between the Windows colours, as a 16-colour picture does.
-	source.rgb = mix(source.rgb, nearest_windows_color(source.rgb + offset * 0.25), windows_shades);
+	if (windows_shades > 0.0) {  // the search is 16 steps per window pixel; skip it while it changes nothing
+		source.rgb = mix(source.rgb, nearest_windows_color(source.rgb + offset * 0.25), windows_shades);
+	}
 	vec3 c;
 	if (palette_size > 0) {
 		c = nearest_palette_color(source.rgb + offset * dither / float(palette_size));
