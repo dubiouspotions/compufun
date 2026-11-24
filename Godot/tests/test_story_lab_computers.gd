@@ -62,6 +62,13 @@ func run() -> void:
 	check("a new address left empty keeps the old one", (added.get_metadata(0) as Email).from, kept)
 	await process_frame
 	added = mails.get_root().get_children().back()
+	added.select(2)
+	panel.call("_edit_cell")
+	added.set_range(2, Array(added.get_text(2).split(",")).find("(none)"))
+	panel.call("_edit_mail", added)
+	check("(none) removes an address", (added.get_metadata(0) as Email).to, "")
+	await process_frame
+	added = mails.get_root().get_children().back()
 	added.select(1)
 	panel.call("_edit_cell")
 	added.set_range(1, Array(added.get_text(1).split(",")).find("New address..."))

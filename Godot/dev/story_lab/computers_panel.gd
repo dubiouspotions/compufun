@@ -15,6 +15,8 @@ signal bench_requested(customer: Customer, errand: Errand, setup: Win95Setup)
 const SETTLE_SECONDS: float = 0.4
 const _MAIL_COLUMNS: PackedStringArray = ["Folder", "From", "To", "Subject", "Sent", "Read"]
 const _NEW_ADDRESS: String = "New address..."
+## The From and To choice that removes the address.
+const _NO_ADDRESS: String = "(none)"
 ## The Read column's text for unread and read; a double-click flips it. (An unticked check box draws nothing in the Lab's theme.)
 const _READ: PackedStringArray = ["unread", "read"]
 
@@ -307,13 +309,21 @@ func _edit_mail(row: TreeItem) -> void:
 			_mails.edit_selected.call_deferred(true)
 			return
 	mail.folder = _folder_names.find(_cell(row, 0)) as Email.Folder
-	# A new address left without typing one keeps the old: an empty cell is a cancel, not "nobody".
-	mail.from = _cell(row, 1) if _cell(row, 1).strip_edges() != "" else mail.from
-	mail.to = _cell(row, 2) if _cell(row, 2).strip_edges() != "" else mail.to
+	mail.from = _address(row, 1, mail.from)
+	mail.to = _address(row, 2, mail.to)
 	mail.subject = row.get_text(3)
 	mail.sent = row.get_text(4)
 	mail.read = row.get_text(5) == _READ[1]
 	_save_mails.call_deferred()  # the save rebuilds the table, which the Tree refuses inside its own signal
+
+
+# The address in [param column] of [param row]: "(none)" picked removes it; a new address left
+# without typing one keeps [param was], as leaving the cell is a cancel.
+func _address(row: TreeItem, column: int, was: String) -> String:
+	var text := _cell(row, column)
+	if text == _NO_ADDRESS:
+		return ""
+	return text if text.strip_edges() != "" else was
 
 
 func _save_mails() -> void:
@@ -343,8 +353,9 @@ func _edit_cell() -> void:
 		options = Array(_folder_names)
 	elif column in [1, 2] and not current.contains(","):
 		options = Array(_after.addresses()).filter(func(a: String) -> bool: return not a.contains(","))
+		options.push_front(_NO_ADDRESS)
 		if current == "":
-			options.push_front("")
+			current = _NO_ADDRESS
 		options.append(_NEW_ADDRESS)
 	if not options.is_empty():
 		row.set_cell_mode(column, TreeItem.CELL_MODE_RANGE)
