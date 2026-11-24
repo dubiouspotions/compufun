@@ -619,6 +619,7 @@ func _build() -> void:
 	var split := VSplitContainer.new()
 	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	split.split_offset = board_height  # the board's height: it doesn't expand
+	split.add_theme_constant_override("autohide", 0)  # show the grabber, so writers find the line
 	_week_view.add_child(split)
 	split.add_child(_board)
 	_lower = Control.new()
