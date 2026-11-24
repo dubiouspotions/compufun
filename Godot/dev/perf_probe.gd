@@ -23,6 +23,7 @@ const PROBLEMS: Array[String] = ["dust_overheat", "no_sound", "bad_ram", "dust_o
 var game: Node
 var _main: Node
 var _dev_menu: Node
+var _knobs: Array = []
 
 
 func _initialize() -> void:
@@ -36,6 +37,7 @@ func _run() -> void:
 	var knobs: Array = args.filter(func(a: String) -> bool: return a.begins_with("+"))
 	for knob in knobs:
 		args.erase(knob)
+	_knobs = knobs
 	var day := 2
 	if not args.is_empty() and args[0].is_valid_int():
 		day = int(args[0])
@@ -63,8 +65,6 @@ func _run() -> void:
 			"capped" if capped else "uncapped", knobs, DisplayServer.window_get_size(), DisplayServer.screen_get_scale(),
 			DisplayServer.screen_get_refresh_rate(), DisplayServer.window_get_vsync_mode(), Engine.max_fps,
 			RenderingServer.get_video_adapter_name()])
-	for viewport in _viewports():
-		RenderingServer.viewport_set_measure_render_time(viewport.get_viewport_rid(), true)
 	for each: String in cases:
 		await _case(each, capped)
 	quit()
@@ -124,18 +124,45 @@ func _case(case_name: String, capped: bool) -> void:
 		if not is_instance_valid(viewport):
 			continue
 		var cpu: float = per_viewport[viewport] / samples
-		if cpu >= 0.005:
+		if cpu >= 0.005 and _knobs.has("+vptime"):
 			print("   %-50s %s cpu %.2f ms" % [_path(viewport), _size(viewport), cpu])
 
 
-# Turns a part off: +fps=N, +lowproc (low processor mode), +pause, +nopost (the world's post shader),
-# +nobuffers (the screen buffers), +noworld, +noshadows, +nolights, +nopipes, +noparticles,
-# +nofollow (main's camera follow), +stop=<script> (its processing), +shadowoff=<node> (its lights).
+# Turns a part off, or +vptime turns on each viewport's render time (its GPU timer queries make the
+# macOS GL driver submit early, which skews the frame time): +fps=N, +lowproc (low processor mode), +pause, +nopost (the world's post shader),
+# +nobuffers (the screen buffers), +nocrt and +noglow (the Screen Views' CRT look, or its glow), +noworld, +noshadows, +nolights, +nopipes, +noparticles,
+# +nofollow (main's camera follow), +whenvisible (every always-updating viewport but the world's), +nobusfx (the audio buses' effects), +noaudio (every player), +stop=<script> (its processing), +shadowoff=<node> (its lights).
 func _turn(knob: String) -> void:
 	var world := _main.get_node(^"World") as SubViewportContainer
 	match knob.get_slice("=", 0):
+		"+whenvisible":
+			for node in root.find_children("*", "SubViewport", true, false):
+				var viewport := node as SubViewport
+				if viewport.render_target_update_mode == SubViewport.UPDATE_ALWAYS and viewport != world.get_child(0):
+					print("perf_probe: when visible: ", root.get_path_to(viewport), " ", viewport.size)
+					viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+		"+nobusfx":
+			for bus in AudioServer.bus_count:
+				for effect in AudioServer.get_bus_effect_count(bus):
+					AudioServer.set_bus_effect_enabled(bus, effect, false)
+		"+noaudio":
+			for node in root.find_children("*", "", true, false):
+				if node is AudioStreamPlayer or node is AudioStreamPlayer2D or node is AudioStreamPlayer3D:
+					node.set(&"playing", false)
+					node.set(&"autoplay", false)
+					node.process_mode = Node.PROCESS_MODE_DISABLED
+		"+vptime":
+			for viewport in _viewports():
+				RenderingServer.viewport_set_measure_render_time(viewport.get_viewport_rid(), true)
 		"+fps":
 			Engine.max_fps = int(knob.get_slice("=", 1))
+		"+nocrt", "+noglow":
+			for view in _main.find_children("*", "ScreenView", true, false):
+				var screen := view.get_node(^"%Screen") as CanvasItem
+				if knob == "+nocrt":
+					screen.material = null
+				elif screen.material is ShaderMaterial:
+					(screen.material as ShaderMaterial).set_shader_parameter(&"glow", 0.0)
 		"+noparticles":
 			for node in root.find_children("*", "CPUParticles3D", true, false):
 				(node as CPUParticles3D).emitting = false
