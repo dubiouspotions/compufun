@@ -55,7 +55,7 @@ const KNOWN_GAME_METHODS: Array[String] = [
 	# the repair
 	"focus_job", "job_beside", "lay_down", "can_stand_up", "stand_up", "open_case", "turn_screw", "can_turn",
 	"can_take", "take_part", "can_put", "put_part", "take_new_part", "can_take_blocker", "take_blocker", "can_take_misplaced", "take_misplaced", "put_on_mat", "take_from_mat",
-	"can_return_part", "return_part", "trash_part", "take_from_trash", "connect_cable", "set_powered",
+	"can_return_part", "return_part", "trash_part", "connect_cable", "set_powered",
 	"can_power_on", "alarms", "setup_for", "has_floppy", "can_eject", "eject_floppy", "can_insert_floppy", "insert_floppy", "toggle_cd_tray", "set_software_fixed", "set_tested",
 	# CompuFunDB and the printout
 	"search_db", "start_db", "mark_check", "carry_printout", "tick_printout",
@@ -460,12 +460,12 @@ func _rearrange(job: Job) -> void:
 			return
 
 
-# Takes the pieces that sit on [param place] out onto the trash, the broken piece into the trash, a
-# new one from the storage in, and the others back from the trash.
+# Takes the pieces that sit on [param place] out onto the mat, the broken piece into the trash, a
+# new one from the storage in, and the others back from the mat.
 func _replace(job: Job, place: Part) -> void:
 	var on_top := Part.every().filter(func(other: Part) -> bool: return other.sits_on == place and job.piece(other) != null)
 	for other: Part in on_top:
-		if not (game.take_part(job, other) and game.trash_part()):
+		if not (game.take_part(job, other) and game.put_on_mat(job)):
 			_fail("%s, on top of %s, won't come out" % [other.id(), place.id()])
 			return
 	if not (game.take_part(job, place) and game.trash_part()):
@@ -476,7 +476,7 @@ func _replace(job: Job, place: Part) -> void:
 		return
 	on_top.reverse()
 	for other: Part in on_top:
-		if not (game.take_from_trash() and game.put_part(job, other)):
+		if not (game.take_from_mat(job, job.mat.size() - 1) and game.put_part(job, other)):
 			_fail("%s won't go back on %s" % [other.id(), place.id()])
 			return
 

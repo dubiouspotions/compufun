@@ -2,10 +2,11 @@ class_name TrashCan
 extends Node3D
 ## The trash can by the work desk (wiki: Hardware Repair). A click with a part in the hand throws it
 ## in, on top of what lies there; with an empty hand, a click throws away the printout that the player
-## carries (Game.printout). With neither, a click goes to [member look_view], and there takes the part
-## on top back. While a click would throw something away ([method can_throw]), the can's outline
-## pulses like the Open sign's; under the mouse it shows the hover colour. While the printout is
-## raised, a click on the can throws it away (CarriedPrintout), even with a part in the hand.
+## carries (Game.printout). With neither, a click goes to [member look_view], where the can then takes
+## no click: nothing thrown away comes back. Outside [member look_view], the can's outline pulses like
+## the Open sign's while a click would throw something away ([method can_throw]), and shows the hover
+## colour under the mouse; in [member look_view] it shows no outline. While the printout is raised, a
+## click on the can throws it away (CarriedPrintout), even with a part in the hand.
 ## A click that throws a piece in plays its part's [member Part.trash_sound].
 
 ## The group of the shop's trash can.
@@ -71,10 +72,7 @@ func throw_printout() -> bool:
 func _on_clicked(_clicked: Hotspot) -> void:
 	var thrown := Game.hand
 	if not can_throw():
-		if Game.view != look_view:
-			Game.go_to_view(look_view)
-		else:
-			Game.take_from_trash()
+		Game.go_to_view(look_view)
 	elif thrown == null:
 		throw_printout()
 	elif Game.trash_part() and thrown.part.trash_sound != null:
@@ -88,11 +86,13 @@ func _set_hovered(on: bool) -> void:
 
 func _sync() -> void:
 	var throws := can_throw()
-	_hotspot.set_enabled(throws or Game.view != look_view or not Game.trashed.is_empty())
+	var looking := Game.view == look_view
+	_hotspot.set_enabled(throws or not looking)
 	_hovered = _hovered and _hotspot.input_ray_pickable
-	_outline.visible = throws or _hovered
+	var pulses := throws and not looking
+	_outline.visible = not looking and (throws or _hovered)
 	_outline.material_override = _hover_material if _hovered else _pulse_material
-	if throws != (_pulse != null):
+	if pulses != (_pulse != null):
 		if _pulse != null:
 			_pulse.kill()
 			_pulse = null

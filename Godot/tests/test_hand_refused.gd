@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
 ## A take that only the piece in the hand stops (Game.hand_refused) shakes the part in the hand
-## sideways: a storage box, a piece in the open case, a misplaced one, the mat and the trash. A take
+## sideways: a storage box, a piece in the open case, a misplaced one and the mat. A take
 ## that an empty hand wouldn't make either (a piece under another) refuses nothing. With a full hand,
 ## the case's pieces take the click but show no outline.
 
@@ -43,19 +43,18 @@ func run() -> void:
 	check("the mat's fan: refused", [game.take_from_mat(job, 0), refused[0]], [false, 4])
 	game.trash_part()
 	game.take_new_part(gpu)
-	check("the trash's CPU: refused", [game.take_from_trash(), refused[0]], [false, 5])
 
 	var storage := shop.find_children("*", "Area3D", true, false).filter(func(h: Node) -> bool: return h is Hotspot and h.action == Hotspot.Action.TAKE_PART)
 	var cpu_box: Hotspot = storage.filter(func(h: Hotspot) -> bool: return h.part == cpu)[0]
 	var gpu_box: Hotspot = storage.filter(func(h: Hotspot) -> bool: return h.part == gpu)[0]
 	cpu_box.clicked.emit(cpu_box)
-	check("a click on the CPU box shakes the new graphics card", [game.hand.part, refused[0]], [gpu, 6])
+	check("a click on the CPU box shakes the new graphics card", [game.hand.part, refused[0]], [gpu, 5])
 	gpu_box.clicked.emit(gpu_box)
-	check("its own box takes it back", [game.hand, refused[0]], [null, 6])
+	check("its own box takes it back", [game.hand, refused[0]], [null, 5])
 
 	check("restore a misplaced drive", game.restore({"day": 1, "phase": "OPEN", "jobs": [{"customer": SKATER, "problem": "dust_overheat", "slot": 0, "case_open": true, "panel_screws": [false, false], "misplaced": {"cpu": "hard_drive"}, "parts": {"fan": "fan!", "gpu": "gpu", "motherboard": "motherboard", "ram_1": "ram", "ram_2": "ram"}}]}), "")
 	job = game.jobs[0]
 	game.take_new_part(fan)
-	check("the misplaced drive: refused", [game.take_misplaced(job, cpu), job.misplaced[cpu].part, refused[0]], [false, drive, 7])
+	check("the misplaced drive: refused", [game.take_misplaced(job, cpu), job.misplaced[cpu].part, refused[0]], [false, drive, 6])
 	shop.queue_free()
 	await process_frame

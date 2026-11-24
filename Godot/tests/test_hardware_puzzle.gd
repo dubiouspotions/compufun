@@ -51,13 +51,13 @@ func run() -> void:
 	check("the hard drive lifts off the socket", [game.take_misplaced(job, cpu), game.hand.part, job.misplaced.has(cpu)], [true, drive, false])
 	check("one piece in the hand", game.take_misplaced(job, Part.named(&"ram_1")), false)
 	check("RAM lies in the drive bay: the drive goes nowhere yet", game.put_part(job), false)
-	check("the trash holds it meanwhile", game.trash_part(), true)
+	check("the mat holds it meanwhile", game.put_on_mat(job), true)
 	await process_frame
 	check("the open case shows four", _lying_models(case), 4)
 	check("a new CPU goes in the empty socket", [game.take_new_part(cpu), game.put_part(job, cpu)], [true, true])
 	check("the fan lifts off RAM slot 2 onto the CPU", [game.take_misplaced(job, Part.named(&"ram_2")), game.put_part(job, fan)], [true, true])
 	check("the RAM lifts out of the drive bay into slot 2", [game.take_misplaced(job, drive), game.put_part(job)], [true, true])
-	check("the drive comes back from the trash into its bay", [game.take_from_trash(), game.put_part(job, drive)], [true, true])
+	check("the drive comes back from the mat into its bay", [game.take_from_mat(job, 0), game.put_part(job, drive)], [true, true])
 
 	var saved: Dictionary = game.snapshot()
 	check("the snapshot names the misplaced pieces", saved["jobs"][0]["misplaced"], {"ram_1": "gpu", "gpu": "ram"})
@@ -74,9 +74,9 @@ func run() -> void:
 	case.set(&"job", job)
 
 	var gpu := Part.named(&"gpu")
-	check("the graphics card lifts off RAM slot 1 into the trash", [game.take_misplaced(job, Part.named(&"ram_1")), game.put_part(job), game.trash_part()], [true, false, true])
+	check("the graphics card lifts off RAM slot 1 onto the mat", [game.take_misplaced(job, Part.named(&"ram_1")), game.put_part(job), game.put_on_mat(job)], [true, false, true])
 	check("the RAM lifts out of the GPU slot into slot 1", [game.take_misplaced(job, gpu), game.put_part(job)], [true, true])
-	check("the graphics card from the trash into its slot", [game.take_from_trash(), game.put_part(job, gpu)], [true, true])
+	check("the graphics card from the mat into its slot", [game.take_from_mat(job, 0), game.put_part(job, gpu)], [true, true])
 	check("every place filled, nothing misplaced", [job.places.size(), job.misplaced.is_empty()], [7, true])
 	check("open: not fixed", job.hardware_fixed, false)
 	game.open_case(job, false)

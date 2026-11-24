@@ -31,14 +31,14 @@ func run() -> void:
 	check("once, and the view stays", [_played().size(), game.view], [1, &"Right"])
 
 	await _quiet()
-	game.take_from_trash()
+	game.take_new_part(Part.named(&"fan"))
 	game.trash_part()
 	await process_frame
 	check("thrown in without a click, it plays nothing", _played(), [])
 	var trashed: Variant = game.snapshot().get("trashed")
 	check("restore the floppy in the trash", game.restore({"trashed": trashed}), "")
 	await process_frame
-	check("a restore plays nothing", [game.trashed.size(), _played()], [3, []])
+	check("a restore plays nothing", [game.trashed.size(), _played()], [4, []])
 	_can.queue_free()
 
 

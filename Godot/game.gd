@@ -124,7 +124,8 @@ var calling: Job
 var phone_off_hook: bool = false
 ## The part in the player's hand, or null. The hand holds one piece at a time.
 var hand: Piece
-## The pieces that the player threw in the trash can, the last one last. Never emptied.
+## The pieces that the player threw in the trash can, the last one last. Never emptied, and none
+## comes back out.
 var trashed: Array[Piece] = []
 ## The printout that the player carries, line by line as the printer printed it; empty while they
 ## carry none. It is apart from the hand, the player can't put it down, and only the trash can or the
@@ -978,15 +979,14 @@ func return_part(part: Part) -> bool:
 	return true
 
 
-## Throws the piece in the hand in the trash can, on top of what is in it.
+## Throws the piece in the hand in the trash can, on top of what is in it, for good.
 func trash_part() -> bool:
-	return _put_in(trashed)
-
-
-## Takes the piece on top of the trash back into the empty hand. With a piece in the hand it takes
-## none and emits [signal hand_refused].
-func take_from_trash() -> bool:
-	return _take_from(trashed)
+	if hand == null:
+		return false
+	trashed.append(hand)
+	hand = null
+	changed.emit()
+	return true
 
 
 ## The player takes [param lines], a page from the printer, and carries it with no ticks. While they
@@ -1037,23 +1037,6 @@ static func printout_box(line: String) -> int:
 		if at >= 0:
 			return at
 	return -1
-
-
-func _put_in(pile: Array[Piece]) -> bool:
-	if hand == null:
-		return false
-	pile.append(hand)
-	hand = null
-	changed.emit()
-	return true
-
-
-func _take_from(pile: Array[Piece]) -> bool:
-	if pile.is_empty() or _refused_full(true):
-		return false
-	hand = pile.pop_back()
-	changed.emit()
-	return true
 
 
 # Emits hand_refused and returns true when the hand holds a piece and an empty hand would take (takes).

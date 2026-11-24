@@ -1,8 +1,9 @@
 extends "res://tests/test.gd"
 ## The trash can's outline pulses like the Open sign's exactly while a click on it would throw
 ## something away: a new part, a broken one, the boot floppy, the carried printout (raised or not).
-## It stops when the hand is empty and no page is carried, also in the Trash view over a full can, and
-## shows the light blue hover outline under the mouse.
+## It stops when the hand is empty and no page is carried, and shows the light blue hover outline
+## under the mouse. Looking down into the can (the Trash view), it shows no outline, and takes a click
+## only to throw something in: nothing thrown away comes back.
 
 const PAGE: PackedStringArray = ["FIX: Clogged CPU fan", "1. Open case"]
 
@@ -58,19 +59,33 @@ func run() -> void:
 	_click()
 	check("the page thrown away: it stops", [game.printout, _pulsing()], [PackedStringArray(), false])
 
-	game.go_to_view(_can.get("look_view"))
-	check("in the Trash view over a full can: clickable, dark", [hotspot.input_ray_pickable, _pulsing()], [true, false])
 	_click()
-	check("a click takes the top piece back, and it pulses again", [game.hand != null, _pulsing()], [true, true])
+	check("an empty hand looks down into the can", game.view, _can.get("look_view"))
+	var thrown: int = game.trashed.size()
+	check("in the Trash view over a full can, an empty hand: no click, dark", [thrown > 0, hotspot.input_ray_pickable, _outline.visible], [true, false, false])
+	game.take_new_part(Part.named(&"fan"))
+	check("a part in the hand: it takes the click, still dark", [hotspot.input_ray_pickable, _outline.visible, _pulsing(false)], [true, false, false])
+	hotspot.mouse_entered.emit()
+	check("no hover outline either", _outline.visible, false)
+	hotspot.mouse_exited.emit()
+	_click()
+	check("thrown in from the Trash view", [game.hand, game.trashed.size()], [null, thrown + 1])
+	game.carry_printout(PAGE)
+	check("a carried page: it takes the click, dark", [hotspot.input_ray_pickable, _outline.visible], [true, false])
+	_click()
+	check("thrown in, and the can takes no click again", [game.printout, hotspot.input_ray_pickable], [PackedStringArray(), false])
+	game.go_to_view(&"Right")
+	check("back in the Right view, an empty hand: clickable, dark", [hotspot.input_ray_pickable, _pulsing()], [true, false])
 	_can.queue_free()
 	await process_frame
 
 
-# True while the outline shows the pulse material and its tween runs.
-func _pulsing() -> bool:
+# True while the outline shows the pulse material and its tween runs. Checks that it pulses exactly
+# when the can's own rule says a click throws, or never when [param throw_pulses] is false.
+func _pulsing(throw_pulses: bool = true) -> bool:
 	var tween: Tween = _can.get("_pulse")
 	var on := _outline.visible and _outline.material_override == _pulse and tween != null and tween.is_running()
-	check("the pulse matches the can's own rule", on, _can.call("can_throw"))
+	check("the pulse matches the can's own rule", on, throw_pulses and _can.call("can_throw"))
 	return on
 
 
