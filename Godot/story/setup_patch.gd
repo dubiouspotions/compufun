@@ -25,7 +25,8 @@ const _MAIL_KEY: Array[StringName] = [&"sent", &"subject"]
 @export var files: Dictionary[String, Win95File] = {}
 ## The mails to delete: only their sent and subject count.
 @export var unmailed: Array[Email] = []
-## The mails to put, in order; each replaces the mail with its sent and subject.
+## The mails to put, in order; each takes the place of the mail with its sent and subject, or comes
+## last.
 @export var mails: Array[Email] = []
 
 
@@ -75,6 +76,22 @@ static func catch_up(setup: Win95Setup, customer: Customer, upto: Errand, includ
 		setup.patched.append(patch_name)
 
 
+## [param customer]'s computer as it comes on the visit of [param errand], with that visit's patch,
+## or before it, as the patch's editor starts from: for null, at the start of the game with or
+## without the start patch. A patch that resets starts from [method start]. Null without a setup.
+static func arriving(customer: Customer, errand: Errand, with_patch: bool, errands: Array[Errand], patches: Dictionary[String, SetupPatch]) -> Win95Setup:
+	if customer.computer == null or customer.computer.win95_setup == null:
+		return null
+	if errand == null:
+		return start(customer, patches) if with_patch else customer.computer.win95_setup.copy()
+	var own: SetupPatch = patches.get(errand_name(errand))
+	if not with_patch and own != null and own.reset:
+		return start(customer, patches)
+	var setup := start(customer, patches)
+	catch_up(setup, customer, errand, with_patch, errands, patches)
+	return setup
+
+
 ## True when the patch changes nothing.
 func is_empty() -> bool:
 	return not reset and settings.is_empty() and deleted.is_empty() and files.is_empty() and unmailed.is_empty() and mails.is_empty()
@@ -99,10 +116,15 @@ func apply(setup: Win95Setup) -> void:
 			container.append(file)
 		_take_fields(file, files[path])
 		file.is_folder = files[path].is_folder
-	var gone := unmailed.map(_mail_key) + mails.map(_mail_key)
+	var gone := unmailed.map(_mail_key)
 	setup.emails.assign(setup.emails.filter(func(e: Email) -> bool: return _mail_key(e) not in gone))
+	var keys := setup.emails.map(_mail_key)
 	for mail: Email in mails:
-		setup.emails.append(mail.duplicate())
+		var at := keys.find(_mail_key(mail))
+		if at >= 0:
+			setup.emails[at] = mail.duplicate()
+		else:
+			setup.emails.append(mail.duplicate())
 
 
 ## The patch that makes [param before] into [param after], or a String that says why there is

@@ -71,6 +71,7 @@ var _bible: StoryBiblePanel
 var _problem_panel: StoryProblemPanel
 var _sign_panel: StorySignPanel
 var _call_outs: StoryCallOutsPanel
+var _computers: StoryComputersPanel
 var _sections: ButtonGroup
 var _send_panel: StorySendPanel
 var _editor_play: StoryPlayInEditor
@@ -205,6 +206,8 @@ func refresh() -> void:
 		_problem_panel.show_problems(_week.problems, drafts)
 	if _sign_panel.visible:
 		_sign_panel.show_signs(_week)
+	if _computers.visible:
+		_computers.show_computers(_week, drafts)
 	_show_drafts_count()
 	_send_button.disabled = drafts.paths().is_empty()
 	_send_button.tooltip_text = "Make a GitHub issue of your drafts" if not drafts.to_checkout else "Save to checkout is on: commit the files with git instead"
@@ -419,7 +422,7 @@ func play(errand: Errand, trigger: Conversation.Trigger) -> String:
 
 
 ## Shows the "Week" (the board and the picked errand or day), the "Problems", the "Signs", the
-## "Call-outs" or the "Bible".
+## "Call-outs", the "Computers" or the "Bible".
 func show_section(section: String) -> void:
 	for button: BaseButton in _sections.get_buttons():
 		button.set_pressed_no_signal((button as Button).text == section)
@@ -429,6 +432,7 @@ func show_section(section: String) -> void:
 	_problem_panel.visible = section == "Problems"
 	_sign_panel.visible = section == "Signs"
 	_call_outs.visible = section == "Call-outs"
+	_computers.visible = section == "Computers"
 	_bible.visible = section == "Bible"
 	if section == "Problems":
 		_problem_panel.show_problems(_week.problems, drafts)
@@ -436,6 +440,8 @@ func show_section(section: String) -> void:
 		_sign_panel.show_signs(_week)
 	elif section == "Call-outs":
 		_call_outs.show_call_outs(drafts)
+	elif section == "Computers":
+		_computers.show_computers(_week, drafts)
 	elif section == "Bible":
 		_bible.show_pages(drafts)
 
@@ -444,6 +450,24 @@ func show_section(section: String) -> void:
 func open_problem(id: StringName) -> void:
 	show_section("Problems")
 	_problem_panel.open_problem(id)
+
+
+## The Computers section (for its edits).
+func computers_panel() -> StoryComputersPanel:
+	return _computers
+
+
+## Puts [param setup] on the bench in the game (Game.edit_setup) and hides the Lab; Esc or F4 brings
+## it back, where Save patch reads the computer. Returns why it can't, or "".
+func bench(customer: Customer, errand: Errand, setup: Win95Setup) -> String:
+	var reason: String = Game.edit_setup(customer, errand, setup)
+	if reason != "":
+		_say("Can't put it on the bench: " + reason, true)
+		return reason
+	_computers.benched(setup)
+	hide()
+	_playing = true
+	return ""
 
 
 ## The Call-outs section (for its edits).
@@ -784,6 +808,11 @@ func _build() -> void:
 	_call_outs.saved.connect(_store_edit)
 	_call_outs.hide()
 	page.add_child(_call_outs)
+	_computers = StoryComputersPanel.new()
+	_computers.saved.connect(_store_edit)
+	_computers.bench_requested.connect(bench)
+	_computers.hide()
+	page.add_child(_computers)
 	_bible = StoryBiblePanel.new()
 	_bible.saved.connect(_store_page)
 	_bible.hide()
@@ -857,7 +886,7 @@ func _top_bar() -> Control:
 	row.add_child(LabUI.label("Story Lab", 26))
 	row.add_child(LabUI.chip("Game paused", LabUI.ACCENT, 13))
 	_sections = ButtonGroup.new()
-	var sections := LabUI.segmented(PackedStringArray(["Week", "Problems", "Signs", "Call-outs", "Bible"]), _sections)
+	var sections := LabUI.segmented(PackedStringArray(["Week", "Problems", "Signs", "Call-outs", "Computers", "Bible"]), _sections)
 	for button: BaseButton in _sections.get_buttons():
 		button.custom_minimum_size.x = 90
 		button.toggled.connect(func(on: bool) -> void:

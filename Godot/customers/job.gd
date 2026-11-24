@@ -257,6 +257,8 @@ func snapshot() -> Dictionary:
 		data["errand"] = errand.file_name()
 	if problem != null and (errand == null or errand.file == "" or problem != errand.problem):
 		data["problem"] = String(problem.short_name)
+	elif problem == null and errand != null and errand.problem != null:
+		data["problem"] = ""
 	return data
 
 

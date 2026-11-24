@@ -428,6 +428,38 @@ func load_story(drafts: Dictionary[String, String] = {}) -> PackedStringArray:
 	return errors
 
 
+## For the Story Lab's Edit on bench: puts [param customer]'s computer on the counter, with no
+## problem, booted on the bench in the Screen View, on the day of [param errand] (null: of their
+## first errand that brings a computer) after every errand of the day came. It runs [param setup] as
+## it is: no setup patch or break goes on it. Returns "" or why it can't, and then keeps the state.
+func edit_setup(customer: Customer, errand: Errand, setup: Win95Setup) -> String:
+	if week == null:
+		return _refuse("edit_setup: the story files didn't load")
+	var job := {"customer": customer.resource_path, "problem": "", "slot": 0, "powered": true}
+	if errand != null:
+		job["errand"] = errand.file_name()
+	var found: Variant = _job_errand(job, errand.day_number() if errand != null else 1)
+	if found is String:
+		return _refuse("edit_setup: " + found)
+	var number := maxi((found as Errand).day_number(), 1)
+	var new_flags := flags.duplicate()
+	new_flags.erase(gone_flag(customer))
+	setup.patched.clear()
+	for each: Errand in week.errands():
+		if each.customer == customer:
+			setup.patched.append(SetupPatch.errand_name(each))
+	var had: Win95Setup = setups.get(customer.computer)
+	setups[customer.computer] = setup
+	var refused := restore({"day": number, "phase": "OPEN", "arrivals": day_of(number).codes().size(), "flags": new_flags,
+			"seen": seen.keys(), "jobs": [job], "focus_slot": 0, "connected_slot": 0, "view": "Screen"})
+	if refused != "":
+		if had != null:
+			setups[customer.computer] = had
+		else:
+			setups.erase(customer.computer)
+	return refused
+
+
 ## Jumps to the day of [param to_play], an errand of the week that plays (by file name, so the
 ## Story Lab can pass its own parse of the file after [method load_story]), as [method restore] sets
 ## it: the errands before it came and went, with their computers, so the counter is empty; the
@@ -1456,7 +1488,9 @@ func restore(state: Dictionary) -> String:
 			return _refuse("job %d: %s" % [i, job_errand])
 		var errand_customer: Customer = job_errand.customer
 		var job_problem: Problem = job_errand.problem
-		if data.has("problem"):
+		if str(data.get("problem", "-")) == "":
+			job_problem = null
+		elif data.has("problem"):
 			var problem_path := PROBLEM_PATH % str(data["problem"])
 			job_problem = load(problem_path) as Problem if ResourceLoader.exists(problem_path) else null
 			if job_problem == null:
