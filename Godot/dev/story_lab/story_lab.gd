@@ -71,6 +71,7 @@ var _sign_panel: StorySignPanel
 var _call_outs: StoryCallOutsPanel
 var _sections: ButtonGroup
 var _send_panel: StorySendPanel
+var _preview: StoryLinePreview
 var _customers: PopupMenu
 var _add_day: int = 0
 
@@ -100,6 +101,7 @@ func _notification(what: int) -> void:
 		if visible:
 			_playing = false
 		elif is_node_ready():
+			_preview.close()
 			save_now()
 		_hold(is_visible_in_tree())
 	elif what == NOTIFICATION_WM_CLOSE_REQUEST and is_node_ready():
@@ -138,6 +140,23 @@ func save_now() -> void:
 	_problem_panel.save_now()
 	_call_outs.save_now()
 	_bible.save_now()
+
+
+## Shows [param line] of [param customer] in the game's dialogue box over the Lab, as the game shows
+## it, under [param conversation]'s voice effect; a click, Esc or Shift+Enter closes it. Returns ""
+## or why it can't show, which the status line says.
+func preview_line(customer: Customer, line: DialogueLine, conversation: Conversation) -> String:
+	var reason := "put the cursor on a customer line, or below one" if line == null else _preview.show_line(customer, line, conversation)
+	if reason != "":
+		_say("Nothing to show in the dialogue box: %s." % reason, true)
+		return reason
+	_say("The dialogue box shows the line as the game does. A click, Esc or Shift+Enter closes it.")
+	return ""
+
+
+## The preview of a line in the dialogue box (for its state).
+func line_preview() -> StoryLinePreview:
+	return _preview
 
 
 ## Loads the week again from the story files with the drafts over them, and shows it.
@@ -788,6 +807,7 @@ func _build() -> void:
 	_errand_panel = StoryErrandPanel.new()
 	_errand_panel.saved.connect(_store_edit)
 	_errand_panel.unfinished_changed.connect(_store_unfinished)
+	_errand_panel.preview_requested.connect(preview_line)
 	_errand_panel.remove_requested.connect(_remove_errand)
 	_errand_panel.play_requested.connect(play)
 	_errand_panel.edit_problem_requested.connect(open_problem)
@@ -810,6 +830,8 @@ func _build() -> void:
 	_customers = PopupMenu.new()
 	_customers.id_pressed.connect(_add_errand_for)
 	add_child(_customers)
+	_preview = StoryLinePreview.new()
+	add_child(_preview)
 
 
 func _top_bar() -> Control:

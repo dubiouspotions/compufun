@@ -204,6 +204,8 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Unfinished text**: A writer's text of a story file that doesn't parse yet, kept beside the drafts (`user://story_drafts/unfinished/`, `StoryDrafts.unfinished`) so that a quit doesn't lose it. The game doesn't play it and Send doesn't send it; the Story Lab's text view opens it with its errors, and once it parses it becomes the draft.
 *Avoid:* broken draft, pending text, scratch.
 
+**Line preview**: One customer line shown over the Story Lab in the game's own dialogue box, with its portrait, its typing and its voice (`StoryLinePreview`): Shift+Enter in the text view, or a line's Play. A click, Esc or Shift+Enter closes it.
+*Avoid:* line test, mock dialogue.
 
 **Event**: A visit that a customer doesn't walk in for: while their errand's computer is on the counter and not yet done, they pop up from behind the counter and talk (`== event` in the errand's story file, `Game.Visit.EVENT`). It holds the next customer back until it came, and isn't an arrival.
 *Avoid:* jumpscare, special visit, interruption.

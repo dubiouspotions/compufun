@@ -10,6 +10,10 @@ signal saved(path: String, text: String)
 ## The unfinished text of the errand file [param path] changed: [param text] is the last good text
 ## with every conversation that doesn't parse yet as the writer has it; "" when none is left.
 signal unfinished_changed(path: String, text: String)
+## The writer asked to see [param line] of [param customer] in the game's dialogue box, under
+## [param conversation]'s voice effect: Shift+Enter in the text view, or a line's Play in the
+## graph. [param line] is null when the cursor has no customer line at or above it.
+signal preview_requested(customer: Customer, line: DialogueLine, conversation: Conversation)
 ## The writer asked to remove the errand file [param path].
 signal remove_requested(path: String)
 ## The writer asked to edit the problem [param id] in the Problems section.
@@ -521,6 +525,8 @@ func _show_graph() -> void:
 		_graph.connect(&"edited", func() -> void:
 			_apply(StoryFormat.write_errand(_errand), true)
 			_keep_unfinished())
+		_graph.connect(&"preview_requested", func(line: DialogueLine) -> void:
+			preview_requested.emit(_errand.customer, line, _shown_conversation()))
 	if _errand != null and _tab < _errand.conversations.size():
 		_graph.set(&"facts", flags)
 		_graph.call(&"show_conversation", _errand.conversations[_tab], _errand.customer)
@@ -550,6 +556,46 @@ func _complete() -> void:
 	for option: String in options:
 		_code.add_code_completion_option(CodeEdit.KIND_PLAIN_TEXT, option.strip_edges(), option + suffix)
 	_code.update_code_completion_options(true)
+
+
+# --- The text view
+
+func _on_code_input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if key == null or not key.pressed:
+		return
+	if (key.keycode == KEY_ENTER or key.keycode == KEY_KP_ENTER) and key.shift_pressed:
+		_code.accept_event()  # Shift+Enter previews; it never breaks the line
+		if not key.echo:
+			_preview_at_caret()
+
+
+func _preview_at_caret() -> void:
+	var at := _said_at(_code.get_caret_line())
+	preview_requested.emit(_errand.customer if _errand != null else null, at.get("line") as DialogueLine, _shown_conversation())
+
+
+# The conversation of the tab that shows, as it last parsed; null without one.
+func _shown_conversation() -> Conversation:
+	return _errand.conversations[_tab] if _errand != null and _tab < _errand.conversations.size() else null
+
+
+# True when [param row] of the text view is a customer line.
+func _is_said(row: int) -> bool:
+	var body := _code.get_line(row).strip_edges()
+	if body == "" or body.begins_with("==") or body.begins_with("brief:"):
+		return false
+	return StoryFormat.line_kind(body) == StoryFormat.LineKind.SAID
+
+
+# The customer line at [param row], or else the nearest one above it: {"row", "line" (a
+# DialogueLine), "own" (true when it is at [param row])}; {} without one.
+func _said_at(row: int) -> Dictionary:
+	for at: int in range(row, -1, -1):
+		if _is_said(at):
+			var parsed := StoryFormat.parse_line(_code.get_line(at), _path)
+			return {"row": at, "line": parsed.value, "own": at == row}
+	return {}
 
 
 func _moods() -> PackedStringArray:
@@ -852,6 +898,7 @@ func _right() -> Control:
 	_code.syntax_highlighter = _highlighter
 	_code.text_changed.connect(func() -> void: _settle.start())
 	_code.code_completion_requested.connect(_complete)
+	_code.gui_input.connect(_on_code_input)
 	_text_view.add_child(_code)
 	_errors = ItemList.new()
 	_errors.custom_minimum_size.y = 70

@@ -1,8 +1,9 @@
 extends "res://tests/test.gd"
 ## The conversation graph's mood picker offers the moods that the customer's person has portraits
-## for, marks those without a voice mood, and sets the line's mood; Play speaks a line or says why not.
+## for, marks those without a voice mood, and sets the line's mood; Play asks for the line's preview.
 
 const GRAPH := "res://dev/story_lab/conversation_graph.tscn"
+const PLAY := "Play this line in the game's dialogue box"
 const ConversationGraph := preload("res://dev/story_lab/conversation_graph.gd")
 
 var graph: ConversationGraph
@@ -43,19 +44,14 @@ func run() -> void:
 	var nobody := Customer.new()
 	nobody.display_name = "Nobody"
 	graph.show_conversation(talk, nobody)
-	var play := _find(graph.box_of(talk), func(node: Node) -> bool: return node is Button and node.get(&"tooltip_text") == "Play this line") as Button
-	play.pressed.emit()
-	check("Play without a voice says why", _status().contains("Nobody has no voice yet"), true)
 	var portrait_less := _find(graph.box_of(talk), func(node: Node) -> bool: return node is Button and node.get(&"text") == "?") as Button
 	check("a mood without a portrait is marked", portrait_less != null, true)
 	graph.show_conversation(talk, manager)
-	play = _find(graph.box_of(talk), func(node: Node) -> bool: return node is Button and node.get(&"tooltip_text") == "Play this line") as Button
+	var asked: Array[DialogueLine] = []
+	graph.preview_requested.connect(func(said: DialogueLine) -> void: asked.append(said))
+	var play := _find(graph.box_of(talk), func(node: Node) -> bool: return node is Button and node.get(&"tooltip_text") == PLAY) as Button
 	play.pressed.emit()
-	if ClassDB.class_exists(&"ChimeraVoice"):
-		check("Play speaks the line in its mood", _status(), "Playing \"%s\" (angry)" % line.text)
-	else:
-		check("Play without the live voice or a rendered file says why", _status().begins_with("Nothing to play for"), true)
-	(graph.get_node("%Voice") as VoicePlayer).hush()
+	check("Play asks to show its line in the dialogue box", [asked.size(), asked.has(line)], [1, true])
 	await _check_voice_dropdown(talk, manager)
 
 
@@ -95,10 +91,6 @@ func _thumb_of(button: Button) -> Array:
 	if crop == null:
 		return [button.icon]
 	return [crop.atlas, is_equal_approx(crop.region.size.x, crop.region.size.y), crop.region.position.y]
-
-
-func _status() -> String:
-	return (graph.get_menu_hbox().get_node("Status") as Label).text
 
 
 func _find(under: Node, matches: Callable) -> Node:

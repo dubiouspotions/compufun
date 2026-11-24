@@ -6,6 +6,8 @@ extends GraphEdit
 
 ## The conversation changed in place; the owner writes its story file from it.
 signal edited
+## The writer pressed a line's Play: the owner shows [param line] in the game's dialogue box.
+signal preview_requested(line: DialogueLine)
 
 @export var box_width: float = 280.0
 ## The width of a box for a reply without lines or flags: where branches meet before a list.
@@ -97,7 +99,6 @@ var _targets: Dictionary[GraphElement, Vector2] = {}
 var _flashes: Dictionary[Resource, float] = {}
 
 @onready var _overlay: Control = %Returns
-@onready var _voice: VoicePlayer = %Voice
 @onready var _mood_picker: PopupPanel = %MoodPicker
 @onready var _moods_grid: GridContainer = %Moods
 @onready var _confirm: ConfirmationDialog = %ConfirmDelete
@@ -881,7 +882,7 @@ func _line_row(reply: Reply, index: int) -> Control:
 	words.add_child(_line_effect(line))
 	words.add_child(_line_look(line))
 	row.add_child(words)
-	row.add_child(_icon_button(_play_icon(), "Play this line", _play.bind(line)))
+	row.add_child(_icon_button(_play_icon(), "Play this line in the game's dialogue box", func() -> void: preview_requested.emit(line)))
 	if not _read_only:
 		row.add_child(_icon_button(_trash_icon(), "Delete line", func() -> void: delete_line(reply, index)))
 	return row
@@ -1484,11 +1485,7 @@ func _thumb(mood: StringName) -> Texture2D:
 	var portrait := _portrait(mood)
 	if portrait == null:
 		return _customer.person.face if _customer != null and _customer.person != null else null
-	var side := minf(portrait.get_width() * thumb_crop, portrait.get_height())
-	var crop := AtlasTexture.new()
-	crop.atlas = portrait
-	crop.region = Rect2((portrait.get_width() - side) * 0.5, 0.0, side, side)
-	return crop
+	return LabUI.face_of(portrait, thumb_crop)
 
 
 func _has_voice_mood(mood: StringName) -> bool:
@@ -1532,14 +1529,3 @@ func _pick_mood(line: DialogueLine, near: Control) -> void:
 	_mood_picker.reset_size()
 	var at := near.get_global_transform_with_canvas() * Vector2(0, near.size.y)
 	_mood_picker.popup(Rect2i(Vector2i(at), Vector2i.ZERO))
-
-
-func _play(line: DialogueLine) -> void:
-	if _customer == null or _customer.voice == null:
-		_status.text = "%s has no voice yet, so there is nothing to play." % (_customer.display_name if _customer != null else "This customer")
-		return
-	var seconds := _voice.say(line, _customer.voice, line.effect if line.effect != null else _conversation.effect)
-	if seconds > 0.0 or OS.has_feature("web"):
-		_status.text = "Playing \"%s\" (%s)" % [line.text, line.voice()]
-	else:
-		_status.text = "Nothing to play for \"%s\" yet: its voice isn't rendered, and this build can't speak it live." % line.text

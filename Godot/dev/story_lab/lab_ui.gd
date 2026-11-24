@@ -28,6 +28,16 @@ static func resource_names(dir: String) -> PackedStringArray:
 	return names
 
 
+## The face and upper body from the top of [param portrait], square: [param share] of its width,
+## centred, or its whole height when that is less.
+static func face_of(portrait: Texture2D, share: float = 0.62) -> AtlasTexture:
+	var side := minf(portrait.get_width() * share, portrait.get_height())
+	var crop := AtlasTexture.new()
+	crop.atlas = portrait
+	crop.region = Rect2((portrait.get_width() - side) * 0.5, 0.0, side, side)
+	return crop
+
+
 static func label(text: String, size: int = 15, color: Color = TEXT) -> Label:
 	var made := Label.new()
 	made.text = text
