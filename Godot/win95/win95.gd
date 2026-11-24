@@ -305,6 +305,12 @@ func _on_booted() -> void:
 		_no_signal.show()  # the BIOS stops before the video card sends a picture
 		return
 	_no_signal.hide()
+	if _state.job != null and _state.job.skips_boot:
+		_state.job.skips_boot = false
+		pointer_visible = true
+		_state.reached_desktop()
+		_open_startup()
+		return
 	_boot = _BOOT.instantiate()
 	_boot.floppy_in_a = setup.floppy_in_a
 	_boot.computer = _state

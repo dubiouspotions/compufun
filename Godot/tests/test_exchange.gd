@@ -16,10 +16,12 @@ func run() -> void:
 	customer.computer = computer
 	var job := Job.new(customer, Problem.new(), 0, 0)
 	job.powered = true
+	job.skips_boot = true
 	var win95: Control = (load(WIN95) as PackedScene).instantiate()
 	win95.get_node("ComputerState").job = job
 	root.add_child(win95)
 	await process_frame
+	check("a boot that skips shows the desktop at once", [win95.get("pointer_visible"), job.skips_boot, win95.get("_boot")], [true, false, null])
 	var desktop: Node = win95.get_node("Desktop")
 	var setup: Win95Setup = win95.get_node("ComputerState").setup
 	var inbox: Node = desktop.open(load(INBOX), false)

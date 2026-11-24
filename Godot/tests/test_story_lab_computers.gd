@@ -37,6 +37,7 @@ func run() -> void:
 	check("Edit on bench puts her computer on the bench", lab.call("bench", office_girl, errand, setup), "")
 	check("booted, connected, in the Screen View, running that copy", [game.connected != null, game.view, game.setups[office_girl.computer] == setup], [true, &"Screen", true])
 	check("with no problem", game.connected.problem, null)
+	check("its boot goes straight to the desktop", game.connected.skips_boot, true)
 	var note := Win95File.new()
 	note.name = "note.txt"
 	note.contents = "Back at 2."

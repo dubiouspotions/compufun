@@ -435,7 +435,7 @@ func load_story(drafts: Dictionary[String, String] = {}) -> PackedStringArray:
 func edit_setup(customer: Customer, errand: Errand, setup: Win95Setup) -> String:
 	if week == null:
 		return _refuse("edit_setup: the story files didn't load")
-	var job := {"customer": customer.resource_path, "problem": "", "slot": 0, "powered": true}
+	var job := {"customer": customer.resource_path, "problem": "", "slot": 0, "powered": true, "skips_boot": true}
 	if errand != null:
 		job["errand"] = errand.file_name()
 	var found: Variant = _job_errand(job, errand.day_number() if errand != null else 1)
@@ -1510,6 +1510,7 @@ func restore(state: Dictionary) -> String:
 		# The same visit as before keeps its broken running copy, which the player may have fixed since.
 		job.broken = jobs.any(func(j: Job) -> bool: return j.order == job.order and j.customer == errand_customer and j.broken)
 		job.powered = bool(data.get("powered", false))
+		job.skips_boot = bool(data.get("skips_boot", false))
 		job.cd_tray_open = bool(data.get("cd_tray_open", false))
 		if data.has("parts"):
 			var given_places: Variant = data["parts"]

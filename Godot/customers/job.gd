@@ -64,6 +64,9 @@ var hardware_fixed: bool:
 var software_fixed: bool = false
 ## The computer is switched on.
 var powered: bool = false
+## The next boot goes straight to the desktop, with no POST or splash (the Story Lab's Edit on bench).
+## Game.restore takes it; the snapshot doesn't keep it, as it lasts one boot.
+var skips_boot: bool = false
 ## The seconds that the computer has run with a CPU but no fan on it; Game switches it off at
 ## Game.OVERHEAT_SECONDS. 0 while it is off.
 var heat_seconds: float = 0.0
