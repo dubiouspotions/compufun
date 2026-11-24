@@ -1,0 +1,77 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://win95/office/office_window.tscn" id="base"]
+[ext_resource type="Script" path="res://win95/office/excel.gd" id="script"]
+[ext_resource type="Script" path="res://win95/office/worksheet.gd" id="worksheet"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/excel_16.png" id="icon"]
+
+[node name="Excel" instance=ExtResource("base")]
+script = ExtResource("script")
+untitled_name = "Book1"
+
+[node name="TitleBar" parent="VBox" index="0"]
+title = "Microsoft Excel"
+icon = ExtResource("icon")
+
+[node name="FormulaBar" type="HBoxContainer" parent="VBox/Body" index="0"]
+custom_minimum_size = Vector2(0, 21)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="NameBox" type="OptionButton" parent="VBox/Body/FormulaBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(125, 20)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+alignment = 1
+fit_to_longest_item = false
+tooltip_text = "Name Box"
+
+[node name="EditMarks" type="Control" parent="VBox/Body/FormulaBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(38, 0)
+layout_mode = 2
+
+[node name="EditFormula" type="Label" parent="VBox/Body/FormulaBar"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+text = "="
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FormulaText" type="LineEdit" parent="VBox/Body/FormulaBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Grid" type="HBoxContainer" parent="VBox/Body" index="1"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="Worksheet" type="Control" parent="VBox/Body/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("worksheet")
+
+[node name="Rows" type="VScrollBar" parent="VBox/Body/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Bottom" type="HBoxContainer" parent="VBox/Body" index="2"]
+custom_minimum_size = Vector2(0, 17)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="SheetTabs" type="Control" parent="VBox/Body/Bottom"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(380, 17)
+layout_mode = 2
+
+[node name="Columns" type="HScrollBar" parent="VBox/Body/Bottom"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
