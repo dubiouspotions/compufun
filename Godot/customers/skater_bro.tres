@@ -399,6 +399,7 @@ script = ExtResource("11_movdk")
 wallpaper = ExtResource("wallpaper")
 desktop = Array[ExtResource("2_nepbl")]([SubResource("Resource_xghb6"), SubResource("Resource_mtqkb")])
 drive_c = Array[ExtResource("2_nepbl")]([SubResource("Resource_pbx1f"), SubResource("Resource_4rcf8"), SubResource("Resource_ssvdj")])
+defrag_finish_day = 5
 emails = Array[ExtResource("9_5i8g7")]([SubResource("Resource_ovstq"), SubResource("Resource_t3ecn"), SubResource("Resource_ri5pa"), SubResource("Resource_ch6ki")])
 installed_apps = PackedStringArray("Calculator", "Notepad", "Paint", "Raytrace 2")
 start_menu_programs = Array[ExtResource("2_nepbl")]([ExtResource("excel_shortcut"), ExtResource("powerpoint_shortcut"), ExtResource("word_shortcut")])

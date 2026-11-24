@@ -64,7 +64,7 @@ const KNOWN_GAME_METHODS: Array[String] = [
 	"can_pick_up_phone", "pick_up_phone", "put_down_phone", "can_call", "next_to_call", "answers", "call_customer", "rings_out", "hang_up",
 	"ending", "reboot",
 	# state, flags and tools that a week doesn't need to play
-	"snapshot", "restore", "load_story", "play_errand", "edit_setup", "day_numbers", "day_of", "date_of", "moment", "moment_of", "defrag_day", "defrag_finish", "defrag_progress", "defrag_due", "daypart_of", "daypart_of_errand", "check_day",
+	"snapshot", "restore", "load_story", "play_errand", "edit_setup", "day_numbers", "day_of", "date_of", "moment", "moment_of", "defrag_day", "defrag_finish", "defrag_progress", "defrag_due", "finish_due_defrags", "daypart_of", "daypart_of_errand", "check_day",
 	"flag", "set_flag", "put_flag", "sign_flag", "gone_flag", "is_gone", "runs_cambion", "dismiss_visitor", "fix", "skip_wait",
 	"can_skip_before_opening", "skip_before_opening",
 ]

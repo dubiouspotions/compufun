@@ -106,7 +106,7 @@ var arrivals: int = 0
 var daypart: Daypart = Daypart.NONE:
 	set(value):
 		daypart = value
-		_finish_defrags()
+		finish_due_defrags()
 ## The computers on the counter, oldest drop-off first. Jobs left overnight stay.
 var jobs: Array[Job] = []
 ## The computer that the player works on in the Workview, or null for none.
@@ -238,17 +238,22 @@ func defrag_day(setup: Win95Setup) -> int:
 
 
 ## When the Disk Defragmenter run of [param setup] finishes, as a moment: at the
-## [member Win95Setup.defrag_days]th [member Win95Setup.defrag_daypart] after it started, so a run
-## started on day 4 in the afternoon, or on day 5 in the morning, finishes on day 5 in the afternoon.
-## A daypart that isn't one logs an error and finishes at the end of the run's last day.
+## [member Win95Setup.defrag_daypart] of [member Win95Setup.defrag_finish_day] when the setup names
+## one, whenever the run started (a run that starts later is due at once); otherwise at the
+## [member Win95Setup.defrag_days]th defrag_daypart after it started, so a run started on day 4 in
+## the afternoon, or on day 5 in the morning, finishes on day 5 in the afternoon. A daypart that
+## isn't one logs an error and finishes at the end of the run's last day.
 func defrag_finish(setup: Win95Setup) -> float:
-	var last_day := setup.defrag_started_day + setup.defrag_days - 1
+	var fixed := setup.defrag_finish_day > 0
+	var last_day := setup.defrag_finish_day if fixed else setup.defrag_started_day + setup.defrag_days - 1
 	var key := String(setup.defrag_daypart).to_upper()
 	if not Daypart.has(key):
 		push_error("Game.defrag_finish: defrag_daypart '%s' is not a daypart (%s)" % [setup.defrag_daypart, ", ".join(Daypart.keys())])
 		return last_day + 1.0
 	var finish := moment_of(last_day, Daypart[key])
-	return finish if finish > moment_of(setup.defrag_started_day, setup.defrag_started_daypart as Daypart) else finish + 1.0
+	if fixed or finish > moment_of(setup.defrag_started_day, setup.defrag_started_daypart as Daypart):
+		return finish
+	return finish + 1.0
 
 
 ## The share of the Disk Defragmenter run of [param setup] that is done by now, 0 to 1: the game's
@@ -267,9 +272,10 @@ func defrag_due(setup: Win95Setup) -> bool:
 	return moment() >= defrag_finish(setup)
 
 
-# Finishes the Disk Defragmenter run of each computer that is on and whose run is due by now
-# (defrag_finish).
-func _finish_defrags() -> void:
+## Finishes the Disk Defragmenter run of each computer that is on and whose run is due by now
+## ([method defrag_due]): drive C is no longer fragmented. Each change of [member daypart], a power-on
+## and a run that starts already due (ComputerState.start_defrag) call it.
+func finish_due_defrags() -> void:
 	for job in jobs:
 		var setup: Win95Setup = setups.get(job.customer.computer)
 		if setup == null or not job.powered or not setup.defragmenting or not defrag_due(setup):
@@ -784,7 +790,7 @@ func set_powered(job: Job, on: bool) -> void:
 	job.powered = on
 	job.heat_seconds = 0.0
 	if on:
-		_finish_defrags()
+		finish_due_defrags()
 	changed.emit()
 
 
@@ -1444,7 +1450,7 @@ func _restore_defrags(runs: Dictionary[Job, Array]) -> void:
 		if setup.defragmenting:
 			setup.defrag_started_day = runs[job][0]
 			setup.defrag_started_daypart = runs[job][1]
-	_finish_defrags()
+	finish_due_defrags()
 
 
 # [param job]'s snapshot, with "defrag_started" ([day, "DAYPART"]) while its Disk Defragmenter runs.

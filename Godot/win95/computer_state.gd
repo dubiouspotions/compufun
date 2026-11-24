@@ -692,8 +692,8 @@ func _report_tested() -> void:
 		Game.set_tested(job)
 
 
-## Starts Disk Defragmenter on drive C. Game finishes it on the day and daypart that
-## Win95Setup.defrag_days and defrag_daypart say, while the computer is on, or as it next comes on.
+## Starts Disk Defragmenter on drive C. Game finishes it at Game.defrag_finish (Win95Setup's
+## defrag_finish_day or defrag_days, and defrag_daypart), while the computer is on, or as it next comes on.
 ## Switching off keeps the run, and the next boot reopens its window (Win95's StartUp pass).
 func start_defrag() -> void:
 	if setup == null or setup.defragmenting:
@@ -701,6 +701,7 @@ func start_defrag() -> void:
 	setup.defragmenting = true
 	setup.defrag_started_day = Game.day_number
 	setup.defrag_started_daypart = Game.daypart
+	Game.finish_due_defrags()  # a run that a fixed finish day has already passed
 	_changed()
 
 

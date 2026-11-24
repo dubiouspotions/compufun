@@ -1,7 +1,8 @@
 extends "res://tests/test.gd"
-## Disk Defragmenter on the skater's fragmented drive (errand 0403, day 4) runs until the first
-## afternoon after it starts (Win95Setup.defrag_days, defrag_daypart), or the evening when no afternoon
-## comes;
+## Disk Defragmenter on the skater's fragmented drive (errand 0403, day 4) runs until the afternoon of
+## day 5 (Win95Setup.defrag_finish_day, defrag_daypart) wherever it starts, or the evening when no
+## afternoon comes; started after that, it finishes at once; another computer's run lasts until the
+## first afternoon after it starts (defrag_days);
 ## paused, it stops. Switched off, it keeps its start: it finishes as the computer comes on after the
 ## finish, or else the next boot reopens its window, running; also after End Task on the window, a
 ## Shut Down and a restart, but not after Pause. Its window shows the share of the game's time from the
@@ -99,14 +100,20 @@ func run() -> void:
 	window.get_node("%Start").pressed.emit()
 	check("Start on day 5 in the morning runs it again until that afternoon", [setup.defragmenting, setup.defrag_started_day, game.defrag_day(setup), window.get_node("%Progress").value, window.get_node("%Estimate").text], [true, 5, 5, 0.0, "Estimated time finished: Afternoon today"])
 	game.daypart = GAME.Daypart.MIDDAY
+	window.call("_sync_computer")
+	check("started late, it moves faster: halfway by midday", window.get_node("%Progress").value, 50.0)
 	window.get_node("%Start").pressed.emit()
 	window.get_node("%Start").pressed.emit()
-	check("paused and started again at midday, it still finishes that afternoon", [setup.defrag_started_daypart, game.defrag_day(setup)], [GAME.Daypart.MIDDAY, 5])
+	check("paused and started again at midday, it still finishes that afternoon", [setup.defrag_started_daypart, game.defrag_day(setup), window.get_node("%Progress").value, window.get_node("%Estimate").text], [GAME.Daypart.MIDDAY, 5, 0.0, "Estimated time finished: Afternoon today"])
 	game.daypart = GAME.Daypart.AFTERNOON
 	check("and does", [setup.defragmenting, setup.fragmented], [false, false])
 	setup.fragmented = true
 	window.get_node("%Start").pressed.emit()
-	check("started in the afternoon, it runs until the next afternoon", game.defrag_day(setup), 6)
+	check("the skater's run started after day 5's afternoon finishes at once", [setup.defrag_finish_day, setup.defragmenting, setup.fragmented], [5, false, false])
+	setup.defrag_finish_day = 0
+	setup.fragmented = true
+	window.get_node("%Start").pressed.emit()
+	check("without a finish day, a run started in the afternoon runs until the next afternoon", [setup.defragmenting, game.defrag_day(setup)], [true, 6])
 	window.queue_free()
 	state.queue_free()
 	await process_frame

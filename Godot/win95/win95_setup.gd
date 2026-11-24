@@ -39,6 +39,10 @@ const _DESKTOP_SHORTCUTS: Array[Win95File] = [
 @export var defrag_days: int = 1
 ## The daypart that a run finishes at, one of CallOuts.DAYPARTS, such as &"afternoon".
 @export var defrag_daypart: StringName = &"afternoon"
+## Not 0: every run finishes on this day number at [member defrag_daypart], whenever it started or
+## restarted, in place of [member defrag_days], as a pickup on that day needs; a run that starts after
+## that finishes at once.
+@export var defrag_finish_day: int = 0
 ## Disk Defragmenter is running on a fragmented drive. Only while the game runs.
 var defragmenting: bool = false
 ## The day number and the Game.Daypart that the running Disk Defragmenter started on; Game.defrag_finish
