@@ -25,7 +25,7 @@ const _START_MENU_PATH := "C:\\WINDOWS\\Start Menu"
 ## here, so that Game hears whether the problem is fixed.
 var setup: Win95Setup
 var is_on: bool = false
-## The job whose computer this is. Set once, before the node enters the tree.
+## The job whose computer this is. Set before the node enters the tree; [method adopt] changes it.
 var job: Job
 
 ## Counts boots, so that a hang timer from an earlier boot does nothing.
@@ -630,6 +630,19 @@ func restart(wait_seconds: float, off_seconds: float) -> void:
 	await get_tree().create_timer(off_seconds).timeout
 	if boot == _boots and not job.powered and job in Game.jobs:
 		Game.set_powered(job, true)
+
+
+## Runs on as [param heir], the job that Game.restore made anew for this computer. A different
+## running copy boots, as the computer is then another one.
+func adopt(heir: Job) -> void:
+	job = heir
+	var running := Game.setup_for(heir)
+	if running != setup:
+		setup = running
+		if is_on:
+			_boots += 1
+			booted.emit()
+	_sync()
 
 
 func _sync() -> void:

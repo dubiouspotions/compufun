@@ -54,8 +54,14 @@ func pointer_busy() -> bool:
 func _sync() -> void:
 	for job: Job in _desktops.keys():
 		if job not in Game.jobs:
-			_desktops[job].queue_free()
+			var desktop: Control = _desktops[job]
 			_desktops.erase(job)
+			var heir := _heir(job)
+			if heir != null:
+				_desktops[heir] = desktop
+				(desktop.get_node(^"%ComputerState") as ComputerState).adopt(heir)
+			else:
+				desktop.queue_free()
 	for job in Game.jobs:
 		if job.powered:
 			_desktop(job)
@@ -68,6 +74,15 @@ func _sync() -> void:
 				desktop.get_parent().remove_child(desktop)
 			home.add_child(desktop)
 	_no_signal.visible = shown == null
+
+
+# The job that Game.restore made anew for [param job]'s computer (a story reload restores the
+# state it had), so its desktop runs on instead of booting again; null if there is none.
+func _heir(job: Job) -> Job:
+	for each: Job in Game.jobs:
+		if each.customer.computer == job.customer.computer and not _desktops.has(each):
+			return each
+	return null
 
 
 # The desktop of [param job], made at the first call. Null, with an error, when the scene is unfit.
