@@ -1,0 +1,309 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://win95/property_sheet.tscn" id="sheet"]
+
+[node name="MircSetup" instance=ExtResource("sheet")]
+has_apply = false
+
+[node name="TitleBar" parent="VBox" index="0"]
+title = "mIRC Setup"
+
+[node name="IRC Servers" type="Control" parent="VBox/Body/Column/Tabs"]
+custom_minimum_size = Vector2(330, 230)
+layout_mode = 2
+
+[node name="ServerLabel" type="Label" parent="VBox/Body/Column/Tabs/IRC Servers"]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 210.0
+offset_bottom = 26.0
+text = "IRC Server"
+
+[node name="Servers" type="OptionButton" parent="VBox/Body/Column/Tabs/IRC Servers"]
+unique_name_in_owner = true
+offset_left = 10.0
+offset_top = 28.0
+offset_right = 246.0
+offset_bottom = 50.0
+focus_mode = 0
+
+[node name="Add" type="Button" parent="VBox/Body/Column/Tabs/IRC Servers"]
+offset_left = 256.0
+offset_top = 10.0
+offset_right = 320.0
+offset_bottom = 33.0
+focus_mode = 0
+disabled = true
+text = "Add"
+
+[node name="Edit" type="Button" parent="VBox/Body/Column/Tabs/IRC Servers"]
+offset_left = 256.0
+offset_top = 37.0
+offset_right = 320.0
+offset_bottom = 60.0
+focus_mode = 0
+disabled = true
+text = "Edit"
+
+[node name="Delete" type="Button" parent="VBox/Body/Column/Tabs/IRC Servers"]
+offset_left = 256.0
+offset_top = 64.0
+offset_right = 320.0
+offset_bottom = 87.0
+focus_mode = 0
+disabled = true
+text = "Delete"
+
+[node name="Sort" type="Button" parent="VBox/Body/Column/Tabs/IRC Servers"]
+offset_left = 256.0
+offset_top = 91.0
+offset_right = 320.0
+offset_bottom = 114.0
+focus_mode = 0
+disabled = true
+text = "Sort"
+
+[node name="RealNameLabel" type="Label" parent="VBox/Body/Column/Tabs/IRC Servers"]
+offset_left = 10.0
+offset_top = 123.0
+offset_right = 100.0
+offset_bottom = 139.0
+text = "Real Name:"
+
+[node name="RealName" type="LineEdit" parent="VBox/Body/Column/Tabs/IRC Servers"]
+unique_name_in_owner = true
+offset_left = 100.0
+offset_top = 120.0
+offset_right = 246.0
+offset_bottom = 142.0
+
+[node name="EmailLabel" type="Label" parent="VBox/Body/Column/Tabs/IRC Servers"]
+offset_left = 10.0
+offset_top = 150.0
+offset_right = 100.0
+offset_bottom = 166.0
+text = "Email Address:"
+
+[node name="Email" type="LineEdit" parent="VBox/Body/Column/Tabs/IRC Servers"]
+unique_name_in_owner = true
+offset_left = 100.0
+offset_top = 147.0
+offset_right = 246.0
+offset_bottom = 169.0
+
+[node name="NicknameLabel" type="Label" parent="VBox/Body/Column/Tabs/IRC Servers"]
+offset_left = 10.0
+offset_top = 177.0
+offset_right = 100.0
+offset_bottom = 193.0
+text = "Nickname:"
+
+[node name="Nickname" type="LineEdit" parent="VBox/Body/Column/Tabs/IRC Servers"]
+unique_name_in_owner = true
+offset_left = 100.0
+offset_top = 174.0
+offset_right = 246.0
+offset_bottom = 196.0
+
+[node name="AlternateLabel" type="Label" parent="VBox/Body/Column/Tabs/IRC Servers"]
+offset_left = 10.0
+offset_top = 204.0
+offset_right = 100.0
+offset_bottom = 220.0
+text = "Alternate:"
+
+[node name="Alternate" type="LineEdit" parent="VBox/Body/Column/Tabs/IRC Servers"]
+unique_name_in_owner = true
+offset_left = 100.0
+offset_top = 201.0
+offset_right = 246.0
+offset_bottom = 223.0
+
+[node name="ConnectNow" type="Button" parent="VBox/Body/Column/Tabs/IRC Servers"]
+unique_name_in_owner = true
+offset_left = 256.0
+offset_top = 201.0
+offset_right = 320.0
+offset_bottom = 224.0
+focus_mode = 0
+text = "Connect!"
+
+[node name="Local Info" type="MarginContainer" parent="VBox/Body/Column/Tabs"]
+visible = false
+custom_minimum_size = Vector2(330, 230)
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+
+[node name="Column" type="VBoxContainer" parent="VBox/Body/Column/Tabs/Local Info"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Fields" type="GridContainer" parent="VBox/Body/Column/Tabs/Local Info/Column"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 6
+
+[node name="Label0" type="Label" parent="VBox/Body/Column/Tabs/Local Info/Column/Fields"]
+layout_mode = 2
+text = "Local Host:"
+
+[node name="Field0" type="LineEdit" parent="VBox/Body/Column/Tabs/Local Info/Column/Fields"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = ""
+
+[node name="Label1" type="Label" parent="VBox/Body/Column/Tabs/Local Info/Column/Fields"]
+layout_mode = 2
+text = "IP Address:"
+
+[node name="Field1" type="LineEdit" parent="VBox/Body/Column/Tabs/Local Info/Column/Fields"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = ""
+
+[node name="Options" type="MarginContainer" parent="VBox/Body/Column/Tabs"]
+visible = false
+custom_minimum_size = Vector2(330, 230)
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+
+[node name="Column" type="VBoxContainer" parent="VBox/Body/Column/Tabs/Options"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Check" type="CheckBox" parent="VBox/Body/Column/Tabs/Options/Column"]
+layout_mode = 2
+focus_mode = 0
+text = "Retry connection"
+button_pressed = false
+
+[node name="Fields" type="GridContainer" parent="VBox/Body/Column/Tabs/Options/Column"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 6
+
+[node name="Label0" type="Label" parent="VBox/Body/Column/Tabs/Options/Column/Fields"]
+layout_mode = 2
+text = "Number of retries:"
+
+[node name="Field0" type="LineEdit" parent="VBox/Body/Column/Tabs/Options/Column/Fields"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = "3"
+
+[node name="Identd" type="MarginContainer" parent="VBox/Body/Column/Tabs"]
+visible = false
+custom_minimum_size = Vector2(330, 230)
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+
+[node name="Column" type="VBoxContainer" parent="VBox/Body/Column/Tabs/Identd"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Check" type="CheckBox" parent="VBox/Body/Column/Tabs/Identd/Column"]
+layout_mode = 2
+focus_mode = 0
+text = "Enable Identd server"
+button_pressed = true
+
+[node name="Fields" type="GridContainer" parent="VBox/Body/Column/Tabs/Identd/Column"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 6
+
+[node name="Label0" type="Label" parent="VBox/Body/Column/Tabs/Identd/Column/Fields"]
+layout_mode = 2
+text = "User ID:"
+
+[node name="Field0" type="LineEdit" parent="VBox/Body/Column/Tabs/Identd/Column/Fields"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = ""
+
+[node name="Label1" type="Label" parent="VBox/Body/Column/Tabs/Identd/Column/Fields"]
+layout_mode = 2
+text = "System:"
+
+[node name="Field1" type="LineEdit" parent="VBox/Body/Column/Tabs/Identd/Column/Fields"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = "UNIX"
+
+[node name="Label2" type="Label" parent="VBox/Body/Column/Tabs/Identd/Column/Fields"]
+layout_mode = 2
+text = "Port:"
+
+[node name="Field2" type="LineEdit" parent="VBox/Body/Column/Tabs/Identd/Column/Fields"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = "113"
+
+[node name="Firewall" type="MarginContainer" parent="VBox/Body/Column/Tabs"]
+visible = false
+custom_minimum_size = Vector2(330, 230)
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+
+[node name="Column" type="VBoxContainer" parent="VBox/Body/Column/Tabs/Firewall"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Check" type="CheckBox" parent="VBox/Body/Column/Tabs/Firewall/Column"]
+layout_mode = 2
+focus_mode = 0
+text = "Use SOCKS firewall"
+button_pressed = false
+
+[node name="Fields" type="GridContainer" parent="VBox/Body/Column/Tabs/Firewall/Column"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 6
+
+[node name="Label0" type="Label" parent="VBox/Body/Column/Tabs/Firewall/Column/Fields"]
+layout_mode = 2
+text = "Hostname:"
+
+[node name="Field0" type="LineEdit" parent="VBox/Body/Column/Tabs/Firewall/Column/Fields"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = ""
+
+[node name="Label1" type="Label" parent="VBox/Body/Column/Tabs/Firewall/Column/Fields"]
+layout_mode = 2
+text = "User ID:"
+
+[node name="Field1" type="LineEdit" parent="VBox/Body/Column/Tabs/Firewall/Column/Fields"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = ""
+
+[node name="Label2" type="Label" parent="VBox/Body/Column/Tabs/Firewall/Column/Fields"]
+layout_mode = 2
+text = "Password:"
+
+[node name="Field2" type="LineEdit" parent="VBox/Body/Column/Tabs/Firewall/Column/Fields"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = ""
+
+[node name="Label3" type="Label" parent="VBox/Body/Column/Tabs/Firewall/Column/Fields"]
+layout_mode = 2
+text = "Port:"
+
+[node name="Field3" type="LineEdit" parent="VBox/Body/Column/Tabs/Firewall/Column/Fields"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = "1080"

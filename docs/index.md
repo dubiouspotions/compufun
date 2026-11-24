@@ -16,6 +16,7 @@ situation the reader might be in — never as a summary.
 | [working-together.md](working-together.md) | You set up a machine, add or rename a file, add a new kind of binary file, or meet a merge conflict. |
 | [crt.md](crt.md) | You tune or change the CRT look of the Screen View, or a click on the desktop lands in the wrong place. |
 | [win95-reference.md](win95-reference.md) | You copy how Windows 95 looks, sounds or behaves (a screensaver, an applet, a sound, a dialog) and need the real thing to compare against: the install CD and the VM. |
+| [mirc.md](mirc.md) | You change mIRC on the activist's computer or his chat logs, or want to know which parts of it are real 1996 mIRC and which are invented. |
 | [win95-icons.md](win95-icons.md) | You need a Windows 95 icon for the desktop, a window or a dialog, or want to re-extract them from a Win95 install. |
 | [performance.md](performance.md) | The game or the Story Lab makes a computer hot or slow, you add a light with a shadow, a SubViewport, a shader that reads TIME or work in `_process`, or you want to measure what a frame costs. |
 | [ios.md](ios.md) | You build or run the game on iOS (the simulator or a device), or weigh an iOS port: the build steps, the touch and layout gaps, and why the issues token stays out of a build. Also when a view, the world buffer or the UI looks wrong on a screen that isn't 16:9. |

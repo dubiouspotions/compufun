@@ -1,0 +1,119 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://win95/property_sheet.tscn" id="sheet"]
+
+[node name="MircOptions" instance=ExtResource("sheet")]
+has_apply = false
+
+[node name="TitleBar" parent="VBox" index="0"]
+title = "mIRC Options"
+
+[node name="IRC Switches" type="MarginContainer" parent="VBox/Body/Column/Tabs"]
+custom_minimum_size = Vector2(330, 230)
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+
+[node name="Column" type="VBoxContainer" parent="VBox/Body/Column/Tabs/IRC Switches"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Switch0" type="CheckBox" parent="VBox/Body/Column/Tabs/IRC Switches/Column"]
+layout_mode = 2
+focus_mode = 0
+text = "Show joins/parts in channel"
+button_pressed = true
+
+[node name="Switch1" type="CheckBox" parent="VBox/Body/Column/Tabs/IRC Switches/Column"]
+layout_mode = 2
+focus_mode = 0
+text = "Show quits in channel"
+button_pressed = true
+
+[node name="Switch2" type="CheckBox" parent="VBox/Body/Column/Tabs/IRC Switches/Column"]
+layout_mode = 2
+focus_mode = 0
+text = "Show user addresses"
+button_pressed = true
+
+[node name="Switch3" type="CheckBox" parent="VBox/Body/Column/Tabs/IRC Switches/Column"]
+layout_mode = 2
+focus_mode = 0
+text = "Prefix own messages"
+button_pressed = true
+
+[node name="Switch4" type="CheckBox" parent="VBox/Body/Column/Tabs/IRC Switches/Column"]
+layout_mode = 2
+focus_mode = 0
+text = "Timestamp events"
+button_pressed = true
+
+[node name="Switch5" type="CheckBox" parent="VBox/Body/Column/Tabs/IRC Switches/Column"]
+layout_mode = 2
+focus_mode = 0
+text = "Actions are purple"
+button_pressed = true
+
+[node name="Logging" type="Control" parent="VBox/Body/Column/Tabs"]
+visible = false
+custom_minimum_size = Vector2(330, 230)
+layout_mode = 2
+
+[node name="LogsLabel" type="Label" parent="VBox/Body/Column/Tabs/Logging"]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 240.0
+offset_bottom = 26.0
+text = "Log files:"
+
+[node name="Logs" type="ItemList" parent="VBox/Body/Column/Tabs/Logging"]
+unique_name_in_owner = true
+offset_left = 10.0
+offset_top = 28.0
+offset_right = 246.0
+offset_bottom = 218.0
+
+[node name="View" type="Button" parent="VBox/Body/Column/Tabs/Logging"]
+unique_name_in_owner = true
+offset_left = 256.0
+offset_top = 28.0
+offset_right = 320.0
+offset_bottom = 51.0
+focus_mode = 0
+text = "View"
+
+[node name="Delete" type="Button" parent="VBox/Body/Column/Tabs/Logging"]
+offset_left = 256.0
+offset_top = 55.0
+offset_right = 320.0
+offset_bottom = 78.0
+focus_mode = 0
+disabled = true
+text = "Delete"
+
+[node name="Extras" type="MarginContainer" parent="VBox/Body/Column/Tabs"]
+visible = false
+custom_minimum_size = Vector2(330, 230)
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+
+[node name="Column" type="VBoxContainer" parent="VBox/Body/Column/Tabs/Extras"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Fields" type="GridContainer" parent="VBox/Body/Column/Tabs/Extras/Column"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 6
+
+[node name="Label0" type="Label" parent="VBox/Body/Column/Tabs/Extras/Column/Fields"]
+layout_mode = 2
+text = "Title bar text:"
+
+[node name="Field0" type="LineEdit" parent="VBox/Body/Column/Tabs/Extras/Column/Fields"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = ""

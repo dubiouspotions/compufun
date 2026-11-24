@@ -49,6 +49,8 @@
 [ext_resource type="PackedScene" path="res://win95/web_browser.tscn" id="app_netscape"]
 [ext_resource type="Texture2D" path="res://win95/netscape/logo_32.png" id="icon_netscape"]
 [ext_resource type="Texture2D" path="res://win95/netscape/logo_48.png" id="cached_logo"]
+[ext_resource type="PackedScene" path="res://win95/mirc.tscn" id="app_mirc"]
+[ext_resource type="Texture2D" path="res://win95/mirc/logo_32.png" id="icon_mirc"]
 
 [sub_resource type="Resource" id="Hardware_486"]
 script = ExtResource("hardware_script")
@@ -424,10 +426,87 @@ name = "Netscape Navigator"
 icon = ExtResource("icon_netscape")
 target = "C:\\Program Files\\Netscape\\NETSCAPE.EXE"
 
+[sub_resource type="Resource" id="Program_mirc"]
+script = ExtResource("2_egn44")
+name = "MIRC32.EXE"
+icon = ExtResource("icon_mirc")
+program = ExtResource("app_mirc")
+modified = "Saturday, April 27, 1996 12:00:00 PM"
+
+[sub_resource type="Resource" id="Mirc_ini"]
+script = ExtResource("2_egn44")
+name = "MIRC.INI"
+icon = ExtResource("6_m26x5")
+contents = "[mirc]
+user=Craig
+email=craig@mainstreet.net
+nick=elmroot
+anick=elmroot_
+host=irc.dal.net (DALnet USA)SERVER:irc.dal.net:6667GROUP:3
+
+[Servers]
+sv0=irc.eskimo.com (Efnet USA)SERVER:irc.eskimo.com:6667GROUP:1
+sv1=us.undernet.org (Undernet USA)SERVER:us.undernet.org:6667GROUP:2
+sv2=irc.dal.net (DALnet USA)SERVER:irc.dal.net:6667GROUP:3
+sv3=DALnet: groucho.dal.net (USA)SERVER:groucho.dal.net:6667GROUP:dalnet
+sv4=DALnet: liberator.dal.net (UK)SERVER:liberator.dal.net:7000GROUP:dalnet
+sv5=Undernet (Europe)SERVER:eu.undernet.org:6667GROUP:undernet
+
+[Files]
+aliases=aliases.ini
+popups=popups.ini
+users=remote.ini
+variables=remote.ini
+commands=remote.ini
+events=remote.ini
+"
+modified = "Thursday, May 30, 1996 1:35:02 AM"
+
+[sub_resource type="Resource" id="Log_oddbuilds"]
+script = ExtResource("2_egn44")
+name = "#oddbuilds.log"
+icon = ExtResource("4_qsrht")
+contents_file = "res://customers/activist_guy/mirc_logs/oddbuilds.log"
+modified = "Thursday, May 30, 1996 1:20:41 AM"
+
+[sub_resource type="Resource" id="Log_fl0ppyjoe"]
+script = ExtResource("2_egn44")
+name = "fl0ppyjoe.log"
+icon = ExtResource("4_qsrht")
+contents_file = "res://customers/activist_guy/mirc_logs/fl0ppyjoe.log"
+modified = "Sunday, May 12, 1996 8:38:12 PM"
+
+[sub_resource type="Resource" id="Log_s1mmking"]
+script = ExtResource("2_egn44")
+name = "s1mmking.log"
+icon = ExtResource("4_qsrht")
+contents_file = "res://customers/activist_guy/mirc_logs/s1mmking.log"
+modified = "Tuesday, May 14, 1996 9:16:03 PM"
+
+[sub_resource type="Resource" id="Folder_mirc"]
+script = ExtResource("2_egn44")
+name = "MIRC"
+icon = ExtResource("5_lymrw")
+is_folder = true
+children = Array[Resource]([SubResource("Program_mirc"), SubResource("Mirc_ini"), SubResource("Log_oddbuilds"), SubResource("Log_fl0ppyjoe"), SubResource("Log_s1mmking")])
+
+[sub_resource type="Resource" id="Shortcut_mirc"]
+script = ExtResource("2_egn44")
+name = "mIRC32"
+icon = ExtResource("icon_mirc")
+target = "C:\\MIRC\\MIRC32.EXE"
+
+[sub_resource type="Resource" id="Start_mirc"]
+script = ExtResource("2_egn44")
+name = "mIRC32"
+icon = ExtResource("icon_mirc")
+target = "C:\\MIRC\\MIRC32.EXE"
+
 [sub_resource type="Resource" id="Setup_accountant"]
 script = ExtResource("9_86j8n")
-drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResource("Resource_docs"), SubResource("Folder_program_files")])
-desktop = Array[ExtResource("2_egn44")]([SubResource("Shortcut_netscape")])
+drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResource("Resource_docs"), SubResource("Folder_program_files"), SubResource("Folder_mirc")])
+desktop = Array[ExtResource("2_egn44")]([SubResource("Shortcut_netscape"), SubResource("Shortcut_mirc")])
+start_menu_programs = Array[ExtResource("2_egn44")]([SubResource("Start_mirc")])
 installed_apps = PackedStringArray("Calculator", "Notepad")
 registered_owner = "Craig"
 dial_up_name = "MainStreet Online"
