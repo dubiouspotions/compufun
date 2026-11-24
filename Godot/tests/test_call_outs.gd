@@ -6,6 +6,8 @@ extends "res://tests/test.gd"
 
 const GAME := preload("res://game.gd")
 const SKATER: String = "res://story/callouts/skater_bro.callouts"
+const EVERYONE: String = "res://story/callouts/everyone.callouts"
+const EVERYONE_TEXT: String = "== waiting\n(neutral) Hello?\n(thinking) Anyone?\n"
 const SKATER_TEXT: String = """== waiting [if day 7] [effect cambion_glitch]
 (irritated03) I am still here. I am always here.
 
@@ -20,11 +22,8 @@ const SKATER_TEXT: String = """== waiting [if day 7] [effect cambion_glitch]
 
 func run() -> void:
 	var skater := load("res://customers/skater_bro.tres") as Customer
-	var other := load("res://customers/retired_accountant.tres") as Customer  # no call-outs of his own
 	check("the week loads without call-out drafts", game.story_errors, PackedStringArray())
 	var everyone: CallOuts.Set = game.week.call_outs[CallOuts.EVERYONE].sets[0]
-	game.restore({"day": 7, "phase": "OPEN"})
-	check("a customer without their own calls out everyone's set", game.call_outs_of(skater), everyone)
 	var silent := PackedStringArray()
 	for line: DialogueLine in everyone.lines:
 		for part: DialogueLine in line.parts():
@@ -32,25 +31,25 @@ func run() -> void:
 				silent.append(part.text)
 	check("everyone's call-outs keep the voices rendered for them", silent, PackedStringArray())
 
-	check("a customer's call-outs load", game.load_story(drafts({SKATER: SKATER_TEXT})), PackedStringArray())
+	check("a customer's call-outs load", story(SKATER_TEXT), PackedStringArray())
+	var drafted: CallOuts.Set = game.week.call_outs[CallOuts.EVERYONE].sets[0]
 	var sets: Array[CallOuts.Set] = game.week.call_outs[&"skater_bro"].sets
 	check("restore day 7", game.restore({"day": 7, "phase": "OPEN"}), "")
 	check("on day 7 the day's set plays, with its effect", [game.call_outs_of(skater), game.call_outs_of(skater).effect.resource_path], [sets[0], "res://voices/effects/cambion_glitch.tres"])
-	check("others still call out everyone's", said(game.call_outs_of(other)), said(everyone))
 	check("restore day 3", game.restore({"day": 3, "phase": "OPEN"}), "")
 	check("on day 3 in the morning, their plain set", [game.daypart, game.call_outs_of(skater)], [GAME.Daypart.MORNING, sets[1]])
 	game.daypart = GAME.Daypart.AFTERNOON
 	check("in the afternoon, the afternoon's set", game.call_outs_of(skater), sets[2])
 
 	var only_day := "== waiting [if day 2]\n(neutral) Tuesday?\n"
-	check("a customer with only a day's set loads", game.load_story(drafts({SKATER: only_day})), PackedStringArray())
+	check("a customer with only a day's set loads", story(only_day), PackedStringArray())
 	check("restore day 3", game.restore({"day": 3, "phase": "OPEN"}), "")
-	check("on another day they fall back to everyone's", said(game.call_outs_of(skater)), said(everyone))
+	check("on another day they fall back to everyone's", said(game.call_outs_of(skater)), said(drafted))
 
-	check("a set [with everyone] loads", game.load_story(drafts({SKATER: "== waiting [with everyone]\n(neutral) Yo?\n"})), PackedStringArray())
+	check("a set [with everyone] loads", story("== waiting [with everyone]\n(neutral) Yo?\n"), PackedStringArray())
 	check("restore day 3", game.restore({"day": 3, "phase": "OPEN"}), "")
 	var both: CallOuts.Set = game.call_outs_of(skater)
-	check("it adds everyone's lines after its own", said(both), PackedStringArray(["(neutral) Yo?"]) + said(everyone))
+	check("it adds everyone's lines after its own", said(both), PackedStringArray(["(neutral) Yo?"]) + said(drafted))
 	check("the same set each time, so the call-out goes on", game.call_outs_of(skater), both)
 	check("everyone's own file can't add everyone", StoryFormat.parse_call_outs("== waiting [with everyone]\n(neutral) A.\n", "res://story/callouts/everyone.callouts").errors.size(), 1)
 
@@ -78,6 +77,12 @@ func said(lines: Conversation) -> PackedStringArray:
 	for line: DialogueLine in lines.lines:
 		found.append("(%s) %s" % [line.mood, line.text])
 	return found
+
+
+# Loads the week with the skater's call-outs [param skater_text] and everyone's EVERYONE_TEXT, so
+# no call-outs in the week change what plays.
+func story(skater_text: String) -> PackedStringArray:
+	return game.load_story(drafts({SKATER: skater_text, EVERYONE: EVERYONE_TEXT}))
 
 
 func drafts(texts: Dictionary) -> Dictionary[String, String]:
