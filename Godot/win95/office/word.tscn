@@ -1,0 +1,35 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://win95/office/office_window.tscn" id="base"]
+[ext_resource type="Script" path="res://win95/office/word.gd" id="script"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/word_16.png" id="icon"]
+[ext_resource type="Script" path="res://win95/office/word_ruler.gd" id="ruler"]
+[ext_resource type="Script" path="res://win95/rich_editor.gd" id="editor"]
+
+[node name="Word" instance=ExtResource("base")]
+script = ExtResource("script")
+
+[node name="TitleBar" parent="VBox" index="0"]
+title = "Microsoft Word"
+icon = ExtResource("icon")
+
+[node name="Ruler" type="Control" parent="VBox/Body" index="0"]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+script = ExtResource("ruler")
+
+[node name="Page" type="ScrollContainer" parent="VBox/Body" index="1"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+
+[node name="Text" type="Control" parent="VBox/Body/Page" index="0"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("editor")
+line_width = 576.0
+margin = Vector2(26, 4)
+spell_check = true

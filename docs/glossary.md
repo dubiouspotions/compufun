@@ -280,6 +280,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 ## Win95
 
+**Office frame**: The window that every Office 97 app on a customer's computer shares (`win95/office/office_window.tscn`): the title, Office's File menu, the Standard and Formatting toolbars, the status bar and the Office Assistant's layer. Word and Excel are scenes that inherit it.
+*Avoid:* Office shell, Office window, chrome.
+
 **Control Panel**: The Win95 folder that lists the applets of every `.CPL` file in `C:\WINDOWS\SYSTEM` of the running copy; Fonts and Printers are applets of MAIN.CPL too. It opens from My Computer and from Start > Settings.
 *Avoid:* settings, control center.
 
