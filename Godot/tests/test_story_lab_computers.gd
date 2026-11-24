@@ -25,6 +25,8 @@ func run() -> void:
 	var mails: Tree = panel.get("_mails")
 	var first := mails.get_root().get_first_child()
 	check("the table lists her mails", first != null, true)
+	panel.call("_edit_mail", first)
+	check("a cell clicked and left unchanged makes no draft", drafts.paths(), PackedStringArray())
 	var was_read := first.is_checked(5)
 	first.set_checked(5, not was_read)
 	panel.call("_edit_mail", first)

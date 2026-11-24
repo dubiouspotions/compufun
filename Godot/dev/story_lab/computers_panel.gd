@@ -162,10 +162,21 @@ func _save_setup(after: Win95Setup) -> String:
 	var left: Variant = SetupPatch.between(applied, after)
 	if not check.errors.is_empty() or not (left is SetupPatch and (left as SetupPatch).is_empty()):
 		return _say("Not saved: the patch doesn't read back as the computer: %s" % (check.errors if not check.errors.is_empty() else (left as SetupPatch).write() if left is SetupPatch else left))
-	_code.text = text
 	_mark(PackedStringArray())
+	if text == _stored_text():
+		return ""  # a cell clicked and left: the patch says the same, so no draft
+	_code.text = text
 	saved.emit(_path, text)
 	return ""
+
+
+# The stored patch as write() puts it, so a patch that says the same in other words compares equal.
+func _stored_text() -> String:
+	var parsed := SetupPatch.parse(_drafts.text(_path), _path)
+	if not parsed.errors.is_empty():
+		return _drafts.text(_path)
+	var stored: SetupPatch = parsed.value
+	return "" if stored.is_empty() else stored.write()
 
 
 func _parsed_reset() -> bool:
