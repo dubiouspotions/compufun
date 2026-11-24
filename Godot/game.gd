@@ -518,21 +518,12 @@ static func put_flag(into: Dictionary[StringName, int], flag_name: StringName, v
 ## The choices of [param reply] that the player can say now: their condition matches, and one of
 ## their replies can play. In the reply's order.
 func offered(reply: Reply) -> Array[Choice]:
-	var found: Array[Choice] = []
-	if reply == null:
-		return found
-	for choice: Choice in reply.choices:
-		if choice != null and _met(choice.when) and reply_to(choice) != null:
-			found.append(choice)
-	return found
+	return reply.offered_on(day_number, flags) if reply != null else ([] as Array[Choice])
 
 
 ## The reply that [param choice] gets now: the first whose condition matches; null when none does.
 func reply_to(choice: Choice) -> Reply:
-	for reply: Reply in choice.replies:
-		if reply != null and _met(reply.when):
-			return reply
-	return null
+	return choice.reply_on(day_number, flags)
 
 
 ## The player says [param choice] to the customer who talks or answers the phone: their reply plays

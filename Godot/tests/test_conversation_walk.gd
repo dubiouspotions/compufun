@@ -3,7 +3,8 @@ extends "res://tests/test.gd"
 ## below their list, a + list comes back with its picks greyed and its leave button goes on below it,
 ## a deeper list's back button returns to the list above, [end] stops, if/else answers by flag,
 ## lines below a list play after it, and leaving lines at the end wait for the box to close while
-## those that something follows play in it.
+## those that something follows play in it. A walk on a sandbox day and flags leaves Game alone,
+## and a walk can start at any line.
 
 const ERRAND := """customer: skater_bro
 
@@ -127,6 +128,49 @@ func run() -> void:
 	check("then the list", texts(walk.choices()), ["Q?", "Go."])
 	walk.pick(walk.choices()[1])
 	check("over, with nothing to call out", [walk.is_over(), walk.leaving_lines()], [true, []])
+
+	_on_a_sandbox(walk_script, talks)
+
+
+# A walk on a sandbox day and flags, from the start or from a line, leaves Game as it was.
+func _on_a_sandbox(walk_script: GDScript, talks: Array[Conversation]) -> void:
+	game.conversation = null
+	var game_flags: Dictionary = game.flags.duplicate()
+	var flags: Dictionary[StringName, int] = {}
+	var walk: RefCounted = walk_script.new(talks[0], null, walk_script.Sandbox.new(1, flags))
+	walk.said()
+	walk.pick(walk.choices()[0])
+	walk.said()
+	walk.pick(walk.choices()[0])
+	walk.said()
+	walk.pick(walk.choices()[0])
+	check("a reply sets its flag in the sandbox", flags, {&"new_windows": 1})
+	walk.said()
+	walk.pick(walk.choices()[1])
+	check("and the sandbox's flags decide what plays", texts(walk.lines()), ["Floppies."])
+
+	var floppies: DialogueLine = talks[0].then.then.choices[1].replies[0].lines[0]
+	flags = {}
+	walk = walk_script.new(talks[0], floppies, walk_script.Sandbox.new(1, flags))
+	check("from a line, it starts there, whatever its condition says", texts(walk.lines()), ["Floppies."])
+	walk.said()
+	check("then its + list shows again, the pick on the way greyed", [texts(walk.choices()), walk.was_picked(walk.choices()[1]), walk.leave_text()], [["When did it start?", "Did you install anything?"], true, "That's all, thanks."])
+	walk.leave()
+	check("and on below it, setting the sandbox's flags", [texts(walk.lines()), flags], [["Anyway, fix it."], {&"told": 1}])
+
+	var sweet: DialogueLine = talks[0].choices[0].replies[0].lines[0]
+	walk = walk_script.new(talks[0], sweet, walk_script.Sandbox.new(1, no_flags()))
+	walk.said()
+	check("from a reply of a - choice, on below its list", texts(walk.choices()), ["What's the issue?"])
+
+	var later: DialogueLine = talks[2].choices[0].replies[0].lines[1]
+	walk = walk_script.new(talks[2], later, walk_script.Sandbox.new(1, no_flags()))
+	check("from a leaving line at the end: over, and it holds the leaving lines", [walk.is_over(), texts(walk.leaving_lines())], [true, ["Later!", "Peace!"]])
+	check("Game stays as it was", [game.flags, game.conversation], [game_flags, null])
+
+
+func no_flags() -> Dictionary[StringName, int]:
+	return {}
 
 
 func texts(of: Array) -> Array:

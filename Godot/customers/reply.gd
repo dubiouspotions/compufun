@@ -19,6 +19,16 @@ extends Resource
 @export var then: Reply
 
 
+## The choices that the player can say after this reply on day [param day] with [param flags]:
+## their condition matches, and one of their replies can play ([method Choice.reply_on]). In order.
+func offered_on(day: int, flags: Dictionary[StringName, int]) -> Array[Choice]:
+	var found: Array[Choice] = []
+	for choice: Choice in choices:
+		if choice != null and (choice.when == null or choice.when.is_met(day, flags)) and choice.reply_on(day, flags) != null:
+			found.append(choice)
+	return found
+
+
 ## Every line of this reply, of the replies under it and of its [member then], depth first.
 func all_lines() -> Array[DialogueLine]:
 	var found: Array[DialogueLine] = lines.duplicate()
