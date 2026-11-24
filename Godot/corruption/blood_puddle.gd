@@ -4,10 +4,14 @@ extends CorruptionSign
 ## computer stood. A puddle under the computer runs in a rivulet across the work mat to the
 ## counter's near edge (+Z from the slot), down the counter's front, and drips onto the floor into a
 ## second puddle. Started during play, it plays out over [method settled_seconds]; after a jump it
-## shows the settled state at once. It drips for as long as it shows. [member shape_seed] decides
+## shows the settled state at once. It drips, and each drop sounds as it lands, only on the day that
+## it started in play (the flag [constant DAY_FLAG]); later it lies still. [member shape_seed] decides
 ## every shape, so it looks the same every time. A computer that slides left off the puddle, as one
 ## to its left leaves the counter, drags a smear of it to where it stops; the flag [constant DRAG_FLAG]
 ## keeps it.
+
+## Emitted as a drop lands in the floor puddle and its sound plays: only while the blood is fresh.
+signal dripped
 
 @export_group("Counter")
 ## From the slot's marker along +Z to the counter's near edge, in metres. shop.tscn: the counter's
@@ -78,6 +82,8 @@ extends CorruptionSign
 @export var floor_radius: float = 0.08
 ## How long the floor puddle takes to grow to its full size from the first drop, in seconds.
 @export var floor_grow_seconds: float = 60.0
+## The sound of a drop landing in the floor puddle.
+@export var drip_sound: SoundSet
 
 @export_group("Drag")
 ## How wide the smear is across the counter where it leaves the puddle, and where it ends, in metres.
@@ -98,6 +104,8 @@ extends CorruptionSign
 ## The counter slot + 1 where the smear that a computer dragged from the puddle ends; 0 or unset: no
 ## smear.
 const DRAG_FLAG: StringName = &"blood_puddle_drag"
+## The day that the blood started in play; 0 or unset: it started in a jump, and is not fresh.
+const DAY_FLAG: StringName = &"blood_puddle_day"
 const RIM_POINTS: int = 14
 const TEXTURE_METRES: float = 0.2 ## How many metres one repeat of the texture spans.
 
@@ -119,10 +127,13 @@ var _drag_elapsed: float = 0.0
 @onready var _drop: MeshInstance3D = %Drop
 @onready var _floor_puddle: MeshInstance3D = %FloorPuddle
 @onready var _drag: Node3D = %Drag
+@onready var _drip_player: AudioStreamPlayer3D = %DripSound
 
 
 func _ready() -> void:
 	set_process(false)
+	if drip_sound == null:
+		push_error("%s: no drip_sound" % scene_file_path)
 	_build()
 	super()
 
@@ -154,6 +165,8 @@ func _apply(shown_stage: int) -> void:
 		_blood.visible = true
 		set_process(true)
 		_elapsed = 0.0 if live else settled_seconds()
+		if live and not fresh():
+			Game.set_flag.call_deferred(DAY_FLAG, Game.day_number)  # out of the Game.changed that runs this
 	elif shown_stage > 0 and not live:
 		_elapsed = maxf(_elapsed, settled_seconds())
 	_sync_drag(shown_stage - 1, live)
@@ -186,8 +199,17 @@ func _sync_drag(puddle_slot: int, live: bool) -> void:
 	set_process(shown >= 0 or is_processing())
 
 
+## True on the day that the blood started in play: it drips.
+func fresh() -> bool:
+	return Game.flag(DAY_FLAG) == Game.day_number
+
+
 func _process(delta: float) -> void:
+	var landed := _landed()
 	_elapsed += delta
+	if _landed() > landed and fresh() and drip_sound != null:
+		drip_sound.play_on(_drip_player)
+		dripped.emit()
 	_drag_elapsed += delta
 	_show()
 
@@ -204,9 +226,7 @@ func _show() -> void:
 	_run.visible = run > 0.0
 	_run.scale = Vector3(run_width, (floor_depth - lip_depth) * maxf(run, 0.01), 1.0)
 	_show_drop()
-	var drip := _elapsed - _first_landing()
-	var landed := floorf(drip / drip_seconds) + 1.0 if drip >= 0.0 else 0.0
-	_grow(_floor_puddle, sqrt(clampf(landed * drip_seconds / floor_grow_seconds, 0.0, 1.0)))
+	_grow(_floor_puddle, sqrt(clampf(_landed() * drip_seconds / floor_grow_seconds, 0.0, 1.0)))
 	_show_drag()
 
 
@@ -223,7 +243,7 @@ func _show_drag() -> void:
 # A drop swells at the bottom of the streak, falls to the floor and lands, every drip_seconds.
 func _show_drop() -> void:
 	var drip := _elapsed - _streak_start() - streak_seconds
-	if drip < 0.0:
+	if drip < 0.0 or not fresh():
 		_drop.visible = false
 		return
 	var phase := fmod(drip, drip_seconds)
@@ -245,8 +265,14 @@ func _streak_start() -> float:
 	return rivulet_delay + rivulet_seconds
 
 
+# How many drops have landed in the floor puddle by _elapsed.
+func _landed() -> int:
+	var drip := _elapsed - _first_landing()
+	return floori(drip / drip_seconds) + 1 if drip >= 0.0 else 0
+
+
 func _first_landing() -> float:
-	return _streak_start() + streak_seconds + swell_seconds + sqrt(2.0 * (floor_depth - lip_depth) / gravity)
+	return _streak_start() + streak_seconds + swell_seconds + sqrt(2.0 * (floor_depth - lip_depth - drop_radius * 0.8) / gravity)  # as _show_drop hides it
 
 
 # Shows node at share (0 to 1) of its full size; hidden at 0.
@@ -322,6 +348,7 @@ func _build() -> void:
 	_drop.mesh = _drop_mesh()
 	_floor_puddle.mesh = _disk(rng, Vector2(floor_radius, floor_radius), core)
 	_floor_puddle.position = Vector3(_rivulet_end.x, lift - floor_depth, edge_distance + floor_radius * 0.5)
+	_drip_player.position = _floor_puddle.position
 	for mesh: MeshInstance3D in [_puddle, _streak, _run, _drop, _floor_puddle]:
 		mesh.material_override = material
 
