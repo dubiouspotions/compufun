@@ -2,7 +2,8 @@ class_name ClickableOutline
 extends Resource
 ## How the outline of a thing that takes a click now looks: the Open sign, the phone, a printed page.
 ## It pulses in [member pulse_color] while the thing can be clicked, and shows [member hover_color]
-## under the mouse. One file (clickable_outline.tres) for all of them, so they look alike.
+## under the mouse. One file (clickable_outline.tres) for all of them, so they look alike. A broken
+## piece in an open case shows [member broken_hover_color] under the mouse instead (OpenCase).
 
 ## The pulse's colour.
 @export var pulse_color: Color = Color(1.0, 0.82, 0.2)
@@ -12,6 +13,8 @@ extends Resource
 @export var pulse_seconds: float = 1.2
 ## The outline under the mouse, over the pulse.
 @export var hover_color: Color = Color(0.75, 0.9, 1.0)
+## The outline of a broken piece under the mouse, in an open case.
+@export var broken_hover_color: Color = Color(1.0, 0.2, 0.15)
 
 
 ## A see-through outline in [member pulse_color] for a mesh's material_overlay, [param width]
