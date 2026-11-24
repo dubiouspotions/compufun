@@ -308,8 +308,13 @@ func _edit_cell() -> void:
 	_mails.edit_selected(true)
 
 
+# Picking a mail closes every cell again: only the double-clicked one opens (_edit_cell).
 func _mail_selected() -> void:
 	var row := _mails.get_selected()
+	for each: TreeItem in _mails.get_root().get_children():
+		for column: int in _MAIL_COLUMNS.size():
+			each.set_editable(column, false)
+	_body.placeholder_text = "This mail has no text yet: type it here." if row != null else "Pick a mail to edit its text."
 	_body.editable = row != null
 	var text := (row.get_metadata(0) as Email).body if row != null else ""
 	if _body.text != text:
