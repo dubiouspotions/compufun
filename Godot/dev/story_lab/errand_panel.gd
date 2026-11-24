@@ -1,8 +1,9 @@
 class_name StoryErrandPanel
 extends HBoxContainer
 ## The Story Lab's picked errand: on the left who comes and why (the brief, the problem, the
-## computer, the condition), on the right a tab per conversation, as a graph or as text. Each edit
-## that parses is a new text of the whole file, which [signal saved] hands up. An edit with errors stays marked, and the file keeps its last good text;
+## computer, the condition), on the right a tab per conversation, as a graph or as text, the text
+## with a sidebar (StoryTextSidebar). Each edit that parses is a new text of the whole file, which
+## [signal saved] hands up. An edit with errors stays marked, and the file keeps its last good text;
 ## [signal unfinished_changed] hands up the writer's text, so that it outlives a quit.
 
 ## [param text], which parses, is the new text of the errand file [param path].
@@ -11,8 +12,8 @@ signal saved(path: String, text: String)
 ## with every conversation that doesn't parse yet as the writer has it; "" when none is left.
 signal unfinished_changed(path: String, text: String)
 ## The writer asked to see [param line] of [param customer] in the game's dialogue box, under
-## [param conversation]'s voice effect: Shift+Enter in the text view, or a line's Play in the
-## graph. [param line] is null when the cursor has no customer line at or above it.
+## [param conversation]'s voice effect: Shift+Enter or the sidebar's Play in the text view, or a
+## line's Play in the graph. [param line] is null when the cursor has no customer line at or above it.
 signal preview_requested(customer: Customer, line: DialogueLine, conversation: Conversation)
 ## The writer asked to remove the errand file [param path].
 signal remove_requested(path: String)
@@ -43,8 +44,12 @@ const COMPUTER_HINTS: PackedStringArray = [
 ## Seconds of no typing before an edit is parsed and saved.
 const SETTLE_SECONDS: float = 0.4
 
-## The flags to offer while typing; the Lab fills it from the week.
-var flags: PackedStringArray = []
+## The flags to offer while typing and in the sidebar; the Lab fills it from the week.
+var flags: PackedStringArray = []:
+	set(value):
+		flags = value
+		if _sidebar != null:
+			_sidebar.show_facts(value)
 ## The week's problems by id (StoryFiles.Week.problems), which the problem picker lists and the
 ## errand names; the Lab fills it.
 var problems: Dictionary[StringName, Problem] = {}:
@@ -69,6 +74,8 @@ var _tab: int = 0
 var _pending: Dictionary[int, String] = {}
 # The unfinished text as last handed up.
 var _kept: String = ""
+# Mood to completion icon, for the open errand's person.
+var _icons: Dictionary[StringName, Texture2D] = {}
 var _view: String = ""
 var _filling: bool = false
 var _remove_armed: bool = false
@@ -97,6 +104,7 @@ var _code: CodeEdit
 var _highlighter: StoryHighlighter
 var _errors: ItemList
 var _text_view: Control
+var _sidebar: StoryTextSidebar
 var _graph_view: Control
 var _empty: Control
 var _play: Button
@@ -456,6 +464,7 @@ func _show_tab(index: int) -> void:
 		_apply_section()
 	else:
 		_mark(PackedStringArray(), "", PackedStringArray())
+	_show_said()
 	_show_conversation()
 
 
@@ -536,26 +545,59 @@ func _show_graph() -> void:
 
 # --- Completion
 
-func _complete() -> void:
+# What fits at the caret: {"options": the words, "suffix": what follows each, "moods": true for moods}.
+func _options() -> Dictionary:
 	var before := _code.get_line(_code.get_caret_line()).substr(0, _code.get_caret_column())
-	var options := PackedStringArray()
-	var suffix := ""
 	if RegEx.create_from_string("^\\t*\\([a-z0-9_]*$").search(before) != null:
-		options = _moods()
-		suffix = ") "
-	elif RegEx.create_from_string("\\[effect [a-z0-9_]*$").search(before) != null:
-		options = LabUI.resource_names("res://voices/effects/")
-		suffix = "]"
-	elif RegEx.create_from_string("\\[voice [a-z0-9_]*$").search(before) != null:
-		options = LabUI.resource_names(Voices.MOODS_DIR)
-		suffix = "]"
-	elif RegEx.create_from_string("\\[[a-z]*$").search(before) != null:
-		options = PackedStringArray(["if ", "once]", "effect ", "leave ", "back "] if before.begins_with("==") else ["if ", "end]"])
-	elif RegEx.create_from_string("(^\\t*(set|if) |\\[if )[^\\]]*$").search(before) != null:
-		options = flags
-	for option: String in options:
-		_code.add_code_completion_option(CodeEdit.KIND_PLAIN_TEXT, option.strip_edges(), option + suffix)
+		return {"options": _moods(), "suffix": ") ", "moods": true}
+	if RegEx.create_from_string("\\[effect [a-z0-9_]*$").search(before) != null:
+		return {"options": LabUI.resource_names("res://voices/effects/"), "suffix": "]"}
+	if RegEx.create_from_string("\\[voice [a-z0-9_]*$").search(before) != null:
+		return {"options": LabUI.resource_names(Voices.MOODS_DIR), "suffix": "]", "moods": true}
+	if RegEx.create_from_string("\\[[a-z]*$").search(before) != null:
+		return {"options": PackedStringArray(["if ", "once]", "effect ", "leave ", "back "] if before.begins_with("==") else ["if ", "end]"]), "suffix": ""}
+	if RegEx.create_from_string("(^\\t*(set|if) |\\[if )[^\\]]*$").search(before) != null:
+		return {"options": flags, "suffix": ""}
+	return {"options": PackedStringArray(), "suffix": ""}
+
+
+func _complete() -> void:
+	var found := _options()
+	for option: String in found["options"]:
+		var icon := _mood_icon(StringName(option)) if found.get("moods", false) else null
+		_code.add_code_completion_option(CodeEdit.KIND_PLAIN_TEXT, option.strip_edges(), option + found["suffix"], Color.WHITE, icon)
 	_code.update_code_completion_options(true)
+
+
+# Opens the completion list as the writer types where it has options, and closes it where it has none.
+func _offer_completion() -> void:
+	if not _code.has_focus():
+		return
+	var options: PackedStringArray = _options()["options"]
+	if options.is_empty():
+		_code.cancel_code_completion()
+	elif _code.get_code_completion_selected_index() < 0:
+		_code.request_code_completion(true)
+
+
+# The face of [param mood]'s portrait as a completion icon, or null when the person has none.
+func _mood_icon(mood: StringName) -> Texture2D:
+	if _icons.has(mood):
+		return _icons[mood]
+	var person := _errand.customer.person if _errand != null and _errand.customer != null else null
+	var portrait: Texture2D = person.portraits.get(mood) if person != null else null
+	if portrait == null:
+		return null
+	var image := LabUI.face_of(portrait).get_image()
+	if image == null:
+		push_error("Story Lab: can't read %s for its completion icon" % portrait.resource_path)
+		return null
+	if image.is_compressed():
+		image.decompress()
+	var side := maxi(roundi(_code.get_line_height() * 0.7), 1)  # CodeEdit draws an icon at 0.7 of the row height
+	image.resize(side, side, Image.INTERPOLATE_LANCZOS)
+	_icons[mood] = ImageTexture.create_from_image(image)
+	return _icons[mood]
 
 
 # --- The text view
@@ -568,6 +610,9 @@ func _on_code_input(event: InputEvent) -> void:
 		_code.accept_event()  # Shift+Enter previews; it never breaks the line
 		if not key.echo:
 			_preview_at_caret()
+		return
+	if key.unicode >= 32 or key.keycode == KEY_BACKSPACE:
+		_offer_completion.call_deferred()
 
 
 func _preview_at_caret() -> void:
@@ -596,6 +641,59 @@ func _said_at(row: int) -> Dictionary:
 			var parsed := StoryFormat.parse_line(_code.get_line(at), _path)
 			return {"row": at, "line": parsed.value, "own": at == row}
 	return {}
+
+
+func _show_said() -> void:
+	var at := _said_at(_code.get_caret_line())
+	_sidebar.show_line(at.get("line") as DialogueLine, at.get("own", false))
+
+
+# Gives the line under the caret [param mood], in one undo step: a customer line's mood is
+# replaced; an empty line gets "(mood) "; under a choice, an if or an else, a new line one tab deeper
+# gets it; after set, a new line beside it; after the "==" line and its brief, a new first line.
+func _set_mood(mood: StringName) -> void:
+	if not _code.editable:
+		return
+	var row := _code.get_caret_line()
+	var raw := _code.get_line(row)
+	var depth := 0
+	while depth < raw.length() and raw[depth] == "\t":
+		depth += 1
+	var tabs := raw.substr(0, depth)
+	var body := raw.substr(depth)
+	var said := "(%s) " % mood
+	_code.begin_complex_operation()
+	if body.strip_edges() == "":
+		_code.set_line(row, tabs + said)
+		_code.set_caret_column(_code.get_line(row).length())
+	elif _is_said(row):
+		var old := RegEx.create_from_string("^\\([a-z0-9_]*\\)\\s*").search(body)
+		var old_end := depth + (old.get_end() if old != null else 0)
+		var column := _code.get_caret_column()
+		_code.set_line(row, tabs + said + body.substr(old_end - depth))
+		_code.set_caret_column(depth + said.length() if column <= old_end else column + depth + said.length() - old_end)
+	else:
+		var under := depth
+		var kind := StoryFormat.line_kind(body)
+		if body.begins_with("==") or body.begins_with("brief:"):
+			under = 0
+			if row + 1 < _code.get_line_count() and _code.get_line(row + 1).strip_edges().begins_with("brief:"):
+				row += 1
+		elif kind != StoryFormat.LineKind.SET:
+			under = depth + 1
+		var line := "\t".repeat(under) + said
+		_code.insert_text("\n" + line, row, _code.get_line(row).length())
+		_code.set_caret_line(row + 1)
+		_code.set_caret_column(line.length())
+	_code.end_complex_operation()
+	_code.grab_focus()
+
+
+func _insert_flag(flag: String) -> void:
+	if not _code.editable:
+		return
+	_code.insert_text_at_caret(flag)
+	_code.grab_focus()
 
 
 func _moods() -> PackedStringArray:
@@ -635,6 +733,8 @@ func _fill_fields() -> void:
 	for mood: String in _moods():
 		moods[StringName(mood)] = true
 	_highlighter.moods = moods
+	_icons.clear()
+	_sidebar.show_person(customer)
 	_show_problem()
 	_filling = false
 
@@ -882,11 +982,17 @@ func _right() -> Control:
 	var body := Control.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	box.add_child(body)
-	_text_view = VBoxContainer.new()
+	_text_view = HBoxContainer.new()
 	_text_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_text_view.add_theme_constant_override("separation", 10)
 	body.add_child(_text_view)
+	var editor := VBoxContainer.new()
+	editor.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_text_view.add_child(editor)
 	_code = CodeEdit.new()
 	_code.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_code.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+	_code.indent_wrapped_lines = true
 	_code.gutters_draw_line_numbers = true
 	_code.indent_use_spaces = false
 	_code.indent_size = 4
@@ -896,10 +1002,13 @@ func _right() -> Control:
 	_code.add_theme_constant_override("line_spacing", 6)
 	_highlighter = StoryHighlighter.new()
 	_code.syntax_highlighter = _highlighter
-	_code.text_changed.connect(func() -> void: _settle.start())
+	_code.text_changed.connect(func() -> void:
+		_settle.start()
+		_show_said())
+	_code.caret_changed.connect(_show_said)
 	_code.code_completion_requested.connect(_complete)
 	_code.gui_input.connect(_on_code_input)
-	_text_view.add_child(_code)
+	editor.add_child(_code)
 	_errors = ItemList.new()
 	_errors.custom_minimum_size.y = 70
 	_errors.add_theme_color_override("font_color", LabUI.BAD)
@@ -909,7 +1018,12 @@ func _right() -> Control:
 		if line >= 0:
 			_code.set_caret_line(line)
 			_code.grab_focus())
-	_text_view.add_child(_errors)
+	editor.add_child(_errors)
+	_sidebar = StoryTextSidebar.new()
+	_sidebar.mood_picked.connect(_set_mood)
+	_sidebar.flag_picked.connect(_insert_flag)
+	_sidebar.play_pressed.connect(_preview_at_caret)
+	_text_view.add_child(_sidebar)
 	_graph_view = VBoxContainer.new()
 	_graph_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	body.add_child(_graph_view)

@@ -312,7 +312,8 @@ The game refuses a file that doesn't parse, and names the file, the line and wha
 ## Change it
 
 Edit the text, then run the story check and the tests that cover the change
-(`run.gd -- story`). Render the voices of new or changed lines, then import (see "Voices" in
+(`run.gd -- story`). A change to the format changes the Story Lab's short reference too,
+`dev/story_lab/how_to_write.txt`, which the text view's sidebar shows. Render the voices of new or changed lines, then import (see "Voices" in
 [building-and-testing.md](building-and-testing.md)); `git rm` the files it lists as unused, and
 commit the `.wav` and `.wav.import` files with the text.
 

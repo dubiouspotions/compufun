@@ -1,0 +1,21 @@
+	(happy) Sweet!
+A customer line: the mood, then the words.
+	- Welcome to CompuFun!
+	+ When did it start?
+Choices; in a row, one list. After a - it goes on below the list, after a + the list shows again.
+	- Anything else?
+		(thinking) Nah, man.
+A tab deeper: the choice's answer, and deeper lists. An empty line starts a new list.
+	- Bye. [end]
+Ends the conversation after the answer.
+	(neutral) Over there. [look left]
+The player turns first: left, right or ahead.
+	(happy) Hm. [voice thinking]
+Another voice mood than the face's.
+	(neutral) Later! [leaving]
+Said walking out; leaving lines come last.
+	set skater_cambion, visits=2
+Sets facts as its lines start.
+	if skater_cambion
+First under a choice, if and else pick the answer whose facts hold.
+Shift+Enter: the line in the dialogue box. Ctrl+Space: what fits here.

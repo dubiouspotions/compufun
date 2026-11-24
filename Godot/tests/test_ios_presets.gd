@@ -2,8 +2,8 @@ extends "res://tests/test.gd"
 ## The "iOS Release" export preset (the App Store) is the "iOS" preset (the team's TestFlight)
 ## without the team's tools: the same options and files, less those below (docs/ios.md).
 
-## Files that only the team's builds carry: the Story Lab reads the bible.
-const TEAM_ONLY_INCLUDES: PackedStringArray = ["story/bible/*.md"]
+## Files that only the team's builds carry: the Story Lab's bible and its reference of the format.
+const TEAM_ONLY_INCLUDES: PackedStringArray = ["story/bible/*.md", "dev/story_lab/*.txt"]
 ## Folders that only the team's builds carry.
 const RELEASE_EXCLUDES: PackedStringArray = ["dev/*", "tests/*"]
 
@@ -21,7 +21,7 @@ func run() -> void:
 	for f in _filters(presets, team, "include_filter"):
 		if not TEAM_ONLY_INCLUDES.has(f):
 			team_includes.append(f)
-	check("the same files, less the bible", _filters(presets, store, "include_filter"), team_includes)
+	check("the same files, less the Story Lab's", _filters(presets, store, "include_filter"), team_includes)
 	check("the same exclusions, plus dev/ and tests/", _filters(presets, store, "exclude_filter"), _sorted(_filters(presets, team, "exclude_filter") + RELEASE_EXCLUDES))
 
 

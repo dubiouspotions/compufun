@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
-## The Story Lab's text view: unfinished text that outlives a quit, saving at once, and the line
-## preview in the game's dialogue box.
+## The Story Lab's text view: unfinished text that outlives a quit, saving at once, the sidebar
+## (the line's face, the faces, the facts), completion that opens by itself, and the line preview in
+## the game's dialogue box.
 
 const ERRANDS := "res://story/errands/"
 const SKATER := ERRANDS + "0101_skater_bro.errand"
@@ -15,6 +16,7 @@ var drafts: StoryDrafts
 var lab: Control  # untyped: StoryLab names the Game autoload, which a test script compiled under -s can't
 var panel: StoryErrandPanel
 var code: CodeEdit
+var sidebar: StoryTextSidebar
 
 
 func run() -> void:
@@ -26,6 +28,7 @@ func run() -> void:
 		drafts.put("res://story/days/day_%d.day" % n, "weather: clear\nwarp: 0\n")
 	drafts.put(SKATER, _skater(DROP_OFF))
 	drafts.put(NICE, "customer: nice_guy\n")
+	StoryTextSidebar.folded = false
 	lab = (load("res://dev/story_lab/story_lab.tscn") as PackedScene).instantiate() as Control
 	lab.set("drafts", drafts)
 	root.add_child(lab)
@@ -34,9 +37,13 @@ func run() -> void:
 	panel = lab.call("errand_panel")
 	panel.show_view("Text")
 	code = panel.find_children("*", "CodeEdit", true, false)[0]
+	sidebar = panel.find_children("*", "StoryTextSidebar", true, false)[0]
 	await process_frame
 	_text_that_does_not_parse_is_unfinished_text()
 	await _hiding_or_closing_saves_at_once()
+	await _the_sidebar_follows_the_cursor()
+	_a_face_sets_the_mood_in_one_undo_step()
+	await _typing_opens_the_completion()
 	await _shift_enter_shows_the_line_in_the_dialogue_box()
 	await _the_graph_play_shows_the_same_preview()
 	lab.queue_free()
@@ -114,6 +121,88 @@ func _hiding_or_closing_saves_at_once() -> void:
 	check("a close request (Cmd+Q) saves at once", [drafts.text(SKATER), drafts.has_unfinished(SKATER)], [_skater(DROP_OFF), false])
 
 
+func _the_sidebar_follows_the_cursor() -> void:
+	await _caret(0, 0)
+	var person: Person = (load("res://customers/skater_bro.tres") as Customer).person
+	var portrait: TextureRect = sidebar.get("_portrait")
+	var line_box: Control = sidebar.get("_frame")
+	var above: Label = sidebar.get("_above")
+	await _caret(1, 0)
+	check("on a customer line it shows that line's face", [portrait.texture, line_box.modulate.a, above.text], [person.portraits[&"neutral"], 1.0, ""])
+	await _caret(3, 0)
+	check("it follows the cursor", portrait.texture, person.portraits[&"happy"])
+	await _caret(2, 0)
+	check("on a choice it shows the line above, dimmed", [portrait.texture, line_box.modulate.a < 1.0, above.text != ""], [person.portraits[&"neutral"], true, true])
+	var faces := (sidebar.get("_faces") as GridContainer).get_children().map(func(face: Node) -> String: return face.name)
+	check("the faces are the person's moods", faces, Array(person.moods()).map(func(mood: StringName) -> String: return String(mood)))
+	var long := "(thinking) " + "So, my computer is really slow and it gets hot when I play my MIDI songs all night. ".repeat(4)
+	code.text = DROP_OFF + "\n" + long + "\n- OK."
+	await _caret(6, 3)
+	check("a long line wraps, and keeps its indent", [code.wrap_mode, code.indent_wrapped_lines, code.get_line_wrap_count(5) > 0], [TextEdit.LINE_WRAPPING_BOUNDARY, true, true])
+	check("a choice under a wrapped line shows the wrapped line", [portrait.texture, line_box.modulate.a < 1.0], [person.portraits[&"thinking"], true])
+	code.text = DROP_OFF
+	var facts := (sidebar.get("_facts") as HFlowContainer).get_children().map(func(chip: Node) -> String: return (chip as Button).text)
+	check("the facts are the week's flags", facts, Array(lab.call("flag_names")))
+	var fold: Button = sidebar.get("_fold")
+	fold.pressed.emit()
+	var folded_away := StoryTextSidebar.new()
+	check("the toggle folds it away, also for the next text view", [(sidebar.get("_body") as Control).visible, sidebar.custom_minimum_size.x, StoryTextSidebar.folded, (folded_away.get("_body") as Control).visible], [false, 0.0, true, false])
+	folded_away.free()
+	fold.pressed.emit()
+	check("and back", (sidebar.get("_body") as Control).visible, true)
+
+
+func _a_face_sets_the_mood_in_one_undo_step() -> void:
+	code.text = DROP_OFF + "\n"
+	code.clear_undo_history()
+	var before := code.text
+	code.set_caret_line(1)
+	code.set_caret_column(12)
+	_face("angry").pressed.emit()
+	check("on a customer line it replaces the mood, the cursor staying in the words", [code.get_line(1), code.get_caret_column()], ["(angry) Yo! Is this the computer repair shop?", 10])
+	code.undo()
+	check("one undo reverts it", code.text, before)
+	code.set_caret_line(5)
+	_face("happy").pressed.emit()
+	check("on an empty line it writes the mood, the cursor after it", [code.get_line(5), code.get_caret_line(), code.get_caret_column()], ["(happy) ", 5, 8])
+	code.undo()
+	check("one undo reverts that", code.text, before)
+	code.set_caret_line(2)
+	_face("thinking").pressed.emit()
+	check("under a choice it opens a new line, a tab deeper", [code.get_line(3), code.get_line(4), code.get_caret_line(), code.get_caret_column()], ["\t(thinking) ", "\t(happy) Sweet!", 3, 12])
+	code.undo()
+	check("and one undo reverts it", code.text, before)
+	var chip: Button = (sidebar.get("_facts") as HFlowContainer).get_children().filter(func(c: Node) -> bool: return (c as Button).text == "skater_bro_runs_cambion")[0]
+	code.set_caret_line(5)
+	code.set_caret_column(0)
+	code.insert_text_at_caret("set ")
+	chip.pressed.emit()
+	check("a fact goes in at the cursor", code.get_line(5), "set skater_bro_runs_cambion")
+	code.text = DROP_OFF
+	panel.save_now()
+
+
+func _typing_opens_the_completion() -> void:
+	code.text = DROP_OFF + "\n"
+	code.grab_focus()
+	code.set_caret_line(5)
+	code.set_caret_column(0)
+	root.push_input(_key(KEY_PARENLEFT, "("))
+	await process_frame
+	await process_frame
+	var options := code.get_code_completion_options()
+	var happy := options.filter(func(o: Dictionary) -> bool: return o["display_text"] == "happy")
+	check("typing ( at a line start opens the moods", [code.get_line(5).begins_with("("), code.get_code_completion_selected_index() >= 0, options.size()], [true, true, (load("res://customers/skater_bro.tres") as Customer).person.moods().size()])
+	check("each with its face as the icon, the row's size", [happy.size(), happy[0]["icon"] is Texture2D if not happy.is_empty() else false, (happy[0]["icon"] as Texture2D).get_height() if not happy.is_empty() else 0], [1, true, roundi(code.get_line_height() * 0.7)])
+	root.push_input(_key(KEY_Z, "z"))
+	root.push_input(_key(KEY_Z, "z"))
+	await process_frame
+	await process_frame
+	check("it closes when nothing matches", code.get_code_completion_selected_index(), -1)
+	code.text = DROP_OFF
+	panel.save_now()
+
+
 func _shift_enter_shows_the_line_in_the_dialogue_box() -> void:
 	var preview: Control = lab.call("line_preview")
 	code.grab_focus()
@@ -132,9 +221,8 @@ func _shift_enter_shows_the_line_in_the_dialogue_box() -> void:
 	await process_frame
 	check("Esc closes it, and the Lab stays", [preview.visible, lab.visible, code.text], [false, true, DROP_OFF])
 	code.set_caret_line(3)
-	root.push_input(shift_enter.duplicate() as InputEvent)
-	await process_frame
-	check("on a customer line it shows that line", (preview.call("shown_line") as DialogueLine).text if (preview.call("shown_line") as DialogueLine) != null else "", "Sweet!")
+	(sidebar.get("_play") as Button).pressed.emit()
+	check("the sidebar's Play shows the same preview", (preview.call("shown_line") as DialogueLine).text if (preview.call("shown_line") as DialogueLine) != null else "", "Sweet!")
 	root.push_input(shift_enter.duplicate() as InputEvent)
 	await process_frame
 	check("Shift+Enter again closes it, without a new line", [preview.visible, code.text], [false, DROP_OFF])
@@ -151,6 +239,16 @@ func _the_graph_play_shows_the_same_preview() -> void:
 	check("the graph's Play shows its line in the same preview", [preview.visible, (preview.call("shown_line") as DialogueLine).text if (preview.call("shown_line") as DialogueLine) != null else ""], [true, talk.lines[0].text])
 	preview.call("close")
 	panel.show_view("Text")
+
+
+func _caret(line: int, column: int) -> void:
+	code.set_caret_line(line)
+	code.set_caret_column(column)
+	await process_frame  # TextEdit tells caret_changed at the end of the frame
+
+
+func _face(mood: String) -> Button:
+	return (sidebar.get("_faces") as GridContainer).get_node(mood) as Button
 
 
 func _key(keycode: Key, typed: String) -> InputEventKey:
