@@ -19,8 +19,8 @@ func run() -> void:
 	var job := Job.new(customer(computer), prank, 0, 0)
 	game.jobs = [job] as Array[Job]
 	var setup: Win95Setup = game.setup_for(job)
-	var hidden := setup.file_at("Desktop\\New Folder")
-	check("one folder on the desktop, in the corner", [setup.desktop.size(), hidden != null and hidden.desktop_position != Vector2.ZERO], [1, true])
+	var hidden := setup.file_at("Desktop\\GOTCHA")
+	check("one folder, GOTCHA, on the desktop, in the corner", [setup.desktop.size(), hidden != null and hidden.desktop_position != Vector2.ZERO], [1, true])
 	check("it holds every icon, Win95's own first", hidden.children.map(func(f: Win95File) -> String: return f.name),
 		["My Computer", "Network Neighborhood", "Inbox", "Recycle Bin", "Calculator.exe", "todo.txt", "letter.doc"])
 	var shot := setup.wallpaper as DesktopScreenshot
@@ -34,7 +34,7 @@ func run() -> void:
 	state.job = job
 	root.add_child(state)
 	await process_frame
-	var todo: Win95File = setup.file_at("Desktop\\New Folder\\todo.txt")
+	var todo: Win95File = setup.file_at("Desktop\\GOTCHA\\todo.txt")
 	check("a folder into itself is refused", state.move_files([hidden] as Array[Win95File], hidden.children).contains("subfolder"), true)
 	setup.desktop.append(file("todo.txt"))
 	check("a name clash is refused", state.move_files([todo] as Array[Win95File], setup.desktop).contains("same name"), true)
@@ -55,6 +55,8 @@ func run() -> void:
 	check("a drag on the desktop moves it", todo.desktop_position, Vector2(40, 40))
 	state.move_files([todo] as Array[Win95File], hidden.children)
 	check("moved into a folder, it lines up", todo.desktop_position, Vector2.ZERO)
+	prank.software_check.apply_fix(setup)
+	check("the fix empties and deletes GOTCHA", [setup.file_at("Desktop\\GOTCHA"), prank.software_check.is_fixed(setup)], [null, true])
 	state.free()
 	game.jobs = [] as Array[Job]
 

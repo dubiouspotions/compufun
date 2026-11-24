@@ -5,6 +5,7 @@
 
 [sub_resource type="Resource" id="DesktopPrankCheck_corner"]
 script = ExtResource("desktop_prank_check")
+folder_name = "GOTCHA"
 
 [resource]
 script = ExtResource("problem")
