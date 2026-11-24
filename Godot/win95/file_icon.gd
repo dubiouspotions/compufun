@@ -25,7 +25,12 @@ const CELL_PAD := 7.0
 ## The stock teal under a focused, unselected desktop icon, which the focus dots invert.
 const _DESKTOP_COLOR := Color(0, 0.5, 0.5)
 
+## Win95's shortcut overlay (SHELL32.DLL's icon 30), drawn over the bottom left of a shortcut's icon.
+const _ARROW := preload("res://win95/theme/icons_extracted/overlay_shortcut_32.png")
+const _ARROW_SMALL := preload("res://win95/theme/icons_extracted/overlay_shortcut_16.png")
+
 static var _selected_material: ShaderMaterial
+static var _arrowed: Dictionary[Texture2D, Texture2D] = {}
 
 @export var text := "":
 	set(value):
@@ -66,6 +71,11 @@ static var _selected_material: ShaderMaterial
 @export var stub := false:
 	set(value):
 		stub = value
+		_sync()
+## The icon is a shortcut (Win95File.target): the arrow overlay sits in its bottom left corner.
+@export var shortcut := false:
+	set(value):
+		shortcut = value
 		_sync()
 ## Lays the icon out in one 17 px row: the 16 px twin of [member icon] (Win95File.small_icon, or
 ## [member icon] scaled down), then the name, cut with "..." to fit [member row_width].
@@ -151,6 +161,8 @@ func _sync() -> void:
 	if compact:
 		var small := Win95File.small_icon(icon)
 		picture = small if small != null else icon
+	if shortcut:
+		picture = _with_arrow(picture)
 	icon_rect.texture = Stub.mark(picture) if stub else picture
 	icon_rect.material = _selection_material() if selected and active else null
 	var label: Label = %Name
@@ -162,6 +174,26 @@ func _sync() -> void:
 		label.theme_type_variation = &"DesktopIconLabel" if on_desktop else &"IconLabel"
 	_sync_layout(icon_rect, label)
 	queue_redraw()
+
+
+# [param texture] with the shortcut arrow over it, made once per texture.
+static func _with_arrow(texture: Texture2D) -> Texture2D:
+	if texture == null:
+		return null
+	if not _arrowed.has(texture):
+		var image := texture.get_image()
+		if image.is_compressed():
+			image.decompress()
+		image.convert(Image.FORMAT_RGBA8)
+		var arrow := (_ARROW_SMALL if image.get_width() <= 16 else _ARROW).get_image()
+		if arrow.is_compressed():
+			arrow.decompress()
+		arrow.convert(Image.FORMAT_RGBA8)
+		if arrow.get_size() != image.get_size():
+			arrow.resize(image.get_width(), image.get_height(), Image.INTERPOLATE_NEAREST)
+		image.blend_rect(arrow, Rect2i(Vector2i.ZERO, arrow.get_size()), Vector2i.ZERO)
+		_arrowed[texture] = ImageTexture.create_from_image(image)
+	return _arrowed[texture]
 
 
 func _sync_layout(icon_rect: TextureRect, label: Label) -> void:

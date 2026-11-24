@@ -593,6 +593,7 @@ func _add_icon(view: IconView, entry: Resource, on_desktop: bool) -> FileIcon:
 	var file := entry as Win95File
 	if file == null:
 		return item
+	item.shortcut = file.target != ""
 	if file.system != &"":
 		item.name = file.system
 		var template: Array = _system_icons.get(file.system, [null, true])

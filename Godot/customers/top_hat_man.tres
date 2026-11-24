@@ -221,7 +221,7 @@ installed_apps = PackedStringArray("Calculator", "Notepad")
 registered_owner = "Cole Vanderbilt"
 start_menu_programs = Array[ExtResource("6_1xsf3")]([ExtResource("excel_shortcut"), ExtResource("powerpoint_shortcut"), ExtResource("word_shortcut"), ExtResource("office_startup")])
 program_files = Array[ExtResource("6_1xsf3")]([ExtResource("office97")])
-desktop = Array[ExtResource("6_1xsf3")]([ExtResource("word_shortcut"), ExtResource("excel_shortcut")])
+desktop = Array[ExtResource("6_1xsf3")]([])
 
 [sub_resource type="Resource" id="Resource_qkb4c"]
 script = ExtResource("4_mcnhv")

@@ -7,6 +7,12 @@ extends Resource
 const STARTUP_PATH := "C:\\WINDOWS\\Start Menu\\Programs\\StartUp"
 const _PROGRAMS_PATH := "C:\\WINDOWS\\Start Menu\\Programs"
 const _PROGRAM_FILES_PATH := "C:\\Program Files"
+## The shortcuts that every desktop gets after the customer's own icons, each while its program is
+## installed and the desktop and Recycle Bin hold no shortcut to it yet.
+const _DESKTOP_SHORTCUTS: Array[Win95File] = [
+	preload("res://win95/office/word_shortcut.tres"),
+	preload("res://win95/office/excel_shortcut.tres"),
+]
 
 ## "Windows theme": the system colours. The default is the stock Win95 palette.
 @export var palette: Win95Palette = preload("res://win95/theme/palette.tres")
@@ -15,7 +21,8 @@ const _PROGRAM_FILES_PATH := "C:\\Program Files"
 ## empty for none.
 @export var screensaver: String = ""
 ## The icons on the desktop, in the order that they appear. The running copy puts Win95's own
-## icons first (Win95File.system), so they move and hide like files.
+## icons first (Win95File.system), so they move and hide like files, and the shortcuts to Word and
+## Excel last.
 @export var desktop: Array[Win95File] = []
 ## The top folder of drive C.
 @export var drive_c: Array[Win95File] = []
@@ -135,6 +142,7 @@ func copy() -> Win95Setup:
 		else:
 			_merge(programs.children, running.start_menu_programs)
 		running.start_menu_programs.clear()  # the folder holds them now; a copy of this copy mustn't add them twice
+	running._add_desktop_shortcuts()
 	for path in running.recently_opened:
 		var document := running.file_at(path)
 		if document == null:
@@ -143,6 +151,13 @@ func copy() -> Win95Setup:
 			running.recent_documents.append(document)
 	running._add_system_icons()
 	return running
+
+
+func _add_desktop_shortcuts() -> void:
+	for shortcut in _DESKTOP_SHORTCUTS:
+		var linked := func(file: Win95File) -> bool: return file.target.nocasecmp_to(shortcut.target) == 0
+		if file_at(shortcut.target) != null and not desktop.any(linked) and not recycle_bin.any(linked):
+			desktop.append(shortcut.duplicate_deep())
 
 
 # Adds [param items] to [param container]; a folder named like one in the container adds its items
