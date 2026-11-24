@@ -86,3 +86,19 @@ func run() -> void:
 	game.turn_screw(job, 1)
 	check("closed with real parts: fixed, replaced", [job.hardware_fixed, game.flag(REPLACED)], [true, 1])
 	check("the trash holds his organs", Job.pieces_data(game.trashed).slice(-7), ["lungs", "spleen", "kidney_left", "kidney_right", "liver", "brain", "heart"])
+
+	await _nobody_answers()
+
+
+# He is dead: a call about his computer rings out, organs in or not, and he never comes for it.
+func _nobody_answers() -> void:
+	for replaced: int in [0, 1]:
+		check("restore day 7, his computer done", game.restore({"day": 7, "phase": "OPEN", "arrivals": 3, "flags": {REPLACED: replaced},
+				"jobs": [{"errand": "0703_skater_bro", "slot": 0, "hardware_fixed": true, "software_fixed": true, "tested": true}]}), "")
+		var job: Job = game.jobs[0]
+		check("replaced %d: he doesn't answer" % replaced, [game.can_call(), game.answers(job)], [true, false])
+		game.call_customer(job)
+		check("replaced %d: the call rings out" % replaced, game.rings_out(), true)
+		game.hang_up()
+		check("replaced %d: nobody comes, and the phone doesn't call again" % replaced, [game.visitor, job.unanswered, game.can_call()], [null, true, false])
+		check("replaced %d: the day can close" % replaced, game.can_close(), true)
