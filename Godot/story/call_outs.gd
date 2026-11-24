@@ -15,10 +15,32 @@ const DAYPARTS: Array[StringName] = [&"morning", &"midday", &"afternoon"]
 ## [member Conversation.daypart].
 class Set:
 	extends Conversation
+	## The set adds everyone's lines, of the set that everyone's file picks then, after its own
+	## ([code][with everyone][/code]).
+	var with_everyone: bool = false
+	var _merged: Set
+	var _merged_with: Set
 
 	## True when the set has neither a condition nor a daypart: it plays when no other set matches.
 	func is_plain() -> bool:
 		return when == null and daypart == &""
+
+	## This set with [param everyone]'s lines after its own, the same Set each time for the same
+	## [param everyone], so the call-out box goes on rather than starting again. Itself without
+	## [member with_everyone] or [param everyone].
+	func adding(everyone: Set) -> Set:
+		if not with_everyone or everyone == null:
+			return self
+		if _merged == null or _merged_with != everyone:
+			_merged_with = everyone
+			_merged = Set.new()
+			_merged.id = id
+			_merged.brief = brief
+			_merged.when = when
+			_merged.daypart = daypart
+			_merged.effect = effect
+			_merged.lines.assign(lines + everyone.lines)
+		return _merged
 
 
 ## The customer's file name, or [constant EVERYONE].

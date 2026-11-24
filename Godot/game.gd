@@ -2042,19 +2042,18 @@ static func daypart_of_errand(errand: Errand) -> Daypart:
 
 
 ## The set of lines that [param who] calls out now while they wait (docs/dialogue.md, "Call-outs"):
-## their own set for today's day, flags and daypart, else everyone's; null without a week that
-## loaded, or for a null [param who].
+## their own set for today's day, flags and daypart, else everyone's, which an own set tagged
+## [with everyone] adds after its lines; null without a week that loaded, or for a null [param who].
 func call_outs_of(who: Customer) -> CallOuts.Set:
 	if week == null or who == null:
 		return null
 	var part := _daypart_name()
 	var number := day.number if day != null else 1
+	var picks: Array[CallOuts.Set] = []
 	for outs_name: StringName in [StringName(_id_of(who)), CallOuts.EVERYONE]:
 		var outs: CallOuts = week.call_outs.get(outs_name)
-		var picked := outs.pick(number, flags, part) if outs != null else null
-		if picked != null:
-			return picked
-	return null
+		picks.append(outs.pick(number, flags, part) if outs != null else null)
+	return picks[0].adding(picks[1]) if picks[0] != null else picks[1]
 
 
 ## Why [param d] can't be played, or "" when it can: it is null, has more than

@@ -210,8 +210,10 @@ brief: The skater gets bored fast.
 - A file holds sets: each starts with `== waiting`, then `(mood) text` lines, without choices,
   `set`, `if`, `[leaving]` or `[look]`. A line can have `[effect name]` and `[voice mood]`.
 - Tags after `== waiting`: `[if ...]` (a condition, below), `[daypart morning]`, `midday` or
-  `afternoon` (the daypart as the customer waits, as the week board's bands show it), and
-  `[effect name]` for all its lines.
+  `afternoon` (the daypart as the customer waits, as the week board's bands show it),
+  `[effect name]` for all its lines, and `[with everyone]`, which adds the lines of everyone's set
+  that matches then after the set's own, so a customer has a few lines of their own among
+  everyone's (not in everyone's file).
 - **Which set plays:** the first set whose `if` and `daypart` both match; else the set without
   either, the customer's fallback. A file has at most one such set. When none of the customer's
   sets plays, or they have no file, everyone's file decides the same way; it must have a set

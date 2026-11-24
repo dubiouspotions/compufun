@@ -18,6 +18,7 @@ var _about: Label
 var _day: OptionButton
 var _daypart: OptionButton
 var _effect: OptionButton
+var _with_everyone: CheckBox
 var _code: CodeEdit
 var _errors: ItemList
 var _settle: Timer
@@ -46,7 +47,8 @@ func open(outs_name: StringName) -> void:
 	var everyone := outs_name == CallOuts.EVERYONE
 	_title.text = "Everyone" if everyone else _spoken(outs_name)
 	_about.text = "Every customer calls these out, unless a set of their own matches." if everyone else \
-		"%s calls out the first of these sets whose day, daypart and flags match, else the one without any; with none that matches, everyone's." % _title.text
+		"%s calls out the first of these sets whose day, daypart and flags match, else the one without any; with none that matches, everyone's. A set with [with everyone] adds everyone's lines after its own." % _title.text
+	_with_everyone.visible = not everyone
 	_code.placeholder_text = "" if everyone else "%s calls out everyone's lines. Add a set above to give them their own." % _title.text
 	_code.text = _drafts.text(_path)
 	_code.clear_undo_history()
@@ -132,6 +134,8 @@ func _add_set() -> void:
 		head += " [daypart %s]" % CallOuts.DAYPARTS[_daypart.selected - 1]
 	if _effect.selected > 0:
 		head += " [effect %s]" % _effect.get_item_text(_effect.selected)
+	if _with_everyone.visible and _with_everyone.button_pressed:
+		head += " [with everyone]"
 	var text := _code.text.strip_edges(false, true)
 	_code.text = (text + "\n\n" if text != "" else "") + head + "\n(neutral) "
 	_code.set_caret_line(_code.get_line_count() - 1)
@@ -153,7 +157,7 @@ func _complete() -> void:
 	elif RegEx.create_from_string("\\[daypart [a-z]*$").search(before) != null:
 		options = PackedStringArray(CallOuts.DAYPARTS)
 	elif RegEx.create_from_string("\\[[a-z]*$").search(before) != null:
-		options = PackedStringArray(["if ", "daypart ", "effect "] if before.begins_with("==") else ["effect ", "voice "])
+		options = PackedStringArray(["if ", "daypart ", "effect ", "with everyone]"] if before.begins_with("==") else ["effect ", "voice "])
 		suffix = ""
 	for option: String in options:
 		_code.add_code_completion_option(CodeEdit.KIND_PLAIN_TEXT, option.strip_edges(), option + suffix)
@@ -212,6 +216,10 @@ func _build() -> void:
 	for effect: String in LabUI.resource_names(Voices.EFFECTS_DIR):
 		_effect.add_item(effect)
 	add.add_child(_effect)
+	_with_everyone = CheckBox.new()
+	_with_everyone.text = "+ everyone's lines"
+	_with_everyone.tooltip_text = "[with everyone]: the set adds everyone's lines after its own."
+	add.add_child(_with_everyone)
 	add.add_child(LabUI.button("Add set", _add_set))
 	_code = CodeEdit.new()
 	_code.size_flags_vertical = Control.SIZE_EXPAND_FILL

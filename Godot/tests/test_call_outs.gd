@@ -1,7 +1,8 @@
 extends "res://tests/test.gd"
 ## Call-outs come from story/callouts/: everyone's set plays for a customer without their own, with
 ## the voices rendered for it; a customer's set for a day, flags or a daypart wins over their plain
-## set, which wins over everyone's. A call-outs file that doesn't fit the format names its line.
+## set, which wins over everyone's, and a set [with everyone] adds everyone's lines to its own. A
+## call-outs file that doesn't fit the format names its line.
 
 const GAME := preload("res://game.gd")
 const SKATER: String = "res://story/callouts/skater_bro.callouts"
@@ -45,6 +46,13 @@ func run() -> void:
 	check("a customer with only a day's set loads", game.load_story(drafts({SKATER: only_day})), PackedStringArray())
 	check("restore day 3", game.restore({"day": 3, "phase": "OPEN"}), "")
 	check("on another day they fall back to everyone's", said(game.call_outs_of(skater)), said(everyone))
+
+	check("a set [with everyone] loads", game.load_story(drafts({SKATER: "== waiting [with everyone]\n(neutral) Yo?\n"})), PackedStringArray())
+	check("restore day 3", game.restore({"day": 3, "phase": "OPEN"}), "")
+	var both: CallOuts.Set = game.call_outs_of(skater)
+	check("it adds everyone's lines after its own", said(both), PackedStringArray(["(neutral) Yo?"]) + said(everyone))
+	check("the same set each time, so the call-out goes on", game.call_outs_of(skater), both)
+	check("everyone's own file can't add everyone", StoryFormat.parse_call_outs("== waiting [with everyone]\n(neutral) A.\n", "res://story/callouts/everyone.callouts").errors.size(), 1)
 
 	var bad := {
 		"== waiting\n(neutral) A.\n== waiting\n(neutral) B.\n": "a second '== waiting' without [if] or [daypart]",

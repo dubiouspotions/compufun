@@ -438,6 +438,8 @@ class _Reader:
 			if each == null:
 				continue
 			each.id = StringName("%s/waiting/%d" % [outs.name, outs.sets.size() + 1])
+			if each.with_everyone and outs.name == CallOuts.EVERYONE:
+				_error(sections[i], "[with everyone] in everyone's own file adds nothing")
 			if each.is_plain():
 				if plain >= 0:
 					_error(sections[i], "a second '== waiting' without [if] or [daypart]; only one plays when no other set matches (line %d)" % (plain + 1))
@@ -461,8 +463,10 @@ class _Reader:
 					_error(from, "[%s]: the daypart must be %s" % [tag, ", ".join(PackedStringArray(CallOuts.DAYPARTS))])
 			elif tag.begins_with("effect "):
 				each.effect = _load(EFFECTS_DIR, tag.substr(7).strip_edges(), from, "voice effect") as VoiceEffect
+			elif tag == "with everyone":
+				each.with_everyone = true
 			else:
-				_error(from, "[%s] is not a tag of a call-out set: if, daypart or effect" % tag)
+				_error(from, "[%s] is not a tag of a call-out set: if, daypart, effect or with everyone" % tag)
 		var body := from + 1
 		while body < to and _lines[body].strip_edges() == "":
 			body += 1
