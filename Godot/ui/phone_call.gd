@@ -5,10 +5,10 @@ extends Control
 ## phone rings, the customer answers (their PHONE conversation, or [member greeting]), the player
 ## says [member you_say], and hangs up; then the customer comes for it. A PHONE conversation without
 ## lines rings out: [member no_answer] shows, the call ends, and the phone never calls about that
-## computer again. Each line goes on by itself [member auto_advance_seconds] after it ends, or at a
-## click anywhere (or Enter), as in the dialogue. The shop's phone takes clicks only while
-## Game.can_call. Off the hook without a call (Game.pick_up_phone), it lists the computers; Esc or
-## "Put down" puts it down. Game refuses both while the shop is closed or someone is in it.
+## computer again. Each line types in time with its voice, as in the dialogue, and goes on by itself
+## [member auto_advance_seconds] after it ends, or at a click anywhere (or Enter). The shop's phone
+## takes clicks only while Game.can_call. Off the hook without a call (Game.pick_up_phone), it lists
+## the computers; Esc or "Put down" puts it down. Game refuses both while the shop is closed or someone is in it.
 
 ## The heading over the customers to call.
 @export var pick_title: String = "Call a customer"
@@ -147,8 +147,8 @@ func _show_line() -> void:
 	if _line < _lines.size():
 		var line := _lines[_line]
 		_name.text = customer.display_name
-		_text.type_out(line.text)
 		_voice.say(line, customer.voice, VoiceEffect.of(line, Game.conversation))
+		_text.type_line(line, _voice)
 	elif Game.rings_out():
 		_name.text = ""
 		_text.type_out(no_answer)

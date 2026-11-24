@@ -2,7 +2,9 @@ class_name DialogueOverlay
 extends Control
 ## A customer talks: their portrait, one line of a conversation at a time. A click anywhere shows
 ## the rest of a line that types, then goes to the next line; so does a pause after the voice ends.
-## A line whose mood changes partway shows the face of each part as the typing reaches it.
+## While the voice knows its timing, the text types in time with it, and a line whose mood changes
+## partway shows each part's face as that part's audio starts; otherwise the text types at its own
+## speed and each part's face shows as the typing reaches it.
 ## Under a reply's last line, the player's choices, each a button that plays the customer's reply.
 ## A ConversationWalk decides what comes next. The portrait sways and breathes, and shakes in time
 ## with the voice.
@@ -137,7 +139,7 @@ func _process(delta: float) -> void:
 	var breath := breath_rise * (0.5 + 0.5 * sin(TAU * _time / breath_seconds))
 	_portrait.rotation = _snap(deg_to_rad(sway + shake))
 	_portrait.scale = Vector2(1.0, 1.0 + _snap(breath + talk_rise * _talk))
-	_follow_typing()
+	_follow_voice()
 	var quiet := not _text.is_typing() and _voice.quiet()
 	_quiet = _quiet + delta if quiet and not _choices.visible else 0.0
 	if not _pending.is_empty():
@@ -419,7 +421,8 @@ func _center_run(image: Image, y: int, axis: int) -> int:
 
 func _show_line() -> void:
 	var line := _lines[_line]
-	_text.type_out(line.text if line != null else "")
+	_voice.hush()  # a line said twice in a row would otherwise type along with its first saying
+	_text.type_line(line, _voice)
 	_show_portrait(line.mood if line != null else _NEUTRAL)
 	_quiet = 0.0
 	_show_choices([])
@@ -432,19 +435,25 @@ func _show_line() -> void:
 	_speak(line)
 
 
-## The mood whose portrait shows: the shown line's part that the typing has reached.
+## The mood whose portrait shows: the shown line's part whose audio plays, or that the typing has
+## reached while the voice's timing is unknown.
 func face() -> StringName:
 	return _face
 
 
-# Shows the face of the part of the shown line that the typing has reached, the last part's once
-# the whole line shows.
-func _follow_typing() -> void:
+# Shows the face of the shown line's part whose audio plays now (VoicePlayer.playing_part); without
+# known timing, the part that the typing has reached, the last part's once the whole line shows.
+func _follow_voice() -> void:
 	var line := shown_line()
 	if line == null or line.mood_changes.is_empty():
 		return
-	var typed := _text.visible_characters
-	var mood := line.mood_at(line.text.length() if typed < 0 else typed - 1)
+	var part := _voice.playing_part() if _voice.said() == line else -1
+	var mood: StringName
+	if part >= 0:
+		mood = line.mood_at(line.part_starts()[part])
+	else:
+		var typed := _text.visible_characters
+		mood = line.mood_at(line.text.length() if typed < 0 else typed - 1)
 	if mood != _face:
 		_show_portrait(mood)
 
@@ -454,8 +463,9 @@ func hush() -> void:
 	_voice.hush()
 
 
-## Says the shown line again from its start, as when the player looks back at the customer. Once
-## its choices show, the line is over, and it stays quiet.
+## Says the shown line again from its start, as when the player looks back at the customer; text
+## that still types follows the voice again from there. Once its choices show, the line is over,
+## and it stays quiet.
 func replay() -> void:
 	if shown_line() != null:
 		_speak(_lines[_line])
@@ -488,7 +498,7 @@ func _advance() -> void:
 	_quiet = 0.0
 	if _text.is_typing():
 		_text.finish()
-		_follow_typing()
+		_follow_voice()
 		return
 	if not _pending.is_empty():
 		_show_pending()

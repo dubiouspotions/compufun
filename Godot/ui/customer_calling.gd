@@ -6,7 +6,8 @@ extends PanelContainer
 ## [member lines_per_mood] random lines of a group (never the one just said) before the next, so
 ## they get more annoyed, and once at the end they stay annoyed, going round from group
 ## [member loop_from_mood] on. A customer who goes calls out their leaving lines instead, each once. While a look of the conversation has turned the player
-## away, the box says the conversation's line instead ([method say]).
+## away, the box says the conversation's line instead ([method say]). A line types in time with its
+## voice while the voice knows its timing, and shows at once otherwise.
 
 ## The line that [method say] shows has been read: its voice ended and [member read_seconds] passed,
 ## or the player clicked the box or pressed accept. Fires once per line.
@@ -51,7 +52,7 @@ var _voice_seconds: float = 0.0
 var _side: Vector2 = Vector2.ZERO
 
 @onready var _name: Label = %Name
-@onready var _label: Label = %Line
+@onready var _label: TypedLabel = %Line
 @onready var _voice: VoicePlayer = %Voice
 @onready var _timer: Timer = %Timer
 
@@ -146,9 +147,9 @@ func say(customer: Customer, line: DialogueLine, conversation: Conversation) -> 
 	_quiet = 0.0
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_name.text = customer.spoken_name()
-	_label.text = line.text
-	show()
 	_voice_seconds = _voice.say(line, customer.voice, VoiceEffect.of(line, conversation))
+	_label.type_line(line, _voice)
+	show()
 
 
 ## The conversation's line that [method say] shows and that the player hasn't read yet; null
@@ -242,9 +243,10 @@ func _on_timer() -> void:
 	_step += 1
 	_last = line
 	_name.text = _customer.spoken_name()
-	_label.text = line.text
+	var seconds := _voice.say(line, _customer.voice, VoiceEffect.of(line, _conversation))
+	_label.type_line(line, _voice)
 	show()
-	_timer.start(maxf(show_seconds, _voice.say(line, _customer.voice, VoiceEffect.of(line, _conversation))))
+	_timer.start(maxf(show_seconds, seconds))
 
 
 func _waiting_line() -> DialogueLine:

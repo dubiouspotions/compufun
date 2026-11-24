@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://voices/voice_player.gd" id="voice_player"]
 [ext_resource type="Script" path="res://ui/customer_calling.gd" id="script"]
+[ext_resource type="Script" path="res://ui/typed_label.gd" id="typed_label"]
 [ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_regular.ttf" id="pixel"]
 [ext_resource type="FontFile" path="res://win95/theme/fonts/w95fa_pixel_bold.ttf" id="pixel_bold"]
 
@@ -38,6 +39,9 @@ text = "Customer"
 [node name="Line" type="Label" parent="Text"]
 unique_name_in_owner = true
 layout_mode = 2
+script = ExtResource("typed_label")
+chars_per_second = 0.0
+visible_characters_behavior = 1
 theme_override_colors/font_color = Color(0.96, 0.95, 0.92, 1)
 theme_override_fonts/font = ExtResource("pixel")
 theme_override_font_sizes/font_size = 28

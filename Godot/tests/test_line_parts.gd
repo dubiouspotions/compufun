@@ -1,7 +1,8 @@
 extends "res://tests/test.gd"
 ## A customer line whose mood changes partway ("(mood)" inside it, a mood of Person.MOODS): it
 ## parses into line parts and writes back exactly, every committed story file loads as before, the
-## dialogue box shows each part's face as the typing reaches it, the voice says the parts in order
+## dialogue box shows each part's face as the typing reaches it while the voice's timing is unknown
+## (test_voice_sync has the voice's own timing), the voice says the parts in order
 ## from one file each, the story check and the Week page read it, and the graph edits its parts.
 
 const PATH := "res://story/errands/0603_activist_guy.errand"
@@ -132,6 +133,7 @@ func _dialogue_box_faces() -> void:
 	var activist := load("res://customers/activist_guy.tres") as Customer
 	var talk := (StoryFormat.parse_errand("customer: activist_guy\n\n== drop-off\n%s\n(happy) Bye.\n" % SAID, PATH).value as Errand).conversations[0]
 	var box: Control = (load("res://ui/dialogue_overlay.tscn") as PackedScene).instantiate()
+	box.get_node("Voice").set_script(preload("res://tests/fake_voice.gd"))  # without known timing
 	root.add_child(box)
 	await process_frame
 	var label := box.get_node("%LineLabel") as TypedLabel

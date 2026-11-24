@@ -58,7 +58,7 @@ func mood_at(index: int) -> StringName:
 
 
 ## The parts of the line in order: what the voice says one after another, and the faces that the
-## dialogue box shows as its typing reaches each. Each part is a new DialogueLine with its own
+## dialogue box shows as each one's audio starts. Each part is a new DialogueLine with its own
 ## words (without the spaces around them) and mood, and this line's [member voice_mood] and
 ## [member effect], which hold for the whole line. A line in one mood is its own only part,
 ## [code][self][/code], so its voice file stays the same.

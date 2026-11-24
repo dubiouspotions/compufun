@@ -253,10 +253,12 @@ brief: He arrives cheerful; the problem comes out only when asked.
   mood.
 - **A line's mood can change partway.** Inside a customer line, `(mood)` with a mood of
   `Person.MOODS` starts a new line part in that mood; any other word in parentheses stays text.
-  It is still one line: one box, one click. The dialogue box shows each part's face as the typing
-  reaches it, and a click that shows the rest of the line shows the last part's face. The voice
-  says the parts one after another, each in its own mood, without a pause; each part has its own
-  voice file. The tags at the end (`[voice]`, `[effect]`, `[look]`, `[leaving]`) hold for the
+  It is still one line: one box, one click. The voice says the parts one after another, each in
+  its own mood, without a pause; each part has its own voice file. The dialogue box shows each
+  part's face as its audio starts, and types its text over the time that its audio takes; a click
+  shows the whole line, and the face goes on following the voice. Where the voice's timing is
+  unknown (in a browser, or a part without its voice file), the text types at its own speed and
+  each face shows as the typing reaches its part. The tags at the end (`[voice]`, `[effect]`, `[look]`, `[leaving]`) hold for the
   whole line: with `[voice mood]` every part speaks in that voice mood, and only the faces change.
 
   ```
