@@ -25,33 +25,34 @@ func run() -> void:
 	var list: ItemList = panel.get("_list")
 	check("the list picks it", list.get_item_text(list.get_selected_items()[0]).contains("0301_office_girl"), true)
 	var mails: Tree = panel.get("_mails")
-	var first := mails.get_root().get_first_child()
-	check("the table lists her mails", first != null, true)
-	check("with no patch yet, her mails show dim: on the computer already", first.get_custom_color(3), LabUI.DIM)
+	check("with no patch yet, the table is empty: it shows only the patch's mails", mails.get_root().get_child_count(), 0)
+	panel.call("_add_mail")
+	var first := mails.get_selected()
+	check("Add mail puts a mail in the patch, picked", [mails.get_root().get_child_count(), first != null, drafts.text(PATCH).begins_with("mail\n")], [1, true, true])
+	var first_subject := first.get_text(3)
+	var text_before := drafts.text(PATCH)
 	panel.call("_edit_mail", first)
 	await process_frame
-	check("a cell left unchanged makes no draft", drafts.paths(), PackedStringArray())
+	check("a cell left unchanged changes nothing", drafts.text(PATCH), text_before)
 	first = mails.get_root().get_first_child()  # the table was shown again
 	first.select(1)
-	check("a click picks the mail: its text shows, no cell opens", [(panel.get("_body") as TextEdit).text != "", first.is_editable(1)], [true, false])
+	check("a click picks the mail: its text is editable, no cell opens", [(panel.get("_body") as TextEdit).editable, first.is_editable(1)], [true, false])
 	var was_read := first.get_text(5) == "read"
 	first.select(5)
 	panel.call("_edit_cell")  # a double-click
 	await process_frame
-	check("a double-click on Read flips it, as a draft: the mail, whole", [drafts.text(PATCH).begins_with("mail\n\tfolder:"), (panel.get("_after") as Win95Setup).emails[0].read], [true, not was_read])
+	check("a double-click on Read flips it in the patch", (panel.get("_table") as SetupPatch).mails[0].read, not was_read)
 	first = mails.get_root().get_first_child()
-	check("the mail the patch now changes shows bright", first.get_custom_color(3) != LabUI.DIM, true)
 	first.select(1)
 	panel.call("_edit_cell")
-	check("From edits as a dropdown of her addresses, and a new one", first.get_text(1).split(",")[-1], "New address...")
+	check("From edits as a dropdown of her addresses, (none) and a new one", [first.get_text(1).split(",")[0], first.get_text(1).split(",")[-1]], ["(none)", "New address..."])
 	var from_text: String = (first.get_metadata(0) as Email).from
 	panel.call("_close_cells")  # Esc, then a click elsewhere
 	check("a dropdown left without a pick is text again, showing the mail", [first.get_cell_mode(1), first.get_text(1)], [TreeItem.CELL_MODE_STRING, from_text])
 
 	panel.call("_add_mail")
 	var added: TreeItem = mails.get_selected()
-	var setup_now: Win95Setup = panel.get("_after")
-	check("Add mail picks a new mail to her, from someone she writes with", [added.get_text(3).begins_with("New mail"), added.get_text(2), added.get_text(1) not in ["", added.get_text(2)]], [true, setup_now.own_address(), true])
+	check("Add mail picks a new mail to her, from someone she writes with", [added.get_text(3).begins_with("New mail"), added.get_text(2), added.get_text(1) not in ["", added.get_text(2)]], [true, (panel.get("_after") as Win95Setup).own_address(), true])
 	added.select(1)
 	panel.call("_edit_cell")
 	added.set_range(1, Array(added.get_text(1).split(",")).find("New address..."))
@@ -77,10 +78,31 @@ func run() -> void:
 	panel.call("_edit_mail", added)
 	await process_frame
 	check("after the week reloads, the list still picks the open patch", list.get_item_text(list.get_selected_items()[0]).contains("0301_office_girl"), true)
-	check("the typed address is saved and offered from then on", [drafts.text(PATCH).contains("from: Mom <mom@home.se>"), "Mom <mom@home.se>" in setup_now.addresses()], [true, true])
+	check("the typed address is saved and offered from then on", [drafts.text(PATCH).contains("from: Mom <mom@home.se>"), "Mom <mom@home.se>" in (panel.get("_after") as Win95Setup).addresses()], [true, true])
 	check("the game plays it", game.story_errors, PackedStringArray())
 
 	var code: CodeEdit = panel.get("_code")
+	code.text = drafts.text(PATCH) + "\nunmail\n\tsent: 1996-06-01 16:40\n\tsubject: My screen\n"
+	panel.call("_save_text")
+	await process_frame
+	var unmail_row: TreeItem = mails.get_root().get_children().back()
+	check("an unmail line shows as a row that deletes that mail", [unmail_row.get_text(0), unmail_row.get_text(3)], ["deletes", "My screen"])
+	unmail_row.select(0)
+	panel.call("_delete_mail")
+	await process_frame
+	check("Delete mail takes the line out of the patch", drafts.text(PATCH).contains("unmail"), false)
+	code.text = drafts.text(PATCH) + "\nmail\n\tsubject: My screen\n\tsent: 1996-06-01 16:40\n\tread: false\n"
+	panel.call("_save_text")
+	await process_frame
+	var hers: TreeItem = mails.get_root().get_children().back()
+	check("a mail line for one she has shows so: changes her mail, her From dim, its Read bright", [hers.get_text(6), hers.get_text(1), hers.get_custom_color(1), hers.get_custom_color(5)], ["changes her mail", "Desk 4 <desk4@harbourimport.se>", LabUI.DIM, LabUI.TEXT])
+	hers.select(1)
+	check("picked, it shows her text", (panel.get("_body") as TextEdit).text.begins_with("Someone has been at my computer"), true)
+	hers.select(5)
+	panel.call("_edit_cell")  # Read back to read
+	await process_frame
+	var line := drafts.text(PATCH).substr(drafts.text(PATCH).find("subject: My screen\n") - 6)
+	check("a change to it writes only that field, and which mail", [line.contains("read: true"), line.contains("from:"), line.contains("body:")], [true, false, false])
 	code.text = "# Her desk, Monday.\nset muted: false\n\n" + drafts.text(PATCH)
 	panel.call("_save_text")
 	await process_frame
@@ -130,7 +152,7 @@ func run() -> void:
 	job.errand = errand
 	var running: Win95Setup = game.setup_for(job)
 	check("her computer comes in with the note", running.file_at("Desktop\\note.txt").contents, "Back at 2.")
-	check("and the mail as the table left it, in its place", running.emails[0].read, not was_read)
+	check("and the mail as the table left it", running.emails.filter(func(m: Email) -> bool: return m.subject == first_subject).map(func(m: Email) -> bool: return m.read), [not was_read])
 
 	var start := SetupPatch.arriving(office_girl, null, true, game.week.errands(), game.week.patches)
 	check("Edit on bench for the start of the game", lab.call("bench", office_girl, null, start), "")

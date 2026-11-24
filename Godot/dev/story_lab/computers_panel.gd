@@ -13,7 +13,9 @@ signal saved(path: String, text: String)
 signal bench_requested(customer: Customer, errand: Errand, setup: Win95Setup)
 
 const SETTLE_SECONDS: float = 0.4
-const _MAIL_COLUMNS: PackedStringArray = ["Folder", "From", "To", "Subject", "Sent", "Read"]
+const _MAIL_COLUMNS: PackedStringArray = ["Folder", "From", "To", "Subject", "Sent", "Read", "Change"]
+## The Email field of each column but Change, in order.
+const _FIELDS: PackedStringArray = ["folder", "from", "to", "subject", "sent", "read"]
 const _NEW_ADDRESS: String = "New address..."
 ## The From and To choice that removes the address.
 const _NO_ADDRESS: String = "(none)"
@@ -26,7 +28,7 @@ var _drafts: StoryDrafts
 var _customer: Customer
 var _errand: Errand
 var _path: String = ""
-## The computer before the patch, and with it: the table edits [member _after].
+## The computer before the patch, and with it: Save patch compares the bench with [member _before].
 ## Email.Folder's names, lowercase, in its order: how the table shows a folder.
 var _folder_names := PackedStringArray(Email.Folder.keys().map(func(k: String) -> String: return k.to_lower()))
 # True while a mail's typed text waits for the pause that saves it.
@@ -39,6 +41,8 @@ var _before: Win95Setup
 var _after: Win95Setup
 ## The running copy that Edit on bench gave the game, until Save patch reads it.
 var _bench: Win95Setup
+# The open patch as read from its text, which the mail table shows and edits; null while the text has errors.
+var _table: SetupPatch
 # The patch that Edit on bench was pressed on: Save patch writes there.
 var _bench_path: String = ""
 var _list: ItemList
@@ -134,10 +138,18 @@ func _stage_name(errand: Errand) -> String:
 
 # Builds the computer before and with the patch from the week, and shows its mails.
 func _rebuild() -> void:
+	_build_computer()
+	var parsed := SetupPatch.parse(_drafts.text(_path), _path)
+	_table = parsed.value if parsed.errors.is_empty() else null
+	_show_mails()
+
+
+# Builds the computer before and with the patch, from the week: what Save patch compares, and the
+# addresses that From and To offer.
+func _build_computer() -> void:
 	var errands := _week.errands()
 	_before = SetupPatch.arriving(_customer, _errand, false, errands, _week.patches)
 	_after = SetupPatch.arriving(_customer, _errand, true, errands, _week.patches)
-	_show_mails()
 
 
 func _fill() -> void:
@@ -192,17 +204,9 @@ func _save_text() -> void:
 		saved.emit(_path, text)
 
 
-# Saves the patch that makes the computer before this visit into [param after]: what differs, and
-# the stored patch's reset, comments and lines that still hold. A refused table edit is undone, so the
-# table shows the patch as saved. Returns "" or why not.
+# Saves the patch that makes the computer before this visit into the bench's [param after]: what
+# differs, and the stored patch's reset, comments and lines that still hold. Returns "" or why not.
 func _save_setup(after: Win95Setup) -> String:
-	var refused := _try_save(after)
-	if refused != "" and after == _after:
-		_rebuild.call_deferred()  # deferred: the Tree may be inside its own signal
-	return refused
-
-
-func _try_save(after: Win95Setup) -> String:
 	if _saving_table or _saving:
 		return _say("Not saved: another save of this patch is still going on.")  # a programmer error: saves don't nest
 	if _code.text != _drafts.text(_path):
@@ -225,7 +229,7 @@ func _try_save(after: Win95Setup) -> String:
 	_mark(PackedStringArray())
 	if text != _drafts.text(_path) and not (stored.errors.is_empty() and text == _written(stored.value)):  # else it says the same: no draft
 		_code.text = text
-		_saving_table = after == _after  # a bench save shows the bench's mails, from the reload
+		_saving_table = false  # a bench save shows its mails: the reload rebuilds the table
 		_saving = true
 		saved.emit(_path, text)
 		_saving = false
@@ -266,25 +270,20 @@ func _mark(errors: PackedStringArray) -> void:
 	_errors.visible = not errors.is_empty()
 
 
-# Shows the mails of [member _after], keeping the picked one picked, and its text as it is typed.
+# Shows the mails of the patch (mail and unmail lines), keeping the picked one picked.
 func _show_mails() -> void:
 	var picked := _mails.get_selected()
-	var picked_key := "%s %s" % [(picked.get_metadata(0) as Email).sent, (picked.get_metadata(0) as Email).subject] if picked != null else ""
+	var picked_mail: Email = picked.get_metadata(0) if picked != null else null
 	_mails.clear()
 	var root := _mails.create_item()
 	var reselect: TreeItem
-	var made: Variant = SetupPatch.between(_before, _after) if _before != null and _after != null else null
-	var in_patch := (made as SetupPatch).mails.map(func(m: Email) -> String: return "%s %s" % [m.sent, m.subject]) if made is SetupPatch else []
-	for mail: Email in _after.emails if _after != null else ([] as Array[Email]):
-		var row := _mails.create_item(root)
-		if "%s %s" % [mail.sent, mail.subject] == picked_key:
-			reselect = row
-		row.set_metadata(0, mail)
-		_show_row(row)
-		if "%s %s" % [mail.sent, mail.subject] not in in_patch:  # on the computer already; the patch doesn't touch it
-			for column: int in _MAIL_COLUMNS.size():
-				row.set_custom_color(column, LabUI.DIM)
-				row.set_tooltip_text(column, "On the computer before this visit; this patch doesn't change it. Edit it to change it in this patch.")
+	if _table != null:
+		for mail: Email in _table.mails + _table.unmailed:
+			var row := _mails.create_item(root)
+			row.set_metadata(0, mail)
+			_show_row(row)
+			if mail == picked_mail:
+				reselect = row
 	if reselect != null:
 		reselect.select(0)
 	_mail_selected()
@@ -308,13 +307,21 @@ func _edit_mail(row: TreeItem) -> void:
 			row.set_editable(column, true)
 			_mails.edit_selected.call_deferred(true)
 			return
-	mail.folder = _folder_names.find(_cell(row, 0)) as Email.Folder
-	mail.from = _address(row, 1, mail.from)
-	mail.to = _address(row, 2, mail.to)
-	mail.subject = row.get_text(3)
-	mail.sent = row.get_text(4)
-	mail.read = row.get_text(5) == _READ[1]
-	_save_mails.call_deferred()  # the save rebuilds the table, which the Tree refuses inside its own signal
+	if _is_unmail(mail):
+		mail.subject = row.get_text(3)
+		mail.sent = row.get_text(4)
+		_save_table.call_deferred()
+		return
+	var hers := _hers(mail)
+	var shown := func(field: String) -> Variant: return (hers if hers != null and not _sets(mail, field) else mail).get(field)
+	var values := {
+		"folder": _folder_names.find(_cell(row, 0)), "from": _address(row, 1, shown.call("from")), "to": _address(row, 2, shown.call("to")),
+		"subject": row.get_text(3), "sent": row.get_text(4), "read": row.get_text(5) == _READ[1],
+	}
+	for field: String in _FIELDS:
+		if values[field] != shown.call(field):  # only what the cell changed: the rest stays as the patch has it
+			_set_field(mail, field, values[field])
+	_save_table.call_deferred()  # the save reloads the week, which the Tree refuses inside its own signal
 
 
 # The address in [param column] of [param row]: "(none)" picked removes it; a new address left
@@ -326,9 +333,35 @@ func _address(row: TreeItem, column: int, was: String) -> String:
 	return text if text.strip_edges() != "" else was
 
 
-func _save_mails() -> void:
-	if _save_setup(_after) == "":
-		_show_mails()
+# Writes the table's patch as the open patch, with the stored text's comments. Refused (the patch text
+# has unsaved edits or errors), the table goes back to the stored patch. Returns "" or why not.
+func _save_table() -> String:
+	var refused := ""
+	if _table == null:
+		refused = "Not saved: the patch text above has errors (marked). Fix them, and the table shows its mails."
+	elif _code.text != _drafts.text(_path):
+		refused = "Not saved: the patch text above has changes that aren't saved yet, or errors (marked). Wait a moment or fix them, then try again."
+	var text := _written(_table) if refused == "" else ""
+	if refused == "" and not SetupPatch.parse(text, _path).errors.is_empty():
+		refused = "Not saved: the table's patch doesn't read back: %s" % SetupPatch.parse(text, _path).errors
+	if refused != "":
+		_rebuild()
+		return _say(refused)
+	_mark(PackedStringArray())
+	if text != _drafts.text(_path):
+		_code.text = text
+		_saving_table = true
+		_saving = true
+		saved.emit(_path, text)
+		_saving = false
+		_saving_table = false
+		_build_computer()  # the reload kept the table; the computer has the new patch now
+	_show_mails()
+	return ""
+
+
+func _is_unmail(mail: Email) -> bool:
+	return _table != null and mail in _table.unmailed
 
 
 # A click picks a mail; a double-click or Enter edits the picked cell, so picking never opens an
@@ -342,6 +375,11 @@ func _edit_cell() -> void:
 	var column := _mails.get_column_at_position(mouse) if _mails.get_item_at_position(mouse) == row else _mails.get_selected_column()
 	if column < 0:
 		column = 3  # Enter with no cell picked: the subject
+	if column == 6:
+		return  # Change says what the line does; it follows from the mail
+	if _is_unmail(row.get_metadata(0)) and column not in [3, 4]:
+		_say("An unmail line has only the sent and subject of the mail it deletes.")
+		return
 	row.select(column)
 	if column == 5:
 		row.set_text(5, _READ[int(row.get_text(5) != _READ[1])])
@@ -376,42 +414,107 @@ func _close_cells() -> void:
 		_show_row(each)  # a cell left mid-edit (Esc) shows its mail again
 
 
-# Shows [param row]'s mail in its cells, as text.
+# Shows [param row]'s mail in its cells, as text; an unmail line deletes the mail of that sent and
+# subject, so it shows only those.
 func _show_row(row: TreeItem) -> void:
 	var mail: Email = row.get_metadata(0)
-	var texts := [_folder_names[mail.folder], mail.from, mail.to, mail.subject, mail.sent, _READ[int(mail.read)]]
-	for column: int in texts.size():
-		row.set_text(column, texts[column])
+	if _is_unmail(mail):
+		var gone := ["deletes", "", "", mail.subject, mail.sent, "", "deletes her mail"]
+		for column: int in gone.size():
+			row.set_text(column, gone[column])
+		return
+	var hers := _hers(mail)
+	for column: int in _FIELDS.size():
+		var field := _FIELDS[column]
+		var kept := hers != null and not _sets(mail, field)  # her mail's own value: the patch leaves it
+		var value: Variant = (hers if kept else mail).get(field)
+		row.set_text(column, _folder_names[value] if field == "folder" else _READ[int(value)] if field == "read" else str(value))
+		row.set_custom_color(column, LabUI.DIM if kept else LabUI.TEXT)
+		row.set_tooltip_text(column, "Her mail's own; the patch leaves it." if kept else "")
+	row.set_text(6, "changes her mail" if hers != null else "new")
+	row.set_tooltip_text(6, "Her mail of this sent and subject is on the computer: the patch sets the bright fields, the dim ones stay hers." if hers != null else "A new mail on the computer.")
+
+
+# The mail on the computer before this visit that [param mail] changes (the same sent and subject),
+# or null for a new mail.
+func _hers(mail: Email) -> Email:
+	if _before == null:
+		return null
+	for each: Email in _before.emails:
+		if each.sent == mail.sent and each.subject == mail.subject:
+			return each
+	return null
+
+
+# True when the patch sets [param field] of [param mail]: every field of a mail it writes whole.
+func _sets(mail: Email, field: String) -> bool:
+	var key := "%s %s" % [mail.sent, mail.subject]
+	return not _table.mail_given.has(key) or field in _table.mail_given[key] or field in ["sent", "subject"]
+
+
+# Sets [param field] of the patch's [param mail] to [param value], recording that the patch sets it.
+# A new sent or subject on a mail that changes hers makes it a new mail and deletes hers, as the two
+# say which mail it is.
+func _set_field(mail: Email, field: String, value: Variant) -> void:
+	var hers := _hers(mail)
+	var key := "%s %s" % [mail.sent, mail.subject]
+	if hers != null and field in ["sent", "subject"] and value != mail.get(field):
+		var gone := Email.new()
+		gone.sent = mail.sent
+		gone.subject = mail.subject
+		_table.unmailed.append(gone)
+		for other: String in _FIELDS + PackedStringArray(["body"]):
+			if not _sets(mail, other):
+				mail.set(other, hers.get(other))
+		_table.mail_given.erase(key)
+		mail.set(field, value)
+		return
+	if mail.get(field) == value and _sets(mail, field):
+		return
+	mail.set(field, value)
+	var new_key := "%s %s" % [mail.sent, mail.subject]
+	if _table.mail_given.has(key):
+		var given := _table.mail_given[key]
+		_table.mail_given.erase(key)
+		if field not in given:
+			given.append(field)
+		_table.mail_given[new_key] = given
 
 
 func _mail_selected() -> void:
 	var row := _mails.get_selected()
 	_close_cells()
 	_body.placeholder_text = "This mail has no text yet: type it here." if row != null else "Pick a mail to edit its text."
-	_body.editable = row != null
-	var text := (row.get_metadata(0) as Email).body if row != null else ""
+	_body.editable = row != null and not _is_unmail(row.get_metadata(0))
+	var picked: Email = row.get_metadata(0) if row != null else null
+	var hers := _hers(picked) if picked != null and not _is_unmail(picked) else null
+	var text := (hers.body if hers != null and not _sets(picked, "body") else picked.body) if picked != null else ""
 	if _body.text != text:
 		_body.text = text
 
 
 func _body_changed() -> void:
 	var row := _mails.get_selected()
-	if row != null:
-		(row.get_metadata(0) as Email).body = _body.text
+	if row != null and not _is_unmail(row.get_metadata(0)):
+		var mail: Email = row.get_metadata(0)
+		var hers := _hers(mail)
+		if hers != null and not _sets(mail, "body") and _body.text == hers.body:
+			return  # her text, shown as the mail is picked: nothing changed
+		_set_field(mail, "body", _body.text)
 		_mail_pending = true
 		_settle.start()
 
 
 func _add_mail() -> void:
-	if _after == null:
-		_say("Pick a computer's patch on the left first.")
+	if _after == null or _table == null:
+		_say("Pick a computer's patch on the left first, with no errors in its text.")
 		return
 	var mail := Email.new()
 	var date: Dictionary = Game.date_of(_errand.day_number() if _errand != null else 1)
 	mail.sent = "%04d-%02d-%02d 09:00" % [date.year, date.month, date.day]
-	var subjects := _after.emails.filter(func(m: Email) -> bool: return m.sent == mail.sent).map(func(m: Email) -> String: return m.subject)
+	var taken := (_after.emails + _table.mails).map(func(m: Email) -> String: return "%s %s" % [m.sent, m.subject])
 	var number := _after.emails.size() + 1
-	while "New mail %d" % number in subjects:  # a patch tells mails apart by sent and subject
+	while "%s New mail %d" % [mail.sent, number] in taken:  # a patch tells mails apart by sent and subject
 		number += 1
 	mail.subject = "New mail %d" % number
 	mail.to = _after.own_address()
@@ -419,29 +522,31 @@ func _add_mail() -> void:
 		if address != mail.to:
 			mail.from = address
 			break
-	_after.emails.append(mail)
-	if _save_setup(_after) == "":
-		_show_mails()
-		var rows := _mails.get_root().get_children()
-		rows.back().select(3)
+	_table.mails.append(mail)
+	if _save_table() == "":
+		for row: TreeItem in _mails.get_root().get_children():
+			if row.get_metadata(0) == mail:
+				row.select(3)
 		_mail_selected()
 
 
+## Takes the picked mail out of the patch: a mail line, or an unmail line.
 func _delete_mail() -> void:
 	var row := _mails.get_selected()
 	if row == null:
 		_say("Pick the mail to delete first: click it in the table.")
 		return
-	_after.emails.erase(row.get_metadata(0))
-	if _save_setup(_after) == "":
-		_show_mails()
+	var mail: Email = row.get_metadata(0)
+	_table.mails.erase(mail)
+	_table.unmailed.erase(mail)
+	_save_table()
 
 
 # Saves what the pause was waiting for: the mail text typed, or the patch text.
 func _on_settle() -> void:
 	if _mail_pending:
 		_mail_pending = false
-		_save_setup(_after)
+		_save_table()
 	else:
 		_save_text()
 
@@ -509,13 +614,10 @@ func _build() -> void:
 	var mail_row := HBoxContainer.new()
 	mail_row.add_theme_constant_override("separation", 8)
 	mail_box.add_child(mail_row)
-	var mails_title := LabUI.label("Mails as the computer arrives", 15)
-	mails_title.tooltip_text = "Every mail on it this visit: from its .tres and the patches before, with this patch's changes. The patch text above holds only what this visit changes."
-	mails_title.mouse_filter = Control.MOUSE_FILTER_STOP
-	mail_row.add_child(mails_title)
+	mail_row.add_child(LabUI.label("Mails in this patch", 15))
 	mail_row.add_child(LabUI.button("Add mail", _add_mail))
 	mail_row.add_child(LabUI.button("Delete mail", _delete_mail))
-	mail_row.add_child(LabUI.label("Dim: on the computer already. Bright: this patch's. Click a mail to edit its text below; double-click a cell to change it.", 13, LabUI.DIM))
+	mail_row.add_child(LabUI.label("Click a mail to edit its text below; double-click a cell to change it. A mail with the sent and subject of one she has replaces it.", 13, LabUI.DIM))
 	_mails = Tree.new()
 	_mails.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_mails.custom_minimum_size.y = 160
@@ -526,7 +628,7 @@ func _build() -> void:
 	for i: int in _MAIL_COLUMNS.size():
 		_mails.set_column_title(i, _MAIL_COLUMNS[i])
 		_mails.set_column_expand(i, i in [1, 2, 3])
-		_mails.set_column_custom_minimum_width(i, [110, 0, 0, 0, 170, 60][i])
+		_mails.set_column_custom_minimum_width(i, [110, 0, 0, 0, 170, 60, 150][i])
 	_mails.item_edited.connect(func() -> void: _edit_mail(_mails.get_edited()))
 	_mails.item_selected.connect(_mail_selected)
 	_mails.cell_selected.connect(_mail_selected)

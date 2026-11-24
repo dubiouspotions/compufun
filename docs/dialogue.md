@@ -263,9 +263,10 @@ unmail
   keeps the fields left out, so a moved icon is its path and `desktop_position`; a new one has its
   defaults in them. Save patch writes a new file's fields that aren't their defaults. A folder keeps
   its children. A text with line breaks is a block: `contents:`, then its lines two tabs deep. A text with a space or line break at an end, or a leading `"`, is one quoted line instead, escaped as in JSON: `body: "the "`.
-- `mail` puts a mail, every `Email` field that isn't its default (`folder: inbox`, `read: false`),
-  replacing the mail with the same `sent` and `subject`; `unmail` deletes the mail with that `sent`
-  and `subject`.
+- `mail` puts a mail. Its `sent` and `subject` say which: for a mail the computer has with those, it
+  sets only the fields under it and the mail keeps the rest, so a change is short (`read: true`); a
+  mail it hasn't got is new, with the fields left out at their defaults. `unmail` deletes the mail
+  with that `sent` and `subject`.
 - A resource field (an icon, a picture, a program) names a `res://` file, or `none`. Enums are
   their names in lower case (`folder: trash`); other values are Godot's on one line (`true`,
   `Vector2(300, 200)`, `{&"title": "Q2"}`), texts quoted as above.
@@ -273,7 +274,9 @@ unmail
   folder. A computer gets the patches of all its customer's errands up to the visit, by code, each
   once, also those of visits where it never booted, and those of an alternative errand of the same
   customer that didn't come. A patch with an error applies nothing; the Lab marks the line.
-- Save patch and the mail table write what differs from the computer before the visit, and keep the
+- The mail table shows the patch's `mail` and `unmail` lines, nothing else: new mails, changes to
+  hers (with her own values dim) and deletes. Editing a row edits its line.
+- Save patch writes what differs from the computer before the visit, and keeps the
   stored patch's `reset`, its comments (moved to the top) and its lines that still hold, such as a
   `delete` of a file the player might make. What a patch can't hold, such as a picture drawn in
   Paint, is left out, and the Lab says so. While the patch text has unsaved edits or errors, a table
