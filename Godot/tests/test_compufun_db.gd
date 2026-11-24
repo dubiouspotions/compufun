@@ -26,12 +26,12 @@ func run() -> void:
 	_press(db, KEY_ENTER)
 	_press(db, KEY_ENTER)
 	check("Enter searches, Enter picks", [game.db_search.query, db.get("_column")], ["Restarts by itself", CHECKS])
-	check("its causes; the dust and the hamster are one", _texts(db, CAUSES), ["Bad RAM module", "Failing hard drive", "Faulty CPU fan"])
+	check("its causes; the dust and the hamster are one", _texts(db, CAUSES), ["Faulty graphics card", "Bad RAM module", "Failing hard drive", "Faulty CPU fan"])
 
 	game.mark_check("Windows starts", true)
-	check("a ticked no: rules out its causes", _possible(db), [false, true, true])
+	check("a ticked no: rules out its causes", _possible(db), [true, false, true, true])
 	game.mark_check("Freezes with a buzz after the desktop appears", true)
-	check("and no others", _possible(db), [false, false, true])
+	check("and no others", _possible(db), [false, false, false, true])
 
 	check("restore the snapshot", game.restore(game.snapshot()), "")
 	check("the search survives", [game.db_search.query, game.db_search.ticked_checks.size()], ["Restarts by itself", 2])

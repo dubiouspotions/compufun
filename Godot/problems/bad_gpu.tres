@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Problem" format=3]
+
+[ext_resource type="Resource" path="res://parts/gpu.tres" id="1_gpu"]
+[ext_resource type="Script" path="res://problems/problem.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+short_name = &"bad_gpu"
+broken_part = ExtResource("1_gpu")
+hangs_after = 2.0
+hang_seconds = 6.0
+hang_message = "A fatal exception 0E has occurred at 0028:C0034B23 in VXD VDD(01) +
+00002A1F. The current application will be terminated.
+
+*  Press any key to terminate the current application.
+*  Press CTRL+ALT+DEL again to restart your computer. You will
+   lose any unsaved information in all applications."

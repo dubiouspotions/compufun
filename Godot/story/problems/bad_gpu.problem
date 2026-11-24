@@ -1,0 +1,20 @@
+post-it: Blue screen of death
+cause: Faulty graphics card
+symptoms:
+	Blue screen
+	Restarts by itself
+checks:
+	yes: Windows starts
+	yes: Memory test passes
+	no: Stops at "Non-System disk or disk error"
+	no: Windows stays up after the desktop appears
+	yes: Bluescreen after the desktop appears
+		shows: "A fatal exception 0E has occurred", then a reboot 6 s later
+	no: Freezes with a buzz after the desktop appears
+	yes: CPU fan is clean and spins freely
+	yes: Every part sits in its own place
+hardware steps:
+	Open case
+	Trash the GPU
+	Fit a new GPU
+	Close case
