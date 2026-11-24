@@ -1,0 +1,73 @@
+[gd_resource type="Theme" format=3]
+
+[ext_resource type="Script" path="res://win95/theme/win95bevel.gd" id="bevel"]
+[ext_resource type="Resource" path="res://win95/theme/palette.tres" id="palette"]
+
+[sub_resource type="StyleBoxEmpty" id="flat"]
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBox" id="raised"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+script = ExtResource("bevel")
+kind = 9
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBox" id="toggled"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+script = ExtResource("bevel")
+kind = 1
+fill = 2
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBox" id="bar"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 2.0
+content_margin_top = 1.0
+content_margin_right = 2.0
+content_margin_bottom = 1.0
+script = ExtResource("bevel")
+kind = 9
+palette = ExtResource("palette")
+
+[sub_resource type="StyleBox" id="cell"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 3.0
+content_margin_top = 1.0
+content_margin_right = 3.0
+content_margin_bottom = 1.0
+script = ExtResource("bevel")
+kind = 1
+palette = ExtResource("palette")
+
+[resource]
+OfficeToolButton/base_type = &"Button"
+OfficeToolButton/colors/icon_disabled_color = Color(1, 1, 1, 0.35)
+OfficeToolButton/styles/disabled = SubResource("flat")
+OfficeToolButton/styles/focus = SubResource("flat")
+OfficeToolButton/styles/hover = SubResource("raised")
+OfficeToolButton/styles/hover_pressed = SubResource("toggled")
+OfficeToolButton/styles/normal = SubResource("flat")
+OfficeToolButton/styles/pressed = SubResource("toggled")
+OfficeToolbar/base_type = &"PanelContainer"
+OfficeToolbar/styles/panel = SubResource("bar")
+OfficeGrip/base_type = &"Panel"
+OfficeGrip/styles/panel = SubResource("raised")
+OfficeSeparator/base_type = &"Panel"
+OfficeSeparator/styles/panel = SubResource("cell")
+OfficeStatusCell/base_type = &"PanelContainer"
+OfficeStatusCell/styles/panel = SubResource("cell")

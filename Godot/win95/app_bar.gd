@@ -4,7 +4,9 @@ class_name AppBar
 
 
 ## Adds the menu [param title] to [param bar]. Each of [param items] is [label, action] (a
-## Callable, or null for one that isn't built), or [] for a separator.
+## Callable, or null for one that isn't built), or [] for a separator. A third item, a Key with its
+## modifier masks such as KEY_MASK_CTRL | KEY_Z, shows the item's shortcut; the window handles the
+## keys itself, so the menu never acts on them.
 static func add_menu(bar: MenuBar, title: String, items: Array) -> PopupMenu:
 	var menu := PopupMenu.new()
 	menu.name = title
@@ -13,7 +15,8 @@ static func add_menu(bar: MenuBar, title: String, items: Array) -> PopupMenu:
 		if item.is_empty():
 			menu.add_separator()
 			continue
-		menu.add_item(item[0], actions.size())
+		menu.add_item(item[0], actions.size(), item[2] if item.size() > 2 else 0)
+		menu.set_item_shortcut_disabled(menu.item_count - 1, true)
 		var action: Variant = item[1] if item.size() > 1 else null
 		actions.append(action if action is Callable else Callable())
 		if not action is Callable:

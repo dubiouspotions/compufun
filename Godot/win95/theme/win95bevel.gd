@@ -13,6 +13,7 @@ enum Kind {
 	DEFAULT, # the default button of a dialog: a black frame around a raised button
 	TAB, # a property sheet tab: raised, with cut top corners and no bottom edge
 	FLAT, # 1 px shadow outline: a pushed spin box button
+	THIN, # 1 px raised edge: an Office 97 toolbar button under the mouse, a toolbar's border
 }
 
 ## What fills the inside of the edge. DITHER is a checkerboard of highlight and face.
@@ -114,10 +115,12 @@ func _draw(to_canvas_item: RID, rect: Rect2) -> void:
 			return
 		Kind.FLAT:
 			_edge(to_canvas_item, r, p.shadow_color, p.shadow_color)
+		Kind.THIN:
+			_edge(to_canvas_item, r, p.highlight_color, p.shadow_color)
 	var face := inner
 	if kind == Kind.DEFAULT:
 		face = inner.grow(-2)
-	elif kind != Kind.SUNKEN and kind != Kind.FLAT:
+	elif kind not in [Kind.SUNKEN, Kind.FLAT, Kind.THIN]:
 		face = inner.grow(-1)
 	_fill(to_canvas_item, face, p)
 	if drop_down != DropDown.NONE:
