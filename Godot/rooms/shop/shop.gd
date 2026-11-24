@@ -59,7 +59,7 @@ const WORKVIEW: StringName = &"Workview"
 @export var phone_outline: ClickableOutline = preload("res://rooms/clickable_outline.tres")
 @export var phone_outline_width: float = 0.01
 
-@onready var _camera: Camera3D = %Camera
+@onready var _camera: ViewCamera = %Camera
 @onready var _views: Node3D = %Views
 @onready var _follow: PathFollow3D = %CustomerFollow
 @onready var _path: Path3D = $CustomerPath
@@ -102,8 +102,8 @@ const WORKVIEW: StringName = &"Workview"
 ## then step to the counter in pop_up_step_seconds.
 @export var pop_up_depth: float = 1.0
 ## In the Workview the customer peeks over the counter instead, as far back as the PopUpSpot: their
-## face shows at this point of the view, from (0, 0) in the middle to (1, 1) at the top right corner.
-## The default is beside the open case, which stands up into the top of the view.
+## face shows at this point of the view's 16:9 frame, from (0, 0) in the middle to (1, 1) at its top
+## right corner. The default is beside the open case, which stands up into the top of the view.
 @export var pop_up_peek_at: Vector2 = Vector2(0.6, 0.6)
 @export var pop_up_seconds: float = 0.25
 @export var pop_up_shake_metres: float = 0.05
@@ -197,17 +197,17 @@ func _ready() -> void:
 ## while it still covers the game.
 func warm_up() -> void:
 	var home := _camera.global_transform
-	var home_fov := _camera.fov
+	var home_fov := _camera.view_fov
 	await _hand.warm_up(Part.every()[0])
 	for node: Node in _views.get_children():
 		var marker := node as ViewMarker
 		if marker == null:
 			continue
 		_camera.global_transform = marker.global_transform
-		_camera.fov = marker.fov
+		_camera.view_fov = marker.fov
 		await RenderingServer.frame_post_draw
 	_camera.global_transform = home
-	_camera.fov = home_fov
+	_camera.view_fov = home_fov
 
 
 func view_marker(view_name: StringName) -> ViewMarker:
@@ -224,9 +224,7 @@ func turn_from_main() -> float:
 	if main == null:
 		return 0.0
 	var yaw := angle_difference(main.global_rotation.y, _camera.global_rotation.y)
-	var size := _camera.get_viewport().get_visible_rect().size
-	var half_width := atan(tan(deg_to_rad(_camera.fov) * 0.5) * size.x / size.y)
-	return yaw / (2.0 * half_width)
+	return yaw / (2.0 * atan(_camera.tangents().x))
 
 
 ## The job whose computer stands nearest the middle of the Main View: its slot is the closest to the
@@ -568,13 +566,13 @@ func _move_camera(view_name: StringName) -> void:
 		_camera_tween.kill()
 	if first:
 		_camera.global_transform = marker.global_transform
-		_camera.fov = marker.fov
+		_camera.view_fov = marker.fov
 		return
 	var seconds := marker.turn_seconds if marker.turn_seconds > 0.0 else turn_seconds
 	_camera_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_parallel()
 	_camera_tween.tween_property(_camera, "global_position", marker.global_position, seconds)
 	_camera_tween.tween_property(_camera, "quaternion", marker.global_basis.get_rotation_quaternion(), seconds)
-	_camera_tween.tween_property(_camera, "fov", marker.fov, seconds)
+	_camera_tween.tween_property(_camera, "view_fov", marker.fov, seconds)
 
 
 ## Moves the Workview marker to the eye of the computer in focus, standing or lying. True when it
@@ -635,9 +633,8 @@ func _pop_up() -> void:
 # PopUpSpot; the feet sink through the floor behind the counter.
 func _peek_spot() -> Vector3:
 	var marker := view_marker(WORKVIEW)
-	var half := tan(deg_to_rad(marker.fov) * 0.5)
-	var screen := _camera.get_viewport().get_visible_rect().size
-	var across := marker.global_basis.x * half * screen.aspect() * pop_up_peek_at.x + marker.global_basis.y * half * pop_up_peek_at.y
+	var half := ViewCamera.design_tangents(marker.fov)
+	var across := marker.global_basis.x * half.x * pop_up_peek_at.x + marker.global_basis.y * half.y * pop_up_peek_at.y
 	var ray := (-marker.global_basis.z + across).normalized()
 	var from := marker.global_position
 	var face := from + ray * ((_pop_up_spot.global_position.z - from.z) / ray.z)

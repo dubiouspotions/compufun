@@ -45,6 +45,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Printout**: The page that the dot-matrix printer under the work desk (`Printer`) printed last: the checklist of a CompuFunDB search (its checks and the causes still possible), or the fix of one cause. It stays sticking out of the printer until the next print replaces it or the player takes it. The player carries one printout at a time, apart from the hand (`Game.printout`), and can't take another or put it down: only a click on the trash can or the end of the day takes it; its top peeks in at the bottom left of every view, clear of the part in the hand on the right, and a click raises it on the right side of the view, where the player ticks its check boxes as their own notes while they keep playing; a click outside the page lowers it (`ui/carried_printout.tscn`). In the CompuFunDB view it is always raised, right of the screen.
 *Avoid:* print, checklist sheet.
 
+**Design frame**: The 1920 x 1080 (16:9) canvas that the game is laid out for. Desktop and web show exactly it; a mobile screen of another shape shows all of it and more (docs/ios.md).
+*Avoid:* design size, safe frame.
+
 **Screen buffer**: The 640 x 480 viewport that runs the Win95 desktop. The 3D monitor shows it, and the Screen View shows it at 2x.
 *Avoid:* desktop viewport, screen texture.
 

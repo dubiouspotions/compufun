@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://rooms/shop/shop.gd" id="1_y5yy5"]
+[ext_resource type="Script" path="res://rooms/view_camera.gd" id="view_camera"]
 [ext_resource type="Material" path="res://materials/floor.tres" id="2_4tacs"]
 [ext_resource type="Material" path="res://materials/ceiling.tres" id="3_mslom"]
 [ext_resource type="Material" path="res://materials/wall.tres" id="4_kwqp3"]
@@ -195,6 +196,7 @@ unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.55, 0.7)
 current = true
 fov = 50.0
+script = ExtResource("view_camera")
 
 [node name="Hand" parent="Camera" instance=ExtResource("hand")]
 unique_name_in_owner = true

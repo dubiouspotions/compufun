@@ -36,6 +36,13 @@ var _hovered_beside_screen: Hotspot
 
 
 
+## The world buffer's size, in world pixels, for a canvas of [param canvas] design pixels at
+## [param texel] design pixels per world pixel: rounded up, so that the world covers the canvas and
+## each world pixel stays whole. 480 x 270 for the 1920 x 1080 design frame at 4.
+static func world_buffer_size(canvas: Vector2, texel: int) -> Vector2i:
+	return Vector2i((canvas / texel - Vector2.ONE * 0.001).ceil())  # a canvas of 1320.0001 stays 330
+
+
 ## Renders every view once, behind the loading screen, so that no shader compiles while the player
 ## plays (see Shop.warm_up).
 func warm_up() -> void:
@@ -44,6 +51,8 @@ func warm_up() -> void:
 func _ready() -> void:
 	if OS.is_debug_build() and ResourceLoader.exists(DEV_MENU):
 		add_child(load(DEV_MENU).instantiate())
+	get_viewport().size_changed.connect(_fit_world)
+	_fit_world()
 	for view: ScreenView in _screen_views:
 		view.add_look(_shop.set_screen_texture(view.screen, view.screen_texture()))
 		view.fade_seconds = _shop.turn_seconds
@@ -114,6 +123,13 @@ func _process(_delta: float) -> void:
 func _exit_tree() -> void:
 	if RenderingServer.frame_pre_draw.is_connected(_follow_camera):
 		RenderingServer.frame_pre_draw.disconnect(_follow_camera)
+
+
+# The world covers the canvas: on a screen that isn't 16:9 (stretch aspect "expand"), its buffer grows.
+func _fit_world() -> void:
+	var canvas := get_viewport().get_visible_rect()
+	_world.position = canvas.position
+	_world.size = Vector2(world_buffer_size(canvas.size, _world.stretch_shrink) * _world.stretch_shrink)
 
 
 func _follow_camera() -> void:

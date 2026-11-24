@@ -23,9 +23,8 @@ script = ExtResource("1_dg77c")
 [node name="World" type="SubViewportContainer" parent="." unique_id=762432951 groups=["world_post"]]
 texture_filter = 1
 material = ExtResource("3_w48qg")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+offset_right = 1920.0
+offset_bottom = 1080.0
 stretch = true
 stretch_shrink = 4
 

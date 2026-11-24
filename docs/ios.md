@@ -69,9 +69,8 @@ Export outside `Godot/`: Godot imports whatever lies inside the project, Xcode's
   RGBAHalf, custom cursors are unsupported, and one `DisplayServer.mouse_get_position()` fails.
 - **The voices:** without the `ChimeraVoice` extension, `voice_player.gd` plays the rendered WAVs.
   The preset leaves out `voices/live/`.
-- **The layout:** the game letterboxes 16:9 on every screen. On the iPhone the side bars hide the
-  Dynamic Island. Unfolding the Duo moves the game to the inner screen mid-conversation, with
-  nothing lost.
+- **The layout:** the game fills the screen (see "Filling the screen" below). Unfolding the Duo
+  moves the game to the inner screen mid-conversation, with nothing lost.
 - **Touch:** Godot turns a tap into a left click, so buttons, hotspots, the nav arrows, dragging
   parts and cables, and the Win95 drag and drop work. A hardware keyboard or the debug strip
   reaches F2.
@@ -91,6 +90,34 @@ Export outside `Godot/`: Godot imports whatever lies inside the project, Xcode's
 - **The OS keyboard:** text fields inside the screen buffers never raise it (the touch keyboard types
   there). Elsewhere (F9's note, the Story Lab), `TouchControls` lifts the focused field's CanvasLayer
   above it, by the caret line in a TextEdit, and puts it back when the keyboard goes.
+
+## Filling the screen
+
+On iOS and Android the game fills the whole screen; desktop and web keep 16:9 with black bars.
+`display/window/stretch/aspect.mobile="expand"` does it: the canvas never shrinks below the
+1920 x 1080 design frame and grows in the screen's extra direction, to about 1920 x 1320 on the
+folded Duo, 2345 x 1080 on a 2.17:1 iPhone and 1920 x 1333 on an iPad Air 11". Every view shows at
+least its 16:9 picture:
+
+- **The world buffer** grows with the canvas at the same 4 design pixels per world pixel, rounded
+  up to whole world pixels (`main.gd`, `world_buffer_size`): 480 x 330, 587 x 270, 480 x 334. Main
+  re-derives it whenever the window changes, so a fold or unfold resizes it. The CRT look's
+  `world_pixel` stays 4.
+- **The camera** (`rooms/view_camera.gd`) reads each view marker's fov as the vertical field of
+  view of the 16:9 frame. A buffer narrower than 16:9 uses `KEEP_WIDTH` with the frame's
+  horizontal fov, so it shows more above and below; a wider one uses `KEEP_HEIGHT` and shows more at
+  the sides. Code that needs the picture's extent asks `ViewCamera.tangents()`, not `fov`.
+- **The part in the hand** keeps its size in the 16:9 frame and stays at the picture's edge.
+- **UI** anchored to the edges follows them. A touch panel's default place keeps its share of the
+  free room (`MovablePanel.default_position`), so the trackpad stays at the bottom left and the
+  keyboard centred.
+- **Orientation:** `display/window/handheld/orientation` is sensor landscape, so the game turns
+  with the device in both landscape directions. The committed `ios/CompuFun/CompuFun-Info.plist`
+  changes to both orientations at the next export.
+
+To try a shape on desktop, set `root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND` from a
+throwaway `-s` script (or an uncommitted `Godot/override.cfg` with `window/stretch/aspect="expand"`)
+and run with `--resolution 2034x1398`, `2622x1206` or `2360x1640`.
 
 ## What a real port needs
 

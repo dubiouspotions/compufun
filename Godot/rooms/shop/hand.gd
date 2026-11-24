@@ -16,11 +16,11 @@ extends Node3D
 ## How far in front of the camera the part is held, in metres. Short, so that the room seldom gets
 ## between the camera and the part.
 @export_range(0.06, 1.0) var distance: float = 0.25
-## The longest side of the part on screen, as a share of the view's height.
+## The longest side of the part on screen, as a share of the height of the view's 16:9 frame.
 @export_range(0.05, 1.0) var shown_size: float = 0.22
 ## How the part is turned in the hand, in degrees: tipped toward the player to show its top.
 @export var held_rotation_degrees: Vector3 = Vector3(40.0, -30.0, 8.0)
-## How far the part sways while held, as a share of the view's height.
+## How far the part sways while held, as a share of the height of the view's 16:9 frame.
 @export var sway: float = 0.008
 ## How far the part rocks while held, in degrees.
 @export var sway_degrees: float = 2.0
@@ -30,8 +30,9 @@ extends Node3D
 @export var raise_seconds: float = 0.18
 ## The views where the hand goes down, out of the picture: the views where a screen fills the view.
 @export var lowered_in_views: Array[StringName] = [&"Screen", &"CompuFunDB"]
-## The longest side of the part while the player drags it, as a share of the view's height. Smaller
-## than [member shown_size], and up and right of the mouse, so that the place under the mouse shows.
+## The longest side of the part while the player drags it, as a share of the height of the view's
+## 16:9 frame. Smaller than [member shown_size], and up and right of the mouse, so that the place
+## under the mouse shows.
 @export_range(0.02, 1.0) var dragged_size: float = 0.12
 ## How far the mouse moves, in pixels of the world buffer, before a press on the part becomes a drag.
 @export var drag_threshold: float = 3.0
@@ -48,7 +49,7 @@ var _dragging: bool = false
 var _mouse: Vector2  # in pixels of the world buffer
 var _passing: bool = false
 
-@onready var _camera: Camera3D = get_parent() as Camera3D
+@onready var _camera: ViewCamera = get_parent() as ViewCamera
 @onready var _holder: Node3D = %Holder
 @onready var _name: Label3D = %Name
 @onready var _broken: Label3D = %Broken
@@ -56,7 +57,7 @@ var _passing: bool = false
 
 func _ready() -> void:
 	if _camera == null:
-		push_error("Hand: the parent %s is not a Camera3D" % get_parent().get_path())
+		push_error("Hand: the parent %s is not a ViewCamera" % get_parent().get_path())
 		return
 	Game.changed.connect(_sync)
 	_sync()
@@ -78,29 +79,29 @@ func warm_up(part: Part) -> void:
 	_sync()
 
 
-# The node's local units are heights of the view, so the part and its labels keep their size on
-# screen across fields of view, and one font pixel is one pixel of the world buffer.
+# The node's local units are heights of the view's 16:9 frame, so the part and its labels keep their
+# size on screen across fields of view and window shapes, and one font pixel is one pixel of the world
+# buffer. screen_position spans the whole picture, so the part stays at its edge.
 func _process(delta: float) -> void:
 	_time += delta
 	var view := _camera.get_viewport().get_visible_rect().size
-	var half_height := tan(deg_to_rad(_camera.fov) * 0.5) * distance
-	var height := 2.0 * half_height
+	var half_picture := _camera.tangents() * distance
+	var height := 2.0 * ViewCamera.design_tangents(_camera.view_fov).y * distance
 	var bob := sin(_time * TAU * sway_speed)
 	var drift := cos(_time * TAU * sway_speed * 0.5)
-	var below := (1.0 + screen_position.y) * 0.5 + shown_size  # just out of the bottom of the view
-	var at := Vector2(screen_position.x * view.x / view.y, screen_position.y) * 0.5
+	var below := (1.0 + screen_position.y) * half_picture.y + shown_size * height  # just out of the bottom of the view
+	var at := screen_position * half_picture
 	if _dragging:
-		at = Vector2(_mouse.x - view.x * 0.5, view.y * 0.5 - _mouse.y) / view.y + Vector2.ONE * dragged_size * 0.6
+		at = Vector2(_mouse.x - view.x * 0.5, view.y * 0.5 - _mouse.y) * (2.0 * half_picture.y / view.y) + Vector2.ONE * dragged_size * 0.6 * height
 		if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):  # released over the UI, which kept the release
 			_drop(_mouse)
-	position = Vector3(at.x + drift * sway, at.y + bob * sway - _lowered * below, 0.0) * height
-	position.z = -distance
+	position = Vector3(at.x + drift * sway * height, at.y + bob * sway * height - _lowered * below, -distance)
 	scale = Vector3.ONE * height
 	_holder.scale = Vector3.ONE * (dragged_size / shown_size if _dragging else 1.0)
 	_name.visible = not _dragging
 	_broken.visible = not _dragging and _held != null and _held.broken
 	_holder.rotation_degrees = held_rotation_degrees + Vector3(bob, drift, 0.0) * sway_degrees
-	_name.pixel_size = 1.0 / view.y
+	_name.pixel_size = 2.0 * half_picture.y / view.y / height
 	_broken.pixel_size = _name.pixel_size
 
 
