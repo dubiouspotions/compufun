@@ -259,7 +259,7 @@ unmail
 - `file <path>` and `folder <path>` set the fields under it, tab-indented. A file that is there
   keeps the fields left out, so a moved icon is its path and `desktop_position`; a new one has its
   defaults in them. Save patch writes a new file's fields that aren't their defaults. A folder keeps
-  its children. A text with line breaks is a block: `contents:`, then its lines two tabs deep.
+  its children. A text with line breaks is a block: `contents:`, then its lines two tabs deep. A text with a space or line break at an end, or a leading `"`, is one quoted line instead, escaped as in JSON: `body: "the "`.
 - `mail` puts a mail, every `Email` field that isn't its default (`folder: inbox`, `read: false`),
   replacing the mail with the same `sent` and `subject`; `unmail` deletes the mail with that `sent`
   and `subject`.
