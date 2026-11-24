@@ -189,6 +189,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Mood**: How a customer says a line: it picks the person's portrait, and the voice mood unless the line has its own. A person has the moods that it has portraits for.
 *Avoid:* pose, emotion, expression.
 
+**Line part**: The run of a customer line in one mood. A `(mood)` inside a line starts a new line part (`DialogueLine.parts()`): the dialogue box shows its face once the typing reaches it, and the voice says it in its own mood, from its own voice file, right after the part before. A line in one mood is one line part.
+*Avoid:* part (alone: a part is a computer part), segment, beat, sub-line.
+
 **Voice mood**: How a line sounds, apart from its picture: a `VoiceMood` in `voices/moods/<mood>.tres` (speed, pitch and more). A line speaks in its mood's voice mood, or in its own (`DialogueLine.voice_mood`, `[voice mood]` in a story file) when a portrait is used outside its own mood.
 *Avoid:* voice pose, tone.
 

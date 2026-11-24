@@ -1,6 +1,6 @@
 extends SceneTree
 ## Renders the voice file of every customer line in the story files (errands and call-outs) and the
-## shared conversations that has none, with Chimera's command-line tool, and lists the voice files that no line uses any
+## shared conversations that has none, one file per part of a line whose mood changes partway, with Chimera's command-line tool, and lists the voice files that no line uses any
 ## more. See docs/building-and-testing.md.
 ## From Godot/: CHIMERA=/path/to/chimera godot --headless --script res://voices/render_voices.gd
 
@@ -50,19 +50,22 @@ func _initialize() -> void:
 			for conversation: Conversation in errand.conversations:
 				for line: DialogueLine in conversation.all_lines():
 					if not line.text.strip_edges().is_empty():
-						wanted[Voices.path_of(line, voice.body)] = [line, voice.body, errand.file]
+						for part: DialogueLine in line.parts():
+							wanted[Voices.path_of(part, voice.body)] = [part, voice.body, errand.file]
 	for name: StringName in week.call_outs:
 		var outs: CallOuts = week.call_outs[name]
 		var in_voices: Array = voices.keys() if name == CallOuts.EVERYONE else ([bodies[name]] if bodies.has(name) else [])
 		for each: CallOuts.Set in outs.sets:
 			for voice: String in in_voices:
 				for line: DialogueLine in each.lines:
-					wanted[Voices.path_of(line, voice)] = [line, voice, outs.file]
+					for part: DialogueLine in line.parts():
+						wanted[Voices.path_of(part, voice)] = [part, voice, outs.file]
 	for conversation in shared:
 		for voice: String in voices:
 			for line: DialogueLine in conversation.all_lines():
 				if line != null and not line.text.strip_edges().is_empty():
-					wanted[Voices.path_of(line, voice)] = [line, voice, conversation.resource_path]
+					for part: DialogueLine in line.parts():
+						wanted[Voices.path_of(part, voice)] = [part, voice, conversation.resource_path]
 	var rendered := 0
 	for voice_path: String in wanted:
 		if FileAccess.file_exists(voice_path):

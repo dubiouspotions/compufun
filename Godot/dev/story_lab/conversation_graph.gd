@@ -75,6 +75,8 @@ var _columns: Dictionary[Resource, int] = {}
 var _returns: Array[Array] = []
 # What can be edited in place, by _spot_key: [the control it replaces, its text, apply(text) -> error].
 var _spots: Dictionary[String, Array] = {}
+# The face button of each line part, by the spot key of its words.
+var _faces: Dictionary[String, Button] = {}
 var _selected: Resource
 var _rebuilding: bool = false
 var _place_queued: bool = false
@@ -167,8 +169,10 @@ func return_arrows() -> Array[Array]:
 
 
 ## Sets the text of [param part]: a DialogueLine, a Choice, or the Conversation's brief. A story
-## file holds each on one line, so line breaks become spaces. Returns "" or why the text was
-## refused (empty, or it reads as something else in the story file).
+## file holds each on one line, so line breaks become spaces. A line's text is its words as the
+## story file writes them (StoryFormat.said_text): a "(mood)" in it starts a line part in that
+## mood. Returns "" or why the text was refused (empty, or it reads as something else in the story
+## file).
 func edit_text(part: Resource, text: String) -> String:
 	var said := text.replace("\r", "").replace("\n", " ").strip_edges()
 	if part is Conversation:
@@ -177,6 +181,8 @@ func edit_text(part: Resource, text: String) -> String:
 		return ""
 	if said == "":
 		return "Type some text, or delete it."
+	if part is DialogueLine:
+		return _edit_words(part, said)
 	var old: String = part.get(&"text")
 	var was_misread := _misread() != ""
 	part.set(&"text", said)
@@ -188,12 +194,93 @@ func edit_text(part: Resource, text: String) -> String:
 	return ""
 
 
-## Makes [param line] say its text in [param mood], one of the customer's person's moods.
+# Sets [param line]'s words, as the story file writes them, unless the file would read them back
+# otherwise; returns "" or why not.
+func _edit_words(line: DialogueLine, said: String) -> String:
+	var old_text := line.text
+	var old_changes := line.mood_changes
+	var was_misread := _misread() != ""
+	line.text = said
+	var wrong := StoryFormat.take_mood_changes(line)
+	var problem := ("The story file can't hold this text: %s" % "; ".join(wrong)) if not wrong.is_empty() else _misread()
+	if not wrong.is_empty() or (problem != "" and not was_misread):
+		line.text = old_text
+		line.mood_changes = old_changes
+		return problem
+	_changed(_owner_of(line))
+	return ""
+
+
+## Makes [param line] say its text in [param mood], one of the customer's person's moods: the
+## first line part's mood, which a line in one mood says all of.
 func set_mood(line: DialogueLine, mood: StringName) -> void:
 	line.mood = mood
-	if line.voice_mood == mood:
+	if line.voice_mood == mood and line.mood_changes.is_empty():
 		line.voice_mood = &""
 	_changed(_owner_of(line))
+
+
+## Sets the words of line part [param index] of [param line] ([method DialogueLine.parts]), keeping
+## the spaces around them; a "(mood)" in [param words] starts another line part. Returns "" or why
+## the words were refused, as [method edit_text] does.
+func edit_line_part(line: DialogueLine, index: int, words: String) -> String:
+	var said := words.replace("\r", "").replace("\n", " ").strip_edges()
+	if said == "":
+		return "Type some text, or merge this part into the one above." if index > 0 else "Type some text, or delete it."
+	var span := _part_span(line, index)
+	var old := line.text.substr(span.x, span.y - span.x)
+	var lead := old.length() - old.lstrip(" ").length()
+	var trail := old.length() - old.rstrip(" ").length()
+	var edited := line.duplicate() as DialogueLine
+	edited.text = line.text.substr(0, span.x) + old.left(lead) + said + old.right(trail) + line.text.substr(span.y)
+	edited.mood_changes = {}
+	for start: int in line.mood_changes:
+		edited.mood_changes[start + (edited.text.length() - line.text.length() if start > span.x else 0)] = line.mood_changes[start]
+	return _edit_words(line, StoryFormat.said_text(edited))
+
+
+## Makes line part [param index] of [param line] say its words in [param mood]; part 0 is
+## [method set_mood].
+func set_line_part_mood(line: DialogueLine, index: int, mood: StringName) -> void:
+	if index == 0:
+		set_mood(line, mood)
+		return
+	line.mood_changes[line.part_starts()[index]] = mood
+	_changed(_owner_of(line))
+
+
+## Splits line part [param index] of [param line] at [param at], a character of its words: the
+## words from there on (without the spaces before them) are a new line part in the same mood,
+## which the writer then changes. Returns "" or why not: each part needs words.
+func split_line_part(line: DialogueLine, index: int, at: int) -> String:
+	var span := _part_span(line, index)
+	var slice := line.text.substr(span.x, span.y - span.x)
+	var cut := span.x + slice.length() - slice.lstrip(" ").length() + at
+	if at <= 0 or line.text.substr(span.x, cut - span.x).strip_edges() == "":
+		return "Put the cursor where the new part starts, after some words."
+	while cut < span.y and line.text[cut] == " ":
+		cut += 1
+	if cut >= span.y or line.text.substr(cut, span.y - cut).strip_edges() == "":
+		return "Put the cursor where the new part starts, before some words."
+	line.mood_changes[cut] = line.mood_at(span.x)
+	_changed(_owner_of(line))
+	return ""
+
+
+## Merges line part [param index] (1 or later) of [param line] into the one before it, which says
+## its words in its own mood.
+func merge_line_part(line: DialogueLine, index: int) -> void:
+	if index <= 0 or index >= line.part_starts().size():
+		push_error("ConversationGraph.merge_line_part: \"%s\" has no part %d after its first" % [line.text, index])
+		return
+	line.mood_changes.erase(line.part_starts()[index])
+	_changed(_owner_of(line))
+
+
+# Where line part [param index] of [param line] is in its text: x its start, y its end.
+func _part_span(line: DialogueLine, index: int) -> Vector2i:
+	var starts := line.part_starts()
+	return Vector2i(starts[index], starts[index + 1] if index + 1 < starts.size() else line.text.length())
 
 
 ## Inserts a new line into [param reply] at [param index] (its end for -1) and returns it.
@@ -377,7 +464,7 @@ func set_line_effect(line: DialogueLine, effect: VoiceEffect) -> void:
 ## Makes [param line] speak in the voice mood [param voice] (voices/moods/), whatever its picture;
 ## empty, or its own mood, speaks in the voice of its picture's mood.
 func set_voice_mood(line: DialogueLine, voice: StringName) -> void:
-	line.voice_mood = voice if voice != line.mood else &""
+	line.voice_mood = voice if voice != line.mood or not line.mood_changes.is_empty() else &""
 	_changed(_owner_of(line))
 
 
@@ -443,6 +530,7 @@ func _rebuild() -> void:
 	_columns.clear()
 	_returns.clear()
 	_spots.clear()
+	_faces.clear()
 	_status.text = "Read only" if _read_only else "Double-click a text to edit it. Drag the dots to reorder."
 	if _conversation != null:
 		var meets: Array[Array] = []
@@ -840,53 +928,111 @@ func _choice_box(choice: Choice, reply: Reply, index: int) -> GraphNode:
 	return box
 
 
+# A line: its face and words, its voice, effect and look, Play and delete. A line whose mood changes
+# partway has one row per line part, each with its face and words, and the voice, effect and look
+# of the whole line under them.
 func _line_row(reply: Reply, index: int) -> Control:
 	var line := reply.lines[index]
 	var row := HBoxContainer.new()
 	if not _read_only:
 		row.add_child(_grip(line.text, {"kind": &"line", "list": reply, "index": index}))
 		row.set_drag_forwarding(Callable(), _can_drop.bind(&"line", reply), func(_at: Vector2, data: Variant) -> void: move_line(reply, data["index"], index))
+	var parts := line.parts()
+	var body := VBoxContainer.new()
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body.add_theme_constant_override(&"separation", 2)
+	if parts.size() > 1:
+		body.set_meta(&"line_parts", true)  # the editor of a part's words opens under that part
+	var words: VBoxContainer
+	for i: int in parts.size():
+		var part_row := HBoxContainer.new()
+		part_row.add_child(_face(line, i, parts[i].mood))
+		words = VBoxContainer.new()
+		words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		words.add_theme_constant_override(&"separation", 0)
+		var text := _label(parts[i].text, 14, ink)
+		var field := _part_field(i)
+		if parts.size() == 1:
+			_spot(words, text, line, field, StoryFormat.said_text(line), func(said: String) -> String: return edit_text(line, said))
+		else:
+			_spot(words, text, line, field, parts[i].text, func(said: String) -> String: return edit_line_part(line, i, said))
+		part_row.add_child(words)
+		if i > 0 and not _read_only:
+			var merge := _action("merge up", "Merge this part into the one above: its words in that part's face", merge_line_part.bind(line, i))
+			merge.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+			part_row.add_child(merge)
+		body.add_child(part_row)
+	if parts.size() > 1:
+		# The voice, effect and look hold for the whole line, so they sit under all its parts.
+		var whole := HBoxContainer.new()
+		var indent := Control.new()
+		indent.custom_minimum_size.x = thumb_size.x
+		whole.add_child(indent)
+		words = VBoxContainer.new()
+		words.add_theme_constant_override(&"separation", 0)
+		whole.add_child(words)
+		body.add_child(whole)
+	words.add_child(_line_voice(line))
+	words.add_child(_line_effect(line))
+	words.add_child(_line_look(line))
+	if parts.size() == 1:
+		row.add_child(body)
+	else:
+		# A faint panel holds the parts together as one line.
+		var panel := PanelContainer.new()
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var fill := StyleBoxFlat.new()
+		fill.bg_color = Color("f2f2f2")
+		fill.border_color = Color("d0d0d0")
+		fill.border_width_left = 3
+		fill.set_corner_radius_all(4)
+		fill.set_content_margin_all(3)
+		panel.add_theme_stylebox_override(&"panel", fill)
+		panel.add_child(body)
+		row.add_child(panel)
+	row.add_child(_icon_button(_play_icon(), "Play from this line in the game's dialogue box", func() -> void: preview_requested.emit(line)))
+	if not _read_only:
+		row.add_child(_icon_button(_trash_icon(), "Delete line", func() -> void: delete_line(reply, index)))
+	return row
+
+
+# The spot field of line part [param index]'s words: "text" for the first, "text1" and on after it.
+static func _part_field(index: int) -> StringName:
+	return &"text" if index == 0 else StringName("text%d" % index)
+
+
+# The face of line part [param index] of [param line], in [param mood], with its mood under it; a
+# click opens the mood picker for that part.
+func _face(line: DialogueLine, index: int, mood: StringName) -> Control:
 	var face := VBoxContainer.new()
 	face.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	face.add_theme_constant_override(&"separation", 0)
-	var mood := Button.new()
-	mood.custom_minimum_size = thumb_size
-	mood.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	mood.expand_icon = true
-	mood.icon = _thumb(line.mood)
-	if mood.icon == null:
-		mood.text = "?"
-	mood.tooltip_text = _mood_tip(line.mood)
+	var button := Button.new()
+	button.custom_minimum_size = thumb_size
+	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	button.expand_icon = true
+	button.icon = _thumb(mood)
+	if button.icon == null:
+		button.text = "?"
+	button.tooltip_text = _mood_tip(mood)
 	for state: StringName in [&"normal", &"hover", &"pressed", &"disabled"]:
 		var frame := StyleBoxFlat.new()
 		frame.bg_color = Color("e4e4e4") if state != &"hover" else Color("d2d2d2")
 		frame.set_corner_radius_all(4)
 		frame.set_content_margin_all(0)
-		mood.add_theme_stylebox_override(state, frame)
-	mood.add_theme_stylebox_override(&"focus", StyleBoxEmpty.new())
-	mood.add_theme_color_override(&"font_color", error_color)
+		button.add_theme_stylebox_override(state, frame)
+	button.add_theme_stylebox_override(&"focus", StyleBoxEmpty.new())
+	button.add_theme_color_override(&"font_color", error_color)
 	if not _read_only:
-		mood.pressed.connect(_pick_mood.bind(line, mood))
-	face.add_child(mood)
-	var caption := _label(String(line.mood), 10, faint_ink if _portrait(line.mood) != null else error_color)
+		button.pressed.connect(_pick_mood.bind(line, index, button))
+	_faces[_spot_key(line, _part_field(index))] = button
+	face.add_child(button)
+	var caption := _label(String(mood), 10, faint_ink if _portrait(mood) != null else error_color)
 	caption.autowrap_mode = TextServer.AUTOWRAP_OFF
 	caption.custom_minimum_size.x = thumb_size.x
 	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	face.add_child(caption)
-	row.add_child(face)
-	var words := VBoxContainer.new()
-	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	words.add_theme_constant_override(&"separation", 0)
-	var text := _label(line.text, 14, ink)
-	_spot(words, text, line, &"text", line.text, func(said: String) -> String: return edit_text(line, said))
-	words.add_child(_line_voice(line))
-	words.add_child(_line_effect(line))
-	words.add_child(_line_look(line))
-	row.add_child(words)
-	row.add_child(_icon_button(_play_icon(), "Play from this line in the game's dialogue box", func() -> void: preview_requested.emit(line)))
-	if not _read_only:
-		row.add_child(_icon_button(_trash_icon(), "Delete line", func() -> void: delete_line(reply, index)))
-	return row
+	return face
 
 
 func _label(text: String, font_size: int, color: Color) -> Label:
@@ -1169,7 +1315,7 @@ func _open_spot(part: Resource, field: StringName, reveal: bool = false) -> void
 	var editor := _text_editor(said, commit)
 	# A text gets the whole width of its box, under the row that shows it.
 	var row: Control = anchor
-	while not (row.get_parent() is GraphNode):
+	while not (row.get_parent() is GraphNode or row.get_parent().has_meta(&"line_parts")):
 		row = row.get_parent()
 	row.get_parent().add_child(holder)
 	row.get_parent().move_child(holder, row.get_index() + 1)
@@ -1181,11 +1327,46 @@ func _open_spot(part: Resource, field: StringName, reveal: bool = false) -> void
 			_rebuild.call_deferred())
 	holder.add_child(editor)
 	holder.add_child(error)
+	if part is DialogueLine:
+		holder.add_child(_split_button(part, field, editor, error))
 	anchor.hide()
 	editor.grab_focus.call_deferred()
 	_selected = part if part is Choice or part is Reply else _owner_of(part)
 	if reveal:
 		_reveal(editor)
+
+
+# The button under the editor of a line part's words that splits the part at the editor's cursor
+# into a new line part, then opens the new part's mood picker. It takes no focus, so the editor
+# keeps its cursor.
+func _split_button(line: DialogueLine, field: StringName, editor: TextEdit, error: Label) -> Button:
+	var index := 0 if field == &"text" else String(field).trim_prefix("text").to_int()
+	var split := _action("split at the cursor", "A new face from the cursor on: the line's mood changes there, in the same box", func() -> void:
+		var at := editor.get_caret_column()
+		for row: int in editor.get_caret_line():
+			at += editor.get_line(row).length() + 1
+		at -= editor.text.length() - editor.text.lstrip(" \n").length()
+		var problem := ""
+		if editor.text.replace("\n", " ").strip_edges() != line.parts()[index].text:
+			problem = edit_line_part(line, index, editor.text)
+		if problem == "":
+			problem = split_line_part(line, index, at)
+		if problem != "":
+			error.text = problem
+			error.show()
+			return
+		_pick_mood_later(line, index + 1))
+	split.size_flags_horizontal = Control.SIZE_SHRINK_END
+	return split
+
+
+# Opens the mood picker of line part [param index] of [param line] once the rebuild that the edit
+# queued is done.
+func _pick_mood_later(line: DialogueLine, index: int) -> void:
+	await get_tree().process_frame
+	var face: Button = _faces.get(_spot_key(line, _part_field(index)))
+	if face != null:
+		_pick_mood(line, index, face)
 
 
 # Once [param editor]'s box is laid out, scrolls over [member motion_seconds] by the least that
@@ -1439,7 +1620,7 @@ func _same(a: Reply, b: Reply) -> bool:
 	if a.lines.size() != b.lines.size() or a.choices.size() != b.choices.size():
 		return false
 	for i: int in a.lines.size():
-		if a.lines[i].text != b.lines[i].text or a.lines[i].mood != b.lines[i].mood or a.lines[i].voice_mood != b.lines[i].voice_mood:
+		if a.lines[i].text != b.lines[i].text or a.lines[i].mood != b.lines[i].mood or a.lines[i].voice_mood != b.lines[i].voice_mood or a.lines[i].mood_changes != b.lines[i].mood_changes:
 			return false
 	for i: int in a.choices.size():
 		var x := a.choices[i]
@@ -1502,7 +1683,8 @@ func _mood_tip(mood: StringName) -> String:
 	return tip
 
 
-func _pick_mood(line: DialogueLine, near: Control) -> void:
+# Opens the mood picker for line part [param index] of [param line] under [param near].
+func _pick_mood(line: DialogueLine, index: int, near: Control) -> void:
 	for child: Node in _moods_grid.get_children():
 		_moods_grid.remove_child(child)
 		child.queue_free()
@@ -1520,12 +1702,12 @@ func _pick_mood(line: DialogueLine, near: Control) -> void:
 		button.text = String(mood) if _has_voice_mood(mood) else "%s (no voice)" % mood
 		button.tooltip_text = _mood_tip(mood)
 		button.toggle_mode = true
-		button.button_pressed = mood == line.mood
+		button.button_pressed = mood == line.parts()[index].mood
 		if not _has_voice_mood(mood):
 			button.add_theme_color_override(&"font_color", error_color)
 		button.pressed.connect(func() -> void:
 			_mood_picker.hide()
-			set_mood(line, mood))
+			set_line_part_mood(line, index, mood))
 		_moods_grid.add_child(button)
 	_mood_picker.reset_size()
 	var at := near.get_global_transform_with_canvas() * Vector2(0, near.size.y)

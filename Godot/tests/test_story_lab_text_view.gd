@@ -1,6 +1,7 @@
 extends "res://tests/test.gd"
 ## The Story Lab's text view: unfinished text that outlives a quit, saving at once, the sidebar
-## (the line's face, the faces, the facts) and completion that opens by itself. Its Shift+Enter is in
+## (the line's face, the faces, the facts), completion that opens by itself, and a line whose mood
+## changes partway: its colours, the face of the part under the cursor and a face click on it. Its Shift+Enter is in
 ## test_story_lab_play_in_editor.gd.
 
 const ERRANDS := "res://story/errands/"
@@ -43,6 +44,7 @@ func run() -> void:
 	await _the_sidebar_follows_the_cursor()
 	_a_face_sets_the_mood_in_one_undo_step()
 	await _typing_opens_the_completion()
+	await _line_parts()
 	lab.queue_free()
 	await process_frame
 
@@ -217,3 +219,45 @@ func _key(keycode: Key, typed: String) -> InputEventKey:
 	key.unicode = typed.unicode_at(0) if typed != "" else 0
 	return key
 
+
+func _line_parts() -> void:
+	var said := "(thinking) So, my computer. (angry) It's broken (again)."
+	code.text = DROP_OFF + "\n" + said + "\n- OK."
+	var person: Person = (load("res://customers/skater_bro.tres") as Customer).person
+	var portrait: TextureRect = sidebar.get("_portrait")
+	var mood: Label = sidebar.get("_mood")
+	await _caret(5, 12)
+	check("in the first part the sidebar shows its face", [portrait.texture, mood.text], [person.portraits[&"thinking"], "thinking"])
+	await _caret(5, said.find("It's"))
+	check("in the second part, that part's face", [portrait.texture, mood.text], [person.portraits[&"angry"], "angry"])
+	await _caret(6, 0)
+	check("on the choice after it, the last part's face", portrait.texture, person.portraits[&"angry"])
+	var colors: Dictionary = code.syntax_highlighter.get_line_syntax_highlighting(5)
+	var at := said.find("(angry)")
+	check("the mood inside the line is coloured as the leading one", [colors.get(at, {}).get("color"), colors.get(at + "(angry) ".length(), {}).get("color"), colors.has(said.find("(again)"))],
+		[LabUI.GOOD, LabUI.TEXT, false])
+	code.clear_undo_history()
+	code.set_caret_line(5)
+	code.set_caret_column(said.find("broken"))
+	_face("happy").pressed.emit()
+	check("a face sets the mood of the part under the cursor, which stays in the words", [code.get_line(5), code.get_caret_column()], ["(thinking) So, my computer. (happy) It's broken (again).", said.find("broken")])
+	code.undo()
+	check("in one undo step", code.get_line(5), said)
+	code.set_caret_column(14)
+	_face("neutral").pressed.emit()
+	check("in the first part it sets the leading mood", code.get_line(5), "(neutral) So, my computer. (angry) It's broken (again).")
+	code.text = DROP_OFF + "\n(neutral) Hi. "
+	code.grab_focus()
+	code.set_caret_line(5)
+	code.set_caret_column(code.get_line(5).length())
+	root.push_input(_key(KEY_PARENLEFT, "("))
+	await process_frame
+	await process_frame
+	var options := code.get_code_completion_options().map(func(o: Dictionary) -> String: return o["display_text"])
+	var moods := Array(person.moods()).map(func(m: StringName) -> String: return String(m))
+	options.sort()
+	moods.sort()
+	check("typing ( inside a customer line offers the person's moods", [code.get_code_completion_selected_index() >= 0, options], [true, moods])
+	code.cancel_code_completion()
+	code.text = DROP_OFF
+	panel.save_now()

@@ -2,6 +2,7 @@ class_name DialogueOverlay
 extends Control
 ## A customer talks: their portrait, one line of a conversation at a time. A click anywhere shows
 ## the rest of a line that types, then goes to the next line; so does a pause after the voice ends.
+## A line whose mood changes partway shows the face of each part as the typing reaches it.
 ## Under a reply's last line, the player's choices, each a button that plays the customer's reply.
 ## A ConversationWalk decides what comes next. The portrait sways and breathes, and shakes in time
 ## with the voice.
@@ -95,6 +96,8 @@ var _slot_bottom: float
 var _figure: Rect2i
 # The shown portrait's pixels; null while none shows.
 var _image: Image
+# The mood whose portrait shows, as asked for.
+var _face: StringName = &""
 # The Box's own copy of its panel style, whose right margin keeps the text clear of the portrait.
 var _box_style: StyleBox
 # The right margin that the scene gives the box.
@@ -134,6 +137,7 @@ func _process(delta: float) -> void:
 	var breath := breath_rise * (0.5 + 0.5 * sin(TAU * _time / breath_seconds))
 	_portrait.rotation = _snap(deg_to_rad(sway + shake))
 	_portrait.scale = Vector2(1.0, 1.0 + _snap(breath + talk_rise * _talk))
+	_follow_typing()
 	var quiet := not _text.is_typing() and _voice.quiet()
 	_quiet = _quiet + delta if quiet and not _choices.visible else 0.0
 	if not _pending.is_empty():
@@ -245,6 +249,7 @@ func _rise_portrait() -> void:
 
 ## Shows the portrait of [param mood]. A mood that the person has no portrait for shows "neutral".
 func _show_portrait(mood: StringName) -> void:
+	_face = mood
 	_portrait.texture = null
 	_figure = Rect2i()
 	_image = null
@@ -427,6 +432,23 @@ func _show_line() -> void:
 	_speak(line)
 
 
+## The mood whose portrait shows: the shown line's part that the typing has reached.
+func face() -> StringName:
+	return _face
+
+
+# Shows the face of the part of the shown line that the typing has reached, the last part's once
+# the whole line shows.
+func _follow_typing() -> void:
+	var line := shown_line()
+	if line == null or line.mood_changes.is_empty():
+		return
+	var typed := _text.visible_characters
+	var mood := line.mood_at(line.text.length() if typed < 0 else typed - 1)
+	if mood != _face:
+		_show_portrait(mood)
+
+
 ## Stops the shown line's voice; the line and its text stay.
 func hush() -> void:
 	_voice.hush()
@@ -466,6 +488,7 @@ func _advance() -> void:
 	_quiet = 0.0
 	if _text.is_typing():
 		_text.finish()
+		_follow_typing()
 		return
 	if not _pending.is_empty():
 		_show_pending()

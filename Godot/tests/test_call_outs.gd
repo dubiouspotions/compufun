@@ -26,8 +26,9 @@ func run() -> void:
 	check("a customer without their own calls out everyone's set", game.call_outs_of(skater), everyone)
 	var silent := PackedStringArray()
 	for line: DialogueLine in everyone.lines:
-		if not ResourceLoader.exists(Voices.path_of(line, skater.voice.body)):
-			silent.append(line.text)
+		for part: DialogueLine in line.parts():
+			if not ResourceLoader.exists(Voices.path_of(part, skater.voice.body)):
+				silent.append(part.text)
 	check("everyone's call-outs keep the voices rendered for them", silent, PackedStringArray())
 
 	check("a customer's call-outs load", game.load_story(drafts({SKATER: SKATER_TEXT})), PackedStringArray())

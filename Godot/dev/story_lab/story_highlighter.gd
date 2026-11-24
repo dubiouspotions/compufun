@@ -1,7 +1,7 @@
 class_name StoryHighlighter
 extends SyntaxHighlighter
-## Colours a conversation of a story file (docs/dialogue.md): the "==" line, brief:, a line's mood,
-## the player's - and + choices, set, if and else, and [tags].
+## Colours a conversation of a story file (docs/dialogue.md): the "==" line, brief:, a line's mood
+## and each mood inside it, the player's - and + choices, set, if and else, and [tags].
 
 const KEYWORD := Color("c792ea")
 const TAG := Color("9d8cd6")
@@ -39,13 +39,32 @@ func _get_line_syntax_highlighting(line: int) -> Dictionary:
 	elif body.begins_with("("):
 		var close := body.find(")")
 		var mood := StringName(body.substr(1, close - 1)) if close > 0 else &""
-		colors[depth] = {"color": LabUI.GOOD if moods.is_empty() or moods.has(mood) else LabUI.BAD}
+		colors[depth] = {"color": _mood_color(mood)}
 		if close > 0:
 			colors[depth + close + 1] = {"color": LabUI.TEXT}
+			_mood_changes(colors, text, depth + close + 1)
 			_tags(colors, text, depth + close + 1)
 	else:
 		colors[depth] = {"color": LabUI.TEXT}
-	return colors
+		_mood_changes(colors, text, depth)
+	var sorted := {}
+	var columns := colors.keys()
+	columns.sort()
+	for column: int in columns:
+		sorted[column] = colors[column]
+	return sorted
+
+
+func _mood_color(mood: StringName) -> Color:
+	return LabUI.GOOD if moods.is_empty() or moods.has(mood) else LabUI.BAD
+
+
+# Colours each "(mood)" inside the line from [param from] on as the leading mood is coloured.
+func _mood_changes(colors: Dictionary, text: String, from: int) -> void:
+	var end := text.find(" [", from)
+	for found: RegExMatch in StoryFormat.mood_change().search_all(text.substr(0, end if end >= 0 else text.length()), from):
+		colors[found.get_start()] = {"color": _mood_color(StringName(found.get_string(1)))}
+		colors[found.get_end()] = {"color": LabUI.TEXT}
 
 
 # Colours the trailing [tags] of [param text] from [param from] on.

@@ -133,7 +133,7 @@ static func _check_dayparts(d: Day, found: PackedStringArray) -> void:
 ## The missing links of [param week], one sentence each, starting with the file path: a flag that
 ## nothing sets or nothing checks, a + choice without lines, an errand without a drop-off (unless it
 ## brings no computer and has no lines at all), an errand code whose alternatives can all fail on
-## its day, a line's mood that the customer's person has no portrait for, a voice mood that a line
+## its day, a line's mood (or the mood of a part of it) that the customer's person has no portrait for, a voice mood that a line
 ## speaks in (DialogueLine.voice) that has no voices/moods/<mood>.tres, a [leaving] line that the conversation can go on after (it plays in the
 ## dialogue box), a look that is not in DialogueLine.LOOKS or that never turns the view (on a
 ## [leaving] line or the phone), a problem without repair mechanics (no res://problems/<id>.tres, or one
@@ -165,8 +165,9 @@ static func missing_links(week: StoryFiles.Week) -> PackedStringArray:
 		var outs: CallOuts = week.call_outs[name]
 		for each: CallOuts.Set in outs.sets:
 			for line: DialogueLine in each.lines:
-				if not Voices.has_mood(line.voice()):
-					found.append("%s (%s): \"%s\" speaks in the voice mood %s, which has no voice (%s%s.tres)." % [outs.file, each.id, line.text.left(40), line.voice(), MOODS_DIR, line.voice()])
+				for part: DialogueLine in line.parts():
+					if not Voices.has_mood(part.voice()):
+						found.append("%s (%s): \"%s\" speaks in the voice mood %s, which has no voice (%s%s.tres)." % [outs.file, each.id, part.text.left(40), part.voice(), MOODS_DIR, part.voice()])
 	var named := {}
 	for d: Day in week.days:
 		for errand: Errand in d.errands:
@@ -212,13 +213,13 @@ static func _check_errand(errand: Errand, found: PackedStringArray) -> void:
 		_check_leaving(c, false, "%s (%s)" % [errand.file, c.id], found)
 		var person := errand.customer.person if errand.customer != null else null
 		for line: DialogueLine in c.all_lines():
-			var mood := line.mood
-			if person == null or not person.moods().has(mood):
-				found.append("%s (%s): \"%s\" is in the mood %s, which %s has no portrait for." % [errand.file, c.id, line.text.left(40), mood, person.resource_path if person != null else "a customer without a person"])
+			for part: DialogueLine in line.parts():
+				if person == null or not person.moods().has(part.mood):
+					found.append("%s (%s): \"%s\" is in the mood %s, which %s has no portrait for." % [errand.file, c.id, part.text.left(40), part.mood, person.resource_path if person != null else "a customer without a person"])
+				if line.voice_mood == &"" and not Voices.has_mood(part.mood):
+					found.append("%s (%s): \"%s\" is in the mood %s, which has no voice (%s%s.tres)." % [errand.file, c.id, part.text.left(40), part.mood, MOODS_DIR, part.mood])
 			if line.voice_mood != &"" and not Voices.has_mood(line.voice_mood):
 				found.append("%s (%s): \"%s\" speaks in the voice mood %s, which has no voice (%s%s.tres)." % [errand.file, c.id, line.text.left(40), line.voice_mood, MOODS_DIR, line.voice_mood])
-			elif line.voice_mood == &"" and not Voices.has_mood(mood):
-				found.append("%s (%s): \"%s\" is in the mood %s, which has no voice (%s%s.tres)." % [errand.file, c.id, line.text.left(40), mood, MOODS_DIR, mood])
 			if line.look != &"" and not DialogueLine.LOOKS.has(line.look):
 				found.append("%s (%s): \"%s\" has the look %s, which is not %s." % [errand.file, c.id, line.text.left(40), line.look, " or ".join(PackedStringArray(DialogueLine.LOOKS.keys()))])
 			elif line.look != &"" and (line.leaving or c.trigger == Conversation.Trigger.PHONE):

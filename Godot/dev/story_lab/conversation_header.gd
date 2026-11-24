@@ -104,7 +104,7 @@ func show_conversation(conversation: Conversation) -> void:
 	_leave.text = "" if conversation.leave_text == defaults.leave_text else conversation.leave_text
 	_back.text = "" if conversation.back_text == defaults.back_text else conversation.back_text
 	_pop_up_row.visible = conversation.trigger == Conversation.Trigger.EVENT
-	_pop_up.text = conversation.pop_up.text if conversation.pop_up != null else ""
+	_pop_up.text = StoryFormat.said_text(conversation.pop_up) if conversation.pop_up != null else ""
 	_error.hide()
 
 
@@ -124,7 +124,7 @@ func _commit() -> void:
 	var leave := _leave.text.strip_edges() if _leave.text.strip_edges() != "" else defaults.leave_text
 	var back := _back.text.strip_edges() if _back.text.strip_edges() != "" else defaults.back_text
 	var pop_up := _pop_up.text.strip_edges()
-	var had := _conversation.pop_up.text if _conversation.pop_up != null else ""
+	var had := StoryFormat.said_text(_conversation.pop_up) if _conversation.pop_up != null else ""
 	if brief == _conversation.brief and leave == _conversation.leave_text and back == _conversation.back_text and pop_up == had:
 		return
 	_conversation.brief = brief
@@ -135,6 +135,11 @@ func _commit() -> void:
 	elif pop_up != had:
 		var line := _conversation.pop_up.duplicate() as DialogueLine if _conversation.pop_up != null else DialogueLine.new()
 		line.text = pop_up
+		var wrong := StoryFormat.take_mood_changes(line)
+		if not wrong.is_empty():
+			_error.text = "The story file can't hold these words: %s" % "; ".join(wrong)
+			_error.show()
+			return
 		_conversation.pop_up = line
 	edited.emit()
 

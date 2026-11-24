@@ -213,7 +213,8 @@ tune (how far the pitch snaps to notes) take the curve's average once per line; 
 pre-rendered WAV has only the person's body and the mood's speed, pitch and swing, so the rest of
 the layers plays only where the live voice is built.
 
-**Live.** `VoicePlayer` speaks each line as it plays: in the web build Chimera runs as wasm in a
+**Live.** `VoicePlayer` speaks each line as it plays, the parts of a line whose mood changes
+partway one after another without a pause, each in its own mood: in the web build Chimera runs as wasm in a
 Web Worker (`voices/live/live_voice.js`), on desktop as the `ChimeraVoice` extension
 (`native/chimera_voice/`). Without them, as on a machine that has not built them, it plays the
 line's WAV, rendered as below. The Voice Lab, in the Dev menu (F3 or Cmd+3), puts every Chimera
@@ -237,8 +238,10 @@ release holds another hash than `main`.
 
 **Rendered.** Each customer line plays a WAV in `Godot/voices/`, which [Chimera](https://github.com/jamesondh/chimera-vocal-synth)
 renders from the text, in the body of the customer's `voice` person and the line's voice mood
-(`Godot/voices/moods/<mood>.tres`: speed, pitch and pitch swing). A line without its file is
-silent, and a debug run warns about it. Conversations that every customer shares, such as the thanks at a pickup, live in
+(`Godot/voices/moods/<mood>.tres`: speed, pitch and pitch swing). A line whose mood changes
+partway has one WAV per line part (`DialogueLine.parts()`), named by the same hash of its words, so
+an edit of one part renders only that part again; the player plays them one after another. A line
+without its file is silent, and a debug run warns about it. Conversations that every customer shares, such as the thanks at a pickup, live in
 `Godot/customers/conversations/`; they and everyone's call-outs (`story/callouts/everyone.callouts`)
 are rendered in each body that a customer's person has.
 

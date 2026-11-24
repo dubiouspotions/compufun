@@ -584,7 +584,8 @@ func _find_lines() -> void:
 				continue
 			for conversation: Conversation in errand.conversations:
 				for line: DialogueLine in conversation.all_lines():
-					_lines.append(["%s · %s" % [errand.customer.spoken_name(), line.text.left(50)], line, errand.customer.voice, VoiceEffect.of(line, conversation)])
+					for part: DialogueLine in line.parts():
+						_lines.append(["%s · %s" % [errand.customer.spoken_name(), part.text.left(50)], part, errand.customer.voice, VoiceEffect.of(line, conversation)])
 	for path: String in _resources(CUSTOMERS):
 		var resource := load(path)
 		if resource is Conversation:

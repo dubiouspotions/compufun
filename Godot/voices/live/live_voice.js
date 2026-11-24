@@ -33,18 +33,21 @@
 				} else if (m.kind === "say") {
 					current = m.id;
 					await loaded; // the first say arrives right behind init
-					if (current !== m.id) return;
-					const type = new TextEncoder().encode(m.voiceType || "");
-					w.say_voice_type(type.length ? put(type) : 0, type.length);
-					const text = new TextEncoder().encode(m.text);
-					const total = w.say_start(put(text), text.length, m.body, m.rate, m.speed, m.pitch, m.accent);
-					if (total === 0) throw new Error("say_start rendered nothing for: " + m.text);
-					while (current === m.id) {
-						const n = w.say_render(CHUNK);
-						if (n === 0) break;
-						const chunk = new Float32Array(w.memory.buffer, w.say_buffer(), n).slice();
-						postMessage({ kind: "chunk", id: m.id, samples: chunk }, [chunk.buffer]);
-						await pause();
+					// The parts of a line, rendered one after another into the same stream of chunks.
+					for (const part of m.parts) {
+						if (current !== m.id) return;
+						const type = new TextEncoder().encode(part.voiceType || "");
+						w.say_voice_type(type.length ? put(type) : 0, type.length);
+						const text = new TextEncoder().encode(part.text);
+						const total = w.say_start(put(text), text.length, m.body, m.rate, part.speed, part.pitch, part.accent);
+						if (total === 0) throw new Error("say_start rendered nothing for: " + part.text);
+						while (current === m.id) {
+							const n = w.say_render(CHUNK);
+							if (n === 0) break;
+							const chunk = new Float32Array(w.memory.buffer, w.say_buffer(), n).slice();
+							postMessage({ kind: "chunk", id: m.id, samples: chunk }, [chunk.buffer]);
+							await pause();
+						}
 					}
 				}
 			} catch (err) {
@@ -83,9 +86,11 @@
 			worker.postMessage({ kind: "init", wasm: wasmBytes.buffer, dict: dictBytes.buffer }, [wasmBytes.buffer, dictBytes.buffer]);
 		},
 
-		// body: 0 male, 1 female, 2 child. speed and pitch are multipliers, accent < 0 is the
-		// default, volume is linear. voiceType is a voice type's text form; "" says it plainly.
-		say(text, body, speed, pitch, accent, volume, voiceType) {
+		// Says one line. partsJson: a JSON array of its parts, each { text, speed, pitch, accent,
+		// voiceType }, said one after another without a pause; speed and pitch are multipliers,
+		// accent < 0 is the default, voiceType is a voice type's text form ("" says it plainly).
+		// body: 0 male, 1 female, 2 child. volume is linear.
+		sayParts(partsJson, body, volume) {
 			api.stop();
 			if (!ctx) {
 				ctx = new AudioContext();
@@ -100,7 +105,7 @@
 			gain.gain.value = volume;
 			id += 1;
 			next = 0;
-			worker.postMessage({ kind: "say", id, text, body, rate: RATE, speed, pitch, accent, voiceType: voiceType || "" });
+			worker.postMessage({ kind: "say", id, parts: JSON.parse(partsJson), body, rate: RATE });
 		},
 
 		stop() {

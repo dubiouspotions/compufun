@@ -556,6 +556,8 @@ func _options() -> Dictionary:
 	var before := _code.get_line(_code.get_caret_line()).substr(0, _code.get_caret_column())
 	if RegEx.create_from_string("^\\t*\\([a-z0-9_]*$").search(before) != null:
 		return {"options": _moods(), "suffix": ") ", "moods": true}
+	if _is_said(_code.get_caret_line()) and RegEx.create_from_string("^[^\\[]*\\([a-z0-9_]*$").search(before) != null:
+		return {"options": PackedStringArray(Array(_moods()).filter(func(mood: String) -> bool: return Person.MOODS.has(StringName(mood)))), "suffix": ") ", "moods": true}
 	if RegEx.create_from_string("\\[effect [a-z0-9_]*$").search(before) != null:
 		return {"options": LabUI.resource_names("res://voices/effects/"), "suffix": "]"}
 	if RegEx.create_from_string("\\[voice [a-z0-9_]*$").search(before) != null:
@@ -673,11 +675,29 @@ func _said_at(row: int) -> Dictionary:
 
 func _show_said() -> void:
 	var at := _said_at(_code.get_caret_line())
-	_sidebar.show_line(at.get("line") as DialogueLine, at.get("own", false))
+	var line := at.get("line") as DialogueLine
+	if line != null:
+		var parts := line.parts()
+		# The line above shows as the player answers it: all shown, in its last part's face.
+		var part := _mood_changes_before(_code.get_line(at.row), _code.get_caret_column()).size() if at.own else parts.size() - 1
+		line = parts[mini(part, parts.size() - 1)]
+	_sidebar.show_line(line, at.get("own", false))
 
 
-# Gives the line under the caret [param mood], in one undo step: a customer line's mood is
-# replaced; an empty line gets "(mood) "; under a choice, an if or an else, a new line one tab deeper
+# The "(mood)"s inside the customer line [param raw], as written with its indent, that start before
+# [param column]: each starts a part, so their count is the part that the column is in.
+func _mood_changes_before(raw: String, column: int) -> Array[RegExMatch]:
+	var lead := RegEx.create_from_string("^\\t*(\\([a-z0-9_]*\\)\\s*)?").search(raw)
+	var tags := raw.find(" [", lead.get_end())
+	var found: Array[RegExMatch] = []
+	for change: RegExMatch in StoryFormat.mood_change().search_all(raw.substr(0, tags if tags >= 0 else raw.length()), lead.get_end()):
+		if change.get_start() < column:
+			found.append(change)
+	return found
+
+
+# Gives the line under the caret [param mood], in one undo step: the mood of a customer line's part
+# under the caret is replaced; an empty line gets "(mood) "; under a choice, an if or an else, a new line one tab deeper
 # gets it; after set, a new line beside it; after the "==" line and its brief, a new first line.
 func _set_mood(mood: StringName) -> void:
 	if not _code.editable:
@@ -694,6 +714,13 @@ func _set_mood(mood: StringName) -> void:
 	if body.strip_edges() == "":
 		_code.set_line(row, tabs + said)
 		_code.set_caret_column(_code.get_line(row).length())
+	elif _is_said(row) and not _mood_changes_before(raw, _code.get_caret_column()).is_empty():
+		var change: RegExMatch = _mood_changes_before(raw, _code.get_caret_column()).back()
+		var column := _code.get_caret_column()
+		var marker := "(%s)" % mood
+		var old_end := change.get_start() + change.get_string(1).length() + 2
+		_code.set_line(row, raw.substr(0, change.get_start()) + marker + raw.substr(old_end))
+		_code.set_caret_column(column + marker.length() - (old_end - change.get_start()) if column >= old_end else mini(column, change.get_start() + marker.length()))
 	elif _is_said(row):
 		var old := RegEx.create_from_string("^\\([a-z0-9_]*\\)\\s*").search(body)
 		var old_end := depth + (old.get_end() if old != null else 0)

@@ -36,6 +36,12 @@ static var _web_error: JavaScriptObject
 @export_range(0.0, 1.0, 0.01) var swing_jitter: float = 0.3
 
 var _left: int = 0
+# The parts of the live line on desktop (say's dictionaries), the one that plays now, and the body.
+var _live: Array[Dictionary] = []
+var _live_at: int = 0
+var _body: int = 0
+# The rendered files still to play, each [stream, pitch_scale], when the line is not live.
+var _files: Array[Array] = []
 ## When the last samples are pushed, in ticks (msec); the player stops once they have played.
 var _drained_at: int = 0
 
@@ -45,12 +51,14 @@ func _ready() -> void:
 	if AudioServer.get_bus_index(BUS) < 0:
 		push_error("VoicePlayer: no \"%s\" bus in the bus layout (default_bus_layout.tres)" % BUS)
 	bus = BUS
+	finished.connect(_play_next_file)
 
 
 ## Starts saying [param line] as [param person], in its mood, under [param effect]
 ## (null for none) and [member through], and returns its length in seconds, or 0 when the length
-## is not known yet (a live line in a browser). A pre-rendered WAV has only the person's body and the
-## mood's rate, pitch and swing.
+## is not known yet (a live line in a browser). A line with parts ([method DialogueLine.parts]) says
+## them one after another, each in its own mood, without a pause between them. A pre-rendered WAV
+## has only the person's body and the mood's rate, pitch and swing.
 func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) -> float:
 	hush()
 	if line == null or line.text.strip_edges().is_empty():
@@ -59,21 +67,31 @@ func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) ->
 		push_error("VoicePlayer: no voice person, or one with an unknown body, for \"%s\"" % line.text)
 		return 0.0
 	var voice := person.body
-	var mood := Voices.mood(line.voice())
-	var rate := mood.rate * (1.0 + randf_range(-rate_jitter, rate_jitter))
-	var pitch := mood.pitch * (1.0 + randf_range(-pitch_jitter, pitch_jitter))
-	var swing := mood.swing * (1.0 + randf_range(-swing_jitter, swing_jitter))
+	# One jitter for the whole line, so that its parts sound like one person.
+	var jitter := Vector3(1.0 + randf_range(-rate_jitter, rate_jitter), 1.0 + randf_range(-pitch_jitter, pitch_jitter), 1.0 + randf_range(-swing_jitter, swing_jitter))
+	var parts: Array[Dictionary] = []
+	for part: DialogueLine in line.parts():
+		var mood := Voices.mood(part.voice())
+		parts.append({line = part, mood = mood, rate = mood.rate * jitter.x, pitch = mood.pitch * jitter.y,
+				swing = mood.swing * jitter.z, type = Voices.layer(person, mood, effect, through)})
 	pitch_scale = 1.0
-	var type_text := Voices.layer(person, mood, effect, through)
 	var web := _web_voice()
 	if web != null:
-		web.say(line.text, BODIES[voice], rate, pitch, swing, db_to_linear(volume_db), type_text)
+		var said: Array[Dictionary] = []
+		for part: Dictionary in parts:
+			said.append({text = (part.line as DialogueLine).text, speed = part.rate, pitch = part.pitch, accent = part.swing, voiceType = part.type})
+		web.sayParts(JSON.stringify(said), BODIES[voice], db_to_linear(volume_db))
 		_owner = self
 		return 0.0
 	var engine := _desktop_engine()
 	if engine != null:
-		engine.set_voice_type(type_text)
-		_left = engine.start(line.text, BODIES[voice], MIX_RATE, rate, pitch, swing)
+		_live = parts
+		_body = BODIES[voice]
+		# Planned last to first: each later part's length, then the first part, which plays now.
+		var samples := 0
+		for i: int in range(parts.size() - 1, -1, -1):
+			_left = _start_part(i)
+			samples += _left
 		if _left > 0:
 			var generator := AudioStreamGenerator.new()
 			generator.mix_rate = MIX_RATE
@@ -83,16 +101,20 @@ func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) ->
 			_owner = self
 			_drained_at = 0
 			set_process(true)
-			return _left / MIX_RATE
+			return samples / MIX_RATE
+		_live = []
 		push_error("VoicePlayer: ChimeraVoice rendered nothing for \"%s\"; playing the file" % line.text)
-	var file := Voices.stream_of(line, voice)
-	if file == null:
-		return 0.0
-	# A rendered file is fixed; playing it a touch higher or lower is the variation it can have.
-	pitch_scale = pitch / mood.pitch
-	stream = file
-	_start()
-	return file.get_length() / pitch_scale
+	var seconds := 0.0
+	for part: Dictionary in parts:
+		var file := Voices.stream_of(part.line, voice)
+		if file == null:
+			continue
+		# A rendered file is fixed; playing it a touch higher or lower is the variation it can have.
+		var scale: float = part.pitch / (part.mood as VoiceMood).pitch
+		_files.append([file, scale])
+		seconds += file.get_length() / scale
+	_play_next_file()
+	return seconds
 
 
 ## How loud the voice is right now, from 0 (silent) to 1 (loud speech). It follows the syllables,
@@ -116,6 +138,8 @@ func quiet() -> bool:
 
 ## Stops the line, live or not.
 func hush() -> void:
+	_files.clear()
+	_live = []
 	stop()
 	set_process(false)
 	if _owner != self:
@@ -143,6 +167,9 @@ func _process(_delta: float) -> void:
 	if wanted <= 0:
 		return
 	var samples: PackedFloat32Array = _engine.render(wanted)
+	if samples.is_empty() and _live_at + 1 < _live.size():
+		_start_part(_live_at + 1)
+		samples = _engine.render(wanted)
 	if samples.is_empty():
 		_drained_at = Time.get_ticks_msec()
 		return
@@ -151,6 +178,25 @@ func _process(_delta: float) -> void:
 	for i in samples.size():
 		frames[i] = Vector2(samples[i], samples[i])
 	playback.push_buffer(frames)
+
+
+# Plans part [param index] of the live line in the engine, which renders it next; returns its length
+# in samples, 0 when it says nothing.
+func _start_part(index: int) -> int:
+	var part := _live[index]
+	_live_at = index
+	_engine.set_voice_type(part.type)
+	return _engine.start((part.line as DialogueLine).text, _body, MIX_RATE, part.rate, part.pitch, part.swing)
+
+
+# Plays the next rendered file of the line, if any is left.
+func _play_next_file() -> void:
+	if _files.is_empty():
+		return
+	var next: Array = _files.pop_front()
+	stream = next[0]
+	pitch_scale = next[1]
+	_start()
 
 
 # The ChimeraVoice extension with the dictionary loaded, or null without the extension.

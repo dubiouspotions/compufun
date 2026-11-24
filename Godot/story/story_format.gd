@@ -37,6 +37,8 @@ const _DEFAULT_FIRST_WAIT: Vector2 = Vector2(5.0, 8.0)
 const _DEFAULT_GAP: Vector2 = Vector2(20.0, 40.0)
 const _DEFAULT_IDLE_WAIT: float = 4.0
 
+static var _mood_change: RegEx
+
 ## What a line of a conversation is, by how it starts after its indent (docs/dialogue.md): a
 ## customer line, a "-" or "+" choice, "set", "if" or "else".
 enum LineKind { SAID, CHOICE, SET, IF, ELSE }
@@ -59,6 +61,20 @@ static func parse_line(text: String, path: String) -> Parsed:
 	result.value = reader._said({text = text.strip_edges(), line = 0})
 	result.errors = reader._sorted_errors()
 	return result
+
+
+## Takes each "(mood)" inside [param line]'s [member DialogueLine.text] out into its
+## [member DialogueLine.mood_changes], which it replaces, as a story file reads the words of a line: for an editor
+## that sets a line's words as they are written ([method said_text]). Returns what is wrong, one
+## "what" each, such as a mood without words after it; empty when the words read.
+static func take_mood_changes(line: DialogueLine) -> PackedStringArray:
+	var reader := _Reader.new("", "")
+	line.mood_changes = {}
+	reader._take_mood_changes(line, 0)
+	var whats := PackedStringArray()
+	for error: String in reader._sorted_errors():
+		whats.append(error.trim_prefix(":1: "))
+	return whats
 
 
 ## The kind of [param text], a line of a conversation without its indent.
@@ -165,12 +181,31 @@ static func write_errand(errand: Errand) -> String:
 		if c.back_text != Conversation.new().back_text:
 			head += " [back %s]" % c.back_text
 		if c.pop_up != null:
-			head += " [pop-up %s%s]" % ["" if c.pop_up.mood == &"neutral" else "(%s) " % c.pop_up.mood, c.pop_up.text]
+			head += " [pop-up %s%s]" % ["" if c.pop_up.mood == &"neutral" else "(%s) " % c.pop_up.mood, said_text(c.pop_up)]
 		out.append(head)
 		if c.brief != "":
 			out.append("brief: " + c.brief)
 		_write_block(out, c, 0)
 	return "\n".join(out) + "\n"
+
+
+## The words of [param line] as a story file writes them: its [member DialogueLine.text] with
+## "(mood) " back where each of its [member DialogueLine.mood_changes] starts a part; without the
+## leading mood and the tags. A line in one mood gives its text as it is.
+static func said_text(line: DialogueLine) -> String:
+	var text := line.text
+	var starts := line.part_starts()
+	for i: int in range(starts.size() - 1, 0, -1):
+		text = text.insert(starts[i], "(%s) " % line.mood_changes[starts[i]])
+	return text
+
+
+## What starts a part of a customer line in another mood, inside the line: "(mood)" with a mood of
+## [constant Person.MOODS], and the spaces after it. Group 1 is the mood.
+static func mood_change() -> RegEx:
+	if _mood_change == null:
+		_mood_change = RegEx.create_from_string("\\((%s)\\)\\s*" % "|".join(PackedStringArray(Person.MOODS)))
+	return _mood_change
 
 
 ## The problem file of [param problem]'s text.
@@ -259,10 +294,10 @@ static func _write_block(out: PackedStringArray, reply: Reply, depth: int) -> vo
 	if not reply.set_flags.is_empty():
 		out.append(tabs + "set " + write_flags(reply.set_flags))
 	for line: DialogueLine in reply.lines:
-		var said: String = "%s(%s) %s" % [tabs, line.mood, line.text]
+		var said: String = "%s(%s) %s" % [tabs, line.mood, said_text(line)]
 		if line.look != &"":
 			said += " [look %s]" % line.look
-		if line.voice() != line.mood:
+		if line.voice_mood != &"" and (line.voice_mood != line.mood or not line.mood_changes.is_empty()):
 			said += " [voice %s]" % line.voice_mood
 		if line.effect != null:
 			said += " [effect %s]" % _stem(line.effect)
@@ -782,11 +817,35 @@ class _Reader:
 			text = text.substr(0, found.get_start())
 			found = tag.search(text)
 		line.text = text
-		if line.voice_mood == line.mood:
+		_take_mood_changes(line, token.line)
+		if line.voice_mood == line.mood and line.mood_changes.is_empty():
 			line.voice_mood = &""
 		if text == "":
 			_error(token.line, "a line without text")
 		return line
+
+	# Takes each "(mood)" inside [param line]'s text, a mood of Person.MOODS, and the spaces after
+	# it out of the text into DialogueLine.mood_changes; any other "(...)" stays text.
+	func _take_mood_changes(line: DialogueLine, at: int) -> void:
+		var words := ""
+		var from := 0
+		for found: RegExMatch in StoryFormat.mood_change().search_all(line.text):
+			words += line.text.substr(from, found.get_start() - from)
+			if line.mood_changes.has(words.length()):
+				_error(at, "no words after (%s): each mood inside a line starts a part that says something" % line.mood_changes[words.length()])
+			line.mood_changes[words.length()] = StringName(found.get_string(1))
+			from = found.get_end()
+		if line.mood_changes.is_empty():
+			return
+		line.text = words + line.text.substr(from)
+		var parts := line.parts()
+		for i: int in parts.size():
+			if parts[i].text != "":
+				continue
+			if i == 0:
+				_error(at, "no words before (%s): a line starts with its mood, \"(%s) words\"" % [parts[1].mood, parts[1].mood])
+			else:
+				_error(at, "no words after (%s): each mood inside a line starts a part that says something" % parts[i].mood)
 
 	# Splits trailing "[...]" tags off [param text]: {text, tags} with the tags in written order.
 	func _split_tags(text: String) -> Dictionary:

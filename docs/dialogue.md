@@ -250,7 +250,19 @@ brief: He arrives cheerful; the problem comes out only when asked.
 - `(mood) text` is a customer line. Without a mood it is neutral. `[effect name]` at the end
   gives it its own voice effect (`voices/effects/<name>.tres`). `[voice mood]` speaks it in another
   voice mood than its portrait's (`voices/moods/<mood>.tres`), for a portrait used outside its own
-  mood. `[leaving]` makes it a call-out:
+  mood.
+- **A line's mood can change partway.** Inside a customer line, `(mood)` with a mood of
+  `Person.MOODS` starts a new line part in that mood; any other word in parentheses stays text.
+  It is still one line: one box, one click. The dialogue box shows each part's face as the typing
+  reaches it, and a click that shows the rest of the line shows the last part's face. The voice
+  says the parts one after another, each in its own mood, without a pause; each part has its own
+  voice file. The tags at the end (`[voice]`, `[effect]`, `[look]`, `[leaving]`) hold for the
+  whole line: with `[voice mood]` every part speaks in that voice mood, and only the faces change.
+
+  ```
+  (neutral) I always help when I can. About the computer... (angry) You can keep it.
+  ```
+ `[leaving]` makes it a call-out:
   the customer says it while walking out, outside the dialogue box, as at the end of a visit.
   Leaving lines come last: the box closes before them. A leaving line that the conversation can go
   on after plays in the box, and the story check lists it.
@@ -299,7 +311,7 @@ files on every push; nobody edits it.
 
 The files are the outline. The story check lists the missing links: a flag that nothing sets or
 checks, a `+` choice without a line, an errand without a `drop-off`, an errand code whose alternatives can
-all fail, a mood that the person has no portrait for, a voice mood that a line speaks in and that has no voice, a `[leaving]` line that the
+all fail, a mood that the person has no portrait for (a leading one or one inside a line), a voice mood that a line speaks in and that has no voice, a `[leaving]` line that the
 conversation can go on after, a look that is unknown or never turns the view, a problem without repair mechanics, a problem file that no errand
 names, a call-out whose voice mood has no voice:
 

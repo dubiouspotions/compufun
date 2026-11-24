@@ -1,5 +1,7 @@
 	(happy) Sweet!
 A customer line: the mood, then the words.
+	(neutral) Sure. (angry) Not you!
+A mood inside the line changes the face there; still one box.
 	- Welcome to CompuFun!
 	+ When did it start?
 Choices; in a row, one list. After a - it goes on below the list, after a + the list shows again.
