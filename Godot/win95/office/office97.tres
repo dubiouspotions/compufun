@@ -6,12 +6,20 @@
 [ext_resource type="Texture2D" path="res://win95/office/icons/office_logo_32.png" id="logo"]
 [ext_resource type="PackedScene" path="res://win95/office/shortcut_bar.tscn" id="shortcut_bar"]
 [ext_resource type="PackedScene" path="res://win95/office/word.tscn" id="word_app"]
+[ext_resource type="PackedScene" path="res://win95/office/excel.tscn" id="excel_app"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/excel_32.png" id="excel"]
 
 [sub_resource type="Resource" id="winword"]
 script = ExtResource("file")
 name = "WINWORD.EXE"
 icon = ExtResource("word")
 program = ExtResource("word_app")
+
+[sub_resource type="Resource" id="excel_exe"]
+script = ExtResource("file")
+name = "EXCEL.EXE"
+icon = ExtResource("excel")
+program = ExtResource("excel_app")
 
 [sub_resource type="Resource" id="msoffice"]
 script = ExtResource("file")
@@ -24,7 +32,7 @@ script = ExtResource("file")
 name = "Office"
 icon = ExtResource("folder")
 is_folder = true
-children = Array[Resource]([SubResource("winword"), SubResource("msoffice")])
+children = Array[Resource]([SubResource("excel_exe"), SubResource("winword"), SubResource("msoffice")])
 
 [sub_resource type="Resource" id="templates"]
 script = ExtResource("file")

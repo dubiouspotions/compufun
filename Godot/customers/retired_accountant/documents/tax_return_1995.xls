@@ -1,0 +1,20 @@
+# Bob's tax return for 1995. Placeholder for the writers.
+A width: 30
+B width: 12
+A1 bold: TAX RETURN 1995
+A3 bold underline: Income
+B3 bold right: kr
+A4: Pension
+B4 comma 0: 118400
+A5: Interest, savings account
+B5 comma 0: 2315
+A6 bold: Total income
+B6 bold comma 0: 120715
+A8 bold underline: Deductions
+A9: Memory for the computer (Kev)
+B9 comma 0: 0
+A10: Stamps for the tax office
+B10 comma 0: 28
+A11 bold: Total deductions
+B11 bold comma 0: 28
+A13 italic: Check every figure twice. Then once more.

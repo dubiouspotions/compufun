@@ -40,6 +40,7 @@
 [ext_resource type="Script" path="res://customers/customer.gd" id="38_tnt8y"]
 [ext_resource type="Resource" path="res://win95/office/office97.tres" id="office97"]
 [ext_resource type="Resource" path="res://win95/office/word_shortcut.tres" id="word_shortcut"]
+[ext_resource type="Resource" path="res://win95/office/excel_shortcut.tres" id="excel_shortcut"]
 [ext_resource type="Resource" path="res://win95/office/shortcut_bar_startup.tres" id="office_startup"]
 
 [sub_resource type="Resource" id="Resource_b132l"]
@@ -217,9 +218,9 @@ script = ExtResource("35_4lgvo")
 drive_c = Array[ExtResource("6_1xsf3")]([SubResource("Resource_27iha"), SubResource("Resource_lst57")])
 installed_apps = PackedStringArray("Calculator", "Notepad")
 registered_owner = "Cole Vanderbilt"
-start_menu_programs = Array[ExtResource("6_1xsf3")]([ExtResource("word_shortcut"), ExtResource("office_startup")])
+start_menu_programs = Array[ExtResource("6_1xsf3")]([ExtResource("excel_shortcut"), ExtResource("word_shortcut"), ExtResource("office_startup")])
 program_files = Array[ExtResource("6_1xsf3")]([ExtResource("office97")])
-desktop = Array[ExtResource("6_1xsf3")]([ExtResource("word_shortcut")])
+desktop = Array[ExtResource("6_1xsf3")]([ExtResource("word_shortcut"), ExtResource("excel_shortcut")])
 
 [sub_resource type="Resource" id="Resource_qkb4c"]
 script = ExtResource("4_mcnhv")

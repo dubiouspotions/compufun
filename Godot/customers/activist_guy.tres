@@ -53,6 +53,7 @@
 [ext_resource type="Texture2D" path="res://win95/mirc/logo_32.png" id="icon_mirc"]
 [ext_resource type="Resource" path="res://win95/office/office97.tres" id="office97"]
 [ext_resource type="Resource" path="res://win95/office/word_shortcut.tres" id="word_shortcut"]
+[ext_resource type="Resource" path="res://win95/office/excel_shortcut.tres" id="excel_shortcut"]
 
 [sub_resource type="Resource" id="Hardware_486"]
 script = ExtResource("hardware_script")
@@ -508,7 +509,7 @@ target = "C:\\MIRC\\MIRC32.EXE"
 script = ExtResource("9_86j8n")
 drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResource("Resource_docs"), SubResource("Folder_program_files"), SubResource("Folder_mirc")])
 desktop = Array[ExtResource("2_egn44")]([SubResource("Shortcut_netscape"), SubResource("Shortcut_mirc")])
-start_menu_programs = Array[ExtResource("2_egn44")]([SubResource("Start_mirc"), ExtResource("word_shortcut")])
+start_menu_programs = Array[ExtResource("2_egn44")]([SubResource("Start_mirc"), ExtResource("excel_shortcut"), ExtResource("word_shortcut")])
 installed_apps = PackedStringArray("Calculator", "Notepad")
 registered_owner = "Craig"
 dial_up_name = "MainStreet Online"

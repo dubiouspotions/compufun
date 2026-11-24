@@ -1,0 +1,26 @@
+# Harbour Import AB, the containers of May 1996. Placeholder for the writers.
+A width: 14
+B width: 12
+C width: 10
+D width: 20
+A1 bold: CONTAINERS, MAY 1996
+A3 bold underline: Container
+B3 bold underline: From
+C3 bold underline: Arrived
+D3 bold underline: Status
+A4: HBIU 446981
+B4: Hamburg
+C4: '6 May
+D4: Delivered
+A5: HBIU 447033
+B5: Gdansk
+C5: '13 May
+D5: Delivered
+A6: HBIU 447120
+B6: Rotterdam
+C6: '24 May
+D6 bold: Held at customs!
+A7: HBIU 447215
+B7: Rotterdam
+C7: '31 May
+D7: Expected

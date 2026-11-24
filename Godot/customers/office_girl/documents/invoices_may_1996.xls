@@ -1,0 +1,20 @@
+# Harbour Import AB, invoices sent in May 1996. Placeholder for the writers.
+A width: 22
+B width: 10
+C width: 12
+A1 bold: INVOICES, MAY 1996
+A3 bold underline: Customer
+B3 bold underline: Invoice
+C3 bold underline right: kr
+A4: Nordic Garden Supply
+B4: '96-041
+C4 comma 0: 18450
+A5: Sundberg Furniture
+B5: '96-042
+C5 comma 0: 7200
+A6: Nordic Garden Supply
+B6: '96-043
+C6 comma 0: 3975
+A8 bold: Total
+C8 bold comma 0: 29625
+A10 italic: 96-044 waits for container HBIU 447120.

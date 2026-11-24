@@ -43,6 +43,7 @@
 [ext_resource type="Texture2D" path="res://win95/wallpapers/red_blocks.png" id="wallpaper"]
 [ext_resource type="Resource" path="res://win95/office/office97.tres" id="office97"]
 [ext_resource type="Resource" path="res://win95/office/word_shortcut.tres" id="word_shortcut"]
+[ext_resource type="Resource" path="res://win95/office/excel_shortcut.tres" id="excel_shortcut"]
 [ext_resource type="Texture2D" path="res://win95/office/icons/word_document_32.png" id="icon_word_document"]
 
 [sub_resource type="Resource" id="Hardware_machine"]
@@ -297,7 +298,7 @@ drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResou
 emails = Array[ExtResource("7_pq1pi")]([SubResource("Resource_ylt2v"), SubResource("Resource_ujwre")])
 installed_apps = PackedStringArray("Calculator", "Notepad", "Media Player", "Sound Recorder")
 volume = 60.0
-start_menu_programs = Array[ExtResource("2_egn44")]([ExtResource("word_shortcut")])
+start_menu_programs = Array[ExtResource("2_egn44")]([ExtResource("excel_shortcut"), ExtResource("word_shortcut")])
 program_files = Array[ExtResource("2_egn44")]([ExtResource("office97")])
 recently_opened = PackedStringArray("C:\\My Documents\\Business plan.doc")
 

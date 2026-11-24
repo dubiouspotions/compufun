@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Win95File" format=3]
+
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="file"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/excel_32.png" id="excel"]
+
+[resource]
+script = ExtResource("file")
+name = "Microsoft Excel"
+icon = ExtResource("excel")
+target = "C:\\Program Files\\Microsoft Office\\Office\\EXCEL.EXE"

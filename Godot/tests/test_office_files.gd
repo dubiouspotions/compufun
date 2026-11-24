@@ -5,6 +5,7 @@ extends "res://tests/test.gd"
 
 const WIN95 := "res://win95/win95.tscn"  # loaded at run time: its scripts name the Game autoload
 const OFFICE_WINDOW := "res://win95/office/office_window.tscn"
+const EXCEL_PATH := "C:\\Program Files\\Microsoft Office\\Office\\EXCEL.EXE"
 const WORD_PATH := "C:\\Program Files\\Microsoft Office\\Office\\WINWORD.EXE"
 
 
@@ -108,6 +109,7 @@ func _on_every_customer() -> void:
 			continue
 		var setup := customer.computer.win95_setup.copy()
 		var word := setup.file_at(WORD_PATH)
+		check("%s has Excel, in the Start menu too" % path, [setup.file_at(EXCEL_PATH) != null and setup.file_at(EXCEL_PATH).program != null, setup.file_at("C:\\WINDOWS\\Start Menu\\Programs\\Microsoft Excel").target], [true, EXCEL_PATH])
 		check("%s has Word, in the Start menu too" % path, [word != null and (load("res://win95/computer_state.gd") as GDScript).call(&"is_runnable", word), setup.file_at("C:\\WINDOWS\\Start Menu\\Programs\\Microsoft Word").target], [true, WORD_PATH])
 		var state: Node = load("res://win95/computer_state.gd").new()
 		state.setup = setup
@@ -133,9 +135,9 @@ func _the_office_girls_documents() -> void:
 	var desktop: Node = win95.get_node("Desktop")
 	var invitation: Win95File = state.setup.file_at("C:\\My Documents\\Midsummer party.doc")
 	check("her invitation holds its RTF file's text", invitation.contents, FileAccess.get_file_as_string("res://customers/office_girl/documents/midsummer_party.doc"))
-	check("Start > Documents starts with it", state.setup.recent_documents, [invitation])
+	check("Start > Documents starts with what she opened last", state.setup.recent_documents.map(func(f: Win95File) -> String: return f.name), ["Containers May 1996.xls", "Midsummer party.doc", "Invoices May 1996.xls"])
 	var bar: Variant = state.tasks()[0].bar if not state.tasks().is_empty() else null
-	check("her Shortcut Bar runs", bar != null, true)
+	check("her Shortcut Bar runs, with Word and Excel", [bar != null, state.tasks()[0].button("Microsoft Excel") != null if bar != null else false], [true, true])
 	win95.open_file(invitation)
 	var word: Control = desktop.active_window()
 	check("it opens in Word", [word.scene_file_path, word.get_node("%TitleBar").title], ["res://win95/office/word.tscn", "Microsoft Word - Midsummer party.doc"])
@@ -149,5 +151,13 @@ func _the_office_girls_documents() -> void:
 	word.show_properties()
 	var sheet: Control = word.blocked_by
 	check("its Properties: her Summary and Word's Template", [sheet.get_node("%Author").text, sheet.get_node("%Company").text, sheet.get_node("%Template").text], ["Sam Hilton", "Harbour Import AB", "Normal"])
+	sheet.close()
+	await process_frame
+	win95.open_file(state.setup.file_at("C:\\My Documents\\Containers May 1996.xls"))
+	var excel: Control = desktop.active_window()
+	check("her containers open in Excel", [excel.scene_file_path, excel.get_node("%TitleBar").title], ["res://win95/office/excel.tscn", "Microsoft Excel - Containers May 1996.xls"])
+	check("as cells that read", excel.document_text().contains("Held at customs!"), true)
+	excel.show_properties()
+	check("with Excel's Summary: no Template row", [excel.blocked_by.get_node("%Title").text, excel.blocked_by.get_node("%Template").visible], ["Containers", false])
 	root.remove_child(win95)
 	win95.free()
