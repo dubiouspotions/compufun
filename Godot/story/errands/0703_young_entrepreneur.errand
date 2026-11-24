@@ -5,3 +5,20 @@ brief:
 	The Young entrepreneur was not deleted: he comes in the Office girl's place, without a computer, as a special dialogue event now with glitched voice. What happens is open. An idea, not decided: he stands in front of the player, and when they turn to fetch parts he is there too, and when they look right...
 
 == drop-off [effect cambion_glitch]
+(neutral) You never came to the after work...
+- Uh, you didn't tell me when and where it was.
+- What after work?
+(problem) I thought I could trust you. Turns out you can't trust anyone. It is so lonely at the top.
+- Dude. Are you alright?
+	(angry) I've wasted so much time. And thereby also so much money!
+- Hey. All is going to be okay.
+	(angry) I've wasted so much time. And thereby also so much money!
+- Money and fame isn't everything you know.
+	(angry) Don't you DARE!
+	- Sorry! I was just trying to make you feel better!
+		(irritated03) The ONLY thing worth more than money is TIME!
+(thinking) Depending on the conversion rate that is. If time is money, what currency are we even talking about? All my calculations. Are they wrong...?
+- Dude, you make no sense.
+- Can I call someone to come pick you up? You clearly seem out of it.
+(irritated03) No one can help me now! I'm doomed! Forever sentenced to a life in poverty! All that time! It never was money! I lost it all!
+- Dude, what?
