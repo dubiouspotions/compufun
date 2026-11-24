@@ -32,3 +32,6 @@ desktop.ini
 /Godot/voices/live/chimera_voice.wasm
 /Godot/voices/live/chimera_voice.gdextension
 /native/chimera_voice/target/
+
+# Claude Code session worktrees
+/.claude/worktrees/
