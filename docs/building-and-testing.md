@@ -37,6 +37,15 @@ echo '{"day": 1, "phase": "OPEN", "db_day": 1, "view": "CompuFunDB"}' > /tmp/db.
 "$GODOT" --path Godot res://main.tscn -- --restore /tmp/db.json   # CompuFunDB, started up for the day
 ```
 
+`tools/run.sh` passes its arguments on to Godot, so the same works without the editor, and the
+Story Lab can open at start too, on its own or on one errand (the file whose name starts so):
+
+```sh
+tools/run.sh res://main.tscn                          # past the logo and the loading screen
+tools/run.sh res://main.tscn -- --story-lab           # with the Story Lab open
+tools/run.sh res://main.tscn -- --errand 0101         # with errand 0101 open in story mode
+```
+
 After a pull, a class that a teammate added (`class_name`) can be missing from the class cache, so
 every script that uses it fails with "Identifier ... not declared", and `--import` does not fix
 it. An editor scan does: open the project in the editor, or run
@@ -217,17 +226,14 @@ tools/build-voice.sh
 ```
 
 On Windows the script builds with Rust's GNU toolchain, which brings its own MinGW: no Visual
-Studio needed. `Play HumanError.bat` doesn't build: it downloads the Windows library from the
-[`live-voice` release](https://github.com/dubiouspotions/humanerror/releases/tag/live-voice), and
-again whenever `native/chimera_voice` has changed since that was built. After such a change,
-build it on Windows and upload it, from `Godot/voices/live/`:
-
-```sh
-bash ../../../tools/build-voice.sh windows
-git rev-parse HEAD:native/chimera_voice > voice-source.txt   # commit the change first
-powershell -c "Compress-Archive -Force bin, chimera_voice.gdextension, voice-source.txt live-voice-windows.zip"
-gh release upload live-voice live-voice-windows.zip --clobber
-```
+Studio needed. The launchers don't build: `Play HumanError.bat` and `Play HumanError.app` download
+the Windows or macOS library from the
+[`live-voice` release](https://github.com/dubiouspotions/compufun/releases/tag/live-voice)
+(`live-voice-windows.zip`, `live-voice-macos.zip`), and again whenever `native/chimera_voice` has
+changed since that was built: each zip's `voice-source.txt` holds the tree hash it was built from
+(`git rev-parse HEAD:native/chimera_voice`). CI's **Live Voice Release** job replaces both zips
+after a push to `main` that changes `native/chimera_voice` or `tools/build-voice.sh`, or when the
+release holds another hash than `main`.
 
 **Rendered.** Each customer line plays a WAV in `Godot/voices/`, which [Chimera](https://github.com/jamesondh/chimera-vocal-synth)
 renders from the text, in the body of the customer's `voice` person and the line's voice mood
@@ -269,6 +275,7 @@ are rendered in each body that a customer's person has.
 - **Version** reads the version from the `vX.Y.Z` tags. A release bumps it and tags the commit.
 
 - **Live Voice** builds `native/chimera_voice` with `tools/build-voice.sh`: macOS on a Mac runner, the wasm, Linux and Windows on Ubuntu. Build downloads them before its import.
+- **Live Voice Release** (on `main` only) zips the Windows and macOS libraries for the launchers and uploads them to the `live-voice` release with the workflow's token, when the push changed the live voice or the release is stale ("Voices" above).
 - **Build** stamps the version into the game, imports, exports all four presets as
   `CompuFun-<version>.zip` and uploads them as run artifacts. A failed build posts to Discord, and so
   do `ERROR` lines in the export log.
