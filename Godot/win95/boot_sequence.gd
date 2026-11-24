@@ -3,7 +3,8 @@ extends Control
 ## system summary, the splash screen, "Starting Windows 95..." with a blinking cursor, then the
 ## desktop beneath, part by part over its bare background, over one recording of the machine. Any key
 ## or click skips to the bare desktop, unless [member skippable] is off. Until the desktop is whole it
-## takes every key and click. Frees itself when the startup sound has played.
+## takes every key and click. DEL during the POST opens BIOS Setup (BiosSetup), then the POST
+## starts again. Frees itself when the startup sound has played.
 
 ## The whole desktop shows.
 signal finished
@@ -93,6 +94,16 @@ var _players: Array[AudioStreamPlayer] = []
 ## The desktop parts not shown yet, with the modulate that each one gets back.
 var _unshown: Dictionary[CanvasItem, Color] = {}
 
+## The running computer whose Win95Setup keeps the BIOS Setup choices (Win95Setup.cmos) and clock;
+## win95.gd sets it. null, as on the work computer, keeps them until the boot ends.
+var computer: ComputerState
+## True from the POST's first line to its end: DEL then opens BIOS Setup.
+var _in_post: bool = false
+## DEL was pressed during the POST: it stops, and BIOS Setup opens.
+var _entering_setup: bool = false
+var _bios_setup: BiosSetup
+var _own_setup: Win95Setup
+
 ## Returns the Array of CanvasItems that appear one by one after the boot, in that order; win95.gd
 ## sets it. Unset, or for a boot that doesn't start Windows, nothing is hidden.
 var desktop_parts: Callable
@@ -120,7 +131,11 @@ func _process(delta: float) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if not (event is InputEventKey or event is InputEventMouseButton) or not event.is_pressed():
 		return
-	if _awaiting_key:
+	# Backspace too: a Mac keyboard's Delete key is Backspace.
+	if _in_post and event is InputEventKey and (event as InputEventKey).keycode in [KEY_DELETE, KEY_BACKSPACE]:
+		accept_event()
+		_entering_setup = true
+	elif _awaiting_key:
 		accept_event()
 		_any_key.emit()
 	elif skippable:
@@ -139,12 +154,16 @@ func play() -> void:
 	show()
 	focus_mode = Control.FOCUS_ALL
 	grab_focus.call_deferred()
+	_sound(power_on_sound)
 	await _run_post()
+	while _entering_setup and not _halted:
+		await _run_setup()
+		await _run_post()
 	if _halted:
 		return
 	if not _skipped:
 		await _run_summary()
-	if floppy_in_a:
+	if floppy_in_a and not _boots_c_first():
 		await _disk_error()
 	if boots_windows and hardware.hard_drive == "":
 		_halted = true  # a skip doesn't get past it
@@ -177,9 +196,14 @@ func _run_post() -> void:
 	_energy_star.hide()
 	_footer.hide()
 	_post.text = "\n".join(video_bios_lines)
-	_sound(power_on_sound)
 	if not await _wait(warm_up_seconds):
 		return
+	_in_post = true
+	await _post_lines()
+	_in_post = false
+
+
+func _post_lines() -> void:
 	_footer.show()
 	_energy_star.visible = hardware.energy_star()
 	_post.text = ""
@@ -193,6 +217,40 @@ func _run_post() -> void:
 			if not await _wait(detect_seconds if line.strip_edges().begins_with("Detecting") else line_seconds):
 				return
 	await _wait(post_hold_seconds)
+
+
+## The Win95Setup that keeps the BIOS Setup choices: the running computer's, or this boot's own.
+func cmos_setup() -> Win95Setup:
+	if computer != null and computer.setup != null:
+		return computer.setup
+	if _own_setup == null:
+		_own_setup = Win95Setup.new()
+	return _own_setup
+
+
+func _boots_c_first() -> bool:
+	return BiosSetup.value(cmos_setup(), &"boot_sequence") == 1 and hardware.hard_drive != ""
+
+
+# BIOS Setup until the player leaves it; a save applies its choices. Then the computer resets.
+func _run_setup() -> void:
+	_entering_setup = false
+	_skipped = false
+	_bios_setup = BiosSetup.new()
+	_bios_setup.hardware = hardware
+	_bios_setup.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(_bios_setup)
+	_bios_setup.open(cmos_setup())
+	var values: Dictionary[StringName, Variant] = await _bios_setup.closed
+	if not values.is_empty():
+		if computer != null and computer.setup != null:
+			computer.apply_settings(values)
+		else:
+			for property in values:
+				cmos_setup().set(property, values[property])
+	_bios_setup.queue_free()
+	_bios_setup = null
+	grab_focus()
 
 
 # The screen clears to the system summary, then the lines before the boot.
@@ -260,7 +318,8 @@ func _show_desktop() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_ENTER_TREE and _playing and visible:
-		grab_focus.call_deferred()  # the cable moved the screen, which drops the focus
+		# the cable moved the screen, which drops the focus
+		(_bios_setup if is_instance_valid(_bios_setup) else self).grab_focus.call_deferred()
 	elif what == NOTIFICATION_PREDELETE:
 		for part: Variant in _unshown.keys():
 			_show_part(part)
@@ -277,11 +336,12 @@ func _show_part(part: Variant) -> void:
 func _count_memory() -> bool:
 	var before := _post.text
 	var steps := 30
+	var seconds := memory_test_seconds * (0.25 if BiosSetup.value(cmos_setup(), &"quick_post") == 1 else 1.0)
 	var last := roundi(steps * memory_fail_share) if memory_fails else steps
 	for i in last + 1:
 		@warning_ignore("integer_division")
 		_post.text = before + "Memory Test :  %dK" % (hardware.memory_kb * i / steps)
-		if not await _wait(memory_test_seconds / steps) and not memory_fails:
+		if not await _wait(seconds / steps) and not memory_fails:
 			return false
 	if memory_fails:
 		_halted = true
@@ -294,10 +354,10 @@ func _count_memory() -> bool:
 ## Waits [param seconds], and longer while the screen is out of the tree; false when the player
 ## skipped meanwhile.
 func _wait(seconds: float) -> bool:
-	if _skipped:
+	if _skipped or _entering_setup:
 		return false
 	await _pause(seconds)
-	return not _skipped
+	return not (_skipped or _entering_setup)
 
 
 func _pause(seconds: float) -> void:

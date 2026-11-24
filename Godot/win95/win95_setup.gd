@@ -66,6 +66,11 @@ var desktop_screenshot: DesktopScreenshot
 ## Date/Time sets it, and the taskbar clock and file dates read it (ComputerState.now()).
 @export var clock_offset_seconds: int = 0
 
+@export_group("CMOS")
+## What BIOS Setup's BIOS FEATURES SETUP page keeps: a feature id of BiosSetup.FEATURES to the index
+## of its option. A missing id is the feature's default; BiosSetup.value() reads it.
+@export var cmos: Dictionary[StringName, int] = {}
+
 @export_group("System")
 ## What System > General shows under "Microsoft Windows 95", for example "4.00.950".
 @export var version: String = "4.00.950"

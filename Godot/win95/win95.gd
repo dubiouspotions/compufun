@@ -272,6 +272,7 @@ func _on_booted() -> void:
 	_no_signal.hide()
 	_boot = _BOOT.instantiate()
 	_boot.floppy_in_a = setup.floppy_in_a
+	_boot.computer = _state
 	if _state.job != null:
 		var computer := _state.job.customer.computer
 		var hardware: Hardware = computer.hardware.duplicate() if computer != null and computer.hardware != null else Hardware.new()

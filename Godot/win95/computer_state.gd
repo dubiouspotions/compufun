@@ -207,15 +207,16 @@ func _remove_shortcuts(container: Array, inside: String) -> void:
 ## clock_offset_seconds. A Time datetime dictionary, weekday included.
 func now() -> Dictionary:
 	var offset := setup.clock_offset_seconds if setup != null else 0
-	return Time.get_datetime_dict_from_unix_time(_game_unix() + offset)
+	return Time.get_datetime_dict_from_unix_time(game_unix() + offset)
 
 
 ## The clock_offset_seconds that makes [method now] show [param t], a Time datetime dictionary.
 func offset_for(t: Dictionary) -> int:
-	return Time.get_unix_time_from_datetime_dict(t) - _game_unix()
+	return Time.get_unix_time_from_datetime_dict(t) - game_unix()
 
 
-func _game_unix() -> int:
+## The game's date and the real time of day, in Unix seconds: the clock with no offset.
+static func game_unix() -> int:
 	var t: Dictionary = Game.date
 	t.merge(Time.get_time_dict_from_system(), true)
 	return Time.get_unix_time_from_datetime_dict(t)
