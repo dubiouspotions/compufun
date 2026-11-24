@@ -1,6 +1,6 @@
 //! The effects of a voice type, applied to the line as it streams out: tape wobble, then the chunk
 //! effects (stutter, reverse, dropout, static), then the effects per sample (ring mod, metal,
-//! clip, distortion, phaser, chorus, echo, reverb, sample hold, bit depth). Every setting can
+//! clip, distortion, phaser, chorus, echo, reverb, sample hold, bit depth, band-pass). Every setting can
 //! change from one block to the next, as the voice type's curve moves.
 
 use std::collections::VecDeque;
@@ -31,6 +31,10 @@ pub struct Params {
     pub reverb: f64,
     pub hold: f64,
     pub bits: f64,
+    /// A high-pass below this, in Hz; 0 or less is off.
+    pub low_cut_hz: f64,
+    /// A low-pass above this, in Hz; half the sample rate or more is off.
+    pub high_cut_hz: f64,
 }
 
 impl Params {
@@ -50,6 +54,8 @@ const ECHO_S: f64 = 0.28;
 const CHORUS_S: f64 = 0.025;
 const COMBS_S: [f64; 4] = [0.0297, 0.0371, 0.0411, 0.0437];
 const ALLPASS_S: [f64; 2] = [0.005, 0.0017];
+/// The Q of the two sections of a fourth-order Butterworth filter.
+const BUTTERWORTH_Q: [f64; 2] = [0.5412, 1.3066];
 
 pub struct Fx {
     fs: f64,
@@ -67,6 +73,36 @@ pub struct Fx {
     echo: Line,
     combs: Vec<Line>,
     allpass: Vec<Line>,
+    /// The band-pass: two high-pass sections, then two low-pass sections.
+    band: [Biquad; 4],
+}
+
+/// One second-order filter section (the RBJ cookbook's), with its state.
+#[derive(Clone, Copy, Default)]
+struct Biquad {
+    b: [f32; 3],
+    a: [f32; 2],
+    x: [f32; 2],
+    y: [f32; 2],
+}
+
+impl Biquad {
+    /// Makes it a high-pass (`high`) or low-pass at `hz`, keeping its state so a moving cutoff doesn't click.
+    fn tune(&mut self, hz: f64, q: f64, fs: f64, high: bool) {
+        let (sin, cos) = (TAU * hz / fs).sin_cos();
+        let alpha = sin / (2.0 * q);
+        let a0 = 1.0 + alpha;
+        let (b0, b1) = if high { ((1.0 + cos) / 2.0, -(1.0 + cos)) } else { ((1.0 - cos) / 2.0, 1.0 - cos) };
+        self.b = [(b0 / a0) as f32, (b1 / a0) as f32, (b0 / a0) as f32];
+        self.a = [(-2.0 * cos / a0) as f32, ((1.0 - alpha) / a0) as f32];
+    }
+
+    fn run(&mut self, x: f32) -> f32 {
+        let y = self.b[0] * x + self.b[1] * self.x[0] + self.b[2] * self.x[1] - self.a[0] * self.y[0] - self.a[1] * self.y[1];
+        self.x = [x, self.x[0]];
+        self.y = [y, self.y[0]];
+        y
+    }
 }
 
 /// A delay line.
@@ -107,6 +143,7 @@ impl Fx {
             echo: Line::new(len(ECHO_S)),
             combs: COMBS_S.iter().map(|s| Line::new(len(*s))).collect(),
             allpass: ALLPASS_S.iter().map(|s| Line::new(len(*s))).collect(),
+            band: [Biquad::default(); 4],
         }
     }
 
@@ -196,6 +233,16 @@ impl Fx {
         let hold = (p.hold.round() as u64).max(1);
         let levels = 2f64.powf(p.bits.clamp(1.0, 16.0) - 1.0) as f32;
         let fs = self.fs;
+        let low_cut = p.low_cut_hz > 0.0;
+        let high_cut = p.high_cut_hz < fs / 2.0;
+        for (i, q) in BUTTERWORTH_Q.iter().enumerate() {
+            if low_cut {
+                self.band[i].tune(p.low_cut_hz.min(0.45 * fs), *q, fs, true);
+            }
+            if high_cut {
+                self.band[2 + i].tune(p.high_cut_hz.max(20.0), *q, fs, false);
+            }
+        }
         for (i, &x) in input.iter().enumerate() {
             let k = self.n + i as u64;
             let t = k as f64 / fs;
@@ -264,6 +311,11 @@ impl Fx {
             s = self.held;
             if levels < 32768.0 {
                 s = (s * levels).round() / levels;
+            }
+            for (section, on) in self.band.iter_mut().zip([low_cut, low_cut, high_cut, high_cut]) {
+                if on {
+                    s = section.run(s);
+                }
             }
             out.push_back(s.clamp(-1.0, 1.0));
         }

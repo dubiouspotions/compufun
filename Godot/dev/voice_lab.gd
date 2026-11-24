@@ -66,6 +66,10 @@ const GROUPS: Array = [
 		["fs", "Clock mismatch", 2000.0, 60000.0, 50.0, 22050.0],
 		["drive", "Clip", 1.0, 40.0, 0.1, 1.0],
 	]],
+	["Telephone", "Down a phone line", [
+		["low_cut_hz", "Low cut", 0.0, 2000.0, 10.0, 0.0],
+		["high_cut_hz", "High cut", 200.0, 20000.0, 10.0, 20000.0],
+	]],
 	["Corrupted", "Damaged on the way", [
 		["stutter", "Stutter", 0.0, 1.0, 0.01, 0.0],
 		["stutter_ms", "Stutter length", 10.0, 400.0, 1.0, 80.0],
@@ -110,7 +114,7 @@ const MACROS: Dictionary = {
 	"Hacked": {"static": 0.35, "roughness": 0.9, "fry": 0.6, "distortion": 0.6, "chorus": 0.5},
 }
 const UNITS: Dictionary = {"fs": " Hz", "glide": " s", "pressure": " cmH2O", "vibrato_rate": " Hz", "drift": " ct",
-	"stutter_ms": " ms", "chunk_ms": " ms", "metal_ms": " ms", "ring_hz": " Hz", "wobble_hz": " Hz", "bits": " bit", "rate": "x", "pitch": "x", "shift": "x"}
+	"stutter_ms": " ms", "chunk_ms": " ms", "metal_ms": " ms", "ring_hz": " Hz", "wobble_hz": " Hz", "low_cut_hz": " Hz", "high_cut_hz": " Hz", "bits": " bit", "rate": "x", "pitch": "x", "shift": "x"}
 
 const BG := Color("12141a")
 const CARD := Color("1b1e26")

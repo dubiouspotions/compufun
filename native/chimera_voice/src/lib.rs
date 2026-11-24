@@ -240,6 +240,8 @@ impl Speaker {
             reverb: g("reverb"),
             hold: g("hold"),
             bits: g("bits"),
+            low_cut_hz: g("low_cut_hz"),
+            high_cut_hz: g("high_cut_hz"),
         }
     }
 }
@@ -265,5 +267,46 @@ fn tune(gestures: &mut [Gesture], root: f64, amount: f64) {
             g.ramp_in *= 1.0 - 0.97 * amount;
             g.ramp_out *= 1.0 - 0.97 * amount;
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::f64::consts::TAU;
+
+    // How much of a sine at `hz` comes through the band-pass of a telephone, as a ratio of RMS.
+    fn passes(hz: f64) -> f64 {
+        let fs = 22050.0;
+        let mut p = Speaker::default().params_at(0.0);
+        p.low_cut_hz = 300.0;
+        p.high_cut_hz = 3400.0;
+        let input: Vec<f32> = (0..fs as usize).map(|i| 0.5 * (TAU * hz * i as f64 / fs).sin() as f32).collect();
+        let mut out = VecDeque::new();
+        let mut fx = Fx::new(fs, 1);
+        for block in input.chunks(BLOCK) {
+            fx.push(block, &p, &mut out);
+        }
+        let rms = |s: &[f32]| (s.iter().map(|x| (*x as f64).powi(2)).sum::<f64>() / s.len() as f64).sqrt();
+        let settled: Vec<f32> = out.iter().copied().skip(out.len() / 2).collect();
+        rms(&settled) / rms(&input[input.len() / 2..])
+    }
+
+    #[test]
+    fn band_pass_keeps_speech_band() {
+        assert!(passes(1000.0) > 0.9, "1 kHz: {}", passes(1000.0));
+        assert!(passes(100.0) < 0.05, "100 Hz: {}", passes(100.0));
+        assert!(passes(8000.0) < 0.05, "8 kHz: {}", passes(8000.0));
+    }
+
+    #[test]
+    fn band_pass_is_off_at_neutral() {
+        let p = Speaker::default().params_at(0.0);
+        let input: Vec<f32> = (0..BLOCK).map(|i| (i as f32 / BLOCK as f32) - 0.5).collect();
+        let mut out = VecDeque::new();
+        let mut fx = Fx::new(22050.0, 1);
+        fx.push(&input, &p, &mut out);
+        fx.finish(&p, &mut out);
+        assert_eq!(out.iter().copied().collect::<Vec<f32>>(), input);
     }
 }
