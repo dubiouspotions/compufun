@@ -5,7 +5,7 @@
 [ext_resource type="Material" path="res://materials/pegboard.tres" id="3_pegboard"]
 [ext_resource type="Material" path="res://materials/shop_goods.tres" id="4_goods"]
 
-[node name="WallShelf" type="MeshInstance3D"]
+[node name="WallShelf" type="MeshInstance3D" groups=["shelf_goods"]]
 mesh = ExtResource("1_mesh")
 surface_material_override/0 = ExtResource("2_metal")
 surface_material_override/1 = ExtResource("3_pegboard")

@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://corruption/win95_boxes.gd" id="1_sign"]
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="2_psx"]
+[ext_resource type="Texture2D" path="res://corruption/win95_boxes/goods.png" id="3_goods"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_boxes"]
+render_priority = 0
+shader = ExtResource("2_psx")
+shader_parameter/albedo_texture = ExtResource("3_goods")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)
+shader_parameter/world_uv = false
+shader_parameter/uv_scale = 1.0
+
+[node name="Win95Boxes" type="Node"]
+script = ExtResource("1_sign")
+title = "The shelf boxes become Windows 95 boxes"
+timing = 2
+description = "Every box on the wall shelving's boards (software, modems, CD-ROM drives, speakers, keyboards, mice and floppies) is a Windows 95 retail box: the flag on a blue sky and WIN95. The cards and cables on the pegboard stay."
+hint = "The wall shelving, in the Left View."
+boxes = SubResource("ShaderMaterial_boxes")
