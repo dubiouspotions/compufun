@@ -28,6 +28,9 @@ const _MAIL_KEY: Array[StringName] = [&"sent", &"subject"]
 @export var given: Dictionary[String, PackedStringArray] = {}
 ## The mails to delete: only their sent and subject count.
 @export var unmailed: Array[Email] = []
+## What [method between] couldn't put in a patch, said for a person: a picture made in Paint has no
+## res:// file. Not part of the patch, so the rest can still be saved.
+var left_out: PackedStringArray = []
 ## The mails to put, in order; each takes the place of the mail with its sent and subject, or comes
 ## last.
 @export var mails: Array[Email] = []
@@ -107,12 +110,15 @@ func apply(setup: Win95Setup) -> void:
 	for path: String in deleted:
 		var container: Variant = _container(setup, path, false)
 		if container != null:
-			var file := _named(container, path.get_file())
+			var file := _named(container, _segment(path))
 			if file != null:
 				container.erase(file)
 	for path: String in files:
-		var container: Array = _container(setup, path, true)
-		var file := _named(container, _leaf(path))
+		var made: Variant = _container(setup, path, true)
+		if made == null:
+			continue  # a bad path, which _container reported
+		var container: Array = made
+		var file := _named(container, _segment(path))
 		if file == null:
 			file = Win95File.new()
 			file.name = _leaf(path)
@@ -135,7 +141,7 @@ func apply(setup: Win95Setup) -> void:
 
 
 ## The patch that makes [param before] into [param after], or a String that says why there is
-## none, naming the file, mail or setting: a picture that no res:// file holds, two files of one name.
+## none: two mails with one sent and subject. What a patch can't hold is in its [member left_out].
 static func between(before: Win95Setup, after: Win95Setup) -> Variant:
 	var patch := SetupPatch.new()
 	for property: Dictionary in _fields(after, _TREES):
@@ -144,7 +150,8 @@ static func between(before: Win95Setup, after: Win95Setup) -> Variant:
 			continue
 		var text: Variant = _encode(after.get(name), property)
 		if text == null:
-			return "the setting %s is %s, which no res:// file holds" % [name, after.get(name)]
+			patch.left_out.append("the setting %s (a picture made on the computer, which no res:// file holds)" % name)
+			continue
 		if text != _encode(before.get(name), property):
 			patch.settings[name] = after.get(name)
 	var old: Variant = _flatten(before)
@@ -159,7 +166,8 @@ static func between(before: Win95Setup, after: Win95Setup) -> Variant:
 		var file: Win95File = new[key][1]
 		var text: Variant = _fields_text(file, _FILE_SKIP)
 		if text is Array:
-			return "%s: %s" % [new[key][0], text[0]]
+			patch.left_out.append("%s (%s)" % [new[key][0], text[0]])
+			continue
 		if not old.has(key) or old[key][1].is_folder != file.is_folder:
 			patch.files[new[key][0]] = file
 		elif _fields_text(old[key][1], _FILE_SKIP) != text:
@@ -185,6 +193,47 @@ static func between(before: Win95Setup, after: Win95Setup) -> Variant:
 	return patch
 
 
+## Adds to [param made] the entries of [param old] that it lacks but that still hold on
+## [param after] (applying one there changes nothing), so a patch saved from the computer keeps a
+## writer's deliberate lines, such as a delete of a file that the player might make.
+static func keep_holding(old: SetupPatch, made: SetupPatch, after: Win95Setup) -> void:
+	var holds := func(entry: SetupPatch) -> bool:
+		var tried := after.copy()
+		entry.apply(tried)
+		var left: Variant = between(tried, after)
+		return left is SetupPatch and (left as SetupPatch).is_empty()
+	for name: StringName in old.settings:
+		var entry := SetupPatch.new()
+		entry.settings[name] = old.settings[name]
+		if not made.settings.has(name) and holds.call(entry):
+			made.settings[name] = old.settings[name]
+	for path: String in old.deleted:
+		var entry := SetupPatch.new()
+		entry.deleted.append(path)
+		if path not in made.deleted and holds.call(entry):
+			made.deleted.append(path)
+	for path: String in old.files:
+		var entry := SetupPatch.new()
+		entry.files[path] = old.files[path]
+		if old.given.has(path):
+			entry.given[path] = old.given[path]
+		if not made.files.has(path) and holds.call(entry):
+			made.files[path] = old.files[path]
+			if old.given.has(path):
+				made.given[path] = old.given[path]
+	var made_keys := (made.unmailed + made.mails).map(_mail_key)
+	for mail: Email in old.unmailed:
+		var entry := SetupPatch.new()
+		entry.unmailed.append(mail)
+		if _mail_key(mail) not in made_keys and holds.call(entry):
+			made.unmailed.append(mail)
+	for mail: Email in old.mails:
+		var entry := SetupPatch.new()
+		entry.mails.append(mail)
+		if _mail_key(mail) not in made_keys and holds.call(entry):
+			made.mails.append(mail)
+
+
 ## The patch as its .setup file says it.
 func write() -> String:
 	var out := PackedStringArray()
@@ -192,7 +241,9 @@ func write() -> String:
 		out.append("reset")
 	for property: StringName in settings:
 		var info := _property(Win95Setup.new(), property)
-		out.append("set %s: %s" % [property, _encode(settings[property], info)])
+		var value: Variant = settings[property]
+		var shown: Variant = JSON.stringify(String(value)) if _needs_quotes(value) else _encode(value, info)
+		out.append("set %s: %s" % [property, shown])
 	for path: String in deleted:
 		out.append("delete " + path)
 	for path: String in files:
@@ -326,8 +377,7 @@ static func _fields_text(object: Object, skip: Array, only: Array = []) -> Varia
 		var text: Variant = _encode(value, property)
 		if text == null:
 			return ["%s is %s, which no res:// file holds" % [property.name, value]]
-		if (value is String or value is StringName) and (String(value).strip_edges() != String(value) or String(value).begins_with("\"")):
-			# Spaces or line breaks at an end, which the lines lose, or a leading quote: quoted, escaped.
+		if _needs_quotes(value):
 			out.append("\t%s: %s" % [property.name, JSON.stringify(String(value))])
 		elif (value is String or value is StringName) and String(value).contains("\n"):
 			out.append("\t%s:" % property.name)
@@ -369,6 +419,12 @@ static func _encode(value: Variant, property: Dictionary) -> Variant:
 			paths.append(item_path)
 		return ", ".join(paths)
 	return _one_line(value)
+
+
+# True for a text that a plain line can't keep: spaces or line breaks at an end, which the lines
+# lose, or a leading quote, which reads as quoted. Such a text is written quoted and escaped.
+static func _needs_quotes(value: Variant) -> bool:
+	return (value is String or value is StringName) and (String(value).strip_edges() != String(value) or String(value).begins_with("\""))
 
 
 # [param value] in Godot's text form on one line, its texts escaped: var_to_str spreads a
@@ -455,7 +511,13 @@ static func _bad_path(path: String) -> String:
 	return ""
 
 
+# The file name at the end of [param path], without a twin's "*2" (see _flatten_into).
 static func _leaf(path: String) -> String:
+	return _segment(path).get_slice("*", 0)
+
+
+# The last part of [param path], with a twin's "*2".
+static func _segment(path: String) -> String:
 	return path.get_slice("\\", path.get_slice_count("\\") - 1)
 
 
@@ -467,7 +529,11 @@ static func _parent_key(key: String) -> String:
 # missing; null when missing and not made.
 static func _container(setup: Win95Setup, path: String, make: bool) -> Variant:
 	var parts := path.split("\\")
-	var container: Array = [setup.desktop, setup.drive_c, setup.recycle_bin][TOPS.find(parts[0])]
+	var top := TOPS.find(parts[0])
+	if top < 0 or parts.size() < 2:
+		push_error("SetupPatch: '%s' starts with none of %s, then a backslash and a name; left out" % [path, ", ".join(TOPS)])
+		return null
+	var container: Array = [setup.desktop, setup.drive_c, setup.recycle_bin][top]
 	for i in range(1, parts.size() - 1):
 		var folder := _named(container, parts[i])
 		if folder == null:
@@ -481,10 +547,15 @@ static func _container(setup: Win95Setup, path: String, make: bool) -> Variant:
 	return container
 
 
+# The file named [param file_name] in [param container]; "name*2" is the second of that name.
 static func _named(container: Array, file_name: String) -> Win95File:
+	var wanted := file_name.get_slice("*", 0)
+	var nth := maxi(1, file_name.get_slice("*", 1).to_int()) if file_name.contains("*") else 1
 	for file: Win95File in container:
-		if file.name.nocasecmp_to(file_name) == 0:
-			return file
+		if file.name.nocasecmp_to(wanted) == 0:
+			nth -= 1
+			if nth == 0:
+				return file
 	return null
 
 
@@ -504,11 +575,15 @@ static func _flatten(setup: Win95Setup) -> Variant:
 	return flat
 
 
+# Adds the files under [param path]. A second file of one name, as two deleted readme.txt in the
+# Recycle Bin, is "readme.txt*2": a Windows file name has no "*".
 static func _flatten_into(flat: Dictionary, container: Array, path: String) -> String:
 	for file: Win95File in container:
 		var file_path := path + "\\" + file.name
-		if flat.has(file_path.to_lower()):
-			return "two files are named %s" % file_path
+		var nth := 2
+		while flat.has(file_path.to_lower()):
+			file_path = "%s\\%s*%d" % [path, file.name, nth]
+			nth += 1
 		flat[file_path.to_lower()] = [file_path, file]
 		var bad := _flatten_into(flat, file.children, file_path)
 		if bad != "":

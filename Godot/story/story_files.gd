@@ -102,7 +102,8 @@ static func _load_patches(week: Week, drafts: Dictionary[String, String]) -> voi
 		var patch_name := path.get_file().get_basename()
 		if not names.has(patch_name) and not ResourceLoader.exists(StoryFormat.CUSTOMERS_DIR + patch_name + ".tres"):
 			week.errors.append("%s: no errand file %s.errand and no customer %s%s.tres has this name" % [path, patch_name, StoryFormat.CUSTOMERS_DIR, patch_name])
-		week.patches[patch_name] = parsed.value as SetupPatch
+		if parsed.errors.is_empty():  # a patch that doesn't read never applies, not even its good lines
+			week.patches[patch_name] = parsed.value as SetupPatch
 
 
 # Parses the problem files into [param week], each with its .tres; a .tres without a problem file is

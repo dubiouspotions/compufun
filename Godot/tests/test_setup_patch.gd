@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
 ## Setup patches (SetupPatch): the patch between two setups makes one into the other, also through
-## its text; a patch converges on what the player did; a picture without a file is refused; and the
+## its text; a patch converges on what the player did; a picture without a file is left out; and the
 ## patches of a customer's errands go on once each, in errand code order, a reset starting again.
 
 
@@ -70,8 +70,33 @@ func run() -> void:
 	drawn.name = "cat.bmp"
 	drawn.picture = ImageTexture.create_from_image(Image.create(4, 4, false, Image.FORMAT_RGB8))
 	after.desktop.append(drawn)
-	var refused: Variant = SetupPatch.between(before, after)
-	check("a picture that no file holds is refused, by name", refused is String and (refused as String).contains("cat.bmp"), true)
+	var left_out: SetupPatch = SetupPatch.between(before, after)
+	check("a picture that no file holds is left out, by name, and the rest kept", [left_out.left_out.size(), left_out.left_out[0].contains("cat.bmp"), left_out.settings.has(&"volume")], [1, true, true])
+	after.desktop.erase(drawn)
+
+	var twins := office_girl.computer.win95_setup.copy()
+	for folder: String in ["C:\\Letters", "C:\\Old"]:
+		var twin := Win95File.new()
+		twin.name = "readme.txt"
+		twin.contents = folder
+		twins.recycle_bin.append(twin)
+	twins.registered_owner = " Desk 4 "
+	twins.cmos = {&"boot_sequence": 1}
+	var twin_patch: SetupPatch = SetupPatch.between(office_girl.computer.win95_setup.copy(), twins)
+	var twin_text := twin_patch.write()
+	check("two deleted files of one name: the second is readme.txt*2; a spaced setting is quoted", [twin_text.contains("file Recycled\\readme.txt*2"), twin_text.contains('set registered_owner: " Desk 4 "')], [true, true])
+	var twin_read := SetupPatch.parse(twin_text, "twins.setup")
+	var twin_made := office_girl.computer.win95_setup.copy()
+	(twin_read.value as SetupPatch).apply(twin_made)
+	check("and they read back: both files, the setting, the BIOS settings typed", [twin_read.errors, twin_made.recycle_bin.map(func(f: Win95File) -> String: return f.contents), twin_made.registered_owner, twin_made.cmos], [PackedStringArray(), ["C:\\Letters", "C:\\Old"], " Desk 4 ", {&"boot_sequence": 1}])
+
+	var holding := SetupPatch.parse("delete C:\\maybe.txt\nset muted: false\nset volume: 30\n", "h").value as SetupPatch
+	var now := office_girl.computer.win95_setup.copy()
+	holding.apply(now)
+	now.left_handed = true
+	var made_now: SetupPatch = SetupPatch.between(office_girl.computer.win95_setup.copy(), now)
+	SetupPatch.keep_holding(holding, made_now, now)
+	check("a saved patch keeps the lines that still hold: a delete in advance, a setting as it is", [made_now.deleted, made_now.settings.has(&"muted"), made_now.settings.get(&"volume"), made_now.settings.get(&"left_handed")], [PackedStringArray(["C:\\maybe.txt"]), true, 30.0, true])
 
 	var bad := SetupPatch.parse("set loudness: 3\nfile D:\\x\nmail\n\tfolder: attic\nset volume: 50\nreset\n", "bad.setup")
 	check("bad lines are each named", bad.errors.size(), 4)
