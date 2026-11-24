@@ -37,6 +37,15 @@ echo '{"day": 1, "phase": "OPEN", "db_day": 1, "view": "CompuFunDB"}' > /tmp/db.
 "$GODOT" --path Godot res://main.tscn -- --restore /tmp/db.json   # CompuFunDB, started up for the day
 ```
 
+`tools/run.sh` passes its arguments on to Godot, so the same works without the editor, and the
+Story Lab can open at start too, on its own or on one errand (the file whose name starts so):
+
+```sh
+tools/run.sh res://main.tscn                          # past the logo and the loading screen
+tools/run.sh res://main.tscn -- --story-lab           # with the Story Lab open
+tools/run.sh res://main.tscn -- --errand 0101         # with errand 0101 open in story mode
+```
+
 After a pull, a class that a teammate added (`class_name`) can be missing from the class cache, so
 every script that uses it fails with "Identifier ... not declared", and `--import` does not fix
 it. An editor scan does: open the project in the editor, or run

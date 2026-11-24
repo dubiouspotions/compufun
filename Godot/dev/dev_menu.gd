@@ -2,7 +2,8 @@ class_name DevMenu
 extends CanvasLayer
 ## The Dev menu, F3 or Cmd+3 (debug builds only): tools for making the game, as opposed to the F2 or Cmd+2 debug
 ## menu's switches for playing it. One button per tool; a tool opens over the game and closes
-## itself. F4 or Cmd+4 shows and hides the Story Lab.
+## itself. F4 or Cmd+4 shows and hides the Story Lab. A run started with "-- --story-lab" opens it,
+## and "-- --errand 0101" opens that errand in it (see [method open_from_args]).
 
 ## The tools, in order; each button shows the scene's file name.
 @export var tools: Array[PackedScene] = []
@@ -27,6 +28,7 @@ func _ready() -> void:
 	checkout.toggled.connect(_save_to_checkout)
 	_list.add_child(checkout)
 	_play_drafts()
+	open_from_args.call_deferred(OS.get_cmdline_user_args())
 
 
 # A writer's drafts play from the start, not only once the Story Lab opens.
@@ -40,6 +42,32 @@ func _play_drafts() -> void:
 		return
 	for error: String in Game.load_story(drafts.texts()):
 		push_error("Dev menu: the game can't play the Story Lab drafts: " + error)
+
+
+## Opens the Story Lab when [param args] (the user arguments after "--") hold "--story-lab", and
+## with "--errand <name>" also opens, full-window, the one errand file whose name starts with
+## <name>, such as "0101" for 0101_middle_manager.errand. Returns why it opened nothing it was
+## asked to, or "".
+func open_from_args(args: PackedStringArray) -> String:
+	var at := args.find("--errand")
+	if not args.has("--story-lab") and at < 0:
+		return ""
+	if story_lab == null:
+		return _refuse("no Story Lab scene is set on the Dev menu")
+	_open(story_lab)
+	if at < 0:
+		return ""
+	var wanted := args[at + 1] if at + 1 < args.size() else ""
+	var found := Array(StoryFiles.files(StoryFiles.ERRANDS_DIR, ".errand")).filter(func(path: String) -> bool: return wanted != "" and path.get_file().begins_with(wanted))
+	if found.size() != 1:
+		return _refuse("--errand '%s' names %d errand files in %s, not one: %s" % [wanted, found.size(), StoryFiles.ERRANDS_DIR, ", ".join(found.map(func(path: String) -> String: return path.get_file()))])
+	_child(story_lab).call(&"open_story", found[0])
+	return ""
+
+
+func _refuse(why: String) -> String:
+	push_error("Dev menu: " + why)
+	return why
 
 
 func _input(event: InputEvent) -> void:
