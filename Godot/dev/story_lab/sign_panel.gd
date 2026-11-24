@@ -15,6 +15,8 @@ signal problem_picked(id: StringName)
 const TIMINGS: PackedStringArray = ["Early: days 1 to 3", "Mid: days 3 to 5", "Late: days 5 to 7"]
 
 var _box: VBoxContainer
+## The sign that [method open_sign] last opened, outlined.
+var _opened: StringName = &""
 
 
 func _ready() -> void:
@@ -61,12 +63,17 @@ func show_signs(week: StoryFiles.Week) -> void:
 				_box.add_child(_card(shown, StoryCheck.sign_starts(week, index, shown["id"])))
 
 
-## Scrolls to the sign [param id] once [method show_signs] has shown it; an unknown id is an error.
+## Outlines the sign [param id] once [method show_signs] has shown it, and scrolls to it; the outline
+## stays through later [method show_signs] until another sign opens. An unknown id is an error.
 func open_sign(id: StringName) -> void:
 	var card := _box.get_node_or_null(NodePath(String(id))) as Control
 	if card == null:
 		push_error("Story Lab: no corruption sign %s in the Signs section" % id)
 		return
+	_opened = id
+	for each: Node in _box.get_children():
+		if each is PanelContainer:
+			(each as PanelContainer).add_theme_stylebox_override("panel", _card_style(each.name == id))
 	await get_tree().process_frame
 	ensure_control_visible(card)
 
@@ -74,10 +81,7 @@ func open_sign(id: StringName) -> void:
 func _card(shown: Dictionary, found: Array[Dictionary]) -> Control:
 	var card := PanelContainer.new()
 	card.name = String(shown["id"])
-	var style := LabUI.box(LabUI.RAISED, 10, 5)
-	style.content_margin_left = 16
-	style.content_margin_right = 16
-	card.add_theme_stylebox_override("panel", style)
+	card.add_theme_stylebox_override("panel", _card_style(shown["id"] == _opened))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 4)
 	card.add_child(box)
@@ -109,6 +113,15 @@ func _card(shown: Dictionary, found: Array[Dictionary]) -> Control:
 		link.tooltip_text = "Open it"
 		row.add_child(link)
 	return card
+
+
+func _card_style(opened_card: bool) -> StyleBoxFlat:
+	var style := LabUI.box(Color(LabUI.ACCENT, 0.3) if opened_card else LabUI.RAISED, 10, 5)
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	style.border_color = LabUI.ACCENT
+	style.set_border_width_all(2 if opened_card else 0)
+	return style
 
 
 func _open(start: Dictionary) -> void:

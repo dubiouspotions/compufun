@@ -197,6 +197,7 @@ func refresh() -> void:
 		if path.begins_with(StoryFiles.DAYS_DIR):
 			drafted_days.append(path.get_file().get_basename().trim_prefix("day_").to_int())
 	_board.show_week(_week.days, _cards, _selected, drafted_days, _week)
+	StoryLabBoard.grey_placed_signs(_sign_strip, _board.placed_signs())
 	_problems.text = "" if _week.errors.is_empty() else "%d problems in the story files (hover)" % _week.errors.size()
 	_problems.tooltip_text = "\n".join(_week.errors)
 	_errand_panel.flags = flag_names()
@@ -847,7 +848,7 @@ func _build() -> void:
 	_back.tooltip_text = "The week board, with this errand open below it (Esc)"
 	_back.hide()
 	strip_row.add_child(_back)
-	_sign_strip = StoryLabBoard.sign_strip()
+	_sign_strip = StoryLabBoard.sign_strip(open_sign)
 	_week_view.add_child(_sign_strip)
 	var split := VSplitContainer.new()
 	split.size_flags_vertical = Control.SIZE_EXPAND_FILL

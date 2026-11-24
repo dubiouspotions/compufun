@@ -48,6 +48,8 @@ const PORTRAIT_SIZE: int = 44
 const BAND_NAMES: PackedStringArray = ["Before opening", "Morning", "Midday", "Afternoon", "At closing"]
 const CUSTOMERS_DIR: String = "res://customers/"
 const SIGN_COLOR := Color("c58cff")
+const STRIP_TIP: String = "Click to open it in Signs. Drag onto a time of day or a customer's card to start it there."
+const PLACED_TIP: String = "It starts in the week already. Click to open it in Signs; drag it to start it somewhere else too."
 
 var _hinted: PanelContainer
 var _hinted_style: StyleBox
@@ -256,8 +258,9 @@ static func sign_spots(starts: Array[Dictionary], days: Array, cards: Dictionary
 
 
 ## A wrapping row of every corruption sign (by title) that drags onto the board: dropped on a band or
-## a card, it starts the sign there ([signal sign_dropped]).
-static func sign_strip() -> Control:
+## a card, it starts the sign there ([signal sign_dropped]). A click on a chip calls [param picked]
+## with the sign's id. Each chip is named Sign_<id>.
+static func sign_strip(picked: Callable) -> Control:
 	var row := HFlowContainer.new()
 	row.add_theme_constant_override("h_separation", 6)
 	row.add_theme_constant_override("v_separation", 4)
@@ -265,11 +268,38 @@ static func sign_strip() -> Control:
 	var titles := StoryDayPanel.signs()
 	for id: StringName in titles:
 		var chip := _sign_chip_box(titles[id] if titles[id] != "" else StoryFactPicker.humanize(id), 12, 150)
+		chip.name = "Sign_" + id
 		chip.mouse_default_cursor_shape = Control.CURSOR_DRAG
-		chip.tooltip_text = "%s (%s)\nDrag onto a time of day or a customer's card to start it there." % [titles[id], id]
+		chip.tooltip_text = "%s (%s)\n%s" % [titles[id], id, STRIP_TIP]
 		chip.set_drag_forwarding(_sign_drag.bind(chip, id, {}, titles[id]), Callable(), Callable())
+		chip.gui_input.connect(func(event: InputEvent) -> void:
+			var click := event as InputEventMouseButton
+			# On release, as a card acts: what the click opens rebuilds the Lab.
+			if click != null and not click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
+				picked.call(id))
 		row.add_child(chip)
 	return row
+
+
+## Greys out the chips in [param strip], from [method sign_strip], of the signs in [param placed]
+## (from [method placed_signs]); the others show in full.
+static func grey_placed_signs(strip: Control, placed: Dictionary[StringName, bool]) -> void:
+	for chip: Node in strip.get_children():
+		if chip is PanelContainer:
+			var is_placed := placed.has(StringName(String(chip.name).trim_prefix("Sign_")))
+			var control := chip as Control
+			control.modulate.a = 0.4 if is_placed else 1.0
+			control.tooltip_text = "%s\n%s" % [control.tooltip_text.get_slice("\n", 0), PLACED_TIP if is_placed else STRIP_TIP]
+
+
+## The signs that the shown week starts somewhere, by a chip on a band or a card. A start that only
+## stops a sign (value 0) doesn't count.
+func placed_signs() -> Dictionary[StringName, bool]:
+	var placed: Dictionary[StringName, bool] = {}
+	for spot: Dictionary in _spots:
+		if spot["start"]["value"] != 0:
+			placed[spot["id"]] = true
+	return placed
 
 
 static func _sign_drag(_at: Vector2, chip: Control, id: StringName, from: Dictionary, title: String) -> Variant:
