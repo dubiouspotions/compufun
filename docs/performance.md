@@ -20,7 +20,12 @@ With `capped` it keeps the project's settings: measure the CPU load from outside
 processor mode draws 0.
 
 The Compatibility renderer measures no GPU time. `Performance.TIME_PROCESS` does not give a usable
-per-frame script time either; turn parts off instead.
+per-frame script time either; turn parts off instead. On macOS, `ioreg -r -d 1 -c IOAccelerator` gives
+the GPU's "Device Utilization %", and `sample <pid> 5` shows where each thread spends its time; Godot's
+own frames have no symbols, but the GL driver's do.
+
+Measure on a weak Mac: miquon, an M1 Mac mini, stands in for the team's M1 and M2 laptops. A fast Mac
+hides costs that a laptop pays: on an M5 Max the Main View takes 1.9 ms a frame, on the M1 5.5 ms.
 
 ## Where the cost goes
 
@@ -50,6 +55,31 @@ On an M5 Max with a Retina screen at 120 Hz, day 2, before and after the frame c
 - **The 3D world** is about half of the Main View's frame (the 480 x 270 world buffer, its lights and
   shadows). The post shader, the two screen buffers and the Pipedream (on day 2) cost little.
 
+## On an M1
+
+At 60 fps, day 2, on a 1080p screen (CPU is a share of one core):
+
+| Case | CPU | GPU |
+| --- | --- | --- |
+| Main View | 44 % | 17 % |
+| Screen View | 45 % | 31 % |
+| CompuFunDB | 39 % | 33 % |
+| Story Lab, idle | 10 % | 1 % |
+
+- **The GL driver.** The main thread spends most of its time in Apple's OpenGL, which translates every
+  draw call and render pass to Metal. The cost grows with draw calls, viewports and passes, not with
+  pixels. Godot also writes GPU timer queries for every viewport in every frame, and each makes this
+  driver submit its work early; a viewport that doesn't render costs none.
+- **The screen buffers** update only while something draws them (`UPDATE_WHEN_VISIBLE`): the 3D monitor
+  or the Screen View. A monitor out of sight costs nothing, and its first frame back in view can show
+  its last picture for one frame.
+- **The CRT look** adds about 14 points of GPU in the Screen View and CompuFunDB.
+- **The post shader** skips its search for the nearest Windows colour while `windows_shades` is 0, which
+  it is until the warp drifts the colours; it is the only per-pixel pass over the whole window, so a
+  Retina screen pays it 2.7 times over.
+- **Not worth it:** the ANGLE driver (`--rendering-driver opengl3_angle`) costs more CPU and GPU than
+  Apple's OpenGL. Audio, bus effects included, is 2 to 3 points.
+
 ## What keeps the window drawing
 
 Low processor mode draws a frame only when something changed. Two things count as a change in every
@@ -61,4 +91,5 @@ frame:
 So the Story Lab, which covers the paused game, sets the game's always-updating viewports to
 `UPDATE_DISABLED` (they keep their last picture), hides what draws below it from the renderer
 (`RenderingServer.canvas_item_set_visible`, so the game's nodes stay visible to the game), and turns low
-processor mode on. All three come back when it hides.
+processor mode on, with one display frame of sleep between the loop's turns instead of 6.9 ms. All of
+it comes back when the Lab hides.
