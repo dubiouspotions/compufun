@@ -316,7 +316,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Close Program**: The Win95 dialog that Ctrl+Alt+Del opens (`win95/close_program.tscn`): the open windows and the background tasks, with End Task, Shut Down and Cancel. Ctrl+Alt+Del again restarts the computer. Ctrl+Alt+End and Ctrl+Alt+Backspace open it too.
 *Avoid:* task manager, Ctrl+Alt+Del menu.
 
-**Virus**: A background task that is a virus (`Virus`), such as BIZOPP.EXE, which scanners name `Bizopp.A` (`Virus.virus_name`). A program file whose scene is one is infected, whatever problem put it there (`Virus.infects`).
+**Virus**: A background task that is a virus (`Virus`), such as BIZOPP.EXE, which scanners name `Bizopp.A` (`Virus.virus_name`). A program file whose scene is one is infected, whatever problem put it there (`Virus.infects`). A virus in the StartUp folder runs from power-on, before Windows starts, so its symptom shows as soon as the computer is on.
 *Avoid:* malware, worm.
 
 **CompuFun AntiVirus**: The antivirus on the floppy disk from its box in the Storage View. Its SETUP.EXE installs AV.EXE into C:\Program Files (`win95/av_setup.tscn`, `ComputerState.install`); AV.EXE's Scan Now lists the infected files on the desktop and drive C, and Clean removes them with their tasks and StartUp shortcuts (`win95/av_scan.tscn`, `ComputerState.remove_viruses`).

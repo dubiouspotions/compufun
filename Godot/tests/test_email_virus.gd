@@ -1,9 +1,10 @@
 extends "res://tests/test.gd"
 ## The email virus (VirusCheck, win95/bizopp.tscn): the break puts BIZOPP.EXE in C:\WINDOWS and a
-## shortcut in StartUp, once; each boot that reaches the desktop runs it as a task, which opens and
-## closes the CD tray; its file is in use, so a delete, rename or move is refused with the sharing
-## violation; End Task in Close Program (Ctrl+Alt+Del) stops it; deleting it then fixes the problem,
-## and the next boot runs nothing. Ctrl+Alt+Del twice restarts the computer.
+## shortcut in StartUp, once; each boot runs it as a task from power-on, before Windows, which opens
+## and closes the CD tray while the computer is on, also across a snapshot and restore; its file is
+## in use, so a delete, rename or move is refused with the sharing violation; End Task in Close
+## Program (Ctrl+Alt+Del) stops it; deleting it then fixes the problem, and the next boot runs
+## nothing. Ctrl+Alt+Del twice restarts the computer.
 
 const VIRUS_PATH := "C:\\WINDOWS\\BIZOPP.EXE"
 const SHARING := ": There has been a sharing violation.\nThe source or destination file may be in use."
@@ -15,8 +16,12 @@ func run() -> void:
 	var virus_check := problem.software_check as VirusCheck
 	check("email_virus has a VirusCheck", virus_check != null, true)
 	virus_check.virus.program = _fast(virus_check.virus.program)
-	var job := Job.new(load("res://customers/young_entrepreneur.tres"), problem, 0, 0)
-	game.jobs = [job] as Array[Job]
+	game.start_day(make_day(1, [[load("res://customers/young_entrepreneur.tres"), problem]]))
+	game.open_shop()
+	game.customer_arrived()
+	game.dialogue_finished()
+	game.customer_left()
+	var job: Job = game.jobs[0]
 	var setup: Win95Setup = game.setup_for(job)
 	var startup := setup.file_at(Win95Setup.STARTUP_PATH)
 	var virus := setup.file_at(VIRUS_PATH)
@@ -35,15 +40,32 @@ func run() -> void:
 	var win95: Control = bench._desktops.get(job)
 	var state: Node = win95.get_node("%ComputerState")
 	var desktop: Node = win95.get_node("Desktop")
-	check("no task before the desktop is up", _task_names(state), [])
-	(win95.get("_boot") as Node).finished.emit()
-	check("the boot reaches the desktop and runs StartUp's BizOpp", _task_names(state), ["Bizopp"])
-	check("BIZOPP.EXE is in use", state.call(&"in_use", virus), true)
-
+	check("the virus runs from power-on, before the desktop is up", [_task_names(state), is_instance_valid(win95.get("_boot"))], [["Bizopp"], true])
 	await create_timer(WAIT + 0.1).timeout
-	check("the virus opens the CD tray", job.cd_tray_open, true)
+	check("and opens the CD tray during the boot", job.cd_tray_open, true)
+	(win95.get("_boot") as Node).finished.emit()
+	check("the desktop starts no second one", _task_names(state), ["Bizopp"])
+	check("BIZOPP.EXE is in use", state.call(&"in_use", virus), true)
 	await create_timer(WAIT).timeout
-	check("and closes it", job.cd_tray_open, false)
+	check("the virus closes the tray", job.cd_tray_open, false)
+
+	game.set_powered(job, false)
+	check("switching off ends it", _task_names(state), [])
+	await create_timer(WAIT * 2.0).timeout
+	check("and the tray stays put", job.cd_tray_open, false)
+	game.set_powered(job, true)
+	await process_frame
+	check("switching on runs it again", _task_names(state), ["Bizopp"])
+	await create_timer(WAIT + 0.1).timeout
+	check("and the tray opens again", job.cd_tray_open, true)
+
+	check("a restore", game.restore(game.snapshot()), "")
+	job = game.jobs[0]
+	await process_frame
+	check("keeps the tray out and the one virus running", [job.cd_tray_open, _task_names(state)], [true, ["Bizopp"]])
+	await create_timer(WAIT).timeout
+	check("which closes it", job.cd_tray_open, false)
+	(win95.get("_boot") as Node).finished.emit()
 
 	var as_array: Array[Win95File] = [virus]
 	check("a delete is refused", state.call(&"delete_files", as_array), "Cannot delete BIZOPP.EXE" + SHARING)

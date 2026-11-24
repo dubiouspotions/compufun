@@ -305,6 +305,7 @@ func _on_booted() -> void:
 		_no_signal.show()  # the BIOS stops before the video card sends a picture
 		return
 	_no_signal.hide()
+	_start_startup_viruses()
 	if _state.job != null and _state.job.skips_boot:
 		_state.job.skips_boot = false
 		pointer_visible = true
@@ -729,14 +730,33 @@ func _launch(program: Win95File, document: Win95File) -> void:
 		window.open_file(document, _state)
 
 
-# Each boot that reaches the desktop opens what the StartUp folder holds, as Win95 does.
+# Each boot that reaches the desktop opens what the StartUp folder holds, as Win95 does; its viruses already run.
 func _open_startup() -> void:
-	var startup := _state.setup.file_at(Win95Setup.STARTUP_PATH)
-	if startup == null:
-		return
-	for item: Win95File in startup.children.duplicate():
-		if not item.is_folder:
+	for item in _startup_items():
+		if _startup_virus(item) == null:
 			open_file(item)
+
+
+# A virus in StartUp runs from power-on, before Windows, so that its symptom shows as the computer starts.
+func _start_startup_viruses() -> void:
+	for item in _startup_items():
+		var virus := _startup_virus(item)
+		if virus != null:
+			_state.run_task(virus.program.instantiate() as BackgroundTask, virus)
+
+
+func _startup_items() -> Array[Win95File]:
+	var startup := _state.setup.file_at(Win95Setup.STARTUP_PATH)
+	var items: Array[Win95File] = []
+	if startup != null:
+		items.assign(startup.children.filter(func(item: Win95File) -> bool: return not item.is_folder))
+	return items
+
+
+# The infected program that a StartUp item runs, itself or through its shortcut; null for any other item.
+func _startup_virus(item: Win95File) -> Win95File:
+	var program := _state.setup.file_at(item.target) if item.target != "" else item
+	return program if program != null and Virus.infects(program) else null
 
 
 func _message(title: String, text: String) -> void:
