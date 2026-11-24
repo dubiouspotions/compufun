@@ -37,6 +37,8 @@ func run() -> void:
 	check("it deletes the desktop icon that went", patch.deleted, PackedStringArray(["Desktop\\" + gone.name]))
 	check("it sets what changed", patch.settings.keys(), [&"wallpaper", &"volume", &"muted"])
 	var text := patch.write()
+	var moved := "file Desktop\\%s\n\tdesktop_position: Vector2(300, 200)\n" % after.desktop[0].name
+	check("a moved icon says only where it stands", text.contains(moved), true)
 	var parsed := SetupPatch.parse(text, "test.setup")
 	check("its text reads back without errors", parsed.errors, PackedStringArray())
 	check("and writes the same text", (parsed.value as SetupPatch).write(), text)

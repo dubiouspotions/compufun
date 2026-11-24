@@ -256,8 +256,9 @@ unmail
   `.tres` and its start patch, then this patch.
 - `set <field>: <value>` sets a field of `Win95Setup`. `delete <path>` deletes a file or folder
   with what is in it. A path starts with `Desktop`, `C:` or `Recycled` (the Recycle Bin).
-- `file <path>` and `folder <path>` say what the file must be: the fields under it, tab-indented,
-  each `Win95File` field that isn't its default; a field left out takes its default. A folder keeps
+- `file <path>` and `folder <path>` set the fields under it, tab-indented. A file that is there
+  keeps the fields left out, so a moved icon is its path and `desktop_position`; a new one has its
+  defaults in them. Save patch writes a new file's fields that aren't their defaults. A folder keeps
   its children. A text with line breaks is a block: `contents:`, then its lines two tabs deep.
 - `mail` puts a mail, every `Email` field that isn't its default (`folder: inbox`, `read: false`),
   replacing the mail with the same `sent` and `subject`; `unmail` deletes the mail with that `sent`

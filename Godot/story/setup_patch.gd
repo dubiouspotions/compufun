@@ -23,6 +23,9 @@ const _MAIL_KEY: Array[StringName] = [&"sent", &"subject"]
 ## The files and folders to put, by path, parents first, each as it must be (its children aside).
 ## A file of that name that is there takes the fields; one that isn't is added at the end.
 @export var files: Dictionary[String, Win95File] = {}
+## For each path in [member files], the fields that the patch sets, so a moved icon says only where
+## it stands; the others stay as they are. Every field for a path that isn't here.
+@export var given: Dictionary[String, PackedStringArray] = {}
 ## The mails to delete: only their sent and subject count.
 @export var unmailed: Array[Email] = []
 ## The mails to put, in order; each takes the place of the mail with its sent and subject, or comes
@@ -114,7 +117,11 @@ func apply(setup: Win95Setup) -> void:
 			file = Win95File.new()
 			file.name = _leaf(path)
 			container.append(file)
-		_take_fields(file, files[path])
+		if given.has(path):
+			for field: String in given[path]:
+				file.set(field, files[path].get(field))
+		else:
+			_take_fields(file, files[path])
 		file.is_folder = files[path].is_folder
 	var gone := unmailed.map(_mail_key)
 	setup.emails.assign(setup.emails.filter(func(e: Email) -> bool: return _mail_key(e) not in gone))
@@ -153,8 +160,14 @@ static func between(before: Win95Setup, after: Win95Setup) -> Variant:
 		var text: Variant = _fields_text(file, _FILE_SKIP)
 		if text is Array:
 			return "%s: %s" % [new[key][0], text[0]]
-		if not old.has(key) or old[key][1].is_folder != file.is_folder or _fields_text(old[key][1], _FILE_SKIP) != text:
+		if not old.has(key) or old[key][1].is_folder != file.is_folder:
 			patch.files[new[key][0]] = file
+		elif _fields_text(old[key][1], _FILE_SKIP) != text:
+			patch.files[new[key][0]] = file
+			var was: Win95File = old[key][1]
+			patch.given[new[key][0]] = PackedStringArray(_fields(file, _FILE_SKIP)
+					.filter(func(f: Dictionary) -> bool: return _encode(file.get(f.name), f) != _encode(was.get(f.name), f))
+					.map(func(f: Dictionary) -> String: return f.name))
 	var old_mails: Variant = _mails_by_key(before)
 	var new_mails: Variant = _mails_by_key(after)
 	for by_key: Variant in [old_mails, new_mails]:
@@ -185,7 +198,7 @@ func write() -> String:
 	for path: String in files:
 		out.append("")
 		out.append(("folder " if files[path].is_folder else "file ") + path)
-		out.append_array(_fields_text(files[path], _FILE_SKIP))
+		out.append_array(_fields_text(files[path], _FILE_SKIP, Array(given.get(path, PackedStringArray()))))
 	for mail: Email in unmailed:
 		out.append("")
 		out.append("unmail")
@@ -243,8 +256,10 @@ static func parse(text: String, path: String) -> StoryFormat.Parsed:
 				var file := Win95File.new()
 				file.is_folder = word == "folder"
 				file.name = _leaf(rest)
-				i = _read_fields(lines, i, file, _FILE_SKIP, path, parsed.errors)
+				var read: Array[StringName] = []
+				i = _read_fields(lines, i, file, _FILE_SKIP, path, parsed.errors, read)
 				patch.files[rest] = file
+				patch.given[rest] = PackedStringArray(read)
 			"mail", "unmail":
 				var mail := Email.new()
 				i = _read_fields(lines, i, mail, [] if word == "mail" else _fields(mail, _MAIL_KEY).map(func(p: Dictionary) -> StringName: return p.name), path, parsed.errors)
@@ -263,8 +278,8 @@ class _Bad:
 
 
 # Reads the "\tkey: value" lines (and "\tkey:" blocks of "\t\t" lines) from line [param from] into
-# [param object]; returns the index of the first line after them.
-static func _read_fields(lines: PackedStringArray, from: int, object: Object, skip: Array, path: String, errors: PackedStringArray) -> int:
+# [param object], adding each key to [param read]; returns the index of the first line after them.
+static func _read_fields(lines: PackedStringArray, from: int, object: Object, skip: Array, path: String, errors: PackedStringArray, read: Array[StringName] = []) -> int:
 	var i := from
 	while i < lines.size() and lines[i].begins_with("\t") and not lines[i].begins_with("\t\t"):
 		var at := "%s:%d: " % [path, i + 1]
@@ -288,6 +303,7 @@ static func _read_fields(lines: PackedStringArray, from: int, object: Object, sk
 			errors.append(at + value.why)
 		else:
 			object.set(key, value)
+			read.append(key)
 	return i
 
 

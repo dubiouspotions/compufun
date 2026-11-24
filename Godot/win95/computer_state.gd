@@ -386,7 +386,7 @@ func move_files(files: Array[Win95File], container: Array, places: Array[Vector2
 			why = "Cannot move %s: Cannot find the specified file. Make sure you specify the correct path and filename." % file.name
 		elif is_same(from, container):
 			if i < places.size():
-				file.desktop_position = place
+				file.desktop_position = place.round()  # whole pixels, as Win95 has
 				file.seen_at = Vector2.ZERO
 			continue
 		elif file.is_folder and _holds(file.children, container):
@@ -401,7 +401,7 @@ func move_files(files: Array[Win95File], container: Array, places: Array[Vector2
 			continue
 		(from as Array).erase(file)
 		container.append(file)
-		file.desktop_position = place
+		file.desktop_position = place.round()
 		file.seen_at = Vector2.ZERO
 	_changed()
 	return refused
