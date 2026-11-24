@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## The taskbar shows the computer's clock; Date/Time sets it; System shows the setup; Add/Remove
-## Programs uninstalls.
+## The taskbar shows the computer's clock; Date/Time sets it; System shows the setup, or Cambion's
+## build; Add/Remove Programs uninstalls.
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run time: it names the Game autoload
 
@@ -101,6 +101,15 @@ func test_system() -> void:
 	state.job.customer.display_name = "Skater bro"
 	sheet = desktop.call(&"open", load("res://win95/applets/system.tscn"))
 	check("an empty owner shows the customer's name", (sheet.get_node("%Owner") as Label).text, "Skater bro")
+	sheet.free()
+	var cambion := StringName(state.job.customer.resource_path.get_file().get_basename() + "_runs_cambion")
+	game.set_flag(cambion)
+	sheet = desktop.call(&"open", load("res://win95/applets/system.tscn"))
+	check("a computer that runs Cambion shows its build", (sheet.get_node("%Version") as Label).text, "4.06.6612")
+	sheet.free()
+	game.set_flag(cambion, 0)
+	sheet = desktop.call(&"open", load("res://win95/applets/system.tscn"))
+	check("and the setup's version once Cambion is gone", (sheet.get_node("%Version") as Label).text, "4.00.950 B")
 	desktop.free()
 
 
