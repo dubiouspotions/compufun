@@ -1,0 +1,110 @@
+# Day 5 (Tuesday, June 4, 1996). On Monday night, with his own computer in the shop, Nick finished
+# his pitch at her desk and turned her desktop into a screenshot.
+set recently_opened: PackedStringArray("C:\\My Documents\\Investor pitch 2.ppt", "C:\\My Documents\\Containers May 1996.xls", "C:\\My Documents\\Midsummer party.doc")
+
+file Desktop\to do.txt
+	modified: Monday, June 3, 1996 4:58:21 PM
+	contents:
+		TO DO
+
+		- Customs papers for the Rotterdam container!! DONE!!!
+		- Call the freight office about pallet 12 (AGAIN) (AGAIN!!)
+		- Order toner + yellow post-its
+		- Birthday card for Margit, Friday
+		- Water the ficus
+		- Wednesday 18:00, Bar Brygga!!! Bake a cake
+		- Lock my computer when I leave (Nick says)
+
+file C:\My Documents\Investor pitch 2.ppt
+	icon: res://win95/office/icons/powerpoint_presentation_32.png
+	modified: Monday, June 3, 1996 9:41:07 PM
+	summary: {&"title": "IMPORT & EXPORT", &"author": "Nick", &"company": "Big Ideas Import", &"comments": "Time is money!"}
+	contents:
+		design: Highvolt
+
+		slide: Title Slide
+		title: IMPORT & EXPORT
+		text: Mostly import
+
+		slide: Bulleted List
+		title: The idea
+		text: Buy things where they are cheap
+		text: Sell them where they are not
+		text:   Repeat
+
+		slide: 2 Column Text
+		title: Why now?
+		text: Time is money
+		text: Money is time
+		right: Cutting edge software
+		right: A business computer
+
+		slide: Bulleted List
+		title: Our partners
+		text: An excellent business opportunity
+		text:   (by email, details to follow)
+
+		slide: Title Only
+		title: Questions?
+
+mail
+	from: Desk 4 <desk4@harbourimport.se>
+	to: Big Ideas Import <ceo@bigideas.se>
+	subject: Wednesday :)
+	sent: 1996-06-03 08:47
+	folder: sent
+	read: true
+	body:
+		Hi Nick!
+
+		About Wednesday. Is your after work still on? Who else is coming?
+
+		Sam
+
+mail
+	from: Big Ideas Import <ceo@bigideas.se>
+	to: Desk 4 <desk4@harbourimport.se>
+	subject: Re: Wednesday :)
+	sent: 1996-06-03 08:58
+	read: true
+	body:
+		Wednesday, 18:00, Bar Brygga by the ferry.
+
+		So far: you, me, and the one from the computer shop, if I remember to tell them.
+
+		Bring business cards. Time is money.
+
+		Nick
+		CEO, Big Ideas Import
+
+mail
+	from: Desk 4 <desk4@harbourimport.se>
+	to: Big Ideas Import <ceo@bigideas.se>
+	subject: Re: Re: Wednesday :)
+	sent: 1996-06-03 09:02
+	folder: sent
+	read: true
+	body:
+		I don't have business cards. I'll bring cake!
+
+mail
+	from: Margit <margit@harbourimport.se>
+	to: Desk 4 <desk4@harbourimport.se>
+	subject: Re: Midsummer at Harbour Import!
+	sent: 1996-06-03 10:15
+	read: true
+	body:
+		Count me in. I'm bringing the herring, as threatened.
+
+		Who's bringing the snaps?
+
+		Margit
+
+mail
+	from: Port of Stockholm, Cargo <cargo@stockholmport.se>
+	to: Desk 4 <desk4@harbourimport.se>
+	subject: Container HBIU 447120
+	sent: 1996-06-03 14:02
+	body:
+		Container HBIU 447120 has been cleared by customs.
+		Please collect it from Terminal 2 within three working days.
