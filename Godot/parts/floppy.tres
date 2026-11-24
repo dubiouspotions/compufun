@@ -2,8 +2,10 @@
 
 [ext_resource type="Script" path="res://parts/floppy_disk.gd" id="1_part"]
 [ext_resource type="PackedScene" path="res://props/floppy_disk.tscn" id="2_model"]
+[ext_resource type="Resource" path="res://sounds/chord_low.tres" id="3_trash"]
 
 [resource]
 script = ExtResource("1_part")
 display_name = "Floppy disk"
 model = ExtResource("2_model")
+trash_sound = ExtResource("3_trash")

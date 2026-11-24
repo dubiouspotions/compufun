@@ -5,6 +5,8 @@ extends Node3D
 ## carries (Game.printout). With neither, a click goes to [member look_view], and there takes the part
 ## on top back. The can is outlined while the player holds a part or carries a printout. While the
 ## printout is raised, a click on the can throws it away (CarriedPrintout), even with a part in the hand.
+## A piece that lands in the can plays its part's [member Part.trash_sound], whatever threw it in,
+## unless the state jumped there (Game.jump).
 
 ## The group of the shop's trash can.
 const GROUP: StringName = &"trash_can"
@@ -27,6 +29,7 @@ const GROUP: StringName = &"trash_can"
 
 var _shown: Array[Piece] = []
 var _hovered: bool = false
+var _heard_jump: int = -1
 
 @onready var _pieces: Node3D = %Pieces
 @onready var _hotspot: Hotspot = %Hotspot
@@ -77,8 +80,13 @@ func _sync() -> void:
 	_hovered = _hovered and _hotspot.input_ray_pickable
 	_outline.visible = holding or _hovered
 	(_outline.material_override as StandardMaterial3D).albedo_color = hover_color if _hovered else ready_color
+	var jumped := Game.jump != _heard_jump
+	_heard_jump = Game.jump
 	if _shown == Game.trashed:
 		return
+	var landed: Piece = Game.trashed.back() if Game.trashed.size() > _shown.size() else null
+	if not jumped and landed != null and landed.part.trash_sound != null:
+		landed.part.trash_sound.play_at(self)
 	_shown = Game.trashed.duplicate()
 	for child: Node in _pieces.get_children():
 		child.queue_free()

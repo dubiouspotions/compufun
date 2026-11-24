@@ -28,6 +28,9 @@ const IDS: Array[StringName] = [&"motherboard", &"cpu", &"fan", &"ram_1", &"ram_
 ## Plays instead of the shop's usual sound as a piece of this part comes into or leaves the hand, such
 ## as a squelch; null for the usual sound.
 @export var handle_sound: SoundSet
+## Plays from the trash can as a piece of this part lands in it, as the boot floppy's low error chord;
+## null for none.
+@export var trash_sound: SoundSet
 ## A loop that plays from a computer instead of its fans' hum while it runs with a piece of this part
 ## in it, as a wheezing lung. It must loop. null for the usual fans.
 @export var running_sound: AudioStream
