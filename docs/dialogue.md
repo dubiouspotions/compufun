@@ -121,9 +121,11 @@ the usual one once they stand at the counter.
   tested), on that day or a later one: while that computer is on the counter and not done, nobody
   is in the shop and the phone is on the hook. `[if ...]` and `[daypart ...]` narrow it to a day and
   a daypart.
-- It comes only while the player is zoomed in on a computer in the Workview. The next customer
-  doesn't wait for it: when its day or daypart passes while the player is not in the Workview, it
-  doesn't come.
+- It comes only while the player is zoomed in on a computer in the Workview.
+- `[daypart ...]` holds that daypart open: until the event has played, no customer of a later
+  daypart comes in, so the day goes on once the player has zoomed in. Customers of the same daypart
+  still come. Without `[daypart ...]` the next customer doesn't wait for it, and when its day
+  passes first, it doesn't come.
 - It plays once, and it is not an arrival: it doesn't change the daypart.
 
 ## A problem: `story/problems/<id>.problem`

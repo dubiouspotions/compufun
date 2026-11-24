@@ -2,9 +2,8 @@ extends "res://tests/test.gd"
 ## An errand's event (== event in its story file): while its computer is on the counter and not yet
 ## done, on the day and in the daypart that its tags allow, the customer pops up behind the counter
 ## as the player is zoomed in on a computer in the Workview. The skater's day-4 event comes only at
-## midday on day 5, while his defrag still runs. The event doesn't hold the next customer back,
-## doesn't come once its daypart passed, doesn't count as an arrival, plays once, and survives a
-## restore.
+## midday on day 5, while his defrag still runs. Its daypart lasts until it has played: the
+## afternoon's customer waits. It doesn't count as an arrival, plays once, and survives a restore.
 
 const GAME := preload("res://game.gd")
 ## The skater's day-4 defrag errand, which runs until the afternoon of day 5.
@@ -25,7 +24,7 @@ func run() -> void:
 	_not_in_the_morning()
 	_at_midday_zoomed_in()
 	_not_outside_the_workview()
-	_not_once_midday_passed()
+	_midday_holds_until_it_played()
 	_no_event_without_the_computer()
 	_not_once_done()
 	_restore_and_play()
@@ -103,12 +102,21 @@ func _not_outside_the_workview() -> void:
 		check("in the %s view nobody pops up" % view, [game.visitor, game.waiting_event() != null], [null, true])
 
 
-func _not_once_midday_passed() -> void:
+func _midday_holds_until_it_played() -> void:
 	check("restore day 5 at midday", game.restore(MIDDAY), "")
 	game.skip_wait()
 	tick(0.1)
-	check("the event doesn't hold the afternoon's customer back", [game.arrivals, game.daypart, game.visit], [3, GAME.Daypart.AFTERNOON, GAME.Visit.DROP_OFF])
-	check("in the afternoon his event no longer waits", game.waiting_event(), null)
+	check("the event holds the afternoon's customer back: midday goes on", [game.arrivals, game.daypart, game.visitor], [2, GAME.Daypart.MIDDAY, null])
+	_zoom_in()
+	check("zoomed in, he pops up", game.visit, GAME.Visit.EVENT)
+	game.customer_arrived()
+	game.dialogue_finished()
+	game.customer_out_the_door()
+	game.customer_left()
+	game.go_to_view(&"Main")
+	game.skip_wait()
+	tick(0.1)
+	check("once it played, the afternoon's customer comes in", [game.arrivals, game.daypart, game.visit, game.errand.file_name()], [3, GAME.Daypart.AFTERNOON, GAME.Visit.DROP_OFF, "0503_nice_guy"])
 
 
 func _no_event_without_the_computer() -> void:

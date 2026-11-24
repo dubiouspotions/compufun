@@ -1788,12 +1788,20 @@ func _try_arrival() -> bool:
 	if phase != Phase.OPEN or visitor != null or phone_off_hook or not _has_room():
 		return false
 	var next := _next_arrival()
-	if next < 0 or not _arrival_due():
+	if next < 0 or not _arrival_due() or _held_open(coming(next)):
 		return false
 	arrivals = next + 1
 	daypart = maxi(daypart, daypart_of_errand(coming(next))) as Daypart
 	_set_visitor(coming(next), Visit.DROP_OFF)
 	return true
+
+
+# True while the waiting event plays in a daypart (Conversation.daypart) that [param next] would end:
+# the event holds its daypart open until it has played.
+func _held_open(next: Errand) -> bool:
+	var e := waiting_event()
+	var event := matching_conversation(e, Conversation.Trigger.EVENT)
+	return event != null and event.daypart != &"" and next != null and daypart_of_errand(next) > daypart
 
 
 # True when the counter has room for the computer of the next errand to come in, or it brings none.
@@ -1808,8 +1816,9 @@ func _has_room() -> bool:
 ## the hook, an errand whose computer is on the counter and not yet done (fixed and tested), whose
 ## customer is not gone for good, and that has an EVENT conversation that matches now (its
 ## condition and daypart) and hasn't played. It comes only while the player is zoomed in on a
-## computer in the Workview, and doesn't hold back the next customer: when its day or daypart passes
-## first, it doesn't come.
+## computer in the Workview. An event with a daypart holds it open: until it has played, no customer
+## of a later daypart comes in. Without one it doesn't hold back the next customer, and when its day
+## passes first, it doesn't come.
 func waiting_event() -> Errand:
 	if phase != Phase.OPEN or visitor != null or phone_off_hook:
 		return null
