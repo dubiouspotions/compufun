@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
 ## A customer line whose mood changes partway ("(mood)" inside it, a mood of Person.MOODS): it
-## parses into line parts and writes back exactly, every committed story file loads as before, the
+## parses into line parts and writes back exactly, every committed errand writes back the same, the
 ## dialogue box shows each part's face as the typing reaches it, the voice says the parts in order
 ## from one file each, the story check and the Week page read it, and the graph edits its parts.
 
@@ -14,8 +14,8 @@ const ERRAND := """customer: activist_guy
 (happy) Hi(angry) there.
 (neutral) One mood (only), as ever.
 """
-## Two committed lines of the activist, as one line: each part has its rendered voice file.
-const SAID := "(neutral) No worries, dude. (angry) You can keep it - I'm planning on staying away from any tech for the foreseeable future."
+## A committed line of the activist in two parts: each part has its rendered voice file.
+const SAID := "(neutral) I always help when I can. About the computer... (angry) You can keep it - I'm planning on staying away from any tech for the foreseeable future."
 
 
 func run() -> void:
@@ -70,10 +70,8 @@ func _parse_errors() -> void:
 		check("\"%s\" is refused: %s" % [case[0], errors], [errors.size(), errors[0].contains(case[1]) if not errors.is_empty() else false], [1, true])
 
 
-# Every committed errand and call-out reads as before: no line has parts, and each errand writes
-# back the same, but for spaces at the end of a line.
+# Every committed errand parses and writes back the same, but for spaces at the end of a line.
 func _committed_files_load_unchanged() -> void:
-	var with_parts := PackedStringArray()
 	var rewritten := PackedStringArray()
 	for path: String in StoryFiles.files(StoryFiles.ERRANDS_DIR, ".errand"):
 		var text := FileAccess.get_file_as_string(path)
@@ -81,17 +79,6 @@ func _committed_files_load_unchanged() -> void:
 		check("%s parses" % path, parsed.errors, PackedStringArray())
 		if _rstripped(StoryFormat.write_errand(parsed.value as Errand)) != _rstripped(text):
 			rewritten.append(path)
-		for c: Conversation in (parsed.value as Errand).conversations:
-			for line: DialogueLine in c.all_lines():
-				if not line.mood_changes.is_empty():
-					with_parts.append("%s: %s" % [path, line.text])
-	for path: String in StoryFiles.files(StoryFiles.CALL_OUTS_DIR, ".callouts"):
-		var outs := StoryFormat.parse_call_outs(FileAccess.get_file_as_string(path), path)
-		for each: CallOuts.Set in (outs.value as CallOuts).sets:
-			for line: DialogueLine in each.lines:
-				if not line.mood_changes.is_empty():
-					with_parts.append("%s: %s" % [path, line.text])
-	check("no committed line has parts", with_parts, PackedStringArray())
 	check("every committed errand writes back the same", rewritten, PackedStringArray())
 
 
@@ -103,8 +90,8 @@ func _voice_files_per_part() -> void:
 	var line := _line(SAID)
 	var parts := line.parts()
 	var each := parts.map(func(p: DialogueLine) -> String: return Voices.path_of(p, "male"))
-	check("each part has the file that a line of its words and mood has", each, [Voices.path_of(_line("(neutral) No worries, dude."), "male"), Voices.path_of(_line("(angry) You can keep it - I'm planning on staying away from any tech for the foreseeable future."), "male")])
-	var edited := _line("(neutral) No worries, dude. (angry) Keep it.")
+	check("each part has the file that a line of its words and mood has", each, [Voices.path_of(_line("(neutral) I always help when I can. About the computer..."), "male"), Voices.path_of(_line("(angry) You can keep it - I'm planning on staying away from any tech for the foreseeable future."), "male")])
+	var edited := _line("(neutral) I always help when I can. About the computer... (angry) Keep it.")
 	check("an edit of the second part leaves the first part's file", [Voices.path_of(edited.parts()[0], "male") == each[0], Voices.path_of(edited.parts()[1], "male") == each[1]], [true, false])
 
 
