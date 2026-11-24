@@ -65,7 +65,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _path: Path3D = $CustomerPath
 # By Game.AlleyEnd: the scene's customer path comes in from the right end, the left's is its mirror image.
 @onready var _alley_paths: Array[Curve3D] = [_path.curve, _mirrored(_path.curve)]
-## How high the customer's head is above their feet, in metres, for the call-out's arrow.
+## How high the middle of the customer's head is above their feet, in metres.
 @export var head_height: float = 1.6
 
 @onready var _body: CustomerBody = %CustomerBody
@@ -80,6 +80,8 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _work_power: Hotspot = %PowerHotspot
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
+@onready var _door_frame_left: MeshInstance3D = $Room/DoorFrameLeft
+@onready var _door_frame_right: MeshInstance3D = $Room/DoorFrameRight
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
 @onready var _phone_hotspot: Hotspot = %Phone
 @onready var _phone_body: MeshInstance3D = $Room/PhoneProp/Body
@@ -257,6 +259,40 @@ func customer_direction() -> Vector2:
 		return Vector2.ZERO
 	var head := _camera.global_transform.affine_inverse() * (_body.global_position + Vector3.UP * head_height)
 	return Vector2(atan2(head.x, -head.z), atan2(head.y, Vector2(head.x, head.z).length())) / (PI * 0.5)
+
+
+## Where the camera sees the point [param offset] from the middle of the visitor's head now, in
+## pixels of the world buffer; [param offset] is in metres along the camera's right and up. INF
+## while nobody is in the shop, the head is behind the camera, or the front wall hides it.
+func visitor_head_point(offset: Vector2) -> Vector2:
+	var head := _body.global_position + Vector3.UP * head_height
+	if not _body.is_visible_in_tree() or _camera.is_position_behind(head) or not _seen_through_front(head):
+		return Vector2.INF
+	var axes := _camera.global_basis
+	return _camera.unproject_position(head + axes.x * offset.x + axes.y * offset.y)
+
+
+# True when [param point] is on the camera's side of the front wall, or the camera sees it through a
+# window pane (the group shop_glass) or the doorway. Nothing else hides it.
+func _seen_through_front(point: Vector3) -> bool:
+	var panes := get_tree().get_nodes_in_group(&"shop_glass")
+	if panes.is_empty():
+		return true
+	var eye := _camera.global_position
+	var front := Plane((panes[0] as Node3D).global_basis.z, (panes[0] as Node3D).global_position)
+	if front.is_point_over(point) == front.is_point_over(eye):
+		return true
+	var openings: Array[AABB] = [_bounds(_door_frame_left).merge(_bounds(_door_frame_right))]
+	for pane: Node in panes:
+		openings.append(_bounds(pane as VisualInstance3D))
+	for opening: AABB in openings:
+		if opening.grow(0.02).intersects_segment(eye, point) != null:  # grown: a pane is flat
+			return true
+	return false
+
+
+static func _bounds(node: VisualInstance3D) -> AABB:
+	return node.global_transform * node.get_aabb()
 
 
 ## The screen of the monitor that shows [param screen] as the camera sees it now, in pixels of the
