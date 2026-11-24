@@ -24,7 +24,7 @@ render_target_update_mode = 2
 [node name="Screen" type="TextureRect" parent="." node_paths=PackedStringArray("buffer", "tube") unique_id=312858844]
 unique_name_in_owner = true
 material = ExtResource("5_look")
-texture_filter = 1
+texture_filter = 2
 layout_mode = 0
 offset_right = 640.0
 offset_bottom = 480.0

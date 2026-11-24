@@ -6,7 +6,9 @@ shader_type canvas_item;
 #include "res://shaders/psx.gdshaderinc"
 
 /** The screen buffer; CrtScreen sets it. A headless compile, as in CI's export, rejects TEXTURE as a function argument. */
-uniform sampler2D screen_texture : filter_nearest;
+uniform sampler2D screen_texture : filter_linear, repeat_disable;
+/** The glow of each buffer pixel, as shaders/crt_glow.gdshader renders it; CrtScreen sets it. */
+uniform sampler2D glow_texture : filter_linear, repeat_disable, hint_default_black;
 
 group_uniforms tube;
 /** How far the glass curves from left to right. It bows the horizontal lines; a Trinitron curves only this way. */
@@ -84,14 +86,25 @@ vec3 to_display(vec3 c) {
 	return sqrt(max(c, vec3(0.0)));
 }
 
+// True when the cursor covers any texel from lo to hi.
+bool crt_cursor_over(ivec2 lo, ivec2 hi) {
+	ivec2 at = ivec2(floor(crt_cursor));
+	return all(lessThanEqual(at, hi)) && all(greaterThan(at + textureSize(crt_cursor_texture, 0), lo));
+}
+
 // Bilinear that stays sharp at whole scales: blends only across the pixel's edge, over the width
-// of one screen pixel. scale = screen pixels per VGA pixel; 1 is plain bilinear.
+// of one screen pixel. scale = screen pixels per VGA pixel; 1 is plain bilinear. Away from the
+// cursor, the texture unit blends the four texels in one read, which needs linear filtering: the
+// Compatibility renderer takes it from the node's texture_filter, not from the uniform's hint.
 vec3 sharp_sample(sampler2D tex, vec2 uv, vec2 size, vec2 scale) {
 	vec2 p = uv * size - 0.5;
 	vec2 i = floor(p);
 	vec2 f = clamp((p - i - 0.5) * scale + 0.5, 0.0, 1.0);
 	ivec2 lo = clamp(ivec2(i), ivec2(0), ivec2(size) - 1);
 	ivec2 hi = clamp(ivec2(i) + 1, ivec2(0), ivec2(size) - 1);
+	if (!crt_cursor_over(lo, hi)) {
+		return textureLod(tex, (i + 0.5 + f) / size, 0.0).rgb;  // the texture unit blends the four texels
+	}
 	vec3 a = crt_texel(tex, lo);
 	vec3 b = crt_texel(tex, ivec2(hi.x, lo.y));
 	vec3 c = crt_texel(tex, ivec2(lo.x, hi.y));
@@ -147,14 +160,8 @@ void fragment() {
 	}
 
 	if (glow > 0.0) {
-		vec2 px = uv * size;
-		vec3 sum = vec3(0.0);
-		for (int i = 0; i < 12; i++) {
-			float angle = float(i) * 2.39996;  // golden angle: an even disc in few taps
-			float r = glow_radius * sqrt((float(i) + 0.5) / 12.0);
-			sum += fetch_linear(screen_texture, px + r * vec2(cos(angle), sin(angle)), size);
-		}
-		color += sum / 12.0 * glow;
+		vec3 halo = textureLod(glow_texture, uv, 0.0).rgb;
+		color += halo * halo * glow;
 	}
 
 	if (ghosting > 0.0) {
