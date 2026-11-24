@@ -48,6 +48,9 @@ func run() -> void:
 	check("it deletes the desktop icon that went", patch.deleted, PackedStringArray(["Desktop\\" + gone.name]))
 	check("it sets what changed", patch.settings.keys(), [&"wallpaper", &"recently_opened", &"volume", &"muted"])
 	var text := patch.write()
+	var changed_mail := text.substr(text.find("mail\n\tfolder: trash"))
+	changed_mail = changed_mail.left(changed_mail.find("\n\n") if changed_mail.contains("\n\n") else changed_mail.length())
+	check("a mail she has, changed, says only what changes and which mail", [changed_mail.contains("from:"), changed_mail.contains("body:"), changed_mail.contains("subject: " + after.emails[0].subject), changed_mail.contains("read:")], [false, false, true, true])
 	var moved := "file Desktop\\%s\n\tdesktop_position: Vector2(300, 200)\n" % after.desktop[0].name
 	check("a moved icon says only where it stands", text.contains(moved), true)
 	var parsed := SetupPatch.parse(text, "test.setup")

@@ -34,6 +34,10 @@ var left_out: PackedStringArray = []
 ## The mails to put, in order; each takes the place of the mail with its sent and subject, or comes
 ## last.
 @export var mails: Array[Email] = []
+## For a mail in [member mails] by its key (sent and subject): the fields it sets on the mail of that
+## key that the computer has, which keeps the others, so a change says only what changes. Every
+## field for a mail that isn't here.
+@export var mail_given: Dictionary[String, PackedStringArray] = {}
 
 
 ## The name of the patch file of [param errand]: its file name, such as "0403_skater_bro".
@@ -133,8 +137,12 @@ func apply(setup: Win95Setup) -> void:
 	setup.emails.assign(setup.emails.filter(func(e: Email) -> bool: return _mail_key(e) not in gone))
 	var keys := setup.emails.map(_mail_key)
 	for mail: Email in mails:
-		var at := keys.find(_mail_key(mail))
-		if at >= 0:
+		var key := _mail_key(mail)
+		var at := keys.find(key)
+		if at >= 0 and mail_given.has(key):
+			for field: String in mail_given[key]:
+				setup.emails[at].set(field, mail.get(field))
+		elif at >= 0:
 			setup.emails[at] = mail.duplicate()
 		else:
 			setup.emails.append(mail.duplicate())
@@ -188,8 +196,15 @@ static func between(before: Win95Setup, after: Win95Setup) -> Variant:
 		var text: Variant = _fields_text(new_mails[key], [])
 		if text is Array:
 			return "the mail '%s': %s" % [key, text[0]]
-		if not old_mails.has(key) or _fields_text(old_mails[key], []) != text:
+		if not old_mails.has(key):
 			patch.mails.append(new_mails[key])
+		elif _fields_text(old_mails[key], []) != text:
+			var mail: Email = new_mails[key]
+			var was: Email = old_mails[key]
+			patch.mails.append(mail)
+			patch.mail_given[key] = PackedStringArray(_fields(mail, []).filter(func(f: Dictionary) -> bool:
+					return StringName(f.name) in _MAIL_KEY or _encode(mail.get(f.name), f) != _encode(was.get(f.name), f))
+					.map(func(f: Dictionary) -> String: return f.name))
 	return patch
 
 
@@ -230,8 +245,13 @@ static func keep_holding(old: SetupPatch, made: SetupPatch, after: Win95Setup) -
 	for mail: Email in old.mails:
 		var entry := SetupPatch.new()
 		entry.mails.append(mail)
-		if _mail_key(mail) not in made_keys and holds.call(entry):
+		var key := _mail_key(mail)
+		if old.mail_given.has(key):
+			entry.mail_given[key] = old.mail_given[key]
+		if key not in made_keys and holds.call(entry):
 			made.mails.append(mail)
+			if old.mail_given.has(key):
+				made.mail_given[key] = old.mail_given[key]
 
 
 ## The patch as its .setup file says it.
@@ -257,7 +277,7 @@ func write() -> String:
 	for mail: Email in mails:
 		out.append("")
 		out.append("mail")
-		out.append_array(_fields_text(mail, []))
+		out.append_array(_fields_text(mail, [], Array(mail_given.get(_mail_key(mail), PackedStringArray()))))
 	return "\n".join(out).strip_edges(true, false) + "\n"
 
 
@@ -313,8 +333,11 @@ static func parse(text: String, path: String) -> StoryFormat.Parsed:
 				patch.given[rest] = PackedStringArray(read)
 			"mail", "unmail":
 				var mail := Email.new()
-				i = _read_fields(lines, i, mail, [] if word == "mail" else _fields(mail, _MAIL_KEY).map(func(p: Dictionary) -> StringName: return p.name), path, parsed.errors)
+				var read: Array[StringName] = []
+				i = _read_fields(lines, i, mail, [] if word == "mail" else _fields(mail, _MAIL_KEY).map(func(p: Dictionary) -> StringName: return p.name), path, parsed.errors, read)
 				(patch.mails if word == "mail" else patch.unmailed).append(mail)
+				if word == "mail":
+					patch.mail_given[_mail_key(mail)] = PackedStringArray(read)
 			_:
 				parsed.errors.append(at + "'%s' is not reset, set, delete, file, folder, mail or unmail" % word)
 	return parsed
