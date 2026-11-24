@@ -766,7 +766,8 @@ func setup_for(job: Job) -> Win95Setup:
 
 
 ## Switches [param job] on or off. The screen shows the [member connected] job while it is on.
-## The job must be on the counter.
+## A Disk Defragmenter run keeps its start while the computer is off, and one that came due meanwhile
+## finishes as it comes on. The job must be on the counter.
 func set_powered(job: Job, on: bool) -> void:
 	if job == null or job not in jobs:
 		push_error("Game.set_powered: the job is not on the counter: %s" % job)
@@ -777,6 +778,8 @@ func set_powered(job: Job, on: bool) -> void:
 		return
 	job.powered = on
 	job.heat_seconds = 0.0
+	if on:
+		_finish_defrags()
 	changed.emit()
 
 
@@ -1582,8 +1585,6 @@ func restore(state: Dictionary) -> String:
 			var started_daypart: Variant = _enum_value(Daypart, started[1], "defrag_started") if well_formed else "it isn't one"
 			if started_daypart is String:
 				return _refuse("job %d: defrag_started must be [day, daypart], not %s: %s" % [i, started, started_daypart])
-			if not job.powered:
-				return _refuse("job %d: Disk Defragmenter runs only while the computer is on" % i)
 			new_defrags[job] = [int(started[0]), started_daypart]
 		new_jobs.append(job)
 	var new_focus: Variant = _job_in(new_jobs, int(state.get("focus_slot", -1)), "focus_slot")

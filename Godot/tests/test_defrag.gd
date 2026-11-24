@@ -1,8 +1,10 @@
 extends "res://tests/test.gd"
 ## Disk Defragmenter on the skater's fragmented drive (errand 0403, day 4) runs until the afternoon of
 ## the next day (Win95Setup.defrag_days, defrag_daypart), or the evening when no afternoon comes;
-## switched off or paused, it stops. Its window shows the share of the game's time from the start to
-## the finish, and estimates the finish; a restore keeps the run. The case churns meanwhile.
+## paused, it stops. Switched off, it keeps its start: it finishes as the computer comes on after the
+## finish, or else the next boot reopens its window, running; also after End Task on the window, a
+## Shut Down and a restart, but not after Pause. Its window shows the share of the game's time from the
+## start to the finish, and estimates the finish; a restore keeps the run. The case churns meanwhile.
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run time: it names the Game autoload
 const DEFRAG_PATH := "res://win95/defrag.tscn"
@@ -45,7 +47,9 @@ func run() -> void:
 	check("restored", game.restore(JSON.parse_string(JSON.stringify(saved))), "")
 	var restored: Win95Setup = game.setups.get(game.jobs[0].customer.computer)
 	check("the restored run goes on, as far along", [restored.defragmenting, game.defrag_progress(restored)] if restored != null else [], [true, 0.75])
-	check("a run on a computer that is off is refused", game.restore({"day": 5, "arrivals": 1, "jobs": [{"errand": "0403_skater_bro", "defrag_started": [4, "AFTERNOON"]}]}).contains("only while the computer is on"), true)
+	check("a run on a computer that is off restores too", game.restore({"day": 5, "arrivals": 1, "jobs": [{"errand": "0403_skater_bro", "defrag_started": [4, "AFTERNOON"]}]}), "")
+	restored = game.setups.get(game.jobs[0].customer.computer)
+	check("with its start", [restored.defragmenting, restored.defrag_started_day], [true, 4])
 	check("so is a daypart that isn't one", game.restore({"day": 5, "arrivals": 1, "jobs": [{"errand": "0403_skater_bro", "powered": true, "defrag_started": [4, "TEATIME"]}]}).contains("defrag_started"), true)
 	window.queue_free()
 	state.queue_free()
@@ -101,12 +105,17 @@ func run() -> void:
 	setup = state.get("setup")
 	game.set_powered(game.jobs[0], false)
 	await process_frame
+	check("switched off, it keeps its start", [setup.defragmenting, setup.defrag_started_day, setup.fragmented], [true, 4, true])
 	game.close_shop()
 	game.start_next_day()
 	game.daypart = GAME.Daypart.AFTERNOON
-	check("switched off, it stops and stays fragmented", [setup.defragmenting, setup.fragmented, game.jobs[0].software_fixed], [false, true, false])
+	check("the finish passes while it is off: not finished yet", [setup.defragmenting, setup.fragmented, game.jobs[0].software_fixed], [true, true, false])
+	game.set_powered(game.jobs[0], true)
+	check("switched on after the finish, it finishes", [setup.defragmenting, setup.fragmented, game.jobs[0].software_fixed], [false, false, true])
 	state.queue_free()
 	await process_frame
+
+	await _reopens()
 
 	var computer: Node3D = load("res://rooms/shop/job_computer.tscn").instantiate()
 	state = await _defragmenting()
@@ -124,6 +133,73 @@ func run() -> void:
 	computer.queue_free()
 	state.queue_free()
 	await process_frame
+
+
+# The bench screen's desktop of the skater's computer, booted, with Disk Defragmenter running in its
+# window; each way that Windows goes down, and what the next boot opens.
+func _reopens() -> void:
+	game.reboot()
+	check("restore the skater's computer, on and defragmenting", game.restore({"day": 4, "arrivals": 3, "phase": "OPEN", "connected_slot": 0, "jobs": [{"errand": "0403_skater_bro", "slot": 0, "powered": true, "defrag_started": [4, "AFTERNOON"]}]}), "")
+	var job: Job = game.jobs[0]
+	var setup: Win95Setup = game.setups[job.customer.computer]
+	var bench: Control = load("res://ui/bench_screen.tscn").instantiate()
+	root.add_child(bench)
+	await process_frame
+	var win95: Control = bench._desktops.get(job)
+	var desktop: Node = win95.get_node("Desktop")
+	(win95.get("_boot") as Node).finished.emit()
+	await process_frame
+	var window := _defrag_window(desktop)
+	check("a boot during a run opens Disk Defragmenter, running", [window != null, window.get_node("%Start").text if window != null else ""], [true, "Pause"])
+	game.close_shop()
+
+	game.set_powered(job, false)
+	game.set_powered(job, true)
+	check("switched off and on, it boots", [_defrag_window(desktop), is_instance_valid(win95.get("_boot"))], [null, true])
+	(win95.get("_boot") as Node).finished.emit()
+	await process_frame
+	window = _defrag_window(desktop)
+	check("and reopens it, as far along, with the same start", [window != null, window.get_node("%Progress").value if window != null else -1.0, setup.defrag_started_day], [true, 25.0, 4])
+
+	win95.call(&"_on_action", &"close_program")
+	var windows: Array = desktop.call(&"windows")
+	var dialog: Node = windows[windows.size() - 1]
+	var names: PackedStringArray = dialog.call(&"program_names")
+	dialog.call(&"select", names.find("Disk Defragmenter"))
+	dialog.get_node("%EndTask").pressed.emit()
+	await process_frame
+	check("End Task closes its window and keeps the run", [_defrag_window(desktop), setup.defragmenting], [null, true])
+	win95.get_node("%ComputerState").call(&"shut_down")
+	game.set_powered(job, false)
+	game.set_powered(job, true)
+	(win95.get("_boot") as Node).finished.emit()
+	await process_frame
+	check("after Shut Down and the power, the boot reopens it", _defrag_window(desktop) != null, true)
+
+	win95.get_node("%ComputerState").call(&"restart", 0.05, 0.05)
+	await create_timer(0.3).timeout
+	check("a restart boots again", [job.powered, is_instance_valid(win95.get("_boot"))], [true, true])
+	(win95.get("_boot") as Node).finished.emit()
+	await process_frame
+	window = _defrag_window(desktop)
+	check("and reopens it", window != null, true)
+
+	window.get_node("%Start").pressed.emit()
+	check("Pause stops the run", setup.defragmenting, false)
+	game.set_powered(job, false)
+	game.set_powered(job, true)
+	(win95.get("_boot") as Node).finished.emit()
+	await process_frame
+	check("so the next boot opens nothing", _defrag_window(desktop), null)
+	game.jobs = [] as Array[Job]
+	bench.free()
+
+
+func _defrag_window(desktop: Node) -> Node:
+	for window: Node in desktop.call(&"windows"):
+		if window.scene_file_path == DEFRAG_PATH and window.visible and not window.is_queued_for_deletion():
+			return window
+	return null
 
 
 # Day 4 after the skater's drop-off, his computer on, fragmented again, and Disk Defragmenter

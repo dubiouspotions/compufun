@@ -25,6 +25,7 @@ const _DESKTOP_ICONS := preload("res://win95/desktop_icons.tscn")
 const _CRUSH := preload("res://shaders/psx_post.gdshader")
 ## The applet that the desktop's Properties opens. Loaded when used: a preload here cycles.
 const _DISPLAY := "res://win95/applets/display.tres"
+const _DEFRAG := "res://win95/defrag.tscn"
 const _SHARED_PALETTE := preload("res://win95/theme/palette.tres")
 const _THEME := preload("res://win95/win95.tres")  # shared by every Win95 scene, so the shared palette paints it
 const _ICONS := "res://win95/theme/icons/"
@@ -732,10 +733,16 @@ func _launch(program: Win95File, document: Win95File) -> void:
 
 
 # Each boot that reaches the desktop opens what the StartUp folder holds, as Win95 does; its viruses already run.
+# A Disk Defragmenter run that a power-off cut short opens again, running.
 func _open_startup() -> void:
 	for item in _startup_items():
 		if _startup_virus(item) == null:
 			open_file(item)
+	if _state.setup.defragmenting:
+		for program in _state.installed_programs():
+			if program.program != null and program.program.resource_path == _DEFRAG:
+				_launch(program, null)
+				break
 
 
 # A virus in StartUp runs from power-on, before Windows, so that its symptom shows as the computer starts.

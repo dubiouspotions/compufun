@@ -656,7 +656,6 @@ func _sync() -> void:
 		_boots += 1
 		booted.emit()
 	else:
-		setup.defragmenting = false  # switching off stops the run
 		_end_tasks()
 		powered_off.emit()
 
@@ -694,7 +693,8 @@ func _report_tested() -> void:
 
 
 ## Starts Disk Defragmenter on drive C. Game finishes it on the day and daypart that
-## Win95Setup.defrag_days and defrag_daypart say, while the computer stays on.
+## Win95Setup.defrag_days and defrag_daypart say, while the computer is on, or as it next comes on.
+## Switching off keeps the run, and the next boot reopens its window (Win95's StartUp pass).
 func start_defrag() -> void:
 	if setup == null or setup.defragmenting:
 		return

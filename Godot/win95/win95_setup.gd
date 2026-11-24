@@ -35,7 +35,7 @@ const _DESKTOP_SHORTCUTS: Array[Win95File] = [
 ## Defragmenter run finishes (see [member defrag_days]).
 @export var fragmented: bool = false
 ## A Disk Defragmenter run on a fragmented drive finishes this many days after the day it started,
-## once that day reaches [member defrag_daypart], if the computer stays on all the while.
+## once that day reaches [member defrag_daypart], or as the computer next comes on after that.
 @export var defrag_days: int = 1
 ## The daypart that a run finishes at, one of CallOuts.DAYPARTS, such as &"afternoon".
 @export var defrag_daypart: StringName = &"afternoon"

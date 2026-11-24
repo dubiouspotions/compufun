@@ -1,7 +1,7 @@
 extends "res://win95/window.gd"
 ## Disk Defragmenter: Start runs it for run_seconds, the block map sorts itself, and finished fires.
 ## On a fragmented drive C (Win95Setup.fragmented) the run is the computer's (ComputerState.start_defrag)
-## and takes until a later day if the computer stays on: the window shows Game.defrag_progress, which
+## and takes until a later day, also across a power-off: the window shows Game.defrag_progress, which
 ## follows the game's time from the start to the finish, and Pause stops the run, so the next one
 ## starts over. Under the progress bar it estimates when, which Win95 never did.
 
