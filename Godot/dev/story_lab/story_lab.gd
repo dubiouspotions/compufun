@@ -722,6 +722,7 @@ func _build() -> void:
 	_errand_panel.play_requested.connect(play)
 	_errand_panel.edit_problem_requested.connect(open_problem)
 	_errand_panel.story_requested.connect(open_story)
+	_errand_panel.timeline_requested.connect(show_timeline)
 	_errand_panel.errand_picked.connect(open_errand)
 	_day_panel = StoryDayPanel.new()
 	_day_panel.saved.connect(_store_edit)

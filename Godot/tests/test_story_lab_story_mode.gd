@@ -41,11 +41,11 @@ func run() -> void:
 	check("a click on a card opens its errand below the board", [panel.path(), lab.call("story_mode"), board.is_visible_in_tree()], [SKATER_2, false, true])
 	var week_height := panel.size.y
 
-	await _click(_button(panel, "Open full").get_global_rect().get_center())
-	check("Open full opens story mode on the errand", [lab.call("story_mode"), panel.path()], [true, SKATER_2])
+	await _click(_button(panel, "Full screen").get_global_rect().get_center())
+	check("Full screen opens story mode on the errand", [lab.call("story_mode"), panel.path()], [true, SKATER_2])
 	check("story mode hides the board and the signs", [board.is_visible_in_tree(), signs.is_visible_in_tree()], [false, false])
 	check("the errand panel shows, and larger than below the board", [panel.is_visible_in_tree(), panel.size.y > week_height + 300], [true, true])
-	check("Open full hides in story mode", _button(panel, "Open full").is_visible_in_tree(), false)
+	check("the button turns into Exit full screen", [_has_button(panel, "Full screen"), _has_button(panel, "Exit full screen")], [false, true])
 
 	check("the list holds only the customer's errands, in errand code order", _rows(panel), ["0101_skater_bro", "0201_skater_bro", "0302_skater_bro"])
 	check("the open errand's row is highlighted", _pressed_rows(panel), ["0201_skater_bro"])
@@ -81,6 +81,9 @@ func run() -> void:
 	await _click(_button(lab, "Back to timeline").get_global_rect().get_center())
 	check("Back to timeline goes to the week with the errand open", [lab.call("story_mode"), board.is_visible_in_tree(), panel.path()], [false, true, NICE])
 	check("Back to timeline hides in the week view", _button(lab, "Back to timeline").is_visible_in_tree(), false)
+	await _click(_button(panel, "Full screen").get_global_rect().get_center())
+	await _click(_button(panel, "Exit full screen").get_global_rect().get_center())
+	check("Exit full screen goes to the week with the errand open", [lab.call("story_mode"), board.is_visible_in_tree(), panel.path()], [false, true, NICE])
 
 	var at := _card(lab, SKATER_1).get_global_rect().get_center()
 	_press(at, true)
@@ -158,6 +161,10 @@ func _chip(lab: Control, customer: String) -> Control:
 
 func _outlined(lab: Control, customer: String) -> bool:
 	return (_chip(lab, customer).get_theme_stylebox("panel") as StyleBoxFlat).border_width_top > 0
+
+
+func _has_button(under: Control, text: String) -> bool:
+	return under.find_children("*", "Button", true, false).any(func(node: Node) -> bool: return (node as Button).text == text)
 
 
 func _button(under: Control, text: String) -> Button:

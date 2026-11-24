@@ -13,8 +13,10 @@ signal remove_requested(path: String)
 signal edit_problem_requested(id: StringName)
 ## The writer asked to play [param errand]'s conversation for [param trigger] in the game.
 signal play_requested(errand: Errand, trigger: Conversation.Trigger)
-## The writer asked to open the errand file [param path] in story mode ("Open full").
+## The writer asked to open the errand file [param path] in story mode ("Full screen").
 signal story_requested(path: String)
+## The writer asked to leave story mode ("Exit full screen").
+signal timeline_requested
 ## The writer clicked the errand file [param path] in the list of the customer's errands.
 signal errand_picked(path: String)
 
@@ -43,14 +45,14 @@ var problems: Dictionary[StringName, Problem] = {}:
 		problems = value
 		if _problem != null:
 			_fill_problem_picker()
-## True: the left column lists the customer's errands ([method show_errands]) and "Open full" hides,
-## as story mode shows the panel.
+## True: the left column lists the customer's errands ([method show_errands]) and the full screen
+## button leaves story mode, as story mode shows the panel.
 var story_mode: bool = false:
 	set(on):
 		story_mode = on
 		if _errand_list != null:
 			_errand_list.visible = on
-			_open_full.visible = not on
+			_show_full_screen()
 
 var _path: String = ""
 var _text: String = ""
@@ -67,7 +69,7 @@ var _face_slot: Control
 var _name: Label
 var _code_label: Label
 var _remove: Button
-var _open_full: Button
+var _full_screen: Button
 var _errand_list: VBoxContainer
 var _brief: TextEdit
 var _problem: OptionButton
@@ -531,6 +533,14 @@ func _show_problem() -> void:
 	_problem_text.text = "\n".join(lines)
 
 
+func _show_full_screen() -> void:
+	if _full_screen == null:
+		return
+	_full_screen.text = "Exit full screen" if story_mode else "Full screen"
+	_full_screen.icon = load("res://dev/story_lab/icons/%s.svg" % ("exit_full_screen" if story_mode else "full_screen"))
+	_full_screen.tooltip_text = "Back to the week board (Esc)" if story_mode else "The errand fills the window, with this customer's other errands beside it. Esc comes back."
+
+
 func _arm_remove() -> void:
 	if not _remove_armed:
 		_remove_armed = true
@@ -620,16 +630,9 @@ func _left() -> Control:
 	names.add_child(_name)
 	_code_label = LabUI.label("", 13, LabUI.DIM)
 	names.add_child(_code_label)
-	var actions := VBoxContainer.new()
-	actions.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	actions.add_theme_constant_override("separation", 2)
-	who.add_child(actions)
-	_open_full = LabUI.button("Open full", func() -> void: story_requested.emit(_path), &"FlatButton")
-	_open_full.tooltip_text = "The errand fills the window, with this customer's other errands beside it. Esc comes back."
-	_open_full.visible = not story_mode
-	actions.add_child(_open_full)
 	_remove = LabUI.button("Remove errand", _arm_remove, &"FlatButton")
-	actions.add_child(_remove)
+	_remove.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	who.add_child(_remove)
 	_errand_list = VBoxContainer.new()
 	_errand_list.add_theme_constant_override("separation", 2)
 	_errand_list.visible = story_mode
@@ -720,6 +723,13 @@ func _right() -> Control:
 			if on:
 				show_view((button as Button).text))
 	bar.add_child(views)
+	_full_screen = LabUI.button("", func() -> void:
+		if story_mode:
+			timeline_requested.emit()
+		else:
+			story_requested.emit(_path))
+	_show_full_screen()
+	bar.add_child(_full_screen)
 	_play = LabUI.button("Play", func() -> void:
 		_settle_now()
 		play_requested.emit(_errand, trigger()), &"AccentButton")
