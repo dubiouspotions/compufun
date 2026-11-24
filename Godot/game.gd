@@ -46,9 +46,18 @@ enum VisitorState {
 	POPPING_UP, ## The visitor of an EVENT pops up from behind the counter and steps to it; the room calls [method customer_arrived] then.
 }
 
+## The two ends of the alley, as the player sees them from the counter: a visitor walks in from one
+## ([member visitor_from]) and out toward one ([member visitor_to]).
+enum AlleyEnd {
+	RIGHT,
+	LEFT,
+}
+
 ## The views from which a turn to the Main view lets an event in once the next customer is due
 ## ([method waiting_event]).
 const SIDE_VIEWS: Array[StringName] = [&"Left", &"Right"]
+## The chance, 0 to 1, that a visitor walks out toward the alley end that they came in from.
+const SAME_WAY_OUT: float = 0.75
 ## The places on the counter. A full counter holds back the next drop-off.
 const MAX_JOBS: int = 4
 ## The most errand codes that a Day may have: the most visitors that it brings.
@@ -117,6 +126,11 @@ var visitor: Customer
 var errand: Errand
 var visit: Visit = Visit.NONE
 var visitor_state: VisitorState = VisitorState.NONE
+## The alley end that the visitor walks in from, and the one that they walk out toward. Each visitor
+## comes from either end at random and leaves the same way with the chance [constant SAME_WAY_OUT],
+## so an event's visitor, who pops up, leaves toward either at random. Kept after the visitor left.
+var visitor_from: AlleyEnd = AlleyEnd.RIGHT
+var visitor_to: AlleyEnd = AlleyEnd.RIGHT
 ## The name of the current view marker in the room, for example &"Main".
 var view: StringName = &"Main"
 ## The facts of the story: a name and a number. A flag that is 0 or missing is not set.
@@ -1278,6 +1292,8 @@ func snapshot() -> Dictionary:
 		"visitor": visitor.resource_path if visitor != null else "",
 		"visit": String(Visit.find_key(visit)),
 		"visitor_state": String(VisitorState.find_key(visitor_state)),
+		"visitor_from": String(AlleyEnd.find_key(visitor_from)),
+		"visitor_to": String(AlleyEnd.find_key(visitor_to)),
 		"jobs": jobs.map(func(j: Job) -> Dictionary: return j.snapshot()),
 		"focus_slot": focus.slot if focus != null else -1,
 		"connected_slot": connected.slot if connected != null else -1,
@@ -1298,7 +1314,8 @@ func snapshot() -> Dictionary:
 ## Sets the state from [param state], in the format of [method snapshot]. A missing key takes its
 ## value at the start of a day, except that the shop is OPEN: day 1, nobody in the shop, no
 ## arrivals, an empty counter, an empty hand and trash, no printout, no flags, nothing seen, no
-## CompuFunDB search or start-up, the daypart of the arrivals; a missing view keeps the current one.
+## CompuFunDB search or start-up, the daypart of the arrivals, the RIGHT alley end in and out; a
+## missing view keeps the current one.
 ## The conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
 ## Keys in [constant RETIRED_KEYS] are ignored, with what they held.
 func restore(state: Dictionary) -> String:
@@ -1435,7 +1452,9 @@ func restore(state: Dictionary) -> String:
 			return _refuse("the visitor %s is gone for good (%s)" % [_who(new_visitor), gone_flag(new_visitor)])
 	var new_visit: Variant = _enum_value(Visit, state.get("visit", "NONE" if new_visitor == null else "DROP_OFF"), "visit")
 	var new_visitor_state: Variant = _enum_value(VisitorState, state.get("visitor_state", "NONE" if new_visitor == null else "WALKING_IN"), "visitor_state")
-	for value: Variant in [new_visit, new_visitor_state]:
+	var new_from: Variant = _enum_value(AlleyEnd, state.get("visitor_from", "RIGHT"), "visitor_from")
+	var new_to: Variant = _enum_value(AlleyEnd, state.get("visitor_to", "RIGHT"), "visitor_to")
+	for value: Variant in [new_visit, new_visitor_state, new_from, new_to]:
 		if value is String:
 			return _refuse(value)
 	if (new_visitor == null) != (new_visit == Visit.NONE) or (new_visitor == null) != (new_visitor_state == VisitorState.NONE):
@@ -1526,6 +1545,8 @@ func restore(state: Dictionary) -> String:
 	errand = new_errand
 	visit = new_visit
 	visitor_state = new_visitor_state
+	visitor_from = new_from
+	visitor_to = new_to
 	leaving_lines = []
 	_pickup = new_pickup
 	_restart_wait()
@@ -1789,6 +1810,9 @@ func _set_visitor(visiting: Errand, why: Visit) -> void:
 	leaving_lines = []
 	if customer != null:
 		arrival += 1
+		visitor_from = AlleyEnd.LEFT if randf() < 0.5 else AlleyEnd.RIGHT
+		var other := AlleyEnd.RIGHT if visitor_from == AlleyEnd.LEFT else AlleyEnd.LEFT
+		visitor_to = visitor_from if randf() < SAME_WAY_OUT else other
 	_restart_wait()
 
 

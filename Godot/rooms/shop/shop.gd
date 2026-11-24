@@ -46,6 +46,9 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _camera: Camera3D = %Camera
 @onready var _views: Node3D = %Views
 @onready var _follow: PathFollow3D = %CustomerFollow
+@onready var _path: Path3D = $CustomerPath
+# By Game.AlleyEnd: the scene's customer path comes in from the right end, the left's is its mirror image.
+@onready var _alley_paths: Array[Curve3D] = [_path.curve, _mirrored(_path.curve)]
 ## How high the customer's head is above their feet, in metres, for the call-out's arrow.
 @export var head_height: float = 1.6
 
@@ -543,6 +546,7 @@ func _walk_in() -> void:
 		_walk_tween.kill()
 	_body.rotation.y = 0.0
 	_body.position = Vector3.ZERO
+	_path.curve = _alley_paths[Game.visitor_from]
 	_follow.progress_ratio = 0.0
 	var door := _door_ratio()
 	_walk_tween = create_tween()
@@ -601,6 +605,7 @@ func _walk_out(outside: bool = false) -> void:
 	_walk_out_arrival = Game.arrival
 	if _walk_tween != null:
 		_walk_tween.kill()
+	_path.curve = _alley_paths[Game.visitor_to]
 	var door := _door_ratio()
 	_walk_tween = create_tween()
 	if outside:
@@ -635,8 +640,19 @@ func _sync_phone() -> void:
 
 ## The progress ratio of the customer path where it passes under the door bell.
 func _door_ratio() -> float:
-	var path := _follow.get_parent() as Path3D
-	return path.curve.get_closest_offset(path.to_local(_door_bell.global_position)) / path.curve.get_baked_length()
+	return _path.curve.get_closest_offset(_path.to_local(_door_bell.global_position)) / _path.curve.get_baked_length()
+
+
+# [param curve] mirrored across the path's x = 0, which runs through the door.
+static func _mirrored(curve: Curve3D) -> Curve3D:
+	var mirror := curve.duplicate() as Curve3D
+	var flip := Vector3(-1.0, 1.0, 1.0)
+	for i: int in curve.point_count:
+		mirror.set_point_position(i, curve.get_point_position(i) * flip)
+		mirror.set_point_in(i, curve.get_point_in(i) * flip)
+		mirror.set_point_out(i, curve.get_point_out(i) * flip)
+		mirror.set_point_tilt(i, -curve.get_point_tilt(i))
+	return mirror
 
 
 func _on_hotspot_clicked(hotspot: Hotspot) -> void:
