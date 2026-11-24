@@ -3,8 +3,9 @@ extends Node3D
 ## The trash can by the work desk (wiki: Hardware Repair). A click with a part in the hand throws it
 ## in, on top of what lies there; with an empty hand, a click throws away the printout that the player
 ## carries (Game.printout). With neither, a click goes to [member look_view], and there takes the part
-## on top back. The can is outlined while the player holds a part or carries a printout. While the
-## printout is raised, a click on the can throws it away (CarriedPrintout), even with a part in the hand.
+## on top back. While a click would throw something away ([method can_throw]), the can's outline
+## pulses like the Open sign's; under the mouse it shows the hover colour. While the printout is
+## raised, a click on the can throws it away (CarriedPrintout), even with a part in the hand.
 ## A click that throws a piece in plays its part's [member Part.trash_sound].
 
 ## The group of the shop's trash can.
@@ -12,9 +13,8 @@ const GROUP: StringName = &"trash_can"
 
 ## The sound of the printout thrown in.
 @export var page_sound: SoundSet = preload("res://sounds/paper_handle.tres")
-## The outline colour while a click would do something, and while the mouse is over the can.
-@export var ready_color: Color = Color(0.75, 0.9, 1.0)
-@export var hover_color: Color = Color(1.0, 0.82, 0.2)
+## How the outline pulses while a click would throw something away, and looks under the mouse.
+@export var outline: ClickableOutline = preload("res://rooms/clickable_outline.tres")
 ## The close-up that looks down into the can.
 @export var look_view: StringName = &"Trash"
 ## The longest side of a part in the can, in metres. A bigger part shows smaller.
@@ -28,6 +28,9 @@ const GROUP: StringName = &"trash_can"
 
 var _shown: Array[Piece] = []
 var _hovered: bool = false
+var _pulse_material: StandardMaterial3D
+var _hover_material: StandardMaterial3D
+var _pulse: Tween
 
 @onready var _pieces: Node3D = %Pieces
 @onready var _hotspot: Hotspot = %Hotspot
@@ -35,6 +38,9 @@ var _hovered: bool = false
 
 
 func _ready() -> void:
+	# The outline is its own hull mesh, so the materials need no grow.
+	_pulse_material = outline.pulse_material(0.0)
+	_hover_material = outline.hover_material(0.0)
 	_hotspot.clicked.connect(_on_clicked)
 	_hotspot.mouse_entered.connect(_set_hovered.bind(true))
 	_hotspot.mouse_exited.connect(_set_hovered.bind(false))
@@ -45,6 +51,12 @@ func _ready() -> void:
 ## True while the mouse is over the can and a click on it would do something.
 func is_hovered() -> bool:
 	return _hovered
+
+
+## True while a click on the can would throw something away: a piece in the hand (the can takes any),
+## or the carried printout.
+func can_throw() -> bool:
+	return Game.hand != null or not Game.printout.is_empty()
 
 
 ## Throws the carried printout in, with its sound. Returns false, and does nothing, when the player
@@ -58,15 +70,15 @@ func throw_printout() -> bool:
 
 func _on_clicked(_clicked: Hotspot) -> void:
 	var thrown := Game.hand
-	if thrown != null:
-		if Game.trash_part() and thrown.part.trash_sound != null:
-			thrown.part.trash_sound.play_at(self)
-	elif throw_printout():
-		return
-	elif Game.view != look_view:
-		Game.go_to_view(look_view)
-	else:
-		Game.take_from_trash()
+	if not can_throw():
+		if Game.view != look_view:
+			Game.go_to_view(look_view)
+		else:
+			Game.take_from_trash()
+	elif thrown == null:
+		throw_printout()
+	elif Game.trash_part() and thrown.part.trash_sound != null:
+		thrown.part.trash_sound.play_at(self)
 
 
 func _set_hovered(on: bool) -> void:
@@ -75,11 +87,17 @@ func _set_hovered(on: bool) -> void:
 
 
 func _sync() -> void:
-	var holding := Game.hand != null or not Game.printout.is_empty()
-	_hotspot.set_enabled(holding or Game.view != look_view or not Game.trashed.is_empty())
+	var throws := can_throw()
+	_hotspot.set_enabled(throws or Game.view != look_view or not Game.trashed.is_empty())
 	_hovered = _hovered and _hotspot.input_ray_pickable
-	_outline.visible = holding or _hovered
-	(_outline.material_override as StandardMaterial3D).albedo_color = hover_color if _hovered else ready_color
+	_outline.visible = throws or _hovered
+	_outline.material_override = _hover_material if _hovered else _pulse_material
+	if throws != (_pulse != null):
+		if _pulse != null:
+			_pulse.kill()
+			_pulse = null
+		else:
+			_pulse = outline.pulse(_pulse_material, self)
 	if _shown == Game.trashed:
 		return
 	_shown = Game.trashed.duplicate()
