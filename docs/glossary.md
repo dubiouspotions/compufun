@@ -201,7 +201,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Draft**: A writer's edit of a story file, kept in the player's user folder until `main` has it (`user://story_drafts/`). The game plays drafts over the files from `main`; Send turns them into a GitHub issue.
 *Avoid:* local change, patch, overlay.
 
-**Event**: A visit that a customer doesn't walk in for: in the midday of their errand's day, while their computer is on the counter, they pop up from behind the counter and talk (`== event` in the errand's story file, `Game.Visit.EVENT`). It holds the next customer back until it came, and isn't an arrival.
+**Event**: A visit that a customer doesn't walk in for: while their errand's computer is on the counter and not yet done, they pop up from behind the counter and talk (`== event` in the errand's story file, `Game.Visit.EVENT`). It holds the next customer back until it came, and isn't an arrival.
 *Avoid:* jumpscare, special visit, interruption.
 
 **Visitor**: The customer who is in the shop now, to drop off, show or pick up a computer, or with none (`Game.visitor`, in for `Game.errand`). Only one at a time. One who shows a computer waits beside it on the counter until the player clicks them; then they pick it up.

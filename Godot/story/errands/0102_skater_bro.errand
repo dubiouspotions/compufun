@@ -32,12 +32,3 @@ brief:
 - You're welcome! Have a funtastic day!
 - No biggie. Stay safe!
 (neutral) Peace out! [leaving]
-
-== event [pop-up (happy) Hey!]
-brief: Placeholder for the writers: he pops up too early to ask whether his computer is done.
-(happy) Yo! Is my computer done yet?
-- Not yet. I'll call you when it's ready.
-	(neutral) Aw, man. Okay, okay.
-- You only just left!
-	(thinking) Time flies when you're shredding, dude.
-(neutral) Later, dude! [leaving]

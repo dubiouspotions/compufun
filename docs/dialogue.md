@@ -105,12 +105,13 @@ An event is a visit that the customer doesn't walk in for: they pop up from behi
 the view shakes, they call out the `[pop-up ...]` line (a `(mood)` is optional), step to the
 counter, and the player turns to face them for the conversation. Then they walk out.
 
-- It comes on the errand's day, in the midday (after the customer who makes it midday left), while
-  the errand's computer is on the counter, nobody is in the shop and the phone is on the hook.
+- It comes at any time from the drop-off until the player has finished the errand's computer
+  (fixed and tested), on that day or a later one: while that computer is on the counter and not
+  done, nobody is in the shop and the phone is on the hook.
 - It comes while the player works in the Workview on a computer whose case is open; else as they
   turn back to the Main view from the left or the right once the next customer is due. The next
-  customer waits until it came.
-- It plays once, and it is not an arrival: the afternoon customer still makes it afternoon.
+  customer waits until it came. The customer rises once the view has turned, so the player sees it.
+- It plays once, and it is not an arrival: the next customer still sets the time of day.
 
 ## A problem: `story/problems/<id>.problem`
 

@@ -46,8 +46,9 @@ func run() -> void:
 	check("nobody left to call: dark, and a click does nothing", [game.can_call(), body.material_overlay == null, phone.input_ray_pickable], [false, true, false])
 	check("restore with his computer done again", game.restore(done), "")
 
-	var event := done.duplicate(true)
-	event.merge({"visitor": "res://customers/skater_bro.tres", "visit": "EVENT", "visitor_state": "POPPING_UP"})
+	var event := {"day": 5, "arrivals": 0, "view": "Main", "seen": ["0401/drop-off/1", "0402/drop-off/1", "0403/drop-off/1"],
+		"jobs": [{"errand": "0403_skater_bro", "slot": 0}, {"errand": "0402_attractive_guy", "slot": 1, "order": 1, "software_fixed": true, "tested": true}],
+		"visitor": "res://customers/skater_bro.tres", "visit": "EVENT", "visitor_state": "POPPING_UP"}
 	check("restore the skater popping up for his event", game.restore(event), "")
 	check("while he's in the shop: dark", [game.can_call(), body.material_overlay == null], [false, true])
 	shop.queue_free()

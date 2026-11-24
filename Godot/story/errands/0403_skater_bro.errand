@@ -13,3 +13,12 @@ brief:
 		(thinking) Kinda, yeah. Everything takes forever to open.
 	- OK, leave it with me. [end]
 		(happy) Cool. Call me, dude.
+
+== event [pop-up (happy) Hey!]
+brief: Placeholder for the writers: he pops up too early to ask whether his computer is done; the defrag runs until day 5.
+(happy) Yo! Is my computer done yet?
+- Not yet. I'll call you when it's ready.
+	(neutral) Aw, man. Okay, okay.
+- You only just left!
+	(thinking) Time flies when you're shredding, dude.
+(neutral) Later, dude! [leaving]

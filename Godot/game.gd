@@ -1502,10 +1502,10 @@ func restore(state: Dictionary) -> String:
 	elif new_visit == Visit.EVENT:
 		if new_visitor_state == VisitorState.WAITING:
 			return _refuse("%s popped up for an event, so they don't wait; WAITING is for a drop-off that shows a computer" % _who(new_visitor))
-		var theirs := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.errand != null and j.errand.day_number() == number \
+		var theirs := new_jobs.filter(func(j: Job) -> bool: return j.customer == new_visitor and j.errand != null and not j.done \
 				and j.errand.conversations.any(func(c: Conversation) -> bool: return c.trigger == Conversation.Trigger.EVENT))
 		if theirs.is_empty():
-			return _refuse("%s is in for an event, but no computer of theirs from an errand of day %d with an event is on the counter" % [_who(new_visitor), number])
+			return _refuse("%s is in for an event, but no computer of theirs that is not done yet, from an errand with an event, is on the counter" % _who(new_visitor))
 		new_errand = theirs[0].errand
 	if new_visitor_state == VisitorState.POPPING_UP and new_visit != Visit.EVENT:
 		return _refuse("%s pops up, but only an EVENT visitor pops up, not a %s one" % [_who(new_visitor), Visit.find_key(new_visit)])
@@ -1651,18 +1651,19 @@ func _has_room() -> bool:
 	return next >= 0 and coming(next).brings == Errand.Brings.NOTHING
 
 
-## The errand whose event comes next, or null: in the midday of an open shop with nobody in it and
-## the phone on the hook, an errand of today whose computer is on the counter, whose customer is not
-## gone for good, and that has an EVENT conversation that matches and hasn't played. Until it comes,
-## it holds back the next customer. It comes while the player is in the Workview with the computer in
-## focus open, or as they turn to the Main view from a side view ([constant SIDE_VIEWS]) once the
-## next customer is due.
+## The errand whose event comes next, or null: in an open shop with nobody in it and the phone on
+## the hook, an errand whose computer is on the counter and not yet done (fixed and tested), whose
+## customer is not gone for good, and that has an EVENT conversation that matches and hasn't played.
+## So it can come on any day and at any time of day from the drop-off until the player finishes the
+## computer. Until it comes, it holds back the next customer. It comes while the player is in the
+## Workview with the computer in focus open, or as they turn to the Main view from a side view
+## ([constant SIDE_VIEWS]) once the next customer is due.
 func waiting_event() -> Errand:
-	if phase != Phase.OPEN or daypart != Daypart.MIDDAY or visitor != null or phone_off_hook:
+	if phase != Phase.OPEN or visitor != null or phone_off_hook:
 		return null
 	for job: Job in jobs:
 		var e := job.errand
-		if e == null or e.day_number() != day_number or is_gone(e.customer):
+		if e == null or job.done or is_gone(e.customer):
 			continue
 		var event := matching_conversation(e, Conversation.Trigger.EVENT)
 		if event != null and not seen.has(String(event.id)):
