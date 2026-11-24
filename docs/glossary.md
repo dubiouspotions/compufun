@@ -122,7 +122,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Stand-in**: A part that no place takes but that sits in the places of another part and works like it, such as Skater Bro's heart in place of the motherboard (`Part.poses_as`, `Problem.stand_ins`).
 *Avoid:* organ part, fake part.
 
-**Misplaced piece**: A piece that the customer put on a place of another kind; it keeps that place empty until the player lifts it off (`Problem.misplaced`, `Job.misplaced`).
+**Misplaced piece**: A piece that the customer put on a place of another kind; it lies there until the player lifts it off, and the place's own piece can go in under it (`Problem.misplaced`, `Job.misplaced`).
 *Avoid:* loose part, wrong part.
 
 **Missing part**: A part that the customer took out: one place that takes it starts empty, and the player takes a new one from the storage (`Problem.missing_part`).

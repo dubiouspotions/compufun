@@ -5,9 +5,11 @@ extends Node3D
 ## where a click puts it back on. It draws the job from Game on every change and acts through Game.
 ## What the player can use now has a thin pulsing outline, and a screw or an empty screw hole that
 ## can turn a beating ring; where the piece in the hand or a screw can go shows a see-through ghost of
-## it; the screwdriver hovers over a screw. An empty screw hole in the closed panel shows dark.
+## it, and every other empty place a faint one of what belongs there; the screwdriver hovers over a
+## screw. An empty screw hole in the closed panel shows dark.
 ## What lies in the way (Job.blocker), such as a hamster, lies on top of the part that it sits on; a
-## misplaced piece (Job.misplaced) lies askew on its wrong place, on top of the part that place sits on.
+## misplaced piece (Job.misplaced) lies askew on its wrong place, on top of the place's own piece once
+## that is in, else on top of the part that the place sits on.
 
 const HOTSPOT: PackedScene = preload("res://rooms/hotspot.tscn")
 const SCREW_MATERIAL: Material = preload("res://materials/metal.tres")
@@ -18,6 +20,9 @@ const PULSE_RING: Shader = preload("res://shaders/pulse_ring.gdshader")
 ## The outline and ghost colour of what the player can use now, and of the one under the mouse.
 @export var usable_color: Color = Color(1.0, 0.84, 0.35)
 @export var hover_color: Color = Color(0.8, 0.95, 1.0)
+## The colour of the faint ghost in each empty place that the hand's piece can't go into now, which
+## shows through what lies on it; its alpha is how much of it shows.
+@export var empty_color: Color = Color(1.0, 1.0, 1.0, 0.25)
 ## Its broken_hover_color outlines a broken piece under the mouse.
 @export var outline: ClickableOutline = preload("res://rooms/clickable_outline.tres")
 ## How far the outline stands out from a mesh, in metres.
@@ -93,6 +98,7 @@ var _outline_hover: StandardMaterial3D
 var _outline_broken_hover: StandardMaterial3D
 var _ghost: StandardMaterial3D
 var _ghost_hover: StandardMaterial3D
+var _ghost_empty: StandardMaterial3D
 var _outlined: Array[MeshInstance3D] = []
 var _ghosts: Array[Node3D] = []
 var _hovered: Hotspot
@@ -101,7 +107,8 @@ var _turning: Tween
 var _bobbing: Tween
 var _fading: Tween
 var _driver_materials: Array[StandardMaterial3D] = []
-# The pieces that lie on a place that isn't theirs (Job.blocker, Job.misplaced), to [model, hotspot].
+# The pieces that lie on a place that isn't theirs (Job.blocker, Job.misplaced), to [model, hotspot,
+# the shown piece that it rests on or null].
 var _lying: Dictionary[Piece, Array] = {}
 # Each place's hotspot as the scene has it: [position, size]. A stand-in's hotspot fits its model.
 var _place_hotspots: Dictionary[Part, Array] = {}
@@ -130,6 +137,9 @@ func _ready() -> void:
 	_outline_broken_hover = Hotspot.outline_material(outline.broken_hover_color, outline_width)
 	_ghost = Hotspot.ghost_material(usable_color)
 	_ghost_hover = Hotspot.ghost_material(hover_color)
+	_ghost_empty = Hotspot.ghost_material(empty_color)
+	_ghost_empty.albedo_color = empty_color
+	_ghost_empty.no_depth_test = true  # shows through the fan that went in before the missing CPU
 	_screw_ring = ShaderMaterial.new()
 	_screw_ring.shader = PULSE_RING
 	_screw_ring.set_shader_parameter(&"color", usable_color)
@@ -244,6 +254,9 @@ func _sync_lying() -> void:
 			(_lying[piece][0] as Node3D).queue_free()
 			_lying.erase(piece)
 	for piece: Piece in wanted:
+		if _lying.has(piece) and _lying[piece][2] != _rest_of(piece, wanted[piece]):  # its place filled or emptied under it
+			(_lying[piece][0] as Node3D).queue_free()
+			_lying.erase(piece)
 		if not _lying.has(piece):
 			var laid := _lay(piece, wanted[piece])
 			if laid.is_empty():
@@ -261,17 +274,16 @@ func _lay(piece: Piece, place: Part) -> Array:
 	if model == null:
 		return []
 	model.set_meta(&"piece", piece)
+	var under := _rest_of(piece, place)
 	if piece == job.blocker:
-		var under: Node3D = _shown.get(place.id())
 		model.position.y = Part.bounds(under).end.y if under != null else 0.0
 		marker.add_child(model)
 	else:
 		# Flat in the case, not in the marker's frame: the RAM slots' markers stand the RAM up.
-		var under: Node3D = _shown.get(place.sits_on.id()) if place.sits_on != null else null
 		var lean := 1.0 if Part.IDS.find(place.id()) % 2 == 0 else -1.0
 		model.position = marker.position
 		if under != null:
-			model.position.y = _places.to_local(under.to_global(Vector3(0, Part.bounds(under).end.y, 0))).y
+			model.position.y = (_places.global_transform.affine_inverse() * under.global_transform * Part.bounds(under)).end.y
 		model.rotation_degrees = Vector3(misplaced_tilt * lean, misplaced_turn * lean, 0.0)
 		_places.add_child(model)
 	var box := Part.bounds(model)
@@ -281,7 +293,15 @@ func _lay(piece: Piece, place: Part) -> Array:
 	model.add_child(hotspot)
 	hotspot.clicked.connect(func(_h: Hotspot) -> void: _lift(piece, place))
 	_watch(hotspot)
-	return [model, hotspot]
+	return [model, hotspot, under]
+
+
+# The shown piece that [param piece], lying on [param place], rests on: the blocker on the part that
+# it sits on; a misplaced piece on the place's own piece, else on the part that the place sits on.
+func _rest_of(piece: Piece, place: Part) -> Node3D:
+	if piece == job.blocker or _shown.has(place.id()):
+		return _shown.get(place.id())
+	return _shown.get(place.sits_on.id()) if place.sits_on != null else null
 
 
 # The misplaced pieces fall from above where they lie onto the case, the board and the pieces in it,
@@ -358,7 +378,9 @@ func _can_lift(piece: Piece, place: Part, ignore_hand: bool = false) -> bool:
 
 
 func _lift(piece: Piece, place: Part) -> void:
-	if piece == job.blocker:
+	if Game.can_put(job, place):  # the hand's piece goes in under the piece that lies on its place
+		Game.put_part(job, place)
+	elif piece == job.blocker:
 		Game.take_blocker(job)
 	else:
 		Game.take_misplaced(job, place)
@@ -562,13 +584,18 @@ func _sync_highlights() -> void:
 	for part: Part in Part.every():
 		var place := _place(part)
 		var hotspot := place.get_node("Hotspot") as Hotspot if place != null else null
-		if hotspot == null or not hotspot.input_ray_pickable:
+		if hotspot == null:
 			continue
+		var usable := hotspot.input_ray_pickable
 		if job.piece(part) != null:
-			if Game.hand == null:  # with a full hand a click only shakes it
+			if usable and Game.hand == null:  # with a full hand a click only shakes it
 				_highlight(_shown.get(part.id()), hotspot, job.piece(part).broken)
-		elif Game.hand != null:
-			_add_ghost(part.piece_part().model, place, hotspot)  # the hardware that belongs there, whatever the hand holds
+		elif usable and Game.hand != null:
+			var lying: Array = _lying.get(job.misplaced.get(part), [])
+			var hovered: bool = _hovered == hotspot or (not lying.is_empty() and _hovered == lying[1])
+			_add_ghost(part.piece_part().model, place, _ghost_hover if hovered else _ghost)  # the hardware that belongs there, whatever the hand holds
+		elif job.case_open:
+			_add_ghost(part.piece_part().model, place, _ghost_empty)
 	for piece: Piece in _lying:
 		var laid: Array = _lying[piece]
 		if (laid[1] as Hotspot).input_ray_pickable and Game.hand == null:
@@ -580,7 +607,7 @@ func _sync_highlights() -> void:
 			_highlight(_mat_shown[job.mat[top]][1], spot_hotspot, job.mat[top].broken)
 	if _hovered in _mat_surfaces and Game.hand != null:  # the mat is wide: a ghost only where the player points
 		var pile := _next_pile()
-		_add_ghost(Game.hand.part.model, _spots.get_child(pile), _hovered)
+		_add_ghost(Game.hand.part.model, _spots.get_child(pile), _ghost_hover)
 		if not _ghosts.is_empty():
 			_lay_flat(_ghosts.back(), _pile_height(pile), job.mat.size())
 	if _panel_hotspot.input_ray_pickable:
@@ -617,12 +644,12 @@ func _highlight(node: Node3D, hotspot: Hotspot, broken: bool = false) -> void:
 		_outlined.append(mesh)
 
 
-func _add_ghost(model: PackedScene, where: Node3D, hotspot: Hotspot) -> void:
+func _add_ghost(model: PackedScene, where: Node3D, material: Material) -> void:
 	if model == null or where == null:
 		return
 	var ghost := model.instantiate() as Node3D
 	for mesh: MeshInstance3D in ghost.find_children("*", "MeshInstance3D", true, false):
-		mesh.material_override = _ghost_hover if hotspot == _hovered else _ghost
+		mesh.material_override = material
 	for smoke: CPUParticles3D in ghost.find_children("*", "CPUParticles3D", true, false):
 		smoke.emitting = false
 	where.add_child(ghost)

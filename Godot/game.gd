@@ -920,12 +920,13 @@ func take_misplaced(job: Job, part: Part) -> bool:
 
 
 ## True when the piece in the hand can go into the place [param part] of [param job]: the place takes
-## it, the computer is off, the case is open, the place is empty with nothing misplaced on it, and the
-## part that it sits on is in.
+## it, the computer is off, the case is open, the place is empty, and the part that it sits on is in,
+## unless the problem takes its parts in any order (Problem.any_order). A piece misplaced on the place
+## stays lying on top of the new one.
 func can_put(job: Job, part: Part) -> bool:
-	if hand == null or not hand.part.fits(part) or job.powered or not job.case_open or job.piece(part) != null or job.misplaced.has(part):
+	if hand == null or not hand.part.fits(part) or job.powered or not job.case_open or job.piece(part) != null:
 		return false
-	return part.sits_on == null or job.piece(part.sits_on) != null
+	return part.sits_on == null or job.piece(part.sits_on) != null or (job.problem != null and job.problem.any_order)
 
 
 ## True when screw [param index] of the side panel of [param job] can turn, out or in: the panel is
@@ -1556,7 +1557,7 @@ func restore(state: Dictionary) -> String:
 				if pieces is String:
 					return _refuse("job %d: misplaced: %s" % [i, pieces])
 				var each: Piece = pieces[0]
-				if each.part == place.piece_part() or job.places.has(place):
+				if each.part == place.piece_part():
 					return _refuse("job %d: %s can't lie misplaced on %s" % [i, each.part.id(), place_id])
 				job.misplaced[place] = each
 		var mat_pieces: Variant = Job.pieces_from(data.get("mat", []))

@@ -22,10 +22,13 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 ## the computer, so the player takes a new one from the storage. null for none.
 @export var missing_part: Part
 ## The pieces that the customer put in the wrong places: the place that each lies on, to the part of
-## the piece. Such a piece lies askew on a place that doesn't take it, which stays empty until the
-## player lifts the piece off; a place of the piece's own part starts empty. Every place that a piece
-## lies on must have its own piece missing or lying elsewhere. Empty for none.
+## the piece. Such a piece lies askew on a place that doesn't take it, until the player lifts it off;
+## the place's own piece can go in under it meanwhile. A place of the piece's own part starts empty.
+## Every place that a piece lies on must have its own piece missing or lying elsewhere. Empty for none.
 @export var misplaced: Dictionary[Part, Part] = {}
+## True lets a part go into its place before the part that it sits on is in, so that no piece waits
+## for another, as in the hardware puzzle, whose fan goes in before the missing CPU.
+@export var any_order: bool = false
 ## For a hardware problem that shows in Windows, as an overheating computer does, until the
 ## hardware is fixed: the seconds after the desktop appears, which is when the startup sound
 ## starts, until Windows stutters and hangs. 0 keeps it running.

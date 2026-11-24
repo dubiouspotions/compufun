@@ -20,8 +20,8 @@ var places: Dictionary[Part, Piece] = {}
 ## What lies in the computer and doesn't belong there (Problem.blocker), on the part that it sits on;
 ## null once the player took it out, or for a problem without one.
 var blocker: Piece
-## The pieces that lie askew on places that don't take them (Problem.misplaced), keyed by that place,
-## which holds no piece of its own while one lies on it.
+## The pieces that lie askew on places that don't take them (Problem.misplaced), keyed by that place.
+## The place's own piece can go in under one (Game.can_put).
 var misplaced: Dictionary[Part, Piece] = {}
 ## The pieces that the player took out and put down on the mat beside the computer.
 var mat: Array[Piece] = []
