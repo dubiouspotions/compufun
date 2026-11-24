@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
-## The story check (StoryCheck) finds the missing links of a week and indexes who sets and who checks
-## each flag.
+## The story check (StoryCheck) finds the missing links of a week, among them a day without an errand
+## in each daypart, and indexes who sets and who checks each flag.
 
 
 func run() -> void:
@@ -22,17 +22,18 @@ problem: dust_overheat
 - Bye. [if not gone_young_entrepreneur]
 	(sulky) Bye then.
 """)
-	add(week, "0102_office_girl", "customer: office_girl\nproblem: dust_overheat\n\n== pick-up\n(happy) Thanks.\n")
-	add(week, "0103_hat_guy", "customer: hat_guy\ncomputer: none\n")
+	add(week, "0102_office_girl", "customer: office_girl\nproblem: dust_overheat\ndaypart: midday\n\n== pick-up\n(happy) Thanks.\n")
+	add(week, "0103_hat_guy", "customer: hat_guy\ncomputer: none\ndaypart: afternoon\n")
 	add(week, "0201_hat_guy", "customer: hat_guy\ncomputer: none\nwhen: flag_a\n\n== drop-off\n(neutral) A.\n")
-	add(week, "0201_office_girl", "customer: office_girl\ncomputer: none\nwhen: not flag_a\n\n== drop-off\n(neutral) Not A.\n")
-	add(week, "0202_hat_guy", "customer: hat_guy\ncomputer: none\nwhen: flag_b, day 2\n\n== drop-off\n(neutral) B.\n\n== pick-up\nset flag_a, flag_b\n(neutral) Set.\n")
+	add(week, "0201_office_girl", "customer: office_girl\ncomputer: none\ndaypart: midday\nwhen: not flag_a\n\n== drop-off\n(neutral) Not A.\n")
+	add(week, "0202_hat_guy", "customer: hat_guy\ncomputer: none\ndaypart: midday\nwhen: flag_b, day 2\n\n== drop-off\n(neutral) B.\n\n== pick-up\nset flag_a, flag_b\n(neutral) Set.\n")
 	var bare := Problem.new()
 	bare.take_over_path("res://problems/test_bare.tres")
 	var bare_errand: Errand = add(week, "0301_hat_guy", "customer: hat_guy\n\n== drop-off\n(neutral) Hm.\n")
 	bare_errand.problem = bare
 	add(week, "0302_hat_guy", """customer: hat_guy
 computer: none
+daypart: midday
 
 == drop-off
 (neutral) Bye now. [leaving]
@@ -53,6 +54,7 @@ computer: none
 """)
 	add(week, "0303_hat_guy", """customer: hat_guy
 computer: none
+daypart: afternoon
 
 == drop-off
 (neutral) Over there. [look right]
@@ -87,7 +89,12 @@ computer: none
 	check("a look that is not left, right or ahead", text.contains(looks + "drop-off/1): \"Up there.\" has the look up, which is not left or right or ahead."), true)
 	check("a look that never turns the view", [text.contains(looks + "drop-off/1): \"Bye.\" has the look left, which turns the view only"), text.contains(looks + "phone/1): \"Look!\" has the look ahead, which turns the view only")], [true, true])
 	check("but not a look before a line in the box", text.contains("Over there."), false)
-	check("no other links", links.size(), 15)
+	check("a day without an errand in a daypart", text.contains("res://story/days/day_2.day: no errand on day 2 is afternoon; a day needs one in each of morning, midday, afternoon."), true)
+	check("a day without errands lacks all three", ["morning", "midday", "afternoon"].all(func(part: String) -> bool: return text.contains("day_4.day: no errand on day 4 is %s;" % part)), true)
+	check("an errand of an earlier daypart than the one before it", text.contains("res://story/errands/0304_hat_guy.errand is morning but comes after res://story/errands/0302_hat_guy.errand, which is midday: the day is still midday when its customer comes in."), true)
+	check("alternatives with different dayparts", text.contains("res://story/errands/0201_hat_guy.errand: the alternatives of 0201 have different dayparts; they share one."), true)
+	check("but not a day with all three in order", [text.contains("day_1.day: no errand"), text.contains("day_3.day: no errand")], [false, false])
+	check("no other links", links.size(), 15 + 1 + 4 * 3 + 1 + 1)
 
 	var index := StoryCheck.flag_index(week)
 	check("who sets pat_told", index[&"pat_told"]["set_by"], PackedStringArray([drop_off + " > \"Did you install anything?\")"]))

@@ -42,7 +42,7 @@ func run() -> void:
 	_press(to, false)
 	await _frames(2)
 	var texts := drafts.texts()
-	check("the errand dropped on day 2 comes last that day", texts.get(ERRANDS + "0202_nice_guy.errand"), "customer: nice_guy\n")
+	check("the errand dropped into day 2's Afternoon, under its card, comes last that day in the afternoon", texts.get(ERRANDS + "0202_nice_guy.errand"), "customer: nice_guy\ndaypart: afternoon\n")
 	check("its old file is gone", texts.has(NICE), false)
 	lab.queue_free()
 	await _frames(1)

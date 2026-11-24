@@ -1,5 +1,6 @@
 customer: retired_accountant
 problem: no_sound
+daypart: afternoon
 brief:
 	Fixing the sound closes the errand. He also misses Clippy (NoClippy, a corruption that has no problem file, because CompuFunDB doesn't handle corruption): when he opens an office program, WordPad shows Clippy's frame empty. Clippy is only noticed; there is no solution, and the player can call him once the computer is tested and report no success. From now on Clippy is gone from every computer; before, he was there.
 

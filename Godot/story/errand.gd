@@ -19,6 +19,10 @@ enum Brings {
 ## shop; the shop opens only after they have walked out the door. Only an errand in the day's first
 ## place (01) can come before opening.
 @export var before_opening: bool = false
+## The daypart of the visit, one of CallOuts.DAYPARTS: when the day's first errand of a later daypart
+## comes in, the day turns to it; an errand of the day's current daypart or an earlier one doesn't
+## move it. Alternatives share it.
+@export var daypart: StringName = &"morning"
 ## null comes always. Two errands with one [member code] are alternatives: the first, by file name,
 ## whose condition matches comes.
 @export var when: Condition

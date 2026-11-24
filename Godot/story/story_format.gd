@@ -119,6 +119,8 @@ static func write_errand(errand: Errand) -> String:
 		out.append("computer: " + BRINGS.find_key(errand.brings))
 	if errand.before_opening:
 		out.append("comes: " + COMES.find_key(true))
+	if errand.daypart != CallOuts.DAYPARTS[0]:
+		out.append("daypart: " + errand.daypart)
 	if errand.when != null:
 		out.append("when: " + write_condition(errand.when))
 	_write_text_block(out, "brief", errand.brief)
@@ -313,7 +315,7 @@ class _Reader:
 				_error(0, "errand code %s: the day must be 01 to 07 and the place 01 or more" % parsed.code)
 		var sections := _section_starts()
 		var header_end: int = sections[0] if not sections.is_empty() else _lines.size()
-		var fields := _read_fields(0, header_end, ["customer", "problem", "computer", "comes", "when", "brief"])
+		var fields := _read_fields(0, header_end, ["customer", "problem", "computer", "comes", "daypart", "when", "brief"])
 		if not fields.has("customer"):
 			_error(0, "no 'customer:'")
 		else:
@@ -332,6 +334,11 @@ class _Reader:
 				_error(fields.comes_line, "comes: before opening is only for the day's first errand (place 01), not %s" % parsed.code)
 			else:
 				parsed.before_opening = COMES[fields.comes]
+		if fields.has("daypart"):
+			if StringName(fields.daypart) in CallOuts.DAYPARTS:
+				parsed.daypart = StringName(fields.daypart)
+			else:
+				_error(fields.daypart_line, "daypart: '%s' is not %s" % [fields.daypart, ", ".join(PackedStringArray(CallOuts.DAYPARTS))])
 		if fields.has("when"):
 			parsed.when = _condition(fields.when, fields.when_line)
 		parsed.brief = fields.get("brief", "")

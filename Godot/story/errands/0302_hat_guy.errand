@@ -1,5 +1,6 @@
 customer: hat_guy
 problem: noimages
+daypart: midday
 brief:
 	He thinks he is an expert, won't listen, and breaks his own computer: he removed ".exe" from every program in the Windows folder, where Win95 keeps them, so nothing starts. He is grumpy at pickup. A choice there: "Someone removed all the .exe." "Well, I did that." The player can tell him what they think of that.
 

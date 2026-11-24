@@ -1,5 +1,6 @@
 customer: retired_accountant
 problem: no_sound
+daypart: midday
 brief:
 	The only customer who brings the same problem more than once. He is overjoyed when the sound comes back.
 

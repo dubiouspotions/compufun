@@ -195,7 +195,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Story Lab**: The panel in the running game (Dev menu, F4) that edits the story files: the week, the errands and their conversations, as a graph or as text, the problems, the corruption signs, the call-outs and the bible, and plays a conversation in place.
 *Avoid:* Dialogue tab, Week tab, story editor, dialogue editor.
 
-**Week board**: The Story Lab's week (`dev/story_lab/week_board.gd`): a column per day, split into bands, Before opening, Morning, Midday, Afternoon and At closing. Each errand card sits under the band of its daypart as the customer comes in (`Game.daypart_of`); At closing lists the day's closing facts. A chip shows where each corruption sign starts. Cards drag between places and bands; customers and signs drag onto it from the strips above it, a customer to make an errand and a sign to start there.
+**Week board**: The Story Lab's week (`dev/story_lab/week_board.gd`): a column per day, split into bands, Before opening, Morning, Midday, Afternoon and At closing. Each errand card sits under the band of its daypart; a card dropped on a band's heading goes to the band's end, one dropped on a card goes next to it, and both take the band's daypart. At closing lists the day's closing facts. A chip shows where each corruption sign starts. Cards drag between places and bands; customers and signs drag onto it from the strips above it, a customer to make an errand and a sign to start there.
 *Avoid:* timeline, calendar, week view.
 
 **Draft**: A writer's edit of a story file, kept in the player's user folder until `main` has it (`user://story_drafts/`). The game plays drafts over the files from `main`; Send turns them into a GitHub issue.
@@ -207,7 +207,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Visitor**: The customer who is in the shop now, to drop off, show or pick up a computer, or with none (`Game.visitor`, in for `Game.errand`). Only one at a time. One who shows a computer waits beside it on the counter until the player clicks them; then they pick it up.
 *Avoid:* current customer.
 
-**Daypart**: The time of day in the game: morning, midday, afternoon or evening (`Game.daypart`). The day starts in the morning, the second and third customers who come in make it midday and afternoon (a visit without a computer at the start of the day, such as day 1's tutorial, doesn't count), and closing the shop makes it evening; time does not pass on its own. The Outside shows it.
+**Daypart**: The time of day in the game: morning, midday, afternoon or evening (`Game.daypart`). The day starts in the morning; the day's first errand of daypart midday or afternoon (`Errand.daypart`, `daypart:` in its story file) turns it to that daypart as its customer comes in, and closing the shop makes it evening; time does not pass on its own. The Outside shows it.
 *Avoid:* hour, time, clock.
 
 **Debug menu**: The F2 panel in debug builds, with the tabs World (the time of day, the day cycle, the rain), Game (the `Game` state), Presets, Signs and GitHub (the issues token and the reporter name on a device).

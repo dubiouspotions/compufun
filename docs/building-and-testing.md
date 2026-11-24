@@ -151,7 +151,8 @@ templates (Editor > Manage Export Templates).
 
 `dev/story.gd` runs the story check (`story/story_check.gd`) on the week from the story files and
 prints the missing links: flags that nothing sets or checks, choices without lines, errands without
-a drop-off, errand codes that can come with nobody, moods without a portrait or a voice, problems
+a drop-off, errand codes that can come with nobody, days without an errand in each daypart or with
+one out of order, moods without a portrait or a voice, problems
 without repair mechanics, problem files that no errand names. Fix a missing link in the story files, then run it again until it lists
 none. `outline` prints errand files in their written layout.
 

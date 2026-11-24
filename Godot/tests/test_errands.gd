@@ -73,8 +73,8 @@ func _dayparts() -> void:
 	var day_1 := day_of(1, [
 		errand("0101_retired_accountant", "customer: retired_accountant\ncomputer: none\n\n== drop-off\n(neutral) Welcome.\n"),
 		errand("0102_skater_bro", "customer: skater_bro\n" + dust),
-		errand("0103_office_girl", "customer: office_girl\n" + dust),
-		errand("0104_hat_guy", "customer: hat_guy\n" + dust),
+		errand("0103_office_girl", "customer: office_girl\ndaypart: midday\n" + dust),
+		errand("0104_hat_guy", "customer: hat_guy\ndaypart: afternoon\n" + dust),
 	])
 	game.restore({"day": 1, "phase": "CLOSED"})
 	game.start_day(day_1)

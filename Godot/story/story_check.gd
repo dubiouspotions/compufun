@@ -109,6 +109,27 @@ static func _sign_start(week: StoryFiles.Week, where: String) -> Dictionary:
 	return start
 
 
+# Day [param d] needs an errand in each daypart; alternatives share one, and each errand comes no
+# earlier in the day than the daypart of the errands before it.
+static func _check_dayparts(d: Day, found: PackedStringArray) -> void:
+	var latest := 0
+	var latest_file := ""
+	for daypart: StringName in CallOuts.DAYPARTS:
+		if not d.errands.any(func(errand: Errand) -> bool: return errand.daypart == daypart):
+			found.append("%sday_%d.day: no errand on day %d is %s; a day needs one in each of %s." % [StoryFiles.DAYS_DIR, d.number, d.number, daypart, ", ".join(PackedStringArray(CallOuts.DAYPARTS))])
+	for code: String in d.codes():
+		var alternatives := d.alternatives(code)
+		if alternatives.any(func(errand: Errand) -> bool: return errand.daypart != alternatives[0].daypart):
+			found.append("%s: the alternatives of %s have different dayparts; they share one." % [alternatives[0].file, code])
+		for errand: Errand in alternatives:
+			if CallOuts.DAYPARTS.find(errand.daypart) < latest:
+				found.append("%s is %s but comes after %s, which is %s: the day is still %s when its customer comes in." % [errand.file, errand.daypart, latest_file, CallOuts.DAYPARTS[latest], CallOuts.DAYPARTS[latest]])
+		for errand: Errand in alternatives:
+			if CallOuts.DAYPARTS.find(errand.daypart) > latest:
+				latest = CallOuts.DAYPARTS.find(errand.daypart)
+				latest_file = errand.file
+
+
 ## The missing links of [param week], one sentence each, starting with the file path: a flag that
 ## nothing sets or nothing checks, a + choice without lines, an errand without a drop-off (unless it
 ## brings no computer and has no lines at all), an errand code whose alternatives can all fail on
@@ -139,6 +160,7 @@ static func missing_links(week: StoryFiles.Week) -> PackedStringArray:
 				found.append("%s: errand code %s can come with nobody on day %d: %s." % [alternatives[0].file, code, d.number, failing])
 		for errand: Errand in d.errands:
 			_check_errand(errand, found)
+		_check_dayparts(d, found)
 	for name: StringName in week.call_outs:
 		var outs: CallOuts = week.call_outs[name]
 		for each: CallOuts.Set in outs.sets:

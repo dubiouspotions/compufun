@@ -30,8 +30,8 @@ enum Visit {
 enum Daypart {
 	NONE, ## No day has started.
 	MORNING, ## The day started; the player opens the shop, and the first customer comes in.
-	MIDDAY, ## The second customer came in.
-	AFTERNOON, ## The third customer came in.
+	MIDDAY, ## The day's first errand of daypart midday came in ([member Errand.daypart]).
+	AFTERNOON, ## The day's first errand of daypart afternoon came in.
 	EVENING, ## The player closed the shop.
 	NIGHT, ## Not reached in play; the debug menu shows it.
 }
@@ -1638,7 +1638,7 @@ func _try_arrival() -> bool:
 	if next < 0 or not _arrival_due() or waiting_event() != null:
 		return false
 	arrivals = next + 1
-	daypart = daypart_of(day, arrivals)
+	daypart = maxi(daypart, daypart_of_errand(coming(next))) as Daypart
 	_set_visitor(coming(next), Visit.DROP_OFF)
 	return true
 
@@ -1881,16 +1881,21 @@ static func _id_of(who: Customer) -> String:
 	return who.resource_path.get_file().get_basename()
 
 
-## The daypart of [param on_day] after [param count] arrivals: morning until the second customer
-## who brings a computer, then midday, then afternoon. Errand codes at the start of the day whose
-## alternatives all bring nothing (day 1's tutorial) come in the morning and don't count.
+## The daypart of [param on_day] after [param count] arrivals: the latest daypart of the errands of
+## its first [param count] errand codes (each errand's [member Errand.daypart]), and morning before
+## any. A code whose alternatives differ counts with the latest of them.
 static func daypart_of(on_day: Day, count: int) -> Daypart:
-	var visits_first := 0
-	for code: String in on_day.codes():
-		if on_day.alternatives(code).any(func(each: Errand) -> bool: return each.brings != Errand.Brings.NOTHING):
-			break
-		visits_first += 1
-	return clampi(count - visits_first, 1, Daypart.AFTERNOON) as Daypart
+	var latest := Daypart.MORNING
+	var codes := on_day.codes()
+	for i: int in mini(count, codes.size()):
+		for each: Errand in on_day.alternatives(codes[i]):
+			latest = maxi(latest, daypart_of_errand(each)) as Daypart
+	return latest
+
+
+## The daypart that [param errand] turns the day to as it comes in: its [member Errand.daypart].
+static func daypart_of_errand(errand: Errand) -> Daypart:
+	return Daypart[String(errand.daypart).to_upper()]
 
 
 ## The set of lines that [param who] calls out now while they wait (docs/dialogue.md, "Call-outs"):

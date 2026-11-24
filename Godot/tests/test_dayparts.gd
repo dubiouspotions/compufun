@@ -1,7 +1,8 @@
 extends "res://tests/test.gd"
-## The day starts in the morning, the second and third arrivals make it midday and afternoon,
-## closing makes it evening, and the sky outside follows: it runs forward to each daypart's hour
-## within the day, and shows a new day's or a restored state's hour at once.
+## The day starts in the morning, the first errand of daypart midday and of afternoon turn it to
+## them, a second errand of the same daypart doesn't move it, closing makes it evening, and the sky
+## outside follows: it runs forward to each daypart's hour within the day, and shows a new day's or a
+## restored state's hour at once.
 
 const GAME := preload("res://game.gd")
 
@@ -43,6 +44,20 @@ func run() -> void:
 	outside.hour = 2.0
 	game.start_day(day)
 	check("a new day shows the morning at once", outside.hour, outside.morning_hour)
+
+	var two_middays := make_day(2, [[skater, dust], [entrepreneur, dust], [hat_guy, dust], [load("res://customers/nice_guy.tres"), dust]])
+	two_middays.errands[2].daypart = &"midday"
+	two_middays.errands[3].daypart = &"afternoon"
+	two_middays.gap_seconds = Vector2(20.0, 40.0)
+	game.start_day(two_middays)
+	game.open_shop()
+	tick(0.1)
+	var seen: Array = [game.daypart]
+	for i: int in 3:
+		serve()
+		seen.append(game.daypart)
+	check("two errands in midday both come at midday; the clock turns once for them", seen, [GAME.Daypart.MORNING, GAME.Daypart.MIDDAY, GAME.Daypart.MIDDAY, GAME.Daypart.AFTERNOON])
+	check("daypart_of agrees after each arrival", range(1, 5).map(func(n: int) -> int: return GAME.daypart_of(two_middays, n)), [GAME.Daypart.MORNING, GAME.Daypart.MIDDAY, GAME.Daypart.MIDDAY, GAME.Daypart.AFTERNOON])
 
 
 ## Checks that the sky leaves [param from] at the daypart change, is between the two hours half way,

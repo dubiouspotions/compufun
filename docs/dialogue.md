@@ -19,8 +19,8 @@ story/bible/storyline.md              prose that the game doesn't read: the lore
 story/bible/customers.md
 ```
 
-- **The file name of an errand starts with its errand code.** `0101` is day 1, the first errand
-  (morning); `0503` is day 5, the third (evening). The name after it is the customer. Two errands
+- **The file name of an errand starts with its errand code.** `0101` is day 1, the first errand;
+  `0503` is day 5, the third. The name after it is the customer. Two errands
   with the same code are alternatives: the first, by name, whose `when` matches comes (day 7
   evening). Moving an errand to another day or place renames its file.
 - **Customers, persons and computers stay resources** (`customers/*.tres`,
@@ -58,6 +58,7 @@ customer while the counter is empty. `notes` is for people only.
 customer: skater_bro
 problem: dust_overheat
 computer: leaves
+daypart: midday
 when: young_entrepreneur_deleted
 brief:
 	Meet the skater. His computer runs Cambion: the calculator answers 666 to every sum.
@@ -79,6 +80,11 @@ brief:
 - `comes`: `after opening` (the default) or `before opening`: the customer is already at the
   counter, talking, when the day starts, and the player can open the shop once they are out the
   door. Only the day's first errand (place 01) can come before opening.
+- `daypart`: `morning` (the default), `midday` or `afternoon`. When the day's first errand of a
+  later daypart comes in, the day turns to it; a second errand of the same daypart doesn't move the
+  clock. A day needs at least one errand in each daypart, in order, and alternatives share one: the
+  story check lists a day without one, alternatives that differ, and an errand that comes after a
+  later daypart's. The week board's bands show it, and a card dropped in a band takes its daypart.
 - `when`: a condition (below); without it the errand always comes.
 - `brief`: what the visit is for, written before any line.
 - **Conversations** start with `==` and the trigger: `drop-off` (the customer arrives),
@@ -111,7 +117,7 @@ counter, and the player turns to face them for the conversation. Then they walk 
 - It comes while the player works in the Workview on a computer whose case is open; else as they
   turn back to the Main view from the left or the right once the next customer is due. The next
   customer waits until it came. The customer rises once the view has turned, so the player sees it.
-- It plays once, and it is not an arrival: the next customer still sets the time of day.
+- It plays once, and it is not an arrival: it doesn't change the daypart.
 
 ## A problem: `story/problems/<id>.problem`
 

@@ -1,9 +1,10 @@
 class_name StoryLabBoard
 extends HBoxContainer
 ## The Story Lab's week: a column per day with its weather and warp, and its errand cards in the order
-## the customers come in, each under its band (the time of day that Game.daypart_of gives it).
+## the customers come in, each under its band (its errand's daypart).
 ## Alternatives (errands with one errand code) stack in one dashed card. Cards drag to another day,
-## place or band, or onto a card to become its alternative; customers drag in from
+## place or band, or onto a card to become its alternative, and take the daypart of the band that
+## they land in; customers drag in from
 ## [method customer_strip] to make a new errand. A chip shows where each corruption sign starts; the
 ## chips, and the signs of [method sign_strip], drag onto a band or a card to start the sign there.
 
@@ -18,12 +19,14 @@ signal day_picked(day: int)
 signal add_requested(day: int)
 ## The writer dropped the errand file [param path] on day [param day] at place [param index] (0 is
 ## the first, in the order before the move), or with [param alternative] onto the errands at that
-## place. [param before_opening] is true when it lands in place 0 of the Before opening band.
-signal errand_dropped(path: String, day: int, index: int, alternative: bool, before_opening: bool)
+## place. [param before_opening] is true when it lands in place 0 of the Before opening band;
+## [param daypart] (one of CallOuts.DAYPARTS) is the daypart of the band that it lands in.
+signal errand_dropped(path: String, day: int, index: int, alternative: bool, before_opening: bool, daypart: StringName)
 ## The writer dropped [param customer] (a file name in customers/, without .tres) on day
 ## [param day] for a new errand at place [param index] (0 is the first; the errands from there move
-## down), coming before opening with [param before_opening].
-signal customer_dropped(customer: String, day: int, index: int, before_opening: bool)
+## down), coming before opening with [param before_opening], in [param daypart] (one of
+## CallOuts.DAYPARTS), the daypart of the band that it lands in.
+signal customer_dropped(customer: String, day: int, index: int, before_opening: bool, daypart: StringName)
 ## The writer clicked the chip of the corruption sign [param id].
 signal sign_picked(id: StringName)
 ## The writer dropped the sign [param id] to start it at [param to]: {"day": 1 to 7, "key": "on start"
@@ -33,10 +36,10 @@ signal sign_dropped(id: StringName, from: Dictionary, to: Dictionary)
 
 ## The parts of a day column, in the order of the day.
 enum Band {
-	BEFORE_OPENING, ## Place 01, when it says comes: before opening.
-	MORNING, ## Game.Daypart.MORNING as the customer comes in.
-	MIDDAY, ## Game.Daypart.MIDDAY.
-	AFTERNOON, ## Game.Daypart.AFTERNOON.
+	BEFORE_OPENING, ## Place 01, when it says comes: before opening. Its daypart is morning.
+	MORNING, ## The errands of daypart morning (Errand.daypart).
+	MIDDAY, ## Of daypart midday.
+	AFTERNOON, ## Of daypart afternoon.
 	AT_CLOSING, ## The day's on close flags and close signs; no errand comes then.
 }
 
@@ -45,7 +48,6 @@ const PORTRAIT_SIZE: int = 44
 const BAND_NAMES: PackedStringArray = ["Before opening", "Morning", "Midday", "Afternoon", "At closing"]
 const CUSTOMERS_DIR: String = "res://customers/"
 const SIGN_COLOR := Color("c58cff")
-const GAME := preload("res://game.gd")  # the script, not the autoload: tests compile this before autoloads exist
 
 var _hinted: PanelContainer
 var _hinted_style: StyleBox
@@ -139,47 +141,49 @@ static func _moved(days: Array, path: String, day: int, index: int, alternative:
 
 
 ## The band of each place of [param day_groups] (one day of [method groups]) whose errands are in
-## [param cards] (path to {"errand": Errand}), by the game's rule, Game.daypart_of: BEFORE_OPENING
-## for place 01 when one of its errands comes before opening, else MORNING, MIDDAY or AFTERNOON.
-## [param moving] comes after opening whatever its file says; a path without a card is a new errand
-## that leaves its computer.
+## [param cards] (path to {"errand": Errand}): BEFORE_OPENING for place 01 when one of its errands
+## comes before opening, else the band of its first errand's daypart. [param moving] comes after
+## opening whatever its file says; a path without a card is a new errand in the morning.
 static func bands(day_groups: Array, cards: Dictionary, moving: String = "") -> Array[Band]:
-	var day := Day.new()
-	for g: int in day_groups.size():
-		for path: String in day_groups[g]:
-			var stand_in := Errand.new()
-			stand_in.code = "01%02d" % (g + 1)
-			var errand: Errand = cards[path]["errand"] if cards.has(path) else null
-			if errand != null:
-				stand_in.brings = errand.brings
-				stand_in.before_opening = errand.before_opening and path != moving
-			day.errands.append(stand_in)
 	var found: Array[Band] = []
 	for g: int in day_groups.size():
-		if g == 0 and day.alternatives("0101").any(func(each: Errand) -> bool: return each.before_opening):
+		var errands: Array = (day_groups[g] as Array).map(func(path: String) -> Errand: return cards[path]["errand"] if cards.has(path) else null)
+		if g == 0 and range(errands.size()).any(func(i: int) -> bool: return errands[i] != null and errands[i].before_opening and day_groups[g][i] != moving):
 			found.append(Band.BEFORE_OPENING)
 		else:
-			found.append(Band[GAME.Daypart.find_key(GAME.daypart_of(day, g + 1))])
+			found.append(band_of(errands[0].daypart if errands[0] != null else CallOuts.DAYPARTS[0]))
 	return found
 
 
+## The band of [param daypart], one of CallOuts.DAYPARTS.
+static func band_of(daypart: StringName) -> Band:
+	return Band[String(daypart).to_upper()]
+
+
+## The daypart (one of CallOuts.DAYPARTS) that an errand takes in [param band]; Before opening is
+## morning. &"" for At closing, where no errand comes.
+static func daypart_of(band: Band) -> StringName:
+	match band:
+		Band.BEFORE_OPENING:
+			return CallOuts.DAYPARTS[0]
+		Band.AT_CLOSING:
+			return &""
+	return StringName(String(Band.find_key(band)).to_lower())
+
+
 ## The place on day [param day] of [param days] (0 is the first, in the order before the move) that
-## puts the errand file [param path] in [param band]: the first place where [method bands] gives it
-## that band, or the end of the day. "" is a new errand that leaves its computer. BEFORE_OPENING is
-## place 0; the other bands never take place 0 from an errand that comes before opening.
+## appends the errand file [param path] to [param band]: after the last place whose band is
+## [param band] or earlier, so before every later band. "" is a new errand. BEFORE_OPENING is place 0.
 static func place_for(days: Array, cards: Dictionary, day: int, band: Band, path: String = "") -> int:
-	var day_groups: Array = days[day - 1]
 	if band == Band.BEFORE_OPENING:
 		return 0
-	var first := 1 if not day_groups.is_empty() and bands(day_groups, cards, path)[0] == Band.BEFORE_OPENING else 0
-	for index: int in range(first, day_groups.size() + 1):
-		var after: Array = _moved(days, path, day, index, false)[day - 1]
-		for g: int in after.size():
-			if path in after[g]:
-				if bands(after, cards, path)[g] == band:
-					return index
-				break
-	return day_groups.size()
+	var day_groups: Array = days[day - 1]
+	var placed := bands(day_groups, cards, path)
+	var place := 0
+	for g: int in day_groups.size():
+		if placed[g] <= band:
+			place = g + 1
+	return place
 
 
 ## The facts that [param day] sets at closing (its on close flags but the signs', which show as
@@ -778,7 +782,7 @@ func _drop(at: Vector2, data: Variant, card: PanelContainer, day: int, index: in
 		return
 	var zone := _zone(card, at)
 	var place := index + (1 if zone == "after" else 0)
-	errand_dropped.emit(data["story_errand"], day, place, zone == "alternative", band == Band.BEFORE_OPENING and place == 0)
+	errand_dropped.emit(data["story_errand"], day, place, zone == "alternative", band == Band.BEFORE_OPENING and place == 0, daypart_of(band))
 
 
 # [param first] is the band's first errand's path, "" when it has none: Midday and Afternoon then
@@ -802,7 +806,8 @@ func _drop_band(_at: Vector2, data: Variant, day: int, band: Band) -> void:
 ## Drops [param data], a drag of the board ({"story_errand": path}), of [method customer_strip]
 ## ({"story_customer": name}) or of a sign ({"story_sign": id, "from": its start or {}}), into
 ## [param band] of day [param day] (1 to 7). An errand goes to the place that [method place_for]
-## gives ([signal errand_dropped]), a customer makes an errand there ([signal customer_dropped]), and
+## gives, the end of the band, and takes its daypart ([signal errand_dropped]); a customer makes an
+## errand there ([signal customer_dropped]); and
 ## a sign starts as the day starts (Before opening, Morning), at closing, or with the drop-off of the
 ## band's first errand (Midday, Afternoon) ([signal sign_dropped]). A drop that the band refuses
 ## (an errand at closing, a sign in a band without errands) is an error.
@@ -829,9 +834,9 @@ func drop_in(data: Dictionary, day: int, band: Band) -> void:
 	var path: String = data.get("story_errand", "")
 	var place := place_for(_days, _cards, day, band, path)
 	if path != "":
-		errand_dropped.emit(path, day, place, false, band == Band.BEFORE_OPENING)
+		errand_dropped.emit(path, day, place, false, band == Band.BEFORE_OPENING, daypart_of(band))
 	else:
-		customer_dropped.emit(data["story_customer"], day, place, band == Band.BEFORE_OPENING)
+		customer_dropped.emit(data["story_customer"], day, place, band == Band.BEFORE_OPENING, daypart_of(band))
 
 
 func _can_drop_end(_at: Vector2, data: Variant) -> bool:
@@ -839,11 +844,14 @@ func _can_drop_end(_at: Vector2, data: Variant) -> bool:
 	return _dragged(data) and not data.has("story_sign")
 
 
+# The end of the day: in the daypart of the day's last band.
 func _drop_end(_at: Vector2, data: Variant, day: int, count: int) -> void:
+	var placed := bands(_days[day - 1], _cards, data.get("story_errand", ""))
+	var daypart := daypart_of(placed.back()) if not placed.is_empty() else CallOuts.DAYPARTS[0]
 	if data.has("story_customer"):
-		customer_dropped.emit(data["story_customer"], day, count, false)
+		customer_dropped.emit(data["story_customer"], day, count, false, daypart)
 	else:
-		errand_dropped.emit(data["story_errand"], day, count, false, false)
+		errand_dropped.emit(data["story_errand"], day, count, false, false, daypart)
 
 
 static func _dragged(data: Variant) -> bool:

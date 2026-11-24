@@ -37,7 +37,8 @@ func check(label: String, actual: Variant, expected: Variant) -> void:
 
 ## Day [param number] with one errand per [code][customer, problem][/code] pair in [param errands],
 ## in order, with the errand codes of their places; a third item is the errand's conversations. The
-## first customer comes in at once, and each next one a minute after the last left.
+## first errand is morning, the second midday and the rest afternoon. The first customer comes in at
+## once, and each next one a minute after the last left.
 func make_day(number: int, errands: Array) -> Day:
 	var d := Day.new()
 	d.number = number
@@ -48,6 +49,7 @@ func make_day(number: int, errands: Array) -> Day:
 		if pair.size() > 2:
 			errand.conversations.assign(pair[2])
 		errand.code = "%02d%02d" % [number, d.errands.size() + 1]
+		errand.daypart = CallOuts.DAYPARTS[mini(d.errands.size(), 2)]
 		d.errands.append(errand)
 	d.first_wait_seconds = Vector2.ZERO
 	d.gap_seconds = Vector2(60.0, 60.0)
