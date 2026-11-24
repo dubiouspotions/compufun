@@ -94,8 +94,12 @@ var day: Day
 ## each code before it came in, or stays away for good ([method is_gone], or no alternative
 ## matched).
 var arrivals: int = 0
-## Set by [method start_day], each arrival and [method close_shop]; the Outside shows it.
-var daypart: Daypart = Daypart.NONE
+## Set by [method start_day], each arrival and [method close_shop]; the Outside shows it. Each
+## change finishes the Disk Defragmenter runs that are due by then.
+var daypart: Daypart = Daypart.NONE:
+	set(value):
+		daypart = value
+		_finish_defrags()
 ## The computers on the counter, oldest drop-off first. Jobs left overnight stay.
 var jobs: Array[Job] = []
 ## The computer that the player works on in the Workview, or null for none.
@@ -209,11 +213,23 @@ func date_of(number: int) -> Dictionary:
 	return Time.get_datetime_dict_from_unix_time(unix)
 
 
-# A computer left on overnight finishes what it was doing: Disk Defragmenter.
-func _finish_overnight_work() -> void:
+## True when the Disk Defragmenter run of [param setup] is due: today is its
+## [member Win95Setup.defrag_day] or later, and on that day the daypart has reached its
+## [member Win95Setup.defrag_daypart]. False, with an error, for a daypart that isn't one.
+func defrag_due(setup: Win95Setup) -> bool:
+	var key := String(setup.defrag_daypart).to_upper()
+	if not Daypart.has(key):
+		push_error("Game.defrag_due: defrag_daypart '%s' is not a daypart (%s)" % [setup.defrag_daypart, ", ".join(Daypart.keys())])
+		return false
+	return day_number > setup.defrag_day or (day_number == setup.defrag_day and daypart >= Daypart[key])
+
+
+# Finishes the Disk Defragmenter run of each computer that is on and whose run is due by now
+# (Win95Setup.defrag_day and defrag_daypart).
+func _finish_defrags() -> void:
 	for job in jobs:
 		var setup: Win95Setup = setups.get(job.customer.computer)
-		if setup == null or not job.powered or not setup.defragmenting:
+		if setup == null or not job.powered or not setup.defragmenting or not defrag_due(setup):
 			continue
 		setup.defragmenting = false
 		setup.fragmented = false
@@ -223,8 +239,8 @@ func _finish_overnight_work() -> void:
 ## Starts [param new_day] in the morning with the shop CLOSED: nobody comes in until
 ## [method open_shop], except the customer of a first errand that comes
 ## [member Errand.before_opening], who is already TALKING at the counter. Jobs left overnight stay,
-## and those computers that stayed on finish their Disk Defragmenter run. The player no longer
-## carries a printout. The last day's [member Day.close_signs] stop, and the new day sets its
+## and those computers that stayed on finish the Disk Defragmenter runs due this morning. The player
+## no longer carries a printout. The last day's [member Day.close_signs] stop, and the new day sets its
 ## [member Day.set_flags]. Refuses a day that [method check_day] refuses, and keeps the current state.
 func start_day(new_day: Day) -> void:
 	var invalid := check_day(new_day)
@@ -238,7 +254,6 @@ func start_day(new_day: Day) -> void:
 	phone_off_hook = false
 	printout = []
 	printout_ticks.clear()
-	_finish_overnight_work()
 	arrivals = 0
 	daypart = Daypart.MORNING
 	phase = Phase.CLOSED

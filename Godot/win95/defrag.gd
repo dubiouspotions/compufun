@@ -1,7 +1,8 @@
 extends "res://win95/window.gd"
 ## Disk Defragmenter: Start runs it for run_seconds, the block map sorts itself, and finished fires.
 ## On a fragmented drive C (Win95Setup.fragmented) a run takes all night instead: it crawls through
-## the evening, and the computer finishes it overnight if it stays on (Game starts the next day).
+## the evening, and the computer finishes it on a later day if it stays on (Game.defrag_due). Under
+## the progress bar it estimates when, which Win95 never did.
 
 ## Defragmenting is done.
 signal finished
@@ -16,6 +17,13 @@ signal finished
 @export var used_color: Color = Color(0, 0, 0.502)
 @export var fragment_color: Color = Color(1, 0, 0)
 @export var free_color: Color = Color(1, 1, 1)
+## The estimate under the progress bar while a fragmented drive defragments: %s is the daypart
+## (Win95Setup.defrag_daypart, capitalised) and the day from [member estimate_days].
+@export var estimate_text: String = "Estimated time finished: %s %s"
+## The day in [member estimate_text], by how many days away the run finishes; a later day says
+## [member estimate_later], with %d for the days.
+@export var estimate_days: Dictionary[int, String] = {0: "today", 1: "tomorrow"}
+@export var estimate_later: String = "in %d days"
 
 ## The share of the run that is done, 0 to 1.
 var _done: float = 0.0
@@ -28,6 +36,7 @@ var _blocks: PackedByteArray = PackedByteArray()
 @onready var _progress: ProgressBar = %Progress
 @onready var _status: Label = %Status
 @onready var _start: Button = %Start
+@onready var _estimate: Label = %Estimate
 
 
 func _ready() -> void:
@@ -42,6 +51,7 @@ func _ready() -> void:
 	_computer = desktop.computer if desktop != null else null
 	if _computer != null:
 		_computer.changed.connect(_sync_computer)
+		Game.changed.connect(_sync_computer)
 		_sync_computer()
 	_start.pressed.connect(func() -> void:
 		_running = not _running
@@ -73,7 +83,7 @@ func _sync_computer() -> void:
 		_done = 1.0
 		_running = false
 		finished.emit()
-		_sync()
+	_sync()
 
 
 func _sync() -> void:
@@ -85,6 +95,12 @@ func _sync() -> void:
 		_status.text = "Defragmentation of drive C is complete."
 	elif _running:
 		_status.text = "Defragmenting file system..."
+	var setup := _computer.setup if _computer != null else null
+	_estimate.visible = setup != null and setup.defragmenting
+	if _estimate.visible:
+		var days := setup.defrag_day - Game.day_number
+		var day_text := estimate_days[days] if estimate_days.has(days) else estimate_later % days
+		_estimate.text = estimate_text % [String(setup.defrag_daypart).capitalize(), day_text]
 	_map.queue_redraw()
 
 

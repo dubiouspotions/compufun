@@ -51,6 +51,11 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
+[node name="Estimate" type="Label" parent="VBox/Body/Rows"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
 [node name="Buttons" type="HBoxContainer" parent="VBox/Body/Rows"]
 layout_mode = 2
 alignment = 2

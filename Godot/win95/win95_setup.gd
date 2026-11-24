@@ -19,12 +19,19 @@ const STARTUP_PATH := "C:\\WINDOWS\\Start Menu\\Programs\\StartUp"
 @export var drive_c: Array[Win95File] = []
 ## The files in the Recycle Bin. Restoring one of these puts it on the desktop.
 @export var recycle_bin: Array[Win95File] = []
-## Drive C is fragmented: Windows boots slower and folders take seconds to open, until Disk
-## Defragmenter has run overnight.
+## Drive C is fragmented: Windows boots slower and folders take seconds to open, until a Disk
+## Defragmenter run finishes (see [member defrag_days]).
 @export var fragmented: bool = false
-## Disk Defragmenter is running; it finishes overnight if the computer stays on. Only while the
-## game runs.
+## A Disk Defragmenter run on a fragmented drive finishes this many days after the day it started,
+## once that day reaches [member defrag_daypart], if the computer stays on all the while.
+@export var defrag_days: int = 1
+## The daypart that a run finishes at, one of CallOuts.DAYPARTS, such as &"afternoon".
+@export var defrag_daypart: StringName = &"afternoon"
+## Disk Defragmenter is running on a fragmented drive. Only while the game runs.
 var defragmenting: bool = false
+## The day number that the running Disk Defragmenter finishes on (see [member defrag_days]). Only
+## while the game runs.
+var defrag_day: int = 0
 ## Where each file in the Recycle Bin was deleted from: the desktop, drive_c or a folder's
 ## children. Only while the game runs.
 var deleted_from: Dictionary[Win95File, Array] = {}

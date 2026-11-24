@@ -166,7 +166,7 @@ The story check reads the files; the **week bot** (`tests/test_week_bot.gd`) pla
 where the game has them: it clicks the open sign, reads each customer's lines and clicks their
 choices (at random, from a seed), opens CompuFunDB, searches for a symptom, marks the rest, prints the FIX page with F and
 takes it from the printer, repairs the computer (hardware with Game's part calls, software through
-the computer's own `ComputerState`: the volume, the eject button, Disk Defragmenter overnight, a
+the computer's own `ComputerState`: the volume, the eject button, Disk Defragmenter until the next afternoon, a
 property sheet, a rename, Display Properties, End Task and a delete), waits for the real boot to test it, clicks the phone
 and closes the shop at the sign. Each morning it checks that `Game.restore(Game.snapshot())` keeps
 the state.

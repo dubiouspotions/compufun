@@ -12,6 +12,6 @@ checks:
 		shows: 2 s each
 software steps:
 	Run Disk Defragmenter
-	Leave it on overnight
+	Leave it on until the afternoon next day
 notes:
-	WILL TAKE UNTIL EVENING NEXT DAY
+	WILL TAKE UNTIL AFTERNOON NEXT DAY

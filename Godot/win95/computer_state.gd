@@ -649,11 +649,13 @@ func _report_tested() -> void:
 		Game.set_tested(job)
 
 
-## Starts Disk Defragmenter on drive C. It finishes overnight while the computer stays on.
+## Starts Disk Defragmenter on drive C. Game finishes it on the day and daypart that
+## Win95Setup.defrag_days and defrag_daypart say, while the computer stays on.
 func start_defrag() -> void:
 	if setup == null or setup.defragmenting:
 		return
 	setup.defragmenting = true
+	setup.defrag_day = Game.day_number + setup.defrag_days
 	_changed()
 
 
