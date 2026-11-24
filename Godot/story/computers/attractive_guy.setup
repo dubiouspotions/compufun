@@ -1,0 +1,61 @@
+# Ken Carter, before day 4 (Monday, June 3, 1996). He asked a colleague for the pipes,
+# got the instructions, and took the computer to the shop anyway.
+set palette: res://win95/theme/schemes/plum_high_color.tres
+set wallpaper: res://win95/wallpapers/houndstooth.png
+
+file Desktop\COMPLIMENTS.TXT
+	icon: res://win95/theme/icons/document_text_32.png
+	modified: Thursday, May 30, 1996 10:14:51 PM
+	contents:
+		COMPLIMENTS RECEIVED, MAY 1996
+
+		May 2   Receptionist: "Nice tie."
+		May 9   Waiter at the club: "Very good, sir." (counts)
+		May 14  Mother: "You look tired." (does NOT count)
+		May 21  Lars at work: "Fancy."
+		May 28  Stranger on the bus: "Wow." (the tie? me? both.)
+
+		Total: 4. Target for June: 10.
+
+file C:\My Documents\speech for the club.txt
+	icon: res://win95/theme/icons/document_text_32.png
+	modified: Wednesday, May 29, 1996 11:40:02 PM
+	contents:
+		SPEECH, CLUB DINNER, JUNE 14
+
+		Gentlemen.
+
+		They say a man is judged by the company he keeps.
+		Look around you. We are excellent company.
+
+		(pause for applause)
+		(adjust tie)
+
+mail
+	from: Ken Carter <carterjr@aol.com>
+	to: Lars <lars.b@hotmail.com>
+	subject: your screensaver
+	sent: 1996-05-31 16:02
+	folder: sent
+	read: true
+	body:
+		Lars.
+
+		The pipes on your screen. I want them. How much?
+
+		Ken
+
+mail
+	from: Lars <lars.b@hotmail.com>
+	to: Ken Carter <carterjr@aol.com>
+	subject: Re: your screensaver
+	sent: 1996-05-31 16:20
+	read: true
+	body:
+		Ken,
+
+		It's called 3D Pipes, and it came with Windows. Right-click the desktop, pick Properties, then Screen Saver.
+
+		Even you can do it.
+
+		Lars
