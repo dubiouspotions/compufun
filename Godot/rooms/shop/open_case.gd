@@ -542,6 +542,8 @@ func _pulse(t: float) -> void:
 
 # Outlines what can be taken, turned or lifted; shows a ghost where the hand's piece can go.
 func _sync_highlights() -> void:
+	if not is_instance_valid(_hovered):  # freed under the mouse, so no mouse_exited came
+		_hovered = null
 	for mesh: MeshInstance3D in _outlined:
 		if is_instance_valid(mesh):
 			mesh.material_overlay = null
