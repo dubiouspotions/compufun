@@ -307,8 +307,9 @@ func _edit_mail(row: TreeItem) -> void:
 			_mails.edit_selected.call_deferred(true)
 			return
 	mail.folder = _folder_names.find(_cell(row, 0)) as Email.Folder
-	mail.from = _cell(row, 1)
-	mail.to = _cell(row, 2)
+	# A new address left without typing one keeps the old: an empty cell is a cancel, not "nobody".
+	mail.from = _cell(row, 1) if _cell(row, 1).strip_edges() != "" else mail.from
+	mail.to = _cell(row, 2) if _cell(row, 2).strip_edges() != "" else mail.to
 	mail.subject = row.get_text(3)
 	mail.sent = row.get_text(4)
 	mail.read = row.get_text(5) == _READ[1]
