@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Win95File" format=3]
+
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="file"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/program_group_32.png" id="group"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/office_logo_32.png" id="logo"]
+
+[sub_resource type="Resource" id="shortcut"]
+script = ExtResource("file")
+name = "Microsoft Office Shortcut Bar"
+icon = ExtResource("logo")
+target = "C:\\Program Files\\Microsoft Office\\Office\\MSOFFICE.EXE"
+
+[resource]
+script = ExtResource("file")
+name = "StartUp"
+icon = ExtResource("group")
+is_folder = true
+children = Array[Resource]([SubResource("shortcut")])

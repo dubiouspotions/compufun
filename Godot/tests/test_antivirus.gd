@@ -24,7 +24,7 @@ func run() -> void:
 	game.jobs = [job] as Array[Job]
 	var setup: Win95Setup = game.setup_for(job)
 	var virus := setup.file_at(VIRUS_PATH)
-	check("no Program Files on this computer yet", setup.file_at("C:\\Program Files"), null)
+	check("no AntiVirus on this computer yet", setup.file_at("C:\\Program Files\\CompuFun AntiVirus"), null)
 
 	var bench: Control = load("res://ui/bench_screen.tscn").instantiate()
 	root.add_child(bench)

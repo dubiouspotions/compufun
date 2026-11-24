@@ -38,6 +38,10 @@
 [ext_resource type="Resource" path="res://people/office_girl/person.tres" id="42_o3bf6"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="43_itl7v"]
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_asset_tag.png" id="sticker_asset_tag"]
+[ext_resource type="Resource" path="res://win95/office/office97.tres" id="office97"]
+[ext_resource type="Resource" path="res://win95/office/word_shortcut.tres" id="word_shortcut"]
+[ext_resource type="Resource" path="res://win95/office/shortcut_bar_startup.tres" id="office_startup"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/word_document_32.png" id="icon_word_document"]
 
 [sub_resource type="Resource" id="Resource_pvykc"]
 script = ExtResource("2_r8lo3")
@@ -253,12 +257,20 @@ Harbour Import AB
 "
 modified = "Thursday, May 30, 1996 2:31:05 PM"
 
+[sub_resource type="Resource" id="Doc_midsummer"]
+script = ExtResource("5_nkk1v")
+name = "Midsummer party.doc"
+icon = ExtResource("icon_word_document")
+contents_file = "res://customers/office_girl/documents/midsummer_party.doc"
+summary = Dictionary[StringName, String]({&"title": "Midsummer party", &"author": "Sam Hilton", &"company": "Harbour Import AB"})
+modified = "Thursday, May 30, 1996 4:12:40 PM"
+
 [sub_resource type="Resource" id="Resource_3tcxc"]
 script = ExtResource("5_nkk1v")
 name = "My Documents"
 icon = ExtResource("33_60txt")
 is_folder = true
-children = Array[Resource]([SubResource("Resource_rh5qv"), SubResource("Resource_57xrn")])
+children = Array[Resource]([SubResource("Resource_rh5qv"), SubResource("Resource_57xrn"), SubResource("Doc_midsummer")])
 
 [sub_resource type="Resource" id="Resource_6vrmi"]
 script = ExtResource("34_m2omy")
@@ -283,7 +295,7 @@ read = true
 script = ExtResource("36_40syd")
 palette = ExtResource("scheme_rose")
 wallpaper = ExtResource("wallpaper_daisies")
-desktop = Array[ExtResource("5_nkk1v")]([SubResource("Resource_50c5u"), SubResource("Resource_f6oqf")])
+desktop = Array[ExtResource("5_nkk1v")]([SubResource("Resource_50c5u"), SubResource("Resource_f6oqf"), ExtResource("word_shortcut")])
 drive_c = Array[ExtResource("5_nkk1v")]([SubResource("Resource_jhvqk"), SubResource("Resource_3tcxc")])
 emails = Array[ExtResource("34_m2omy")]([SubResource("Resource_6vrmi"), SubResource("Resource_1vyur")])
 installed_apps = PackedStringArray("Calculator", "Notepad")
@@ -291,6 +303,9 @@ volume = 40.0
 registered_owner = "Sam Hilton"
 registered_organization = "Harbour Import AB"
 product_id = "24796-OEM-0004172-61530"
+start_menu_programs = Array[ExtResource("5_nkk1v")]([ExtResource("word_shortcut"), ExtResource("office_startup")])
+program_files = Array[ExtResource("5_nkk1v")]([ExtResource("office97")])
+recently_opened = PackedStringArray("C:\\My Documents\\Midsummer party.doc")
 
 [sub_resource type="Resource" id="Resource_1w7aw"]
 script = ExtResource("3_jnq3r")

@@ -6,6 +6,7 @@ extends Resource
 ## The folder whose items Windows opens each time a boot reaches the desktop.
 const STARTUP_PATH := "C:\\WINDOWS\\Start Menu\\Programs\\StartUp"
 const _PROGRAMS_PATH := "C:\\WINDOWS\\Start Menu\\Programs"
+const _PROGRAM_FILES_PATH := "C:\\Program Files"
 
 ## "Windows theme": the system colours. The default is the stock Win95 palette.
 @export var palette: Win95Palette = preload("res://win95/theme/palette.tres")
@@ -47,8 +48,16 @@ var desktop_screenshot: DesktopScreenshot
 ## The programs that the Start menu lists, by their name in the menu.
 @export var installed_apps: PackedStringArray = []
 ## Shortcuts and folders that this computer's own programs put in the Start menu's Programs, on top
-## of the stock ones in C:\WINDOWS\Start Menu\Programs; the running copy adds them there.
+## of the stock ones in C:\WINDOWS\Start Menu\Programs; the running copy adds them there. A folder
+## named like one there, such as StartUp, adds its items to that one.
 @export var start_menu_programs: Array[Win95File] = []
+## Program folders that setup programs installed in C:\Program Files, such as the stock Microsoft
+## Office (win95/office/office97.tres); the running copy adds them there, making the folder if it
+## is missing.
+@export var program_files: Array[Win95File] = []
+## The documents that the customer opened last, newest first, by path, such as
+## "C:\My Documents\Invitation.doc": the running copy's [member recent_documents] start with them.
+@export var recently_opened: PackedStringArray = []
 ## Dial-Up Networking: the connection that AutoDial dials when a program goes online, by its name
 ## in the Connect To dialog, such as the provider's; empty for none, and programs then fail at once.
 ## At the customer's home it dialled; on the bench the modem has no phone line.
@@ -111,17 +120,57 @@ var floppy_files: Array[Win95File] = []
 ## contents_file hold its text, and Start Menu\Programs holds [member start_menu_programs].
 func copy() -> Win95Setup:
 	var running := duplicate_deep() as Win95Setup
-	for files: Array in [running.desktop, running.drive_c, running.recycle_bin, running.start_menu_programs]:
+	for files: Array in [running.desktop, running.drive_c, running.recycle_bin, running.start_menu_programs, running.program_files]:
 		_own(files)
+	if not running.program_files.is_empty():
+		var folder := running._program_files_folder()
+		if folder != null:
+			_merge(folder.children, running.program_files)
+		running.program_files.clear()  # drive C holds them now
 	if not running.start_menu_programs.is_empty():
 		var programs := running.file_at(_PROGRAMS_PATH)
 		if programs == null:
 			push_error("Win95Setup: no %s folder, so the Start menu misses %s" % [_PROGRAMS_PATH, running.start_menu_programs.map(func(file: Win95File) -> String: return file.name)])
 		else:
-			programs.children.append_array(running.start_menu_programs)
+			_merge(programs.children, running.start_menu_programs)
 		running.start_menu_programs.clear()  # the folder holds them now; a copy of this copy mustn't add them twice
+	for path in running.recently_opened:
+		var document := running.file_at(path)
+		if document == null:
+			push_error("Win95Setup: recently_opened names %s, which isn't on the desktop or drive C" % path)
+		else:
+			running.recent_documents.append(document)
 	running._add_system_icons()
 	return running
+
+
+# Adds [param items] to [param container]; a folder named like one in the container adds its items
+# to that one instead.
+static func _merge(container: Array, items: Array) -> void:
+	for item: Win95File in items:
+		var same: Win95File = null
+		for existing: Win95File in container:
+			if item.is_folder and existing.is_folder and existing.name.nocasecmp_to(item.name) == 0:
+				same = existing
+		if same != null:
+			_merge(same.children, item.children)
+		else:
+			container.append(item)
+
+
+# C:\Program Files, made when the drive has none; null, with an error, when a file has its name.
+func _program_files_folder() -> Win95File:
+	var folder := file_at(_PROGRAM_FILES_PATH)
+	if folder == null:
+		folder = Win95File.new()
+		folder.name = "Program Files"
+		folder.icon = preload("res://win95/theme/icons/folder_closed_32.png")
+		folder.is_folder = true
+		drive_c.append(folder)
+	elif not folder.is_folder:
+		push_error("Win95Setup: %s is a file, so %s can't be installed" % [_PROGRAM_FILES_PATH, program_files.map(func(file: Win95File) -> String: return file.name)])
+		return null
+	return folder
 
 
 # Each icon of desktop_icons.tscn that the setup doesn't hold yet, in the scene's order. Loaded,

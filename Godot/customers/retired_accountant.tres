@@ -39,6 +39,9 @@
 [ext_resource type="Resource" path="res://people/old_dude/person.tres" id="person"]
 [ext_resource type="Resource" path="res://win95/start_menu_stock.tres" id="start_menu"]
 [ext_resource type="Resource" path="res://win95/system_stock.tres" id="system_folder"]
+[ext_resource type="Resource" path="res://win95/office/office97.tres" id="office97"]
+[ext_resource type="Resource" path="res://win95/office/word_shortcut.tres" id="word_shortcut"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/word_document_32.png" id="icon_word_document"]
 
 [sub_resource type="Resource" id="Hardware_486"]
 script = ExtResource("hardware_script")
@@ -203,12 +206,20 @@ Put the 8 megs from my old box in yours. Twice the memory, so it should fly now.
 "
 modified = "Saturday, April 27, 1996 3:12:05 PM"
 
+[sub_resource type="Resource" id="Doc_tax_office"]
+script = ExtResource("2_egn44")
+name = "Letter to the tax office.doc"
+icon = ExtResource("icon_word_document")
+contents_file = "res://customers/retired_accountant/documents/tax_office.doc"
+summary = Dictionary[StringName, String]({&"title": "My tax return for 1995", &"author": "Bob"})
+modified = "Friday, May 24, 1996 10:20:15 AM"
+
 [sub_resource type="Resource" id="Resource_docs"]
 script = ExtResource("2_egn44")
 name = "My Documents"
 icon = ExtResource("5_lymrw")
 is_folder = true
-children = Array[Resource]([SubResource("Resource_letter")])
+children = Array[Resource]([SubResource("Resource_letter"), SubResource("Doc_tax_office")])
 
 [sub_resource type="Resource" id="Setup_accountant"]
 script = ExtResource("9_86j8n")
@@ -217,6 +228,10 @@ drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResou
 installed_apps = PackedStringArray("Calculator", "Notepad")
 pointer_speed = 1
 registered_owner = "Bob"
+start_menu_programs = Array[ExtResource("2_egn44")]([ExtResource("word_shortcut")])
+program_files = Array[ExtResource("2_egn44")]([ExtResource("office97")])
+desktop = Array[ExtResource("2_egn44")]([ExtResource("word_shortcut")])
+recently_opened = PackedStringArray("C:\\My Documents\\Letter to the tax office.doc")
 
 [sub_resource type="Resource" id="Computer_accountant"]
 script = ExtResource("1_2x16c")

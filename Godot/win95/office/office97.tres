@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="Win95File" format=3]
+
+[ext_resource type="Script" path="res://win95/win95_file.gd" id="file"]
+[ext_resource type="Texture2D" path="res://win95/theme/icons/folder_closed_32.png" id="folder"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/word_32.png" id="word"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/office_logo_32.png" id="logo"]
+[ext_resource type="PackedScene" path="res://win95/office/shortcut_bar.tscn" id="shortcut_bar"]
+
+[sub_resource type="Resource" id="winword"]
+script = ExtResource("file")
+name = "WINWORD.EXE"
+icon = ExtResource("word")
+
+[sub_resource type="Resource" id="msoffice"]
+script = ExtResource("file")
+name = "MSOFFICE.EXE"
+icon = ExtResource("logo")
+program = ExtResource("shortcut_bar")
+
+[sub_resource type="Resource" id="office"]
+script = ExtResource("file")
+name = "Office"
+icon = ExtResource("folder")
+is_folder = true
+children = Array[Resource]([SubResource("winword"), SubResource("msoffice")])
+
+[sub_resource type="Resource" id="templates"]
+script = ExtResource("file")
+name = "Templates"
+icon = ExtResource("folder")
+is_folder = true
+
+[resource]
+script = ExtResource("file")
+name = "Microsoft Office"
+icon = ExtResource("folder")
+is_folder = true
+children = Array[Resource]([SubResource("office"), SubResource("templates")])

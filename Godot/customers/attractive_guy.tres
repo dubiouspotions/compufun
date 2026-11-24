@@ -44,6 +44,8 @@
 [ext_resource type="Texture2D" path="res://win95/wallpapers/clouds.png" id="42_s3boe"]
 [ext_resource type="Resource" path="res://people/handsome_dude/person.tres" id="47_0kfma"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="48_63b2l"]
+[ext_resource type="Resource" path="res://win95/office/office97.tres" id="office97"]
+[ext_resource type="Resource" path="res://win95/office/word_shortcut.tres" id="word_shortcut"]
 
 [sub_resource type="Resource" id="Resource_3m1ns"]
 script = ExtResource("3_18rks")
@@ -390,6 +392,8 @@ desktop = Array[ExtResource("6_r4mep")]([SubResource("Resource_jprns"), SubResou
 drive_c = Array[ExtResource("6_r4mep")]([SubResource("Resource_0saoa"), SubResource("Resource_oat0e"), SubResource("Resource_wx01o")])
 emails = Array[ExtResource("39_krllb")]([SubResource("Resource_qin5b"), SubResource("Resource_dy5m5"), SubResource("Resource_fv38b"), SubResource("Resource_618eh")])
 installed_apps = PackedStringArray("Calculator", "Notepad", "Paint", "Raytrace 2")
+start_menu_programs = Array[ExtResource("6_r4mep")]([ExtResource("word_shortcut")])
+program_files = Array[ExtResource("6_r4mep")]([ExtResource("office97")])
 
 [sub_resource type="Resource" id="Resource_bqhhi"]
 script = ExtResource("4_17aa6")

@@ -38,6 +38,8 @@
 [ext_resource type="Texture2D" path="res://win95/wallpapers/win95-default.png" id="36_2ksw8"]
 [ext_resource type="Resource" path="res://people/nice_guy/person.tres" id="41_y3g3k"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="42_awthr"]
+[ext_resource type="Resource" path="res://win95/office/office97.tres" id="office97"]
+[ext_resource type="Resource" path="res://win95/office/word_shortcut.tres" id="word_shortcut"]
 
 [sub_resource type="Resource" id="Resource_e0hip"]
 script = ExtResource("3_ridxc")
@@ -214,6 +216,8 @@ script = ExtResource("35_6ev7n")
 drive_c = Array[ExtResource("6_11vfk")]([SubResource("Resource_7ti05"), SubResource("Resource_eh7mh")])
 installed_apps = PackedStringArray("Calculator", "Notepad")
 registered_owner = "Bob"
+start_menu_programs = Array[ExtResource("6_11vfk")]([ExtResource("word_shortcut")])
+program_files = Array[ExtResource("6_11vfk")]([ExtResource("office97")])
 
 [sub_resource type="Resource" id="Resource_h3mm7"]
 script = ExtResource("4_uru58")

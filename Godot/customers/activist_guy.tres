@@ -51,6 +51,8 @@
 [ext_resource type="Texture2D" path="res://win95/netscape/logo_48.png" id="cached_logo"]
 [ext_resource type="PackedScene" path="res://win95/mirc.tscn" id="app_mirc"]
 [ext_resource type="Texture2D" path="res://win95/mirc/logo_32.png" id="icon_mirc"]
+[ext_resource type="Resource" path="res://win95/office/office97.tres" id="office97"]
+[ext_resource type="Resource" path="res://win95/office/word_shortcut.tres" id="word_shortcut"]
 
 [sub_resource type="Resource" id="Hardware_486"]
 script = ExtResource("hardware_script")
@@ -506,12 +508,13 @@ target = "C:\\MIRC\\MIRC32.EXE"
 script = ExtResource("9_86j8n")
 drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResource("Resource_docs"), SubResource("Folder_program_files"), SubResource("Folder_mirc")])
 desktop = Array[ExtResource("2_egn44")]([SubResource("Shortcut_netscape"), SubResource("Shortcut_mirc")])
-start_menu_programs = Array[ExtResource("2_egn44")]([SubResource("Start_mirc")])
+start_menu_programs = Array[ExtResource("2_egn44")]([SubResource("Start_mirc"), ExtResource("word_shortcut")])
 installed_apps = PackedStringArray("Calculator", "Notepad")
 registered_owner = "Craig"
 dial_up_name = "MainStreet Online"
 dial_up_user = "craig"
 dial_up_number = "555-0199"
+program_files = Array[ExtResource("2_egn44")]([ExtResource("office97")])
 
 [sub_resource type="Resource" id="Computer_accountant"]
 script = ExtResource("1_2x16c")
