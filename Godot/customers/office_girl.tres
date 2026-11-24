@@ -41,6 +41,7 @@
 [ext_resource type="Resource" path="res://win95/office/office97.tres" id="office97"]
 [ext_resource type="Resource" path="res://win95/office/word_shortcut.tres" id="word_shortcut"]
 [ext_resource type="Resource" path="res://win95/office/excel_shortcut.tres" id="excel_shortcut"]
+[ext_resource type="Resource" path="res://win95/office/powerpoint_shortcut.tres" id="powerpoint_shortcut"]
 [ext_resource type="Texture2D" path="res://win95/office/icons/excel_worksheet_32.png" id="icon_excel_worksheet"]
 [ext_resource type="Resource" path="res://win95/office/shortcut_bar_startup.tres" id="office_startup"]
 [ext_resource type="Texture2D" path="res://win95/office/icons/word_document_32.png" id="icon_word_document"]
@@ -321,7 +322,7 @@ volume = 40.0
 registered_owner = "Sam Hilton"
 registered_organization = "Harbour Import AB"
 product_id = "24796-OEM-0004172-61530"
-start_menu_programs = Array[ExtResource("5_nkk1v")]([ExtResource("excel_shortcut"), ExtResource("word_shortcut"), ExtResource("office_startup")])
+start_menu_programs = Array[ExtResource("5_nkk1v")]([ExtResource("excel_shortcut"), ExtResource("powerpoint_shortcut"), ExtResource("word_shortcut"), ExtResource("office_startup")])
 program_files = Array[ExtResource("5_nkk1v")]([ExtResource("office97")])
 recently_opened = PackedStringArray("C:\\My Documents\\Containers May 1996.xls", "C:\\My Documents\\Midsummer party.doc", "C:\\My Documents\\Invoices May 1996.xls")
 

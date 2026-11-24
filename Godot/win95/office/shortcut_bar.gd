@@ -9,6 +9,7 @@ extends BackgroundTask
 @export var buttons: Array[Array] = [
 	["Microsoft Word", preload("res://win95/office/icons/word_16.png"), "C:\\Program Files\\Microsoft Office\\Office\\WINWORD.EXE"],
 	["Microsoft Excel", preload("res://win95/office/icons/excel_16.png"), "C:\\Program Files\\Microsoft Office\\Office\\EXCEL.EXE"],
+	["Microsoft PowerPoint", preload("res://win95/office/icons/powerpoint_16.png"), "C:\\Program Files\\Microsoft Office\\Office\\POWERPNT.EXE"],
 ]
 ## The gap between the bar and the desktop's right edge, which keeps a maximized window's caption
 ## buttons free.

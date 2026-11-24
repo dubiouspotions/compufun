@@ -42,6 +42,7 @@
 [ext_resource type="Resource" path="res://win95/office/office97.tres" id="office97"]
 [ext_resource type="Resource" path="res://win95/office/word_shortcut.tres" id="word_shortcut"]
 [ext_resource type="Resource" path="res://win95/office/excel_shortcut.tres" id="excel_shortcut"]
+[ext_resource type="Resource" path="res://win95/office/powerpoint_shortcut.tres" id="powerpoint_shortcut"]
 [ext_resource type="Texture2D" path="res://win95/office/icons/excel_worksheet_32.png" id="icon_excel_worksheet"]
 [ext_resource type="Texture2D" path="res://win95/office/icons/word_document_32.png" id="icon_word_document"]
 
@@ -238,7 +239,7 @@ drive_c = Array[ExtResource("2_egn44")]([SubResource("Resource_46tg0"), SubResou
 installed_apps = PackedStringArray("Calculator", "Notepad")
 pointer_speed = 1
 registered_owner = "Bob"
-start_menu_programs = Array[ExtResource("2_egn44")]([ExtResource("excel_shortcut"), ExtResource("word_shortcut")])
+start_menu_programs = Array[ExtResource("2_egn44")]([ExtResource("excel_shortcut"), ExtResource("powerpoint_shortcut"), ExtResource("word_shortcut")])
 program_files = Array[ExtResource("2_egn44")]([ExtResource("office97")])
 desktop = Array[ExtResource("2_egn44")]([ExtResource("word_shortcut"), ExtResource("excel_shortcut")])
 recently_opened = PackedStringArray("C:\\My Documents\\Tax return 1995.xls", "C:\\My Documents\\Letter to the tax office.doc")
