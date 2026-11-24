@@ -25,6 +25,7 @@ const _DESKTOP_ICONS := preload("res://win95/desktop_icons.tscn")
 const _CRUSH := preload("res://shaders/psx_post.gdshader")
 ## The applet that the desktop's Properties opens. Loaded when used: a preload here cycles.
 const _DISPLAY := "res://win95/applets/display.tres"
+const _SYSTEM := "res://win95/applets/system.tres"
 const _DEFRAG := "res://win95/defrag.tscn"
 const _SHARED_PALETTE := preload("res://win95/theme/palette.tres")
 const _THEME := preload("res://win95/win95.tres")  # shared by every Win95 scene, so the shared palette paints it
@@ -859,7 +860,7 @@ func _entries_for(view: IconView, item: FileIcon) -> Array[ContextMenu.Entry]:
 	match item.name:
 		&"MyComputer":
 			return _entries([["Open", &"open", true], ["Explore"], ["Find..."], [], ["Map Network Drive..."],
-				["Disconnect Network Drive..."], [], ["Create Shortcut"], ["Rename", &"rename"], [], ["Properties"]])
+				["Disconnect Network Drive..."], [], ["Create Shortcut"], ["Rename", &"rename"], [], ["Properties", &"system"]])
 		&"RecycleBin":
 			return _entries([["Open", &"open", true], ["Explore"], ContextMenu.item("Empty Recycle Bin", &"empty_bin", false, _state.setup.recycle_bin.is_empty()),
 				[], ["Create Shortcut"], [], ["Properties"]])
@@ -899,7 +900,7 @@ func _background_entries(listing: Listing, view: IconView) -> Array[ContextMenu.
 		&"recycle_bin":
 			return _entries([view_menu, [], arrange, ["Line up Icons"], [], ContextMenu.item("Empty Recycle Bin", &"empty_bin", false, _state.setup.recycle_bin.is_empty()), [], ["Properties"]])
 		&"my_computer":
-			return _entries([view_menu, [], arrange, ["Line up Icons"], [], ["Properties"]])
+			return _entries([view_menu, [], arrange, ["Line up Icons"], [], ["Properties", &"system"]])
 	if not listing.creatable:
 		return _entries([view_menu, [], arrange, ["Line up Icons"], [], ["Properties"]])
 	return _entries([view_menu, [], arrange, ["Line up Icons"], [], paste, paste_shortcut, [], new_menu, [], ["Properties"]])
@@ -958,10 +959,10 @@ func _on_action(id: StringName) -> void:
 		&"new_folder":
 			var folder := _state.new_folder(listing.files.call())
 			_rename_new.call_deferred(view, folder)
-		&"display":
-			var display := load(_DISPLAY) as Applet
-			if await _load(display, folder_load_seconds):
-				_desktop.open(display.sheet)
+		&"display", &"system":
+			var applet := load(_DISPLAY if id == &"display" else _SYSTEM) as Applet
+			if await _load(applet, folder_load_seconds):
+				_desktop.open(applet.sheet)
 		&"properties":
 			var file := _file_of(item) if item != null else null
 			if file != null:
