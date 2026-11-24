@@ -66,17 +66,17 @@ func _build_bars() -> void:
 	var open_selected := func() -> void:
 		if _messages.selected >= 0:
 			open_message(_shown[_messages.selected])
-	AppBar.add_menu(bar, "File", [["Open", open_selected], ["Move...", null], ["Delete", _delete_selected], [], ["Close", close]])
-	AppBar.add_menu(bar, "Edit", [["Mark as Read", _mark_selected_read], ["Mark All as Read", _mark_all_read]])
+	AppBar.add_menu(bar, "File", [["Open", open_selected], ["Move...", _move_selected], ["Delete", _delete_selected], [], ["Close", close]])
+	AppBar.add_menu(bar, "Edit", [["Mark as Read", _mark_selected_read], ["Mark as Unread", _mark_selected_unread], ["Mark All as Read", _mark_all_read]])
 	AppBar.add_menu(bar, "View", [["Folders", null], ["Columns...", null], ["Sort...", null]])
 	AppBar.add_menu(bar, "Tools", [["Deliver Now", null], ["Address Book...", null], ["Options...", null]])
-	AppBar.add_menu(bar, "Compose", [["New Message", null], [], ["Reply to Sender", null], ["Reply to All", null], ["Forward", null]])
+	AppBar.add_menu(bar, "Compose", [["New Message", new_message], [], ["Reply to Sender", null], ["Reply to All", null], ["Forward", null]])
 	AppBar.add_menu(bar, "Help", [["Microsoft Exchange Help Topics", null], [], ["About Microsoft Exchange", null]])
 	var row: HBoxContainer = %Toolbar
 	AppBar.add_button(row, load(_ICONS + "folder_open_16.png"), "Up One Level")
 	AppBar.add_button(row, load(_ICONS + "tree_16.png"), "Show/Hide Folder List", func() -> void: %FoldersField.visible = not %FoldersField.visible)
 	AppBar.add_gap(row)
-	AppBar.add_button(row, load(_ICONS + "mail_new_16.png"), "New Message")
+	AppBar.add_button(row, load(_ICONS + "mail_new_16.png"), "New Message", new_message)
 	AppBar.add_gap(row)
 	AppBar.add_button(row, load(_ICONS + "printer_16.png"), "Print")
 	AppBar.add_button(row, load(_ICONS + "delete_16.png"), "Delete", _delete_selected)
@@ -105,6 +105,34 @@ func _delete_selected() -> void:
 func _mark_selected_read() -> void:
 	if _computer != null and _messages.selected >= 0:
 		_computer.mark_read(_shown[_messages.selected])
+
+
+func _mark_selected_unread() -> void:
+	if _computer != null and _messages.selected >= 0:
+		_computer.mark_read(_shown[_messages.selected], false)
+
+
+## Opens a new message to write, which Send puts in Sent Items.
+func new_message() -> void:
+	var desktop := get_parent() as Win95Desktop
+	var window: Node = desktop.open(_MESSAGE, false)
+	window.closed.connect(window.queue_free)
+	window.compose(_computer)
+
+
+# Lists the other folders under the mouse; the one picked takes the selected message.
+func _move_selected() -> void:
+	if _computer == null or _messages.selected < 0:
+		return
+	var email := _shown[_messages.selected]
+	var menu := PopupMenu.new()
+	for folder in _FOLDERS:
+		if folder != email.folder:
+			menu.add_item(_FOLDER_NAMES[folder], folder)
+	menu.id_pressed.connect(func(id: int) -> void: _computer.move_email(email, id as Email.Folder))
+	menu.popup_hide.connect(menu.queue_free)
+	add_child(menu)
+	menu.popup(Rect2i(Vector2i(get_global_mouse_position()), Vector2i.ZERO))
 
 
 func _mark_all_read() -> void:

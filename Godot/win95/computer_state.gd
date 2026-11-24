@@ -263,12 +263,38 @@ func note_opened(file: Win95File) -> void:
 	setup.recent_documents.resize(mini(setup.recent_documents.size(), 15))
 
 
-## Marks [param email] read, as opening it in Exchange does.
-func mark_read(email: Email) -> void:
-	if setup == null or email.read:
+## Marks [param email] read, as opening it in Exchange does, or unread with [param read] false, as
+## Exchange's Edit > Mark as Unread does.
+func mark_read(email: Email, read: bool = true) -> void:
+	if setup == null or email.read == read:
 		return
-	email.read = true
+	email.read = read
 	_changed()
+
+
+## Puts a new mail in Sent Items, as Exchange's Send does: from the sender of the computer's sent
+## mails, else its registered owner, dated by this computer's clock. Returns the mail, or null
+## without a setup.
+func send_email(to: String, subject: String, body: String) -> Email:
+	if setup == null:
+		return null
+	var mail := Email.new()
+	mail.folder = Email.Folder.SENT
+	mail.read = true
+	for each: Email in setup.emails:
+		if each.folder == Email.Folder.SENT and each.from != "":
+			mail.from = each.from
+			break
+	if mail.from == "":
+		mail.from = setup.registered_owner if setup.registered_owner != "" or job == null else job.customer.display_name
+	var t := now()
+	mail.sent = "%04d-%02d-%02d %02d:%02d" % [t.year, t.month, t.day, t.hour, t.minute]
+	mail.to = to
+	mail.subject = subject
+	mail.body = body
+	setup.emails.append(mail)
+	_changed()
+	return mail
 
 
 ## Moves [param email] to [param folder], as Exchange's Delete moves it to Deleted Items.
