@@ -272,8 +272,8 @@ func mark_read(email: Email, read: bool = true) -> void:
 	_changed()
 
 
-## Puts a new mail in Sent Items, as Exchange's Send does: from the sender of the computer's sent
-## mails, else its registered owner, dated by this computer's clock. Returns the mail, or null
+## Puts a new mail in Sent Items, as Exchange's Send does: from [method Win95Setup.own_address],
+## else the customer, dated by this computer's clock. Returns the mail, or null
 ## without a setup.
 func send_email(to: String, subject: String, body: String) -> Email:
 	if setup == null:
@@ -281,12 +281,9 @@ func send_email(to: String, subject: String, body: String) -> Email:
 	var mail := Email.new()
 	mail.folder = Email.Folder.SENT
 	mail.read = true
-	for each: Email in setup.emails:
-		if each.folder == Email.Folder.SENT and each.from != "":
-			mail.from = each.from
-			break
-	if mail.from == "":
-		mail.from = setup.registered_owner if setup.registered_owner != "" or job == null else job.customer.display_name
+	mail.from = setup.own_address()
+	if mail.from == "" and job != null:
+		mail.from = job.customer.display_name
 	var t := now()
 	mail.sent = "%04d-%02d-%02d %02d:%02d" % [t.year, t.month, t.day, t.hour, t.minute]
 	mail.to = to

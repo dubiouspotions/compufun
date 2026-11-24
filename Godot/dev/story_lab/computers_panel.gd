@@ -14,6 +14,10 @@ signal bench_requested(customer: Customer, errand: Errand, setup: Win95Setup)
 
 const SETTLE_SECONDS: float = 0.4
 const _MAIL_COLUMNS: PackedStringArray = ["Folder", "From", "To", "Subject", "Sent", "Read"]
+const _NEW_ADDRESS: String = "New address..."
+## The Read column's text for unread and read; a double-click flips it. (An unticked check box draws nothing in the Lab's theme.)
+const _READ: PackedStringArray = ["unread", "read"]
+
 
 var _week: StoryFiles.Week
 var _drafts: StoryDrafts
@@ -21,6 +25,8 @@ var _customer: Customer
 var _errand: Errand
 var _path: String = ""
 ## The computer before the patch, and with it: the table edits [member _after].
+## Email.Folder's names, lowercase, in its order: how the table shows a folder.
+var _folder_names := PackedStringArray(Email.Folder.keys().map(func(k: String) -> String: return k.to_lower()))
 var _before: Win95Setup
 var _after: Win95Setup
 ## The running copy that Edit on bench gave the game, until Save patch reads it.
@@ -218,32 +224,73 @@ func _show_mails() -> void:
 		if "%s %s" % [mail.sent, mail.subject] == picked_key:
 			reselect = row
 		row.set_metadata(0, mail)
-		row.set_cell_mode(0, TreeItem.CELL_MODE_RANGE)
-		row.set_text(0, ",".join(Email.Folder.keys().map(func(k: String) -> String: return k.to_lower())))
-		row.set_range(0, mail.folder)
-		row.set_editable(0, true)
-		var texts := [mail.from, mail.to, mail.subject, mail.sent]
-		for column: int in range(1, 5):
-			row.set_text(column, texts[column - 1])
-			row.set_editable(column, true)
-		row.set_cell_mode(5, TreeItem.CELL_MODE_CHECK)
-		row.set_checked(5, mail.read)
-		row.set_editable(5, true)
+		var texts := [_folder_names[mail.folder], mail.from, mail.to, mail.subject, mail.sent, _READ[int(mail.read)]]
+		for column: int in texts.size():
+			row.set_text(column, texts[column])
 	if reselect != null:
 		reselect.select(0)
 	_mail_selected()
 
 
-# Takes the cells of [param row] into its mail, and saves.
+# The text of [param column] of [param row]: a dropdown's choice, or the cell's text.
+func _cell(row: TreeItem, column: int) -> String:
+	if row.get_cell_mode(column) != TreeItem.CELL_MODE_RANGE:
+		return row.get_text(column)
+	return row.get_text(column).split(",")[int(row.get_range(column))]
+
+
+# Takes the cells of [param row] into its mail, and saves; "New address..." opens the cell to type one.
 func _edit_mail(row: TreeItem) -> void:
 	var mail: Email = row.get_metadata(0)
-	mail.folder = int(row.get_range(0)) as Email.Folder
-	mail.from = row.get_text(1)
-	mail.to = row.get_text(2)
+	for column: int in [1, 2]:
+		if _cell(row, column) == _NEW_ADDRESS:
+			row.set_cell_mode(column, TreeItem.CELL_MODE_STRING)
+			row.set_text(column, "")
+			row.set_editable(column, true)
+			row.select(column)
+			_mails.edit_selected.call_deferred(true)
+			return
+	mail.folder = _folder_names.find(_cell(row, 0)) as Email.Folder
+	mail.from = _cell(row, 1)
+	mail.to = _cell(row, 2)
 	mail.subject = row.get_text(3)
 	mail.sent = row.get_text(4)
-	mail.read = row.is_checked(5)
-	_save_setup(_after)
+	mail.read = row.get_text(5) == _READ[1]
+	_save_mails.call_deferred()  # the save rebuilds the table, which the Tree refuses inside its own signal
+
+
+func _save_mails() -> void:
+	if _save_setup(_after) == "":
+		_show_mails()
+
+
+# A click picks a mail; a double-click or Enter edits the picked cell, so picking never opens an
+# editor by accident. Folder, From and To become dropdowns while edited; an address with a comma,
+# which a dropdown can't hold, is typed instead. The table is rebuilt after each edit.
+func _edit_cell() -> void:
+	var row := _mails.get_selected()
+	var column := _mails.get_selected_column()
+	if row == null or column < 0:
+		return
+	if column == 5:
+		row.set_text(5, _READ[int(row.get_text(5) != _READ[1])])
+		_edit_mail(row)
+		return
+	var current := row.get_text(column)
+	var options: Array = []
+	if column == 0:
+		options = Array(_folder_names)
+	elif column in [1, 2] and not current.contains(","):
+		options = Array(_after.addresses()).filter(func(a: String) -> bool: return not a.contains(","))
+		if current == "":
+			options.push_front("")
+		options.append(_NEW_ADDRESS)
+	if not options.is_empty():
+		row.set_cell_mode(column, TreeItem.CELL_MODE_RANGE)
+		row.set_text(column, ",".join(options))
+		row.set_range(column, options.find(current))
+	row.set_editable(column, true)
+	_mails.edit_selected(true)
 
 
 func _mail_selected() -> void:
@@ -268,10 +315,17 @@ func _add_mail() -> void:
 	var date: Dictionary = Game.date_of(_errand.day_number() if _errand != null else 1)
 	mail.sent = "%04d-%02d-%02d 09:00" % [date.year, date.month, date.day]
 	mail.subject = "New mail %d" % (_after.emails.size() + 1)
-	mail.from = "Someone <someone@example.com>"
+	mail.to = _after.own_address()
+	for address: String in _after.addresses():
+		if address != mail.to:
+			mail.from = address
+			break
 	_after.emails.append(mail)
 	if _save_setup(_after) == "":
 		_show_mails()
+		var rows := _mails.get_root().get_children()
+		rows.back().select(3)
+		_mail_selected()
 
 
 func _delete_mail() -> void:
@@ -356,6 +410,7 @@ func _build() -> void:
 	mail_row.add_child(LabUI.label("Mails as the computer arrives", 15))
 	mail_row.add_child(LabUI.button("Add mail", _add_mail))
 	mail_row.add_child(LabUI.button("Delete mail", _delete_mail))
+	mail_row.add_child(LabUI.label("Click a mail to edit its text below; double-click a cell to change it.", 13, LabUI.DIM))
 	_mails = Tree.new()
 	_mails.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_mails.custom_minimum_size.y = 160
@@ -368,6 +423,8 @@ func _build() -> void:
 		_mails.set_column_custom_minimum_width(i, [110, 0, 0, 0, 170, 60][i])
 	_mails.item_edited.connect(func() -> void: _edit_mail(_mails.get_edited()))
 	_mails.item_selected.connect(_mail_selected)
+	_mails.cell_selected.connect(_mail_selected)
+	_mails.item_activated.connect(_edit_cell)
 	mail_box.add_child(_mails)
 	_body = TextEdit.new()
 	_body.custom_minimum_size.y = 100

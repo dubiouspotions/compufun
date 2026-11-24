@@ -239,6 +239,30 @@ static func _read_contents(file: Win95File) -> void:
 	file.contents = text
 
 
+## The owner's mail address: the sender of a sent mail, else the recipient of a received one, else
+## [member registered_owner]; "" with none.
+func own_address() -> String:
+	for mail: Email in emails:
+		if mail.folder in [Email.Folder.SENT, Email.Folder.OUTBOX] and mail.from != "":
+			return mail.from
+	for mail: Email in emails:
+		if mail.folder == Email.Folder.INBOX and mail.to != "":
+			return mail.to
+	return registered_owner
+
+
+## Every address on the mails, From and To, sorted, each once.
+func addresses() -> PackedStringArray:
+	var found := {}
+	for mail: Email in emails:
+		for address: String in [mail.from, mail.to]:
+			if address != "":
+				found[address] = true
+	var sorted := PackedStringArray(found.keys())
+	sorted.sort()
+	return sorted
+
+
 ## Becomes [param other], a running copy too: every field, also the runtime ones.
 func take(other: Win95Setup) -> void:
 	for property: Dictionary in get_property_list():

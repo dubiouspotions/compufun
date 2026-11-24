@@ -26,11 +26,34 @@ func run() -> void:
 	var first := mails.get_root().get_first_child()
 	check("the table lists her mails", first != null, true)
 	panel.call("_edit_mail", first)
-	check("a cell clicked and left unchanged makes no draft", drafts.paths(), PackedStringArray())
-	var was_read := first.is_checked(5)
-	first.set_checked(5, not was_read)
-	panel.call("_edit_mail", first)
-	check("the table edit is a draft: the mail, whole", drafts.text(PATCH).begins_with("mail\n\tfolder:"), true)
+	await process_frame
+	check("a cell left unchanged makes no draft", drafts.paths(), PackedStringArray())
+	first = mails.get_root().get_first_child()  # the table was shown again
+	first.select(1)
+	check("a click picks the mail: its text shows, no cell opens", [(panel.get("_body") as TextEdit).text != "", first.is_editable(1)], [true, false])
+	var was_read := first.get_text(5) == "read"
+	first.select(5)
+	panel.call("_edit_cell")  # a double-click
+	await process_frame
+	check("a double-click on Read flips it, as a draft: the mail, whole", [drafts.text(PATCH).begins_with("mail\n\tfolder:"), (panel.get("_after") as Win95Setup).emails[0].read], [true, not was_read])
+	first = mails.get_root().get_first_child()
+	first.select(1)
+	panel.call("_edit_cell")
+	check("From edits as a dropdown of her addresses, and a new one", first.get_text(1).split(",")[-1], "New address...")
+
+	panel.call("_add_mail")
+	var added: TreeItem = mails.get_selected()
+	var setup_now: Win95Setup = panel.get("_after")
+	check("Add mail picks a new mail to her, from someone she writes with", [added.get_text(3).begins_with("New mail"), added.get_text(2), added.get_text(1) not in ["", added.get_text(2)]], [true, setup_now.own_address(), true])
+	added.select(1)
+	panel.call("_edit_cell")
+	added.set_range(1, Array(added.get_text(1).split(",")).find("New address..."))
+	panel.call("_edit_mail", added)
+	check("New address... opens the cell to type one", added.get_cell_mode(1), TreeItem.CELL_MODE_STRING)
+	added.set_text(1, "Mom <mom@home.se>")
+	panel.call("_edit_mail", added)
+	await process_frame
+	check("the typed address is saved and offered from then on", [drafts.text(PATCH).contains("from: Mom <mom@home.se>"), "Mom <mom@home.se>" in setup_now.addresses()], [true, true])
 	check("the game plays it", game.story_errors, PackedStringArray())
 
 	var setup := SetupPatch.arriving(office_girl, errand, true, game.week.errands(), game.week.patches)
