@@ -9,6 +9,10 @@ const CUSTOMERS_DIR: String = "res://customers/"
 
 ## The GitHub repo that Send makes the issue in, as owner/name; "" reads git's remote origin.
 @export var github_repo: String = ""
+## The week board's height in pixels as the Lab opens; the writer drags the line under it.
+@export var board_height: int = 480
+## The least height in pixels that the writer can drag the week board to.
+@export var board_min_height: int = 220
 
 ## True: edits go straight into res://story/ in the checkout, and no drafts play (the Dev menu's
 ## Save to checkout).
@@ -602,7 +606,7 @@ func _build() -> void:
 	_bible.hide()
 	page.add_child(_bible)
 	_board = StoryLabBoard.new()
-	_board.custom_minimum_size.y = 480
+	_board.custom_minimum_size.y = board_min_height
 	_board.errand_picked.connect(open_errand)
 	_board.errand_dropped.connect(move_errand)
 	_board.customer_dropped.connect(add_errand)
@@ -612,10 +616,14 @@ func _build() -> void:
 	_board.day_picked.connect(open_day)
 	_week_view.add_child(StoryLabBoard.customer_strip())
 	_week_view.add_child(StoryLabBoard.sign_strip())
-	_week_view.add_child(_board)
+	var split := VSplitContainer.new()
+	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	split.split_offset = board_height  # the board's height: it doesn't expand
+	_week_view.add_child(split)
+	split.add_child(_board)
 	_lower = Control.new()
 	_lower.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_week_view.add_child(_lower)
+	split.add_child(_lower)
 	_hint = LabUI.label("Click an errand card to open it, or a day's header for its weather, warp, signs and notes.", 16, LabUI.DIM)
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
