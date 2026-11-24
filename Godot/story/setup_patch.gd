@@ -368,6 +368,25 @@ static func _encode(value: Variant, property: Dictionary) -> Variant:
 				return null
 			paths.append(item_path)
 		return ", ".join(paths)
+	return _one_line(value)
+
+
+# [param value] in Godot's text form on one line, its texts escaped: var_to_str spreads a
+# Dictionary over lines and leaves line breaks and tabs in texts raw, which the patch lines lose.
+static func _one_line(value: Variant) -> String:
+	match typeof(value):
+		TYPE_STRING:
+			return JSON.stringify(value)  # JSON's escapes are Godot's too
+		TYPE_STRING_NAME:
+			return "&" + JSON.stringify(String(value))
+		TYPE_DICTIONARY:
+			var pairs := PackedStringArray()
+			for key: Variant in value:
+				pairs.append("%s: %s" % [_one_line(key), _one_line(value[key])])
+			return "{%s}" % ", ".join(pairs)
+		TYPE_ARRAY, TYPE_PACKED_STRING_ARRAY:
+			var items := PackedStringArray(Array(value).map(_one_line))
+			return ("PackedStringArray(%s)" if value is PackedStringArray else "[%s]") % ", ".join(items)
 	return var_to_str(value)
 
 
@@ -412,6 +431,11 @@ static func _decode(text: String, property: Dictionary, object: Object) -> Varia
 		return float(value)
 	if typeof(value) != property.type:
 		return _Bad.new("%s is a %s, not '%s'" % [property.name, type_string(property.type), text])
+	if (current is Dictionary and (current as Dictionary).is_typed()) or (current is Array and (current as Array).is_typed()):
+		var typed: Variant = current.duplicate()  # a typed field refuses a plain container
+		typed.clear()
+		typed.assign(value)
+		return typed
 	return value
 
 

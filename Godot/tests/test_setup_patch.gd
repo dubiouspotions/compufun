@@ -21,6 +21,8 @@ func run() -> void:
 	docs.children.append(letter)
 	after.drive_c.append(docs)
 	after.desktop[0].desktop_position = Vector2(300, 200)
+	letter.summary = {&"title": "Q2: sales, final", &"comments": "printed\tTuesday\nagain"}  # a typed Dictionary, on one line
+	after.recently_opened = PackedStringArray(["C:\\Letters\\letter.txt"])
 	var gone := after.desktop.pop_back() as Win95File
 	after.emails[0].read = not after.emails[0].read
 	after.emails[0].folder = Email.Folder.TRASH
@@ -44,7 +46,7 @@ func run() -> void:
 	check("a patch comes between two setups", made is SetupPatch, true)
 	var patch: SetupPatch = made
 	check("it deletes the desktop icon that went", patch.deleted, PackedStringArray(["Desktop\\" + gone.name]))
-	check("it sets what changed", patch.settings.keys(), [&"wallpaper", &"volume", &"muted"])
+	check("it sets what changed", patch.settings.keys(), [&"wallpaper", &"recently_opened", &"volume", &"muted"])
 	var text := patch.write()
 	var moved := "file Desktop\\%s\n\tdesktop_position: Vector2(300, 200)\n" % after.desktop[0].name
 	check("a moved icon says only where it stands", text.contains(moved), true)
@@ -56,6 +58,7 @@ func run() -> void:
 	var left: SetupPatch = SetupPatch.between(patched, after)
 	check("the read patch makes the setup into the other: nothing left between them", left.write(), "\n")
 	check("texts with a space or line break at an end, or a leading quote, read back as they were", patched.emails.filter(func(m: Email) -> bool: return m.subject in ["Draft", "\"Quoted\""]).map(func(m: Email) -> Array: return [m.subject, m.body]), [["Draft", "the "], ["\"Quoted\"", "Dear Kent,\n\n"]])
+	check("the letter keeps its summary, typed, tab and line break and all", patched.file_at("C:\\Letters\\letter.txt").summary, letter.summary)
 	check("the letter keeps its tab and its last line break", patched.file_at("C:\\Letters\\letter.txt").contents, letter.contents)
 
 	var converging := SetupPatch.parse("delete Desktop\\gone.txt\nfile C:\\New Folder\\Deep\\a.txt\n\tcontents: hi\n", "test.setup")
