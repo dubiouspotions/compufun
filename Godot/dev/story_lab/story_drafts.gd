@@ -137,6 +137,10 @@ func text(path: String) -> String:
 ## Makes [param new_text] the text of [param path]; "" removes the file, and its unfinished text
 ## with it. A draft equal to the checkout's text disappears. Returns "" or what failed.
 func put(path: String, new_text: String) -> String:
+	if new_text == "":
+		var orphan := _drop_patch_of(path)
+		if orphan != "":
+			return orphan
 	if new_text == "" and _unfinished.has(path):
 		var dropped := put_unfinished(path, "")
 		if dropped != "":
@@ -187,7 +191,17 @@ func discard(path: String) -> String:
 		return dropped
 	if _broken != "":
 		return _broken
-	return "\n".join(_drop(path) + _save_index())
+	var failed := "\n".join(_drop(path) + _save_index())
+	return failed if failed != "" or text(path) != "" else _drop_patch_of(path)
+
+
+# Removes the setup patch named after the errand file [param path] as the errand goes, so no patch is
+# left without its errand (the week refuses one). Returns "" or what failed.
+func _drop_patch_of(path: String) -> String:
+	if not path.begins_with(StoryFiles.ERRANDS_DIR):
+		return ""
+	var patch := SetupPatch.DIR + path.get_file().get_basename() + SetupPatch.EXTENSION
+	return put(patch, "") if text(patch) != "" else ""
 
 
 ## The unfinished text of [param path]: the whole file as the writer has it, which doesn't parse; ""

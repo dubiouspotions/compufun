@@ -232,7 +232,7 @@ func store(path: String, text: String) -> String:
 	if failed != "":
 		_say("Not saved: " + failed, true)
 		return failed
-	_after_store()
+	_after_store(path.begins_with(SetupPatch.DIR))
 	return ""
 
 
@@ -682,8 +682,9 @@ func _store_unfinished(path: String, text: String) -> void:
 		_say("%s doesn't parse yet: it is kept as unfinished text, and the game plays its last version that parsed." % path.get_file())
 
 
-func _after_store() -> void:
-	var errors: PackedStringArray = Game.load_story(drafts.texts())
+# With [param patch_only], the save changed only a setup patch: the game takes it without a restore.
+func _after_store(patch_only: bool = false) -> void:
+	var errors: PackedStringArray = Game.load_story(drafts.texts(), patch_only)
 	refresh()
 	if errors.is_empty():
 		_say("Saved. The game plays it now." if not drafts.to_checkout else "Saved into the checkout.")

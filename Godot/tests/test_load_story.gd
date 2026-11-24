@@ -52,7 +52,7 @@ func run() -> void:
 	var job: Job = game.jobs.back() if not game.jobs.is_empty() else null
 	week = game.week
 	var patch := drafts({"res://story/computers/office_girl.setup": "set volume: 41\n"})
-	check("a setup patch alone loads", game.load_story(patch), PackedStringArray())
+	check("a setup patch alone loads", game.load_story(patch, true), PackedStringArray())
 	check("into the week that plays, with no restore: the talk and the jobs go on", [game.week == week, game.conversation == talking, game.conversation != null, game.jobs.has(job) if job != null else true], [true, true, true, true])
 	check("the game plays the patch", [game.week.patches.has("office_girl"), game.story_drafts], [true, patch])
 	check("anything else reloads the week", [game.load_story(drafts({DAY_1: rainy})), game.week != week], [PackedStringArray(), true])

@@ -404,15 +404,16 @@ func customer_left() -> void:
 ## and plays it from now on: a day that plays goes on in the new week, as [method restore] of the
 ## [method snapshot] sets it. Returns the errors, one "path:line: what" each, also in
 ## [member story_errors]; with any, the week that plays stays as it was. The game loads the week
-## once as it starts.
-func load_story(drafts: Dictionary[String, String] = {}) -> PackedStringArray:
+## once as it starts. With [param patch_only] (only a setup patch changed) it takes the new patches
+## without a restore, so nothing that plays restarts: a patch counts as a computer arrives.
+func load_story(drafts: Dictionary[String, String] = {}, patch_only: bool = false) -> PackedStringArray:
 	var loaded := StoryFiles.load_week(drafts)
 	var errors := loaded.errors.duplicate()
 	for d: Day in loaded.days:
 		var invalid := check_day(d) if errors.is_empty() else ""  # a file that didn't parse fails check_day too
 		if invalid != "":
 			errors.append("%sday_%d.day: %s" % [StoryFiles.DAYS_DIR, d.number, invalid])
-	if errors.is_empty() and week != null and _only_patches_differ(drafts):
+	if errors.is_empty() and week != null and patch_only:
 		week.patches = loaded.patches  # a patch only counts as a computer arrives: no restore, nothing restarts
 		story_drafts = drafts.duplicate()
 	elif errors.is_empty():
@@ -431,17 +432,6 @@ func load_story(drafts: Dictionary[String, String] = {}) -> PackedStringArray:
 	return errors
 
 
-# True when [param drafts] differ from the ones that play only in setup patches (story/computers/).
-func _only_patches_differ(drafts: Dictionary[String, String]) -> bool:
-	var other := func(d: Dictionary[String, String]) -> Dictionary:
-		var kept := {}
-		for path: String in d:
-			if not path.begins_with(SetupPatch.DIR):
-				kept[path] = d[path]
-		return kept
-	return other.call(drafts) == other.call(story_drafts)
-
-
 ## For the Story Lab's Edit on bench: puts [param customer]'s computer on the counter, with no
 ## problem, booted on the bench in the Screen View, on the day of [param errand] (null: of their
 ## first errand that brings a computer) after every errand of the day came. It runs [param setup] as
@@ -458,9 +448,9 @@ func edit_setup(customer: Customer, errand: Errand, setup: Win95Setup) -> String
 	var number := maxi((found as Errand).day_number(), 1)
 	var new_flags := flags.duplicate()
 	new_flags.erase(gone_flag(customer))
-	setup.patched.clear()
+	setup.patched.clear()  # it stands for the job's visit (her first, for the start): later visits' patches still come
 	for each: Errand in week.errands():
-		if each.customer == customer:
+		if each.customer == customer and each.file_name() <= (found as Errand).file_name():
 			setup.patched.append(SetupPatch.errand_name(each))
 	var had: Win95Setup = setups.get(customer.computer)
 	setups[customer.computer] = setup
@@ -520,7 +510,12 @@ func play_errand(to_play: Errand, trigger: Conversation.Trigger = Conversation.T
 				return _refuse_play("%s brings no computer, and an event comes while it is on the counter" % target.file_name())
 			state.merge({"jobs": [{"errand": target.file_name(), "slot": 0}], "focus_slot": 0,
 					"visitor": target.customer.resource_path, "visit": "EVENT", "visitor_state": "POPPING_UP"})
+	var computer := target.customer.computer
+	var running: Win95Setup = setups.get(computer)
+	setups.erase(computer)  # it arrives as the week makes it, with the patches as they are now
 	var refused := restore(state)
+	if refused != "" and running != null:
+		setups[computer] = running
 	if refused == "" and visitor_state == VisitorState.TALKING and errand != target:
 		errand = target  # another alternative of the same customer matched first
 		_start_talk()

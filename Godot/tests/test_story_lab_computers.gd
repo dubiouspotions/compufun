@@ -59,6 +59,31 @@ func run() -> void:
 	check("the typed address is saved and offered from then on", [drafts.text(PATCH).contains("from: Mom <mom@home.se>"), "Mom <mom@home.se>" in setup_now.addresses()], [true, true])
 	check("the game plays it", game.story_errors, PackedStringArray())
 
+	var code: CodeEdit = panel.get("_code")
+	code.text = "# Her desk, Monday.\nset muted: false\n\n" + drafts.text(PATCH)
+	panel.call("_save_text")
+	await process_frame
+	panel.call("_add_mail")
+	await process_frame
+	check("a table save keeps the comment and a line that holds", [drafts.text(PATCH).begins_with("# Her desk, Monday.\n"), drafts.text(PATCH).contains("set muted: false")], [true, true])
+	panel.call("_add_mail")
+	await process_frame
+	var rows := mails.get_root().get_children()
+	rows[rows.size() - 2].select(0)
+	panel.call("_delete_mail")
+	await process_frame
+	panel.call("_add_mail")
+	await process_frame
+	var errors: ItemList = panel.get("_errors")
+	check("Add mail after a delete makes a mail of its own", [errors.item_count, mails.get_root().get_child_count()], [0, rows.size()])
+	var saved_text := drafts.text(PATCH)
+	code.text = saved_text + "set nonsense"
+	panel.call("_add_mail")
+	await process_frame
+	check("with unsaved patch text, a table edit is refused and undone", [drafts.text(PATCH) == saved_text, code.text.ends_with("set nonsense"), mails.get_root().get_child_count(), errors.item_count], [true, true, rows.size(), 1])
+	code.text = saved_text
+	panel.call("_settle_now")
+
 	var setup := SetupPatch.arriving(office_girl, errand, true, game.week.errands(), game.week.patches)
 	check("Edit on bench puts her computer on the bench", lab.call("bench", office_girl, errand, setup), "")
 	check("booted, connected, in the Screen View, running that copy", [game.connected != null, game.view, game.setups[office_girl.computer] == setup], [true, &"Screen", true])
@@ -68,7 +93,11 @@ func run() -> void:
 	note.name = "note.txt"
 	note.contents = "Back at 2."
 	setup.desktop.append(note)
-	check("Save patch writes it", panel.call("save_bench"), "")
+	check("the bench counts only the visits up to this one as applied", ["0301_office_girl" in setup.patched, "0502_office_girl" in setup.patched], [true, false])
+	for each: Errand in game.week.errands():
+		if each.file_name() == "0502_office_girl":
+			panel.call("open", office_girl, each)
+	check("Save patch writes it, into the bench's own patch though another is open", [panel.call("save_bench"), panel.call("path")], ["", PATCH])
 	check("the patch holds the file", drafts.text(PATCH).contains("file Desktop\\note.txt"), true)
 	check("the game plays it", game.story_errors, PackedStringArray())
 
@@ -78,3 +107,17 @@ func run() -> void:
 	var running: Win95Setup = game.setup_for(job)
 	check("her computer comes in with the note", running.file_at("Desktop\\note.txt").contents, "Back at 2.")
 	check("and the mail as the table left it, in its place", running.emails[0].read, not was_read)
+
+	var start := SetupPatch.arriving(office_girl, null, true, game.week.errands(), game.week.patches)
+	check("Edit on bench for the start of the game", lab.call("bench", office_girl, null, start), "")
+	check("runs the start, with no visit's patch on it", [game.setups[office_girl.computer] == start, start.file_at("Desktop\\note.txt") == null], [true, true])
+	lab.call("store", PATCH, drafts.text(PATCH) + "\nset left_handed: true\n")
+	for each: Errand in game.week.errands():
+		if each.file_name() == "0301_office_girl":
+			errand = each
+	check("Play here", game.play_errand(errand, Conversation.Trigger.PICKUP), "")
+	check("makes her computer again, with the patch as it is now", game.setup_for(game.jobs[0]).left_handed, true)
+
+	game.restore({"day": 1})  # its computer off the counter, so the week can lose the errand
+	check("removing an errand", lab.call("store", "res://story/errands/0301_office_girl.errand", ""), "")
+	check("removes its patch, so the week still plays", [drafts.text(PATCH), game.story_errors], ["", PackedStringArray()])

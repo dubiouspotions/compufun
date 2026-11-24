@@ -29,12 +29,16 @@ var _path: String = ""
 var _folder_names := PackedStringArray(Email.Folder.keys().map(func(k: String) -> String: return k.to_lower()))
 # True while a mail's typed text waits for the pause that saves it.
 var _mail_pending: bool = false
+# True while a save reloads the week, which opens the patch again.
+var _saving: bool = false
 # True while a save from the table or the bench reloads the week, which opens the patch again.
 var _saving_table: bool = false
 var _before: Win95Setup
 var _after: Win95Setup
 ## The running copy that Edit on bench gave the game, until Save patch reads it.
 var _bench: Win95Setup
+# The patch that Edit on bench was pressed on: Save patch writes there.
+var _bench_path: String = ""
 var _list: ItemList
 var _title: Label
 var _about: Label
@@ -65,11 +69,12 @@ func path() -> String:
 
 ## Opens the patch of [param customer] for [param errand], or their start patch for null.
 func open(customer: Customer, errand: Errand) -> void:
-	_settle_now()
-	_customer = customer
-	_errand = errand
 	var file_name := SetupPatch.errand_name(errand) if errand != null else SetupPatch.customer_name(customer)
 	var was := _path
+	if SetupPatch.DIR + file_name + SetupPatch.EXTENSION != was:
+		_settle_now()  # another patch: save this one's waiting edit first; a reload of this one leaves it waiting
+	_customer = customer
+	_errand = errand
 	_path = SetupPatch.DIR + file_name + SetupPatch.EXTENSION
 	_title.text = "%s, %s" % [customer.spoken_name(), _stage_name(errand)]
 	_about.text = ("What %s's computer is like as the game starts, on top of its .tres." if errand == null else
@@ -80,7 +85,7 @@ func open(customer: Customer, errand: Errand) -> void:
 		_mark(PackedStringArray())
 	if not (_saving_table and _path == was):  # nor does it rebuild the mails that the table just saved
 		_rebuild()
-	_save_bench.disabled = _bench == null
+	_show_save_bench()
 	for i: int in _list.item_count:
 		if _item_path(i) == _path:
 			_list.select(i)
@@ -89,19 +94,34 @@ func open(customer: Customer, errand: Errand) -> void:
 ## Writes what differs on the computer that Edit on bench put in the game as the open patch.
 ## Returns "" or why it can't.
 func save_bench() -> String:
-	if _bench == null or _customer == null:
+	if _bench == null:
 		return _say("Edit on bench first.")
+	if _path != _bench_path:  # another patch was picked since: the bench belongs to its own
+		for i: int in _list.item_count:
+			if _item_path(i) == _bench_path:
+				var item: Array = _list.get_item_metadata(i)
+				open(item[0], item[1])
+				_list.select(i)
+	if _path != _bench_path:
+		return _say("Not saved: %s is gone from the week, so the bench has no patch to save to." % _bench_path.get_file())
 	if Game.setups.get(_customer.computer) != _bench:
 		_bench = null
-		_save_bench.disabled = true
-		return _say("The computer on the bench is not the one from Edit on bench any more (the game restarted?).")
+		_show_save_bench()
+		return _say("Not saved: the computer from Edit on bench is no longer the one in the game (Play here or a jump replaced it). Edit on bench again.")
 	return _save_setup(_bench)
 
 
 ## The computer on the bench that [method save_bench] reads; for the Lab, which starts it.
 func benched(setup: Win95Setup) -> void:
 	_bench = setup
-	_save_bench.disabled = false
+	_bench_path = _path
+	_show_save_bench()
+
+
+# Save patch names the bench's patch when another is open, as it saves there.
+func _show_save_bench() -> void:
+	_save_bench.disabled = _bench == null
+	_save_bench.text = "Save patch" if _bench == null or _bench_path == _path else "Save patch to %s" % _bench_path.get_file().get_basename()
 
 
 func _stage_name(errand: Errand) -> String:
@@ -170,14 +190,30 @@ func _save_text() -> void:
 		saved.emit(_path, text)
 
 
-# Saves the patch from the computer before it to [param after], keeping a reset. Returns "" or why not.
+# Saves the patch that makes the computer before this visit into [param after]: what differs, and
+# the stored patch's reset, comments and lines that still hold. A refused table edit is undone, so the
+# table shows the patch as saved. Returns "" or why not.
 func _save_setup(after: Win95Setup) -> String:
+	var refused := _try_save(after)
+	if refused != "" and after == _after:
+		_rebuild.call_deferred()  # deferred: the Tree may be inside its own signal
+	return refused
+
+
+func _try_save(after: Win95Setup) -> String:
+	if _saving_table or _saving:
+		return _say("Not saved: another save of this patch is still going on.")  # a programmer error: saves don't nest
+	if _code.text != _drafts.text(_path):
+		return _say("Not saved: the patch text above has changes that aren't saved yet, or errors (marked). Wait a moment or fix them, then try again.")
 	var made: Variant = SetupPatch.between(_before, after)
 	if made is String:
 		return _say("Not saved: " + made)
 	var patch: SetupPatch = made
-	patch.reset = _before != null and _parsed_reset()
-	var text := "" if patch.is_empty() else patch.write()
+	var stored := SetupPatch.parse(_drafts.text(_path), _path)
+	if stored.errors.is_empty():
+		patch.reset = _before != null and (stored.value as SetupPatch).reset
+		SetupPatch.keep_holding(stored.value, patch, after)
+	var text := _written(patch)
 	var check := SetupPatch.parse(text, _path)
 	var applied := SetupPatch.arriving(_customer, _errand, false, _week.errands(), _week.patches)
 	(check.value as SetupPatch).apply(applied)
@@ -185,27 +221,25 @@ func _save_setup(after: Win95Setup) -> String:
 	if not check.errors.is_empty() or not (left is SetupPatch and (left as SetupPatch).is_empty()):
 		return _say("Not saved: the patch doesn't read back as the computer: %s" % (check.errors if not check.errors.is_empty() else (left as SetupPatch).write() if left is SetupPatch else left))
 	_mark(PackedStringArray())
-	if text == _stored_text():
-		return ""  # a cell clicked and left: the patch says the same, so no draft
-	_code.text = text
-	_saving_table = after == _after  # a bench save shows the bench's mails, from the reload
-	saved.emit(_path, text)
-	_saving_table = false
+	if text != _drafts.text(_path) and not (stored.errors.is_empty() and text == _written(stored.value)):  # else it says the same: no draft
+		_code.text = text
+		_saving_table = after == _after  # a bench save shows the bench's mails, from the reload
+		_saving = true
+		saved.emit(_path, text)
+		_saving = false
+		_saving_table = false
+	if not patch.left_out.is_empty():
+		_say("Saved, but a patch can't hold these, so they are left out: " + "; ".join(patch.left_out))
 	return ""
 
 
-# The stored patch as write() puts it, so a patch that says the same in other words compares equal.
-func _stored_text() -> String:
-	var parsed := SetupPatch.parse(_drafts.text(_path), _path)
-	if not parsed.errors.is_empty():
-		return _drafts.text(_path)
-	var stored: SetupPatch = parsed.value
-	return "" if stored.is_empty() else stored.write()
-
-
-func _parsed_reset() -> bool:
-	var parsed := SetupPatch.parse(_drafts.text(_path), _path)
-	return (parsed.value as SetupPatch).reset
+# [param patch] as the open patch's text: the stored text's comments first, as a save can't place them.
+func _written(patch: SetupPatch) -> String:
+	var comments := Array(_drafts.text(_path).split("\n")).filter(func(line: String) -> bool: return line.begins_with("#"))
+	var body := "" if patch.is_empty() else patch.write()
+	if comments.is_empty():
+		return body
+	return "\n".join(comments) + "\n" + ("\n" + body if body != "" else "")
 
 
 func _say(text: String) -> String:
@@ -264,8 +298,8 @@ func _edit_mail(row: TreeItem) -> void:
 		if _cell(row, column) == _NEW_ADDRESS:
 			row.set_cell_mode(column, TreeItem.CELL_MODE_STRING)
 			row.set_text(column, "")
+			row.select(column)  # picking closes the cells, so it opens after
 			row.set_editable(column, true)
-			row.select(column)
 			_mails.edit_selected.call_deferred(true)
 			return
 	mail.folder = _folder_names.find(_cell(row, 0)) as Email.Folder
@@ -343,7 +377,11 @@ func _add_mail() -> void:
 	var mail := Email.new()
 	var date: Dictionary = Game.date_of(_errand.day_number() if _errand != null else 1)
 	mail.sent = "%04d-%02d-%02d 09:00" % [date.year, date.month, date.day]
-	mail.subject = "New mail %d" % (_after.emails.size() + 1)
+	var subjects := _after.emails.filter(func(m: Email) -> bool: return m.sent == mail.sent).map(func(m: Email) -> String: return m.subject)
+	var number := _after.emails.size() + 1
+	while "New mail %d" % number in subjects:  # a patch tells mails apart by sent and subject
+		number += 1
+	mail.subject = "New mail %d" % number
 	mail.to = _after.own_address()
 	for address: String in _after.addresses():
 		if address != mail.to:

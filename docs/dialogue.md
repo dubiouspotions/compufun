@@ -221,7 +221,8 @@ brief: The skater gets bored fast.
 
 What a customer did on their computer (wiki: "Lived-in computers"). `<customer>.setup` goes on the
 setup of `customers/<customer>.tres` as the game makes its running copy; `<code>_<customer>.setup`,
-named like its errand (moving the errand on the week board renames it too), goes on as that visit's job starts, before the problem's break. The Story
+named like its errand, goes on as that visit's job starts, before the problem's break. Moving the
+errand on the week board renames its patch; removing or discarding the errand removes it. The Story
 Lab's Computers tab writes them from the real Win95 (Save patch); this is the text it writes.
 
 ```
@@ -255,7 +256,9 @@ unmail
 - `reset`, first if at all, throws away what the player did: the computer starts again from its
   `.tres` and its start patch, then this patch.
 - `set <field>: <value>` sets a field of `Win95Setup`. `delete <path>` deletes a file or folder
-  with what is in it. A path starts with `Desktop`, `C:` or `Recycled` (the Recycle Bin).
+  with what is in it. A path starts with `Desktop`, `C:` or `Recycled` (the Recycle Bin). A second
+  file of one name in a folder, as two deleted `readme.txt` in the Recycle Bin, is `readme.txt*2`.
+- `#` starts a comment line.
 - `file <path>` and `folder <path>` set the fields under it, tab-indented. A file that is there
   keeps the fields left out, so a moved icon is its path and `desktop_position`; a new one has its
   defaults in them. Save patch writes a new file's fields that aren't their defaults. A folder keeps
@@ -264,10 +267,18 @@ unmail
   replacing the mail with the same `sent` and `subject`; `unmail` deletes the mail with that `sent`
   and `subject`.
 - A resource field (an icon, a picture, a program) names a `res://` file, or `none`. Enums are
-  their names in lower case (`folder: trash`); other values are Godot's (`true`, `Vector2(300, 200)`).
+  their names in lower case (`folder: trash`); other values are Godot's on one line (`true`,
+  `Vector2(300, 200)`, `{&"title": "Q2"}`), texts quoted as above.
 - A patch converges: deleting what is gone does nothing, and a file in a missing folder makes the
   folder. A computer gets the patches of all its customer's errands up to the visit, by code, each
-  once, also those of visits where it never booted.
+  once, also those of visits where it never booted, and those of an alternative errand of the same
+  customer that didn't come. A patch with an error applies nothing; the Lab marks the line.
+- Save patch and the mail table write what differs from the computer before the visit, and keep the
+  stored patch's `reset`, its comments (moved to the top) and its lines that still hold, such as a
+  `delete` of a file the player might make. What a patch can't hold, such as a picture drawn in
+  Paint, is left out, and the Lab says so. While the patch text has unsaved edits or errors, a table
+  edit is refused and undone. Play here makes the customer's computer again, so it shows the patches
+  as they are; a computer already running in the game keeps what it had.
 
 ## Conversations
 
