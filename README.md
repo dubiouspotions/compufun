@@ -73,6 +73,7 @@ gh workflow run godot.yml -R dubiouspotions/humanerror -f bump=patch   # or mino
 - `Godot/win95/netscape/`: Netscape Navigator 2.0's logo, toolbar icons and splash, drawn for the game by `tools/make_netscape_art.py` after screenshots of the real one; the logo and the look are Netscape's, not licensed to us.
 - `Godot/finale/apple_logo.svg`: the Apple logo from [Simple Icons](https://simpleicons.org) 13.21.0, CC0; `Godot/finale/host_boot.gd` draws the Windows logo as four squares. Both are for the finale's fake restart, and both are their owners' trademarks (Apple, Microsoft), not licensed to us.
 - `Godot/people/*/back.png`: drawn by an image model (OpenAI's, through the codex CLI) from our own neutral portraits, with `tools/make_portrait_backs.py`. AI-generated.
+- `Godot/dev/trailer/sandroperrotta_sigla_2.mp3`: "Sigla 2" by sandroperrotta (https://pixabay.com/users/sandroperrotta-2717508/), under the Pixabay Content License (https://pixabay.com/service/license-summary/): the music of the trailer.
 - `Godot/sounds/compufun_jingle.ogg`: the CompuFun jingle, made for the game by Piérre Reimertz; `tools/make_compufun_jingle.sh` makes it from his recording.
 - `Godot/sounds/city_ambience.ogg`: cut and muffled from "Westfield.wav" by Islabonita on Freesound (https://freesound.org/people/Islabonita/sounds/178532/), CC0. `tools/make_city_ambience.sh` makes it.
 - `Godot/compufun_db/fonts/Px437_IBM_VGA_8x16.ttf`: from [The Ultimate Oldschool PC Font Pack](https://int10h.org/oldschool-pc-fonts/) by VileR, CC BY-SA 4.0 (`LICENSE.txt`).

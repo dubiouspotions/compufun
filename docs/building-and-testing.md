@@ -62,6 +62,11 @@ ffmpeg -i /tmp/clip.avi -vf scale=1280:-2 -c:v libx264 -pix_fmt yuv420p -crf 20 
 Movie Maker renders every frame at the fixed rate, however slowly, so the clip never stutters.
 Delete the script afterwards: `run.gd` runs only `test_*.gd`, but it should not be committed.
 
+**The trailer** (`dev/trailer/trailer.tscn`, a 1995 TV commercial) is recorded the same way, then
+`tools/make_trailer.sh` adds the tape and the TV sound; its header has the command. Its narrator
+needs the live voice (`tools/build-voice.sh`). Keep the window on top (`--always-on-top`): macOS
+draws no frames for a covered window, and Movie Maker then records one frame for the whole run.
+
 ## Tests
 
 `Godot/tests/` holds headless tests that play the game through the `Game` API and check its state.
