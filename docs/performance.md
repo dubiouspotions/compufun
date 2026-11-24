@@ -24,6 +24,17 @@ per-frame script time either; turn parts off instead. On macOS, `ioreg -r -d 1 -
 the GPU's "Device Utilization %", and `sample <pid> 5` shows where each thread spends its time; Godot's
 own frames have no symbols, but the GL driver's do.
 
+For GPU time on a Mac, record a Metal System Trace of the running game and sum its GPU intervals:
+
+```sh
+"$GODOT" --path . --resolution 1920x1080 -s res://dev/perf_probe.gd -- 2 capped screen &
+sleep 10   # past the warm-up
+xcrun xctrace record --template 'Metal System Trace' --attach $! --time-limit 4s --output game.trace
+xcrun xctrace export --input game.trace \
+  --xpath '/trace-toc/run[@number="1"]/data/table[@schema="metal-gpu-intervals"]' > gpu.xml
+python3 ../tools/metal_gpu_time.py gpu.xml
+```
+
 Measure on a weak Mac: miquon, an M1 Mac mini, stands in for the team's M1 and M2 laptops. A fast Mac
 hides costs that a laptop pays: on an M5 Max the Main View takes 1.9 ms a frame, on the M1 5.5 ms.
 
@@ -73,7 +84,9 @@ At 60 fps, day 2, on a 1080p screen (CPU is a share of one core):
 - **The screen buffers** update only while something draws them (`UPDATE_WHEN_VISIBLE`): the 3D monitor
   or the Screen View. A monitor out of sight costs nothing, and its first frame back in view can show
   its last picture for one frame.
-- **The CRT look** adds about 14 points of GPU in the Screen View and CompuFunDB.
+- **The GPU** is busy 1.2 ms per frame in the Main View and 3.8 ms in the Screen View and CompuFunDB
+  (Metal System Trace). The CRT look is 2.4 ms of that, its glow 1.1 ms; it is per-pixel work, so a
+  Retina screen with about three times the pixels pays it about three times.
 - **The post shader** skips its search for the nearest Windows colour while `windows_shades` is 0, which
   it is until the warp drifts the colours; it is the only per-pixel pass over the whole window, so a
   Retina screen pays it 2.7 times over.
