@@ -5,11 +5,27 @@ brief:
 
 == drop-off
 (neutral) Hello. Do you do business computers?
-+ What's your business?
+- What's your business?
 	(happy) Import and export. Mostly import. Okay, mostly ideas, so far.
-+ So, what's your problem?
-	(problem) My computer won't start. It just shows a bunch of text, something about a disk.
-	+ Did you put a floppy in?
-		(thinking) Just some software a guy gave me. Business stuff. Very cutting edge.
-	- OK, leave it with me. [end]
-		(neutral) Great. Time is money, you know.
+- We do all sorts of computers.
+	(thinking) Of course you do. Anything else would have been a bad business decision.
+
+- So, what is your problem?
+- Well...
+(problem) My computer won't start. It just shows a bunch of text, something about a disk.
+- Did you put a floppy in?
+(thinking) Just some software a guy gave me. Business stuff. Very cutting edge.
+- OK, leave it with me.
+(happy) Great. I'd really appreciate it if you fixed it as soon as possible. You'd really do me a solid there.
+(irritated01) Time is money, you know.
+- So I've heard...
+
+== pick-up
+(happy) That was quick! You sure seems to know what's essential for running a successful business!
+- It was quite an easy fix actually.
+- Just doing my job.
+(neutral) Still! I see unleashed potential!
+- Oh, really?
+- What does that even mean?
+(neutral) I have to run! But you should come to our business after work sometime!
+- ...sure...
