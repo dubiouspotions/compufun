@@ -385,8 +385,9 @@ func _look_up(job: Job) -> bool:
 	waited = now()
 	while db.call("_loading") and now() - waited < SEARCH_SECONDS:
 		await process_frame
-	var causes: Array = db.call("_entries", 1).map(func(e: Dictionary) -> Problem: return e.problem)  # CompuFunDB.Column.CAUSES
-	await _press(KEY_LEFT)  # from CHECK, where a pick leaves the cursor
+	var causes: Array = db.call("_entries", 2).map(func(e: Dictionary) -> Problem: return e.problem)  # CompuFunDB.Column.CAUSES
+	await _press(KEY_RIGHT)
+	await _press(KEY_RIGHT)
 	for i: int in causes.find(job.problem):
 		await _press(KEY_DOWN)
 	await _press(KEY_F)
