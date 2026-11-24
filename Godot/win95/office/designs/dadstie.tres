@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="PptDesign" format=3]
+
+[ext_resource type="Script" path="res://win95/office/ppt_design.gd" id="script"]
+[ext_resource type="Texture2D" path="res://win95/office/designs/dadstie.png" id="background"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/liberation_serif_regular.ttf" id="title_font"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/liberation_sans_regular.ttf" id="text_font"]
+
+[resource]
+script = ExtResource("script")
+name = "Dadstie"
+background = ExtResource("background")
+title_color = Color(0, 0, 0.5, 1)
+text_color = Color(0, 0, 0, 1)
+bullet_color = Color(0, 0.75, 0.9, 1)
+title_align = 0
+left_inset = 0.07
+title_font = ExtResource("title_font")
+text_font = ExtResource("text_font")

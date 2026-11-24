@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="PptDesign" format=3]
+
+[ext_resource type="Script" path="res://win95/office/ppt_design.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+name = "Default Design"

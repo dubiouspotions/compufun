@@ -1,0 +1,176 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/office/ppt_start_dialog.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="Script" path="res://win95/group_box.gd" id="group_box"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/ppt_start_autocontent.png" id="autocontent"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/ppt_start_template.png" id="template"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/ppt_start_blank.png" id="blank"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/ppt_start_open.png" id="open"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/ppt_start_tip.png" id="tip"]
+
+[sub_resource type="ButtonGroup" id="choice"]
+
+[node name="PowerPointStart" type="PanelContainer"]
+theme = ExtResource("theme")
+script = ExtResource("script")
+in_taskbar = false
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "PowerPoint"
+show_help = true
+
+[node name="Body" type="Control" parent="VBox"]
+custom_minimum_size = Vector2(372, 232)
+layout_mode = 2
+
+[node name="Create" type="Control" parent="VBox/Body"]
+offset_left = 6.0
+offset_top = 19.0
+offset_right = 227.0
+offset_bottom = 156.0
+mouse_filter = 2
+script = ExtResource("group_box")
+text = "Create a new presentation using"
+
+[node name="Existing" type="Control" parent="VBox/Body"]
+offset_left = 6.0
+offset_top = 167.0
+offset_right = 227.0
+offset_bottom = 218.0
+mouse_filter = 2
+script = ExtResource("group_box")
+
+[node name="AutoContentPicture" type="TextureRect" parent="VBox/Body"]
+offset_left = 14.0
+offset_top = 30.0
+offset_right = 48.0
+offset_bottom = 64.0
+mouse_filter = 2
+texture = ExtResource("autocontent")
+stretch_mode = 3
+
+[node name="AutoContent" type="CheckBox" parent="VBox/Body"]
+unique_name_in_owner = true
+offset_left = 58.0
+offset_top = 39.0
+offset_right = 223.0
+offset_bottom = 57.0
+focus_mode = 0
+button_group = SubResource("choice")
+text = "AutoContent wizard"
+disabled = true
+
+[node name="TemplatePicture" type="TextureRect" parent="VBox/Body"]
+offset_left = 14.0
+offset_top = 72.0
+offset_right = 48.0
+offset_bottom = 106.0
+mouse_filter = 2
+texture = ExtResource("template")
+stretch_mode = 3
+
+[node name="Template" type="CheckBox" parent="VBox/Body"]
+unique_name_in_owner = true
+offset_left = 58.0
+offset_top = 81.0
+offset_right = 223.0
+offset_bottom = 99.0
+focus_mode = 0
+button_group = SubResource("choice")
+text = "Template"
+disabled = true
+
+[node name="BlankPicture" type="TextureRect" parent="VBox/Body"]
+offset_left = 14.0
+offset_top = 114.0
+offset_right = 48.0
+offset_bottom = 148.0
+mouse_filter = 2
+texture = ExtResource("blank")
+stretch_mode = 3
+
+[node name="Blank" type="CheckBox" parent="VBox/Body"]
+unique_name_in_owner = true
+offset_left = 58.0
+offset_top = 123.0
+offset_right = 223.0
+offset_bottom = 141.0
+focus_mode = 0
+button_group = SubResource("choice")
+text = "Blank presentation"
+button_pressed = true
+
+[node name="OpenPicture" type="TextureRect" parent="VBox/Body"]
+offset_left = 14.0
+offset_top = 176.0
+offset_right = 48.0
+offset_bottom = 210.0
+mouse_filter = 2
+texture = ExtResource("open")
+stretch_mode = 3
+
+[node name="Open" type="CheckBox" parent="VBox/Body"]
+unique_name_in_owner = true
+offset_left = 58.0
+offset_top = 185.0
+offset_right = 223.0
+offset_bottom = 203.0
+focus_mode = 0
+button_group = SubResource("choice")
+text = "Open an existing presentation"
+disabled = true
+
+[node name="Ok" type="Button" parent="VBox/Body"]
+unique_name_in_owner = true
+offset_left = 271.0
+offset_top = 12.0
+offset_right = 331.0
+offset_bottom = 34.0
+theme_type_variation = &"DefaultButton"
+text = "OK"
+
+[node name="Cancel" type="Button" parent="VBox/Body"]
+unique_name_in_owner = true
+offset_left = 271.0
+offset_top = 40.0
+offset_right = 331.0
+offset_bottom = 62.0
+text = "Cancel"
+
+[node name="Tip" type="PanelContainer" parent="VBox/Body"]
+offset_left = 238.0
+offset_top = 97.0
+offset_right = 362.0
+offset_bottom = 218.0
+theme_type_variation = &"StatusWell"
+
+[node name="TipLabel" type="Label" parent="VBox/Body"]
+offset_left = 246.0
+offset_top = 108.0
+offset_right = 306.0
+offset_bottom = 156.0
+text = "Tip for\nnew\nusers"
+
+[node name="TipBulb" type="TextureRect" parent="VBox/Body"]
+offset_left = 311.0
+offset_top = 109.0
+offset_right = 341.0
+offset_bottom = 141.0
+mouse_filter = 2
+texture = ExtResource("tip")
+
+[node name="TipText" type="Label" parent="VBox/Body"]
+offset_left = 246.0
+offset_top = 158.0
+offset_right = 358.0
+offset_bottom = 214.0
+text = "The AutoContent wizard is the quickest way to create a presentation."
+autowrap_mode = 2

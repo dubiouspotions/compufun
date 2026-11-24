@@ -1,0 +1,196 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://win95/office/office_window.tscn" id="base"]
+[ext_resource type="Script" path="res://win95/office/powerpoint.gd" id="script"]
+[ext_resource type="Script" path="res://win95/office/slide_view.gd" id="slide"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/powerpoint_16.png" id="icon"]
+[ext_resource type="Resource" path="res://win95/office/designs/default.tres" id="design_default"]
+[ext_resource type="Resource" path="res://win95/office/designs/dadstie.tres" id="design_dadstie"]
+[ext_resource type="Resource" path="res://win95/office/designs/fireball.tres" id="design_fireball"]
+[ext_resource type="Resource" path="res://win95/office/designs/highvolt.tres" id="design_highvolt"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/ppt_view_slide.png" id="view_slide"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/ppt_view_outline.png" id="view_outline"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/ppt_view_sorter.png" id="view_sorter"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/ppt_view_notes.png" id="view_notes"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/ppt_view_show.png" id="view_show"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/ppt_drawing_toolbar.png" id="drawing"]
+
+[sub_resource type="StyleBoxFlat" id="backdrop"]
+bg_color = Color(0.5019608, 0.5019608, 0.5019608, 1)
+
+[sub_resource type="StyleBoxFlat" id="sorter"]
+bg_color = Color(1, 1, 1, 1)
+
+[node name="PowerPoint" instance=ExtResource("base")]
+script = ExtResource("script")
+designs = Array[Resource]([ExtResource("design_default"), ExtResource("design_dadstie"), ExtResource("design_fireball"), ExtResource("design_highvolt")])
+untitled_name = "Presentation1"
+
+[node name="TitleBar" parent="VBox" index="0"]
+title = "Microsoft PowerPoint"
+icon = ExtResource("icon")
+
+[node name="Main" type="HBoxContainer" parent="VBox/Body" index="0"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="SlideArea" type="PanelContainer" parent="VBox/Body/Main"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+theme_override_styles/panel = SubResource("backdrop")
+
+[node name="Margin" type="MarginContainer" parent="VBox/Body/Main/SlideArea"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Frame" type="AspectRatioContainer" parent="VBox/Body/Main/SlideArea/Margin"]
+layout_mode = 2
+ratio = 1.3333
+
+[node name="Slide" type="Control" parent="VBox/Body/Main/SlideArea/Margin/Frame"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("slide")
+editable = true
+
+[node name="Float" type="Control" parent="VBox/Body/Main/SlideArea"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="CommonTasks" type="PanelContainer" parent="VBox/Body/Main/SlideArea/Float"]
+unique_name_in_owner = true
+offset_left = 33.0
+offset_top = 12.0
+offset_right = 141.0
+offset_bottom = 96.0
+
+[node name="Column" type="VBoxContainer" parent="VBox/Body/Main/SlideArea/Float/CommonTasks"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TasksTitle" parent="VBox/Body/Main/SlideArea/Float/CommonTasks/Column" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Common Tasks"
+
+[node name="NewSlideTask" type="Button" parent="VBox/Body/Main/SlideArea/Float/CommonTasks/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "New Slide..."
+alignment = 0
+flat = true
+
+[node name="LayoutTask" type="Button" parent="VBox/Body/Main/SlideArea/Float/CommonTasks/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Slide Layout..."
+alignment = 0
+flat = true
+
+[node name="DesignTask" type="Button" parent="VBox/Body/Main/SlideArea/Float/CommonTasks/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Apply Design..."
+alignment = 0
+flat = true
+
+[node name="Sorter" type="ScrollContainer" parent="VBox/Body/Main"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("sorter")
+horizontal_scroll_mode = 0
+
+[node name="Margin" type="MarginContainer" parent="VBox/Body/Main/Sorter"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Slides" type="HFlowContainer" parent="VBox/Body/Main/Sorter/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 12
+
+[node name="SlideScroll" type="VScrollBar" parent="VBox/Body/Main"]
+unique_name_in_owner = true
+layout_mode = 2
+step = 1.0
+
+[node name="Views" type="HBoxContainer" parent="VBox/Body" index="1"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="SlideViewButton" type="Button" parent="VBox/Body/Views"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(17, 16)
+layout_mode = 2
+focus_mode = 0
+tooltip_text = "Slide View"
+icon = ExtResource("view_slide")
+icon_alignment = 1
+
+[node name="OutlineViewButton" type="Button" parent="VBox/Body/Views"]
+disabled = true
+custom_minimum_size = Vector2(17, 16)
+layout_mode = 2
+focus_mode = 0
+tooltip_text = "Outline View"
+icon = ExtResource("view_outline")
+icon_alignment = 1
+
+[node name="SorterViewButton" type="Button" parent="VBox/Body/Views"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(17, 16)
+layout_mode = 2
+focus_mode = 0
+tooltip_text = "Slide Sorter View"
+icon = ExtResource("view_sorter")
+icon_alignment = 1
+
+[node name="NotesViewButton" type="Button" parent="VBox/Body/Views"]
+disabled = true
+custom_minimum_size = Vector2(17, 16)
+layout_mode = 2
+focus_mode = 0
+tooltip_text = "Notes Page View"
+icon = ExtResource("view_notes")
+icon_alignment = 1
+
+[node name="ShowButton" type="Button" parent="VBox/Body/Views"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(17, 16)
+layout_mode = 2
+focus_mode = 0
+tooltip_text = "Slide Show"
+icon = ExtResource("view_show")
+icon_alignment = 1
+
+[node name="Pan" type="HScrollBar" parent="VBox/Body/Views"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="Drawing" type="PanelContainer" parent="VBox/Body" index="2"]
+layout_mode = 2
+
+[node name="Strip" type="TextureRect" parent="VBox/Body/Drawing"]
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 2
+texture = ExtResource("drawing")
+stretch_mode = 2

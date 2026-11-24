@@ -1,0 +1,84 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/office/ppt_layout_dialog.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+
+[node name="NewSlide" type="PanelContainer"]
+theme = ExtResource("theme")
+script = ExtResource("script")
+in_taskbar = false
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "New Slide"
+show_help = true
+
+[node name="Body" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="Row" type="HBoxContainer" parent="VBox/Body"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Left" type="VBoxContainer" parent="VBox/Body/Row"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Prompt" type="Label" parent="VBox/Body/Row/Left"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Choose an AutoLayout:"
+
+[node name="Well" type="PanelContainer" parent="VBox/Body/Row/Left"]
+layout_mode = 2
+theme_type_variation = &"FieldPanel"
+
+[node name="Layouts" type="GridContainer" parent="VBox/Body/Row/Left/Well"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 2
+theme_override_constants/v_separation = 2
+columns = 4
+
+
+[node name="Right" type="VBoxContainer" parent="VBox/Body/Row"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Ok" type="Button" parent="VBox/Body/Row/Right"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+theme_type_variation = &"DefaultButton"
+text = "OK"
+
+[node name="Cancel" type="Button" parent="VBox/Body/Row/Right"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+text = "Cancel"
+
+[node name="Gap" type="Control" parent="VBox/Body/Row/Right"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="NameBox" type="PanelContainer" parent="VBox/Body/Row/Right"]
+custom_minimum_size = Vector2(75, 40)
+layout_mode = 2
+
+[node name="LayoutName" type="Label" parent="VBox/Body/Row/Right/NameBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1

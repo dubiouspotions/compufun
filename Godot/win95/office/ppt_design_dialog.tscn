@@ -1,0 +1,73 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/office/ppt_design_dialog.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="Script" path="res://win95/office/slide_view.gd" id="slide"]
+
+[node name="ApplyDesign" type="PanelContainer"]
+theme = ExtResource("theme")
+script = ExtResource("script")
+in_taskbar = false
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Apply Design"
+show_help = true
+
+[node name="Body" type="MarginContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="Column" type="VBoxContainer" parent="VBox/Body"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LookIn" type="Label" parent="VBox/Body/Column"]
+layout_mode = 2
+text = "Look in:  Presentation Designs"
+
+[node name="Row" type="HBoxContainer" parent="VBox/Body/Column"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Designs" type="ItemList" parent="VBox/Body/Column/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+
+[node name="PreviewFrame" type="PanelContainer" parent="VBox/Body/Column/Row"]
+layout_mode = 2
+theme_type_variation = &"FieldPanel"
+
+[node name="Preview" type="Control" parent="VBox/Body/Column/Row/PreviewFrame"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 150)
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("slide")
+
+[node name="Buttons" type="VBoxContainer" parent="VBox/Body/Column/Row"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Apply" type="Button" parent="VBox/Body/Column/Row/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+theme_type_variation = &"DefaultButton"
+text = "Apply"
+
+[node name="Cancel" type="Button" parent="VBox/Body/Column/Row/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 23)
+layout_mode = 2
+text = "Cancel"
