@@ -57,10 +57,10 @@ func _ready() -> void:
 	title_bar.maximize_pressed.connect(toggle_maximized)
 	title_bar.double_clicked.connect(toggle_maximized)
 	title_bar.icon_pressed.connect(_open_menu)
-	var material := ShaderMaterial.new()
-	material.shader = _OUTLINE_SHADER
+	var shader := ShaderMaterial.new()
+	shader.shader = _OUTLINE_SHADER
 	_outline = ColorRect.new()
-	_outline.material = material
+	_outline.material = shader
 	_outline.top_level = true
 	_outline.z_index = _OUTLINE_Z
 	_outline.mouse_filter = Control.MOUSE_FILTER_IGNORE

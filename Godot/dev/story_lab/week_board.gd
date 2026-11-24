@@ -97,11 +97,11 @@ static func moves(days: Array, path: String, day: int, index: int, alternative: 
 		for g: int in numbered.size():
 			for old: String in numbered[g]:
 				var dir := old.get_base_dir() + "/"
-				var name := old.get_file().get_basename().substr(5)
-				var new_path := "%s%02d%02d_%s.errand" % [dir, d, g + 1, name]
+				var stem := old.get_file().get_basename().substr(5)
+				var new_path := "%s%02d%02d_%s.errand" % [dir, d, g + 1, stem]
 				var copy := 2
 				while taken.has(new_path):
-					new_path = "%s%02d%02d_%s_%d.errand" % [dir, d, g + 1, name, copy]
+					new_path = "%s%02d%02d_%s_%d.errand" % [dir, d, g + 1, stem, copy]
 					copy += 1
 				taken[new_path] = true
 				if new_path != old:
@@ -272,11 +272,11 @@ static func _sign_drag(_at: Vector2, chip: Control, id: StringName, from: Dictio
 
 # A small rounded chip in the signs' colour with [param text], cut with an ellipsis to [param width]
 # pixels, or to the width that its container gives it when 0.
-static func _sign_chip_box(text: String, size: int, width: int) -> PanelContainer:
+static func _sign_chip_box(text: String, font_size: int, width: int) -> PanelContainer:
 	var chip := PanelContainer.new()
 	chip.add_theme_stylebox_override("panel", LabUI.box(Color(SIGN_COLOR, 0.18), 6, 1))
 	chip.mouse_filter = Control.MOUSE_FILTER_STOP
-	var label := LabUI.label(text, size, SIGN_COLOR)
+	var label := LabUI.label(text, font_size, SIGN_COLOR)
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.custom_minimum_size.x = width
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -290,21 +290,21 @@ static func customer_strip() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	row.add_child(LabUI.label("Customers", 13, LabUI.DIM))
-	for name: String in LabUI.resource_names(CUSTOMERS_DIR):
-		var customer := load(CUSTOMERS_DIR + name + ".tres") as Customer
+	for customer_name: String in LabUI.resource_names(CUSTOMERS_DIR):
+		var customer := load(CUSTOMERS_DIR + customer_name + ".tres") as Customer
 		if customer == null:
-			push_error("Story Lab: %s%s.tres doesn't load as a Customer" % [CUSTOMERS_DIR, name])
+			push_error("Story Lab: %s%s.tres doesn't load as a Customer" % [CUSTOMERS_DIR, customer_name])
 		var chip := PanelContainer.new()
 		chip.add_theme_stylebox_override("panel", LabUI.box(LabUI.RAISED, 8, 2))
 		chip.mouse_default_cursor_shape = Control.CURSOR_DRAG
 		chip.mouse_filter = Control.MOUSE_FILTER_STOP
-		chip.tooltip_text = "%s\nDrag onto a day or a time of day for a new errand." % name
-		var shown := customer.spoken_name() if customer != null else name
+		chip.tooltip_text = "%s\nDrag onto a day or a time of day for a new errand." % customer_name
+		var shown := customer.spoken_name() if customer != null else customer_name
 		var drag := func(_at: Vector2) -> Variant:
 			var preview := LabUI.chip(shown, LabUI.TEXT, 15)
 			preview.add_theme_stylebox_override("normal", LabUI.box(LabUI.HOVER, 8, 4))
 			chip.set_drag_preview(preview)
-			return {"story_customer": name}
+			return {"story_customer": customer_name}
 		chip.set_drag_forwarding(drag, Callable(), Callable())
 		var inside := HBoxContainer.new()
 		inside.add_theme_constant_override("separation", 6)

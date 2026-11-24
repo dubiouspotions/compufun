@@ -37,10 +37,10 @@ extends Resource
 
 ## The 16 x 16 version of [param icon], a 32 x 32 icon named like name_32.png, or null when the
 ## icon set has none.
-static func small_icon(icon: Texture2D) -> Texture2D:
-	if icon == null or not icon.resource_path.ends_with("_32.png"):
+static func small_icon(texture: Texture2D) -> Texture2D:
+	if texture == null or not texture.resource_path.ends_with("_32.png"):
 		return null
-	var small := icon.resource_path.trim_suffix("_32.png") + "_16.png"
+	var small := texture.resource_path.trim_suffix("_32.png") + "_16.png"
 	return load(small) if ResourceLoader.exists(small) else null
 
 
@@ -55,8 +55,8 @@ func size_in_bytes() -> int:
 
 ## The value of [param property] on [param program]'s root: as the scene sets it, else the root
 ## script's default; null when the root has no such property. Reads it without making the scene.
-static func root_property(program: PackedScene, property: StringName) -> Variant:
-	var state := program.get_state()
+static func root_property(scene: PackedScene, property: StringName) -> Variant:
+	var state := scene.get_state()
 	var script: Script
 	for i in state.get_node_property_count(0):
 		var property_name := state.get_node_property_name(0, i)
@@ -75,8 +75,8 @@ static func root_property(program: PackedScene, property: StringName) -> Variant
 
 ## True when the root script of [param program] is [param base] or extends it. Reads the scene
 ## without making it.
-static func root_extends(program: PackedScene, base: Script) -> bool:
-	var state := program.get_state()
+static func root_extends(scene: PackedScene, base: Script) -> bool:
+	var state := scene.get_state()
 	for i in state.get_node_property_count(0):
 		if state.get_node_property_name(0, i) == &"script":
 			var script: Script = state.get_node_property_value(0, i)

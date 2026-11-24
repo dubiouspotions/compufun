@@ -87,14 +87,14 @@ func _ready() -> void:
 
 ## Opens the errand file [param path] with [param text]. Text that doesn't parse opens read-only
 ## with its errors, so the writer sees what to fix in the file.
-func show_errand(path: String, text: String) -> void:
+func show_errand(errand_path: String, text: String) -> void:
 	_settle_now()
-	if path != _path:
+	if errand_path != _path:
 		_pending.clear()
 		_tab = 0
-	_path = path
+	_path = errand_path
 	_text = text
-	var parsed := StoryFormat.parse_errand(text, path, problems)
+	var parsed := StoryFormat.parse_errand(text, errand_path, problems)
 	_errand = parsed.value as Errand
 	_fill_fields()
 	_fill_tabs()
@@ -352,10 +352,10 @@ func _show_conversation() -> void:
 
 
 func _add_conversation(trigger_index: int) -> void:
-	var name: String = StoryFormat.TRIGGERS.keys()[trigger_index]
+	var trigger_name: String = StoryFormat.TRIGGERS.keys()[trigger_index]
 	var parts := split(_text)
 	var sections: PackedStringArray = parts["sections"]
-	sections.append("== " + name)
+	sections.append("== " + trigger_name)
 	_pending.clear()
 	if _apply(join(parts["header"], sections)).is_empty():
 		_fill_tabs()
@@ -631,8 +631,8 @@ func _right() -> Control:
 	var add := MenuButton.new()
 	add.text = "+"
 	add.tooltip_text = "Add a conversation"
-	for name: String in TRIGGER_NAMES.values():
-		add.get_popup().add_item(name)
+	for trigger_name: String in TRIGGER_NAMES.values():
+		add.get_popup().add_item(trigger_name)
 	add.get_popup().id_pressed.connect(_add_conversation)
 	bar.add_child(add)
 	_remove_conversation = LabUI.button("Remove", _remove_shown_conversation, &"FlatButton")

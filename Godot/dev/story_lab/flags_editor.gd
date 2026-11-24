@@ -39,15 +39,15 @@ static func make(known: PackedStringArray) -> StoryFlagsEditor:
 
 
 ## Shows a copy of [param flags] (fact to number) to edit.
-func edit(flags: Dictionary[StringName, int]) -> void:
+func edit(edited_flags: Dictionary[StringName, int]) -> void:
 	if not is_node_ready():
-		_shown = flags.duplicate()
+		_shown = edited_flags.duplicate()
 		return
 	for row: Node in _rows.get_children():
 		_rows.remove_child(row)
 		row.queue_free()
-	for flag: StringName in flags:
-		_add_row(flag, flags[flag])
+	for flag: StringName in edited_flags:
+		_add_row(flag, edited_flags[flag])
 
 
 ## The facts as edited: fact to number, 0 to clear it.
@@ -64,17 +64,17 @@ func flags() -> Dictionary[StringName, int]:
 
 
 ## [param flags] in words, such as "skater told us, cambion is false, logo stage is 2"; "" for none.
-static func describe(flags: Dictionary[StringName, int]) -> String:
+static func describe(described: Dictionary[StringName, int]) -> String:
 	var parts := PackedStringArray()
-	for flag: StringName in flags:
+	for flag: StringName in described:
 		var words := StoryFactPicker.humanize(flag)
-		match flags[flag]:
+		match described[flag]:
 			1:
 				parts.append(words)
 			0:
 				parts.append(words + " is false")
 			_:
-				parts.append("%s is %d" % [words, flags[flag]])
+				parts.append("%s is %d" % [words, described[flag]])
 	return ", ".join(parts)
 
 

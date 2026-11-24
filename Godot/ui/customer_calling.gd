@@ -258,6 +258,7 @@ func _waiting_line() -> DialogueLine:
 # The mood group of the line at [param step]: up through the groups, then round the angriest ones.
 func _mood_of(step: int) -> int:
 	var count := _moods.size()
+	@warning_ignore("integer_division")
 	var mood := step / maxi(1, lines_per_mood)
 	if mood < count:
 		return mood

@@ -686,6 +686,7 @@ func _close_print_box() -> void:
 # The print box in the middle of the screen: what prints and how far, in a bar of blocks; then that
 # it is done, with an OK button.
 func _paint_printing() -> void:
+	@warning_ignore("integer_division")
 	var left := (COLUMNS - PRINT_BOX_WIDTH) / 2
 	var inner := PRINT_BOX_WIDTH - 4
 	var middle: String
@@ -710,6 +711,7 @@ func _paint_printing() -> void:
 
 # The first cell of the print box's OK button.
 func _ok_cell() -> Vector2i:
+	@warning_ignore("integer_division")
 	return Vector2i((COLUMNS - OK_BUTTON.length()) / 2, PRINT_BOX_TOP + 3)
 
 
@@ -772,6 +774,7 @@ func _buttons() -> Dictionary[String, Column]:
 # The first x of the button [param text], centred under [param column].
 func _button_x(column: Column, text: String) -> int:
 	var span := _spans[column]
+	@warning_ignore("integer_division")
 	return span.x + (span.y - span.x + 1 - text.length()) / 2
 
 

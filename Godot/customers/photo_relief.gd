@@ -33,7 +33,9 @@ static func build(portrait: Image, back: Image, metres_per_pixel: float, depth: 
 	var soft_back := _soft(_rgba(back)) if back != null else soft_front
 	var w := image.get_width()
 	var h := image.get_height()
+	@warning_ignore("integer_division")
 	var cols := w / step + 1
+	@warning_ignore("integer_division")
 	var rows := h / step + 1
 	var inside := PackedByteArray()
 	inside.resize(cols * rows)
@@ -91,6 +93,7 @@ static func build(portrait: Image, back: Image, metres_per_pixel: float, depth: 
 				for k: int in FRONT_ORDER if side > 0.0 else BACK_ORDER:
 					var i := corners[k]
 					var px := float(mini((i % cols) * step, w - 1))
+					@warning_ignore("integer_division")
 					var py := float(mini((i / cols) * step, h - 1))
 					var d := dist[i]
 					var bulge := 0.0 if d <= 0.0 else depth * sqrt(1.0 - pow(1.0 - minf(d / cells, 1.0), 2.0))
@@ -136,6 +139,7 @@ static func head_width(portrait: Image) -> float:
 static func _soft(image: Image) -> Image:
 	var soft := image.duplicate() as Image
 	soft.premultiply_alpha()
+	@warning_ignore("integer_division")
 	soft.resize(maxi(image.get_width() / 4, 1), maxi(image.get_height() / 4, 1), Image.INTERPOLATE_BILINEAR)
 	return soft
 

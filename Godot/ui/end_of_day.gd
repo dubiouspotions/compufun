@@ -80,9 +80,9 @@ func follow(rect: Rect2) -> void:
 	if _panel.visible:
 		_panel.position = (rect.get_center() - global_position - _panel.size / 2.0).clamp(Vector2.ZERO, size - _panel.size).round()
 	if _dialog.visible:
-		var scale := _dialog.size / Vector2(_buffer.size)
+		var zoom := _dialog.size / Vector2(_buffer.size)
 		var box_size := _box.get_combined_minimum_size()
-		var centre := (rect.get_center() - _dialog.global_position) / scale
+		var centre := (rect.get_center() - _dialog.global_position) / zoom
 		_center.size = box_size
 		_center.position = (centre - box_size / 2.0).clamp(Vector2.ZERO, Vector2(_buffer.size) - box_size).round()
 

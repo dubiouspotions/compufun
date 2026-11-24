@@ -220,9 +220,9 @@ func _show_relief(person: Person) -> void:
 	var torso_too := true
 	if shown:
 		var image := portrait.get_image()
-		var scale := relief_head_width / PhotoRelief.head_width(image)
-		var bottom := relief_top - image.get_height() * scale
-		_relief.mesh = PhotoRelief.build(image, person.back.get_image() if person.back != null else null, scale, relief_depth)
+		var relief_scale := relief_head_width / PhotoRelief.head_width(image)
+		var bottom := relief_top - image.get_height() * relief_scale
+		_relief.mesh = PhotoRelief.build(image, person.back.get_image() if person.back != null else null, relief_scale, relief_depth)
 		_relief.position = Vector3(0.0, bottom, 0.0)
 		_relief.set_surface_override_material(PhotoRelief.Surface.FRONT, _relief_material(portrait, Color.WHITE))
 		var back := _relief_material(person.back, Color.WHITE) if person.back != null else _relief_material(portrait, Color(0.78, 0.78, 0.78))

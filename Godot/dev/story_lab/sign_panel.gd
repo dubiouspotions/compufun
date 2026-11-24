@@ -120,7 +120,7 @@ func _open(start: Dictionary) -> void:
 		problem_picked.emit(start["problem"])
 
 
-func _wrapped(text: String, size: int, color: Color) -> Label:
-	var made := LabUI.label(text, size, color)
+func _wrapped(text: String, font_size: int, color: Color) -> Label:
+	var made := LabUI.label(text, font_size, color)
 	made.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return made

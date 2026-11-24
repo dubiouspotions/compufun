@@ -67,12 +67,12 @@ func open_problem(id: StringName) -> void:
 	_title.text = String(id).capitalize()
 	for child: Node in _built_slot.get_children():
 		child.queue_free()
-	var built := built(_problems.get(id))
-	var chip := LabUI.chip("the game repairs it" if built else "not built yet", LabUI.GOOD if built else LabUI.CHANGED, 13)
-	chip.tooltip_text = "It has repair mechanics in problems/%s.tres." % id if built else NOT_BUILT_TIP
+	var is_built := built(_problems.get(id))
+	var chip := LabUI.chip("the game repairs it" if is_built else "not built yet", LabUI.GOOD if is_built else LabUI.CHANGED, 13)
+	chip.tooltip_text = "It has repair mechanics in problems/%s.tres." % id if is_built else NOT_BUILT_TIP
 	chip.mouse_filter = Control.MOUSE_FILTER_PASS
 	_built_slot.add_child(chip)
-	_remove.visible = not built
+	_remove.visible = not is_built
 	_remove.text = "Remove problem"
 	_post_it.text = problem.perceived_issue
 	_cause.text = problem.cause
@@ -109,19 +109,19 @@ static func built(problem: Problem) -> bool:
 
 
 ## The problem id of a name that a writer typed: lower case, spaces as _, other characters left out.
-static func id_of(name: String) -> String:
-	return RegEx.create_from_string("[^a-z0-9_]").sub(name.strip_edges().to_lower().replace(" ", "_").replace("-", "_"), "", true)
+static func id_of(problem_name: String) -> String:
+	return RegEx.create_from_string("[^a-z0-9_]").sub(problem_name.strip_edges().to_lower().replace(" ", "_").replace("-", "_"), "", true)
 
 
 ## Makes the text-only problem that [param name] names, its post-it the name, and opens it. Returns
 ## "" or why not, in plain words.
-func add_problem(name: String) -> String:
-	var id := id_of(name)
+func add_problem(problem_name: String) -> String:
+	var id := id_of(problem_name)
 	if id == "":
 		return "Name the problem with letters or digits."
 	if _problems.has(StringName(id)):
 		return "There is a problem %s already." % id
-	saved.emit(StoryFiles.PROBLEMS_DIR + id + ".problem", "post-it: %s\n" % name.strip_edges())
+	saved.emit(StoryFiles.PROBLEMS_DIR + id + ".problem", "post-it: %s\n" % problem_name.strip_edges())
 	if _problems.has(StringName(id)):
 		open_problem(StringName(id))
 	return ""
@@ -257,9 +257,9 @@ func _fill_list() -> void:
 		var head := HBoxContainer.new()
 		head.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		box.add_child(head)
-		var name := LabUI.label(String(id).capitalize(), 15)
-		name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		head.add_child(name)
+		var label := LabUI.label(String(id).capitalize(), 15)
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		head.add_child(label)
 		if _drafts.has(file):
 			head.add_child(LabUI.chip("draft", LabUI.CHANGED, 10))
 		if not built(_problems[id]):
@@ -507,7 +507,7 @@ func _rows(into: Control) -> VBoxContainer:
 	return rows
 
 
-func _add_button(text: String, pressed: Callable) -> Button:
-	var made := LabUI.button(text, pressed, &"FlatButton")
+func _add_button(caption: String, pressed: Callable) -> Button:
+	var made := LabUI.button(caption, pressed, &"FlatButton")
 	made.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	return made

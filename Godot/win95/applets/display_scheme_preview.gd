@@ -114,6 +114,7 @@ func _arrow(at: Vector2, up: bool) -> void:
 func _update_dither() -> void:
 	var img := Image.create_empty(2, 2, false, Image.FORMAT_RGBA8)
 	for i in 4:
+		@warning_ignore("integer_division")
 		img.set_pixel(i % 2, i / 2, palette.highlight_color if (i % 2 + i / 2) % 2 == 0 else palette.face_color)
 	if _dither.get_width() == 2:
 		_dither.update(img)
@@ -122,9 +123,9 @@ func _update_dither() -> void:
 
 
 # [param width] > 0 centres the text in that many pixels from [param at]; [param size] 0 is the dialog font's.
-func _text(at: Vector2, text: String, colour: Color, font: Font = null, width: float = -1, size := 0) -> void:
+func _text(at: Vector2, text: String, colour: Color, font: Font = null, width: float = -1, text_size := 0) -> void:
 	var f := font if font != null else get_theme_default_font()
-	var font_size := size if size > 0 else get_theme_default_font_size()
+	var font_size := text_size if text_size > 0 else get_theme_default_font_size()
 	var align := HORIZONTAL_ALIGNMENT_CENTER if width > 0 else HORIZONTAL_ALIGNMENT_LEFT
 	draw_string(f, at + Vector2(0, f.get_ascent(font_size)), text, align, width, font_size, colour)
 

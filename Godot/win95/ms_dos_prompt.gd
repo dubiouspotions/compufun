@@ -114,8 +114,8 @@ func _dir() -> String:
 	return "\n".join(lines)
 
 
-func _dir_line(base: String, extension: String, is_folder: bool, size: int, when: Dictionary, long_name: String) -> String:
-	var amount := "<DIR>       " if is_folder else "%12s" % _grouped(size)
+func _dir_line(base: String, extension: String, is_folder: bool, bytes: int, when: Dictionary, long_name: String) -> String:
+	var amount := "<DIR>       " if is_folder else "%12s" % _grouped(bytes)
 	var date := ""
 	if not when.is_empty():
 		var hour: int = when.hour

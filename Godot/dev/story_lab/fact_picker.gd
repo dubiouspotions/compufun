@@ -77,8 +77,8 @@ func close() -> void:
 
 
 ## Picks [param name], a flag name or the writer's words for one, as if picked in the list.
-func pick(name: String) -> void:
-	var clean := StringName(slug(name))
+func pick(fact_name: String) -> void:
+	var clean := StringName(slug(fact_name))
 	if clean == &"":
 		return
 	fact = clean

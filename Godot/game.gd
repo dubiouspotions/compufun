@@ -335,9 +335,9 @@ func customer_left() -> void:
 	if visitor_state not in [VisitorState.WALKING_OUT, VisitorState.OUTSIDE]:
 		push_error("Game.customer_left: no visitor is walking out (visitor state %s)" % VisitorState.find_key(visitor_state))
 		return
-	var call := conversation if phase == Phase.CALLING else null
+	var phone_call := conversation if phase == Phase.CALLING else null
 	_set_visitor(null, Visit.NONE)
-	conversation = call
+	conversation = phone_call
 	changed.emit()
 
 
@@ -1035,13 +1035,13 @@ func set_tested(job: Job) -> void:
 
 ## Starts a new CompuFunDB search for the symptom [param query], with the checks [param offered],
 ## none marked, and returns it.
-func search_db(query: String, offered: PackedStringArray) -> DbSearch:
+func search_db(query: String, offered_symptoms: PackedStringArray) -> DbSearch:
 	if query.is_empty():
 		push_error("Game.search_db: no symptom to search for")
 		return null
 	db_search = DbSearch.new()
 	db_search.query = query
-	db_search.offered.assign(offered)
+	db_search.offered.assign(offered_symptoms)
 	changed.emit()
 	return db_search
 
@@ -1364,27 +1364,27 @@ func restore(state: Dictionary) -> String:
 		var job_errand: Variant = _job_errand(data, number)
 		if job_errand is String:
 			return _refuse("job %d: %s" % [i, job_errand])
-		var owner: Customer = job_errand.customer
+		var errand_customer: Customer = job_errand.customer
 		var job_problem: Problem = job_errand.problem
 		if data.has("problem"):
 			var problem_path := PROBLEM_PATH % str(data["problem"])
 			job_problem = load(problem_path) as Problem if ResourceLoader.exists(problem_path) else null
 			if job_problem == null:
 				return _refuse("job %d: no problem at '%s'" % [i, problem_path])
-		if new_flags.has(gone_flag(owner)):
-			return _refuse("job %d: %s is gone for good (%s)" % [i, _who(owner), gone_flag(owner)])
+		if new_flags.has(gone_flag(errand_customer)):
+			return _refuse("job %d: %s is gone for good (%s)" % [i, _who(errand_customer), gone_flag(errand_customer)])
 		var slot := int(data.get("slot", i))
 		if slot < 0 or slot >= MAX_JOBS or slots.has(slot):
 			return _refuse("job %d: the slot %d is taken or not 0 to %d" % [i, slot, MAX_JOBS - 1])
 		slots.append(slot)
-		var job := Job.new(owner, job_problem, slot, int(data.get("order", i)))
+		var job := Job.new(errand_customer, job_problem, slot, int(data.get("order", i)))
 		job.errand = job_errand
 		job.hardware_fixed = bool(data.get("hardware_fixed", false))
 		if not bool(data.get("blocker", true)):
 			job.blocker = null
 		job.software_fixed = bool(data.get("software_fixed", false))
 		# The same visit as before keeps its broken running copy, which the player may have fixed since.
-		job.broken = jobs.any(func(j: Job) -> bool: return j.order == job.order and j.customer == owner and j.broken)
+		job.broken = jobs.any(func(j: Job) -> bool: return j.order == job.order and j.customer == errand_customer and j.broken)
 		job.powered = bool(data.get("powered", false))
 		job.cd_tray_open = bool(data.get("cd_tray_open", false))
 		if data.has("parts"):
@@ -1718,26 +1718,26 @@ static func _arrived(on_day: Day, count: int, who: Customer, with_flags: Diction
 ## for a job that names its "problem", an errand without a file or conversations.
 func _job_errand(data: Dictionary, number: int) -> Variant:
 	if data.has("errand"):
-		var name := str(data["errand"])
+		var errand_name := str(data["errand"])
 		for d: Day in week.days:
 			for each: Errand in d.errands:
-				if each.file_name() == name:
+				if each.file_name() == errand_name:
 					if data.has("customer") and each.customer.resource_path != str(data["customer"]):
-						return "the errand %s is %s's, not %s's" % [name, _who(each.customer), data["customer"]]
+						return "the errand %s is %s's, not %s's" % [errand_name, _who(each.customer), data["customer"]]
 					return each
-		return "the week has no errand %s" % name
-	var owner := _customer_at(str(data.get("customer", "")))
-	if owner == null:
+		return "the week has no errand %s" % errand_name
+	var customer := _customer_at(str(data.get("customer", "")))
+	if customer == null:
 		return "no customer at '%s'" % data.get("customer", "")
 	var theirs: Array[Errand] = []
 	for d: Day in week.days:
-		theirs.append_array(d.errands.filter(func(each: Errand) -> bool: return each.customer == owner and each.brings != Errand.Brings.NOTHING))
+		theirs.append_array(d.errands.filter(func(each: Errand) -> bool: return each.customer == customer and each.brings != Errand.Brings.NOTHING))
 	if theirs.is_empty() and data.has("problem"):
 		var stand_in := Errand.new()
-		stand_in.customer = owner
+		stand_in.customer = customer
 		return stand_in
 	if theirs.is_empty():
-		return "%s has no errand in the week that brings a computer, so name its problem" % _who(owner)
+		return "%s has no errand in the week that brings a computer, so name its problem" % _who(customer)
 	var before := theirs.filter(func(each: Errand) -> bool: return each.day_number() <= number)
 	return before.back() if not before.is_empty() else theirs.front()
 
@@ -1889,8 +1889,8 @@ func call_outs_of(who: Customer) -> CallOuts.Set:
 		return null
 	var part := StringName(String(Daypart.find_key(daypart)).to_lower())
 	var number := day.number if day != null else 1
-	for name: StringName in [StringName(_id_of(who)), CallOuts.EVERYONE]:
-		var outs: CallOuts = week.call_outs.get(name)
+	for outs_name: StringName in [StringName(_id_of(who)), CallOuts.EVERYONE]:
+		var outs: CallOuts = week.call_outs.get(outs_name)
 		var picked := outs.pick(number, flags, part) if outs != null else null
 		if picked != null:
 			return picked

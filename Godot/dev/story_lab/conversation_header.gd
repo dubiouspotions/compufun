@@ -53,8 +53,8 @@ func _ready() -> void:
 	_effect = OptionButton.new()
 	_effect.tooltip_text = "How every line of this conversation sounds, unless a line has its own effect"
 	_effect.add_item("None")
-	for name: String in LabUI.resource_names(EFFECTS_DIR):
-		_effect.add_item(name)
+	for effect_name: String in LabUI.resource_names(EFFECTS_DIR):
+		_effect.add_item(effect_name)
 	_effect.item_selected.connect(_set_effect)
 	plays.add_child(_effect)
 	add_child(plays)

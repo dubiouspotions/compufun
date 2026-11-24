@@ -196,8 +196,8 @@ func _add_job(errand: Errand) -> void:
 ## "0102_skater_bro: dust_overheat, leaves", for the lists of errands.
 static func _errand_text(errand: Errand) -> String:
 	var problem := String(errand.problem.short_name) if errand.problem != null else "no problem"
-	var name := errand.file_name() if errand.file != "" else errand.customer.spoken_name()
-	return "%s: %s, %s" % [name, problem, String(Errand.Brings.find_key(errand.brings)).to_lower()]
+	var label := errand.file_name() if errand.file != "" else errand.customer.spoken_name()
+	return "%s: %s, %s" % [label, problem, String(Errand.Brings.find_key(errand.brings)).to_lower()]
 
 
 func _remove_job(index: int) -> void:

@@ -271,11 +271,11 @@ func _draw_label(entry: Entry, font: Font, font_size: int, at: Vector2, color: C
 func _draw_banner() -> void:
 	var height := _rows.size.y
 	_rows.draw_rect(Rect2(0, 0, _BANNER_WIDTH, height), _palette.shadow_color)
-	var size := 16
+	var font_size := 16
 	_rows.draw_set_transform(Vector2(_BANNER_WIDTH - 5.0, height - 6.0), -PI / 2.0)
-	_rows.draw_string(_BOLD, Vector2.ZERO, "Windows", HORIZONTAL_ALIGNMENT_LEFT, -1, size, _palette.face_color)
-	var after := _BOLD.get_string_size("Windows", HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
-	_rows.draw_string(_BOLD, Vector2(after, 0), "95", HORIZONTAL_ALIGNMENT_LEFT, -1, size, _palette.highlight_color)
+	_rows.draw_string(_BOLD, Vector2.ZERO, "Windows", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, _palette.face_color)
+	var after := _BOLD.get_string_size("Windows", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	_rows.draw_string(_BOLD, Vector2(after, 0), "95", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, _palette.highlight_color)
 	_rows.draw_set_transform(Vector2.ZERO, 0.0)
 
 

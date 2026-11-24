@@ -172,8 +172,8 @@ func _button_hotspot(button: MeshInstance3D) -> Hotspot:
 	var hotspot := _HOTSPOT.instantiate() as Hotspot
 	hotspot.size = (button.mesh as BoxMesh).size * local.basis.get_scale() + Vector3(0.016, 0.024, 0.0)
 	hotspot.size.z = 0.05
-	var basis := local.basis.orthonormalized()
-	hotspot.transform = Transform3D(basis, local.origin + basis.z * hotspot.size.z / 2.0)
+	var axes := local.basis.orthonormalized()
+	hotspot.transform = Transform3D(axes, local.origin + axes.z * hotspot.size.z / 2.0)
 	add_child(hotspot)
 	return hotspot
 

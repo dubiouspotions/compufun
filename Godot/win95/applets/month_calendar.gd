@@ -30,6 +30,7 @@ func show_month(year: int, month: int, day: int) -> void:
 
 ## The number of days in [param month] (1 to 12) of [param year].
 static func days_in(year: int, month: int) -> int:
+	@warning_ignore("integer_division")
 	var next := {year = year + month / 12, month = month % 12 + 1, day = 1}
 	return Time.get_datetime_dict_from_unix_time(Time.get_unix_time_from_datetime_dict(next) - 86400).day
 
@@ -63,9 +64,11 @@ func _draw() -> void:
 		var color := get_theme_color("font_color", &"Label")
 		if day == _day:
 			var text_size := font.get_string_size(str(day), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+			@warning_ignore("integer_division")
 			var center := _cell_center(cell / 7 + 1, cell % 7)
 			draw_rect(Rect2((center - Vector2(text_size.x / 2.0 + 2.0, 6.0)).floor(), Vector2(text_size.x + 4.0, 13.0)), selection)
 			color = get_theme_color("font_color", &"IconLabelSelected")
+		@warning_ignore("integer_division")
 		_draw_centered(font, font_size, str(day), cell / 7 + 1, cell % 7, color)
 
 

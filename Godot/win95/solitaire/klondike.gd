@@ -26,6 +26,7 @@ func _init() -> void:
 
 
 static func suit(card: int) -> int:
+	@warning_ignore("integer_division")
 	return card / 13
 
 
@@ -38,9 +39,9 @@ static func is_red(card: int) -> bool:
 
 
 ## Shuffles a full deck with [param seed] and deals it: column i gets i + 1 cards, its top face up.
-func deal(seed: int) -> void:
+func deal(shuffle_seed: int) -> void:
 	var rng := RandomNumberGenerator.new()
-	rng.seed = seed
+	rng.seed = shuffle_seed
 	var deck: Array = range(52)
 	for i in range(51, 0, -1):
 		var j := rng.randi_range(0, i)

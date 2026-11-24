@@ -59,11 +59,12 @@ func fitting_font_size() -> int:
 
 # The largest font size, 1 to [param high], at which all texts fit a paper of [param paper] pixels,
 # wrapped to their boxes ([param wrap]) or in their lines.
-func _largest_fitting(paper: Vector2, wrap: bool, high: int) -> int:
+func _largest_fitting(paper: Vector2, wraps: bool, high: int) -> int:
 	var low := 1
 	while low < high:
+		@warning_ignore("integer_division")
 		var mid := (low + high + 1) / 2
-		if _labels().all(func(label: Label) -> bool: return _fits(label, mid, paper, wrap)):
+		if _labels().all(func(label: Label) -> bool: return _fits(label, mid, paper, wraps)):
 			low = mid
 		else:
 			high = mid - 1
@@ -71,10 +72,10 @@ func _largest_fitting(paper: Vector2, wrap: bool, high: int) -> int:
 
 
 # Measures from the anchors: the labels take the new size of this control only on the next frame.
-func _fits(label: Label, font_size: int, paper: Vector2, wrap: bool) -> bool:
+func _fits(label: Label, font_size: int, paper: Vector2, wraps: bool) -> bool:
 	var box := Vector2(label.anchor_right - label.anchor_left, label.anchor_bottom - label.anchor_top) * paper
 	var font := label.get_theme_font(&"font")
-	var text := font.get_multiline_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, box.x if wrap else -1.0, font_size)
+	var text := font.get_multiline_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, box.x if wraps else -1.0, font_size)
 	var lines := roundi(text.y / font.get_height(font_size))
 	var spacing := label.get_theme_constant(&"line_spacing") * (lines - 1)
 	return text.x <= box.x and text.y + spacing <= box.y

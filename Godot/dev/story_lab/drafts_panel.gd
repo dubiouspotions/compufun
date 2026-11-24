@@ -57,9 +57,9 @@ func _fill() -> void:
 	for path: String in paths:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
-		var name := LabUI.label(path.trim_prefix("res://story/"), 15)
-		name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(name)
+		var label := LabUI.label(path.trim_prefix("res://story/"), 15)
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(label)
 		var what := kind(_drafts, path)
 		row.add_child(LabUI.chip(what, {"new": LabUI.GOOD, "removed": LabUI.BAD, "changed": LabUI.CHANGED}[what], 12))
 		row.add_child(LabUI.label("from " + _drafts.start_commit(path).left(8), 12, LabUI.DIM))

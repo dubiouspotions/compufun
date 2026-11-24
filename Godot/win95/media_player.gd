@@ -157,6 +157,7 @@ func _show_state() -> void:
 
 
 static func _clock(seconds: float) -> String:
+	@warning_ignore("integer_division")
 	return "%d:%04.1f" % [int(seconds) / 60, fmod(seconds, 60.0)]
 
 

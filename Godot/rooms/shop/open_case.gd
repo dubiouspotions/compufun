@@ -692,15 +692,15 @@ func _screw(at: Vector3, unscrewing: bool) -> void:
 
 
 # Fades the screwdriver in (true) or out (false); faded out, it is gone.
-func _fade(show: bool) -> void:
+func _fade(shown: bool) -> void:
 	if _fading != null:
 		_fading.kill()
-	if show and not _driver.visible:
+	if shown and not _driver.visible:
 		_set_driver_alpha(0.0)
 		_driver.visible = true
 	_fading = create_tween()
-	_fading.tween_method(_set_driver_alpha, _driver_materials[0].albedo_color.a, 1.0 if show else 0.0, fade_seconds)
-	if not show:
+	_fading.tween_method(_set_driver_alpha, _driver_materials[0].albedo_color.a, 1.0 if shown else 0.0, fade_seconds)
+	if not shown:
 		_fading.tween_callback(func() -> void:
 			_driver.visible = false
 			if _bobbing != null:

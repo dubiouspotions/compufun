@@ -38,9 +38,9 @@ func show_send(drafts: StoryDrafts) -> void:
 
 ## The name that the issue gives the writer: git's user.name, or else the login.
 static func writer() -> String:
-	var name := GitHubIssues.git(["config", "user.name"])
-	if name != "unknown" and name != "":
-		return name
+	var user_name := GitHubIssues.git(["config", "user.name"])
+	if user_name != "unknown" and user_name != "":
+		return user_name
 	return OS.get_environment("USER") if OS.has_environment("USER") else OS.get_environment("USERNAME")
 
 

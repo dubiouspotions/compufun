@@ -279,40 +279,40 @@ class _Reader:
 
 	func errand() -> Parsed:
 		var result := Parsed.new()
-		var errand := Errand.new()
-		result.value = errand
+		var parsed := Errand.new()
+		result.value = parsed
 		var stem := _path.get_file().get_basename()
 		if RegEx.create_from_string("^[0-7][0-9][0-9][0-9]_[a-z0-9_]+$").search(stem) == null:
 			_error(0, "the file name must be <errand code>_<name>, such as 0101_skater_bro, not '%s'" % stem)
 		else:
-			errand.code = stem.substr(0, 4)
-			errand.file = _path
-			if errand.day_number() < 1 or errand.day_number() > 7 or errand.place() < 1:
-				_error(0, "errand code %s: the day must be 01 to 07 and the place 01 or more" % errand.code)
+			parsed.code = stem.substr(0, 4)
+			parsed.file = _path
+			if parsed.day_number() < 1 or parsed.day_number() > 7 or parsed.place() < 1:
+				_error(0, "errand code %s: the day must be 01 to 07 and the place 01 or more" % parsed.code)
 		var sections := _section_starts()
 		var header_end: int = sections[0] if not sections.is_empty() else _lines.size()
 		var fields := _read_fields(0, header_end, ["customer", "problem", "computer", "comes", "when", "brief"])
 		if not fields.has("customer"):
 			_error(0, "no 'customer:'")
 		else:
-			errand.customer = _load(CUSTOMERS_DIR, fields.customer, fields.customer_line, "customer") as Customer
+			parsed.customer = _load(CUSTOMERS_DIR, fields.customer, fields.customer_line, "customer") as Customer
 		if fields.has("problem"):
-			errand.problem = _problem(fields.problem, fields.problem_line)
+			parsed.problem = _problem(fields.problem, fields.problem_line)
 		if fields.has("computer"):
 			if BRINGS.has(fields.computer):
-				errand.brings = BRINGS[fields.computer]
+				parsed.brings = BRINGS[fields.computer]
 			else:
 				_error(fields.computer_line, "computer: '%s' is not leaves, none or shows" % fields.computer)
 		if fields.has("comes"):
 			if not COMES.has(fields.comes):
 				_error(fields.comes_line, "comes: '%s' is not after opening or before opening" % fields.comes)
-			elif COMES[fields.comes] and errand.code != "" and errand.place() != 1:
-				_error(fields.comes_line, "comes: before opening is only for the day's first errand (place 01), not %s" % errand.code)
+			elif COMES[fields.comes] and parsed.code != "" and parsed.place() != 1:
+				_error(fields.comes_line, "comes: before opening is only for the day's first errand (place 01), not %s" % parsed.code)
 			else:
-				errand.before_opening = COMES[fields.comes]
+				parsed.before_opening = COMES[fields.comes]
 		if fields.has("when"):
-			errand.when = _condition(fields.when, fields.when_line)
-		errand.brief = fields.get("brief", "")
+			parsed.when = _condition(fields.when, fields.when_line)
+		parsed.brief = fields.get("brief", "")
 		var counts: Dictionary[String, int] = {}
 		for i: int in sections.size():
 			var end: int = sections[i + 1] if i + 1 < sections.size() else _lines.size()
@@ -321,8 +321,8 @@ class _Reader:
 				continue
 			var name: String = TRIGGERS.find_key(c.trigger)
 			counts[name] = counts.get(name, 0) + 1
-			c.id = StringName("%s/%s/%d" % [errand.code, name, counts[name]])
-			errand.conversations.append(c)
+			c.id = StringName("%s/%s/%d" % [parsed.code, name, counts[name]])
+			parsed.conversations.append(c)
 		result.errors = _sorted_errors()
 		return result
 

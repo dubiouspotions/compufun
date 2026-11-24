@@ -86,6 +86,7 @@ func _line(from: Vector2i, to: Vector2i) -> void:
 	var steps := maxi(1, int(Vector2(to - from).length()))
 	for i in steps + 1:
 		var point := Vector2i(Vector2(from).lerp(Vector2(to), float(i) / steps))
+		@warning_ignore("integer_division")
 		_image.fill_rect(Rect2i(point - Vector2i(pen_size / 2, pen_size / 2), Vector2i(pen_size, pen_size)).intersection(Rect2i(Vector2i.ZERO, _image.get_size())), _color)
 	_texture.update(_image)
 	_drawn = true
