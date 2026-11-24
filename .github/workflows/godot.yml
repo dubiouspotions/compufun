@@ -120,6 +120,87 @@ jobs:
             Godot/voices/live/chimera_voice.wasm
           if-no-files-found: error
 
+  voice-release:
+    # The launchers download these zips (docs/building-and-testing.md, "Voices").
+    name: Live Voice Release
+    needs: [voice]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: live-voice-release
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: voice-*
+          path: artifacts
+      - name: Upload when the release is stale or this push changed the voice
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          paths=(native/chimera_voice tools/build-voice.sh)
+          want="$(git rev-parse HEAD:native/chimera_voice)"
+          git fetch -q origin main
+          for p in "${paths[@]}"; do
+            if [ "$(git rev-parse "origin/main:$p")" != "$(git rev-parse "HEAD:$p")" ]; then
+              echo "::notice::main has a newer $p; the run for that push uploads the live voice"
+              exit 0
+            fi
+          done
+          changed=false
+          if [ -n "${BEFORE:-}" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            git diff --quiet "$BEFORE" HEAD -- "${paths[@]}" || changed=true
+          fi
+          stale=false
+          mkdir -p current
+          for os in windows macos; do
+            have=""
+            if gh release download live-voice -R "$GITHUB_REPOSITORY" -p "live-voice-$os.zip" -D current --clobber; then
+              have="$(unzip -p "current/live-voice-$os.zip" voice-source.txt || true)"
+            fi
+            echo "live-voice-$os.zip on the release: built from '${have:-nothing}', this commit has $want"
+            [ "$have" = "$want" ] || stale=true
+          done
+          if [ "$changed" = false ] && [ "$stale" = false ]; then
+            echo "The live-voice release is up to date"
+            exit 0
+          fi
+          live=Godot/voices/live
+          for os in windows macos; do
+            case "$os" in
+              windows) lib=chimera_voice.windows.x86_64.dll ;;
+              macos) lib=libchimera_voice.macos.dylib ;;
+            esac
+            found=(artifacts/*/bin/"$lib")
+            [ -f "${found[0]}" ] || { echo "::error::no $lib in the voice artifacts:"; find artifacts -type f; exit 1; }
+            mkdir -p "$live/bin"
+            rm -f "$live"/bin/*
+            cp "${found[0]}" "$live/bin/"
+            bash tools/build-voice.sh list
+            echo "$want" > "$live/voice-source.txt"
+            (cd "$live" && zip -X "$RUNNER_TEMP/live-voice-$os.zip" "bin/$lib" chimera_voice.gdextension voice-source.txt)
+          done
+          gh release upload live-voice -R "$GITHUB_REPOSITORY" --clobber "$RUNNER_TEMP/live-voice-windows.zip" "$RUNNER_TEMP/live-voice-macos.zip"
+          gh release edit live-voice -R "$GITHUB_REPOSITORY" --title "Live voice" --notes "The live voice library (ChimeraVoice) for Windows and macOS, built by CI from native/chimera_voice $want. Play HumanError.bat and Play HumanError.app download it into Godot/voices/live/ when it is missing, or when native/chimera_voice has changed since it was built (voice-source.txt holds that tree's hash). By hand: unzip it into Godot/voices/live/."
+          for os in windows macos; do
+            rm -f "current/live-voice-$os.zip"
+            gh release download live-voice -R "$GITHUB_REPOSITORY" -p "live-voice-$os.zip" -D current
+            [ "$(unzip -p "current/live-voice-$os.zip" voice-source.txt)" = "$want" ] \
+              || { echo "::error::live-voice-$os.zip on the release does not hold voice-source.txt $want after the upload"; exit 1; }
+          done
+          echo "Uploaded live-voice-windows.zip and live-voice-macos.zip, built from native/chimera_voice $want"
+
   build:
     needs: [voice, version]
     # A push cancels an older push's export, not its voice jobs, so their Rust cache still fills.
