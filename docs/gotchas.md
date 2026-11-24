@@ -196,7 +196,10 @@ snap moves every vertex by up to half a pixel of the world buffer; on a counter 
 grazing angle that is about 1 cm of depth. Make a layer at least 1 cm thick, as the work mat is.
 A flat overlay in front of a surface, as the renderer has no decals, needs the same distance: the
 blood stains 0.8 mm in front of the organ computer's case walls didn't show at all, and showed at
-8 mm on the side walls and 2 cm on the back wall (`tools/make_organs.gd`). — 2026-11
+8 mm on the side walls and 2 cm on the back wall (`tools/make_organs.gd`). On a small thing held close
+to the camera no distance is small enough to look right: the floppy's label tore 0.4 mm above the
+disk in the hand. Paint such a layer into the surface's own texture, and a picture that changes per
+instance into psx_world's `overlay` (`props/floppy_disk.gd`). — 2026-11
 
 **A node with `psx_post` (or any canvas shader that writes `COLOR`) ignores its `modulate`, so a
 fade on it pops.** The modulate is in `COLOR` in `vertex()`; `fragment()` replaces it. `psx_post`

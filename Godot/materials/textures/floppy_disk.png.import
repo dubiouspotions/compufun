@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://df5gswnrn1k1t"
-path="res://.godot/imported/floppy_label.png-0156d16644270441258675fa35548f45.ctex"
+uid="uid://dhp4cnfaggdbu"
+path="res://.godot/imported/floppy_disk.png-e671534625f1f86d7af9a8e8aeabc2cb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://materials/textures/floppy_label.png"
-dest_files=["res://.godot/imported/floppy_label.png-0156d16644270441258675fa35548f45.ctex"]
+source_file="res://materials/textures/floppy_disk.png"
+dest_files=["res://.godot/imported/floppy_disk.png-e671534625f1f86d7af9a8e8aeabc2cb.ctex"]
 
 [params]
 

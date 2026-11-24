@@ -1,11 +1,10 @@
 [gd_resource type="ShaderMaterial" format=3]
 
 [ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="1_shader"]
-[ext_resource type="Texture2D" path="res://materials/textures/floppy_label.png" id="2_flag"]
+[ext_resource type="Texture2D" path="res://materials/textures/floppy_disk.png" id="2_disk"]
 
 [resource]
 render_priority = 0
 shader = ExtResource("1_shader")
-shader_parameter/albedo_texture = ExtResource("2_flag")
+shader_parameter/albedo_texture = ExtResource("2_disk")
 shader_parameter/albedo_color = Color(1, 1, 1, 1)
-shader_parameter/fill_transparent = true

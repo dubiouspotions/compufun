@@ -26,6 +26,12 @@ uniform bool tint_from_texture = false;
 uniform float edge_fade : hint_range(0.0, 0.5) = 0.0;
 /** On: the transparent parts of the texture show the picked colour. */
 uniform bool fill_transparent = false;
+/** A picture painted over the texture inside overlay_rect (x, y, width, height in the texture's UV;
+ * a negative width or height mirrors it), such as the print on a floppy's label. Its transparent
+ * parts show the texture. Painted in the same surface, it can't z-fight as a decal would. */
+uniform bool overlay = false;
+uniform sampler2D overlay_texture : source_color, filter_nearest_mipmap;
+uniform vec4 overlay_rect = vec4(0.0, 0.0, 1.0, 1.0);
 
 varying vec2 plain_uv;
 varying vec3 affine_uv;
@@ -124,6 +130,13 @@ void fragment() {
 	if (edge_fade > 0.0) {
 		float edge = min(min(uv.x, 1.0 - uv.x), uv.y);
 		color = mix(picked, color, smoothstep(0.0, edge_fade, edge) * step(uv.y, 1.0));
+	}
+	if (overlay) {
+		vec2 o = (uv - overlay_rect.xy) / overlay_rect.zw;
+		if (o.x >= 0.0 && o.x < 1.0 && o.y >= 0.0 && o.y < 1.0) {
+			vec4 painted = texture(overlay_texture, o);
+			color = mix(color, painted.rgb * albedo_color.rgb, step(0.5, painted.a));
+		}
 	}
 	if (vertex_color_fade) {
 		color = mix(COLOR.rgb, color, COLOR.a);
