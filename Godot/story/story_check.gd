@@ -117,7 +117,8 @@ static func _sign_start(week: StoryFiles.Week, where: String) -> Dictionary:
 ## dialogue box), a look that is not in DialogueLine.LOOKS or that never turns the view (on a
 ## [leaving] line or the phone), a problem without repair mechanics (no res://problems/<id>.tres, or one
 ## that fails Problem.has_repair_mechanics), a problem file
-## that no errand names, and a call-out whose mood or voice mood has no voice.
+## that no errand names, a call-out whose mood or voice mood has no voice, and keywords for a symptom
+## that no problem lists.
 static func missing_links(week: StoryFiles.Week) -> PackedStringArray:
 	var found := PackedStringArray()
 	var index := flag_index(week)
@@ -152,6 +153,13 @@ static func missing_links(week: StoryFiles.Week) -> PackedStringArray:
 	for id: StringName in week.problems:
 		if not named.has(id):
 			found.append("%s%s.problem: no errand names the problem %s." % [StoryFiles.PROBLEMS_DIR, id, id])
+	var symptoms := {}
+	for problem: Problem in week.problems.values():
+		for symptom: String in problem.symptoms:
+			symptoms[symptom] = true
+	for symptom: String in week.keywords:
+		if not symptoms.has(symptom):
+			found.append("%s: keywords for '%s', which no problem lists as a symptom." % [StoryFiles.KEYWORDS_PATH, symptom])
 	return found
 
 

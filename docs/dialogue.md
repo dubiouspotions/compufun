@@ -14,6 +14,7 @@ story/errands/0101_skater_bro.errand  one visit: who, which problem, the brief, 
 story/problems/dust_overheat.problem  one computer problem's text: the post-it, symptoms, steps, notes
 story/callouts/everyone.callouts      what every customer calls out while they wait
 story/callouts/skater_bro.callouts    what one customer calls out instead, by day, daypart or flags
+story/symptoms.keywords               the words that also find each symptom in CompuFunDB's search
 story/bible/storyline.md              prose that the game doesn't read: the lore, the end, the cast
 story/bible/customers.md
 ```
@@ -156,6 +157,20 @@ in its `.tres`: CompuFunDB finds nothing for its symptoms. With
 `empty_case = true`, as `no_parts` has, the computer comes with every place empty and runs anyway;
 taking the side panel off and putting it back on with its screws in is the repair, and the case
 stays empty.
+
+## Symptom keywords: `story/symptoms.keywords`
+
+CompuFunDB's search finds a symptom when its name and its keywords together hold every word that
+the player typed. One line per symptom, the symptom exactly as the problem files spell it:
+
+```
+Computer runs hot: heat, warm, overheating, temperature, fan
+No sound: audio, speaker, silent, mute, volume, quiet
+```
+
+A symptom without a line is found by its name alone. A line for a symptom that no problem lists is
+in the story check. The Story Lab's Keywords tab edits the file, and adds a line for each symptom
+that has none.
 
 ## Call-outs: `story/callouts/<customer>.callouts`
 

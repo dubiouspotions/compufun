@@ -60,6 +60,27 @@ static func parse_call_outs(text: String, path: String) -> Parsed:
 	return _Reader.new(text, path).call_outs()
 
 
+## Reads the symptoms' search keywords in [param text] (story/symptoms.keywords: one
+## "Symptom: word, word" per line; blank lines are skipped) into [param into], symptom to keywords.
+## Returns the errors, which name [param path] and the line.
+static func parse_keywords(text: String, path: String, into: Dictionary[String, PackedStringArray]) -> PackedStringArray:
+	var errors := PackedStringArray()
+	var lines := text.split("\n")
+	for i: int in lines.size():
+		var line := lines[i].strip_edges()
+		if line == "":
+			continue
+		var colon := line.find(":")
+		var symptom := line.substr(0, colon).strip_edges() if colon > 0 else ""
+		if symptom == "":
+			errors.append("%s:%d: not 'Symptom: word, word': %s" % [path, i + 1, line])
+		elif into.has(symptom):
+			errors.append("%s:%d: '%s' has keywords on an earlier line too" % [path, i + 1, symptom])
+		else:
+			into[symptom] = PackedStringArray(Array(line.substr(colon + 1).split(",")).map(func(word: String) -> String: return word.strip_edges()).filter(func(word: String) -> bool: return word != ""))
+	return errors
+
+
 ## The day in [param text], read from [param path] (story/days/day_<n>.day).
 static func parse_day(text: String, path: String) -> Parsed:
 	return _Reader.new(text, path).day()

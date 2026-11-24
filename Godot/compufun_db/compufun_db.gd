@@ -230,14 +230,16 @@ func _add_steps(entries: Array[Dictionary], title: String, steps: PackedStringAr
 	return number
 
 
-# The symptoms that hold every word of [param text], whatever the case; none for no words.
+# The symptoms whose text and keywords (story/symptoms.keywords) hold every word of [param text],
+# whatever the case; none for no words.
 func _found(text: String) -> PackedStringArray:
 	var words := text.to_lower().split(" ", false)
 	var found: PackedStringArray = []
 	if words.is_empty():
 		return found
+	var keywords: Dictionary[String, PackedStringArray] = Game.week.keywords if Game.week != null else {}
 	for symptom: String in _symptoms:
-		var lower := symptom.to_lower()
+		var lower := (symptom + " " + " ".join(keywords.get(symptom, PackedStringArray()))).to_lower()
 		if Array(words).all(func(word: String) -> bool: return lower.contains(word)):
 			found.append(symptom)
 	return found
