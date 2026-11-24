@@ -100,7 +100,7 @@ var _cd_drives: Array[Node] = []
 @onready var _screwdriver: Node3D = %Screwdriver
 @onready var _screwdriver_outline: Sprite3D = %ScrewdriverOutline
 @onready var _screwdriver_hotspot: Hotspot = %ScrewdriverHotspot
-# Plays the sound of a part in the computer that has one (Part.sound), such as a heart.
+# Plays the sound of a part in the running computer that has one (Part.sound), such as a heart.
 @onready var _part_sound: Hum = %PartSound
 # Plays instead of the fans while the computer runs with a part that has one (Part.running_sound).
 @onready var _running_sound: Hum = %RunningSound
@@ -281,7 +281,7 @@ func _churn() -> void:
 
 
 func _sync_part_sound() -> void:
-	_play_part_sound(_part_sound, &"sound", true)
+	_play_part_sound(_part_sound, &"sound", powered)
 	_tower.fans_heard = not _play_part_sound(_running_sound, &"running_sound", powered)
 
 

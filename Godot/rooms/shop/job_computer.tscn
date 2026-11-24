@@ -112,7 +112,7 @@ size = Vector3(0.17, 0.03, 0.04)
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
 script = ExtResource("hum")
-volume_db = -14.0
+volume_db = -24.0
 unit_size = 1.5
 from_clock = true
 

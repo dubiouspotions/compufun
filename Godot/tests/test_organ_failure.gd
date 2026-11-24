@@ -32,6 +32,23 @@ func run() -> void:
 	check("an organ in every place", inside, ORGANS)
 	check("it works as he brings it: fixed, the memory test passes", [job.hardware_fixed, job.fixed, job.memory_fails(), game.can_power_on(job)], [true, true, false, true])
 	check("not replaced", game.flag(REPLACED), 0)
+
+	# The heart beats and the lungs wheeze only while it runs.
+	await process_frame  # the root enters the tree
+	var computer: Node3D = (load("res://rooms/shop/job_computer.tscn") as PackedScene).instantiate()
+	computer.set(&"job", job)
+	root.add_child(computer)
+	await process_frame
+	var beat: Hum = computer.get_node(^"%PartSound")
+	var wheeze: Hum = computer.get_node(^"%RunningSound")
+	check("off: no heartbeat, no wheeze", [beat.on, wheeze.on], [false, false])
+	game.set_powered(job, true)
+	computer.set(&"powered", job.powered)
+	check("on: the heart beats and the lungs wheeze", [beat.on, beat.stream, wheeze.on, wheeze.stream], [true, heart.sound, true, Part.named(&"lungs").running_sound])
+	game.set_powered(job, false)
+	computer.set(&"powered", job.powered)
+	check("off again: both stop", [beat.on, beat.playing, wheeze.on, wheeze.playing], [false, false, false, false])
+	computer.free()
 	game.set_tested(job)
 	check("tested is done: the player can call him", job.done, true)
 
