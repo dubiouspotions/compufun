@@ -38,6 +38,7 @@ var _holding: bool = false
 var _playing: bool = false
 var _was_paused: bool = false
 var _was_low_processor: bool = false
+var _was_low_processor_sleep: int = 0
 ## The game's viewports that stopped drawing while the Lab shows, with the update mode each had.
 var _frozen: Dictionary[SubViewport, SubViewport.UpdateMode] = {}
 ## The canvas items below the Lab that the renderer hides while it shows; their nodes stay visible.
@@ -501,7 +502,9 @@ func _freeze_game(on: bool) -> void:
 				viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 		_cover_game()
 		_was_low_processor = OS.low_processor_usage_mode
+		_was_low_processor_sleep = OS.low_processor_usage_mode_sleep_usec
 		OS.low_processor_usage_mode = true
+		OS.low_processor_usage_mode_sleep_usec = 16667  # one display frame: the default 6.9 ms runs the idle loop 145 times a second
 		return
 	for viewport: Variant in _frozen:
 		if is_instance_valid(viewport):
@@ -512,6 +515,7 @@ func _freeze_game(on: bool) -> void:
 			RenderingServer.canvas_item_set_visible((item as CanvasItem).get_canvas_item(), (item as CanvasItem).visible)
 	_covered.clear()
 	OS.low_processor_usage_mode = _was_low_processor
+	OS.low_processor_usage_mode_sleep_usec = _was_low_processor_sleep
 
 
 # Hides from the renderer what draws below the Lab, without hiding the nodes, which the game reads:

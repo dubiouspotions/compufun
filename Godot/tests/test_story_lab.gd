@@ -34,6 +34,7 @@ func run() -> void:
 	drafts.put(ERRANDS + "0701_hat_guy.errand", "customer: hat_guy\n")
 	drafts.put(ERRANDS + "0702_young_entrepreneur.errand", "customer: young_entrepreneur\nwhen: not gone_young_entrepreneur\n")
 	drafts.put(ERRANDS + "0702_retired_accountant.errand", "customer: retired_accountant\n")
+	var idle_sleep := OS.low_processor_usage_mode_sleep_usec
 	var world := SubViewport.new()
 	world.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	root.add_child(world)
@@ -46,8 +47,9 @@ func run() -> void:
 	check("the shown Lab freezes the game's viewports and draws only on a change, and hides no game node",
 			[world.render_target_update_mode, OS.low_processor_usage_mode, game_ui.visible], [SubViewport.UPDATE_DISABLED, true, true])
 	lab.hide()
-	check("the hidden Lab lets the game draw again",
-			[world.render_target_update_mode, OS.low_processor_usage_mode], [SubViewport.UPDATE_ALWAYS, false])
+	check("the hidden Lab lets the game draw again, with its own idle sleep",
+			[world.render_target_update_mode, OS.low_processor_usage_mode, OS.low_processor_usage_mode_sleep_usec],
+			[SubViewport.UPDATE_ALWAYS, false, idle_sleep])
 	lab.show()
 	world.queue_free()
 	game_ui.queue_free()
