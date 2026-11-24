@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## The dialogue box plays a conversation from a story file (with the fades off): a click finishes a
-## line, then goes on; under the last line it shows the choices, a pick plays the reply, a + reply
-## returns to its list, a deeper list goes back up, and the leave button goes on below the list.
+## line, then goes on; 48 px under the last line it shows the choices, a pick plays the reply, a +
+## reply returns to its list, a deeper list goes back up, and the leave button goes on below the list.
 
 const ERRAND := """customer: skater_bro
 
@@ -40,6 +40,9 @@ func run() -> void:
 	check("no choices while the customer talks", buttons(box), [])
 	await settle(box)
 	check("under the last line: the choices and the leave button", [text(box), buttons(box)], ["Hi.", ["> How long?", "> Why?", "> That's all, thanks."]])
+	await process_frame
+	var gap: float = (box.get_node("%Choices") as Control).get_global_rect().position.y - (box.get_node("%LineLabel") as Control).get_global_rect().end.y
+	check("the choices stand 48 px below the line", gap, 48.0)
 	click(box)
 	check("a click doesn't skip the choices", buttons(box).size(), 3)
 	press(box, 0)
