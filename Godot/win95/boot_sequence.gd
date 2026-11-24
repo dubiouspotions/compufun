@@ -97,7 +97,7 @@ var _unshown: Dictionary[CanvasItem, Color] = {}
 ## The running computer whose Win95Setup keeps the BIOS Setup choices (Win95Setup.cmos) and clock;
 ## win95.gd sets it. null, as on the work computer, keeps them until the boot ends.
 var computer: ComputerState
-## True from the POST's first line to its end: DEL then opens BIOS Setup.
+## True from power-on to the POST's end: DEL then opens BIOS Setup.
 var _in_post: bool = false
 ## DEL was pressed during the POST: BIOS Setup opens once the POST has finished, as on a real board.
 var _entering_setup: bool = false
@@ -196,10 +196,9 @@ func _run_post() -> void:
 	_energy_star.hide()
 	_footer.hide()
 	_post.text = "\n".join(video_bios_lines)
-	if not await _wait(warm_up_seconds):
-		return
 	_in_post = true
-	await _post_lines()
+	if await _wait(warm_up_seconds):
+		await _post_lines()
 	_in_post = false
 
 
