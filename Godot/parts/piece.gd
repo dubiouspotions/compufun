@@ -10,12 +10,16 @@ var broken: bool = false
 ## True for a piece from a box in the storage that has never been in a computer: only such a piece
 ## can go back into its box.
 var unused: bool = false
+## True for a working piece that the customer wants out of the computer (Problem.unwanted_part): it
+## runs and looks like any other, but a computer with it in isn't fixed (Job.hardware_fixed).
+var unwanted: bool = false
 
 
-func _init(piece_part: Part, piece_broken: bool = false, piece_unused: bool = false) -> void:
+func _init(piece_part: Part, piece_broken: bool = false, piece_unused: bool = false, piece_unwanted: bool = false) -> void:
 	part = piece_part
 	broken = piece_broken
 	unused = piece_unused
+	unwanted = piece_unwanted
 
 
 ## A new instance of the part's [member Part.model], its Broken child shown only when this piece is

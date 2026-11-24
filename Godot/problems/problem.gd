@@ -14,6 +14,10 @@ enum Location { HARDWARE, SOFTWARE, BOTH }
 ## The part that is broken, for a hardware problem: the player must replace it. null for a
 ## software problem.
 @export var broken_part: Part
+## A part that works but that the customer wants out, as the top hat man's hard drive: its piece in
+## the computer runs and looks like any other ([member Piece.unwanted]), and the hardware is fixed only
+## once a new piece is in its place. null for none.
+@export var unwanted_part: Part
 ## Something in the computer that doesn't belong there, such as a hamster on the fan: a Part that no
 ## place takes, lying on the part that it sits on, which doesn't come out until it is out. The
 ## hardware is fixed only once it is out. null for none.
@@ -112,8 +116,8 @@ func take_text(from: Problem) -> void:
 	notes = from.notes
 
 
-## True when the .tres sets something that the player repairs: a broken part, a software check, a
-## blocker, a missing or misplaced part, stand-ins, or an empty case. A problem without any is text
+## True when the .tres sets something that the player repairs: a broken or unwanted part, a software
+## check, a blocker, a missing or misplaced part, stand-ins, or an empty case. A problem without any is text
 ## that writers named before a developer built it.
 func has_repair_mechanics() -> bool:
-	return broken_part != null or software_check != null or blocker != null or missing_part != null or not misplaced.is_empty() or not stand_ins.is_empty() or empty_case
+	return broken_part != null or unwanted_part != null or software_check != null or blocker != null or missing_part != null or not misplaced.is_empty() or not stand_ins.is_empty() or empty_case

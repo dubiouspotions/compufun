@@ -409,7 +409,7 @@ func _tick_printout() -> void:
 			_fail("line %d of the printout won't tick" % line)
 
 
-# Lays the computer down, opens it, replaces every broken piece (and takes out what is in the way),
+# Lays the computer down, opens it, replaces every broken or unwanted piece (and takes out what is in the way),
 # closes it and stands it up: what the clicks in the Workview do.
 func _repair_hardware(job: Job) -> void:
 	game.focus_job(job)
@@ -425,7 +425,7 @@ func _repair_hardware(job: Job) -> void:
 		_fail("what lies in the way (%s) won't come out" % job.blocker.part.id())
 		return
 	for place: Part in Part.every():
-		if job.piece(place) != null and job.piece(place).broken:
+		if job.piece(place) != null and (job.piece(place).broken or job.piece(place).unwanted):
 			_replace(job, place)
 	_rearrange(job)
 	if not game.open_case(job, false):
@@ -465,7 +465,7 @@ func _replace(job: Job, place: Part) -> void:
 			_fail("%s, on top of %s, won't come out" % [other.id(), place.id()])
 			return
 	if not (game.take_part(job, place) and game.trash_part()):
-		_fail("the broken %s won't come out" % place.id())
+		_fail("the broken or unwanted %s won't come out" % place.id())
 		return
 	if not (game.take_new_part(place.piece_part()) and game.put_part(job, place)):
 		_fail("a new %s won't go in" % place.piece_part().id())

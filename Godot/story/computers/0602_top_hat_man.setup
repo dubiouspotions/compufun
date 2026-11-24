@@ -1,0 +1,59 @@
+# PLACEHOLDER writer text (#337): the files and mails below are drafts for the writers to rewrite.
+# Day 6 (Wednesday, June 5, 1996): his drive holds proof of embezzlement and mails about economic
+# crimes; that is why he wants it replaced and the old one thrown away.
+
+file C:\My Documents\LEDGER2.TXT
+	icon: res://win95/theme/icons/document_text_32.png
+	modified: Monday, June 3, 1996 11:42:10 PM
+	contents:
+		SECOND LEDGER - DO NOT PRINT
+
+		date      from               to           amount
+		--------  -----------------  -----------  ---------
+		04/02/96  pension fund       account 7      120,000
+		04/30/96  pension fund       account 7       95,000
+		05/28/96  charity gala fund  account 7       40,000
+
+		The official books show these as "consulting".
+
+file C:\My Documents\TODO.TXT
+	icon: res://win95/theme/icons/document_text_32.png
+	modified: Tuesday, June 4, 1996 8:15:33 AM
+	contents:
+		- shred the Q1 statements
+		- auditors on the 14th
+		- new hard drive. Small shop, out of the way. Old one in the TRASH.
+
+mail
+	from: R. <r@accounts.example>
+	to: Cole Vanderbilt <cole@vanderbilt.example>
+	subject: The second set of books
+	sent: 1996-06-03 17:20
+	read: true
+	body:
+		Cole,
+
+		The auditors come on the 14th. The pension fund transfers can't show by then.
+		Move what is left to account 7 before Friday, and get rid of everything on paper.
+
+		R.
+
+mail
+	from: Cole Vanderbilt <cole@vanderbilt.example>
+	to: R. <r@accounts.example>
+	subject: Re: The second set of books
+	sent: 1996-06-03 22:05
+	folder: sent
+	read: true
+	body:
+		Done. Paper goes tonight. I will deal with the computer myself.
+
+mail
+	from: The board <board@vanderbilt.example>
+	to: Cole Vanderbilt <cole@vanderbilt.example>
+	subject: Questions about the pension fund
+	sent: 1996-06-04 09:12
+	body:
+		Mr. Vanderbilt,
+
+		Several members have asked why the pension fund is short. We expect an answer at the meeting.

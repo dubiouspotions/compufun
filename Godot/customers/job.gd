@@ -42,11 +42,12 @@ enum Fault { NONE, NO_CPU, NO_MEMORY, NO_VIDEO }
 const PANEL_SCREWS: int = 2
 ## The screws of the side panel: true while it is in. The panel comes off only when all are out.
 var panel_screws: Array[bool] = []
-## True when every place holds a piece, none is broken, nothing is in the way ([member blocker]) or
+## True when every place holds a piece, none is broken or unwanted, nothing is in the way ([member blocker]) or
 ## misplaced, and the side panel is on with its screws in. For an empty case (Problem.empty_case):
 ## when the panel is on with its screws in and [member was_opened], whatever the places hold.
 ## Setting it is for restore, the presets and the debug menu: true repairs the computer, false
-## breaks the problem's part again, in a random place when several take it.
+## breaks the problem's part again (or puts its unwanted piece back), in a random place when several
+## take it.
 var hardware_fixed: bool:
 	get:
 		if case_open or panel_screws.has(false) or blocker != null or not misplaced.is_empty():
@@ -54,7 +55,7 @@ var hardware_fixed: bool:
 		if runs_empty():
 			return was_opened
 		for part: Part in Part.every():
-			if not places.has(part) or places[part].broken:
+			if not places.has(part) or places[part].broken or places[part].unwanted:
 				return false
 		return true
 	set(value):
@@ -179,16 +180,16 @@ func memory_fails() -> bool:
 
 
 # Puts a piece in every place. When [param break_part] is true, the problem's broken part breaks,
-# in one random place of those that take it, so the player can't learn which; its missing part and
+# in one random place of those that take it, so the player can't learn which, and its unwanted part
+# is unwanted in the same way; its missing part and
 # its misplaced pieces leave their places (see Problem.missing_part, Problem.misplaced), and its
 # stand-ins take the places of the parts that they pose as, in their order, one per place while
 # they last. An empty case (Problem.empty_case) ends with every place empty, broken or repaired.
 func _fill(break_part: bool) -> void:
 	places.clear()
 	misplaced.clear()
-	var broken_part: Part = problem.broken_part if problem != null else null
-	var takers := Part.every().filter(func(place: Part) -> bool: return place.piece_part() == broken_part)
-	var bad: Part = takers.pick_random() if break_part and not takers.is_empty() else null
+	var bad: Part = Job._random_place(problem.broken_part) if break_part and problem != null else null
+	var unwanted: Part = Job._random_place(problem.unwanted_part) if break_part and problem != null else null
 	var stand_ins: Array[Part] = problem.stand_ins if break_part and problem != null else ([] as Array[Part])
 	var used: Array[Part] = []
 	for place: Part in Part.every():
@@ -196,7 +197,7 @@ func _fill(break_part: bool) -> void:
 		var unused := standing_in.filter(func(each: Part) -> bool: return each not in used)
 		var piece_part: Part = unused[0] if not unused.is_empty() else standing_in[0] if not standing_in.is_empty() else place.piece_part()
 		used.append(piece_part)
-		places[place] = Piece.new(piece_part, place == bad)
+		places[place] = Piece.new(piece_part, place == bad, false, place == unwanted)
 	blocker = Piece.new(problem.blocker, false) if break_part and problem != null and problem.blocker != null else null
 	panel_screws.assign(Job.all_in(PANEL_SCREWS))
 	if break_part and problem != null:
@@ -210,6 +211,12 @@ func _fill(break_part: bool) -> void:
 				push_error("Job: %s puts %s on %s, whose own piece is still in" % [problem.resource_path, misplaced[lies_on].part.id(), lies_on.id()])
 	if runs_empty():
 		places.clear()
+
+
+# One random place of those that take [param part]; null for null or a part that no place takes.
+static func _random_place(part: Part) -> Part:
+	var takers := Part.every().filter(func(place: Part) -> bool: return part != null and place.piece_part() == part)
+	return takers.pick_random() if not takers.is_empty() else null
 
 
 # Empties the first place that holds a piece of [param part]; false, with an error, when none does.
@@ -284,11 +291,12 @@ static func _by_place(pieces: Dictionary[Part, Piece]) -> Dictionary[String, Str
 
 
 ## [param pieces] as plain data: "<part id>" for a working piece, "<part id>!" for a broken one,
-## "<part id>+" for an unused one (see [member Piece.unused]).
+## "<part id>+" for an unused one (see [member Piece.unused]), "<part id>~" for an unwanted one (see
+## [member Piece.unwanted]).
 static func pieces_data(pieces: Array) -> Array[String]:
 	var data: Array[String] = []
 	for each: Piece in pieces:
-		data.append(String(each.part.id()) + ("!" if each.broken else "+" if each.unused else ""))
+		data.append(String(each.part.id()) + ("!" if each.broken else "+" if each.unused else "~" if each.unwanted else ""))
 	return data
 
 
@@ -297,10 +305,10 @@ static func pieces_from(data: Array) -> Variant:
 	var pieces: Array[Piece] = []
 	for entry: Variant in data:
 		var text := str(entry)
-		var part_id := StringName(text.trim_suffix("!").trim_suffix("+"))
+		var part_id := StringName(text.trim_suffix("!").trim_suffix("+").trim_suffix("~"))
 		var part := Part.named(part_id)
 		if part == null:
 			return "no part '%s'" % part_id
-		pieces.append(Piece.new(part, text.ends_with("!"), text.ends_with("+")))
+		pieces.append(Piece.new(part, text.ends_with("!"), text.ends_with("+"), text.ends_with("~")))
 	return pieces
 

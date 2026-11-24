@@ -127,6 +127,9 @@ bullets or other separators, so that tools can parse every glossary the same way
 
 **Missing part**: A part that the customer took out: one place that takes it starts empty, and the player takes a new one from the storage (`Problem.missing_part`).
 
+**Unwanted piece**: A working piece that the customer wants out of the computer, as the top hat man's hard drive: it runs and looks like any other, but the computer is fixed only once a new piece is in its place (`Problem.unwanted_part`, `Piece.unwanted`).
+*Avoid:* old part, evidence drive.
+
 **Empty case**: A haunted computer with every place empty that runs anyway, as the hat guy's does on day 7 (`Problem.empty_case`, problem `no_parts`). Taking the side panel off and putting it back on fixes its hardware; the case stays empty.
 *Avoid:* haunted case, hollow case.
 

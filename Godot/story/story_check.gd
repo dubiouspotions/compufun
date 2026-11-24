@@ -231,7 +231,7 @@ static func _check_errand(errand: Errand, found: PackedStringArray) -> void:
 	if problem != null and not problem.resource_path.ends_with(".tres"):
 		found.append("%s names the problem %s, which has no repair mechanics: no %s%s.tres." % [errand.file, problem.short_name, StoryFormat.PROBLEMS_DIR, problem.short_name])
 	elif problem != null and not problem.has_repair_mechanics():
-		found.append("%s names the problem %s, which has no repair mechanics: no broken_part, software_check, blocker, missing_part, misplaced, stand_ins or empty_case." % [errand.file, problem.resource_path])
+		found.append("%s names the problem %s, which has no repair mechanics: no broken_part, unwanted_part, software_check, blocker, missing_part, misplaced, stand_ins or empty_case." % [errand.file, problem.resource_path])
 
 
 static func _check_choices(reply: Reply, where: String, found: PackedStringArray) -> void:

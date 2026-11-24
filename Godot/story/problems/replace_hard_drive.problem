@@ -1,0 +1,22 @@
+post-it: Replace the hard drive
+cause: Hard drive the customer wants replaced
+symptoms:
+	Wants the hard drive replaced
+checks:
+	yes: Windows starts
+	yes: Memory test passes
+	yes: Windows stays up after the desktop appears
+	no: Bluescreen after the desktop appears
+	no: Freezes with a buzz after the desktop appears
+	no: Stops at "Non-System disk or disk error"
+	yes: CPU fan is clean and spins freely
+	yes: Every part sits in its own place
+hardware steps:
+	Open case
+	Take out the old hard drive
+	Fit a new hard drive
+	Close case
+	Switch it on and check that Windows starts
+notes:
+	PLACEHOLDER text (#337) for the writers: the post-it, cause, symptom and steps.
+	Nothing is wrong with the drive. The top hat man wants it gone because it holds evidence of his economic crimes (story/computers/0602_top_hat_man.setup). The job is fixed once a new drive is in; the old one can go in the trash or stay on the mat.

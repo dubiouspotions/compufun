@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="Problem" format=3]
+
+[ext_resource type="Script" path="res://problems/problem.gd" id="1_problem"]
+[ext_resource type="Resource" path="res://parts/hard_drive.tres" id="2_hard_drive"]
+
+[resource]
+script = ExtResource("1_problem")
+short_name = &"replace_hard_drive"
+unwanted_part = ExtResource("2_hard_drive")
