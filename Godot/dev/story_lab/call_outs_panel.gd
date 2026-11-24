@@ -41,7 +41,7 @@ func path() -> String:
 
 ## Opens the call-outs of [param name]: a customer's file name, or CallOuts.EVERYONE.
 func open(outs_name: StringName) -> void:
-	_settle_now()
+	save_now()
 	_path = "%s%s.callouts" % [StoryFiles.CALL_OUTS_DIR, outs_name]
 	var everyone := outs_name == CallOuts.EVERYONE
 	_title.text = "Everyone" if everyone else _spoken(outs_name)
@@ -86,7 +86,8 @@ func _spoken(outs_name: StringName) -> String:
 	return customer.spoken_name()
 
 
-func _settle_now() -> void:
+## Saves at once the edit that waits for the typing to settle.
+func save_now() -> void:
 	if _settle != null and not _settle.is_stopped():
 		_settle.stop()
 		_save()

@@ -32,11 +32,16 @@ func _ready() -> void:
 	_build()
 
 
-## Opens day [param number]'s file [param path] with [param text].
-func show_day(path: String, day_text: String) -> void:
+## Saves at once the edit that waits for the typing to settle.
+func save_now() -> void:
 	if _settle != null and not _settle.is_stopped():
 		_settle.stop()
 		_apply()
+
+
+## Opens day [param number]'s file [param path] with [param text].
+func show_day(path: String, day_text: String) -> void:
+	save_now()
 	_path = path
 	var parsed := StoryFormat.parse_day(day_text, path)
 	var day := parsed.value as Day

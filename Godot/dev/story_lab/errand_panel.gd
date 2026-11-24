@@ -2,11 +2,14 @@ class_name StoryErrandPanel
 extends HBoxContainer
 ## The Story Lab's picked errand: on the left who comes and why (the brief, the problem, the
 ## computer, the condition), on the right a tab per conversation, as a graph or as text. Each edit
-## that parses is a new text of the whole file, which [signal saved] hands up; an edit with errors
-## stays here, marked, and the file keeps its last good text.
+## that parses is a new text of the whole file, which [signal saved] hands up. An edit with errors stays marked, and the file keeps its last good text;
+## [signal unfinished_changed] hands up the writer's text, so that it outlives a quit.
 
 ## [param text], which parses, is the new text of the errand file [param path].
 signal saved(path: String, text: String)
+## The unfinished text of the errand file [param path] changed: [param text] is the last good text
+## with every conversation that doesn't parse yet as the writer has it; "" when none is left.
+signal unfinished_changed(path: String, text: String)
 ## The writer asked to remove the errand file [param path].
 signal remove_requested(path: String)
 ## The writer asked to edit the problem [param id] in the Problems section.
@@ -60,6 +63,8 @@ var _errand: Errand
 var _tab: int = 0
 ## Conversation index to the text of its section that doesn't parse yet.
 var _pending: Dictionary[int, String] = {}
+# The unfinished text as last handed up.
+var _kept: String = ""
 var _view: String = ""
 var _filling: bool = false
 var _remove_armed: bool = false
@@ -102,20 +107,37 @@ func _ready() -> void:
 
 
 ## Opens the errand file [param path] with [param text]. Text that doesn't parse opens read-only
-## with its errors, so the writer sees what to fix in the file.
-func show_errand(errand_path: String, text: String) -> void:
-	_settle_now()
+## with its errors, so the writer sees what to fix in the file. With [param unfinished], the file's
+## unfinished text, the text view shows its conversations that differ, with their errors, at the first
+## of them; the graph shows [param text].
+func show_errand(errand_path: String, text: String, unfinished: String = "") -> void:
+	save_now()
 	if errand_path != _path:
-		_pending.clear()
 		_tab = 0
 	_path = errand_path
 	_text = text
+	_kept = unfinished
+	_pending = unfinished_sections(text, unfinished)
 	var parsed := StoryFormat.parse_errand(text, errand_path, problems)
 	_errand = parsed.value as Errand
 	_fill_fields()
 	_fill_tabs()
 	_header_error.text = "" if parsed.errors.is_empty() else "This file doesn't parse; fix it as text:\n" + "\n".join(parsed.errors)
+	if not _pending.is_empty():
+		_tab = _pending.keys().min()
+		_view = "Text"
 	_show_tab(clampi(_tab, 0, maxi(_errand.conversations.size() - 1, 0)))
+
+
+## Saves at once the edits that wait for the typing to settle: what parses as the file's text
+## ([signal saved]), the rest as its unfinished text ([signal unfinished_changed]).
+func save_now() -> void:
+	if _settle != null and not _settle.is_stopped():
+		_settle.stop()
+		_apply_section()
+	if _field_settle != null and not _field_settle.is_stopped():
+		_field_settle.stop()
+		_apply_fields()
 
 
 ## Lists [param errands] (errand file path to Errand), one row each in errand code order with its
@@ -179,12 +201,50 @@ static func split(text: String) -> Dictionary:
 	return {"header": _trimmed(header), "sections": texts}
 
 
-## The file of [param header] and [param sections]: an empty line between each, as
-## StoryFormat.write_errand writes it.
+## The file of [param header] and [param sections], leaving out empty sections: an empty line
+## between each, as StoryFormat.write_errand writes it.
 static func join(header: String, sections: PackedStringArray) -> String:
 	var parts := PackedStringArray([header]) if header != "" else PackedStringArray()
-	parts.append_array(sections)
+	for section: String in sections:
+		if section != "":
+			parts.append(section)
 	return "\n\n".join(parts) + "\n"
+
+
+## The conversations of [param unfinished], an errand file's unfinished text, by the index of the
+## conversation of [param text], its last good text, that they stand in for: past the sections that
+## both end with and start with, the run where the two differ goes to the first conversation of the
+## run, and the run's other conversations become "". Lines that [param unfinished] has before its
+## first "==" beyond [param text]'s header count as a section of their own. Empty when the two
+## don't differ.
+static func unfinished_sections(text: String, unfinished: String) -> Dictionary[int, String]:
+	var found: Dictionary[int, String] = {}
+	if unfinished == "":
+		return found
+	var good := split(text)
+	var mine := split(unfinished)
+	var goods: PackedStringArray = good["sections"]
+	var mines: PackedStringArray = mine["sections"]
+	if mine["header"] != good["header"]:
+		var extra: String = mine["header"]
+		if extra.begins_with(good["header"]):
+			extra = extra.substr(String(good["header"]).length()).strip_edges(true, false)
+		mines.insert(0, extra)
+	if goods == mines:
+		return found
+	if goods.is_empty():
+		found[0] = "\n\n".join(mines)
+		return found
+	var tail := 0
+	while tail < goods.size() - 1 and tail < mines.size() and goods[goods.size() - 1 - tail] == mines[mines.size() - 1 - tail]:
+		tail += 1
+	var start := 0
+	while start < goods.size() - tail - 1 and start < mines.size() - tail and goods[start] == mines[start]:
+		start += 1
+	found[start] = "\n\n".join(mines.slice(start, mines.size() - tail))
+	for i: int in range(start + 1, goods.size() - tail):
+		found[i] = ""
+	return found
 
 
 static func _trimmed(lines: PackedStringArray) -> String:
@@ -214,6 +274,7 @@ func _apply(full: String, keep_errand: bool = false) -> PackedStringArray:
 func _apply_section() -> PackedStringArray:
 	var parts := split(_text)
 	var sections: PackedStringArray = parts["sections"]
+	var before := sections.size()
 	var section := _trimmed(_code.text.split("\n"))
 	if _tab < sections.size():
 		sections[_tab] = section
@@ -224,8 +285,11 @@ func _apply_section() -> PackedStringArray:
 	_mark(errors, parts["header"], sections)
 	if not errors.is_empty():
 		_pending[_tab] = _code.text
+		_keep_unfinished()
 		return _local(errors, parts["header"], sections)
 	_pending.erase(_tab)
+	_shift_pending(_tab, split(_text)["sections"].size() - before)
+	_keep_unfinished()
 	if _tab_names() != _shown_tab_names():
 		_fill_tabs()
 		_show_tab(clampi(_tab, 0, maxi(_errand.conversations.size() - 1, 0)))
@@ -251,6 +315,7 @@ func _apply_fields() -> void:
 		var at := header.find("brief:")
 		header.insert(at if at >= 0 else header.size(), "when: " + when)
 	var errors := _apply(join("\n".join(PackedStringArray(header)), split(_text)["sections"]))
+	_keep_unfinished()
 	_when_error.text = "" if errors.is_empty() else "\n".join(Array(errors).map(func(e: String) -> String: return e.get_slice(": ", 1) if e.get_slice(": ", 1) != "" else e))
 	_show_problem()
 	_select_problem()
@@ -294,14 +359,43 @@ func _section_start(header: String, sections: PackedStringArray) -> int:
 	return start
 
 
-# Saves the edits that wait for the typing to settle, before the panel shows something else.
-func _settle_now() -> void:
-	if _settle != null and not _settle.is_stopped():
-		_settle.stop()
-		_apply_section()
-	if _field_settle != null and not _field_settle.is_stopped():
-		_field_settle.stop()
-		_apply_fields()
+# The last good text with each pending conversation as the writer has it; "" without any.
+func _unfinished_text() -> String:
+	if _pending.is_empty():
+		return ""
+	var parts := split(_text)
+	var sections: PackedStringArray = parts["sections"]
+	var indexes: Array = _pending.keys()
+	indexes.sort()
+	for i: int in indexes:
+		var section := _trimmed(_pending[i].split("\n"))
+		if i < sections.size():
+			sections[i] = section
+		else:
+			sections.append(section)
+	return join(parts["header"], sections)
+
+
+# Hands up the unfinished text when it differs from what was handed up last.
+func _keep_unfinished() -> void:
+	var text := _unfinished_text()
+	if text != _kept:
+		_kept = text
+		unfinished_changed.emit(_path, text)
+
+
+# Moves the pending conversations after [param index] by [param by] places, as a save of
+# [param index] added or removed conversations; one that lands on or before it was merged into it.
+func _shift_pending(index: int, by: int) -> void:
+	if by == 0:
+		return
+	var moved: Dictionary[int, String] = {}
+	for i: int in _pending:
+		if i <= index:
+			moved[i] = _pending[i]
+		elif i + by > index:
+			moved[i + by] = _pending[i]
+	_pending = moved
 
 
 # --- Conversations
@@ -346,7 +440,7 @@ func _fill_tabs() -> void:
 
 func _show_tab(index: int) -> void:
 	if index != _tab:
-		_settle_now()
+		save_now()
 	_tab = index
 	for button: BaseButton in _tab_group.get_buttons():
 		button.set_pressed_no_signal(button.get_index() == index)
@@ -385,8 +479,8 @@ func _add_conversation(trigger_index: int) -> void:
 	var parts := split(_text)
 	var sections: PackedStringArray = parts["sections"]
 	sections.append("== " + trigger_name)
-	_pending.clear()
 	if _apply(join(parts["header"], sections)).is_empty():
+		_keep_unfinished()
 		_fill_tabs()
 		_show_tab(_errand.conversations.size() - 1)
 
@@ -403,8 +497,10 @@ func _remove_shown_conversation() -> void:
 	var parts := split(_text)
 	var sections: PackedStringArray = parts["sections"]
 	sections.remove_at(_tab)
-	_pending.clear()
 	if _apply(join(parts["header"], sections)).is_empty():
+		_pending.erase(_tab)
+		_shift_pending(_tab, -1)
+		_keep_unfinished()
 		_fill_tabs()
 		_show_tab(clampi(_tab, 0, maxi(_errand.conversations.size() - 1, 0)))
 
@@ -422,7 +518,9 @@ func _show_graph() -> void:
 		if _graph is Control:
 			(_graph as Control).size_flags_vertical = Control.SIZE_EXPAND_FILL
 		_graph_view.add_child(_graph)
-		_graph.connect(&"edited", func() -> void: _apply(StoryFormat.write_errand(_errand), true))
+		_graph.connect(&"edited", func() -> void:
+			_apply(StoryFormat.write_errand(_errand), true)
+			_keep_unfinished())
 	if _errand != null and _tab < _errand.conversations.size():
 		_graph.set(&"facts", flags)
 		_graph.call(&"show_conversation", _errand.conversations[_tab], _errand.customer)
@@ -731,7 +829,7 @@ func _right() -> Control:
 	_show_full_screen()
 	bar.add_child(_full_screen)
 	_play = LabUI.button("Play", func() -> void:
-		_settle_now()
+		save_now()
 		play_requested.emit(_errand, trigger()), &"AccentButton")
 	_play.custom_minimum_size.x = 80
 	bar.add_child(_play)
@@ -771,6 +869,7 @@ func _right() -> Control:
 	_header = StoryConversationHeader.make()
 	_header.edited.connect(func() -> void:
 		_apply(StoryFormat.write_errand(_errand), true)
+		_keep_unfinished()
 		_fill_tabs()
 		for button: BaseButton in _tab_group.get_buttons():
 			button.set_pressed_no_signal(button.get_index() == _tab))

@@ -60,7 +60,7 @@ func show_problems(problems: Dictionary[StringName, Problem], drafts: StoryDraft
 
 ## Opens the problem [param id] in the form.
 func open_problem(id: StringName) -> void:
-	_settle_now()
+	save_now()
 	_id = id
 	_form.show()
 	_empty.hide()
@@ -258,7 +258,8 @@ func _sorted_ids() -> Array[StringName]:
 	return ids
 
 
-func _settle_now() -> void:
+## Saves at once the edit that waits for the typing to settle.
+func save_now() -> void:
 	if _settle != null and not _settle.is_stopped():
 		_settle.stop()
 		_save()

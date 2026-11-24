@@ -88,6 +88,8 @@ func _ready() -> void:
 		_say("Some drafts don't read: " + "; ".join(errors), true)
 	elif not changed_on_main.is_empty():
 		_say("Main changed %d files since you edited them: open Drafts to compare." % changed_on_main.size(), true)
+	elif not drafts.unfinished_paths().is_empty():
+		_say("%d files have unfinished text that doesn't parse yet: open Drafts to see which." % drafts.unfinished_paths().size(), true)
 	else:
 		_say("Click an errand to open it, double-click to open it full. Drag a card to move it.")
 	_hold(is_visible_in_tree())
@@ -97,7 +99,11 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_VISIBILITY_CHANGED and is_inside_tree():
 		if visible:
 			_playing = false
+		elif is_node_ready():
+			save_now()
 		_hold(is_visible_in_tree())
+	elif what == NOTIFICATION_WM_CLOSE_REQUEST and is_node_ready():
+		save_now()
 	elif what == NOTIFICATION_EXIT_TREE:
 		_hold(false)
 
@@ -121,6 +127,17 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		else:
 			hide()
 		get_viewport().set_input_as_handled()
+
+
+## Saves at once every edit that waits for the typing to settle, in every section; the text that
+## doesn't parse as unfinished text. The Lab does it as it hides and as the window is asked to close
+## (Cmd+Q too).
+func save_now() -> void:
+	_errand_panel.save_now()
+	_day_panel.save_now()
+	_problem_panel.save_now()
+	_call_outs.save_now()
+	_bible.save_now()
 
 
 ## Loads the week again from the story files with the drafts over them, and shows it.
@@ -152,12 +169,16 @@ func refresh() -> void:
 		_problem_panel.show_problems(_week.problems, drafts)
 	if _sign_panel.visible:
 		_sign_panel.show_signs(_week)
-	_drafts_button.text = "Drafts (%d)" % drafts.paths().size()
+	_show_drafts_count()
 	_send_button.disabled = drafts.paths().is_empty()
 	_send_button.tooltip_text = "Make a GitHub issue of your drafts" if not drafts.to_checkout else "Save to checkout is on: commit the files with git instead"
 	if _selected == "" and _errand_panel.visible:
 		_show_lower(_hint)
 	_show_mode()
+
+
+func _show_drafts_count() -> void:
+	_drafts_button.text = "Drafts (%d)" % StoryDraftsPanel.edited(drafts).size()
 
 
 ## The errand files on the board: path to {"errand", "problems", "draft"}.
@@ -200,6 +221,8 @@ func move_errand(path: String, day: int, index: int, alternative: bool, before_o
 	var failures := PackedStringArray([drafts.rename(renames)])
 	for moved: String in texts:
 		failures.append(drafts.put(moved, texts[moved]))
+		if drafts.has_unfinished(moved):
+			failures.append(drafts.put_unfinished(moved, _with_header_of(drafts.unfinished(moved), texts[moved])))
 	var failed := "\n".join(Array(failures).filter(func(f: String) -> bool: return f != ""))
 	if failed != "":
 		_after_store()
@@ -265,6 +288,11 @@ static func _with_header(text: String, key: String, value: String) -> String:
 	if value != "":
 		lines.insert(at, "%s: %s" % [key, value])
 	return "\n".join(PackedStringArray(lines))
+
+
+# [param unfinished], an errand's unfinished text, with the header of [param text], its new good text.
+static func _with_header_of(unfinished: String, text: String) -> String:
+	return StoryErrandPanel.join(StoryErrandPanel.split(text)["header"], StoryErrandPanel.split(unfinished)["sections"])
 
 
 # The errands of the move's days whose "comes: before opening" changes, by their path after the
@@ -428,13 +456,17 @@ func open_customer(customer: String) -> String:
 	return ""
 
 
-## Opens the errand file [param path], below the board or, in story mode, full.
+## Opens the errand file [param path], below the board or, in story mode, full. Its unfinished text
+## shows in the text view, and the status line says so.
 func open_errand(path: String) -> void:
+	_errand_panel.save_now()
 	_selected = path
 	refresh()
 	if _cards.has(path):
 		_show_lower(_errand_panel)
-		_errand_panel.show_errand(path, drafts.text(path))
+		_errand_panel.show_errand(path, drafts.text(path), drafts.unfinished(path))
+		if drafts.has_unfinished(path):
+			_say("%s has unfinished text, which doesn't parse yet: the text view shows it with its errors. The game plays its last version that parsed." % path.get_file(), true)
 
 
 ## Opens day [param number] (1 to 7) below the board.
@@ -568,6 +600,16 @@ func _store_page(path: String, text: String) -> void:
 
 func _store_edit(path: String, text: String) -> void:
 	store(path, text)
+
+
+func _store_unfinished(path: String, text: String) -> void:
+	var failed := drafts.put_unfinished(path, text)
+	if failed != "":
+		_say("Your unfinished text isn't kept: " + failed, true)
+		return
+	_show_drafts_count()
+	if text != "":
+		_say("%s doesn't parse yet: it is kept as unfinished text, and the game plays its last version that parsed." % path.get_file())
 
 
 func _after_store() -> void:
@@ -745,6 +787,7 @@ func _build() -> void:
 	_hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_errand_panel = StoryErrandPanel.new()
 	_errand_panel.saved.connect(_store_edit)
+	_errand_panel.unfinished_changed.connect(_store_unfinished)
 	_errand_panel.remove_requested.connect(_remove_errand)
 	_errand_panel.play_requested.connect(play)
 	_errand_panel.edit_problem_requested.connect(open_problem)

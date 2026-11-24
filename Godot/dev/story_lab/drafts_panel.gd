@@ -1,8 +1,8 @@
 class_name StoryDraftsPanel
 extends Control
 ## The Story Lab's list of drafts, over the Lab: each file the writer changed, whether main changed
-## it since, and Discard. A draft that main changed since shows both texts side by side, to keep
-## the writer's or take main's.
+## it since, whether it has unfinished text, and Discard. A draft that main changed since shows both
+## texts side by side, to keep the writer's or take main's.
 
 ## The drafts changed: one was discarded, kept or replaced by main's text.
 signal changed
@@ -38,6 +38,16 @@ static func main_changed(drafts: StoryDrafts) -> PackedStringArray:
 	return found
 
 
+## The paths that have a draft, unfinished text or both, sorted.
+static func edited(drafts: StoryDrafts) -> PackedStringArray:
+	var found: Dictionary[String, bool] = {}
+	for path: String in drafts.paths() + drafts.unfinished_paths():
+		found[path] = true
+	var paths := PackedStringArray(found.keys())
+	paths.sort()
+	return paths
+
+
 ## What the draft of [param path] does: "new", "removed" or "changed".
 static func kind(drafts: StoryDrafts, path: String) -> String:
 	if drafts.texts()[path] == "":
@@ -49,7 +59,7 @@ func _fill() -> void:
 	for child: Node in _list.get_children():
 		_list.remove_child(child)
 		child.queue_free()
-	var paths := _drafts.paths()
+	var paths := edited(_drafts)
 	if paths.is_empty():
 		_list.add_child(LabUI.label("No drafts: the game plays main's story files.", 15, LabUI.DIM))
 		return
@@ -60,9 +70,15 @@ func _fill() -> void:
 		var label := LabUI.label(path.trim_prefix("res://story/"), 15)
 		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(label)
-		var what := kind(_drafts, path)
-		row.add_child(LabUI.chip(what, {"new": LabUI.GOOD, "removed": LabUI.BAD, "changed": LabUI.CHANGED}[what], 12))
-		row.add_child(LabUI.label("from " + _drafts.start_commit(path).left(8), 12, LabUI.DIM))
+		if _drafts.has(path):
+			var what := kind(_drafts, path)
+			row.add_child(LabUI.chip(what, {"new": LabUI.GOOD, "removed": LabUI.BAD, "changed": LabUI.CHANGED}[what], 12))
+			row.add_child(LabUI.label("from " + _drafts.start_commit(path).left(8), 12, LabUI.DIM))
+		if _drafts.has_unfinished(path):
+			var unfinished := LabUI.chip("unfinished text", LabUI.BAD, 12)
+			unfinished.tooltip_text = "Your text of this file doesn't parse yet. The game plays the last version that parsed, and Send leaves the unfinished text out. Open the errand to finish it."
+			unfinished.mouse_filter = Control.MOUSE_FILTER_PASS
+			row.add_child(unfinished)
 		if path in changed_on_main:
 			var warning := LabUI.chip("main changed since you edited this", LabUI.BAD, 12)
 			row.add_child(warning)
@@ -70,7 +86,7 @@ func _fill() -> void:
 		var discard := Button.new()
 		discard.text = "Discard"
 		discard.theme_type_variation = &"FlatButton"
-		discard.tooltip_text = "Drop this draft; main's text plays again"
+		discard.tooltip_text = "Drop this draft and its unfinished text; main's text plays again"
 		discard.pressed.connect(func() -> void:
 			if discard.text == "Discard":
 				discard.text = "Discard: sure?"

@@ -36,7 +36,7 @@ func path() -> String:
 
 ## Opens the page [param page] (a res:// path).
 func open_page(page: String) -> void:
-	_settle_now()
+	save_now()
 	_path = page
 	_title.text = page.get_file()
 	_code.text = _drafts.text(page)
@@ -73,7 +73,8 @@ func _fill() -> void:
 		_remove.visible = false
 
 
-func _settle_now() -> void:
+## Saves at once the edit that waits for the typing to settle.
+func save_now() -> void:
 	if _settle != null and not _settle.is_stopped():
 		_settle.stop()
 		_save()

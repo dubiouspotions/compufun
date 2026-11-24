@@ -4,9 +4,16 @@ extends RefCounted
 ## removes it), with the commit that the draft started from. They live in the user folder until
 ## main has the same text, so the checkout never changes. With [member to_checkout] on, edits go
 ## straight into the checkout instead, and no drafts are kept.
+##
+## Beside the drafts, each path can have unfinished text: the writer's text of the file that doesn't
+## parse yet, kept in [constant UNFINISHED] under [member dir] so that a quit doesn't lose it. It is
+## not a draft: [method texts], [method paths], [method has] and [method text] don't see it, so the
+## game never plays it and Send never sends it, also while [member to_checkout] is on.
 
 const DIR: String = "user://story_drafts/"
 const INDEX: String = "drafts.json"
+## The folder under [member dir] that holds the unfinished text, one file per path, mirroring it.
+const UNFINISHED: String = "unfinished/"
 ## The Story Lab's settings: Save to checkout, and whether its warning was shown.
 const SETTINGS: String = "user://story_lab.cfg"
 ## The start commit of a draft made where neither git nor the build can tell.
@@ -28,6 +35,7 @@ var build_commit: Callable = _build_commit
 
 var _texts: Dictionary[String, String] = {}
 var _commits: Dictionary[String, String] = {}
+var _unfinished: Dictionary[String, String] = {}
 # A drafts.json that doesn't read stops every write, so the drafts in it are never overwritten.
 var _broken: String = ""
 
@@ -56,13 +64,14 @@ static func set_warned_about_checkout() -> String:
 	return _set_setting("warned_checkout", true)
 
 
-## Reads the drafts from [member dir], and drops each that main now has. Returns one
-## "path: what" per draft that doesn't read; while drafts.json doesn't read, nothing is written.
+## Reads the drafts and the unfinished text from [member dir], and drops each draft that main now
+## has. Returns one "path: what" per file that doesn't read; while drafts.json doesn't read, no
+## draft is written.
 func load_drafts() -> PackedStringArray:
 	_texts.clear()
 	_commits.clear()
 	_broken = ""
-	var errors := PackedStringArray()
+	var errors := _load_unfinished()
 	var index_path := dir.path_join(INDEX)
 	if not FileAccess.file_exists(index_path):
 		return errors
@@ -125,9 +134,13 @@ func text(path: String) -> String:
 	return _texts[path] if has(path) else checkout_text(path)
 
 
-## Makes [param new_text] the text of [param path]; "" removes the file. A draft equal to the
-## checkout's text disappears. Returns "" or what failed.
+## Makes [param new_text] the text of [param path]; "" removes the file, and its unfinished text
+## with it. A draft equal to the checkout's text disappears. Returns "" or what failed.
 func put(path: String, new_text: String) -> String:
+	if new_text == "" and _unfinished.has(path):
+		var dropped := put_unfinished(path, "")
+		if dropped != "":
+			return dropped
 	if to_checkout:
 		return _write_checkout(path, new_text)
 	if _broken != "":
@@ -147,26 +160,73 @@ func put(path: String, new_text: String) -> String:
 	return "\n".join(_save_index())
 
 
-## Renames the files in [param moves] (old path to new path) all at once, through drafts. A new
-## path may be another move's old path. Returns "" or what failed.
+## Renames the files in [param moves] (old path to new path) all at once, through drafts; their
+## unfinished text moves with them. A new path may be another move's old path. Returns "" or what
+## failed.
 func rename(moves: Dictionary[String, String]) -> String:
 	var moved: Dictionary[String, String] = {}
+	var carried: Dictionary[String, String] = {}
 	for old: String in moves:
 		moved[moves[old]] = text(old)
+		carried[moves[old]] = unfinished(old)
 	var failures := PackedStringArray()
 	for old: String in moves:
 		if not moved.has(old):
 			failures.append(put(old, ""))
 	for path: String in moved:
 		failures.append(put(path, moved[path]))
+		failures.append(put_unfinished(path, carried[path]))
 	return "\n".join(PackedStringArray(Array(failures).filter(func(f: String) -> bool: return f != "")))
 
 
-## Drops the draft of [param path]: main's text plays again. Returns "" or what failed.
+## Drops the draft of [param path] and its unfinished text: main's text plays again. Returns "" or
+## what failed.
 func discard(path: String) -> String:
+	var dropped := put_unfinished(path, "")
+	if dropped != "":
+		return dropped
 	if _broken != "":
 		return _broken
 	return "\n".join(_drop(path) + _save_index())
+
+
+## The unfinished text of [param path]: the whole file as the writer has it, which doesn't parse; ""
+## when it has none.
+func unfinished(path: String) -> String:
+	return _unfinished.get(path, "")
+
+
+func has_unfinished(path: String) -> bool:
+	return _unfinished.has(path)
+
+
+## The paths with unfinished text, sorted.
+func unfinished_paths() -> PackedStringArray:
+	var found := PackedStringArray(_unfinished.keys())
+	found.sort()
+	return found
+
+
+## Keeps [param new_text] as the unfinished text of [param path], written and read back at once; ""
+## drops it. Its draft and the checkout don't change. Returns "" or what failed.
+func put_unfinished(path: String, new_text: String) -> String:
+	if new_text == _unfinished.get(path, ""):
+		return ""
+	var file := _unfinished_file(path)
+	if new_text == "":
+		_unfinished.erase(path)
+		if not FileAccess.file_exists(file):
+			return ""
+		var removed := DirAccess.remove_absolute(file)
+		return "" if removed == OK else "can't remove the unfinished text %s: %s" % [file, error_string(removed)]
+	var err := DirAccess.make_dir_recursive_absolute(file.get_base_dir())
+	if err != OK:
+		return "can't make %s: %s" % [file.get_base_dir(), error_string(err)]
+	var failed := _write(file, new_text)
+	if failed != "":
+		return failed
+	_unfinished[path] = new_text
+	return ""
 
 
 ## The text of [param path] at the draft's start commit: {"text"} ("" when the file wasn't there),
@@ -248,6 +308,30 @@ func _write_checkout(path: String, new_text: String) -> String:
 
 func _draft_file(path: String) -> String:
 	return dir.path_join(path.trim_prefix("res://"))
+
+
+func _unfinished_file(path: String) -> String:
+	return dir.path_join(UNFINISHED).path_join(path.trim_prefix("res://"))
+
+
+# Reads every file under UNFINISHED into _unfinished; returns one "path: what" per file that doesn't read.
+func _load_unfinished(sub: String = "") -> PackedStringArray:
+	if sub == "":
+		_unfinished.clear()
+	var errors := PackedStringArray()
+	var folder := dir.path_join(UNFINISHED).path_join(sub)
+	if not DirAccess.dir_exists_absolute(folder):
+		return errors
+	for child: String in DirAccess.get_directories_at(folder):
+		errors.append_array(_load_unfinished(sub.path_join(child)))
+	for file: String in DirAccess.get_files_at(folder):
+		var path := "res://" + sub.path_join(file)
+		var read := _read(folder.path_join(file))
+		if read.has("error"):
+			errors.append("%s: the unfinished text doesn't read: %s" % [path, read["error"]])
+		else:
+			_unfinished[path] = read["text"]
+	return errors
 
 
 func _checkout_file(path: String) -> String:

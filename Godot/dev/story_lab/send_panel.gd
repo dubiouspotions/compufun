@@ -12,6 +12,7 @@ var github_repo: String = ""
 
 var _drafts: StoryDrafts
 var _files: Label
+var _unfinished: Label
 var _note: LineEdit
 var _send: Button
 var _status: Label
@@ -30,6 +31,9 @@ func show_send(drafts: StoryDrafts) -> void:
 	for path: String in drafts.paths():
 		names.append("%s (%s)" % [path.trim_prefix("res://story/"), StoryDraftsPanel.kind(drafts, path)])
 	_files.text = "\n".join(names) if not names.is_empty() else "No drafts to send."
+	var unfinished := PackedStringArray(Array(drafts.unfinished_paths()).map(func(path: String) -> String: return path.trim_prefix("res://story/")))
+	_unfinished.text = "" if unfinished.is_empty() else "Not sent: the unfinished text of %s, which doesn't parse yet. Send sends the last version of it that parsed, if it has one." % ", ".join(unfinished)
+	_unfinished.visible = not unfinished.is_empty()
 	_send.disabled = names.is_empty() or _sending
 	_status.text = ""
 	show()
@@ -97,6 +101,9 @@ func _build() -> void:
 	box.add_child(about)
 	_files = LabUI.label("", 14)
 	box.add_child(_files)
+	_unfinished = LabUI.label("", 14, LabUI.BAD)
+	_unfinished.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(_unfinished)
 	_note = LineEdit.new()
 	_note.placeholder_text = "One line: what you changed and why. Start with [test] for a trial send."
 	_note.text_submitted.connect(func(_t: String) -> void: _send_now())
