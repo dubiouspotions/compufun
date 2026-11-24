@@ -188,7 +188,9 @@ the shop's walls, floor and counter are. — 2026-11
 **A thin layer on a surface tears as the camera turns, and the surface shows through.** The vertex
 snap moves every vertex by up to half a pixel of the world buffer; on a counter top seen at a
 grazing angle that is about 1 cm of depth. Make a layer at least 1 cm thick, as the work mat is.
-— 2026-11
+A flat overlay in front of a surface, as the renderer has no decals, needs the same distance: the
+blood stains 0.8 mm in front of the organ computer's case walls didn't show at all, and showed at
+8 mm on the side walls and 2 cm on the back wall (`tools/make_organs.gd`). — 2026-11
 
 **A node with `psx_post` (or any canvas shader that writes `COLOR`) ignores its `modulate`, so a
 fade on it pops.** The modulate is in `COLOR` in `vertex()`; `fragment()` replaces it. `psx_post`
