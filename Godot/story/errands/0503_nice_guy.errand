@@ -6,6 +6,7 @@ brief:
 	The Skater picks up his defragged computer this evening, with a special dialogue: he is hooked and needs it back.
 
 == drop-off
+set sign_win_trash
 (neutral) Hi there! No rush at all, I know you're busy.
 - Welcome to CompuFun! Wet out there?
 - You seem a bit... moist?

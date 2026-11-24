@@ -1,2 +1,3 @@
 weather: clear
 warp: 0.45
+on start: sign_windows_noises

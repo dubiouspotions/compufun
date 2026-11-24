@@ -4,6 +4,7 @@ brief:
 	He took one part out and put the others in the wrong places. "I'm fixing it, it'll be super good."
 
 == drop-off
+set sign_bell_sound
 (neutral) Howdy, partner!
 - Hat guy! I mean, hello, sir!
 - Welcome back! Partner...

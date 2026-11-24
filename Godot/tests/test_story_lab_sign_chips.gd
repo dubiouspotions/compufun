@@ -21,8 +21,10 @@ func _the_committed_starts_show_where_they_start() -> void:
 		shown.append(_where(spot))
 	shown.sort()
 	var expected := PackedStringArray([
+		"bell_sound on 0501_hat_guy.errand",
 		"blood_puddle on 0703_skater_bro.errand, locked",
 		"calc_666 day 1 BEFORE_OPENING",
+		"clippy_jumpscare on 0602_top_hat_man.errand",
 		"customer_x day 6 MORNING",
 		"customer_x=0 day 7 MORNING",
 		"logo_blue day 3 AT_CLOSING",
@@ -32,7 +34,11 @@ func _the_committed_starts_show_where_they_start() -> void:
 		"pointer_escape day 3 MORNING",
 		"pointer_escape=0 day 7 AT_CLOSING",
 		"posters_bounce day 5 AT_CLOSING",
+		"shop_windows day 6 AT_CLOSING",
+		"win95_boxes day 6 MORNING",
 		"win_phone day 7 MORNING",
+		"win_trash on 0503_nice_guy.errand",
+		"windows_noises day 4 MORNING",
 	])
 	expected.sort()
 	check("each start of the committed week shows in its band or on its card", shown, expected)

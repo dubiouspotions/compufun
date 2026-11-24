@@ -1,6 +1,7 @@
 weather: clear
 warp: 0.8
-on start: hat_guy_runs_cambion, sign_customer_x
+on start: hat_guy_runs_cambion, sign_customer_x, sign_win95_boxes
 on close: sign_logo_cambion
+close signs: shop_windows
 notes:
 	Closing: the CompuFun logo reads CambIon, hidden by the ceiling lights the same way; it stays blue.
