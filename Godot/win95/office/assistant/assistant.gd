@@ -3,8 +3,8 @@ extends Control
 ## 97 app (OfficeWindow.assistant). He comes in soon after the app opens, welcomes the player once per
 ## computer, moves now and then, lights his bulb with a tip from tips.txt, offers help with a letter
 ## that starts with "Dear", answers Help, and hides from his right-click menu or his X. Once Cambion
-## has taken him (corruption/no_clippy) his window, balloons and menu work as before, but the paper
-## clip never shows in it. docs/win95-reference.md, "Office Assistant", has what the reference shows.
+## has taken him (corruption/no_clippy) his window and menu work as before, but the paper clip never
+## shows in it, and each balloon says only "..." over its buttons (a Close button when it has none). docs/win95-reference.md, "Office Assistant", has what the reference shows.
 
 ## The group of every assistant; corruption/no_clippy.gd calls _sync_assistant on it.
 const GROUP: StringName = &"win95_office_assistants"
@@ -176,7 +176,13 @@ func reset_tips() -> void:
 
 
 func _sync_assistant() -> void:
-	%Clip.visible = not get_tree().root.get_meta(_WORDPAD.ASSISTANT_TAKEN_META, false)
+	%Clip.visible = not _taken()
+	if _taken():
+		_close_balloon()
+
+
+func _taken() -> bool:
+	return is_inside_tree() and get_tree().root.get_meta(_WORDPAD.ASSISTANT_TAKEN_META, false)
 
 
 # What he remembers on this computer: kept on the desktop, so every Office app shares it.
@@ -279,6 +285,13 @@ func _offer_letter() -> void:
 func _say(beside: bool, heading: String, text: String, choices: Array, buttons: Array, width: float,
 		icon: Texture2D = null) -> void:
 	_close_balloon()
+	if _taken():
+		heading = ""
+		text = "..."
+		choices = []
+		buttons = buttons if not buttons.is_empty() else [[&"close", "Close"]]
+		width = 40.0
+		icon = null
 	_balloon = _BALLOON.new()
 	_balloon.beside = beside
 	_balloon.picked.connect(_on_picked)

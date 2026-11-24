@@ -2,7 +2,8 @@ extends "res://tests/test.gd"
 ## The Office Assistant (win95/office/assistant/) in Word and Excel: he comes in and welcomes the player once
 ## per computer, offers help with a new letter that starts with "Dear", answers Help, shows a tip from
 ## tips.txt, keeps his options, hides until Help calls him back, and once corruption/no_clippy has
-## taken him his window, balloons and menu work as before with no paper clip in it.
+## taken him his window and menu work as before with no paper clip in it, and each balloon says only
+## "..." over its buttons.
 
 const WORD := "res://win95/office/word.tscn"
 const EXCEL := "res://win95/office/excel.tscn"
@@ -100,11 +101,17 @@ func run() -> void:
 	await _seconds(1.0)
 	balloon = helper.balloon()
 	check("Help brings his window back, empty", [helper.is_showing(), clip.visible], [true, false])
-	check("and it answers", balloon.text().begins_with("What would you like to do?") if balloon != null else false, true)
+	check("Help's balloon says only ..., over its buttons", [balloon.text(), balloon.options()] if balloon != null else [], ["...", ["Tips", "Options", "Close"]])
 	balloon.press("Tips")
 	balloon = helper.balloon()
-	check("and shows tips", _ASSISTANT.TIP_OPENERS.any(func(opener: String) -> bool: return balloon.text().begins_with(opener)), true)
+	check("so does the tip", [balloon.text(), balloon.options()] if balloon != null else [], ["...", ["Back", "Next", "Close"]])
 	balloon.press("Close")
+	helper.call(&"_welcome")
+	balloon = helper.balloon()
+	check("the welcome has no buttons, so it gets Close", [balloon.text(), balloon.options()] if balloon != null else [], ["...", ["Close"]])
+	balloon.press("Close")
+	await process_frame
+	check("which closes it", helper.balloon(), null)
 	helper.call(&"_open_menu", Vector2(600, 440))
 	check("his right-click menu opens", (helper.get(&"_menu") as Window).visible, true)
 	(helper.get(&"_menu") as Window).hide()
