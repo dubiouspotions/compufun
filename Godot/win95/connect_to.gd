@@ -21,6 +21,23 @@ var _dial := 0  # counts the dials, so a cancelled one doesn't report
 var _dialing_for := 0.0
 
 
+## Goes online for [param program], a window on a Win95Desktop, as Winsock did: on a computer with a
+## dial-up connection in [param setup], AutoDial's Connect To dialog, modal to the program, until the
+## player cancels it; else [param seconds] of trying. Returns once it gave up, which on the bench it
+## always does: no computer there has its modem.
+static func autodial(program: Control, setup: Win95Setup, seconds: float) -> void:
+	var desktop := program.get_parent() as Win95Desktop
+	if desktop == null or setup == null or setup.dial_up_name == "":
+		if seconds > 0.0:
+			await program.get_tree().create_timer(seconds).timeout
+		return
+	var dialog: Node = desktop.open(load("res://win95/connect_to.tscn"), false)  # preloading its own scene would be a cycle
+	dialog.show_connection(setup)
+	dialog.belong_to(program)
+	await dialog.finished
+	dialog.queue_free()
+
+
 func _ready() -> void:
 	super()
 	set_process(false)

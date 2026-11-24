@@ -317,7 +317,7 @@ Windows file metadata. `tools/write-build-info.sh` writes both.
 To release, run Actions > godot-ci export > Run workflow on `main` and pick the part to bump, or:
 
 ```sh
-gh workflow run godot.yml -R dubiouspotions/humanerror -f bump=patch   # or minor, major
+gh workflow run godot.yml -R dubiouspotions/compufun -f bump=patch   # or minor, major
 ```
 
 The run tags `main` with the next version, then builds, signs, deploys and writes the GitHub

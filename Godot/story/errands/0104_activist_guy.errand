@@ -9,24 +9,25 @@ brief:
 - Busy day?
 	(neutral) Always. The newsletter doesn't write itself.
 - Nice button. What's it for?
-	(happy) Saving the old park from the parking lot people. Sign our petition sometime!
-
-- So, what's your problem?
-	(problem) My computer counts up its memory, and then it just stops.
-	(thinking) I think it's something with the RAM.
-	(neutral) I would do it myself but...
-	- I get it, there's so much to do out there.
+	(happy) Saving the old park from the asphalt overlords. You should sign our petition!
+- Right. So, computer problems?
+	(problem) Yes. On boot, BIOS fails POST. Somewhere in the 8M range.
+	(thinking) Most likely RAM, but it could be the mobo I suppose, a weak trace or a blown cap...
+	(neutral) I'd fix it myself. No time, no spares. Gotta get to my research.
 	- I'll take care of it for you.
-	(neutral) I need it for the newsletter, so please be quick.
-	- I'll do my best. Have a Funtastic day!
+	- Uh... POST...? It's fine, I'll fix it. 
+	- Research...?
+		(irritated02) Something about a distro. It's... I'm investigating.
+	(neutral) I need my box for the newsletter, so please be quick.
+	- I'll do my best. Have a FUNtastic day!
 
 == pick-up
-(neutral) It starts again? Wonderful.
+(neutral) It POSTs? Wonderful.
 - Happy I could help.
 	(neutral) Was it the new memory?
 	- Yeah.
 - That upgrade...
-(irritated02) Yeah, I figured. I'll have a word with my nephew.
+(irritated02) Yeah, I figured. Next time I'm not getting parts off of DALnet.
 - Maybe come back here next time you need an upgrade and I'll throw in a discount for you.
 	(happy) Thanks dude. I'll keep that in mind.
 	- Take care now.

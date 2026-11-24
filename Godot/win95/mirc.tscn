@@ -1,0 +1,385 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://win95/win95.tres" id="theme"]
+[ext_resource type="Script" path="res://win95/mirc.gd" id="script"]
+[ext_resource type="PackedScene" path="res://win95/title_bar.tscn" id="title_bar"]
+[ext_resource type="FontFile" path="res://win95/theme/fonts/px437_ibm_vga_8x16.ttf" id="fixedsys"]
+[ext_resource type="Texture2D" path="res://win95/mirc/logo_16.png" id="logo_16"]
+[ext_resource type="Texture2D" path="res://win95/mirc/status_16.png" id="status_16"]
+[ext_resource type="Texture2D" path="res://win95/mirc/connect.png" id="connect"]
+[ext_resource type="Texture2D" path="res://win95/mirc/setup.png" id="setup"]
+[ext_resource type="Texture2D" path="res://win95/mirc/options.png" id="options"]
+[ext_resource type="Texture2D" path="res://win95/mirc/channels.png" id="channels"]
+[ext_resource type="Texture2D" path="res://win95/mirc/list.png" id="list"]
+[ext_resource type="Texture2D" path="res://win95/mirc/aliases.png" id="aliases"]
+[ext_resource type="Texture2D" path="res://win95/mirc/popups.png" id="popups"]
+[ext_resource type="Texture2D" path="res://win95/mirc/remote.png" id="remote"]
+[ext_resource type="Texture2D" path="res://win95/mirc/finger.png" id="finger"]
+[ext_resource type="Texture2D" path="res://win95/mirc/timer.png" id="timer"]
+[ext_resource type="Texture2D" path="res://win95/mirc/dcc_send.png" id="dcc_send"]
+[ext_resource type="Texture2D" path="res://win95/mirc/dcc_chat.png" id="dcc_chat"]
+[ext_resource type="Texture2D" path="res://win95/mirc/notify.png" id="notify"]
+[ext_resource type="Texture2D" path="res://win95/mirc/urls.png" id="urls"]
+[ext_resource type="Texture2D" path="res://win95/mirc/tile.png" id="tile"]
+[ext_resource type="Texture2D" path="res://win95/mirc/cascade.png" id="cascade"]
+[ext_resource type="Texture2D" path="res://win95/mirc/arrange.png" id="arrange"]
+[ext_resource type="Texture2D" path="res://win95/mirc/help.png" id="help"]
+
+[sub_resource type="StyleBoxFlat" id="app_workspace"]
+content_margin_right = 40.0
+content_margin_bottom = 32.0
+bg_color = Color(0.5019608, 0.5019608, 0.5019608, 1)
+
+[sub_resource type="StyleBoxFlat" id="window"]
+bg_color = Color(1, 1, 1, 1)
+content_margin_left = 2.0
+content_margin_top = 1.0
+content_margin_right = 2.0
+content_margin_bottom = 1.0
+
+[node name="Mirc" type="PanelContainer"]
+custom_minimum_size = Vector2(560, 380)
+theme = ExtResource("theme")
+script = ExtResource("script")
+resizable = true
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TitleBar" parent="VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "mIRC32"
+icon = ExtResource("logo_16")
+show_minimize = true
+show_maximize = true
+
+[node name="MenuBar" type="MenuBar" parent="VBox"]
+layout_mode = 2
+prefer_global_menu = false
+
+[node name="File" type="PopupMenu" parent="VBox/MenuBar"]
+unique_name_in_owner = true
+item_count = 5
+item_0/text = "Connect"
+item_0/id = 1
+item_1/text = "Setup..."
+item_1/id = 2
+item_2/text = "Options..."
+item_2/id = 3
+item_3/text = ""
+item_3/id = 98
+item_3/separator = true
+item_4/text = "Exit"
+item_4/id = 4
+
+[node name="Tools" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 6
+item_0/text = "Aliases..."
+item_0/id = 99
+item_0/disabled = true
+item_1/text = "Popups..."
+item_1/id = 99
+item_1/disabled = true
+item_2/text = "Remote..."
+item_2/id = 99
+item_2/disabled = true
+item_3/text = ""
+item_3/id = 98
+item_3/separator = true
+item_4/text = "Finger..."
+item_4/id = 99
+item_4/disabled = true
+item_5/text = "Timer..."
+item_5/id = 99
+item_5/disabled = true
+
+[node name="DCC" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 6
+item_0/text = "Send..."
+item_0/id = 99
+item_0/disabled = true
+item_1/text = "Get..."
+item_1/id = 99
+item_1/disabled = true
+item_2/text = "Resume..."
+item_2/id = 99
+item_2/disabled = true
+item_3/text = "Chat..."
+item_3/id = 99
+item_3/disabled = true
+item_4/text = ""
+item_4/id = 98
+item_4/separator = true
+item_5/text = "Options..."
+item_5/id = 99
+item_5/disabled = true
+
+[node name="Windows" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 5
+item_0/text = "Tile"
+item_0/id = 99
+item_0/disabled = true
+item_1/text = "Cascade"
+item_1/id = 99
+item_1/disabled = true
+item_2/text = "Arrange Icons"
+item_2/id = 99
+item_2/disabled = true
+item_3/text = ""
+item_3/id = 98
+item_3/separator = true
+item_4/text = "1 Status"
+item_4/id = 97
+item_4/checkable = 2
+item_4/checked = true
+
+[node name="Help" type="PopupMenu" parent="VBox/MenuBar"]
+item_count = 3
+item_0/text = "Contents"
+item_0/id = 99
+item_0/disabled = true
+item_1/text = ""
+item_1/id = 98
+item_1/separator = true
+item_2/text = "About mIRC..."
+item_2/id = 5
+
+[node name="Toolbar" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="ConnectButton" type="Button" parent="VBox/Toolbar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Connect to IRC Server"
+focus_mode = 0
+icon = ExtResource("connect")
+icon_alignment = 1
+
+[node name="Gap1" type="Control" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(6, 0)
+layout_mode = 2
+
+[node name="SetupButton" type="Button" parent="VBox/Toolbar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Setup"
+focus_mode = 0
+icon = ExtResource("setup")
+icon_alignment = 1
+
+[node name="OptionsButton" type="Button" parent="VBox/Toolbar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Options"
+focus_mode = 0
+icon = ExtResource("options")
+icon_alignment = 1
+
+[node name="Gap2" type="Control" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(6, 0)
+layout_mode = 2
+
+[node name="Channels" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Channels Folder"
+focus_mode = 0
+disabled = true
+icon = ExtResource("channels")
+icon_alignment = 1
+
+[node name="List" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "List Channels"
+focus_mode = 0
+disabled = true
+icon = ExtResource("list")
+icon_alignment = 1
+
+[node name="Gap3" type="Control" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(6, 0)
+layout_mode = 2
+
+[node name="Aliases" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Aliases"
+focus_mode = 0
+disabled = true
+icon = ExtResource("aliases")
+icon_alignment = 1
+
+[node name="Popups" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Popups"
+focus_mode = 0
+disabled = true
+icon = ExtResource("popups")
+icon_alignment = 1
+
+[node name="Remote" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Remote"
+focus_mode = 0
+disabled = true
+icon = ExtResource("remote")
+icon_alignment = 1
+
+[node name="Gap4" type="Control" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(6, 0)
+layout_mode = 2
+
+[node name="Finger" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Finger"
+focus_mode = 0
+disabled = true
+icon = ExtResource("finger")
+icon_alignment = 1
+
+[node name="Timer" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Timer"
+focus_mode = 0
+disabled = true
+icon = ExtResource("timer")
+icon_alignment = 1
+
+[node name="Gap5" type="Control" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(6, 0)
+layout_mode = 2
+
+[node name="DccSend" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "DCC Send"
+focus_mode = 0
+disabled = true
+icon = ExtResource("dcc_send")
+icon_alignment = 1
+
+[node name="DccChat" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "DCC Chat"
+focus_mode = 0
+disabled = true
+icon = ExtResource("dcc_chat")
+icon_alignment = 1
+
+[node name="Gap6" type="Control" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(6, 0)
+layout_mode = 2
+
+[node name="Notify" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Notify List"
+focus_mode = 0
+disabled = true
+icon = ExtResource("notify")
+icon_alignment = 1
+
+[node name="Urls" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "URL List"
+focus_mode = 0
+disabled = true
+icon = ExtResource("urls")
+icon_alignment = 1
+
+[node name="Gap7" type="Control" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(6, 0)
+layout_mode = 2
+
+[node name="Tile" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Tile"
+focus_mode = 0
+disabled = true
+icon = ExtResource("tile")
+icon_alignment = 1
+
+[node name="Cascade" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Cascade"
+focus_mode = 0
+disabled = true
+icon = ExtResource("cascade")
+icon_alignment = 1
+
+[node name="Arrange" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Arrange Icons"
+focus_mode = 0
+disabled = true
+icon = ExtResource("arrange")
+icon_alignment = 1
+
+[node name="Gap8" type="Control" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(6, 0)
+layout_mode = 2
+
+[node name="HelpButton" type="Button" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(24, 22)
+layout_mode = 2
+tooltip_text = "Help"
+focus_mode = 0
+disabled = true
+icon = ExtResource("help")
+icon_alignment = 1
+
+[node name="Workspace" type="PanelContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("app_workspace")
+
+[node name="Status" type="PanelContainer" parent="VBox/Workspace"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="VBox/Workspace/Status"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="StatusTitle" parent="VBox/Workspace/Status/VBox" instance=ExtResource("title_bar")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Status"
+icon = ExtResource("status_16")
+show_minimize = true
+show_maximize = true
+
+[node name="Buffer" type="RichTextLabel" parent="VBox/Workspace/Status/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 0
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("fixedsys")
+theme_override_font_sizes/normal_font_size = 16
+theme_override_styles/normal = SubResource("window")
+bbcode_enabled = false
+scroll_following = true
+selection_enabled = true
+
+[node name="Editbox" type="LineEdit" parent="VBox/Workspace/Status/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("fixedsys")
+theme_override_font_sizes/font_size = 16

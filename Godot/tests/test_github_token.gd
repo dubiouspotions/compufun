@@ -41,6 +41,11 @@ func run() -> void:
 	check("a GitHub remote names the repo", GitHubIssues.slug_of_remote("git@github.com:someone/humanerror.git"), "someone/humanerror")
 	check("without git or a remote, the default repo", GitHubIssues.slug_of_remote("unknown"), GitHubIssues.DEFAULT_REPO)
 	check("a remote elsewhere names none", GitHubIssues.slug_of_remote("https://gitlab.com/someone/humanerror.git"), "")
+	var moved := PackedStringArray(["Content-Type: application/json", "Location: https://api.github.com/repositories/42/labels"])
+	check("a renamed repo's 307 redirects to its Location", GitHubIssues.redirect_target(307, moved), "https://api.github.com/repositories/42/labels")
+	check("a 301 redirects too", GitHubIssues.redirect_target(301, PackedStringArray(["location: https://api.github.com/repos/o/new"])), "https://api.github.com/repos/o/new")
+	check("a 200 redirects nowhere", GitHubIssues.redirect_target(200, moved), "")
+	check("a redirect off the API is not followed", GitHubIssues.redirect_target(307, PackedStringArray(["Location: https://example.com/steal"])), "")
 
 	await _tab_shows_only_the_last_four(settings)
 

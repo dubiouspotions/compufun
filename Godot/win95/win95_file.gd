@@ -21,6 +21,10 @@ extends Resource
 @export var target: String = ""
 ## The text of a text file, which Notepad shows and saves.
 @export_multiline var contents: String = ""
+## A plain text file in the project, such as "res://customers/activist_guy/mirc_logs/s1mmking.log",
+## whose text the running copy (Win95Setup.copy) puts in [member contents], so that writers edit
+## text instead of the .tres. Empty keeps [member contents]. The export presets must include it.
+@export_file var contents_file: String = ""
 ## The picture of a .bmp file, which Paint shows and saves. Null for a blank canvas.
 @export var picture: Texture2D
 ## The sound of a .mid file, which Media Player plays: a recording, as Godot plays no MIDI.

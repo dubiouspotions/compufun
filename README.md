@@ -14,7 +14,7 @@ Concept:
 - Game is 3D, maybe PS1 graphics. You can only turn left, right, and zoom into the CRT VGA monitor.
 - Customers don't come in in 3D, but rather as 2D cutouts and chat boxes, "visual novel" style.
 
-[See more concept details in the wiki](https://github.com/dubiouspotions/humanerror/wiki/Game-Concept-&-Loop).
+[See more concept details in the wiki](https://github.com/dubiouspotions/compufun/wiki/Game-Concept-&-Loop).
 
 ## Building
 
@@ -26,12 +26,12 @@ Concept:
 Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actions. A release, started by hand, bumps the version, tags `main` and uploads the builds to itch.io ([Releasing](docs/building-and-testing.md#releasing)):
 
 ```sh
-gh workflow run godot.yml -R dubiouspotions/humanerror -f bump=patch   # or minor, major
+gh workflow run godot.yml -R dubiouspotions/compufun -f bump=patch   # or minor, major
 ```
 
 ## Documentation
 
-- **Architecture:** [wiki/Architecture.md](wiki/Architecture.md), the local copy of the wiki page. Run `bash tools/sync-wiki.sh` to fetch or update it. It holds the design; it is also [online](https://github.com/dubiouspotions/humanerror/wiki/Architecture). The code layout (folders, the main scene tree, the load-bearing settings) is in [docs/architecture.md](docs/architecture.md).
+- **Architecture:** [wiki/Architecture.md](wiki/Architecture.md), the local copy of the wiki page. Run `bash tools/sync-wiki.sh` to fetch or update it. It holds the design; it is also [online](https://github.com/dubiouspotions/compufun/wiki/Architecture). The code layout (folders, the main scene tree, the load-bearing settings) is in [docs/architecture.md](docs/architecture.md).
 - **Rules and how-tos:** start at [docs/index.md](docs/index.md). Set up a new machine with [docs/working-together.md](docs/working-together.md).
 - Coding agents read [AGENTS.md](AGENTS.md).
 
@@ -72,6 +72,7 @@ gh workflow run godot.yml -R dubiouspotions/humanerror -f bump=patch   # or mino
 - `Godot/win95/sounds/hang_buzz.wav`: a slice of `boot_startup.ogg` above, which `tools/make_hang_buzz.sh` cuts; the same terms.
 - `Godot/win95/midi/passport.mp3`: PASSPORT.MID from Windows 95, (C) Microsoft, not licensed to us, played on an ESS AudioDrive ES1868F and recorded by blackstorm88, CC BY-NC-ND 4.0, unedited. From the Internet Archive (https://archive.org/details/passport-mid-played-on-a-es-1868-f).
 - `Godot/win95/netscape/`: Netscape Navigator 2.0's logo, toolbar icons and splash, drawn for the game by `tools/make_netscape_art.py` after screenshots of the real one; the logo and the look are Netscape's, not licensed to us.
+- `Godot/win95/mirc/`: mIRC's icon and toolbar buttons, drawn for the game by `tools/make_mirc_art.py` after the toolbar bitmap and icons of mIRC 4.0 (docs/mirc.md); the look is mIRC's, (C) Khaled Mardam-Bey, not licensed to us.
 - `Godot/finale/apple_logo.svg`: the Apple logo from [Simple Icons](https://simpleicons.org) 13.21.0, CC0; `Godot/finale/host_boot.gd` draws the Windows logo as four squares. Both are for the finale's fake restart, and both are their owners' trademarks (Apple, Microsoft), not licensed to us.
 - `Godot/people/*/back.png`: drawn by an image model (OpenAI's, through the codex CLI) from our own neutral portraits, with `tools/make_portrait_backs.py`. AI-generated.
 - `Godot/dev/trailer/sandroperrotta_sigla_2.mp3`: "Sigla 2" by sandroperrotta (https://pixabay.com/users/sandroperrotta-2717508/), under the Pixabay Content License (https://pixabay.com/service/license-summary/): the music of the trailer.

@@ -1,6 +1,7 @@
 extends "res://win95/window.gd"
 ## A Win95 message box: an icon, a message and a row of buttons. show_message() tells, with the
-## error icon and OK or other buttons; ask() asks, with the warning icon and Yes, No and Cancel.
+## error icon and OK or other buttons; ask() asks, with the warning icon and Yes, No and Cancel;
+## inform() tells with any icon and OK.
 
 ## The player pressed [param button], by its text, such as "OK", "Retry" or "Cancel". Closing the box
 ## with its X answers the last button. The box closes itself after this.
@@ -37,6 +38,12 @@ func show_message(title: String, text: String, buttons: Array[String] = ["OK"]) 
 func ask(title: String, text: String, buttons: Array[String] = ["Yes", "No", "Cancel"]) -> void:
 	_show(title, text, warning_icon, buttons)
 	_play(question_sound)
+
+
+## Shows [param text] under the title [param title], with [param icon] (null for none) and OK,
+## silently, as a program's About box does.
+func inform(title: String, text: String, icon: Texture2D) -> void:
+	_show(title, text, icon, ["OK"])
 
 
 func _focus_default() -> void:

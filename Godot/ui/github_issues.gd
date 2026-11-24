@@ -12,7 +12,11 @@ const TOKEN_FILE: String = "issues-token.txt"
 ## The debug menu's GitHub tab saves the token and the reporter name here, on this device only.
 const SETTINGS_FILE: String = "user://github.cfg"
 ## The repo for the issues where git can't tell.
-const DEFAULT_REPO: String = "dubiouspotions/humanerror"
+const DEFAULT_REPO: String = "dubiouspotions/compufun"
+## The GitHub REST API, the only host that [method api] sends the token to.
+const API: String = "https://api.github.com"
+## The most redirects that [method api] follows for one request.
+const MAX_REDIRECTS: int = 5
 const _SECTION: String = "github"
 
 var _host: Node
@@ -206,9 +210,38 @@ func create_issue(title: String, body: String, labels: Array[Dictionary]) -> Dic
 
 ## One request to the GitHub REST API at [param path] (such as "/repos/o/n/issues"). Returns
 ## {"code", "data"} (the parsed JSON reply), with "error" too when there is no reply or the status
-## is not 2xx. [param body] null: no body.
+## is not 2xx. [param body] null: no body. A redirect (a renamed repo answers 301 or 307) is
+## followed with the same method and body, up to [constant MAX_REDIRECTS] times.
 func api(method: HTTPClient.Method, path: String, body: Variant = null) -> Dictionary:
-	var url := "https://api.github.com" + path
+	var url := API + path
+	for hop: int in MAX_REDIRECTS + 1:
+		var result := await _request(method, url, body)
+		var next := redirect_target(result["code"], result.get("headers", PackedStringArray()))
+		if next == "":
+			result.erase("headers")
+			if not result.has("error") and (result["code"] < 200 or result["code"] >= 300):
+				var data: Variant = result["data"]
+				var message := String(data.get("message", "")) if data is Dictionary else str(data).left(200)
+				result["error"] = "HTTP %d from %s: %s" % [result["code"], path, message]
+			return result
+		url = next
+	return {"code": 0, "error": "more than %d redirects from %s" % [MAX_REDIRECTS, path]}
+
+
+## Where a reply with status [param code] and [param headers] redirects to: its Location for a 301,
+## 302, 307 or 308, else "". A Location outside [constant API] is "": the token goes nowhere else.
+static func redirect_target(code: int, headers: PackedStringArray) -> String:
+	if code not in [301, 302, 307, 308]:
+		return ""
+	for header: String in headers:
+		if header.to_lower().begins_with("location:"):
+			var target := header.substr(header.find(":") + 1).strip_edges()
+			return target if target.begins_with(API + "/") else ""
+	return ""
+
+
+# One request to [param url]: {"code", "data", "headers"}, or {"code": 0, "error"} without a reply.
+func _request(method: HTTPClient.Method, url: String, body: Variant) -> Dictionary:
 	var http := HTTPRequest.new()
 	http.process_mode = Node.PROCESS_MODE_ALWAYS
 	_host.add_child(http)
@@ -227,11 +260,6 @@ func api(method: HTTPClient.Method, path: String, body: Variant = null) -> Dicti
 	http.queue_free()
 	if reply[0] != HTTPRequest.RESULT_SUCCESS:
 		return {"code": 0, "error": "no reply from %s (HTTPRequest result %d)" % [url, reply[0]]}
-	var code: int = reply[1]
 	var text := (reply[3] as PackedByteArray).get_string_from_utf8()
 	var data: Variant = JSON.parse_string(text) if text != "" else null
-	var result := {"code": code, "data": data}
-	if code < 200 or code >= 300:
-		var message := String(data.get("message", "")) if data is Dictionary else text.left(200)
-		result["error"] = "HTTP %d from %s: %s" % [code, path, message]
-	return result
+	return {"code": reply[1], "data": data if data != null or text == "" else text, "headers": reply[2]}

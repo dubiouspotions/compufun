@@ -5,6 +5,7 @@ extends Resource
 
 ## The folder whose items Windows opens each time a boot reaches the desktop.
 const STARTUP_PATH := "C:\\WINDOWS\\Start Menu\\Programs\\StartUp"
+const _PROGRAMS_PATH := "C:\\WINDOWS\\Start Menu\\Programs"
 
 ## "Windows theme": the system colours. The default is the stock Win95 palette.
 @export var palette: Win95Palette = preload("res://win95/theme/palette.tres")
@@ -45,6 +46,9 @@ var desktop_screenshot: DesktopScreenshot
 @export var emails: Array[Email] = []
 ## The programs that the Start menu lists, by their name in the menu.
 @export var installed_apps: PackedStringArray = []
+## Shortcuts and folders that this computer's own programs put in the Start menu's Programs, on top
+## of the stock ones in C:\WINDOWS\Start Menu\Programs; the running copy adds them there.
+@export var start_menu_programs: Array[Win95File] = []
 ## Dial-Up Networking: the connection that AutoDial dials when a program goes online, by its name
 ## in the Connect To dialog, such as the provider's; empty for none, and programs then fail at once.
 ## At the customer's home it dialled; on the bench the modem has no phone line.
@@ -103,11 +107,19 @@ var floppy_files: Array[Win95File] = []
 
 
 ## A copy to run: every file and folder is the copy's own, also the ones that came from another
-## .tres, such as the stock Start Menu folder. duplicate_deep() alone shares those.
+## .tres, such as the stock Start Menu folder. duplicate_deep() alone shares those. Files with a
+## contents_file hold its text, and Start Menu\Programs holds [member start_menu_programs].
 func copy() -> Win95Setup:
 	var running := duplicate_deep() as Win95Setup
-	for files: Array in [running.desktop, running.drive_c, running.recycle_bin]:
+	for files: Array in [running.desktop, running.drive_c, running.recycle_bin, running.start_menu_programs]:
 		_own(files)
+	if not running.start_menu_programs.is_empty():
+		var programs := running.file_at(_PROGRAMS_PATH)
+		if programs == null:
+			push_error("Win95Setup: no %s folder, so the Start menu misses %s" % [_PROGRAMS_PATH, running.start_menu_programs.map(func(file: Win95File) -> String: return file.name)])
+		else:
+			programs.children.append_array(running.start_menu_programs)
+		running.start_menu_programs.clear()  # the folder holds them now; a copy of this copy mustn't add them twice
 	running._add_system_icons()
 	return running
 
@@ -145,7 +157,18 @@ static func _own(files: Array) -> void:
 		if file.resource_path != "" and not file.resource_path.contains("::"):
 			file = file.duplicate_deep()
 			files[i] = file
+		if file.contents_file != "":
+			_read_contents(file)
 		_own(file.children)
+
+
+static func _read_contents(file: Win95File) -> void:
+	var text := FileAccess.get_file_as_string(file.contents_file)
+	var err := FileAccess.get_open_error()
+	if err != OK:
+		push_error("Win95Setup: couldn't read %s for %s: %s" % [file.contents_file, file.name, error_string(err)])
+		return
+	file.contents = text
 
 
 ## Puts [param disk] in drive A:, with copies of its files that the computer changes from now on,
