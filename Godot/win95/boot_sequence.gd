@@ -1,10 +1,11 @@
 extends Control
 ## A 1995 PC booting: a black screen while the monitor warms up, the BIOS power-on self test, the
 ## system summary, the splash screen, "Starting Windows 95..." with a blinking cursor, then the
-## desktop beneath, part by part over its bare background, over one recording of the machine. Any key
-## or click skips to the bare desktop, unless [member skippable] is off. Until the desktop is whole it
-## takes every key and click. DEL during the POST opens BIOS Setup (BiosSetup), then the POST
-## starts again. Frees itself when the startup sound has played.
+## desktop beneath, part by part over its bare background, over one recording of the machine. The
+## POST ignores every key but DEL, which opens BIOS Setup (BiosSetup) once it ends and then starts
+## it again. After the POST, any key or click skips to the bare desktop, unless [member skippable]
+## is off. Until the desktop is whole it takes every key and click. Frees itself when the startup
+## sound has played.
 
 ## The whole desktop shows.
 signal finished
@@ -131,10 +132,11 @@ func _process(delta: float) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if not (event is InputEventKey or event is InputEventMouseButton) or not event.is_pressed():
 		return
-	# Backspace too: a Mac keyboard's Delete key is Backspace.
-	if _in_post and event is InputEventKey and (event as InputEventKey).keycode in [KEY_DELETE, KEY_BACKSPACE]:
-		accept_event()
-		_entering_setup = true
+	if _in_post:  # a real POST ignores every key but DEL; the rest go on, such as Esc out of the view
+		# Backspace too: a Mac keyboard's Delete key is Backspace.
+		if event is InputEventKey and (event as InputEventKey).keycode in [KEY_DELETE, KEY_BACKSPACE]:
+			accept_event()
+			_entering_setup = true
 	elif _awaiting_key:
 		accept_event()
 		_any_key.emit()

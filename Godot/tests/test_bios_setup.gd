@@ -21,6 +21,8 @@ func run() -> void:
 	boot.finished.connect(func() -> void: done[0] = true)
 	boot.play()
 	await process_frame
+	boot._gui_input(_key(KEY_A))
+	check("another key in the POST skips nothing", boot.get("_skipped"), false)
 	boot._gui_input(_key(KEY_DELETE))  # still on the video card's banner
 	await process_frame
 	check("DEL doesn't stop the POST", boot.get("_bios_setup"), null)
