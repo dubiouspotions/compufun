@@ -5,6 +5,8 @@ extends CorruptionSign
 
 ## The LogoSign property that the sign turns on: &"blue" or &"cambion".
 @export var property: StringName = &"blue"
+## On: the sign also turns on [member CambionLabel.cambion] of every CambionLabel in the shop.
+@export var renames_labels: bool = false
 
 var _shown: bool = false
 var _jump: int = -1
@@ -35,3 +37,6 @@ func _show(on: bool) -> void:
 	_shown = on
 	for logo: LogoSign in LogoSign.every(get_tree()):
 		logo.set(property, on)
+	if renames_labels:
+		for label: CambionLabel in CambionLabel.every(get_tree()):
+			label.cambion = on

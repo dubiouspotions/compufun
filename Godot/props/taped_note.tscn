@@ -3,6 +3,7 @@
 [ext_resource type="Material" path="res://materials/paper.tres" id="1_paper"]
 [ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="2_shader"]
 [ext_resource type="Texture2D" path="res://materials/textures/note_arrow.png" id="3_arrow"]
+[ext_resource type="Script" path="res://props/cambion_label.gd" id="4_label"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tape"]
 render_priority = 0
@@ -56,7 +57,7 @@ transform = Transform3D(0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 0
 material_override = SubResource("ShaderMaterial_tape")
 mesh = SubResource("QuadMesh_tape")
 
-[node name="Text" type="Label3D" parent="."]
+[node name="Text" type="Label3D" parent="." groups=["cambion_labels"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.315, 0, 0.005)
 pixel_size = 0.001
 shaded = true
@@ -72,6 +73,10 @@ vertical_alignment = 1
 autowrap_mode = 3
 width = 630.0
 line_spacing = 4.0
+script = ExtResource("4_label")
+cambion_text = "Opening the shop:
+1. Start CambionDB
+2. Flip \"Open\" Sign"
 
 [node name="Arrow" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26, -0.064, 0.005)

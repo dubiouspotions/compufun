@@ -5,6 +5,7 @@
 [node name="LogoCambion" type="Node"]
 script = ExtResource("1_sign")
 property = &"cambion"
+renames_labels = true
 title = "The logo reads CambIon"
 timing = 2
-description = "Both logo signs read CambIon in the logo's style; with logo_blue on too, in blue."
+description = "Both logo signs read CambIon in the logo's style; with logo_blue on too, in blue. The taped note on the counter says to start CambionDB."
