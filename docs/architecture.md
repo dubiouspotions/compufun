@@ -66,8 +66,8 @@ Play starts `ui/loading_screen.tscn`, which loads the main scene in the backgrou
 
 ```
 Main (Node)                              the main buffer: the window
-├─ World (SubViewportContainer, psx_post material, scaled to the window)
-│  └─ SubViewport (480 × 270)            the world buffer
+├─ World (SubViewportContainer, psx_post material, covers the canvas at 4 × in the design frame)
+│  └─ SubViewport (480 × 270 at 16:9; grows with the canvas on mobile, docs/ios.md)  the world buffer
 │     └─ the room (shop.tscn); its monitor shows the screen buffer
 ├─ UI (CanvasLayer)
 │  ├─ the UI screens
@@ -93,5 +93,6 @@ Do not change these without the team:
 - **The Godot project is in `Godot/`, not the repo root.** Docs, CI and art sources stay out of Godot's import scan. CI's `working-directory` and artifact paths assume it.
 - **GL Compatibility renderer.** The web export needs it. Forward+ breaks the web build.
 - **`textures/vram_compression/import_etc2_astc=true`.** The macOS export is universal (arm64) and needs ETC2/ASTC textures. Without it, the macOS export fails.
+- **`display/window/stretch/aspect` is `keep` with `aspect.mobile="expand"`.** Desktop and web show 16:9 with bars; mobile fills the screen, and the world buffer and the camera follow its shape (docs/ios.md, "Filling the screen").
 - **`application/run/max_fps=60`.** V-Sync alone draws 120 frames a second or more on fast screens, which doubles the load (docs/performance.md).
 - **The names of the export presets** (`Web`, `Windows Desktop`, `MacOS`, `Linux`). CI exports them by name.
