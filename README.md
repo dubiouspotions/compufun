@@ -14,7 +14,7 @@ Concept:
 - Game is 3D, maybe PS1 graphics. You can only turn left, right, and zoom into the CRT VGA monitor.
 - Customers don't come in in 3D, but rather as 2D cutouts and chat boxes, "visual novel" style.
 
-[See more concept details in the wiki](https://github.com/dubiouspotions/humanerror/wiki/Game-Concept-&-Loop).
+[See more concept details in the wiki](https://github.com/dubiouspotions/compufun/wiki/Game-Concept-&-Loop).
 
 ## Building
 
@@ -26,12 +26,12 @@ Concept:
 Pushing to `main` exports Web, Windows, macOS and Linux builds with GitHub Actions. A release, started by hand, bumps the version, tags `main` and uploads the builds to itch.io ([Releasing](docs/building-and-testing.md#releasing)):
 
 ```sh
-gh workflow run godot.yml -R dubiouspotions/humanerror -f bump=patch   # or minor, major
+gh workflow run godot.yml -R dubiouspotions/compufun -f bump=patch   # or minor, major
 ```
 
 ## Documentation
 
-- **Architecture:** [wiki/Architecture.md](wiki/Architecture.md), the local copy of the wiki page. Run `bash tools/sync-wiki.sh` to fetch or update it. It holds the design; it is also [online](https://github.com/dubiouspotions/humanerror/wiki/Architecture). The code layout (folders, the main scene tree, the load-bearing settings) is in [docs/architecture.md](docs/architecture.md).
+- **Architecture:** [wiki/Architecture.md](wiki/Architecture.md), the local copy of the wiki page. Run `bash tools/sync-wiki.sh` to fetch or update it. It holds the design; it is also [online](https://github.com/dubiouspotions/compufun/wiki/Architecture). The code layout (folders, the main scene tree, the load-bearing settings) is in [docs/architecture.md](docs/architecture.md).
 - **Rules and how-tos:** start at [docs/index.md](docs/index.md). Set up a new machine with [docs/working-together.md](docs/working-together.md).
 - Coding agents read [AGENTS.md](AGENTS.md).
 

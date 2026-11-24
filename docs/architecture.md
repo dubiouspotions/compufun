@@ -2,7 +2,7 @@
 
 Where the code is: the folders, the main scene tree and the settings that must not change. It changes
 in the same commit as the code. The design, what the parts are and why, is on the wiki page
-[Architecture](https://github.com/dubiouspotions/humanerror/wiki/Architecture) (local copy:
+[Architecture](https://github.com/dubiouspotions/compufun/wiki/Architecture) (local copy:
 `wiki/Architecture.md`).
 
 ## Folders

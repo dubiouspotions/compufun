@@ -183,7 +183,7 @@ assets replaced.
   keeps the drafts.
 - **No git on a device:** iOS can't start processes, and an export has no checkout.
   `GitHubIssues` runs git only where `.git` is next to the project; elsewhere the commit comes from
-  `build_info.txt`, the repo is `dubiouspotions/humanerror` and the name is the tab's. A draft
+  `build_info.txt`, the repo is `dubiouspotions/compufun` and the name is the tab's. A draft
   started on this build starts from the build's own file; "changed on `main`" doesn't show.
 - The Story Lab is a 1080p mouse tool: an iPad with a keyboard and a trackpad can use it, a phone
   can't.
