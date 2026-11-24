@@ -17,6 +17,20 @@ seconds of dips while it loads and compiles its shaders. `--print-fps --log-file
 writes the frame rate to `Documents/perf.log`, which `devicectl device copy from --domain-type
 appDataContainer` fetches.
 
+## Xcode Cloud
+
+`ios/` holds the Xcode project's text, so that Xcode Cloud finds the project and its scheme; the
+export fills in the rest (`ios/.gitignore`). Before each build, `ios/ci_scripts/ci_post_clone.sh`
+pulls the LFS files, downloads Godot and its iOS template, writes the build info, takes the version
+from the release tag (`v0.9.3` -> 0.9.3), and exports a debug build, so testers keep the debug tools.
+Xcode Cloud sets the build number and signs. Re-export into `ios/` when the preset changes, and
+commit what changed.
+
+To set up the workflow (only Xcode's wizard can create the product): open
+`ios/CompuFun.xcodeproj`, Product > Xcode Cloud > Create Workflow, connect the dubiouspotions GitHub
+organisation, start on tag changes matching `v*`, action Archive (iOS) with TestFlight (Internal
+Testing Only), and post-action TestFlight Internal Testing to the group Dubious Potions.
+
 ## Build for the simulator
 
 Godot's 4.7.2 iOS template ships an x86_64-only simulator library, although its folder says
@@ -28,14 +42,14 @@ git clone --depth 1 -b 4.7.2-stable https://github.com/godotengine/godot.git
 scons -C godot platform=ios target=template_debug ios_simulator=yes arch=arm64 -j16
 
 cd Godot && ../tools/write-build-info.sh
-godot --headless --export-debug iOS build/ios/CompuFun.ipa   # export_project_only: writes the Xcode project
+godot --headless --export-debug iOS ../ios/CompuFun.ipa   # export_project_only: fills in ios/
 cp <godot>/bin/libgodot.ios.template_debug.arm64.simulator.a \
-   build/ios/CompuFun.xcframework/ios-arm64_x86_64-simulator/libgodot.a
-xcodebuild -project build/ios/CompuFun.xcodeproj -scheme CompuFun -sdk iphonesimulator \
+   ../ios/CompuFun.xcframework/ios-arm64_x86_64-simulator/libgodot.a
+xcodebuild -project ../ios/CompuFun.xcodeproj -scheme CompuFun -sdk iphonesimulator \
    -destination 'generic/platform=iOS Simulator' ARCHS=arm64 CODE_SIGNING_ALLOWED=NO build
 ```
 
-Export into an empty folder: an export over an old one logs errors about the asset catalog.
+Export outside `Godot/`: Godot imports whatever lies inside the project, Xcode's output included.
 
 - **The simulator can't judge speed.** Godot builds simulator templates without Metal or Vulkan
   (`platform/ios/detect.py`), and the simulator runs OpenGL ES in software on the CPU
