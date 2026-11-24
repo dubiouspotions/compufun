@@ -424,6 +424,9 @@ func _open_submenu(index: int) -> void:
 			if visible:
 				grab_focus()
 				_rows.grab_focus())
+		_sub.window_input.connect(func(event: InputEvent) -> void:
+			if event is InputEventMouseButton and not Rect2(Vector2.ZERO, _sub.size).has_point(event.position):
+				window_input.emit(event.xformed_by(Transform2D(0.0, Vector2(_sub.position - position)))))  # the PopupCatcher listens on the top menu
 	_sub_index = index
 	var row := _row_rect(index)
 	var at := Vector2(position) + _rows.position + Vector2(row.end.x - 3.0, row.position.y - 3.0)
