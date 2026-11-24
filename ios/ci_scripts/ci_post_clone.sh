@@ -21,8 +21,8 @@ curl -fsSL -o "$TOOLS/templates.tpz" "$RELEASES/Godot_v$GODOT_VERSION-stable_exp
 unzip -q -o -j "$TOOLS/templates.tpz" templates/ios.zip templates/version.txt -d "$TEMPLATES"
 
 cd "$ROOT/Godot"
-version=${CI_TAG#v}
-if [[ -n "${CI_TAG:-}" && "$version" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]]; then
+version=${${CI_TAG:-}#v}  # a branch build has no tag and keeps the preset's version
+if [[ "$version" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]]; then
 	sed -i '' "s/^application\/short_version=.*/application\/short_version=\"$version\"/" export_presets.cfg
 fi
 ../tools/write-build-info.sh
