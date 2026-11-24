@@ -150,7 +150,8 @@ static func write_problem(problem: Problem) -> String:
 	out.append("post-it: " + problem.perceived_issue)
 	if problem.cause != "":
 		out.append("cause: " + problem.cause)
-	_write_shown(out, "symptoms", problem.symptoms, problem.symptom_shows)
+	var no_shows: Dictionary[String, String] = {}
+	_write_shown(out, "symptoms", problem.symptoms, no_shows)
 	if not problem.checks.is_empty():
 		var named := PackedStringArray()
 		var shows: Dictionary[String, String] = {}
@@ -477,7 +478,8 @@ class _Reader:
 			_error(fields["cause_line"], "'cause:' is one line, after the colon")
 		else:
 			p.cause = fields.get("cause", "")
-		p.symptoms = _read_shown(fields, "symptoms", "symptom", p.symptom_shows)
+		var no_shows: Dictionary[String, String] = {}
+		p.symptoms = _read_shown(fields, "symptoms", "symptom", no_shows, false)
 		var shows: Dictionary[String, String] = {}
 		var checks := PackedStringArray()  # built here: a packed array is a copy, not a reference
 		for line: String in _read_shown(fields, "checks", "check", shows):
@@ -504,7 +506,7 @@ class _Reader:
 
 	# The entries of the block [param key] of [param fields], each [param noun] once; the 'shows:' line
 	# under each goes into [param shows].
-	func _read_shown(fields: Dictionary, key: String, noun: String, shows: Dictionary[String, String]) -> PackedStringArray:
+	func _read_shown(fields: Dictionary, key: String, noun: String, shows: Dictionary[String, String], takes_shows: bool = true) -> PackedStringArray:
 		var entries := PackedStringArray()
 		for row: Array in _rows(fields, key):
 			var text: String = row[1]
@@ -513,6 +515,8 @@ class _Reader:
 					_error(row[0], "the %s '%s' a second time" % [noun, text])
 				else:
 					entries.append(text)
+			elif not takes_shows:
+				_error(row[0], "nothing goes under a %s; its search keywords are in %s" % [noun, "story/symptoms.keywords"])
 			elif not text.substr(1).begins_with("shows:"):
 				_error(row[0], "under a %s goes only 'shows:' and how it shows in the game" % noun)
 			elif entries.is_empty():

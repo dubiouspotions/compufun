@@ -1,9 +1,7 @@
 post-it: None
 symptoms:
 	Blood comes out of the chassi
-		shows: as he sets the computer down, blood seeps out under it, and stays on the counter for the rest of the game
 	Sound of heartbeat from computer
-		shows: a heartbeat sounds from the computer while the heart is in it
 hardware steps:
 	Remove the computer shell
 	Remove the faulty parts, throw them in the trash
@@ -14,3 +12,5 @@ notes:
 	Broken part: Motherboard, CPU, Fan, GPU and Hard drive
 	Blood comes out of the chassi (discreet)
 	Hardware replaced with customers organs (kidneys (RAM), heart (motherboard), lungs (fan), liver (GPU), brain (hard drive), spleen (CPU)). Note: Don't show the corrupted symptoms in CompuFun db. Treat likemissing/broken hardware with the symptoms.
+	Blood comes out of the chassi: as he sets the computer down, blood seeps out under it, and stays on the counter for the rest of the game.
+	Sound of heartbeat from computer: a heartbeat sounds from the computer while the heart is in it.

@@ -56,7 +56,6 @@ var _send_button: Button
 var _checkout_chip: Label
 var _week_view: Control
 var _bible: StoryBiblePanel
-var _keywords: StoryKeywordsPanel
 var _problem_panel: StoryProblemPanel
 var _sign_panel: StorySignPanel
 var _call_outs: StoryCallOutsPanel
@@ -318,7 +317,7 @@ func play(errand: Errand, trigger: Conversation.Trigger) -> String:
 
 
 ## Shows the "Week" (the board and the picked errand or day), the "Problems", the "Signs", the
-## "Call-outs", the "Keywords" or the "Bible".
+## "Call-outs" or the "Bible".
 func show_section(section: String) -> void:
 	for button: BaseButton in _sections.get_buttons():
 		button.set_pressed_no_signal((button as Button).text == section)
@@ -327,7 +326,6 @@ func show_section(section: String) -> void:
 	_sign_panel.visible = section == "Signs"
 	_call_outs.visible = section == "Call-outs"
 	_bible.visible = section == "Bible"
-	_keywords.visible = section == "Keywords"
 	if section == "Problems":
 		_problem_panel.show_problems(_week.problems, drafts)
 	elif section == "Signs":
@@ -336,8 +334,6 @@ func show_section(section: String) -> void:
 		_call_outs.show_call_outs(drafts)
 	elif section == "Bible":
 		_bible.show_pages(drafts)
-	elif section == "Keywords":
-		_keywords.show_keywords(drafts, _week)
 
 
 ## Opens the problem [param id] in the Problems section.
@@ -451,8 +447,6 @@ func _drafts_changed() -> void:
 		_problem_panel.open_problem(_problem_panel.problem_id())
 	if _call_outs.visible:
 		_call_outs.show_call_outs(drafts)
-	if _keywords.visible:
-		_keywords.show_keywords(drafts, _week)
 
 
 func _store_page(path: String, text: String) -> void:
@@ -599,10 +593,6 @@ func _build() -> void:
 	_call_outs.saved.connect(_store_edit)
 	_call_outs.hide()
 	page.add_child(_call_outs)
-	_keywords = StoryKeywordsPanel.new()
-	_keywords.saved.connect(_store_edit)
-	_keywords.hide()
-	page.add_child(_keywords)
 	_bible = StoryBiblePanel.new()
 	_bible.saved.connect(_store_page)
 	_bible.hide()
@@ -654,7 +644,7 @@ func _top_bar() -> Control:
 	row.add_child(LabUI.label("Story Lab", 26))
 	row.add_child(LabUI.chip("Game paused", LabUI.ACCENT, 13))
 	_sections = ButtonGroup.new()
-	var sections := LabUI.segmented(PackedStringArray(["Week", "Problems", "Signs", "Call-outs", "Keywords", "Bible"]), _sections)
+	var sections := LabUI.segmented(PackedStringArray(["Week", "Problems", "Signs", "Call-outs", "Bible"]), _sections)
 	for button: BaseButton in _sections.get_buttons():
 		button.custom_minimum_size.x = 90
 		button.toggled.connect(func(on: bool) -> void:

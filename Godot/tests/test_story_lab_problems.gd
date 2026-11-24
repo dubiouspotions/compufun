@@ -57,7 +57,12 @@ func _the_form_edits_a_draft(panel: StoryProblemPanel, drafts: StoryDrafts) -> v
 	panel.call("_save")
 	var after := StoryFormat.parse_problem(drafts.text(DUST), DUST).value as Problem
 	check("the post-it is a draft", after.perceived_issue, "Runs hot, then dies")
-	check("the rest of the file stays", [after.symptoms, after.hardware_steps, after.symptom_shows], [before.symptoms, before.hardware_steps, before.symptom_shows])
+	check("the rest of the file stays", [after.symptoms, after.hardware_steps, after.check_shows], [before.symptoms, before.hardware_steps, before.check_shows])
+	var keywords: LineEdit = (panel.get("_symptoms") as VBoxContainer).get_child(0).get_child(1)
+	check("a symptom shows its keywords", keywords.text, "reboot, reset, turns off, shuts down, crashes")
+	keywords.text = "reboot, blinks out"
+	panel.call("_save")
+	check("its keywords edit the shared file", drafts.text(StoryFiles.KEYWORDS_PATH).contains("\nRestarts by itself: reboot, blinks out\n"), true)
 	check("the game plays the draft", (game.get("story_drafts") as Dictionary).get(DUST, ""), drafts.text(DUST))
 	var hardware: VBoxContainer = panel.get("_hardware")
 	panel.call("_move", hardware.get_child(0), 1)
@@ -79,9 +84,10 @@ func _a_reworded_symptom_is_drafted(panel: StoryProblemPanel, drafts: StoryDraft
 	panel.call("_save")
 	check("a reworded symptom saves", "Shuts off by itself" in drafts.text(DUST), true)
 	panel.open_problem(&"haunted_printer")
-	panel.call("_add_symptom", "Prints by itself", "pages come out at night")
+	panel.call("_add_symptom", "Prints by itself", "pages, night")
 	panel.call("_save")
-	check("its symptom and how it shows are drafted", drafts.text(HAUNTED), "post-it: Haunted printer\nsymptoms:\n\tPrints by itself\n\t\tshows: pages come out at night\n")
+	check("its symptom is drafted", drafts.text(HAUNTED), "post-it: Haunted printer\nsymptoms:\n\tPrints by itself\n")
+	check("and its keywords", drafts.text(StoryFiles.KEYWORDS_PATH).contains("\nPrints by itself: pages, night\n"), true)
 
 
 func _the_picker_lists_and_opens_every_problem(lab: Control, drafts: StoryDrafts) -> void:

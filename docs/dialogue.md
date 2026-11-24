@@ -141,7 +141,8 @@ The file name is the problem's id, the name of its `problems/<id>.tres`, which h
   its CAUSES column and the fix it prints. Without one, CompuFunDB names it by the file name.
 - `symptoms`: one per line: every complaint this cause can bring, as a customer would put it, worded
   as other problems word the same complaint ("Slow computer"), so a search offers every likely
-  cause. The player searches CompuFunDB for their words.
+  cause. The player searches CompuFunDB for their words and their keywords
+  (`story/symptoms.keywords`). Nothing goes under a symptom.
 - `checks`: one per line, `yes:` (true when this is the cause) or `no:` (false). The player ticks
   what is true. A ticked check rules out every cause that says `no:` to it, so a cause says `no:`
   only to a check that it makes false. `shows:` is how it fails in the game.
@@ -169,8 +170,8 @@ No sound: audio, speaker, silent, mute, volume, quiet
 ```
 
 A symptom without a line is found by its name alone. A line for a symptom that no problem lists is
-in the story check. The Story Lab's Keywords tab edits the file, and adds a line for each symptom
-that has none.
+in the story check. In the Story Lab, a problem's symptoms have their keywords beside them; an edit
+there changes this file, so every problem with that symptom gets it.
 
 ## Call-outs: `story/callouts/<customer>.callouts`
 
