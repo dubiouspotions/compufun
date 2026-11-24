@@ -20,7 +20,7 @@ const SKATER_TEXT: String = """== waiting [if day 7] [effect cambion_glitch]
 
 func run() -> void:
 	var skater := load("res://customers/skater_bro.tres") as Customer
-	var lady := load("res://customers/nice_lady.tres") as Customer
+	var other := load("res://customers/retired_accountant.tres") as Customer  # no call-outs of his own
 	check("the week loads without call-out drafts", game.story_errors, PackedStringArray())
 	var everyone: CallOuts.Set = game.week.call_outs[CallOuts.EVERYONE].sets[0]
 	game.restore({"day": 7, "phase": "OPEN"})
@@ -36,7 +36,7 @@ func run() -> void:
 	var sets: Array[CallOuts.Set] = game.week.call_outs[&"skater_bro"].sets
 	check("restore day 7", game.restore({"day": 7, "phase": "OPEN"}), "")
 	check("on day 7 the day's set plays, with its effect", [game.call_outs_of(skater), game.call_outs_of(skater).effect.resource_path], [sets[0], "res://voices/effects/cambion_glitch.tres"])
-	check("others still call out everyone's", said(game.call_outs_of(lady)), said(everyone))
+	check("others still call out everyone's", said(game.call_outs_of(other)), said(everyone))
 	check("restore day 3", game.restore({"day": 3, "phase": "OPEN"}), "")
 	check("on day 3 in the morning, their plain set", [game.daypart, game.call_outs_of(skater)], [GAME.Daypart.MORNING, sets[1]])
 	game.daypart = GAME.Daypart.AFTERNOON
