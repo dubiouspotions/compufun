@@ -13,6 +13,10 @@ signal remove_requested(path: String)
 signal edit_problem_requested(id: StringName)
 ## The writer asked to play [param errand]'s conversation for [param trigger] in the game.
 signal play_requested(errand: Errand, trigger: Conversation.Trigger)
+## The writer asked to open the errand file [param path] in story mode ("Open full").
+signal story_requested(path: String)
+## The writer clicked the errand file [param path] in the list of the customer's errands.
+signal errand_picked(path: String)
 
 ## The conversation graph, while the game has it (contract: show_conversation and edited).
 const GRAPH: String = "res://dev/story_lab/conversation_graph.tscn"
@@ -39,6 +43,14 @@ var problems: Dictionary[StringName, Problem] = {}:
 		problems = value
 		if _problem != null:
 			_fill_problem_picker()
+## True: the left column lists the customer's errands ([method show_errands]) and "Open full" hides,
+## as story mode shows the panel.
+var story_mode: bool = false:
+	set(on):
+		story_mode = on
+		if _errand_list != null:
+			_errand_list.visible = on
+			_open_full.visible = not on
 
 var _path: String = ""
 var _text: String = ""
@@ -55,6 +67,8 @@ var _face_slot: Control
 var _name: Label
 var _code_label: Label
 var _remove: Button
+var _open_full: Button
+var _errand_list: VBoxContainer
 var _brief: TextEdit
 var _problem: OptionButton
 var _problem_text: Label
@@ -100,6 +114,19 @@ func show_errand(errand_path: String, text: String) -> void:
 	_fill_tabs()
 	_header_error.text = "" if parsed.errors.is_empty() else "This file doesn't parse; fix it as text:\n" + "\n".join(parsed.errors)
 	_show_tab(clampi(_tab, 0, maxi(_errand.conversations.size() - 1, 0)))
+
+
+## Lists [param errands] (errand file path to Errand), one row each in errand code order with its
+## day, errand code and problem, the row of [param open] highlighted. Shows only in
+## [member story_mode]; a click on a row emits [signal errand_picked].
+func show_errands(errands: Dictionary, open: String) -> void:
+	for child: Node in _errand_list.get_children():
+		_errand_list.remove_child(child)
+		child.queue_free()
+	var paths: Array = errands.keys()
+	paths.sort()
+	for errand_path: String in paths:
+		_errand_list.add_child(_errand_row(errand_path, errands[errand_path], errand_path == open))
 
 
 ## The open errand file, or "".
@@ -512,6 +539,39 @@ func _arm_remove() -> void:
 	remove_requested.emit(_path)
 
 
+func _errand_row(errand_path: String, errand: Errand, open: bool) -> Button:
+	var row := Button.new()
+	row.name = errand_path.get_file().get_basename()
+	row.toggle_mode = true
+	row.button_pressed = open
+	row.theme_type_variation = &"FlatButton"
+	row.custom_minimum_size.y = 32
+	var highlight := LabUI.box(Color(LabUI.ACCENT, 0.22), 8, 2)
+	highlight.border_color = LabUI.ACCENT
+	highlight.set_border_width_all(1)
+	for state: String in ["pressed", "hover_pressed"]:
+		row.add_theme_stylebox_override(state, highlight)
+	row.tooltip_text = errand_path.get_file()
+	row.pressed.connect(func() -> void:
+		row.set_pressed_no_signal(true)
+		errand_picked.emit(errand_path))
+	var cells := HBoxContainer.new()
+	cells.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	cells.offset_left = 12
+	cells.offset_right = -12
+	cells.add_theme_constant_override("separation", 16)
+	cells.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(cells)
+	var problem := String(errand.problem.short_name) if errand.problem != null else "no repair"
+	for cell: Array in [["Day %d" % errand.day_number(), 56, LabUI.DIM], [errand.code, 44, LabUI.DIM], [problem, 0, LabUI.TEXT]]:
+		var label := LabUI.label(cell[0], 14, cell[2])
+		label.custom_minimum_size.x = cell[1]
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cells.add_child(label)
+	return row
+
+
 # --- Building
 
 func _build() -> void:
@@ -560,9 +620,20 @@ func _left() -> Control:
 	names.add_child(_name)
 	_code_label = LabUI.label("", 13, LabUI.DIM)
 	names.add_child(_code_label)
+	var actions := VBoxContainer.new()
+	actions.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	actions.add_theme_constant_override("separation", 2)
+	who.add_child(actions)
+	_open_full = LabUI.button("Open full", func() -> void: story_requested.emit(_path), &"FlatButton")
+	_open_full.tooltip_text = "The errand fills the window, with this customer's other errands beside it. Esc comes back."
+	_open_full.visible = not story_mode
+	actions.add_child(_open_full)
 	_remove = LabUI.button("Remove errand", _arm_remove, &"FlatButton")
-	_remove.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	who.add_child(_remove)
+	actions.add_child(_remove)
+	_errand_list = VBoxContainer.new()
+	_errand_list.add_theme_constant_override("separation", 2)
+	_errand_list.visible = story_mode
+	box.add_child(_errand_list)
 	box.add_child(LabUI.label("What this visit is for", 14, LabUI.DIM))
 	_brief = TextEdit.new()
 	_brief.custom_minimum_size.y = 96
