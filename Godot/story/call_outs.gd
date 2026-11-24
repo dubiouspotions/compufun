@@ -11,12 +11,10 @@ const EVERYONE: StringName = &"everyone"
 const DAYPARTS: Array[StringName] = [&"morning", &"midday", &"afternoon"]
 
 
-## One set of call-outs: its lines, [member Conversation.when] and [member Conversation.effect],
-## and the daypart that it is limited to.
+## One set of call-outs: its lines, [member Conversation.when], [member Conversation.effect] and
+## [member Conversation.daypart].
 class Set:
 	extends Conversation
-	## One of [constant DAYPARTS]; empty for any daypart.
-	var daypart: StringName = &""
 
 	## True when the set has neither a condition nor a daypart: it plays when no other set matches.
 	func is_plain() -> bool:

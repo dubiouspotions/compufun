@@ -103,7 +103,7 @@ brief:
 ### Events: `== event`
 
 ```
-== event [pop-up (happy) Hey!]
+== event [if day 5] [daypart midday] [pop-up (happy) Hey!]
 (happy) Yo! Is my computer done yet?
 - Not yet. I'll call you when it's ready.
 	(neutral) Aw, man. Okay, okay.
@@ -115,12 +115,13 @@ the view shakes, they call out the `[pop-up ...]` line (a `(mood)` is optional),
 counter, and the player turns to face them for the conversation. Then they walk out. While they pop
 up, their 3D body shows the portrait of the pop-up line's mood, and the usual one from the step on.
 
-- It comes at any time from the drop-off until the player has finished the errand's computer
-  (fixed and tested), on that day or a later one: while that computer is on the counter and not
-  done, nobody is in the shop and the phone is on the hook.
-- It comes while the player works in the Workview on a computer whose case is open; else as they
-  turn back to the Main view from the left or the right once the next customer is due. The next
-  customer waits until it came. The customer rises once the view has turned, so the player sees it.
+- It can come from the drop-off until the player has finished the errand's computer (fixed and
+  tested), on that day or a later one: while that computer is on the counter and not done, nobody
+  is in the shop and the phone is on the hook. `[if ...]` and `[daypart ...]` narrow it to a day and
+  a daypart.
+- It comes only while the player is zoomed in on a computer in the Workview, and the customer
+  peeks over the counter there. The next customer doesn't wait for it: when its day or daypart
+  passes while the player is not in the Workview, it doesn't come.
 - It plays once, and it is not an arrival: it doesn't change the daypart.
 
 ## A problem: `story/problems/<id>.problem`
@@ -364,7 +365,8 @@ brief: He arrives cheerful; the problem comes out only when asked.
 `not flag` (must not be), `day 3` and `days 2-4`. A flag that is 0 or missing is not set.
 
 **Tags** in `[...]` after a conversation's `==` line: `[if ...]`, `[once]` (plays only the first
-time it matches), `[effect name]` (for all its lines), `[leave Text]` and `[back Text]` (the
+time it matches), `[daypart morning]`, `midday` or `afternoon` (plays only in that daypart),
+`[effect name]` (for all its lines), `[leave Text]` and `[back Text]` (the
 leave buttons), and for an event `[pop-up Text]`. After a choice: `[if ...]` and `[end]`.
 
 ## Flags and signs

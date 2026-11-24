@@ -63,9 +63,6 @@ enum AlleyEnd {
 	LEFT,
 }
 
-## The views from which a turn to the Main view lets an event in once the next customer is due
-## ([method waiting_event]).
-const SIDE_VIEWS: Array[StringName] = [&"Left", &"Right"]
 ## The chance, 0 to 1, that a visitor walks out toward the alley end that they came in from.
 const SAME_WAY_OUT: float = 0.75
 ## The places on the counter. A full counter holds back the next drop-off.
@@ -315,10 +312,7 @@ func start_day(new_day: Day) -> void:
 func go_to_view(view_name: StringName) -> void:
 	if view_name == &"" or view_name == view:
 		return
-	var from := view
 	view = view_name
-	if view == &"Main" and from in SIDE_VIEWS and _arrival_due():
-		_try_event()
 	changed.emit()
 
 
@@ -471,8 +465,9 @@ func edit_setup(customer: Customer, errand: Errand, setup: Win95Setup) -> String
 ## errand's conversations not yet seen. Then the conversation for [param trigger] plays:
 ## [constant Conversation.Trigger.ARRIVE] with the customer at the counter, PICKUP with them at the
 ## counter and their computer fixed and tested on it, PHONE with the call on about that computer,
-## EVENT with them popping up behind their computer, not yet repaired. For the Story Lab's Play
-## here. Returns "" or why it can't, and then keeps the state.
+## EVENT with them popping up behind their computer, not yet repaired, on the first day and in the
+## daypart that the event's condition and daypart allow. For the Story Lab's Play here. Returns ""
+## or why it can't, and then keeps the state.
 func play_errand(to_play: Errand, trigger: Conversation.Trigger = Conversation.Trigger.ARRIVE) -> String:
 	if to_play == null or to_play.file == "":
 		return _refuse_play("play_errand needs an errand from a story file, not %s" % to_play)
@@ -510,6 +505,12 @@ func play_errand(to_play: Errand, trigger: Conversation.Trigger = Conversation.T
 				return _refuse_play("%s brings no computer, and an event comes while it is on the counter" % target.file_name())
 			state.merge({"jobs": [{"errand": target.file_name(), "slot": 0}], "focus_slot": 0,
 					"visitor": target.customer.resource_path, "visit": "EVENT", "visitor_state": "POPPING_UP"})
+			var events := target.conversations.filter(func(c: Conversation) -> bool: return c.trigger == Conversation.Trigger.EVENT)
+			var event: Conversation = events[0] if not events.is_empty() else null
+			if event != null and event.when != null and event.when.from_day > on_day.number:
+				state.merge({"day": event.when.from_day, "arrivals": 0}, true)
+			if event != null and event.daypart != &"":
+				state["daypart"] = String(event.daypart).to_upper()
 	var computer := target.customer.computer
 	var running: Win95Setup = setups.get(computer)
 	setups.erase(computer)  # it arrives as the week makes it, with the patches as they are now
@@ -640,8 +641,8 @@ func _met(when: Condition) -> bool:
 	return when == null or when.is_met(day_number, flags)
 
 
-## The first conversation of [param from] with [param trigger] whose condition matches now, and
-## that has not played if it plays once. null when none matches, or [param from] is null.
+## The first conversation of [param from] with [param trigger] whose condition and daypart match
+## now, and that has not played if it plays once. null when none matches, or [param from] is null.
 func matching_conversation(from: Errand, trigger: Conversation.Trigger) -> Conversation:
 	if from == null:
 		return null
@@ -650,10 +651,15 @@ func matching_conversation(from: Errand, trigger: Conversation.Trigger) -> Conve
 			continue
 		if c.once and seen.has(String(c.id)):
 			continue
-		if not _met(c.when):
+		if not _met(c.when) or (c.daypart != &"" and c.daypart != _daypart_name()):
 			continue
 		return c
 	return null
+
+
+# The daypart now in lower case, as the story files name it: "morning", "midday", "afternoon".
+func _daypart_name() -> StringName:
+	return StringName(String(Daypart.find_key(daypart)).to_lower())
 
 
 ## Switches the computer in focus off and lays it on its side in the Workview, so the player can
@@ -1716,7 +1722,7 @@ func _process(delta: float) -> void:
 	_heat(delta)
 	if phase == Phase.CALLING:
 		return
-	if focus != null and focus.case_open and view == &"Workview" and _try_event():
+	if focus != null and view == &"Workview" and _try_event():
 		changed.emit()
 		return
 	if phase == Phase.OPEN and visitor == null and _has_room():
@@ -1769,7 +1775,7 @@ func _try_arrival() -> bool:
 	if phase != Phase.OPEN or visitor != null or phone_off_hook or not _has_room():
 		return false
 	var next := _next_arrival()
-	if next < 0 or not _arrival_due() or waiting_event() != null:
+	if next < 0 or not _arrival_due():
 		return false
 	arrivals = next + 1
 	daypart = maxi(daypart, daypart_of_errand(coming(next))) as Daypart
@@ -1787,11 +1793,10 @@ func _has_room() -> bool:
 
 ## The errand whose event comes next, or null: in an open shop with nobody in it and the phone on
 ## the hook, an errand whose computer is on the counter and not yet done (fixed and tested), whose
-## customer is not gone for good, and that has an EVENT conversation that matches and hasn't played.
-## So it can come on any day and at any time of day from the drop-off until the player finishes the
-## computer. Until it comes, it holds back the next customer. It comes while the player is in the
-## Workview with the computer in focus open, or as they turn to the Main view from a side view
-## ([constant SIDE_VIEWS]) once the next customer is due.
+## customer is not gone for good, and that has an EVENT conversation that matches now (its
+## condition and daypart) and hasn't played. It comes only while the player is zoomed in on a
+## computer in the Workview, and doesn't hold back the next customer: when its day or daypart passes
+## first, it doesn't come.
 func waiting_event() -> Errand:
 	if phase != Phase.OPEN or visitor != null or phone_off_hook:
 		return null
@@ -2038,7 +2043,7 @@ static func daypart_of_errand(errand: Errand) -> Daypart:
 func call_outs_of(who: Customer) -> CallOuts.Set:
 	if week == null or who == null:
 		return null
-	var part := StringName(String(Daypart.find_key(daypart)).to_lower())
+	var part := _daypart_name()
 	var number := day.number if day != null else 1
 	for outs_name: StringName in [StringName(_id_of(who)), CallOuts.EVERYONE]:
 		var outs: CallOuts = week.call_outs.get(outs_name)

@@ -174,6 +174,8 @@ static func write_errand(errand: Errand) -> String:
 			head += " [if %s]" % write_condition(c.when)
 		if c.once:
 			head += " [once]"
+		if c.daypart != &"":
+			head += " [daypart %s]" % c.daypart
 		if c.effect != null:
 			head += " [effect %s]" % _stem(c.effect)
 		if c.leave_text != Conversation.new().leave_text:
@@ -681,6 +683,10 @@ class _Reader:
 				c.when = _condition(tag.substr(3), from)
 			elif tag == "once":
 				c.once = true
+			elif tag.begins_with("daypart "):
+				c.daypart = StringName(tag.substr(8).strip_edges())
+				if c.daypart not in CallOuts.DAYPARTS:
+					_error(from, "[%s]: the daypart must be %s" % [tag, ", ".join(PackedStringArray(CallOuts.DAYPARTS))])
 			elif tag.begins_with("effect "):
 				c.effect = _load(EFFECTS_DIR, tag.substr(7).strip_edges(), from, "voice effect") as VoiceEffect
 			elif tag.begins_with("leave "):
@@ -692,7 +698,7 @@ class _Reader:
 			elif tag.begins_with("pop-up "):
 				_error(from, "[%s]: only an event pops up" % tag)
 			else:
-				_error(from, "[%s] is not a tag of a conversation: if, once, effect, leave, back or pop-up" % tag)
+				_error(from, "[%s] is not a tag of a conversation: if, once, daypart, effect, leave, back or pop-up" % tag)
 		var body := from + 1
 		while body < to and _lines[body].strip_edges() == "":
 			body += 1

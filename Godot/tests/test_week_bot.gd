@@ -253,6 +253,12 @@ func _act() -> void:
 			return
 		_testing = null
 		game.trash_printout()
+	if game.waiting_event() != null and game.view != &"Workview":
+		var waiting: Errand = game.waiting_event()
+		_doing = [_code(waiting), "zooms in on %s's computer, which lets the event in" % waiting.customer.spoken_name()]
+		game.focus_job(game.jobs.filter(func(job: Job) -> bool: return job.errand == waiting)[0])
+		game.go_to_view(&"Workview")
+		return
 	for job: Job in game.jobs:
 		if not job.done and not _unrepairable.has(job.order) and await _work_on(job):
 			return
@@ -265,9 +271,6 @@ func _act() -> void:
 		var job: Job = game.next_to_call()
 		_doing = [_code(job.errand), "clicks the phone to call %s for the pickup" % job.customer.spoken_name()]
 		await _click_in(&"Main", _shop.get_node("%Phone"))
-	elif game.waiting_event() != null:
-		_doing = [_code(game.waiting_event()), "turns left and back, which lets %s's event in once the next customer is due" % game.waiting_event().customer.spoken_name()]
-		game.go_to_view(&"Left")
 	elif game.can_close():
 		_doing = ["", "clicks the open sign to close the shop on day %d" % game.day_number]
 		if await _click_in(&"Main", _shop.get_node("%OpenSign").find_child("Hotspot")):

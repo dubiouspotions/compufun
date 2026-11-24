@@ -19,6 +19,8 @@ enum Trigger {
 @export var trigger: Trigger = Trigger.ARRIVE
 ## Plays only the first time it matches.
 @export var once: bool = false
+## Plays only in this daypart of the day (one of [constant CallOuts.DAYPARTS]); empty for any.
+@export var daypart: StringName = &""
 ## The voice effect of every line, the replies' included, unless the line has its own; null for none.
 @export var effect: VoiceEffect
 ## The last button of the player's first list of choices, unless a choice there ends the
