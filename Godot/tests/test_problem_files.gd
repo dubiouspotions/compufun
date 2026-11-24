@@ -26,7 +26,7 @@ func _round_trip() -> void:
 		check("%s writes back the same text" % path, StoryFormat.write_problem(parsed.value), text)
 	var dust := StoryFormat.parse_problem(FileAccess.get_file_as_string(PROBLEM_FILE % "dust_overheat"), PROBLEM_FILE % "dust_overheat").value as Problem
 	check("a check shows how it fails", dust.check_shows.has("CPU fan is clean and spins freely"), true)
-	check("the steps", [dust.hardware_steps.size(), dust.hardware_steps[0], dust.software_steps], [4, "Open case", PackedStringArray()])
+	check("the steps", [dust.hardware_steps.size(), dust.hardware_steps[0], dust.software_steps], [3, "Open case", PackedStringArray()])
 	check("text only, named by its file", [dust.short_name, dust.resource_path, dust.broken_part], [&"dust_overheat", PROBLEM_FILE % "dust_overheat", null])
 
 

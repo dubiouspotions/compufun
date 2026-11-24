@@ -45,7 +45,7 @@ func run() -> void:
 	_press(db, KEY_LEFT)
 	_press(db, KEY_F)
 	var page: PackedStringArray = printer.get("_lines")
-	check("F prints the picked cause's fix", [page[5], "\n".join(page).contains("5. Connect it, switch")], ["Faulty CPU fan", true])
+	check("F prints the picked cause's fix", [page[5], "\n".join(page).contains("4. Connect it, switch")], ["Faulty CPU fan", true])
 	printer.queue_free()
 
 	_press(db, KEY_ESCAPE)  # the print box's OK

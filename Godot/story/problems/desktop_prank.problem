@@ -5,13 +5,13 @@ symptoms:
 	Can't open pictures
 	Programs won't start
 checks:
-	no: Desktop icons open
-	yes: Picture is clean
-	no: Wallpaper is a normal picture
-		shows: Display Properties calls it "prank"
-	no: Icons are on the desktop
+	yes: Icons visible on desktop
 		shows: bottom right, mostly off the screen
+	no: Can open files and folders on desktop
+	no: Can select icons on desktop
 software steps:
 	Double-click the folder in the corner of the desktop
 	Drag the icons in it out onto the desktop
-	Right-click the desktop, click Properties, pick a Wallpaper, click OK
+	Right-click the desktop and select Properties
+	Select any non-prank wallpaper
+	Click Apply

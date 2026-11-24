@@ -10,15 +10,14 @@ symptoms:
 checks:
 	yes: Windows starts
 	yes: Memory test passes
-	no: Windows stays up after the desktop appears
-	no: Bluescreen after the desktop appears
+	yes: Reboots after loading Windows
+	no: Bluescreen of death
 	yes: Freezes with a buzz after the desktop appears
 		shows: a second after the desktop appears, the sound sags into a buzz, then a reboot
 	no: CPU fan is clean and spins freely
 		shows: in the Workview: dust in it, or something lying on it
-	yes: Every part sits in its own place
+	yes: Components are properly installed
 hardware steps:
 	Open case
-	Take out anything stuck on the CPU fan
-	Replace it if it is dirty or broken
+	Replace CPU fan if it is dirty or broken
 	Close case
