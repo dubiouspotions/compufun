@@ -25,6 +25,9 @@ enum { _LEFT = 1, _TOP = 2, _RIGHT = 4, _BOTTOM = 8 }
 @export var resizable := false
 ## Whether the taskbar has a button for the window. Win95's own Close Program dialog has none.
 @export var in_taskbar := true
+## For a program: the seconds that it reads in from the disk the first time it runs after a boot;
+## below 0 takes the computer's program_load_seconds (win95.gd).
+@export var load_seconds: float = -1.0
 
 ## True while the window is minimized: hidden, but still open, with its taskbar button.
 var is_minimized := false

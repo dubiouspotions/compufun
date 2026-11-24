@@ -62,7 +62,7 @@ class Listing:
 		key = listing_key
 
 
-## pointer_visible changed.
+## pointer_visible or pointer_busy changed.
 signal pointer_changed
 
 ## Plays when the player empties the Recycle Bin; null plays nothing.
@@ -75,6 +75,28 @@ signal pointer_changed
 ## How far the sounds' pitch sags before Windows freezes; 1 keeps it.
 @export_range(0.1, 1.0) var hang_pitch: float = 0.8
 
+@export_group("Loading")
+## The seconds that a program reads in from the disk the first time it runs after a boot, unless its
+## window sets its own (window.gd, load_seconds). Meanwhile the drive seeks and the pointer is busy.
+@export var program_load_seconds: float = 0.6
+## The seconds that a folder or a Control Panel applet reads in the first time after a boot.
+@export var folder_load_seconds: float = 0.3
+## How much of its first load a program, folder or applet takes the next time: Win95 keeps it in memory.
+@export_range(0.0, 1.0) var cached_share: float = 0.15
+## How fast a document reads in, in bytes a second, on top of its program.
+@export var disk_bytes_per_second: float = 500000.0
+## How many times as long every load takes on a fragmented drive C, and while Disk Defragmenter runs.
+@export var fragmented_factor: float = 4.0
+@export var defragmenting_factor: float = 2.0
+## With less memory than this, in kilobytes, Windows swaps to the disk, and loads take longer, up to
+## [member max_swap_factor] times as long.
+@export var comfortable_memory_kb: int = 16384
+@export var max_swap_factor: float = 3.0
+@export_group("")
+
+## Multiplies every load; 0 opens everything at once (the tests).
+static var load_scale: float = 1.0
+
 ## Win95 shows the mouse pointer: false while the computer is off and while it boots, until the
 ## desktop appears, and while a screensaver (a [Saver] child) plays. Setting it doesn't show the
 ## pointer over a screensaver.
@@ -86,11 +108,21 @@ var pointer_visible := false:
 			_pointer_on = value
 			pointer_changed.emit()
 
-## How long a folder takes to open on a fragmented drive C.
-const _FRAGMENTED_OPEN_SECONDS := 2.0
+## Win95 shows the "Working in Background" pointer: a program, folder or applet is loading.
+var pointer_busy: bool:
+	get:
+		return _loads > 0
 
 var _pointer_on := false
 var _saver_up := false
+## The loads in progress; the pointer is busy while there are any.
+var _loads := 0
+## Counts boots and power cuts, so that one stops the loads in progress.
+var _runs := 0
+## What has loaded since the boot: programs' scenes, folders' keys and applets.
+var _loaded: Dictionary[Variant, bool] = {}
+## The memory that Windows has, in kilobytes, from the boot.
+var _memory_kb := 0
 
 static var _stock_palette: Win95Palette
 ## What each of Win95's own icons opens, by its node name in desktop_icons.tscn: [opens, stub].
@@ -249,6 +281,9 @@ func _speak(player: AudioStreamPlayer, aloud: bool) -> void:
 
 func _on_booted() -> void:
 	_end_hang()
+	_runs += 1
+	_loaded.clear()
+	_memory_kb = comfortable_memory_kb
 	var setup := _state.setup
 	_desktop.close_all()
 	_uncover()
@@ -280,6 +315,7 @@ func _on_booted() -> void:
 		if not _state.job.has(&"hard_drive"):
 			hardware.hard_drive = ""
 		_boot.hardware = hardware
+		_memory_kb = hardware.memory_kb
 		_boot.memory_fails = _state.job.memory_fails()
 	_floppy_heard = setup.floppy_in_a
 	_boot.desktop_parts = _desktop_parts
@@ -312,6 +348,7 @@ func _desktop_parts() -> Array[CanvasItem]:
 
 func _on_powered_off() -> void:
 	_end_hang()
+	_runs += 1
 	pointer_visible = false
 	if is_instance_valid(_boot):
 		_boot.queue_free()
@@ -322,6 +359,7 @@ func _on_powered_off() -> void:
 # The shut-down screen (win95/shut_down.gd covers the screen with it) stays until the power goes off.
 func _on_shut_down() -> void:
 	_end_hang()
+	_runs += 1
 	pointer_visible = false
 	_desktop.close_all()
 	if is_instance_valid(_boot):
@@ -599,7 +637,7 @@ func _open_item(item: FileIcon) -> void:
 	var folder_view := (item.get_parent() as IconView).folder_view
 	var applet := _entry_of(item) as Applet
 	if applet != null:
-		if applet.sheet != null:
+		if applet.sheet != null and await _load(applet, folder_load_seconds):
 			_desktop.open(applet.sheet)
 	elif item.name == &"MyComputer":
 		_show(Listing.new("My Computer", load(_ICONS + "my_computer_32.png"), &"my_computer", func() -> Array: return _drives, false, &"my_computer"), folder_view)
@@ -671,6 +709,10 @@ func open_file(file: Win95File) -> void:
 
 # A program whose scene is a BackgroundTask runs without a window; any other opens one, with [param document].
 func _launch(program: Win95File, document: Win95File) -> void:
+	var own: Variant = Win95File.root_property(program.program, &"load_seconds")
+	var seconds: float = own if own is float and own >= 0.0 else program_load_seconds
+	if not await _load(program.program, seconds, document.size_in_bytes() if document != null else 0):
+		return
 	if BackgroundTask.runs_in_background(program.program):
 		_state.run_task(program.program.instantiate() as BackgroundTask, program)
 		return
@@ -701,8 +743,8 @@ func _listing_of_item(item: FileIcon) -> Listing:
 
 # A new window takes the folder view of the window that opened it, as in Win95.
 func _show(listing: Listing, folder_view: IconView.FolderView) -> void:
-	if _state.setup.fragmented:
-		await get_tree().create_timer(_FRAGMENTED_OPEN_SECONDS).timeout  # the disk seeks all over
+	if not await _load(listing.key, folder_load_seconds):
+		return
 	for view: IconView in _listings.keys():
 		if view != _icons and is_same(_listings[view].key, listing.key) and _desktop.windows().has(view.owner):
 			_desktop.activate(view.owner)
@@ -720,6 +762,42 @@ func _show(listing: Listing, folder_view: IconView.FolderView) -> void:
 	view.columns = FileDetails.columns(listing.kind)
 	view.folder_view = folder_view
 	_fill(view)
+
+
+# Reads [param key] in from the disk before it opens: [param seconds] the first time after a boot,
+# [member cached_share] of that after, plus [param bytes] of a document, slower as [method _slowness]
+# says. Meanwhile the computer's drive seeks and the pointer is busy. False when the computer
+# rebooted or went off meanwhile, and nothing opens.
+func _load(key: Variant, seconds: float, bytes: int = 0) -> bool:
+	var run := _runs
+	var time := (seconds * (cached_share if _loaded.has(key) else 1.0) + bytes / disk_bytes_per_second) * _slowness() * load_scale
+	_loaded[key] = true
+	if time <= 0.0:
+		return true
+	_loads += 1
+	if _loads == 1:
+		pointer_changed.emit()
+	var read := await HardDrive.read_on(_hard_drive(), time, get_tree(), func() -> bool: return run == _runs)
+	_loads -= 1
+	if _loads == 0:
+		pointer_changed.emit()
+	return read and run == _runs
+
+
+# How many times as long a load takes on this computer now: a fragmented drive, Disk Defragmenter
+# running, too little memory.
+func _slowness() -> float:
+	var setup := _state.setup
+	var factor := (fragmented_factor if setup.fragmented else 1.0) * (defragmenting_factor if setup.defragmenting else 1.0)
+	return factor * clampf(float(comfortable_memory_kb) / maxf(_memory_kb, 1.0), 1.0, max_swap_factor)
+
+
+# The drive of this computer on the counter; null without one in the room.
+func _hard_drive() -> HardDrive:
+	for computer: JobComputer in get_tree().get_nodes_in_group(JobComputer.GROUP):
+		if computer.job == _state.job:
+			return computer.hard_drive
+	return null
 
 
 func _open_context(view: IconView, item: FileIcon, at: Vector2) -> void:
@@ -839,7 +917,9 @@ func _on_action(id: StringName) -> void:
 			var folder := _state.new_folder(listing.files.call())
 			_rename_new.call_deferred(view, folder)
 		&"display":
-			_desktop.open((load(_DISPLAY) as Applet).sheet)
+			var display := load(_DISPLAY) as Applet
+			if await _load(display, folder_load_seconds):
+				_desktop.open(display.sheet)
 		&"properties":
 			var file := _file_of(item) if item != null else null
 			if file != null:

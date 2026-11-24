@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://win95/office/icons/excel_16.png" id="icon"]
 
 [node name="Excel" instance=ExtResource("base")]
+load_seconds = 2.0
 script = ExtResource("script")
 untitled_name = "Book1"
 

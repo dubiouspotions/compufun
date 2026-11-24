@@ -19,7 +19,8 @@ const GROUP: StringName = &"screen_views"
 ## What runs in the screen buffer: a Control of the buffer's size. When its script has a
 ## [code]has_picture() -> bool[/code], the tube locks onto the picture only while it returns true;
 ## a [code]pointer_visible() -> bool[/code] hides the cursor while it returns false, and a
-## [code]pointer_changed[/code] signal says when that changes; [code]picture_changed[/code] says that
+## [code]pointer_busy() -> bool[/code] shows the busy cursor while it returns true, a
+## [code]pointer_changed[/code] signal says when either changes; [code]picture_changed[/code] says that
 ## [code]has_picture()[/code] did. Its [code]screen_opened()[/code], if
 ## it has one, is called each time the view opens.
 @export var content: PackedScene
@@ -231,6 +232,7 @@ func _sync() -> void:
 	var picture := has_picture()
 	var pointer: bool = _content == null or not _content.has_method(&"pointer_visible") or _content.call(&"pointer_visible")
 	_screen.cursor_visible = draw_cursor and picture and pointer
+	_screen.cursor_busy = _content != null and _content.has_method(&"pointer_busy") and _content.call(&"pointer_busy")
 	_tube.reconcile(switched_on, picture, Game.day.warp if Game.day != null else 0.0, Game.jump != _jump)
 	_jump = Game.jump
 	if picture != _had_picture:

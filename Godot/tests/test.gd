@@ -104,6 +104,7 @@ func _initialize() -> void:
 	OS.add_logger(_script_errors)
 	game = root.get_node("Game")  # by path: a script that names the autoload doesn't compile under -s
 	game.set_process(false)
+	load("res://win95/win95.gd").set(&"load_scale", 0.0)  # programs open at once; test_loading turns it on
 	await run()
 	if _user_dir != "":
 		_remove_tree(_user_dir)

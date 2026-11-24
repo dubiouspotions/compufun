@@ -58,6 +58,7 @@ content_margin_bottom = 2.0
 
 
 [node name="MsDosPrompt" type="PanelContainer"]
+load_seconds = 0.8
 theme = ExtResource("theme")
 script = ExtResource("script")
 custom_minimum_size = Vector2(560, 340)

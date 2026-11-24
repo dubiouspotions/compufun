@@ -3,7 +3,7 @@ extends Control
 ## What the bench screen shows: the desktop of the job that the cable is connected to
 ## (Game.connected), and NO SIGNAL while the cable hangs free.
 
-## The shown desktop's [code]pointer_visible[/code] changed.
+## The shown desktop's [code]pointer_visible[/code] or [code]pointer_busy[/code] changed.
 signal pointer_changed
 
 ## The desktop of one job's computer, with a %ComputerState node. Each job gets its own when it is
@@ -41,6 +41,12 @@ func has_picture() -> bool:
 func pointer_visible() -> bool:
 	var shown := _desktops.get(Game.connected) as Control if Game.connected != null else null
 	return shown != null and shown.get(&"pointer_visible") != false
+
+
+## True while the shown desktop loads something, and its pointer is busy.
+func pointer_busy() -> bool:
+	var shown := _desktops.get(Game.connected) as Control if Game.connected != null else null
+	return shown != null and shown.get(&"pointer_busy") == true
 
 
 # Frees the desktops of jobs that left the counter, runs a desktop for every computer that is on,

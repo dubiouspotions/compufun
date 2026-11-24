@@ -23,6 +23,8 @@ const _GLOW_SHADER: Shader = preload("res://shaders/crt_glow.gdshader")
 ## The cursor over most of the desktop, and the pixel of it that points.
 @export var arrow_cursor: Texture2D = preload("res://win95/theme/arrow_cursor.png")
 @export var arrow_hotspot: Vector2 = Vector2.ZERO
+## The arrow while the desktop loads something (Win95's "Working in Background"); it points as the arrow.
+@export var busy_cursor: Texture2D = preload("res://win95/theme/busy_cursor.png")
 ## The cursor over text, and the pixel of it that points.
 @export var ibeam_cursor: Texture2D = preload("res://win95/theme/ibeam_cursor.png")
 @export var ibeam_hotspot: Vector2 = Vector2(4, 9)
@@ -43,10 +45,16 @@ var cursor_visible: bool = true:
 ## instead ([method push_mouse]); a real mouse still points. The screen still accepts those events,
 ## so a touch on the glass doesn't fall through and leave the view.
 var takes_touch: bool = true
+## True shows [member busy_cursor] where the arrow would show.
+var cursor_busy: bool = false:
+	set(value):
+		cursor_busy = value
+		_pick_cursor()
 
 var _near: Dictionary[StringName, float] = {}
 var _cursor_at: Vector2 = Vector2(320, 240)
 var _cursor: Texture2D
+var _shape: Control.CursorShape = Control.CURSOR_ARROW
 
 
 func _ready() -> void:
@@ -72,7 +80,7 @@ func _ready() -> void:
 	_add_glow(material as ShaderMaterial)
 	for uniform in _BENT:
 		_near[uniform] = _param(material, uniform)
-	_set_cursor(arrow_cursor)
+	_pick_cursor()
 
 
 # Renders the look's glow once per buffer pixel (shaders/crt_glow.gdshader), in a viewport that
@@ -135,8 +143,15 @@ func push_mouse(event: InputEventMouse) -> void:
 	buffer.push_input(event, true)
 	_cursor_at = event.position.clamp(Vector2.ZERO, pixels - Vector2.ONE)
 	var over := buffer.gui_get_hovered_control()
-	var shape := over.get_cursor_shape(over.get_global_transform_with_canvas().affine_inverse() * event.position) if over != null else Control.CURSOR_ARROW
-	_set_cursor(ibeam_cursor if shape == Control.CURSOR_IBEAM else sizing_cursors.get(shape, arrow_cursor))
+	_shape = over.get_cursor_shape(over.get_global_transform_with_canvas().affine_inverse() * event.position) if over != null else Control.CURSOR_ARROW
+	_pick_cursor()
+
+
+func _pick_cursor() -> void:
+	if _shape == Control.CURSOR_IBEAM:
+		_set_cursor(ibeam_cursor)
+	else:
+		_set_cursor(sizing_cursors.get(_shape, busy_cursor if cursor_busy else arrow_cursor))
 
 
 func _gui_input(event: InputEvent) -> void:

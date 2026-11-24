@@ -31,6 +31,7 @@ base_font = ExtResource("font_bold")
 variation_transform = Transform2D(1, 0, 0.25, 1, 0, 0)
 
 [node name="WebBrowser" type="PanelContainer"]
+load_seconds = 1.2
 custom_minimum_size = Vector2(600, 420)
 theme = ExtResource("theme")
 script = ExtResource("script")

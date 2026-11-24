@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://win95/report_list.gd" id="report_list"]
 
 [node name="Inbox" type="PanelContainer"]
+load_seconds = 2.0
 custom_minimum_size = Vector2(500, 250)
 offset_right = 500.0
 offset_bottom = 250.0
