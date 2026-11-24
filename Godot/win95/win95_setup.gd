@@ -146,12 +146,7 @@ func copy() -> Win95Setup:
 			_merge(programs.children, running.start_menu_programs)
 		running.start_menu_programs.clear()  # the folder holds them now; a copy of this copy mustn't add them twice
 	running._add_desktop_shortcuts()
-	for path in running.recently_opened:
-		var document := running.file_at(path)
-		if document == null:
-			push_error("Win95Setup: recently_opened names %s, which isn't on the desktop or drive C" % path)
-		else:
-			running.recent_documents.append(document)
+	running.open_recent()
 	running._add_system_icons()
 	return running
 
@@ -261,6 +256,18 @@ func addresses() -> PackedStringArray:
 	var sorted := PackedStringArray(found.keys())
 	sorted.sort()
 	return sorted
+
+
+## Makes [member recent_documents] the files that [member recently_opened] names, as a running copy
+## starts: on a copy, and again when a setup patch sets recently_opened.
+func open_recent() -> void:
+	recent_documents.clear()
+	for path in recently_opened:
+		var document := file_at(path)
+		if document == null:
+			push_error("Win95Setup: recently_opened names %s, which isn't on the desktop or drive C" % path)
+		else:
+			recent_documents.append(document)
 
 
 ## Becomes [param other], a running copy too: every field, also the runtime ones.

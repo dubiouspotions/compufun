@@ -26,6 +26,9 @@ const _MAIL_KEY: Array[StringName] = [&"sent", &"subject"]
 ## For each path in [member files], the fields that the patch sets, so a moved icon says only where
 ## it stands; the others stay as they are. Every field for a path that isn't here.
 @export var given: Dictionary[String, PackedStringArray] = {}
+## For a new file in [member files]: the name of the file it comes after in its folder ("" for first),
+## so it lands where it was and not at the end. A file without one goes last.
+@export var placed: Dictionary[String, String] = {}
 ## The mails to delete: only their sent and subject count.
 @export var unmailed: Array[Email] = []
 ## What [method between] couldn't put in a patch, said for a person: a picture made in Paint has no
@@ -126,13 +129,19 @@ func apply(setup: Win95Setup) -> void:
 		if file == null:
 			file = Win95File.new()
 			file.name = _leaf(path)
-			container.append(file)
+			var previous := _named(container, placed[path]) if placed.get(path, "") != "" else null
+			if placed.has(path) and (placed[path] == "" or previous != null):
+				container.insert(0 if previous == null else container.find(previous) + 1, file)
+			else:
+				container.append(file)
 		if given.has(path):
 			for field: String in given[path]:
 				file.set(field, files[path].get(field))
 		else:
 			_take_fields(file, files[path])
 		file.is_folder = files[path].is_folder
+	if settings.has(&"recently_opened"):
+		setup.open_recent()  # after the files: it names them
 	var gone := unmailed.map(_mail_key)
 	setup.emails.assign(setup.emails.filter(func(e: Email) -> bool: return _mail_key(e) not in gone))
 	var keys := setup.emails.map(_mail_key)
@@ -170,6 +179,9 @@ static func between(before: Win95Setup, after: Win95Setup) -> Variant:
 	for key: String in old:
 		if not new.has(key) and not (old.has(_parent_key(key)) and not new.has(_parent_key(key))):
 			patch.deleted.append(old[key][0])
+	var key_of := {}
+	for key: String in new:
+		key_of[new[key][1]] = key
 	for key: String in new:
 		var file: Win95File = new[key][1]
 		var text: Variant = _fields_text(file, _FILE_SKIP)
@@ -178,6 +190,10 @@ static func between(before: Win95Setup, after: Win95Setup) -> Variant:
 			continue
 		if not old.has(key) or old[key][1].is_folder != file.is_folder:
 			patch.files[new[key][0]] = file
+			var siblings: Array = new[key][2]
+			var at: int = new[key][3]
+			if not old.has(key) and range(at + 1, siblings.size()).any(func(j: int) -> bool: return old.has(key_of[siblings[j]])):
+				patch.placed[new[key][0]] = "" if at == 0 else _segment(new[key_of[siblings[at - 1]]][0])
 		elif _fields_text(old[key][1], _FILE_SKIP) != text:
 			patch.files[new[key][0]] = file
 			var was: Win95File = old[key][1]
@@ -236,6 +252,8 @@ static func keep_holding(old: SetupPatch, made: SetupPatch, after: Win95Setup) -
 			made.files[path] = old.files[path]
 			if old.given.has(path):
 				made.given[path] = old.given[path]
+			if old.placed.has(path):
+				made.placed[path] = old.placed[path]
 	var made_keys := (made.unmailed + made.mails).map(_mail_key)
 	for mail: Email in old.unmailed:
 		var entry := SetupPatch.new()
@@ -270,6 +288,8 @@ func write() -> String:
 		out.append("")
 		out.append(("folder " if files[path].is_folder else "file ") + path)
 		out.append_array(_fields_text(files[path], _FILE_SKIP, Array(given.get(path, PackedStringArray()))))
+		if placed.has(path):
+			out.append("\tafter: " + JSON.stringify(placed[path]))
 	for mail: Email in unmailed:
 		out.append("")
 		out.append("unmail")
@@ -328,9 +348,12 @@ static func parse(text: String, path: String) -> StoryFormat.Parsed:
 				file.is_folder = word == "folder"
 				file.name = _leaf(rest)
 				var read: Array[StringName] = []
-				i = _read_fields(lines, i, file, _FILE_SKIP, path, parsed.errors, read)
+				var after: Array = []
+				i = _read_fields(lines, i, file, _FILE_SKIP, path, parsed.errors, read, after)
 				patch.files[rest] = file
 				patch.given[rest] = PackedStringArray(read)
+				if not after.is_empty():
+					patch.placed[rest] = after[0]
 			"mail", "unmail":
 				var mail := Email.new()
 				var read: Array[StringName] = []
@@ -353,13 +376,21 @@ class _Bad:
 
 # Reads the "\tkey: value" lines (and "\tkey:" blocks of "\t\t" lines) from line [param from] into
 # [param object], adding each key to [param read]; returns the index of the first line after them.
-static func _read_fields(lines: PackedStringArray, from: int, object: Object, skip: Array, path: String, errors: PackedStringArray, read: Array[StringName] = []) -> int:
+# A file's "after" line (the file it comes after) goes into [param after].
+static func _read_fields(lines: PackedStringArray, from: int, object: Object, skip: Array, path: String, errors: PackedStringArray, read: Array[StringName] = [], after: Array = []) -> int:
 	var i := from
 	while i < lines.size() and lines[i].begins_with("\t") and not lines[i].begins_with("\t\t"):
 		var at := "%s:%d: " % [path, i + 1]
 		var line := lines[i].substr(1).strip_edges(false, true)
 		i += 1
 		var key := StringName(line.get_slice(":", 0))
+		if key == &"after" and object is Win95File:
+			var named: Variant = JSON.parse_string(line.substr(6).strip_edges())
+			if named is String:
+				after.append(named)
+			else:
+				errors.append(at + "after names a file in quotes, such as \"WIN.INI\", or \"\" for first")
+			continue
 		var info := _property(object, key)
 		if not line.contains(":") or info.is_empty() or key in skip:
 			var names := _fields(object, skip).map(func(p: Dictionary) -> String: return p.name)
@@ -444,10 +475,13 @@ static func _encode(value: Variant, property: Dictionary) -> Variant:
 	return _one_line(value)
 
 
-# True for a text that a plain line can't keep: spaces or line breaks at an end, which the lines
-# lose, or a leading quote, which reads as quoted. Such a text is written quoted and escaped.
+# True for a one-line text that a plain line can't keep: spaces at an end, which the lines lose, or a
+# leading quote, which reads as quoted. Such a text is written quoted and escaped. A text with line
+# breaks is a block, whose lines keep their spaces; an empty last block line keeps a last line break.
 static func _needs_quotes(value: Variant) -> bool:
-	return (value is String or value is StringName) and (String(value).strip_edges() != String(value) or String(value).begins_with("\""))
+	if not (value is String or value is StringName) or String(value).contains("\n"):
+		return false
+	return String(value).strip_edges() != String(value) or String(value).begins_with("\"")
 
 
 # [param value] in Godot's text form on one line, its texts escaped: var_to_str spreads a
@@ -607,7 +641,7 @@ static func _flatten_into(flat: Dictionary, container: Array, path: String) -> S
 		while flat.has(file_path.to_lower()):
 			file_path = "%s\\%s*%d" % [path, file.name, nth]
 			nth += 1
-		flat[file_path.to_lower()] = [file_path, file]
+		flat[file_path.to_lower()] = [file_path, file, container, container.find(file)]
 		var bad := _flatten_into(flat, file.children, file_path)
 		if bad != "":
 			return bad

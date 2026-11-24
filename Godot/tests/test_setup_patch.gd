@@ -6,8 +6,8 @@ extends "res://tests/test.gd"
 
 func run() -> void:
 	var office_girl: Customer = load("res://customers/office_girl.tres")
-	var before := office_girl.computer.win95_setup.copy()
-	var after := office_girl.computer.win95_setup.copy()
+	var before := SetupPatch.start(office_girl, game.week.patches)
+	var after := SetupPatch.start(office_girl, game.week.patches)
 	after.volume = 41.0
 	after.muted = true
 	after.wallpaper = load("res://win95/wallpapers/bubbles.png")
@@ -56,7 +56,7 @@ func run() -> void:
 	var parsed := SetupPatch.parse(text, "test.setup")
 	check("its text reads back without errors", parsed.errors, PackedStringArray())
 	check("and writes the same text", (parsed.value as SetupPatch).write(), text)
-	var patched := office_girl.computer.win95_setup.copy()
+	var patched := SetupPatch.start(office_girl, game.week.patches)
 	(parsed.value as SetupPatch).apply(patched)
 	var left: SetupPatch = SetupPatch.between(patched, after)
 	check("the read patch makes the setup into the other: nothing left between them", left.write(), "\n")
@@ -77,7 +77,7 @@ func run() -> void:
 	check("a picture that no file holds is left out, by name, and the rest kept", [left_out.left_out.size(), left_out.left_out[0].contains("cat.bmp"), left_out.settings.has(&"volume")], [1, true, true])
 	after.desktop.erase(drawn)
 
-	var twins := office_girl.computer.win95_setup.copy()
+	var twins := SetupPatch.start(office_girl, game.week.patches)
 	for folder: String in ["C:\\Letters", "C:\\Old"]:
 		var twin := Win95File.new()
 		twin.name = "readme.txt"
@@ -85,19 +85,31 @@ func run() -> void:
 		twins.recycle_bin.append(twin)
 	twins.registered_owner = " Desk 4 "
 	twins.cmos = {&"boot_sequence": 1}
-	var twin_patch: SetupPatch = SetupPatch.between(office_girl.computer.win95_setup.copy(), twins)
+	var twin_patch: SetupPatch = SetupPatch.between(SetupPatch.start(office_girl, game.week.patches), twins)
 	var twin_text := twin_patch.write()
 	check("two deleted files of one name: the second is readme.txt*2; a spaced setting is quoted", [twin_text.contains("file Recycled\\readme.txt*2"), twin_text.contains('set registered_owner: " Desk 4 "')], [true, true])
 	var twin_read := SetupPatch.parse(twin_text, "twins.setup")
-	var twin_made := office_girl.computer.win95_setup.copy()
+	var twin_made := SetupPatch.start(office_girl, game.week.patches)
 	(twin_read.value as SetupPatch).apply(twin_made)
 	check("and they read back: both files, the setting, the BIOS settings typed", [twin_read.errors, twin_made.recycle_bin.map(func(f: Win95File) -> String: return f.contents), twin_made.registered_owner, twin_made.cmos], [PackedStringArray(), ["C:\\Letters", "C:\\Old"], " Desk 4 ", {&"boot_sequence": 1}])
 
+	var placed_before := SetupPatch.start(office_girl, game.week.patches)
+	var placed_after := SetupPatch.start(office_girl, game.week.patches)
+	var wedged := Win95File.new()
+	wedged.name = "wedged.txt"
+	placed_after.desktop.insert(1, wedged)
+	var placing: SetupPatch = SetupPatch.between(placed_before, placed_after)
+	var placed_text := placing.write()
+	check("a new file between others says which it comes after", placed_text.contains('file Desktop\\wedged.txt\n\tafter: "%s"' % placed_after.desktop[0].name), true)
+	var placed_made := SetupPatch.start(office_girl, game.week.patches)
+	(SetupPatch.parse(placed_text, "p").value as SetupPatch).apply(placed_made)
+	check("and lands there", placed_made.desktop.map(func(f: Win95File) -> String: return f.name), placed_after.desktop.map(func(f: Win95File) -> String: return f.name))
+
 	var holding := SetupPatch.parse("delete C:\\maybe.txt\nset muted: false\nset volume: 30\n", "h").value as SetupPatch
-	var now := office_girl.computer.win95_setup.copy()
+	var now := SetupPatch.start(office_girl, game.week.patches)
 	holding.apply(now)
 	now.left_handed = true
-	var made_now: SetupPatch = SetupPatch.between(office_girl.computer.win95_setup.copy(), now)
+	var made_now: SetupPatch = SetupPatch.between(SetupPatch.start(office_girl, game.week.patches), now)
 	SetupPatch.keep_holding(holding, made_now, now)
 	check("a saved patch keeps the lines that still hold: a delete in advance, a setting as it is", [made_now.deleted, made_now.settings.has(&"muted"), made_now.settings.get(&"volume"), made_now.settings.get(&"left_handed")], [PackedStringArray(["C:\\maybe.txt"]), true, 30.0, true])
 
