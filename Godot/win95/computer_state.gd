@@ -661,7 +661,16 @@ func start_defrag() -> void:
 	if setup == null or setup.defragmenting:
 		return
 	setup.defragmenting = true
-	setup.defrag_day = Game.day_number + setup.defrag_days
+	setup.defrag_started_day = Game.day_number
+	setup.defrag_started_daypart = Game.daypart
+	_changed()
+
+
+## Stops the running Disk Defragmenter; drive C stays fragmented, and a new run starts over.
+func stop_defrag() -> void:
+	if setup == null or not setup.defragmenting:
+		return
+	setup.defragmenting = false
 	_changed()
 
 

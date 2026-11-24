@@ -27,6 +27,7 @@ enum Visit {
 }
 
 ## The time of day. The customers and closing move it forward; time does not pass on its own.
+## [method moment_of] turns it into a share of the day (DAYPART_SHARES).
 enum Daypart {
 	NONE, ## No day has started.
 	MORNING, ## The day started; the player opens the shop, and the first customer comes in.
@@ -34,6 +35,12 @@ enum Daypart {
 	AFTERNOON, ## The day's first errand of daypart afternoon came in.
 	EVENING, ## The player closed the shop.
 	NIGHT, ## Not reached in play; the debug menu shows it.
+}
+
+## The share of a day that each Daypart stands for in [method moment_of]: four even steps from the
+## morning, and the night halfway to the next morning.
+const DAYPART_SHARES: Dictionary[Daypart, float] = {
+	Daypart.NONE: 0.0, Daypart.MORNING: 0.0, Daypart.MIDDAY: 0.25, Daypart.AFTERNOON: 0.5, Daypart.EVENING: 0.75, Daypart.NIGHT: 0.875,
 }
 
 enum VisitorState {
@@ -213,19 +220,52 @@ func date_of(number: int) -> Dictionary:
 	return Time.get_datetime_dict_from_unix_time(unix)
 
 
-## True when the Disk Defragmenter run of [param setup] is due: today is its
-## [member Win95Setup.defrag_day] or later, and on that day the daypart has reached its
-## [member Win95Setup.defrag_daypart]. False, with an error, for a daypart that isn't one.
-func defrag_due(setup: Win95Setup) -> bool:
+## A point in the game's time as one number: [param on_day] plus the share of a day that
+## [param part] stands for ([constant DAYPART_SHARES]). It moves only with the dayparts.
+static func moment_of(on_day: int, part: Daypart) -> float:
+	return on_day + DAYPART_SHARES[part]
+
+
+## The game's time now (see [method moment_of]).
+func moment() -> float:
+	return moment_of(day_number, daypart)
+
+
+## The day that the Disk Defragmenter run of [param setup] finishes on: the day that it started
+## plus [member Win95Setup.defrag_days].
+func defrag_day(setup: Win95Setup) -> int:
+	return setup.defrag_started_day + setup.defrag_days
+
+
+## When the Disk Defragmenter run of [param setup] finishes, as a moment: its [method defrag_day]
+## at its [member Win95Setup.defrag_daypart]. A daypart that isn't one logs an error and finishes
+## at the end of that day.
+func defrag_finish(setup: Win95Setup) -> float:
 	var key := String(setup.defrag_daypart).to_upper()
 	if not Daypart.has(key):
-		push_error("Game.defrag_due: defrag_daypart '%s' is not a daypart (%s)" % [setup.defrag_daypart, ", ".join(Daypart.keys())])
-		return false
-	return day_number > setup.defrag_day or (day_number == setup.defrag_day and daypart >= Daypart[key])
+		push_error("Game.defrag_finish: defrag_daypart '%s' is not a daypart (%s)" % [setup.defrag_daypart, ", ".join(Daypart.keys())])
+		return defrag_day(setup) + 1.0
+	return moment_of(defrag_day(setup), Daypart[key])
+
+
+## The share of the Disk Defragmenter run of [param setup] that is done by now, 0 to 1: the game's
+## time since it started, over the time from its start to [method defrag_finish].
+func defrag_progress(setup: Win95Setup) -> float:
+	var started := moment_of(setup.defrag_started_day, setup.defrag_started_daypart as Daypart)
+	var finish := defrag_finish(setup)
+	if finish <= started:
+		return 1.0
+	return clampf((moment() - started) / (finish - started), 0.0, 1.0)
+
+
+## True when the Disk Defragmenter run of [param setup] is due: the game's time has reached its
+## [method defrag_finish].
+func defrag_due(setup: Win95Setup) -> bool:
+	return moment() >= defrag_finish(setup)
 
 
 # Finishes the Disk Defragmenter run of each computer that is on and whose run is due by now
-# (Win95Setup.defrag_day and defrag_daypart).
+# (defrag_finish).
 func _finish_defrags() -> void:
 	for job in jobs:
 		var setup: Win95Setup = setups.get(job.customer.computer)
@@ -1315,7 +1355,7 @@ func snapshot() -> Dictionary:
 		"visitor_state": String(VisitorState.find_key(visitor_state)),
 		"visitor_from": String(AlleyEnd.find_key(visitor_from)),
 		"visitor_to": String(AlleyEnd.find_key(visitor_to)),
-		"jobs": jobs.map(func(j: Job) -> Dictionary: return j.snapshot()),
+		"jobs": jobs.map(_job_snapshot),
 		"focus_slot": focus.slot if focus != null else -1,
 		"connected_slot": connected.slot if connected != null else -1,
 		"calling_slot": calling.slot if calling != null else -1,
@@ -1332,11 +1372,34 @@ func snapshot() -> Dictionary:
 	}
 
 
+# Runs Disk Defragmenter on the computers of [param runs], from the [day, daypart] that each started,
+# and stops it on the other computers on the counter; then finishes the runs that are due.
+func _restore_defrags(runs: Dictionary[Job, Array]) -> void:
+	for job in jobs:
+		var setup: Win95Setup = setup_for(job) if runs.has(job) else setups.get(job.customer.computer)
+		if setup == null:
+			continue
+		setup.defragmenting = runs.has(job)
+		if setup.defragmenting:
+			setup.defrag_started_day = runs[job][0]
+			setup.defrag_started_daypart = runs[job][1]
+	_finish_defrags()
+
+
+# [param job]'s snapshot, with "defrag_started" ([day, "DAYPART"]) while its Disk Defragmenter runs.
+func _job_snapshot(job: Job) -> Dictionary:
+	var data := job.snapshot()
+	var setup: Win95Setup = setups.get(job.customer.computer)
+	if setup != null and setup.defragmenting:
+		data["defrag_started"] = [setup.defrag_started_day, String(Daypart.find_key(setup.defrag_started_daypart))]
+	return data
+
+
 ## Sets the state from [param state], in the format of [method snapshot]. A missing key takes its
 ## value at the start of a day, except that the shop is OPEN: day 1, nobody in the shop, no
 ## arrivals, an empty counter, an empty hand and trash, no printout, no flags, nothing seen, no
-## CompuFunDB search or start-up, the daypart of the arrivals, the RIGHT alley end in and out; a
-## missing view keeps the current one.
+## CompuFunDB search or start-up, the daypart of the arrivals, the RIGHT alley end in and out, no
+## Disk Defragmenter run on a job without defrag_started; a missing view keeps the current one.
 ## The conversation follows from the rest. Returns "" or why it refused; a refusal keeps the state.
 ## Keys in [constant RETIRED_KEYS] are ignored, with what they held.
 func restore(state: Dictionary) -> String:
@@ -1376,6 +1439,7 @@ func restore(state: Dictionary) -> String:
 			new_flags[StringName(str(key))] = int(given_flags[key])
 
 	var new_jobs: Array[Job] = []
+	var new_defrags: Dictionary[Job, Array] = {}  # the runs that the state started: [day, daypart]
 	var slots: Array[int] = []
 	var given_jobs: Array = state.get("jobs", [])
 	if given_jobs.size() > MAX_JOBS:
@@ -1456,6 +1520,15 @@ func restore(state: Dictionary) -> String:
 		job.unanswered = bool(data.get("unanswered", false))
 		if job.powered and not can_power_on(job):
 			return _refuse("job %d: a computer that misses a part can't be on" % i)
+		if data.has("defrag_started"):
+			var started: Variant = data["defrag_started"]
+			var well_formed: bool = started is Array and started.size() == 2 and (started[0] is int or started[0] is float)
+			var started_daypart: Variant = _enum_value(Daypart, started[1], "defrag_started") if well_formed else "it isn't one"
+			if started_daypart is String:
+				return _refuse("job %d: defrag_started must be [day, daypart], not %s: %s" % [i, started, started_daypart])
+			if not job.powered:
+				return _refuse("job %d: Disk Defragmenter runs only while the computer is on" % i)
+			new_defrags[job] = [int(started[0]), started_daypart]
 		new_jobs.append(job)
 	var new_focus: Variant = _job_in(new_jobs, int(state.get("focus_slot", -1)), "focus_slot")
 	var new_connected: Variant = _job_in(new_jobs, int(state.get("connected_slot", -1)), "connected_slot")
@@ -1555,6 +1628,7 @@ func restore(state: Dictionary) -> String:
 	arrivals = new_arrivals
 	daypart = new_daypart
 	jobs = new_jobs
+	_restore_defrags(new_defrags)
 	focus = new_focus
 	connected = new_connected
 	calling = new_calling

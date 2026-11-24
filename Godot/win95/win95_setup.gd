@@ -31,9 +31,10 @@ const _PROGRAM_FILES_PATH := "C:\\Program Files"
 @export var defrag_daypart: StringName = &"afternoon"
 ## Disk Defragmenter is running on a fragmented drive. Only while the game runs.
 var defragmenting: bool = false
-## The day number that the running Disk Defragmenter finishes on (see [member defrag_days]). Only
-## while the game runs.
-var defrag_day: int = 0
+## The day number and the Game.Daypart that the running Disk Defragmenter started on; Game.defrag_finish
+## and Game.defrag_progress follow from them. Only while the game runs.
+var defrag_started_day: int = 0
+var defrag_started_daypart: int = 0
 ## Where each file in the Recycle Bin was deleted from: the desktop, drive_c or a folder's
 ## children. Only while the game runs.
 var deleted_from: Dictionary[Win95File, Array] = {}

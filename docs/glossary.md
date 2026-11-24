@@ -219,7 +219,7 @@ bullets or other separators, so that tools can parse every glossary the same way
 **Visitor**: The customer who is in the shop now, to drop off, show or pick up a computer, or with none (`Game.visitor`, in for `Game.errand`). Only one at a time. One who shows a computer waits beside it on the counter until the player clicks them; then they pick it up.
 *Avoid:* current customer.
 
-**Daypart**: The time of day in the game: morning, midday, afternoon or evening (`Game.daypart`). The day starts in the morning; the day's first errand of daypart midday or afternoon (`Errand.daypart`, `daypart:` in its story file) turns it to that daypart as its customer comes in, and closing the shop makes it evening; time does not pass on its own. The Outside shows it.
+**Daypart**: The time of day in the game: morning, midday, afternoon or evening (`Game.daypart`). The day starts in the morning; the day's first errand of daypart midday or afternoon (`Errand.daypart`, `daypart:` in its story file) turns it to that daypart as its customer comes in, and closing the shop makes it evening; time does not pass on its own. The Outside shows it. `Game.moment` counts the days and dayparts as one number, for what takes game time, such as a Disk Defragmenter run (`Game.defrag_progress`).
 *Avoid:* hour, time, clock.
 
 **Debug menu**: The F2 panel in debug builds, with the tabs World (the time of day, the day cycle, the rain), Game (the `Game` state), Presets, Signs and GitHub (the issues token and the reporter name on a device).
