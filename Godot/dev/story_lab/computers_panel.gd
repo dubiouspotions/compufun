@@ -27,6 +27,8 @@ var _path: String = ""
 ## The computer before the patch, and with it: the table edits [member _after].
 ## Email.Folder's names, lowercase, in its order: how the table shows a folder.
 var _folder_names := PackedStringArray(Email.Folder.keys().map(func(k: String) -> String: return k.to_lower()))
+# True while a mail's typed text waits for the pause that saves it.
+var _mail_pending: bool = false
 # True while a save from the table or the bench reloads the week, which opens the patch again.
 var _saving_table: bool = false
 var _before: Win95Setup
@@ -154,7 +156,7 @@ func _item_path(i: int) -> String:
 func _settle_now() -> void:
 	if _settle != null and not _settle.is_stopped():
 		_settle.stop()
-		_save_text()
+		_on_settle()
 
 
 # Saves the text when it parses.
@@ -331,6 +333,7 @@ func _body_changed() -> void:
 	var row := _mails.get_selected()
 	if row != null:
 		(row.get_metadata(0) as Email).body = _body.text
+		_mail_pending = true
 		_settle.start()
 
 
@@ -363,8 +366,10 @@ func _delete_mail() -> void:
 		_show_mails()
 
 
+# Saves what the pause was waiting for: the mail text typed, or the patch text.
 func _on_settle() -> void:
-	if _body.has_focus():
+	if _mail_pending:
+		_mail_pending = false
 		_save_setup(_after)
 	else:
 		_save_text()
