@@ -43,6 +43,7 @@
 [ext_resource type="Resource" path="res://win95/office/word_shortcut.tres" id="word_shortcut"]
 [ext_resource type="Resource" path="res://win95/office/excel_shortcut.tres" id="excel_shortcut"]
 [ext_resource type="Resource" path="res://win95/office/powerpoint_shortcut.tres" id="powerpoint_shortcut"]
+[ext_resource type="Texture2D" path="res://win95/office/icons/word_document_32.png" id="icon_word_document"]
 
 [sub_resource type="Resource" id="Resource_kwjlb"]
 script = ExtResource("2_s7342")
@@ -214,9 +215,18 @@ icon = ExtResource("30_wyon7")
 is_folder = true
 children = Array[Resource]([SubResource("Resource_271kn")])
 
+[sub_resource type="Resource" id="Doc_missing_hamster"]
+script = ExtResource("5_rv54o")
+name = "Missing hamster.doc"
+icon = ExtResource("icon_word_document")
+contents_file = "res://customers/nice_lady/documents/missing_hamster.doc"
+summary = Dictionary[StringName, String]({&"title": "Missing hamster"})
+modified = "Thursday, May 30, 1996 7:48:12 PM"
+
 [sub_resource type="Resource" id="Resource_btamx"]
 script = ExtResource("34_rf5n6")
 wallpaper = ExtResource("wallpaper_hamsters")
+desktop = Array[ExtResource("5_rv54o")]([SubResource("Doc_missing_hamster")])
 drive_c = Array[ExtResource("5_rv54o")]([SubResource("Resource_p7pkh"), SubResource("Resource_60ohp")])
 installed_apps = PackedStringArray("Calculator", "Notepad")
 registered_owner = "Bob"

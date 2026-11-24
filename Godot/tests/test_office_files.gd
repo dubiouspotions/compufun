@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## Office on a customer's computer: its install (C:\Program Files, the Start menu, StartUp), the
 ## documents that the customer opened last, File > Properties' Summary kept with the file, and the
-## Shortcut Bar docked at the top right.
+## Shortcut Bar docked at the top right; the customers' own documents open in Word and Excel.
 
 const WIN95 := "res://win95/win95.tscn"  # loaded at run time: its scripts name the Game autoload
 const OFFICE_WINDOW := "res://win95/office/office_window.tscn"
@@ -76,6 +76,7 @@ func run() -> void:
 
 	_on_every_customer()
 	await _the_office_girls_documents()
+	await _the_nice_ladys_flyer()
 
 
 # A computer with Windows' stock Start menu, one document, Office, the Shortcut Bar and Bob's name.
@@ -159,5 +160,29 @@ func _the_office_girls_documents() -> void:
 	check("as cells that read", excel.document_text().contains("Held at customs!"), true)
 	excel.show_properties()
 	check("with Excel's Summary: no Template row", [excel.blocked_by.get_node("%Title").text, excel.blocked_by.get_node("%Template").visible], ["Containers", false])
+	root.remove_child(win95)
+	win95.free()
+
+
+# The missing hamster flyer on the nice lady's desktop opens in Word.
+func _the_nice_ladys_flyer() -> void:
+	var job := Job.new(load("res://customers/nice_lady.tres") as Customer, Problem.new(), 0, 0)
+	job.powered = true
+	var win95: Control = (load(WIN95) as PackedScene).instantiate()
+	win95.get_node("ComputerState").job = job
+	root.add_child(win95)
+	await process_frame
+	var boot: Node = win95.get("_boot")
+	if is_instance_valid(boot):
+		await boot.finished
+		await create_timer(1.0).timeout  # the boot plays the startup sound after finished
+	var state: Node = win95.get_node("ComputerState")
+	var flyer: Win95File = state.setup.file_at("Desktop\\Missing hamster.doc")
+	check("the flyer lies on her desktop", flyer != null, true)
+	if flyer != null:
+		win95.open_file(flyer)
+		var word: Control = win95.get_node("Desktop").active_window()
+		check("it opens in Word", [word.scene_file_path, word.get_node("%TitleBar").title], ["res://win95/office/word.tscn", "Microsoft Word - Missing hamster.doc"])
+		check("and names Mr. Nibbles", word.document_text().contains("Mr. Nibbles"), true)
 	root.remove_child(win95)
 	win95.free()
