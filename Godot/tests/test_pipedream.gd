@@ -51,5 +51,10 @@ func run() -> void:
 	pipes.call("_process", 1000.0)
 	check("they grow once it looks away", pipes.shown_segments(), day_3)
 
+	game.start_day(game.day_of(6))
+	check("day 6 doesn't start the sign", game.flag(&"sign_pipedream"), 0)
+	game.start_day(game.day_of(7))
+	check("day 7 starts it", game.flag(&"sign_pipedream"), 1)
+
 func _warp(number: int) -> float:
 	return game.day_of(number).warp

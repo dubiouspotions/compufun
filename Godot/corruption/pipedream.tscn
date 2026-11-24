@@ -6,6 +6,6 @@
 script = ExtResource("1_sign")
 title = "The Pipedream grows in the corner"
 timing = 1
-description = "1: the Pipes grow in the corner with the warp. 2: they spread to all of them. They only grow when player aren't looking"
-hint = "1: grows with the day's warp. 2: spreads."
+description = "Win95 Pipes grow out of the corner right of the work desk, but only while that corner is off screen. 1: as many as the day's warp allows (all at warp 1). 2: all of them."
+hint = "Look away from the Right View for a while, then back at the corner right of the work desk."
 stages = 2

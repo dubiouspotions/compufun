@@ -36,14 +36,14 @@ var stage: int = 0:
 ## warp 1, all of them show.
 @export_range(0.0, 1.0, 0.01) var first_amount: float = 0.15
 ## How fast new pipe grows in, in segments per second for each pipe.
-@export_range(0.5, 60.0, 0.5, "suffix:/s") var grow_speed: float = 4.0
+@export_range(0.05, 60.0, 0.05, "suffix:/s") var grow_speed: float = 0.25
 
 @export_group("Shape")
 ## Change any of these, then press Regrow.
 @export_tool_button("Regrow") var regrow: Callable = _rebuild
 ## The space the pipes may turn in, in metres from this node. They leave the origin straight
 ## along -Z until they are inside it.
-@export var bounds: AABB = AABB(Vector3(-0.05, -0.8, -2.2), Vector3(1.15, 2.85, 2.15))
+@export var bounds: AABB = AABB(Vector3(-0.05, -0.8, -1.65), Vector3(0.5, 2.85, 1.6))
 ## The grid step, and the length of one segment, in metres.
 @export_range(0.05, 1.0, 0.01, "suffix:m") var cell: float = 0.2
 ## One pipe per colour, at most 9.

@@ -1,6 +1,6 @@
 weather: clear
 warp: 1
-on start: sign_customer_x=0, sign_win_phone
+on start: sign_customer_x=0, sign_win_phone, sign_pipedream
 on close: sign_pointer_escape=0
 notes:
 	The ending times. The week ends after it, so anything goes.
