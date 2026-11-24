@@ -9,6 +9,7 @@ extends Control
 ## [member auto_advance_seconds] after it ends, or at a click anywhere (or Enter). The shop's phone
 ## takes clicks only while Game.can_call. Off the hook without a call (Game.pick_up_phone), it lists
 ## the computers; Esc or "Put down" puts it down. Game refuses both while the shop is closed or someone is in it.
+## From the answer to the hang-up, the line hisses under the voices (%LineHiss, tools/make_line_hiss.sh).
 
 ## The heading over the customers to call.
 @export var pick_title: String = "Call a customer"
@@ -51,6 +52,7 @@ var _quiet: float = 0.0
 @onready var _next: Button = %Next
 @onready var _phone: Control = %Phone
 @onready var _voice: VoicePlayer = %Voice
+@onready var _hiss: AudioStreamPlayer = %LineHiss
 
 
 func _ready() -> void:
@@ -76,6 +78,9 @@ static func number_of(customer: Customer) -> String:
 
 
 func _process(delta: float) -> void:
+	var answered := visible and _was_calling and _line >= 0 and not Game.rings_out()
+	if _hiss.playing != answered:
+		_hiss.playing = answered
 	if not visible or not _was_calling:
 		_phone.rotation = 0.0
 		return

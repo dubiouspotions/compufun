@@ -31,13 +31,13 @@ func run() -> void:
 			check("%s has its own voice" % dir, who.voice != null and who.voice.resource_path == "res://voices/persons/%s.tres" % dir, true)
 	check("effects/cambion_glitch.tres loads", load("res://voices/effects/cambion_glitch.tres") is VoiceEffect, true)
 	var telephone: VoiceEffect = load("res://voices/effects/telephone.tres")
-	check("the telephone keeps about 300 to 3400 Hz", [telephone.base.get("low_cut_hz"), telephone.base.get("high_cut_hz")], [300.0, 3400.0])
+	check("the telephone keeps about 500 to 2600 Hz", [telephone.base.get("low_cut_hz"), telephone.base.get("high_cut_hz")], [500.0, 2600.0])
 	var phone: Node = load("res://ui/phone_call.tscn").instantiate()
 	check("the phone says every line through the telephone", (phone.get_node("%Voice") as VoicePlayer).through, telephone)
 	phone.free()
 	var glitched := Voices.layer(person, null, load("res://voices/effects/cambion_glitch.tres"), telephone).split("|")
 	check("a glitch on the phone plays through the telephone on both sides of its curve",
-		[glitched.size(), glitched[0].contains("high_cut_hz=3400"), glitched[1].contains("high_cut_hz=3400"), glitched[1].contains("ring_mix")], [3, true, true, true])
+		[glitched.size(), glitched[0].contains("high_cut_hz=2600"), glitched[1].contains("high_cut_hz=2600"), glitched[1].contains("ring_mix"), glitched[1].contains("bits=6.0")], [3, true, true, true, true])
 
 	var line := DialogueLine.new()
 	line.text = "Dude, my computer!"

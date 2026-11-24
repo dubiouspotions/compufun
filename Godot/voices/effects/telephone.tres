@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_effect")
 base = Dictionary[String, float]({
-"distortion": 0.1,
-"high_cut_hz": 3400.0,
-"low_cut_hz": 300.0
+"distortion": 0.35,
+"high_cut_hz": 2600.0,
+"low_cut_hz": 500.0
 })

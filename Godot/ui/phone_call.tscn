@@ -4,6 +4,7 @@
 [ext_resource type="Script" path="res://ui/typed_label.gd" id="typed_label"]
 [ext_resource type="Script" path="res://voices/voice_player.gd" id="voice_player"]
 [ext_resource type="Resource" path="res://voices/effects/telephone.tres" id="telephone"]
+[ext_resource type="AudioStream" path="res://sounds/line_hiss.ogg" id="line_hiss"]
 [ext_resource type="PackedScene" path="res://ui/phone_choice.tscn" id="choice"]
 [ext_resource type="PackedScene" path="res://props/phone.tscn" id="phone"]
 [ext_resource type="Shader" path="res://shaders/psx_post.gdshader" id="psx_post"]
@@ -173,6 +174,12 @@ text = "Put down"
 
 [node name="Voice" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
-volume_db = -6.0
+volume_db = -9.5
 script = ExtResource("voice_player")
 through = ExtResource("telephone")
+
+[node name="LineHiss" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("line_hiss")
+volume_db = -20.0
+bus = &"Shop"
