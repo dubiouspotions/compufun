@@ -9,16 +9,16 @@ brief:
 - Busy day?
 	(neutral) Always. The newsletter doesn't write itself.
 - Nice button. What's it for?
-	(happy) Saving the old park from the asphalt overlords. You should sign our petition!
+	(happy) Oh, this? It's just a group a couple of my friends online and me are part of. You probably haven't heard of it. We fight for online freedom.
 - Right. So, computer problems?
 	(problem) Yes. On boot, BIOS fails POST. Somewhere in the 8M range.
 	(thinking) Most likely RAM, but it could be the mobo I suppose, a weak trace or a blown cap...
 	(neutral) I'd fix it myself. No time, no spares. Gotta get to my research.
 	- I'll take care of it for you.
-	- Uh... POST...? It's fine, I'll fix it. 
+	- Uh... POST...? It's fine, I'll fix it.
 	- Research...?
 		(irritated02) Something about a distro. It's... I'm investigating.
-	(neutral) I need my box for the newsletter, so please be quick.
+	(neutral) I don't like not having access to the forums - It's insane what the other users get up to when the mod isn't around. So please hurry if you can!
 	- I'll do my best. Have a FUNtastic day!
 
 == pick-up
