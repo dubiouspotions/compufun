@@ -1,6 +1,7 @@
-extends "res://win95/notepad.gd"
-## WordPad: Notepad with the office assistant's frame beside the page. With assistant_present
-## false the frame stays and is empty, as a computer with the NoClippy problem shows it.
+extends "res://win95/document_window.gd"
+## WordPad: a rich text page (RichEditor) that opens and saves .doc files as RTF (Rtf), as Word does,
+## with the office assistant's frame beside the page. With assistant_present false the frame stays
+## and is empty, as a computer with the NoClippy problem shows it.
 
 ## The group of every WordPad.
 const GROUP: StringName = &"win95_wordpads"
@@ -17,6 +18,12 @@ const ASSISTANT_TAKEN_META: StringName = &"win95_assistant_taken"
 			_sync_assistant()
 ## The assistant's picture; null leaves the space blank.
 @export var assistant_picture: Texture2D
+## The file extensions that WordPad opens, lower case, without the dot.
+@export var opens: Array[String] = ["doc", "wri", "rtf"]
+
+var _saved := ""  # the document as Rtf.write wrote it at the last open or save
+
+@onready var _text: RichEditor = %Text
 
 
 func _ready() -> void:
@@ -24,6 +31,24 @@ func _ready() -> void:
 	add_to_group(GROUP)
 	%Picture.texture = assistant_picture
 	_sync_assistant()
+
+
+func _focus_default() -> void:
+	_text.grab_focus()
+
+
+func _load(from: Win95File) -> void:
+	_text.set_document(Rtf.read(from.contents) if from != null else RichDocument.new())
+	_saved = Rtf.write(_text.document)
+
+
+func _save(state: ComputerState, into: Win95File) -> void:
+	_saved = Rtf.write(_text.document)
+	state.write_text(into, _saved)
+
+
+func _is_dirty() -> bool:
+	return file != null and Rtf.write(_text.document) != _saved
 
 
 func _sync_assistant() -> void:
