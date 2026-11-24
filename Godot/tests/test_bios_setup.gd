@@ -1,6 +1,6 @@
 extends "res://tests/test.gd"
 ## BIOS Setup: DEL during the POST opens it, a save keeps the choices in the computer's Win95Setup
-## and resets the computer, and Boot Sequence C,A boots past a floppy in A:.
+## and resets the computer, and Boot Sequence C,A boots past a floppy in A: and fixes Bootfloppy.
 
 
 func run() -> void:
@@ -55,6 +55,16 @@ func run() -> void:
 	var state: Node = desktop.get_node("%ComputerState")
 	var job_boot: Node = desktop.get("_boot")
 	check("a customer's computer keeps its choices in its running copy", job_boot.get("computer") == state and job_boot.cmos_setup() == state.setup, true)
+	game.set_powered(job, false)
+
+	var floppy_job := Job.new(load("res://customers/young_entrepreneur.tres"), load("res://problems/bootfloppy.tres"), 1, 1)
+	game.jobs = [floppy_job] as Array[Job]
+	game.set_powered(floppy_job, true)
+	await process_frame
+	var floppy_state: Node = bench._desktops.get(floppy_job).get_node("%ComputerState")
+	check("Bootfloppy: broken", floppy_job.software_fixed, false)
+	floppy_state.apply_settings({&"cmos": {&"boot_sequence": 1} as Dictionary[StringName, int]} as Dictionary[StringName, Variant])
+	check("saving Boot Sequence C,A fixes it, the floppy still in", [floppy_job.software_fixed, game.has_floppy(floppy_job)], [true, true])
 	game.jobs = [] as Array[Job]
 	bench.free()
 

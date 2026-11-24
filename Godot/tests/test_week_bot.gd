@@ -44,7 +44,7 @@ const KNOWN_ENUMS: Dictionary[String, Array] = {
 	"Problem.Location": ["HARDWARE", "SOFTWARE", "BOTH"],
 }
 ## The SoftwareCheck types that [method _fix_check] fixes the way a player does.
-const KNOWN_CHECKS: Array[String] = ["SettingCheck", "FileCheck", "MultiCheck", "DesktopPrankCheck", "VirusCheck"]
+const KNOWN_CHECKS: Array[String] = ["SettingCheck", "FileCheck", "MultiCheck", "AnyCheck", "DesktopPrankCheck", "VirusCheck"]
 ## Game's public methods: those that the bot, or the scenes that it clicks, use in a week, and those
 ## that a week doesn't need (queries, the debug menu, the Story Lab).
 const KNOWN_GAME_METHODS: Array[String] = [
@@ -504,6 +504,8 @@ func _fix_check(job: Job, software: SoftwareCheck, state: Node) -> void:
 		&"MultiCheck":
 			for each: SoftwareCheck in (software as MultiCheck).checks:
 				_fix_check(job, each, state)
+		&"AnyCheck":
+			_fix_check(job, (software as AnyCheck).checks[0], state)
 		&"FileCheck":
 			var file_check := software as FileCheck
 			var file := file_check.broken_file(setup)

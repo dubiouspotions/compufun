@@ -2,14 +2,27 @@
 
 [ext_resource type="Script" path="res://problems/problem.gd" id="1_u4sk2"]
 [ext_resource type="Script" path="res://problems/setting_check.gd" id="2_g6n7m"]
+[ext_resource type="Script" path="res://problems/any_check.gd" id="3_any"]
+[ext_resource type="Script" path="res://problems/software_check.gd" id="4_base"]
 
 [sub_resource type="Resource" id="Resource_76u48"]
 script = ExtResource("2_g6n7m")
 setting = &"floppy_in_a"
 broken_value = true
 
+[sub_resource type="Resource" id="boot_c_first"]
+script = ExtResource("2_g6n7m")
+setting = &"cmos"
+key = &"boot_sequence"
+broken_value = 0
+fixed_value = 1
+
+[sub_resource type="Resource" id="either"]
+script = ExtResource("3_any")
+checks = Array[ExtResource("4_base")]([SubResource("Resource_76u48"), SubResource("boot_c_first")])
+
 [resource]
 script = ExtResource("1_u4sk2")
 short_name = &"bootfloppy"
 location = 1
-software_check = SubResource("Resource_76u48")
+software_check = SubResource("either")
