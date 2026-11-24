@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://briau2emhamii"
-path="res://.godot/imported/clippy_blink_half.png-7141c70eb8ca3915b4ae2e01f15ab4f2.ctex"
+uid="uid://dj6kya1fkv57h"
+path="res://.godot/imported/clippy_listen.png-ab32322379abaf897c1d57db4ca145ee.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://win95/office/assistant/clippy_blink_half.png"
-dest_files=["res://.godot/imported/clippy_blink_half.png-7141c70eb8ca3915b4ae2e01f15ab4f2.ctex"]
+source_file="res://win95/office/assistant/clippy_listen.png"
+dest_files=["res://.godot/imported/clippy_listen.png-ab32322379abaf897c1d57db4ca145ee.ctex"]
 
 [params]
 

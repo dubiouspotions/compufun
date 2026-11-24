@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d1rvmflvyeo5q"
-path="res://.godot/imported/clippy_brows_up.png-712489231bdef05e16f05b5b23206612.ctex"
+uid="uid://c8c7rv7hpau1g"
+path="res://.godot/imported/clippy_squash.png-505b328649ee0d28f8b8e7ece5aadf4e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://win95/office/assistant/clippy_brows_up.png"
-dest_files=["res://.godot/imported/clippy_brows_up.png-712489231bdef05e16f05b5b23206612.ctex"]
+source_file="res://win95/office/assistant/clippy_squash.png"
+dest_files=["res://.godot/imported/clippy_squash.png-505b328649ee0d28f8b8e7ece5aadf4e.ctex"]
 
 [params]
 

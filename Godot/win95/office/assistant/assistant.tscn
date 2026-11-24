@@ -21,22 +21,29 @@ layout_mode = 0
 offset_right = 98.0
 offset_bottom = 88.0
 
-[node name="VBox" type="VBoxContainer" parent="Frame"]
+[node name="Margin" type="MarginContainer" parent="Frame"]
 layout_mode = 2
-theme_override_constants/separation = 0
+theme_override_constants/margin_left = 1
+theme_override_constants/margin_top = 1
+theme_override_constants/margin_right = 1
+theme_override_constants/margin_bottom = 1
 
-[node name="Bar" type="PanelContainer" parent="Frame/VBox"]
+[node name="VBox" type="VBoxContainer" parent="Frame/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="Bar" type="PanelContainer" parent="Frame/Margin/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 13)
+custom_minimum_size = Vector2(0, 15)
 layout_mode = 2
 theme_type_variation = &"TitleBar"
 
-[node name="Row" type="HBoxContainer" parent="Frame/VBox/Bar"]
+[node name="Row" type="HBoxContainer" parent="Frame/Margin/VBox/Bar"]
 layout_mode = 2
 mouse_filter = 2
 alignment = 2
 
-[node name="Close" type="Button" parent="Frame/VBox/Bar/Row"]
+[node name="Close" type="Button" parent="Frame/Margin/VBox/Bar/Row"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(12, 11)
 layout_mode = 2
@@ -45,32 +52,30 @@ focus_mode = 0
 theme_type_variation = &"CaptionCloseButton"
 icon_alignment = 1
 
-[node name="Stage" type="ColorRect" parent="Frame/VBox"]
+[node name="Stage" type="ColorRect" parent="Frame/Margin/VBox"]
 unique_name_in_owner = true
 clip_contents = true
-custom_minimum_size = Vector2(92, 69)
+custom_minimum_size = Vector2(92, 68)
 layout_mode = 2
 mouse_filter = 1
 color = Color(1, 1, 1, 1)
 
-[node name="Clip" type="TextureRect" parent="Frame/VBox/Stage"]
+[node name="Clip" type="TextureRect" parent="Frame/Margin/VBox/Stage"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 24.0
-offset_top = 1.0
-offset_right = 64.0
-offset_bottom = 69.0
+offset_right = 92.0
+offset_bottom = 68.0
 mouse_filter = 2
 texture = ExtResource("rest")
 stretch_mode = 2
 
-[node name="Bulb" type="TextureButton" parent="Frame/VBox/Stage"]
+[node name="Bulb" type="TextureButton" parent="Frame/Margin/VBox/Stage"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
 offset_left = 67.0
-offset_top = 8.0
-offset_right = 82.0
-offset_bottom = 32.0
+offset_top = 5.0
+offset_right = 85.0
+offset_bottom = 31.0
 focus_mode = 0
 texture_normal = ExtResource("bulb")

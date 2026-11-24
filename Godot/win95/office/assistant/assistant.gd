@@ -1,5 +1,5 @@
 extends Control
-## The Office Assistant: our own paper clip in a small window in the bottom right corner of an Office
+## The Office Assistant: Office 97's Clippit in a small window in the bottom right corner of an Office
 ## 97 app (OfficeWindow.assistant). He comes in soon after the app opens, welcomes the player once per
 ## computer, moves now and then, lights his bulb with a tip from tips.txt, offers help with a letter
 ## that starts with "Dear", answers Help, and hides from his right-click menu or his X. Once Cambion
@@ -10,22 +10,19 @@ extends Control
 const GROUP: StringName = &"win95_office_assistants"
 ## The tips: one per line under [Office], [Word] or [Excel]; # starts a note.
 const TIPS_FILE := "res://win95/office/assistant/tips.txt"
-## Each animation: its steps, each [pose, seconds] with an optional third item, how far up he hops
-## in pixels. The poses are clippy_<pose>.png, which tools/make_clippy.py draws.
+## Each animation: its steps, each [pose, seconds]. The poses are clippy_<pose>.png, Clippit's frames
+## that tools/crop_clippy.sh cuts from Office 97; "rest" is the rest pose (_rest_pose).
 const ANIMATIONS: Dictionary[StringName, Array] = {
-	&"Blink": [[&"blink_half", 0.06], [&"blink_shut", 0.12], [&"blink_half", 0.06], [&"rest", 0.0]],
-	&"LookLeft": [[&"look_left", 1.4], [&"rest", 0.0]],
-	&"LookRight": [[&"look_right", 1.4], [&"rest", 0.0]],
-	&"LookUp": [[&"look_up", 1.2], [&"rest", 0.0]],
-	&"LookDown": [[&"look_down", 1.2], [&"rest", 0.0]],
-	&"Surprised": [[&"brows_up", 0.12], [&"brows_high", 0.9], [&"brows_up", 0.12], [&"rest", 0.0]],
-	&"Thinking": [[&"look_up", 0.4], [&"frown", 1.4], [&"look_up", 0.3], [&"rest", 0.0]],
-	&"GetAttention": [[&"brows_high", 0.1, 5], [&"brows_high", 0.1, 0], [&"brows_high", 0.1, 5],
-			[&"brows_high", 0.1, 0], [&"brows_up", 0.4], [&"rest", 0.0]],
-	&"Idle": [[&"look_down", 0.8], [&"blink_shut", 0.12], [&"look_down", 0.6], [&"rest", 0.0]],
+	&"Blink": [[&"blink", 0.15], [&"rest", 0.0]],
+	&"LookDown": [[&"glance", 1.4], [&"rest", 0.0]],
+	&"LookAround": [[&"look", 1.2], [&"glance", 0.6], [&"rest", 0.0]],
+	&"Thinking": [[&"glance", 0.5], [&"look", 1.2], [&"glance", 0.4], [&"rest", 0.0]],
+	&"Explain": [[&"point", 0.15], [&"point_far", 1.4], [&"point", 0.15], [&"rest", 0.0]],
+	&"GetAttention": [[&"squash", 0.12], [&"stretch", 0.15], [&"squash", 0.12], [&"stretch_arm", 0.5], [&"rest", 0.0]],
+	&"Turn": [[&"turn", 0.9], [&"rest", 0.0]],
 }
 ## The animations that he plays now and then by himself.
-const IDLE: Array[StringName] = [&"Blink", &"Blink", &"LookLeft", &"LookRight", &"LookDown", &"Idle"]
+const IDLE: Array[StringName] = [&"Blink", &"Blink", &"LookDown", &"LookAround", &"Turn"]
 ## The file that Help looks for once the assistant is gone, by app; this install has no Help.
 const HELP_FILES: Dictionary[String, String] = {
 	"Microsoft Word": "wdmain8.hlp",
@@ -53,8 +50,6 @@ const _INFORMATION := preload("res://win95/theme/icons_extracted/message_info_32
 const _POSE := "res://win95/office/assistant/clippy_%s.png"
 const _MEMORY_META: StringName = &"office_assistant"
 const _LETTER := "^\\s*Dear[\\s,:]"
-## The top of the clip in his window when he stands still.
-const _CLIP_TOP := 1.0
 
 ## How far the window keeps from the app's bottom right corner: clear of the scroll bars and the
 ## status bar.
@@ -137,10 +132,7 @@ func animate(animation: StringName = &"") -> void:
 	_animation = create_tween()
 	for step: Array in ANIMATIONS[animation]:
 		var pose: StringName = step[0]
-		var hop: float = step[2] if step.size() > 2 else 0.0
-		_animation.tween_callback(func() -> void:
-			clip.texture = load(_POSE % pose)
-			clip.position.y = _CLIP_TOP - hop)
+		_animation.tween_callback(func() -> void: _show_pose(pose))
 		if step[1] > 0.0:
 			_animation.tween_interval(step[1])
 	_animation.tween_callback(_wait_idle)
@@ -231,14 +223,14 @@ func _arrive(then: Callable = Callable()) -> void:
 	%Bulb.visible = true
 	%Bulb.texture_normal = _BULB_LIT if _tip_waiting else _BULB_UNLIT
 	var clip: TextureRect = %Clip
-	clip.texture = load(_POSE % &"look_up")
+	clip.texture = load(_POSE % &"stretch")
 	clip.position.y = (%Stage as Control).size.y
 	if _animation != null:
 		_animation.kill()
 	_animation = create_tween()
-	_animation.tween_property(clip, ^"position:y", _CLIP_TOP - 6.0, 0.35).set_ease(Tween.EASE_OUT)
-	_animation.tween_property(clip, ^"position:y", _CLIP_TOP, 0.15).set_ease(Tween.EASE_IN)
-	_animation.tween_callback(func() -> void: clip.texture = load(_POSE % &"rest"))
+	_animation.tween_property(clip, ^"position:y", -6.0, 0.35).set_ease(Tween.EASE_OUT)
+	_animation.tween_property(clip, ^"position:y", 0.0, 0.15).set_ease(Tween.EASE_IN)
+	_animation.tween_callback(_show_pose.bind(&"rest"))
 	_animation.tween_interval(0.2)
 	if then.is_valid():
 		_animation.tween_callback(then)
@@ -253,11 +245,11 @@ func _leave() -> void:
 	if not %Frame.visible:
 		return
 	var clip: TextureRect = %Clip
-	clip.texture = load(_POSE % &"look_down")
+	clip.texture = load(_POSE % &"glance")
 	_animation = create_tween()
 	_animation.tween_property(clip, ^"position:y", (%Stage as Control).size.y, 0.3).set_ease(Tween.EASE_IN)
 	_animation.tween_callback(%Frame.hide)
-	_animation.tween_callback(func() -> void: clip.position.y = _CLIP_TOP)
+	_animation.tween_callback(func() -> void: clip.position.y = 0.0)
 
 
 # The first time on this computer, the welcome; else the tip of the day if the player asked for it.
@@ -311,12 +303,29 @@ func _say(beside: bool, heading: String, text: String, choices: Array, buttons: 
 	add_child(_balloon)
 	_aim()
 	_balloon.say(heading, text, choices, buttons, width, icon)
+	_settle()
 
 
 func _close_balloon() -> void:
 	if balloon() != null:
 		_balloon.queue_free()
 	_balloon = null
+	_settle()
+
+
+# Office 97 rests him on another frame while a balloon is open.
+func _rest_pose() -> StringName:
+	return &"listen" if balloon() != null else &"rest"
+
+
+func _show_pose(pose: StringName) -> void:
+	(%Clip as TextureRect).texture = load(_POSE % (_rest_pose() if pose == &"rest" else pose))
+
+
+# A running animation's next step overrides this, and its last step rests him the same way.
+func _settle() -> void:
+	if is_node_ready() and %Frame.visible:
+		_show_pose(&"rest")
 
 
 func _on_picked(id: StringName) -> void:
