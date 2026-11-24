@@ -53,6 +53,7 @@ func line_at(at: Vector2) -> int:
 ## Where the check box of line [param line] is drawn, in this control's coordinates; empty when the
 ## line has none.
 func box_rect(line: int) -> Rect2:
+	@warning_ignore("static_called_on_instance")
 	var column := Game.printout_box(lines[line]) if line >= 0 and line < lines.size() else -1
 	if column < 0:
 		return Rect2()

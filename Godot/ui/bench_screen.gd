@@ -55,6 +55,7 @@ func _sync() -> void:
 			_desktop(job)
 	var shown := _desktop(Game.connected) if Game.connected != null else null
 	for desktop: Control in _desktops.values():
+		@warning_ignore("incompatible_ternary")
 		var home: Node = self if desktop == shown else _parked
 		if desktop.get_parent() != home:
 			if desktop.get_parent() != null:

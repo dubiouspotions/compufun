@@ -225,8 +225,8 @@ func _write_checkout(path: String, new_text: String) -> String:
 	if new_text == "":
 		if not FileAccess.file_exists(file):
 			return ""
-		var err := DirAccess.remove_absolute(ProjectSettings.globalize_path(file))
-		return "" if err == OK else "can't remove %s: %s" % [file, error_string(err)]
+		var removed := DirAccess.remove_absolute(ProjectSettings.globalize_path(file))
+		return "" if removed == OK else "can't remove %s: %s" % [file, error_string(removed)]
 	var err := DirAccess.make_dir_recursive_absolute(file.get_base_dir())
 	if err != OK:
 		return "can't make %s: %s" % [file.get_base_dir(), error_string(err)]

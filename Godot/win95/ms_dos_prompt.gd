@@ -45,7 +45,7 @@ func _ready() -> void:
 	_sync_focus.call_deferred()
 
 
-func _unhandled_key_input(event: InputEvent) -> void:
+func _unhandled_key_input(_event: InputEvent) -> void:
 	if not _is_active():
 		return
 	get_viewport().set_input_as_handled()

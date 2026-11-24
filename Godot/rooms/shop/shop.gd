@@ -14,6 +14,8 @@ signal crashed
 signal phone_requested
 ## The player pressed the Degauss button of the bench screen.
 signal degauss_requested
+## The player pressed the power button of the work computer while it was off.
+signal work_power_requested
 ## The mouse came onto the back strip ([param on] true) or left it (see [member back_strip_height]).
 signal back_strip_hovered(on: bool)
 
@@ -22,6 +24,8 @@ const WORKVIEW: StringName = &"Workview"
 
 ## The seconds that the camera takes to move to another view.
 @export var turn_seconds: float = 0.35
+## The tint of the work computer's power button while the mouse is over it.
+@export var work_power_hover_color: Color = Color(1.0, 0.84, 0.35)
 ## The seconds that a customer takes from the alley to the counter, and back.
 @export var walk_seconds: float = 7.0
 ## The seconds that a customer takes to turn around at the counter before walking out.
@@ -61,6 +65,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _pipedream: Pipedream = %Pipedream
 @onready var _work_monitor: CrtMonitor = %WorkMonitor
 @onready var _work_tower: PcTower = $Room/WorkTower
+@onready var _work_power: Hotspot = %PowerHotspot
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
@@ -100,6 +105,7 @@ var work_computer_running: bool = false:
 	set(value):
 		work_computer_running = value
 		_work_tower.running = value
+		_work_power.set_enabled(not value)
 
 var _shown_view: StringName = &""
 ## What the hand held and where the cable was at the last sync, to hear what changed since.
@@ -159,6 +165,7 @@ func _ready() -> void:
 	_the_end.view_requested.connect(view_requested.emit)
 	_the_end.crashed.connect(crashed.emit)
 	_bench.degauss_pressed.connect(degauss_requested.emit)
+	_work_power.highlight_on_hover(_work_tower.get_node(^"Power"), work_power_hover_color)
 	_open_sign.open_requested.connect(Game.open_shop)
 	_open_sign.close_requested.connect(close_requested.emit)
 	_phone_outline = phone_outline.hover_material(phone_outline_width)
@@ -666,6 +673,8 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 				_open_sign.shake()  # the phone can't call before the shop opens: point at the sign
 		Hotspot.Action.TALK_TO_VISITOR:
 			Game.talk_to_visitor()
+		Hotspot.Action.POWER_WORK_COMPUTER:
+			work_power_requested.emit()
 		Hotspot.Action.TAKE_PART:
 			if Game.hand == null:
 				Game.take_new_part(hotspot.part)

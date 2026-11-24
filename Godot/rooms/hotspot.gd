@@ -6,7 +6,7 @@ extends Area3D
 ## The player clicked the hotspot with the left mouse button.
 signal clicked(hotspot: Hotspot)
 
-enum Action { GO_TO_VIEW, CALL_CUSTOMER, TAKE_PART, TALK_TO_VISITOR }
+enum Action { GO_TO_VIEW, CALL_CUSTOMER, TAKE_PART, TALK_TO_VISITOR, POWER_WORK_COMPUTER }
 
 ## The group of the hotspots that take a drop (see [member takes_drop]).
 const DROP_TARGETS: StringName = &"hotspot_drop_targets"

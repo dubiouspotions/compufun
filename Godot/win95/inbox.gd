@@ -108,7 +108,7 @@ func _mark_selected_read() -> void:
 
 
 func _mark_all_read() -> void:
-	for email in _shown.duplicate():
+	for email: Email in _shown.duplicate():
 		_computer.mark_read(email)
 
 

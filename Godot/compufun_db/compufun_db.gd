@@ -351,6 +351,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 ## The player opened the screen: the computer starts up if it hasn't today.
 func screen_opened() -> void:
+	power_on()
+
+
+## Starts the computer up, unless it is on.
+func power_on() -> void:
 	if not has_picture():
 		_start_up()
 
@@ -485,11 +490,11 @@ func _on_click(button: InputEventMouseButton) -> void:
 		return
 	if not _entries(column)[lines[line][0]].pick:  # a heading
 		return
-	_column = column
+	_column = column as Column
 	_select(lines[line][0])
 	if column != Column.CAUSES:  # a click on a cause only picks it; F or the button prints it
 		_act()
-	_column = column  # a click keeps the cursor, red, on what it picked
+	_column = column as Column  # a click keeps the cursor, red, on what it picked
 	queue_redraw()
 
 

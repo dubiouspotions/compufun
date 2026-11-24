@@ -29,7 +29,6 @@ signal computer_moved(job: Job)
 var _computers: Dictionary[Job, JobComputer] = {}
 var _slides: Dictionary[Job, Tween] = {}
 
-@onready var _slots: Node3D = %Slots
 
 
 ## Converges on [param jobs]: a computer appears for each new job and leaves with each job that

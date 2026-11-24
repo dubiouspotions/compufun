@@ -151,6 +151,7 @@ func _boxed_line(line: int) -> int:
 	while last + 1 < lines.size() and lines[last + 1].begins_with(" "):
 		last += 1
 	for i: int in range(first, last + 1):
+		@warning_ignore("static_called_on_instance")
 		if Game.printout_box(lines[i]) >= 0:
 			return i
 	return -1

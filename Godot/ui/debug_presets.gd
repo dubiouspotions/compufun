@@ -79,6 +79,7 @@ static func _first_met(candidates: Array, number: int, flags: Dictionary[StringN
 
 static func _put_flags(flags: Dictionary[StringName, int], sets: Dictionary[StringName, int]) -> void:
 	for flag_name: StringName in sets:
+		@warning_ignore("static_called_on_instance")
 		Game.put_flag(flags, flag_name, sets[flag_name])
 
 

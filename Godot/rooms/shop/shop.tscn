@@ -430,6 +430,12 @@ area_mask = 1
 [node name="WorkTower" parent="Room" unique_id=137852129 instance=ExtResource("14_qg2fl")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.85, 0.75, 1.2)
 
+[node name="PowerHotspot" parent="Room/WorkTower" instance=ExtResource("13_ojat2")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, 0.235)
+action = 4
+size = Vector3(0.05, 0.05, 0.04)
+
 [node name="Printer" parent="Room" instance=ExtResource("printer")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.78, 0, 0.25)
 

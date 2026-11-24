@@ -31,6 +31,7 @@ func play_on(player: Node, from_seconds: float = 0.0) -> void:
 ## is a new child of [param at] that frees itself when the take is over. A 3D take sounds like the
 ## room it is in (rooms/shop/sound_zones.tscn).
 func play_at(at: Node) -> void:
+	@warning_ignore("incompatible_ternary")
 	var player: Node = AudioStreamPlayer3D.new() if at is Node3D else AudioStreamPlayer.new()
 	if player is AudioStreamPlayer3D:
 		(player as AudioStreamPlayer3D).area_mask = SOUND_ZONES

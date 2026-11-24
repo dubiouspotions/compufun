@@ -24,7 +24,7 @@ func _ready() -> void:
 			close())
 	%Edit.id_pressed.connect(func(_id: int) -> void: items.select_all())
 	%View.id_pressed.connect(func(id: int) -> void: items.folder_view = id as IconView.FolderView)
-	for i in %Help.item_count:
+	for i: int in %Help.item_count:
 		%Help.set_item_icon(i, Stub.dot())
 	_header.draw.connect(_draw_header)
 	_corner.draw.connect(func() -> void: _corner.draw_rect(Rect2(Vector2.ZERO, _corner.size), _palette.face_color))
@@ -42,7 +42,7 @@ func _sync_status() -> void:
 
 func _sync_view() -> void:
 	var folder_view := items.folder_view
-	for i in %View.item_count:
+	for i: int in %View.item_count:
 		%View.set_item_checked(i, %View.get_item_id(i) == folder_view)
 	var details := folder_view == IconView.FolderView.DETAILS
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if folder_view in [IconView.FolderView.LIST, IconView.FolderView.DETAILS] else ScrollContainer.SCROLL_MODE_DISABLED

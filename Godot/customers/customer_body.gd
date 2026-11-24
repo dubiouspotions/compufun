@@ -227,6 +227,7 @@ func _show_relief(person: Person) -> void:
 		_relief.set_surface_override_material(PhotoRelief.Surface.FRONT, _relief_material(portrait, Color.WHITE))
 		var back := _relief_material(person.back, Color.WHITE) if person.back != null else _relief_material(portrait, Color(0.78, 0.78, 0.78))
 		_relief.set_surface_override_material(PhotoRelief.Surface.BACK, back)
+		@warning_ignore("incompatible_ternary")
 		_relief.set_surface_override_material(PhotoRelief.Surface.HEAD_BACK, back if person.back != null else _plain_head_back())
 		# A portrait cut at the chest leaves the modelled torso to fill the gap down to the trousers.
 		torso_too = bottom >= waist_height - 0.02
@@ -338,6 +339,7 @@ func _back_from_side(part: MeshInstance3D) -> ArrayMesh:
 		indices[corner] = back_copy[indices[corner]]
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	arrays[Mesh.ARRAY_NORMAL] = normals
+	@warning_ignore("incompatible_ternary")
 	arrays[Mesh.ARRAY_TANGENT] = tangents if not tangents.is_empty() else null
 	arrays[Mesh.ARRAY_TEX_UV] = uvs
 	arrays[Mesh.ARRAY_INDEX] = indices

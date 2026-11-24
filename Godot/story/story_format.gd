@@ -199,7 +199,7 @@ static func write_condition(when: Condition) -> String:
 static func write_flags(flags: Dictionary[StringName, int]) -> String:
 	var terms := PackedStringArray()
 	for flag: StringName in flags:
-		terms.append(flag if flags[flag] == 1 else "%s=%d" % [flag, flags[flag]])
+		terms.append(String(flag) if flags[flag] == 1 else "%s=%d" % [flag, flags[flag]])
 	return ", ".join(terms)
 
 
@@ -708,9 +708,9 @@ class _Reader:
 				_error(_peek().line, "after 'if' and 'else', a line belongs under one of them")
 				_block(depth + 1, Reply.new())
 			return choice
-		var answer := Reply.new()
-		_block(depth + 1, answer)
-		choice.replies.append(answer)
+		var reply := Reply.new()
+		_block(depth + 1, reply)
+		choice.replies.append(reply)
 		return choice
 
 	func _said(token: Dictionary) -> DialogueLine:
