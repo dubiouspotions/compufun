@@ -1,0 +1,5 @@
+# The Godot export writes these on every build (ci_scripts/ci_post_clone.sh); the rest is committed so Xcode Cloud can find the project.
+*.xcframework/
+CompuFun.pck
+CompuFun/Images.xcassets/
+CompuFun/dylibs/
