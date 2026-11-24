@@ -27,6 +27,7 @@ func run() -> void:
 	var mails: Tree = panel.get("_mails")
 	var first := mails.get_root().get_first_child()
 	check("the table lists her mails", first != null, true)
+	check("with no patch yet, her mails show dim: on the computer already", first.get_custom_color(3), LabUI.DIM)
 	panel.call("_edit_mail", first)
 	await process_frame
 	check("a cell left unchanged makes no draft", drafts.paths(), PackedStringArray())
@@ -39,9 +40,13 @@ func run() -> void:
 	await process_frame
 	check("a double-click on Read flips it, as a draft: the mail, whole", [drafts.text(PATCH).begins_with("mail\n\tfolder:"), (panel.get("_after") as Win95Setup).emails[0].read], [true, not was_read])
 	first = mails.get_root().get_first_child()
+	check("the mail the patch now changes shows bright", first.get_custom_color(3) != LabUI.DIM, true)
 	first.select(1)
 	panel.call("_edit_cell")
 	check("From edits as a dropdown of her addresses, and a new one", first.get_text(1).split(",")[-1], "New address...")
+	var from_text: String = (first.get_metadata(0) as Email).from
+	panel.call("_close_cells")  # Esc, then a click elsewhere
+	check("a dropdown left without a pick is text again, showing the mail", [first.get_cell_mode(1), first.get_text(1)], [TreeItem.CELL_MODE_STRING, from_text])
 
 	panel.call("_add_mail")
 	var added: TreeItem = mails.get_selected()

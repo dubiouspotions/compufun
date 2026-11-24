@@ -271,14 +271,18 @@ func _show_mails() -> void:
 	_mails.clear()
 	var root := _mails.create_item()
 	var reselect: TreeItem
+	var made: Variant = SetupPatch.between(_before, _after) if _before != null and _after != null else null
+	var in_patch := (made as SetupPatch).mails.map(func(m: Email) -> String: return "%s %s" % [m.sent, m.subject]) if made is SetupPatch else []
 	for mail: Email in _after.emails if _after != null else ([] as Array[Email]):
 		var row := _mails.create_item(root)
 		if "%s %s" % [mail.sent, mail.subject] == picked_key:
 			reselect = row
 		row.set_metadata(0, mail)
-		var texts := [_folder_names[mail.folder], mail.from, mail.to, mail.subject, mail.sent, _READ[int(mail.read)]]
-		for column: int in texts.size():
-			row.set_text(column, texts[column])
+		_show_row(row)
+		if "%s %s" % [mail.sent, mail.subject] not in in_patch:  # on the computer already; the patch doesn't touch it
+			for column: int in _MAIL_COLUMNS.size():
+				row.set_custom_color(column, LabUI.DIM)
+				row.set_tooltip_text(column, "On the computer before this visit; this patch doesn't change it. Edit it to change it in this patch.")
 	if reselect != null:
 		reselect.select(0)
 	_mail_selected()
@@ -296,9 +300,9 @@ func _edit_mail(row: TreeItem) -> void:
 	var mail: Email = row.get_metadata(0)
 	for column: int in [1, 2]:
 		if _cell(row, column) == _NEW_ADDRESS:
+			row.select(column)  # picking closes and refills the cells, so it opens after
 			row.set_cell_mode(column, TreeItem.CELL_MODE_STRING)
 			row.set_text(column, "")
-			row.select(column)  # picking closes the cells, so it opens after
 			row.set_editable(column, true)
 			_mails.edit_selected.call_deferred(true)
 			return
@@ -321,9 +325,13 @@ func _save_mails() -> void:
 # which a dropdown can't hold, is typed instead. The table is rebuilt after each edit.
 func _edit_cell() -> void:
 	var row := _mails.get_selected()
-	var column := _mails.get_selected_column()
-	if row == null or column < 0:
+	if row == null:
 		return
+	var mouse := _mails.get_local_mouse_position()
+	var column := _mails.get_column_at_position(mouse) if _mails.get_item_at_position(mouse) == row else _mails.get_selected_column()
+	if column < 0:
+		column = 3  # Enter with no cell picked: the subject
+	row.select(column)
 	if column == 5:
 		row.set_text(5, _READ[int(row.get_text(5) != _READ[1])])
 		_edit_mail(row)
@@ -351,6 +359,17 @@ func _close_cells() -> void:
 	for each: TreeItem in _mails.get_root().get_children():
 		for column: int in _MAIL_COLUMNS.size():
 			each.set_editable(column, false)
+			if each.get_cell_mode(column) != TreeItem.CELL_MODE_STRING:
+				each.set_cell_mode(column, TreeItem.CELL_MODE_STRING)  # a closed dropdown draws nothing
+		_show_row(each)  # a cell left mid-edit (Esc) shows its mail again
+
+
+# Shows [param row]'s mail in its cells, as text.
+func _show_row(row: TreeItem) -> void:
+	var mail: Email = row.get_metadata(0)
+	var texts := [_folder_names[mail.folder], mail.from, mail.to, mail.subject, mail.sent, _READ[int(mail.read)]]
+	for column: int in texts.size():
+		row.set_text(column, texts[column])
 
 
 func _mail_selected() -> void:
@@ -478,14 +497,18 @@ func _build() -> void:
 	var mail_row := HBoxContainer.new()
 	mail_row.add_theme_constant_override("separation", 8)
 	mail_box.add_child(mail_row)
-	mail_row.add_child(LabUI.label("Mails as the computer arrives", 15))
+	var mails_title := LabUI.label("Mails as the computer arrives", 15)
+	mails_title.tooltip_text = "Every mail on it this visit: from its .tres and the patches before, with this patch's changes. The patch text above holds only what this visit changes."
+	mails_title.mouse_filter = Control.MOUSE_FILTER_STOP
+	mail_row.add_child(mails_title)
 	mail_row.add_child(LabUI.button("Add mail", _add_mail))
 	mail_row.add_child(LabUI.button("Delete mail", _delete_mail))
-	mail_row.add_child(LabUI.label("Click a mail to edit its text below; double-click a cell to change it.", 13, LabUI.DIM))
+	mail_row.add_child(LabUI.label("Dim: on the computer already. Bright: this patch's. Click a mail to edit its text below; double-click a cell to change it.", 13, LabUI.DIM))
 	_mails = Tree.new()
 	_mails.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_mails.custom_minimum_size.y = 160
 	_mails.hide_root = true
+	_mails.select_mode = Tree.SELECT_ROW  # a click picks the whole mail
 	_mails.columns = _MAIL_COLUMNS.size()
 	_mails.column_titles_visible = true
 	for i: int in _MAIL_COLUMNS.size():
