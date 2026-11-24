@@ -4,7 +4,7 @@
 
 [node name="PointerEscape" type="Node"]
 script = ExtResource("1_script")
-title = "The Windows pointer slips off the screen"
+title = "The Windows arrow follows the mouse off a Cambion screen"
 timing = 1
-description = "When working in windows on the screen on thebench, the Windows pointer takes a while to return to the in game pointer when player drags pointer outside of the screen. If left off screen turns back into normal pointer after a small while"
-hint = "Work on the bench screen and wait."
+description = "Now and then, when the mouse leaves the bench screen of a computer that runs Cambion, the Win95 arrow stays the mouse cursor over the shop for a few seconds before the game's cursor returns. Days 3 to 5."
+hint = "Connect a Cambion computer, open the Screen View and move the mouse off the screen, a few times."

@@ -1,96 +1,91 @@
 extends CorruptionSign
-## Now and then, while the player looks at the Win95 screen, its pointer slides off the nearest
-## edge of the screen and comes back a moment later (wiki: In-world - Corruption Signs). The
-## mouse still points and clicks where it is; only the drawn pointer goes.
+## Now and then, when the mouse leaves the open bench screen while the connected computer runs
+## Cambion (Game.runs_cambion), the Win95 arrow comes along: it stays the mouse cursor over the shop
+## for [member linger_seconds], or until the mouse is back on the screen, before the game's cursor
+## returns (wiki: In-world - Corruption Signs). Day 3 starts it and day 6 ends it.
 
-## The fewest seconds between two escapes, counted only while the player looks at the screen.
-@export var wait_min: float = 8.0
-## The most seconds between two escapes.
-@export var wait_max: float = 20.0
-## The seconds that the pointer takes to slide off the screen.
-@export var slide_seconds: float = 0.3
-## The seconds that it stays off the screen.
-@export var away_seconds: float = 1.5
-## The seconds that it takes to slide back to the mouse.
-@export var return_seconds: float = 0.5
-## How far past the edge it goes, in screen buffer pixels: more than the pointer's size.
-@export var beyond: float = 40.0
+## The chance, 0 to 1, that the arrow comes along each time the mouse leaves the screen.
+@export_range(0.0, 1.0) var escape_chance: float = 0.2
+## The seconds that the arrow stays the cursor off the screen.
+@export var linger_seconds: float = 3.0
 
-var _on: bool = false
-var _wait: float = 0.0
-## How far out the pointer is: 0 at the mouse, 1 past the edge.
-var _away: float = 0.0
-var _side: Side = SIDE_RIGHT
-var _escape: Tween
+var _random := RandomNumberGenerator.new()
+var _seeded_jump: int = -1
+var _view: ScreenView  # the view whose arrow lingers; null while none does
+var _left: float = 0.0
+var _arrow: Image
+
+
+## True while the Win95 arrow stands in for the game's cursor.
+func is_lingering() -> bool:
+	return _view != null
 
 
 func _apply(shown_stage: int) -> void:
-	var on := shown_stage > 0
-	set_process(on)
-	if on == _on:
+	if Game.jump != _seeded_jump:
+		_seeded_jump = Game.jump
+		_random.seed = hash(Game.day_number)  # every start or restore of a day rolls the same: the week bot and restores repeat
+	if shown_stage > 0:
+		_listen.call_deferred()  # the screens are in the main scene's UI, which is ready after the shop
+	if shown_stage <= 0 or not _cambion_connected():
+		_end()
+
+
+func _listen() -> void:
+	for node: Node in get_tree().get_nodes_in_group(CrtScreen.GROUP):
+		var screen := node as CrtScreen
+		var view := screen.get_parent() as ScreenView
+		if view == null or view.screen != ViewMarker.Screen.WIN95 or screen.mouse_entered.is_connected(_end):
+			continue
+		screen.mouse_exited.connect(_on_screen_left.bind(view))
+		screen.mouse_entered.connect(_end)
+
+
+func _on_screen_left(view: ScreenView) -> void:
+	if stage() <= 0 or not _cambion_connected() or _windows_cursor_shown() or _random.randf() >= escape_chance:
 		return
-	_on = on
-	_wait = randf_range(wait_min, wait_max)
-	if not on:
-		if _escape != null:
-			_escape.kill()
-		_away = 0.0
-		_push()
+	var screen := view.crt_screen()
+	if _arrow == null:
+		_arrow = screen.arrow_cursor.get_image()
+		if _arrow == null:
+			push_error("pointer_escape: the arrow %s has no image" % screen.arrow_cursor)
+			return
+		_arrow.resize(_arrow.get_width() * view.zoom, _arrow.get_height() * view.zoom, Image.INTERPOLATE_NEAREST)
+	ScreenView.set_cursor(_arrow, Input.CURSOR_ARROW, screen.arrow_hotspot * view.zoom)
+	_view = view
+	_left = linger_seconds
+	set_process(true)
 
 
 func _process(delta: float) -> void:
-	if _escape != null and _escape.is_running():
-		_push()
-		return
-	var watched := _watched()
-	if watched == null:
-		return
-	_wait -= delta
-	if _wait <= 0.0:
-		_start(watched)
+	_left -= delta
+	if _left <= 0.0:
+		_end()
 
 
-func _start(screen: CrtScreen) -> void:
-	var at := screen.cursor_at() / Vector2(screen.buffer.size)
-	var gaps: Dictionary[Side, float] = {SIDE_LEFT: at.x, SIDE_RIGHT: 1.0 - at.x, SIDE_TOP: at.y, SIDE_BOTTOM: 1.0 - at.y}
-	_side = SIDE_LEFT
-	for side: Side in gaps:
-		if gaps[side] < gaps[_side]:
-			_side = side
-	_escape = create_tween()
-	_escape.tween_property(self, ^"_away", 1.0, slide_seconds).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	_escape.tween_interval(away_seconds)
-	_escape.tween_property(self, ^"_away", 0.0, return_seconds).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	_escape.tween_callback(func() -> void:
-		_wait = randf_range(wait_min, wait_max)
-		_push())
+# Gives the game's cursor back.
+func _end() -> void:
+	set_process(false)
+	if _view != null and not _windows_cursor_shown():
+		ScreenView.set_cursor(_view.game_cursor, Input.CURSOR_ARROW, _view.game_cursor_hotspot)
+	_view = null
 
 
-# The Win95 screen that the player looks at: a CRT screen on view that draws its pointer.
-func _watched() -> CrtScreen:
-	for node: Node in get_tree().get_nodes_in_group(CrtScreen.GROUP):
-		var screen := node as CrtScreen
-		if screen.is_visible_in_tree() and screen.cursor_visible and screen.buffer != null:
-			return screen
-	return null
+# The display server outlives the image and logs a leak at exit unless it is cleared.
+func _exit_tree() -> void:
+	if _view != null:
+		ScreenView.set_cursor(null, Input.CURSOR_ARROW)
+		_view = null
 
 
-# Moves every screen's pointer _away of the way from the mouse to past the edge on _side.
-func _push() -> void:
-	for node: Node in get_tree().get_nodes_in_group(CrtScreen.GROUP):
-		var screen := node as CrtScreen
-		if screen.buffer == null:
-			continue
-		var at := screen.cursor_at()
-		var size := Vector2(screen.buffer.size)
-		var out := Vector2.ZERO
-		match _side:
-			SIDE_LEFT:
-				out.x = -at.x - beyond
-			SIDE_RIGHT:
-				out.x = size.x - at.x + beyond
-			SIDE_TOP:
-				out.y = -at.y - beyond
-			SIDE_BOTTOM:
-				out.y = size.y - at.y + beyond
-		screen.cursor_offset = out * _away
+func _cambion_connected() -> bool:
+	return Game.connected != null and Game.runs_cambion(Game.connected.customer)
+
+
+# The sign win_cursor already makes the shop's cursor the Win95 arrow, and owns it.
+func _windows_cursor_shown() -> bool:
+	for node: Node in get_tree().get_nodes_in_group(CorruptionSign.GROUP):
+		var other := node as CorruptionSign
+		if other.id() == &"win_cursor" and other.stage() > 0:
+			return true
+	return false

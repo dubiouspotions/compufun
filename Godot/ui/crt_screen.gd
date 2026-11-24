@@ -39,12 +39,6 @@ var cursor_visible: bool = true:
 	set(value):
 		cursor_visible = value
 		_sync_cursor()
-## Draws the cursor this many buffer pixels from the mouse; clicks still land at the mouse. The
-## corruption sign corruption/pointer_escape.tscn slides it off the screen.
-var cursor_offset: Vector2 = Vector2.ZERO:
-	set(value):
-		cursor_offset = value
-		_sync_cursor()
 ## False makes the screen take no mouse events that a finger made, while the touch trackpad points
 ## instead ([method push_mouse]); a real mouse still points. The screen still accepts those events,
 ## so a touch on the glass doesn't fall through and leave the view.
@@ -190,7 +184,7 @@ func _sync_cursor() -> void:
 	if _cursor in sizing_cursors.values():
 		hotspot = (_cursor.get_size() / 2.0).floor()
 	if tube != null:
-		tube.set_param(&"crt_cursor", (_cursor_at - hotspot + cursor_offset).floor() if cursor_visible else Vector2(-1000, -1000))
+		tube.set_param(&"crt_cursor", (_cursor_at - hotspot).floor() if cursor_visible else Vector2(-1000, -1000))
 
 
 # The uniform's value in [param look], or the shader's default where the look leaves it unset.
