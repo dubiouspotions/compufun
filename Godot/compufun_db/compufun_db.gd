@@ -230,14 +230,16 @@ func _add_steps(entries: Array[Dictionary], title: String, steps: PackedStringAr
 	return number
 
 
-# The symptoms that hold every word of [param text], whatever the case; none for no words.
+# The symptoms whose text and keywords (story/symptoms.keywords) hold every word of [param text],
+# whatever the case; none for no words.
 func _found(text: String) -> PackedStringArray:
 	var words := text.to_lower().split(" ", false)
 	var found: PackedStringArray = []
 	if words.is_empty():
 		return found
+	var keywords: Dictionary[String, PackedStringArray] = Game.week.keywords if Game.week != null else {}
 	for symptom: String in _symptoms:
-		var lower := symptom.to_lower()
+		var lower := (symptom + " " + " ".join(keywords.get(symptom, PackedStringArray()))).to_lower()
 		if Array(words).all(func(word: String) -> bool: return lower.contains(word)):
 			found.append(symptom)
 	return found
@@ -351,6 +353,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 ## The player opened the screen: the computer starts up if it hasn't today.
 func screen_opened() -> void:
+	power_on()
+
+
+## Starts the computer up, unless it is on.
+func power_on() -> void:
 	if not has_picture():
 		_start_up()
 
@@ -485,11 +492,11 @@ func _on_click(button: InputEventMouseButton) -> void:
 		return
 	if not _entries(column)[lines[line][0]].pick:  # a heading
 		return
-	_column = column
+	_column = column as Column
 	_select(lines[line][0])
 	if column != Column.CAUSES:  # a click on a cause only picks it; F or the button prints it
 		_act()
-	_column = column  # a click keeps the cursor, red, on what it picked
+	_column = column as Column  # a click keeps the cursor, red, on what it picked
 	queue_redraw()
 
 
@@ -681,6 +688,7 @@ func _close_print_box() -> void:
 # The print box in the middle of the screen: what prints and how far, in a bar of blocks; then that
 # it is done, with an OK button.
 func _paint_printing() -> void:
+	@warning_ignore("integer_division")
 	var left := (COLUMNS - PRINT_BOX_WIDTH) / 2
 	var inner := PRINT_BOX_WIDTH - 4
 	var middle: String
@@ -705,6 +713,7 @@ func _paint_printing() -> void:
 
 # The first cell of the print box's OK button.
 func _ok_cell() -> Vector2i:
+	@warning_ignore("integer_division")
 	return Vector2i((COLUMNS - OK_BUTTON.length()) / 2, PRINT_BOX_TOP + 3)
 
 
@@ -767,6 +776,7 @@ func _buttons() -> Dictionary[String, Column]:
 # The first x of the button [param text], centred under [param column].
 func _button_x(column: Column, text: String) -> int:
 	var span := _spans[column]
+	@warning_ignore("integer_division")
 	return span.x + (span.y - span.x + 1 - text.length()) / 2
 
 

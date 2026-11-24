@@ -120,7 +120,7 @@ static func popup(near: Control, title: String, editor: Control, closed: Callabl
 	panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	var room := MarginContainer.new()  # the window's edge around the card, for its shadow
 	for side: String in ["left", "top", "right", "bottom"]:
-		room.add_theme_constant_override("margin_" + side, _SHADOW)
+		room.add_theme_constant_override("margin_" + side, int(_SHADOW))
 	panel.add_child(room)
 	var card := PanelContainer.new()
 	var look := StyleBoxFlat.new()

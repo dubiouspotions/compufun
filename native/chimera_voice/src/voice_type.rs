@@ -21,7 +21,7 @@ pub const NEUTRAL: &[(&str, f64)] = &[
     ("stutter_repeats", 3.0), ("reverse", 0.0), ("dropout", 0.0), ("static", 0.0), ("static_level", 0.4),
     ("ring_hz", 0.0), ("ring_mix", 0.0), ("metal_ms", 0.0), ("metal_fb", 0.6), ("drive", 1.0),
     ("distortion", 0.0), ("phaser", 0.0), ("chorus", 0.0), ("delay", 0.0), ("reverb", 0.0),
-    ("hold", 1.0), ("bits", 16.0),
+    ("hold", 1.0), ("bits", 16.0), ("low_cut_hz", 0.0), ("high_cut_hz", 20000.0),
 ];
 
 /// The voice-source keys; one that neither voice sets is left to Chimera.

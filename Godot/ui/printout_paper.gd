@@ -18,12 +18,23 @@ extends Control
 @export var pencil_color: Color = Color(0.42, 0.42, 0.46)
 ## The blank columns on each side, where the tractor holes are.
 @export var margin_chars: int = 3
+## The top-left corner is folded over (see [method fold_rect]).
+@export var folded: bool = false
+## The colour of the fold's back, and of the fold under the mouse.
+@export var fold_color: Color = Color(0.84, 0.83, 0.76)
+@export var fold_hover_color: Color = Color(1.0, 0.98, 0.9)
 
 ## The printed lines.
 var lines: PackedStringArray = []:
 	set(value):
 		lines = value
 		_relayout()
+## True while the mouse is over the fold: it lights up.
+var fold_hovered: bool = false:
+	set(value):
+		if value != fold_hovered:
+			fold_hovered = value
+			queue_redraw()
 ## The indices of the lines whose check box is ticked.
 var ticks: Array[int] = []:
 	set(value):
@@ -53,10 +64,17 @@ func line_at(at: Vector2) -> int:
 ## Where the check box of line [param line] is drawn, in this control's coordinates; empty when the
 ## line has none.
 func box_rect(line: int) -> Rect2:
+	@warning_ignore("static_called_on_instance")
 	var column := Game.printout_box(lines[line]) if line >= 0 and line < lines.size() else -1
 	if column < 0:
 		return Rect2()
 	return Rect2(cell() * Vector2(margin_chars + column, line + 1), cell() * Vector2(3, 1))
+
+
+## The folded corner, in this control's coordinates: the left margin's width, square; empty unless
+## [member folded].
+func fold_rect() -> Rect2:
+	return Rect2(Vector2.ZERO, Vector2.ONE * cell().x * margin_chars) if folded else Rect2()
 
 
 func _relayout() -> void:
@@ -67,7 +85,8 @@ func _relayout() -> void:
 
 func _draw() -> void:
 	var c := cell()
-	draw_rect(Rect2(Vector2.ZERO, size), paper_color)
+	var fold := fold_rect().size.x
+	draw_colored_polygon(PackedVector2Array([Vector2(fold, 0.0), Vector2(size.x, 0.0), size, Vector2(0.0, size.y), Vector2(0.0, fold)]), paper_color)
 	var band := c.y * bar_lines
 	var y := c.y
 	while y < size.y:
@@ -77,8 +96,13 @@ func _draw() -> void:
 	y = c.y * 0.5
 	while y < size.y:
 		for x: float in [c.x * margin_chars * 0.375, size.x - c.x * margin_chars * 0.375]:
-			draw_circle(Vector2(x, y), hole, bar_color.darkened(0.15))
+			if x + y >= fold:  # none in the folded corner
+				draw_circle(Vector2(x, y), hole, bar_color.darkened(0.15))
 		y += c.y
+	if folded:
+		var flap := PackedVector2Array([Vector2(fold, 0.0), Vector2(fold, fold), Vector2(0.0, fold)])
+		draw_colored_polygon(PackedVector2Array([flap[0] + Vector2(2.0, 0.0), flap[1] + Vector2(2.0, 2.0), flap[2] + Vector2(0.0, 2.0)]), Color(0.0, 0.0, 0.0, 0.25))
+		draw_colored_polygon(flap, fold_hover_color if fold_hovered else fold_color)
 	var ascent := font.get_ascent(font_size)
 	for i: int in lines.size():
 		draw_string(font, Vector2(c.x * margin_chars, c.y * (i + 1) + ascent), lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, ink_color)

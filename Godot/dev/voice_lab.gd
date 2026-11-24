@@ -66,6 +66,10 @@ const GROUPS: Array = [
 		["fs", "Clock mismatch", 2000.0, 60000.0, 50.0, 22050.0],
 		["drive", "Clip", 1.0, 40.0, 0.1, 1.0],
 	]],
+	["Telephone", "Down a phone line", [
+		["low_cut_hz", "Low cut", 0.0, 2000.0, 10.0, 0.0],
+		["high_cut_hz", "High cut", 200.0, 20000.0, 10.0, 20000.0],
+	]],
 	["Corrupted", "Damaged on the way", [
 		["stutter", "Stutter", 0.0, 1.0, 0.01, 0.0],
 		["stutter_ms", "Stutter length", 10.0, 400.0, 1.0, 80.0],
@@ -110,7 +114,7 @@ const MACROS: Dictionary = {
 	"Hacked": {"static": 0.35, "roughness": 0.9, "fry": 0.6, "distortion": 0.6, "chorus": 0.5},
 }
 const UNITS: Dictionary = {"fs": " Hz", "glide": " s", "pressure": " cmH2O", "vibrato_rate": " Hz", "drift": " ct",
-	"stutter_ms": " ms", "chunk_ms": " ms", "metal_ms": " ms", "ring_hz": " Hz", "wobble_hz": " Hz", "bits": " bit", "rate": "x", "pitch": "x", "shift": "x"}
+	"stutter_ms": " ms", "chunk_ms": " ms", "metal_ms": " ms", "ring_hz": " Hz", "wobble_hz": " Hz", "low_cut_hz": " Hz", "high_cut_hz": " Hz", "bits": " bit", "rate": "x", "pitch": "x", "shift": "x"}
 
 const BG := Color("12141a")
 const CARD := Color("1b1e26")
@@ -563,6 +567,7 @@ func _save_layer() -> void:
 		_status.text = "Saved %s, but it doesn't read back as a %s." % [path, LAYERS[_layer]]
 		return
 	_fill_picker(_layer)
+	@warning_ignore("incompatible_ternary")
 	_pick(_layer, _picked[_layer].find(StringName(name_text) if _layer == 1 else path), true)
 	var note := " Rendered voice files change with it: run render_voices.gd." if _layer == 1 else ""
 	if _layer == 0 and ResourceLoader.exists("res://people/%s/person.tres" % name_text):
@@ -629,7 +634,7 @@ func _build() -> void:
 	add_child(backdrop)
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for side in ["left", "top", "right", "bottom"]:
+	for side: String in ["left", "top", "right", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 24)
 	add_child(margin)
 	var page := VBoxContainer.new()
@@ -856,7 +861,7 @@ func _all_levers_panel() -> Control:
 	veil.hide()
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for side_name in ["left", "top", "right", "bottom"]:
+	for side_name: String in ["left", "top", "right", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side_name, 48)
 	veil.add_child(margin)
 	var panel := PanelContainer.new()
@@ -940,7 +945,7 @@ func _macro_row(side: int, macro: String) -> Control:
 	reset.name = "Reset"
 	row.add_child(reset)
 	_macros[side][macro] = slider
-	slider.value_changed.connect(func(_value: float) -> void:
+	slider.value_changed.connect(func(_changed: float) -> void:
 		_refresh_macros(side)
 		_apply_macro(side, macro)
 		_on_changed())
@@ -1092,10 +1097,10 @@ func _show_reset(button: Button, changed: bool) -> void:
 	button.mouse_filter = Control.MOUSE_FILTER_STOP if changed else Control.MOUSE_FILTER_IGNORE
 
 
-func _label(text: String, size: int, color: Color) -> Label:
+func _label(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.text = text
-	label.add_theme_font_size_override("font_size", size)
+	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	return label
 
@@ -1123,13 +1128,13 @@ func _make_theme() -> Theme:
 	card.border_color = LINE
 	card.set_border_width_all(1)
 	t.set_stylebox("panel", "PanelContainer", card)
-	for type in ["Button", "OptionButton"]:
+	for type: String in ["Button", "OptionButton"]:
 		t.set_stylebox("normal", type, _box(RAISED, 10, 8))
 		t.set_stylebox("hover", type, _box(HOVER, 10, 8))
 		t.set_stylebox("pressed", type, _box(ACCENT.darkened(0.2), 10, 8))
 		t.set_stylebox("hover_pressed", type, _box(ACCENT.darkened(0.1), 10, 8))
 		t.set_stylebox("focus", type, StyleBoxEmpty.new())
-		for state in ["font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "font_focus_color"]:
+		for state: String in ["font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "font_focus_color"]:
 			t.set_color(state, type, TEXT)
 	t.add_type(&"AccentButton")
 	t.set_type_variation(&"AccentButton", &"Button")

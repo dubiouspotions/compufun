@@ -104,5 +104,6 @@ func _draw_map() -> void:
 		elif _blocks[i] != 0 and drawn < used:
 			color = fragment_color if _blocks[i] == 2 else used_color
 			drawn += 1
+		@warning_ignore("integer_division")
 		var at := Vector2(i % columns, i / columns) * cell
 		_map.draw_rect(Rect2(at + Vector2.ONE, cell - Vector2(2, 2)), color)

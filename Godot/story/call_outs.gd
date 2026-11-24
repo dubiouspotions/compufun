@@ -1,3 +1,4 @@
+@tool
 class_name CallOuts
 extends Resource
 ## What one customer, or every customer, calls out while they wait at the counter and the player

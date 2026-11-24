@@ -439,6 +439,7 @@ func _snapshot_shop() -> void:
 		push_error("Finale: cannot read the shop from %s for the credits" % _buffer.get_path())
 		return
 	var shrink := maxi(backdrop_shrink, 1)
+	@warning_ignore("integer_division")
 	image.resize(maxi(image.get_width() / shrink, 1), maxi(image.get_height() / shrink, 1), Image.INTERPOLATE_TRILINEAR)
 	(%Backdrop as TextureRect).texture = ImageTexture.create_from_image(image)
 

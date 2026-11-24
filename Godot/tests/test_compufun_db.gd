@@ -15,6 +15,7 @@ func run() -> void:
 	db.set("hit_seconds", Vector2.ZERO)
 	root.add_child(db)
 	await process_frame
+	check("a keyword finds its symptom", db.call("_found", "audio"), PackedStringArray(["No sound"]))
 	for letter: String in "restarts":
 		var key := InputEventKey.new()
 		key.unicode = letter.unicode_at(0)

@@ -60,6 +60,27 @@ static func parse_call_outs(text: String, path: String) -> Parsed:
 	return _Reader.new(text, path).call_outs()
 
 
+## Reads the symptoms' search keywords in [param text] (story/symptoms.keywords: one
+## "Symptom: word, word" per line; blank lines are skipped) into [param into], symptom to keywords.
+## Returns the errors, which name [param path] and the line.
+static func parse_keywords(text: String, path: String, into: Dictionary[String, PackedStringArray]) -> PackedStringArray:
+	var errors := PackedStringArray()
+	var lines := text.split("\n")
+	for i: int in lines.size():
+		var line := lines[i].strip_edges()
+		if line == "":
+			continue
+		var colon := line.find(":")
+		var symptom := line.substr(0, colon).strip_edges() if colon > 0 else ""
+		if symptom == "":
+			errors.append("%s:%d: not 'Symptom: word, word': %s" % [path, i + 1, line])
+		elif into.has(symptom):
+			errors.append("%s:%d: '%s' has keywords on an earlier line too" % [path, i + 1, symptom])
+		else:
+			into[symptom] = PackedStringArray(Array(line.substr(colon + 1).split(",")).map(func(word: String) -> String: return word.strip_edges()).filter(func(word: String) -> bool: return word != ""))
+	return errors
+
+
 ## The day in [param text], read from [param path] (story/days/day_<n>.day).
 static func parse_day(text: String, path: String) -> Parsed:
 	return _Reader.new(text, path).day()
@@ -129,7 +150,8 @@ static func write_problem(problem: Problem) -> String:
 	out.append("post-it: " + problem.perceived_issue)
 	if problem.cause != "":
 		out.append("cause: " + problem.cause)
-	_write_shown(out, "symptoms", problem.symptoms, problem.symptom_shows)
+	var no_shows: Dictionary[String, String] = {}
+	_write_shown(out, "symptoms", problem.symptoms, no_shows)
 	if not problem.checks.is_empty():
 		var named := PackedStringArray()
 		var shows: Dictionary[String, String] = {}
@@ -199,7 +221,7 @@ static func write_condition(when: Condition) -> String:
 static func write_flags(flags: Dictionary[StringName, int]) -> String:
 	var terms := PackedStringArray()
 	for flag: StringName in flags:
-		terms.append(flag if flags[flag] == 1 else "%s=%d" % [flag, flags[flag]])
+		terms.append(String(flag) if flags[flag] == 1 else "%s=%d" % [flag, flags[flag]])
 	return ", ".join(terms)
 
 
@@ -279,40 +301,40 @@ class _Reader:
 
 	func errand() -> Parsed:
 		var result := Parsed.new()
-		var errand := Errand.new()
-		result.value = errand
+		var parsed := Errand.new()
+		result.value = parsed
 		var stem := _path.get_file().get_basename()
 		if RegEx.create_from_string("^[0-7][0-9][0-9][0-9]_[a-z0-9_]+$").search(stem) == null:
 			_error(0, "the file name must be <errand code>_<name>, such as 0101_skater_bro, not '%s'" % stem)
 		else:
-			errand.code = stem.substr(0, 4)
-			errand.file = _path
-			if errand.day_number() < 1 or errand.day_number() > 7 or errand.place() < 1:
-				_error(0, "errand code %s: the day must be 01 to 07 and the place 01 or more" % errand.code)
+			parsed.code = stem.substr(0, 4)
+			parsed.file = _path
+			if parsed.day_number() < 1 or parsed.day_number() > 7 or parsed.place() < 1:
+				_error(0, "errand code %s: the day must be 01 to 07 and the place 01 or more" % parsed.code)
 		var sections := _section_starts()
 		var header_end: int = sections[0] if not sections.is_empty() else _lines.size()
 		var fields := _read_fields(0, header_end, ["customer", "problem", "computer", "comes", "when", "brief"])
 		if not fields.has("customer"):
 			_error(0, "no 'customer:'")
 		else:
-			errand.customer = _load(CUSTOMERS_DIR, fields.customer, fields.customer_line, "customer") as Customer
+			parsed.customer = _load(CUSTOMERS_DIR, fields.customer, fields.customer_line, "customer") as Customer
 		if fields.has("problem"):
-			errand.problem = _problem(fields.problem, fields.problem_line)
+			parsed.problem = _problem(fields.problem, fields.problem_line)
 		if fields.has("computer"):
 			if BRINGS.has(fields.computer):
-				errand.brings = BRINGS[fields.computer]
+				parsed.brings = BRINGS[fields.computer]
 			else:
 				_error(fields.computer_line, "computer: '%s' is not leaves, none or shows" % fields.computer)
 		if fields.has("comes"):
 			if not COMES.has(fields.comes):
 				_error(fields.comes_line, "comes: '%s' is not after opening or before opening" % fields.comes)
-			elif COMES[fields.comes] and errand.code != "" and errand.place() != 1:
-				_error(fields.comes_line, "comes: before opening is only for the day's first errand (place 01), not %s" % errand.code)
+			elif COMES[fields.comes] and parsed.code != "" and parsed.place() != 1:
+				_error(fields.comes_line, "comes: before opening is only for the day's first errand (place 01), not %s" % parsed.code)
 			else:
-				errand.before_opening = COMES[fields.comes]
+				parsed.before_opening = COMES[fields.comes]
 		if fields.has("when"):
-			errand.when = _condition(fields.when, fields.when_line)
-		errand.brief = fields.get("brief", "")
+			parsed.when = _condition(fields.when, fields.when_line)
+		parsed.brief = fields.get("brief", "")
 		var counts: Dictionary[String, int] = {}
 		for i: int in sections.size():
 			var end: int = sections[i + 1] if i + 1 < sections.size() else _lines.size()
@@ -321,8 +343,8 @@ class _Reader:
 				continue
 			var name: String = TRIGGERS.find_key(c.trigger)
 			counts[name] = counts.get(name, 0) + 1
-			c.id = StringName("%s/%s/%d" % [errand.code, name, counts[name]])
-			errand.conversations.append(c)
+			c.id = StringName("%s/%s/%d" % [parsed.code, name, counts[name]])
+			parsed.conversations.append(c)
 		result.errors = _sorted_errors()
 		return result
 
@@ -456,7 +478,8 @@ class _Reader:
 			_error(fields["cause_line"], "'cause:' is one line, after the colon")
 		else:
 			p.cause = fields.get("cause", "")
-		p.symptoms = _read_shown(fields, "symptoms", "symptom", p.symptom_shows)
+		var no_shows: Dictionary[String, String] = {}
+		p.symptoms = _read_shown(fields, "symptoms", "symptom", no_shows, false)
 		var shows: Dictionary[String, String] = {}
 		var checks := PackedStringArray()  # built here: a packed array is a copy, not a reference
 		for line: String in _read_shown(fields, "checks", "check", shows):
@@ -483,7 +506,7 @@ class _Reader:
 
 	# The entries of the block [param key] of [param fields], each [param noun] once; the 'shows:' line
 	# under each goes into [param shows].
-	func _read_shown(fields: Dictionary, key: String, noun: String, shows: Dictionary[String, String]) -> PackedStringArray:
+	func _read_shown(fields: Dictionary, key: String, noun: String, shows: Dictionary[String, String], takes_shows: bool = true) -> PackedStringArray:
 		var entries := PackedStringArray()
 		for row: Array in _rows(fields, key):
 			var text: String = row[1]
@@ -492,6 +515,8 @@ class _Reader:
 					_error(row[0], "the %s '%s' a second time" % [noun, text])
 				else:
 					entries.append(text)
+			elif not takes_shows:
+				_error(row[0], "nothing goes under a %s; its search keywords are in %s" % [noun, "story/symptoms.keywords"])
 			elif not text.substr(1).begins_with("shows:"):
 				_error(row[0], "under a %s goes only 'shows:' and how it shows in the game" % noun)
 			elif entries.is_empty():
@@ -708,9 +733,9 @@ class _Reader:
 				_error(_peek().line, "after 'if' and 'else', a line belongs under one of them")
 				_block(depth + 1, Reply.new())
 			return choice
-		var answer := Reply.new()
-		_block(depth + 1, answer)
-		choice.replies.append(answer)
+		var reply := Reply.new()
+		_block(depth + 1, reply)
+		choice.replies.append(reply)
 		return choice
 
 	func _said(token: Dictionary) -> DialogueLine:

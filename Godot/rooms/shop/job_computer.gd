@@ -16,6 +16,9 @@ signal screwdriver_clicked(computer: JobComputer)
 ## (Game.can_eject, Game.can_insert_floppy).
 signal floppy_clicked(computer: JobComputer)
 
+## The group of every computer on the counter.
+const GROUP: StringName = &"job_computers"
+
 ## The outline colour while the mouse or the dragged plug is over the computer.
 @export var hover_color: Color = Color(0.75, 0.9, 1.0)
 ## How far the outline stands out from the case and everything on it, in metres.
@@ -98,6 +101,10 @@ var _cd_drives: Array[Node] = []
 @onready var _running_sound: Hum = %RunningSound
 
 
+func _enter_tree() -> void:
+	add_to_group(GROUP)
+
+
 func _ready() -> void:
 	_hotspot.clicked.connect(func(_h: Hotspot) -> void: clicked.emit(self))
 	_hotspot.mouse_entered.connect(_set_hovered.bind(true))
@@ -165,8 +172,8 @@ func _button_hotspot(button: MeshInstance3D) -> Hotspot:
 	var hotspot := _HOTSPOT.instantiate() as Hotspot
 	hotspot.size = (button.mesh as BoxMesh).size * local.basis.get_scale() + Vector3(0.016, 0.024, 0.0)
 	hotspot.size.z = 0.05
-	var basis := local.basis.orthonormalized()
-	hotspot.transform = Transform3D(basis, local.origin + basis.z * hotspot.size.z / 2.0)
+	var axes := local.basis.orthonormalized()
+	hotspot.transform = Transform3D(axes, local.origin + axes.z * hotspot.size.z / 2.0)
 	add_child(hotspot)
 	return hotspot
 
@@ -183,6 +190,11 @@ func pinned_post_it() -> PostIt3D:
 	return _post_it if _working() else null
 
 
+## Blinks the rings of the side panel's screws that are out (see [method OpenCase.blink_screws]).
+func blink_screws() -> void:
+	_open_case.blink_screws()
+
+
 ## The VGA socket that the bench cable plugs into; its +Z points out of the socket.
 func cable_socket() -> Node3D:
 	return _cable_socket
@@ -193,6 +205,11 @@ func cable_socket() -> Node3D:
 ## computer in focus in the Workview too, where its hotspot takes no clicks.
 func ray_distance(from: Vector3, dir: Vector3) -> float:
 	return _hotspot.box_ray_distance(from, dir)
+
+
+## True while the mouse is over the case and a click on it would open the Workview on it.
+func is_hovered() -> bool:
+	return _hovered and _hotspot.input_ray_pickable
 
 
 ## Stops taking clicks, before the computer leaves the counter.

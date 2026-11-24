@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="ClickableOutline" format=3]
+
+[ext_resource type="Script" path="res://rooms/clickable_outline.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")

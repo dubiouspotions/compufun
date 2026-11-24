@@ -16,6 +16,12 @@ func run() -> void:
 	check("effect on top; its alternate keeps the layers below", Voices.layer(person, mood, effect),
 		"base:scale=0.8,tension=0.2|alt:scale=0.8,tension=0.7,bits=4.0")
 	check("no layers is plain", Voices.layer(null, null, null), "")
+	var through := VoiceEffect.new()
+	through.base = {"tension": 0.1, "high_cut_hz": 3400.0}
+	through.alternate = {"bits": 2.0}
+	check("through goes on top", Voices.layer(person, mood, null, through), "base:scale=0.8,tension=0.1,high_cut_hz=3400.0")
+	check("through holds on both sides of an effect; only its base counts", Voices.layer(person, mood, effect, through),
+		"base:scale=0.8,tension=0.1,high_cut_hz=3400.0|alt:scale=0.8,tension=0.1,bits=4.0,high_cut_hz=3400.0")
 	for name in ["skater_bro", "young_entrepreneur", "retired_accountant"]:
 		var customer: Customer = load("res://customers/%s.tres" % name)
 		check("%s speaks with its person's voice" % name, customer.voice != null and customer.voice == customer.person.voice, true)
@@ -24,6 +30,14 @@ func run() -> void:
 		if not who.portraits.is_empty():
 			check("%s has its own voice" % dir, who.voice != null and who.voice.resource_path == "res://voices/persons/%s.tres" % dir, true)
 	check("effects/cambion_glitch.tres loads", load("res://voices/effects/cambion_glitch.tres") is VoiceEffect, true)
+	var telephone: VoiceEffect = load("res://voices/effects/telephone.tres")
+	check("the telephone keeps about 300 to 3400 Hz", [telephone.base.get("low_cut_hz"), telephone.base.get("high_cut_hz")], [300.0, 3400.0])
+	var phone: Node = load("res://ui/phone_call.tscn").instantiate()
+	check("the phone says every line through the telephone", (phone.get_node("%Voice") as VoicePlayer).through, telephone)
+	phone.free()
+	var glitched := Voices.layer(person, null, load("res://voices/effects/cambion_glitch.tres"), telephone).split("|")
+	check("a glitch on the phone plays through the telephone on both sides of its curve",
+		[glitched.size(), glitched[0].contains("high_cut_hz=3400"), glitched[1].contains("high_cut_hz=3400"), glitched[1].contains("ring_mix")], [3, true, true, true])
 
 	var line := DialogueLine.new()
 	line.text = "Dude, my computer!"

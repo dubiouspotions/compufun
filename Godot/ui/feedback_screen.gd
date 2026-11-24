@@ -293,6 +293,7 @@ func _start_send(report: Dictionary, folder: String) -> void:
 			shot_error = "cannot read %s" % folder.path_join("shot.png")
 		else:
 			if image.get_width() > ISSUE_SHOT_WIDTH:
+				@warning_ignore("integer_division")
 				image.resize(ISSUE_SHOT_WIDTH, image.get_height() * ISSUE_SHOT_WIDTH / image.get_width(), Image.INTERPOLATE_BILINEAR)
 			shot = folder.path_join("shot.jpg")
 			var err := image.save_jpg(shot, 0.85)
@@ -423,18 +424,18 @@ func _issue_body(report: Dictionary) -> String:
 
 ## Paints the marks into the screenshot, at the scale of the picture, with a dark edge.
 func _paint_marks(image: Image, canvas_size: Vector2) -> void:
-	var scale := Vector2(image.get_size()) / canvas_size
-	var radius := STROKE_WIDTH * 0.5 * scale.x
+	var zoom := Vector2(image.get_size()) / canvas_size
+	var radius := STROKE_WIDTH * 0.5 * zoom.x
 	for stroke: PackedVector2Array in _strokes:
-		_paint_stroke(image, stroke, scale, radius + 2.0, EDGE_COLOR)
+		_paint_stroke(image, stroke, zoom, radius + 2.0, EDGE_COLOR)
 	for stroke: PackedVector2Array in _strokes:
-		_paint_stroke(image, stroke, scale, radius, STROKE_COLOR)
+		_paint_stroke(image, stroke, zoom, radius, STROKE_COLOR)
 
 
-func _paint_stroke(image: Image, stroke: PackedVector2Array, scale: Vector2, radius: float, color: Color) -> void:
+func _paint_stroke(image: Image, stroke: PackedVector2Array, zoom: Vector2, radius: float, color: Color) -> void:
 	for i: int in range(1, stroke.size()):
-		var a := stroke[i - 1] * scale
-		var b := stroke[i] * scale
+		var a := stroke[i - 1] * zoom
+		var b := stroke[i] * zoom
 		var steps := maxi(1, ceili(a.distance_to(b) / maxf(radius * 0.5, 1.0)))
 		for s: int in steps + 1:
 			_paint_disc(image, a.lerp(b, float(s) / steps), radius, color)
@@ -512,10 +513,10 @@ func _control_at(point: Vector2) -> String:
 			continue
 		if not control.get_global_rect().has_point(point):
 			continue
-		var layer := _layer_of(control)
-		if layer >= best_layer:
+		var control_layer := _layer_of(control)
+		if control_layer >= best_layer:
 			best = control
-			best_layer = layer
+			best_layer = control_layer
 	return String(best.get_path()) if best != null else ""
 
 

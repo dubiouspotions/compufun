@@ -4,6 +4,7 @@ extends Control
 ## positions and set custom_minimum_size to its size: the sheet sizes itself to its largest page.
 
 ## The player changed something on the page; the sheet enables Apply.
+@warning_ignore("unused_signal")  # the pages emit it
 signal edited
 
 

@@ -31,14 +31,14 @@ func _process(_delta: float) -> void:
 # note, the Story Lab's editors), and back down once the keyboard or the focus goes.
 func _lift_above_keyboard() -> void:
 	var focus := get_viewport().gui_get_focus_owner()
-	var layer := _layer_of(focus) if focus is LineEdit or focus is TextEdit else null
-	if layer != _lifted:
+	var lifting := _layer_of(focus) if focus is LineEdit or focus is TextEdit else null
+	if lifting != _lifted:
 		if _lifted != null and is_instance_valid(_lifted):
 			_lifted.offset = _lifted_from
-		_lifted = layer
-		if layer != null:
-			_lifted_from = layer.offset
-	if layer == null:
+		_lifted = lifting
+		if lifting != null:
+			_lifted_from = lifting.offset
+	if lifting == null:
 		return
 	var lift := 0.0
 	var keyboard := DisplayServer.virtual_keyboard_get_height()
@@ -48,10 +48,10 @@ func _lift_above_keyboard() -> void:
 		if focus is TextEdit:
 			var text := focus as TextEdit
 			bottom = minf(text.get_caret_draw_pos().y + text.get_line_height() * 0.5, bottom)
-		var unlifted := (focus.get_screen_transform() * Vector2(0.0, bottom)).y + (_lifted_from.y - layer.offset.y) * stretch
+		var unlifted := (focus.get_screen_transform() * Vector2(0.0, bottom)).y + (_lifted_from.y - lifting.offset.y) * stretch
 		var keyboard_top := float(DisplayServer.window_get_size().y - keyboard)
 		lift = maxf(0.0, unlifted + keyboard_margin - keyboard_top) / stretch
-	layer.offset = _lifted_from - Vector2(0.0, lift)
+	lifting.offset = _lifted_from - Vector2(0.0, lift)
 
 
 # Window pixels per layer unit: the window's stretch.

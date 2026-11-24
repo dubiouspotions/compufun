@@ -18,12 +18,8 @@ signal close_requested
 @export var open_texture: Texture2D
 ## The face that reads CLOSED, which the player sees while the shop is open.
 @export var closed_texture: Texture2D
-## The outline's colour, and its opacity at the bottom of each pulse, 0 to 1; the top is 1. The
-## phone pulses the same way while it can call.
-@export var pulse_color: Color = Color(1.0, 0.82, 0.2)
-@export_range(0.0, 1.0, 0.01) var pulse_low: float = 0.2
-## How long one pulse of the outline takes, in seconds.
-@export var pulse_seconds: float = 1.2
+## How the outline pulses while the sign takes clicks.
+@export var outline: ClickableOutline = preload("res://rooms/clickable_outline.tres")
 ## Plays when the sign turns over: the shop opens, or closes for the night.
 @export var flip_sound: SoundSet = preload("res://sounds/sign_flip.tres")
 ## Plays with each [method shake]; tools/make_shop_sounds.py times its ticks to the default shake.
@@ -58,7 +54,7 @@ func _ready() -> void:
 	_was_open = _open()
 	_could_open = Game.can_open()
 	_jump = Game.jump
-	(_outline.material_override as StandardMaterial3D).albedo_color = pulse_color
+	(_outline.material_override as StandardMaterial3D).albedo_color = outline.pulse_color
 	_hotspot.clicked.connect(_on_clicked)
 	Game.changed.connect(_sync)
 	_sync()
@@ -119,7 +115,7 @@ func _sync() -> void:
 		_pulse.kill()
 		_pulse = null
 	if clickable:
-		_pulse = Hotspot.pulse(_outline.material_override as StandardMaterial3D, pulse_low, pulse_seconds, self)
+		_pulse = outline.pulse(_outline.material_override as StandardMaterial3D, self)
 
 
 # Turns the sign edge-on, shows [param side], and turns it back, in [member flip_seconds].

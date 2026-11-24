@@ -54,20 +54,26 @@ static func _mood_path(of: StringName) -> String:
 
 
 ## The text form of a voice for ChimeraVoice and the web voice: [param person] at the bottom,
-## [param mood] over it and [param effect] on top, each layer's settings over the ones below.
-## Any layer may be null.
-static func layer(person: VoicePerson, mood: VoiceMood, effect: VoiceEffect) -> String:
+## [param mood] over it, [param effect] over that and [param through] on top, each layer's settings
+## over the ones below. [param through] is what the voice passes through last, such as the
+## telephone (voices/effects/telephone.tres): only its base settings count, and they hold for the
+## whole line on both sides of [param effect]. Any layer may be null.
+static func layer(person: VoicePerson, voice_mood: VoiceMood, effect: VoiceEffect, through: VoiceEffect = null) -> String:
 	var below: Dictionary = {}
 	if person != null:
 		below.merge(person.settings, true)
-	if mood != null:
-		below.merge(mood.settings, true)
+	if voice_mood != null:
+		below.merge(voice_mood.settings, true)
+	var top: Dictionary = through.base if through != null else {}
 	if effect == null:
+		below.merge(top, true)
 		return VoiceEffect.encode(below, {}, null)
 	var base := below.duplicate()
 	base.merge(effect.base, true)
+	base.merge(top, true)
 	var alternate := below.duplicate()
 	alternate.merge(effect.alternate, true)
+	alternate.merge(top, true)
 	return VoiceEffect.encode(base, alternate, effect.curve)
 
 

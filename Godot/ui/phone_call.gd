@@ -13,9 +13,9 @@ extends Control
 @export var pick_title: String = "Call a customer"
 ## What shows while the phone dials and rings, under an empty heading: the call box shows no number.
 @export var ringing_text: String = "- DIALING -"
-## What a customer without a PHONE conversation says when they answer. Customers never say their
-## nickname: the player gave it to them.
-@export var greeting: String = "Hello?"
+## What a customer without a PHONE conversation says when they answer: its lines, in their voice.
+## Customers never say their nickname: the player gave it to them.
+@export var greeting: Conversation = preload("res://customers/conversations/hello.tres")
 ## What the player says once the customer has spoken.
 @export var you_say: String = "Your computer is ready now!"
 ## What shows when nobody answers (Game.rings_out); then the call ends, and nobody comes.
@@ -129,9 +129,7 @@ func _ring() -> void:
 	elif Game.conversation != null and not Game.conversation.lines.is_empty():
 		_lines = Game.conversation.lines
 	else:
-		var hello := DialogueLine.new()
-		hello.text = greeting
-		_lines = [hello]
+		_lines = greeting.lines
 	_call_time = 0.0
 	_line = -1
 	_clear_choices()

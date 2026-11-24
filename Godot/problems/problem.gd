@@ -74,9 +74,6 @@ var cause: String = ""
 ## The symptoms: every complaint that this cause can bring, which the player searches CompuFunDB
 ## for. Problems that can bring the same complaint share its words. From the problem file.
 var symptoms: PackedStringArray = []
-## How each symptom shows in the game, for people: symptom to text; a symptom without one is
-## missing. From the problem file.
-var symptom_shows: Dictionary[String, String] = {}
 ## What the player can check on the computer, as CompuFunDB's CHECK lists them; [member check_yes]
 ## says which are true when this is the cause. From the problem file.
 var checks: PackedStringArray = []
@@ -104,7 +101,6 @@ func take_text(from: Problem) -> void:
 	perceived_issue = from.perceived_issue
 	cause = from.cause
 	symptoms = from.symptoms.duplicate()
-	symptom_shows = from.symptom_shows.duplicate()
 	checks = from.checks.duplicate()
 	check_yes = from.check_yes.duplicate()
 	check_shows = from.check_shows.duplicate()

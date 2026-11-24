@@ -1,35 +1,45 @@
 extends "res://tests/test.gd"
-## Game.runs_cambion reads the flag <customer>_runs_cambion: in such a computer the Calculator answers
-## every sum with the corruption sign calc_666's number, and clearing the flag uninstalls Cambion. Day 1
-## installs it in the skater bro's computer and starts the sign.
-
-const CAMBION_RESULT_META: StringName = &"win95_cambion_result"  # calculator.gd's; preloading it needs Game
+## Game.runs_cambion reads the flag <customer>_runs_cambion, and clearing the flag uninstalls Cambion.
+## Day 1 installs it in the skater bro's computer and starts the corruption sign calc_666: there the
+## Calculator answers every sum with 666. Day 2 installs it in the young entrepreneur's computer,
+## which adds up, as the sign targets the skater bro only.
 
 
 func run() -> void:
 	var skater: Customer = load("res://customers/skater_bro.tres")
+	var entrepreneur: Customer = load("res://customers/young_entrepreneur.tres")
 	var accountant: Customer = load("res://customers/retired_accountant.tres")
 	check("no flag, no Cambion", game.runs_cambion(skater), false)
 	game.set_flag(&"skater_bro_runs_cambion")
 	check("the flag installs it in his computer only", [game.runs_cambion(skater), game.runs_cambion(accountant)], [true, false])
+	game.set_flag(&"skater_bro_runs_cambion", 0)
 
-	root.set_meta(CAMBION_RESULT_META, "666")
+	var sign: Node = (load("res://corruption/calc_666.tscn") as PackedScene).instantiate()  # untyped: CorruptionSign names Game
+	root.add_child(sign)
 	var calculator: Node = (load("res://win95/calculator.tscn") as PackedScene).instantiate()
 	root.add_child(calculator)
 	await process_frame
+	game.start_day(game.day_of(1))
+	check("day 1 installs Cambion in his computer and starts calc_666",
+			[game.runs_cambion(skater), game.flag(game.sign_flag(&"calc_666"))], [true, 1])
 	calculator.set("_job", Job.new(skater, null, 0, 0))
 	check("1 + 1 in his computer", _sum(calculator), "666")
 	game.set_flag(&"skater_bro_runs_cambion", 0)
 	check("clearing the flag uninstalls it", [game.runs_cambion(skater), _sum(calculator)], [false, "2"])
-	calculator.set("_job", Job.new(accountant, null, 0, 0))
 	game.set_flag(&"skater_bro_runs_cambion")
-	check("another customer's computer adds up", _sum(calculator), "2")
-	root.remove_meta(CAMBION_RESULT_META)
 
-	game.set_flag(&"skater_bro_runs_cambion", 0)
-	game.start_day(game.day_of(1))
-	check("day 1 installs Cambion in his computer and starts calc_666",
-			[game.runs_cambion(skater), game.flag(game.sign_flag(&"calc_666"))], [true, 1])
+	game.start_day(game.day_of(2))
+	check("day 2 installs Cambion in the young entrepreneur's computer, with calc_666 still on",
+			[game.runs_cambion(entrepreneur), game.flag(game.sign_flag(&"calc_666"))], [true, 1])
+	calculator.set("_job", Job.new(entrepreneur, null, 0, 0))
+	check("his Cambion computer adds up", _sum(calculator), "2")
+	calculator.set("_job", Job.new(skater, null, 0, 0))
+	check("the skater bro's still answers 666", _sum(calculator), "666")
+	game.set_flag(game.sign_flag(&"calc_666"), 0)
+	check("the sign taken back, his adds up too", _sum(calculator), "2")
+	sign.queue_free()
+	calculator.queue_free()
+	await process_frame
 
 
 func _sum(calculator: Node) -> String:

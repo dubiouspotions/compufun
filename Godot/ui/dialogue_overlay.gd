@@ -265,25 +265,25 @@ func _fit_portrait() -> void:
 	var crown := measured.y
 	var hem := measured.z + 1.0
 	var cut := crown + head_above * (hem - crown)
-	var scale := _portrait_slot.size.y / (hem - cut)
+	var zoom := _portrait_slot.size.y / (hem - cut)
 	if tex.resource_path.ends_with(_MATCH_NEUTRAL_HEIGHT):
 		var target := _neutral_height(tex.resource_path)
 		if target <= 0.0:
 			return
-		scale = target / float(image.get_height())
-		cut = hem - _portrait_slot.size.y / scale
-	var draw := Vector2(image.get_width(), image.get_height()) * scale
-	var left := _portrait_slot.size.x * 0.5 - measured.x * scale
-	var top := -cut * scale - _portrait_slot.size.y
+		zoom = target / float(image.get_height())
+		cut = hem - _portrait_slot.size.y / zoom
+	var drawn := Vector2(image.get_width(), image.get_height()) * zoom
+	var left := _portrait_slot.size.x * 0.5 - measured.x * zoom
+	var top := -cut * zoom - _portrait_slot.size.y
 	_portrait.anchor_left = 0.0
 	_portrait.anchor_right = 0.0
 	_portrait.anchor_top = 1.0
 	_portrait.anchor_bottom = 1.0
 	_portrait.offset_left = left
-	_portrait.offset_right = left + draw.x
+	_portrait.offset_right = left + drawn.x
 	_portrait.offset_top = top
-	_portrait.offset_bottom = top + draw.y
-	_reach = (hem - crown) * scale
+	_portrait.offset_bottom = top + drawn.y
+	_reach = (hem - crown) * zoom
 	# Sway, breathe and talk from the hem at the bottom centre of the slot.
 	_portrait.pivot_offset = Vector2(_portrait_slot.size.x * 0.5 - left, -top)
 	_image = image

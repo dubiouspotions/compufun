@@ -1,9 +1,11 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://corruption/calc_666.gd" id="1_script"]
+[ext_resource type="Resource" path="res://customers/skater_bro.tres" id="2_target"]
 
 [node name="Calc666" type="Node"]
 script = ExtResource("1_script")
-title = "Every result is 666 in a Cambion computer"
-description = "In a computer that runs Cambion (the story sets <customer>_runs_cambion for its customer), every result is 666."
-hint = "Open the Calculator in a computer that runs Cambion, such as the skater bro's."
+title = "Every result is 666 in the skater bro's Cambion computer"
+description = "In the skater bro's computer, while it runs Cambion (the story sets skater_bro_runs_cambion), every result of the Calculator is 666. Other Cambion computers add up."
+hint = "Open the Calculator in the skater bro's computer."
+target = ExtResource("2_target")

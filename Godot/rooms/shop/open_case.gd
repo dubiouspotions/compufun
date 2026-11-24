@@ -18,12 +18,18 @@ const PULSE_RING: Shader = preload("res://shaders/pulse_ring.gdshader")
 ## The outline and ghost colour of what the player can use now, and of the one under the mouse.
 @export var usable_color: Color = Color(1.0, 0.84, 0.35)
 @export var hover_color: Color = Color(0.8, 0.95, 1.0)
+## Its broken_hover_color outlines a broken piece under the mouse.
+@export var outline: ClickableOutline = preload("res://rooms/clickable_outline.tres")
 ## How far the outline stands out from a mesh, in metres.
 @export var outline_width: float = 0.0035
 ## The seconds of one beat of the ring around each screw that the player can turn, and the ring's
 ## outer diameter in metres.
 @export var screw_pulse_seconds: float = 1.6
 @export var screw_ring_size: float = 0.08
+## How many times the rings of the screws that are out blink when the player tries to stand the
+## computer up too early ([method blink_screws]), and the seconds of one blink, off and on.
+@export var screw_blinks: int = 3
+@export var screw_blink_seconds: float = 0.3
 ## The colour of an empty screw hole.
 @export var hole_color: Color = Color(0.05, 0.04, 0.03)
 ## How high the screwdriver hovers over a screw under the mouse, and how far it bobs, in metres.
@@ -81,8 +87,10 @@ var _mat_shown: Dictionary[Piece, Array] = {}
 # Panel screw index to [screw head, hotspot, pulse ring, empty hole].
 var _screws: Array[Array] = []
 var _screw_ring: ShaderMaterial
+var _blink: Tween
 var _outline: StandardMaterial3D
 var _outline_hover: StandardMaterial3D
+var _outline_broken_hover: StandardMaterial3D
 var _ghost: StandardMaterial3D
 var _ghost_hover: StandardMaterial3D
 var _outlined: Array[MeshInstance3D] = []
@@ -119,6 +127,7 @@ var _dressing_for: Problem
 func _ready() -> void:
 	_outline = Hotspot.outline_material(usable_color, outline_width)
 	_outline_hover = Hotspot.outline_material(hover_color, outline_width)
+	_outline_broken_hover = Hotspot.outline_material(outline.broken_hover_color, outline_width)
 	_ghost = Hotspot.ghost_material(usable_color)
 	_ghost_hover = Hotspot.ghost_material(hover_color)
 	_screw_ring = ShaderMaterial.new()
@@ -507,6 +516,29 @@ func _turn(index: int, at: Vector3) -> void:
 
 # --- Highlights ----------------------------------------------------------------------------------
 
+## Blinks the rings of the side panel's screws that are out, [member screw_blinks] times: they keep
+## the computer lying. Their rings show only while the case is [member active] and closed.
+func blink_screws() -> void:
+	if _blink != null:
+		_blink.kill()
+	var blink := _screw_ring.duplicate() as ShaderMaterial
+	blink.set_shader_parameter(&"flash", 1.0)
+	var rings: Array[MeshInstance3D] = []
+	for i: int in _screws.size():
+		if not job.panel_screws[i]:
+			rings.append(_screws[i][2])
+			rings.back().material_override = blink
+	_blink = create_tween()
+	for n: int in screw_blinks:
+		_blink.tween_callback(blink.set_shader_parameter.bind(&"color", Color(usable_color, 0.0)))
+		_blink.tween_interval(screw_blink_seconds / 2.0)
+		_blink.tween_callback(blink.set_shader_parameter.bind(&"color", usable_color))
+		_blink.tween_interval(screw_blink_seconds / 2.0)
+	_blink.tween_callback(func() -> void:
+		for ring: MeshInstance3D in rings:
+			ring.material_override = _screw_ring)
+
+
 func _pulse(t: float) -> void:
 	_outline.albedo_color = usable_color.lerp(Color.WHITE, 0.35 * t)
 	_ghost.albedo_color.a = 0.25 + 0.2 * t
@@ -514,6 +546,8 @@ func _pulse(t: float) -> void:
 
 # Outlines what can be taken, turned or lifted; shows a ghost where the hand's piece can go.
 func _sync_highlights() -> void:
+	if not is_instance_valid(_hovered):  # freed under the mouse, so no mouse_exited came
+		_hovered = null
 	for mesh: MeshInstance3D in _outlined:
 		if is_instance_valid(mesh):
 			mesh.material_overlay = null
@@ -531,17 +565,18 @@ func _sync_highlights() -> void:
 		if hotspot == null or not hotspot.input_ray_pickable:
 			continue
 		if job.piece(part) != null:
-			_highlight(_shown.get(part.id()), hotspot)
+			_highlight(_shown.get(part.id()), hotspot, job.piece(part).broken)
 		elif Game.hand != null:
 			_add_ghost(part.piece_part().model, place, hotspot)  # the hardware that belongs there, whatever the hand holds
-	for laid: Array in _lying.values():
+	for piece: Piece in _lying:
+		var laid: Array = _lying[piece]
 		if (laid[1] as Hotspot).input_ray_pickable:
-			_highlight(laid[0], laid[1])
+			_highlight(laid[0], laid[1], piece.broken)
 	for pile: int in _spots.get_child_count():
 		var spot_hotspot := _spots.get_child(pile).get_node("Hotspot") as Hotspot
 		var top := _top(pile)
 		if spot_hotspot.input_ray_pickable and top >= 0:
-			_highlight(_mat_shown[job.mat[top]][1], spot_hotspot)
+			_highlight(_mat_shown[job.mat[top]][1], spot_hotspot, job.mat[top].broken)
 	if _hovered in _mat_surfaces and Game.hand != null:  # the mat is wide: a ghost only where the player points
 		var pile := _next_pile()
 		_add_ghost(Game.hand.part.model, _spots.get_child(pile), _hovered)
@@ -568,14 +603,16 @@ func _sync_highlights() -> void:
 			_ghosts.append(ghost)
 
 
-func _highlight(node: Node3D, hotspot: Hotspot) -> void:
+# Outlines [param node]; under the mouse in the hover colour, or red when it is a [param broken] piece.
+func _highlight(node: Node3D, hotspot: Hotspot, broken: bool = false) -> void:
 	if node == null:
 		return
 	var meshes: Array[Node] = node.find_children("*", "MeshInstance3D", true, false)
 	if node is MeshInstance3D:
 		meshes.append(node)
+	var hover := _outline_broken_hover if broken else _outline_hover
 	for mesh: MeshInstance3D in meshes:
-		mesh.material_overlay = _outline_hover if hotspot == _hovered else _outline
+		mesh.material_overlay = hover if hotspot == _hovered else _outline
 		_outlined.append(mesh)
 
 
@@ -655,15 +692,15 @@ func _screw(at: Vector3, unscrewing: bool) -> void:
 
 
 # Fades the screwdriver in (true) or out (false); faded out, it is gone.
-func _fade(show: bool) -> void:
+func _fade(shown: bool) -> void:
 	if _fading != null:
 		_fading.kill()
-	if show and not _driver.visible:
+	if shown and not _driver.visible:
 		_set_driver_alpha(0.0)
 		_driver.visible = true
 	_fading = create_tween()
-	_fading.tween_method(_set_driver_alpha, _driver_materials[0].albedo_color.a, 1.0 if show else 0.0, fade_seconds)
-	if not show:
+	_fading.tween_method(_set_driver_alpha, _driver_materials[0].albedo_color.a, 1.0 if shown else 0.0, fade_seconds)
+	if not shown:
 		_fading.tween_callback(func() -> void:
 			_driver.visible = false
 			if _bobbing != null:

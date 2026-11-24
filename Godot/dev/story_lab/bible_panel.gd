@@ -85,12 +85,12 @@ func _save() -> void:
 
 
 func _add_page() -> void:
-	var name := _name.text.strip_edges().to_lower().replace(" ", "_")
-	name = RegEx.create_from_string("[^a-z0-9_-]").sub(name, "", true)
-	if name == "":
+	var page_name := _name.text.strip_edges().to_lower().replace(" ", "_")
+	page_name = RegEx.create_from_string("[^a-z0-9_-]").sub(page_name, "", true)
+	if page_name == "":
 		_title.text = "A page needs a name: letters, digits, - or _."
 		return
-	var page := DIR + name + ".md"
+	var page := DIR + page_name + ".md"
 	if _drafts.text(page) == "":
 		saved.emit(page, "# %s\n" % _name.text.strip_edges())
 	_name.text = ""

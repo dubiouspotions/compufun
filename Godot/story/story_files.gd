@@ -6,6 +6,7 @@ const DAYS_DIR: String = "res://story/days/"
 const ERRANDS_DIR: String = "res://story/errands/"
 const PROBLEMS_DIR: String = StoryFormat.PROBLEM_FILES_DIR
 const CALL_OUTS_DIR: String = "res://story/callouts/"
+const KEYWORDS_PATH: String = "res://story/symptoms.keywords"
 const DAYS: int = 7
 
 ## The loaded week: the days 1 to 7 in order, each with its errands, its problems, the call-outs,
@@ -20,6 +21,8 @@ class Week:
 	## The call-outs of each customer that has a call-outs file, by its file name, and everyone's
 	## by [constant CallOuts.EVERYONE].
 	var call_outs: Dictionary[StringName, CallOuts] = {}
+	## The words that also find a symptom in CompuFunDB's search, by symptom (story/symptoms.keywords).
+	var keywords: Dictionary[String, PackedStringArray] = {}
 	var errors: PackedStringArray = []
 	# The text of each problem file, by id, as it parsed.
 	var _texts: Dictionary[StringName, Problem] = {}
@@ -58,6 +61,7 @@ static func load_week(drafts: Dictionary[String, String] = {}) -> Week:
 		if errand.day_number() >= 1 and errand.day_number() <= DAYS:
 			week.days[errand.day_number() - 1].errands.append(errand)
 	_load_call_outs(week, drafts)
+	week.errors.append_array(StoryFormat.parse_keywords(_text(KEYWORDS_PATH, drafts, week.errors), KEYWORDS_PATH, week.keywords))
 	if week.errors.is_empty():
 		week.fill_problems()
 	return week

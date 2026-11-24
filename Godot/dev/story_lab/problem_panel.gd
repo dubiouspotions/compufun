@@ -1,9 +1,10 @@
 class_name StoryProblemPanel
 extends HBoxContainer
 ## The Story Lab's Problems: every computer problem of the week, with its post-it and whether the
-## game can repair it yet, and a form for the open one (the post-it, the cause, the symptoms and the checks and
-## how each shows, the repair steps and notes). Each edit that is complete is a new text of the problem file
-## (story/problems/<id>.problem), which [signal saved] hands up.
+## game can repair it yet, and a form for the open one (the post-it, the cause, the symptoms with their
+## search keywords, the checks and how each shows, the repair steps and notes). Each edit that is
+## complete is a new text of the problem file (story/problems/<id>.problem), which [signal saved] hands
+## up, and, when a symptom's keywords changed, of story/symptoms.keywords, which every problem shares.
 
 ## [param text] is the new text of the problem file [param path]; "" removes it.
 signal saved(path: String, text: String)
@@ -15,6 +16,8 @@ var _drafts: StoryDrafts
 var _problems: Dictionary[StringName, Problem] = {}
 var _id: StringName = &""
 var _filling: bool = false
+## The symptoms of the open problem as it was last opened or saved: their keywords go with them.
+var _opened_symptoms: PackedStringArray = []
 
 var _list: VBoxContainer
 var _new_name: LineEdit
@@ -67,18 +70,20 @@ func open_problem(id: StringName) -> void:
 	_title.text = String(id).capitalize()
 	for child: Node in _built_slot.get_children():
 		child.queue_free()
-	var built := built(_problems.get(id))
-	var chip := LabUI.chip("the game repairs it" if built else "not built yet", LabUI.GOOD if built else LabUI.CHANGED, 13)
-	chip.tooltip_text = "It has repair mechanics in problems/%s.tres." % id if built else NOT_BUILT_TIP
+	var is_built := built(_problems.get(id))
+	var chip := LabUI.chip("the game repairs it" if is_built else "not built yet", LabUI.GOOD if is_built else LabUI.CHANGED, 13)
+	chip.tooltip_text = "It has repair mechanics in problems/%s.tres." % id if is_built else NOT_BUILT_TIP
 	chip.mouse_filter = Control.MOUSE_FILTER_PASS
 	_built_slot.add_child(chip)
-	_remove.visible = not built
+	_remove.visible = not is_built
 	_remove.text = "Remove problem"
 	_post_it.text = problem.perceived_issue
 	_cause.text = problem.cause
 	_clear(_symptoms)
+	var keywords := _keywords()
 	for symptom: String in problem.symptoms:
-		_add_symptom(symptom, problem.symptom_shows.get(symptom, ""))
+		_add_symptom(symptom, ", ".join(keywords.get(symptom, PackedStringArray())))
+	_opened_symptoms = problem.symptoms
 	_clear(_checks)
 	for check: String in problem.checks:
 		_add_check(check, problem.check_shows.get(check, ""), problem.check_yes.get(check, false))
@@ -109,19 +114,19 @@ static func built(problem: Problem) -> bool:
 
 
 ## The problem id of a name that a writer typed: lower case, spaces as _, other characters left out.
-static func id_of(name: String) -> String:
-	return RegEx.create_from_string("[^a-z0-9_]").sub(name.strip_edges().to_lower().replace(" ", "_").replace("-", "_"), "", true)
+static func id_of(problem_name: String) -> String:
+	return RegEx.create_from_string("[^a-z0-9_]").sub(problem_name.strip_edges().to_lower().replace(" ", "_").replace("-", "_"), "", true)
 
 
 ## Makes the text-only problem that [param name] names, its post-it the name, and opens it. Returns
 ## "" or why not, in plain words.
-func add_problem(name: String) -> String:
-	var id := id_of(name)
+func add_problem(problem_name: String) -> String:
+	var id := id_of(problem_name)
 	if id == "":
 		return "Name the problem with letters or digits."
 	if _problems.has(StringName(id)):
 		return "There is a problem %s already." % id
-	saved.emit(StoryFiles.PROBLEMS_DIR + id + ".problem", "post-it: %s\n" % name.strip_edges())
+	saved.emit(StoryFiles.PROBLEMS_DIR + id + ".problem", "post-it: %s\n" % problem_name.strip_edges())
 	if _problems.has(StringName(id)):
 		open_problem(StringName(id))
 	return ""
@@ -132,7 +137,8 @@ func text() -> String:
 	var problem := Problem.new()
 	problem.perceived_issue = _post_it.text.strip_edges()
 	problem.cause = _cause.text.strip_edges()
-	problem.symptoms = _shown(_symptoms, problem.symptom_shows)
+	var keywords: Dictionary[String, String] = {}
+	problem.symptoms = _shown(_symptoms, keywords)
 	problem.checks = _shown(_checks, problem.check_shows)
 	for row: Node in _checks.get_children():
 		var check := (row.get_child(0) as LineEdit).text.strip_edges()
@@ -158,6 +164,42 @@ func _save() -> void:
 		return
 	_errors.text = ""
 	saved.emit(path(), written)
+	_save_keywords()
+
+
+# The keywords of every symptom, from story/symptoms.keywords with the drafts over it.
+func _keywords() -> Dictionary[String, PackedStringArray]:
+	var keywords: Dictionary[String, PackedStringArray] = {}
+	var errors := StoryFormat.parse_keywords(_drafts.text(StoryFiles.KEYWORDS_PATH), StoryFiles.KEYWORDS_PATH, keywords)
+	if not errors.is_empty():
+		push_error("Story Lab: %s" % "\n".join(errors))
+	return keywords
+
+
+# Writes the form's keywords into story/symptoms.keywords: a symptom that left this problem and that
+# no other problem lists loses its line.
+func _save_keywords() -> void:
+	var keywords := _keywords()
+	var form: Dictionary[String, String] = {}
+	var symptoms := _shown(_symptoms, form)
+	for symptom: String in _opened_symptoms:
+		if symptom not in symptoms and not _problems.keys().any(func(id: StringName) -> bool: return id != _id and symptom in _problems[id].symptoms):
+			keywords.erase(symptom)
+	for symptom: String in symptoms:
+		var words := PackedStringArray(Array(form.get(symptom, "").split(",")).map(func(word: String) -> String: return word.strip_edges()).filter(func(word: String) -> bool: return word != ""))
+		if words.is_empty():
+			keywords.erase(symptom)
+		else:
+			keywords[symptom] = words
+	_opened_symptoms = symptoms
+	var lines := PackedStringArray()
+	var named: Array = keywords.keys()
+	named.sort()
+	for symptom: String in named:
+		lines.append("%s: %s" % [symptom, ", ".join(keywords[symptom])])
+	var text := "\n".join(lines) + "\n" if not lines.is_empty() else ""
+	if text != _drafts.text(StoryFiles.KEYWORDS_PATH):
+		saved.emit(StoryFiles.KEYWORDS_PATH, text)
 
 
 # What keeps the form from being a problem file, in plain words.
@@ -171,7 +213,7 @@ func _form_problems() -> PackedStringArray:
 		for row: Node in list.get_children():
 			var entry := (row.get_child(0) as LineEdit).text.strip_edges()
 			if entry == "" and (row.get_child(1) as LineEdit).text.strip_edges() != "":
-				found.append("A %s says how it shows, but not what it is." % noun)
+				found.append("A symptom has keywords, but no name." if list == _symptoms else "A check says how it shows, but not what it is.")
 			elif seen.has(entry):
 				found.append("Two %ss say \"%s\"; give each its own words." % [noun, entry])
 			seen[entry] = true
@@ -186,7 +228,8 @@ func _plain(errors: PackedStringArray) -> PackedStringArray:
 	return plain
 
 
-# The entries of the rows of [param list], with how each shows into [param shows].
+# The entries of the rows of [param list], with the text of each one's second field (how a check shows,
+# a symptom's keywords) into [param shows].
 func _shown(list: VBoxContainer, shows: Dictionary[String, String]) -> PackedStringArray:
 	var entries := PackedStringArray()
 	for row: Node in list.get_children():
@@ -257,9 +300,9 @@ func _fill_list() -> void:
 		var head := HBoxContainer.new()
 		head.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		box.add_child(head)
-		var name := LabUI.label(String(id).capitalize(), 15)
-		name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		head.add_child(name)
+		var label := LabUI.label(String(id).capitalize(), 15)
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		head.add_child(label)
 		if _drafts.has(file):
 			head.add_child(LabUI.chip("draft", LabUI.CHANGED, 10))
 		if not built(_problems[id]):
@@ -292,8 +335,8 @@ func _arm_remove() -> void:
 
 # --- The form's rows
 
-func _add_symptom(symptom: String = "", shows: String = "") -> void:
-	_add_shown(_symptoms, symptom, shows, "As the customer or the player would put it", "What the player sees or hears")
+func _add_symptom(symptom: String = "", keywords: String = "") -> void:
+	_add_shown(_symptoms, symptom, keywords, "As the customer or the player would put it", "Search keywords: heat, warm, fan")
 
 
 func _add_check(check: String = "", shows: String = "", yes: bool = true) -> void:
@@ -448,8 +491,8 @@ func _right() -> Control:
 	_cause.placeholder_text = "Such as: Clogged CPU fan"
 	_cause.text_changed.connect(func(_t: String) -> void: _changed())
 	box.add_child(_cause)
-	box.add_child(_heading("Symptoms", "What a customer would complain of: every complaint this cause can bring, worded as other problems word it, so a search offers every likely cause. The player searches CompuFunDB for these words."))
-	box.add_child(_columns("The symptom", "How it shows in the game"))
+	box.add_child(_heading("Symptoms", "What a customer would complain of: every complaint this cause can bring, worded as other problems word it, so a search offers every likely cause. The player searches CompuFunDB for these words, and for their keywords."))
+	box.add_child(_columns("The symptom", "Search keywords, shared by every problem with this symptom"))
 	_symptoms = _rows(box)
 	box.add_child(_add_button("+  Symptom", func() -> void: _add_symptom()))
 	box.add_child(_heading("Checks", "What the player can check on the computer. yes: true when this is the cause. no: false when this is the cause. A tick in CompuFunDB means true; a cause is ruled out by a ticked no:, or by a ticked yes: of another cause."))
@@ -507,7 +550,7 @@ func _rows(into: Control) -> VBoxContainer:
 	return rows
 
 
-func _add_button(text: String, pressed: Callable) -> Button:
-	var made := LabUI.button(text, pressed, &"FlatButton")
+func _add_button(caption: String, pressed: Callable) -> Button:
+	var made := LabUI.button(caption, pressed, &"FlatButton")
 	made.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	return made

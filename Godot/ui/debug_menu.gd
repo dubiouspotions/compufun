@@ -77,6 +77,7 @@ func _process(_delta: float) -> void:
 	if _outside == null:
 		return
 	var minutes := int(_outside.hour * 60.0)
+	@warning_ignore("integer_division")
 	_time.text = "Time %02d:%02d" % [minutes / 60, minutes % 60]
 	if _outside.day_minutes > 0.0:
 		_slider.set_value_no_signal(_outside.hour)

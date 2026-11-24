@@ -62,8 +62,8 @@ static func from_user_agent(agent: String) -> Host:
 
 
 ## Shows [param stage] from its start.
-func show_stage(stage: Stage) -> void:
-	_stage = stage
+func show_stage(next: Stage) -> void:
+	_stage = next
 	_time = 0.0
 	queue_redraw()
 

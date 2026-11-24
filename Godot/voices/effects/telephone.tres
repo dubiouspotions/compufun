@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="VoiceEffect" format=3]
+
+[ext_resource type="Script" path="res://voices/voice_effect.gd" id="1_effect"]
+
+[resource]
+script = ExtResource("1_effect")
+base = Dictionary[String, float]({
+"distortion": 0.1,
+"high_cut_hz": 3400.0,
+"low_cut_hz": 300.0
+})

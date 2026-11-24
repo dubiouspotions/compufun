@@ -211,6 +211,12 @@ func toggle_power() -> void:
 	_sync()
 
 
+## Turns on the computer that shows on the screen, if its content can (CompuFunDB's power_on).
+func power_on() -> void:
+	if _content != null and _content.has_method(&"power_on"):
+		_content.call(&"power_on")
+
+
 ## Degausses the monitor: the picture shakes and the magnetised colours clear.
 func degauss() -> void:
 	_tube.degauss()

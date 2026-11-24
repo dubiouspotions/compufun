@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## Customers never say the name that the dialogue shows for them (Customer.spoken_name()):
-## not in their errands' conversations, the shared ones, their call-outs and everyone's, or the
-## phone's greeting.
+## not in their errands' conversations, the shared ones (the phone's greeting too), their call-outs
+## and everyone's.
 
 const SHARED: String = "res://customers/conversations/"
 
@@ -16,13 +16,11 @@ func run() -> void:
 		errands.append_array(d.errands)
 	check("found the errands and the shared conversations", [errands.size() > 3, shared.size() > 1, null in shared], [true, true, false])
 	var phone: Node = load("res://ui/phone_call.tscn").instantiate()
-	var greeting := DialogueLine.new()
-	greeting.text = phone.greeting
-	check("the phone greeting fills in no name", greeting.text.contains("%"), false)
+	check("the phone's greeting is a shared conversation", phone.greeting in shared, true)
 	phone.free()
 	for errand: Errand in errands:
 		var who := errand.customer
-		var lines: Array[DialogueLine] = [greeting]
+		var lines: Array[DialogueLine] = []
 		var own: CallOuts = game.week.call_outs.get(StringName(who.resource_path.get_file().get_basename()))
 		var call_outs: Array[Conversation] = []
 		if own != null:

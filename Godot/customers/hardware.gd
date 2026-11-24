@@ -131,4 +131,5 @@ func _row(left: String, right: String = "") -> String:
 
 func _centre(text: String) -> String:
 	var space := _WIDTH - 2 - text.length()
+	@warning_ignore("integer_division")
 	return " ".repeat(space / 2) + text + " ".repeat(space - space / 2)

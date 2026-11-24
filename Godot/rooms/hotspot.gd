@@ -7,7 +7,7 @@ extends Area3D
 ## lift (TapGate).
 signal clicked(hotspot: Hotspot)
 
-enum Action { GO_TO_VIEW, CALL_CUSTOMER, TAKE_PART, TALK_TO_VISITOR }
+enum Action { GO_TO_VIEW, CALL_CUSTOMER, TAKE_PART, TALK_TO_VISITOR, POWER_WORK_COMPUTER }
 
 ## The group of the hotspots that take a drop (see [member takes_drop]).
 const DROP_TARGETS: StringName = &"hotspot_drop_targets"
@@ -66,16 +66,6 @@ static func outline_material(color: Color, width: float) -> StandardMaterial3D:
 	material.grow_amount = width
 	material.albedo_color = color
 	return material
-
-
-## Pulses the opacity of [param material] (a transparent one) from 1 down to [param low] and back,
-## once every [param seconds], until the returned tween, bound to [param owner], is killed: the
-## outline of a thing that takes a click now, such as the Open sign and the phone.
-static func pulse(material: BaseMaterial3D, low: float, seconds: float, owner: Node) -> Tween:
-	var tween := owner.create_tween().set_loops().set_trans(Tween.TRANS_SINE)
-	tween.tween_property(material, "albedo_color:a", low, seconds / 2.0).from(1.0)
-	tween.tween_property(material, "albedo_color:a", 1.0, seconds / 2.0)
-	return tween
 
 
 ## A see-through ghost material in [param color], for a mesh's material_override: where a thing can go.

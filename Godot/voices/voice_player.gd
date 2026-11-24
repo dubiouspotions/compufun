@@ -25,6 +25,10 @@ static var _web: JavaScriptObject
 static var _web_tried: bool = false
 static var _web_error: JavaScriptObject
 
+## What every line of this player passes through last, such as the telephone on the phone: its
+## base settings go over the line's own effect for the whole line (Voices.layer). Live only: a
+## pre-rendered WAV plays without it. null for none.
+@export var through: VoiceEffect
 ## Each line is said a little differently: its mood's rate, pitch and pitch swing each move by up
 ## to this fraction, at random, so a repeated line doesn't sound copied. 0 says it as written.
 @export_range(0.0, 0.5, 0.01) var rate_jitter: float = 0.05
@@ -44,9 +48,9 @@ func _ready() -> void:
 
 
 ## Starts saying [param line] as [param person], in its mood, under [param effect]
-## (null for none), and returns its length in seconds, or 0 when the length is not known yet (a
-## live line in a browser). A pre-rendered WAV has only the person's body and the mood's rate,
-## pitch and swing.
+## (null for none) and [member through], and returns its length in seconds, or 0 when the length
+## is not known yet (a live line in a browser). A pre-rendered WAV has only the person's body and the
+## mood's rate, pitch and swing.
 func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) -> float:
 	hush()
 	if line == null or line.text.strip_edges().is_empty():
@@ -60,7 +64,7 @@ func say(line: DialogueLine, person: VoicePerson, effect: VoiceEffect = null) ->
 	var pitch := mood.pitch * (1.0 + randf_range(-pitch_jitter, pitch_jitter))
 	var swing := mood.swing * (1.0 + randf_range(-swing_jitter, swing_jitter))
 	pitch_scale = 1.0
-	var type_text := Voices.layer(person, mood, effect)
+	var type_text := Voices.layer(person, mood, effect, through)
 	var web := _web_voice()
 	if web != null:
 		web.say(line.text, BODIES[voice], rate, pitch, swing, db_to_linear(volume_db), type_text)

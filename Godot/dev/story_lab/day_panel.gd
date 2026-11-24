@@ -33,12 +33,12 @@ func _ready() -> void:
 
 
 ## Opens day [param number]'s file [param path] with [param text].
-func show_day(path: String, text: String) -> void:
+func show_day(path: String, day_text: String) -> void:
 	if _settle != null and not _settle.is_stopped():
 		_settle.stop()
 		_apply()
 	_path = path
-	var parsed := StoryFormat.parse_day(text, path)
+	var parsed := StoryFormat.parse_day(day_text, path)
 	var day := parsed.value as Day
 	_filling = true
 	_title.text = "Day %d" % day.number
@@ -69,12 +69,12 @@ func text() -> String:
 		lines.append("on start: " + StoryFormat.write_flags(_on_start.flags()))
 	if not _on_close.flags().is_empty():
 		lines.append("on close: " + StoryFormat.write_flags(_on_close.flags()))
-	var signs := PackedStringArray()
+	var picked := PackedStringArray()
 	for id: StringName in _signs:
 		if _signs[id].button_pressed:
-			signs.append(id)
-	if not signs.is_empty():
-		lines.append("close signs: " + ", ".join(signs))
+			picked.append(id)
+	if not picked.is_empty():
+		lines.append("close signs: " + ", ".join(picked))
 	lines.append("first customer: %s-%s" % [_waits[0].value, _waits[1].value])
 	lines.append("between customers: %s-%s" % [_waits[2].value, _waits[3].value])
 	var notes := _notes.text.strip_edges(false, true)

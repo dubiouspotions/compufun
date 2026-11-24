@@ -4,9 +4,10 @@ extends "res://win95/window.gd"
 
 const DIVIDE_BY_ZERO: String = "Cannot divide by zero."
 
-## Metadata on the scene tree's root: while set, every result in a computer that runs Cambion
-## (Game.runs_cambion) is this number (the corruption sign corruption/calc_666.tscn sets it). Not a
-## static var: a GDScript static leaks the script's dependencies at exit.
+## Metadata on the scene tree's root: a Dictionary of Customer to the number, as a String, that every
+## result shows in that customer's computer while it runs Cambion (Game.runs_cambion); the corruption
+## sign corruption/calc_666.tscn sets it. Not a static var: a GDScript static leaks the script's
+## dependencies at exit.
 const CAMBION_RESULT_META: StringName = &"win95_cambion_result"
 
 var _entry: String = "0"
@@ -50,8 +51,9 @@ func press(key: String) -> void:
 			_accumulator = _apply(_accumulator, _pending, _entry.to_float())
 		elif _pending == "":
 			_accumulator = _entry.to_float()
-		var cambion_result: String = get_tree().root.get_meta(CAMBION_RESULT_META, "")
-		if (computed or key == "=") and _job != null and Game.runs_cambion(_job.customer) and cambion_result != "":
+		var cambion_results: Dictionary = get_tree().root.get_meta(CAMBION_RESULT_META, {})
+		var cambion_result: String = cambion_results.get(_job.customer, "") if _job != null else ""
+		if (computed or key == "=") and cambion_result != "" and Game.runs_cambion(_job.customer):
 			_accumulator = cambion_result.to_float()
 		_pending = "" if key == "=" else key
 		_new_entry = true

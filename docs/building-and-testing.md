@@ -190,7 +190,10 @@ does with the new thing, or decide that a week doesn't need it, then add the nam
 **Layers.** A line's voice is three layers, each over the one below (`Voices.layer`): the
 `VoicePerson` of the customer's person (`voices/persons/`, one per person), the `VoiceMood` of the line's voice mood (`voices/moods/`)
 and a `VoiceEffect` (`voices/effects/`) of the line or its conversation. Make all three in the
-Voice Lab (Dev menu, F3 or Cmd+3); a story file gives an effect to a conversation or a line. An effect has a
+Voice Lab (Dev menu, F3 or Cmd+3); a story file gives an effect to a conversation or a line. A
+`VoicePlayer` can put one more effect's base settings on top of every line it says (`through`): the
+phone call's player says each line through `voices/effects/telephone.tres`, a 300 to 3400 Hz
+band-pass with a little distortion, so a glitch on the phone plays first and then goes down the line. An effect has a
 base, an alternate and a curve over the line that says how much of the alternate plays at each
 moment. The live voice blends the two as it speaks, with the same Rust code on desktop and in the browser
 (`native/chimera_voice/src/voice_type.rs` and `fx.rs`): speed, pitch, melody, body, intonation and

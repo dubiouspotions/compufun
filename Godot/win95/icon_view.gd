@@ -86,11 +86,11 @@ func _ready() -> void:
 	child_exiting_tree.connect(func(_child: Node) -> void: items_changed.emit.call_deferred())
 	items_changed.connect(_sync_focus)
 	_sync_layout()
-	var material := ShaderMaterial.new()
-	material.shader = _BAND_SHADER
-	material.set_shader_parameter("thickness", 1.0)
+	var shader := ShaderMaterial.new()
+	shader.shader = _BAND_SHADER
+	shader.set_shader_parameter("thickness", 1.0)
 	_band = ColorRect.new()
-	_band.material = material
+	_band.material = shader
 	_band.top_level = true
 	_band.z_index = 100
 	_band.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -218,6 +218,7 @@ func _move_placed() -> void:
 				taken.append(Rect2(item.position, item.size))
 				continue
 			while true:
+				@warning_ignore("integer_division")
 				var at := Vector2(next / rows * cell.x, next % rows * cell.y)
 				next += 1
 				if _is_free(taken, Rect2(at, cell)) or at.x > size.x:

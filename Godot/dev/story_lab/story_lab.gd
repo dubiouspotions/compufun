@@ -544,8 +544,8 @@ func _say(text: String, bad: bool = false) -> void:
 func _add_errand(day: int) -> void:
 	_add_day = day
 	_customers.clear()
-	for name: String in LabUI.resource_names(CUSTOMERS_DIR):
-		_customers.add_item(name)
+	for customer_name: String in LabUI.resource_names(CUSTOMERS_DIR):
+		_customers.add_item(customer_name)
 	_customers.position = Vector2i(get_global_mouse_position())
 	_customers.popup()
 

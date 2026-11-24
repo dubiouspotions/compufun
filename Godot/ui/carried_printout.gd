@@ -3,12 +3,12 @@ extends Control
 ## The printout that the player carries (Game.printout), in every view: its top peeks in at the
 ## bottom left, clear of the part in the hand on the right. A click on it raises the page: the player
 ## holds it up on the right side of the view, readable, and keeps playing beside it. A click on a
-## line with a check box ticks or unticks it, and a click on the trash can throws the page away. A
-## click outside the page, or Esc, lowers it, and does nothing else. A page just picked up comes up
-## raised. Beside
-## an open screen (see [method lay_out_around]) the page is always up, right of the screen and leaving
-## it uncovered. Only the trash can takes the page (TrashCan); while the player carries one, a try to
-## take another hops the corner.
+## line with a check box ticks or unticks it, a click on its folded corner lowers it, and a
+## click on the trash can throws the page away; other clicks go on to what is under them. A page
+## just picked up comes up raised. While a customer talks, at the counter or on the phone, a raised
+## page is down, and comes back up after. Beside an open screen (see [method lay_out_around]) a raised
+## page stands right of the screen, leaving it uncovered. Only the trash can takes the page
+## (TrashCan); while the player carries one, a try to take another hops the corner.
 
 ## How far the corner rises, in pixels, while the mouse is over it.
 @export var hover_rise: float = 24.0
@@ -18,8 +18,9 @@ extends Control
 @export_range(0.1, 1.0) var raised_share: float = 0.32
 ## The space between the raised page and the screen, the buttons and the window's edges, in pixels.
 @export var gap: float = 12.0
-## The seconds that the page takes to rise.
+## The seconds that the page takes to rise, and to drop back down.
 @export var raise_seconds: float = 0.25
+@export var lower_seconds: float = 0.2
 ## The seconds of each half of the corner's hop when the player tries to take a second page.
 @export var hop_seconds: float = 0.08
 ## The sound of the page handled as it rises or is lowered.
@@ -41,6 +42,8 @@ var _beside: Rect2 = Rect2()
 var _buttons: Array[Rect2] = []
 ## How far the raised page has risen into place, 0 to 1.
 var _rise: float = 0.0
+## The page is up, or rising; false while it drops and once it is down.
+var _up: bool = false
 var _rising: Tween
 ## The page carried at the last sync: a new one, just picked up, comes up raised.
 var _carried: PackedStringArray = []
@@ -52,6 +55,7 @@ func _ready() -> void:
 	_corner.mouse_entered.connect(func() -> void: _corner_paper.position = _corner_rest - Vector2(0.0, hover_rise))
 	_corner.mouse_exited.connect(func() -> void: _corner_paper.position = _corner_rest)
 	_paper.gui_input.connect(_on_paper_input)
+	_paper.mouse_exited.connect(func() -> void: _paper.fold_hovered = false)
 	Game.printout_refused.connect(_hop_corner)
 	get_viewport().size_changed.connect(_layout)
 	Game.changed.connect(_sync)
@@ -60,26 +64,25 @@ func _ready() -> void:
 	_sync()
 
 
-## True while the carried page is up: raised by the player, or beside an open screen.
+## True while the carried page is up, or rising; false as it drops.
 func is_raised() -> bool:
-	return _paper.visible
+	return _up
 
 
-## Raises the carried page; does nothing while the player carries none.
+## Raises the carried page; does nothing while the player carries none or a customer talks.
 func raise() -> void:
-	_raised = not Game.printout.is_empty()
+	_raised = not Game.printout.is_empty() and not _talking()
 	_sync()
 
 
-## Lowers the page back into the corner, unless it is beside an open screen; the player still
-## carries it.
+## Lowers the page back into the corner; the player still carries it.
 func lower() -> void:
 	_raised = false
 	_sync()
 
 
 ## Tells the page what to keep clear while it is up, every frame: [param screen] is an open screen in
-## canvas coordinates, beside which the page is always up (empty: none), and [param buttons] are the
+## canvas coordinates, beside which the raised page stands (empty: none), and [param buttons] are the
 ## view's buttons, which it leaves uncovered.
 func lay_out_around(screen: Rect2, buttons: Array[Rect2]) -> void:
 	if screen == _beside and buttons == _buttons:
@@ -89,27 +92,14 @@ func lay_out_around(screen: Rect2, buttons: Array[Rect2]) -> void:
 	_sync()
 
 
-# _input, before the buttons, the screens and the hotspots: a click outside the raised page only lowers it,
-# or throws it in the trash can under the mouse.
+# _input, before the hotspots: a left click on the trash can throws the raised page in, even with a part
+# in the hand, which the can would take first.
 func _input(event: InputEvent) -> void:
 	var click := event as InputEventMouseButton
-	if click == null or not click.pressed or click.button_index not in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
-		return
-	if not _raised or _beside.has_area():
-		return
-	if Rect2(Vector2.ZERO, _paper.size).has_point((_paper.make_input_local(click) as InputEventMouseButton).position):
+	if click == null or not click.pressed or click.button_index != MOUSE_BUTTON_LEFT or not is_raised():
 		return
 	var can := get_tree().get_first_node_in_group(TrashCan.GROUP) as TrashCan
-	if click.button_index == MOUSE_BUTTON_LEFT and can != null and can.is_hovered():
-		can.throw_printout()
-	else:
-		lower()
-	get_viewport().set_input_as_handled()
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if _raised and is_raised() and not _beside.has_area() and event.is_action_pressed(&"go_back"):
-		lower()
+	if can != null and can.is_hovered() and can.throw_printout():
 		get_viewport().set_input_as_handled()
 
 
@@ -121,11 +111,18 @@ func _on_corner_input(event: InputEvent) -> void:
 
 
 func _on_paper_input(event: InputEvent) -> void:
+	var motion := event as InputEventMouseMotion
+	if motion != null:
+		_paper.fold_hovered = _paper.fold_rect().grow(4.0).has_point(motion.position)
+		return
 	var click := event as InputEventMouseButton
 	if click == null or not click.pressed:
 		return
 	_paper.accept_event()
 	if click.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if _paper.fold_rect().grow(4.0).has_point(click.position):
+		lower()
 		return
 	var line := _boxed_line(_paper.line_at(click.position))
 	if line >= 0:
@@ -147,6 +144,7 @@ func _boxed_line(line: int) -> int:
 	while last + 1 < lines.size() and lines[last + 1].begins_with(" "):
 		last += 1
 	for i: int in range(first, last + 1):
+		@warning_ignore("static_called_on_instance")
 		if Game.printout_box(lines[i]) >= 0:
 			return i
 	return -1
@@ -158,18 +156,23 @@ func _sync() -> void:
 		_raised = true
 	_carried = Game.printout
 	_raised = _raised and carrying
-	var up := carrying and (_raised or _beside.has_area())
-	_corner.visible = carrying and not up
-	if up != _paper.visible and carrying:
+	var up := carrying and _raised and not _talking()
+	if up != _up and carrying:
 		handle_sound.play_at(self)
-	if up and not _paper.visible:
-		_rise_page()
-	_paper.visible = up
+	if up != _up:
+		_up = up
+		_move_page()
+	_corner.visible = carrying and not up and not _paper.visible
 	for paper: PrintoutPaper in [_corner_paper, _paper]:
 		paper.lines = Game.printout
 		paper.ticks = Game.printout_ticks.duplicate()
 	_fit_corner()
 	_layout()
+
+
+# A customer talks, at the counter or on the phone: the page is out of the way.
+func _talking() -> bool:
+	return Game.visitor_state == Game.VisitorState.TALKING or Game.phase == Game.Phase.CALLING
 
 
 # Widens the corner to the tilted page's right edge, so that it clips only the page's bottom.
@@ -187,21 +190,30 @@ func _hop_corner() -> void:
 		hop.tween_property(_corner_paper, "position:y", _corner_rest.y, hop_seconds)
 
 
-func _rise_page() -> void:
+# Slides the page up into place, or down out of the view and then back into the corner, from wherever
+# it is now. A dropping page takes no clicks.
+func _move_page() -> void:
 	if _rising != null:
 		_rising.kill()
-	_rise = 0.0
-	_rising = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	_paper.mouse_filter = Control.MOUSE_FILTER_STOP if _up else Control.MOUSE_FILTER_IGNORE
+	_paper.fold_hovered = false
+	if _up:
+		_paper.show()
+	_rising = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT if _up else Tween.EASE_IN)
 	_rising.tween_method(func(rise: float) -> void:
 		_rise = rise
-		_layout(), 0.0, 1.0, raise_seconds)
+		_layout(), _rise, 1.0 if _up else 0.0, (1.0 - _rise if _up else _rise) * (raise_seconds if _up else lower_seconds))
+	if not _up:
+		_rising.tween_callback(func() -> void:
+			_paper.hide()
+			_corner.visible = not Game.printout.is_empty())
 
 
 # Lays the raised page on the right: right of the screen, or in the right [member raised_share] of
 # the view, left of the buttons there, at the largest font size at which its text fits. Its tractor
 # margin may run off the window's edge. It rises from below while [member _rise] grows.
 func _layout() -> void:
-	if not is_raised():
+	if not _paper.visible:
 		return
 	var view := get_viewport_rect().size
 	var left := _beside.end.x + gap if _beside.has_area() else view.x * (1.0 - raised_share)

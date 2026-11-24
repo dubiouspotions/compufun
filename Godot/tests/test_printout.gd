@@ -68,8 +68,9 @@ func _check_printer() -> void:
 
 
 # The corner shows at the bottom left while the player carries a page; a click raises the page on the
-# right, where a click on a box ticks it, a click elsewhere on it keeps it up, and a click outside lowers
-# it and reaches nothing else. Beside an open screen the page is always up.
+# right, where a click on a box ticks it, a click elsewhere on it keeps it up, a click outside reaches
+# what is under it, and a click on its folded corner lowers it. While a customer talks it is down. Beside an open
+# screen a raised page stands right of it.
 func _check_close_up() -> void:
 	game.carry_printout(PAGE)
 	var behind := Control.new()  # a stand-in for the buttons and hotspots under the page
@@ -121,15 +122,26 @@ func _check_close_up() -> void:
 	page = paper.get_global_rect()
 	_click_at(page.position + paper.call("box_rect", 5).get_center())
 	check("a real click on the box ticks it and keeps it up", [game.printout_ticks, carried.call("is_raised"), behind_clicks[0]], [[5], true, 0])
-	_click_at(Vector2(page.position.x - 40.0, page.get_center().y))
-	check("a click outside lowers it, with a rustle, and reaches nothing else", [carried.call("is_raised"), corner.visible, behind_clicks[0], handled[0]], [false, true, 0, 5])
-	_click_at(Vector2(page.position.x - 40.0, page.get_center().y))
-	check("lowered, a click there reaches what is under it", behind_clicks[0], 1)
+	_click_at(Vector2(page.position.x - 40.0, page.end.y - 40.0))
+	check("a click outside keeps it up and reaches what is under it", [carried.call("is_raised"), behind_clicks[0]], [true, 1])
+	game.visitor_state = game.VisitorState.TALKING
+	game.changed.emit()
+	check("while a customer talks it drops", [carried.call("is_raised"), paper.visible, corner.visible], [false, true, false])
+	await create_timer(float(carried.get("lower_seconds")) + 0.1).timeout
+	check("and is down in the corner", [paper.visible, corner.visible], [false, true])
+	game.visitor_state = game.VisitorState.NONE
+	game.changed.emit()
+	check("and up again after", carried.call("is_raised"), true)
+	await create_timer(float(carried.get("raise_seconds")) + 0.1).timeout
+	_click_at(paper.get_global_rect().position + paper.call("fold_rect").get_center())
+	await create_timer(float(carried.get("lower_seconds")) + 0.1).timeout
+	check("a click on the folded corner lowers it", [carried.call("is_raised"), corner.visible, behind_clicks[0]], [false, true, 1])
 	game.tick_printout(5, false)
 
 	var screen := Rect2(320, 60, 1280, 960)
 	carried.call("lay_out_around", screen, none)
-	check("beside an open screen the page is up", [carried.call("is_raised"), corner.visible], [true, false])
+	check("beside an open screen the page stays down", [carried.call("is_raised"), corner.visible], [false, true])
+	carried.call("raise")
 	await create_timer(float(carried.get("raise_seconds")) + 0.1).timeout
 	page = paper.get_global_rect()
 	check("the page stays right of the screen", page.position.x >= screen.end.x, true)
@@ -139,11 +151,8 @@ func _check_close_up() -> void:
 	check("a click on its box ticks it", game.printout_ticks, [5])
 	_click_at(screen.get_center())
 	check("a click on the screen keeps it up and reaches the screen", [carried.call("is_raised"), behind_clicks[0]], [true, 2])
-	carried.call("lower")
-	check("beside the screen it stays up", carried.call("is_raised"), true)
 	carried.call("lay_out_around", Rect2(), none)
-	check("away from the screen, back in the corner", [carried.call("is_raised"), corner.visible], [false, true])
-	carried.call("raise")
+	check("away from the screen it stays up", carried.call("is_raised"), true)
 	game.trash_printout()
 	check("thrown away, the page and the corner go", [carried.call("is_raised"), corner.visible], [false, false])
 	carried.call("raise")
@@ -198,7 +207,7 @@ func _check_trash_can() -> void:
 
 
 # While the page is raised, a left click on the trash can throws the page in at once and keeps the part
-# in the hand; a right click there only lowers the page.
+# in the hand.
 func _check_trash_raised() -> void:
 	var can: Node3D = load("res://props/trash_can.tscn").instantiate()  # untyped: TrashCan names Game
 	can.add_to_group(&"trash_can")
@@ -211,9 +220,6 @@ func _check_trash_raised() -> void:
 	await process_frame
 	can.call("_set_hovered", true)
 	carried.call("raise")
-	_click_at(Vector2(4.0, 4.0), MOUSE_BUTTON_RIGHT)
-	check("a right click on the can only lowers the page", [carried.call("is_raised"), game.printout, thrown[0]], [false, PAGE, 0])
-	carried.call("raise")
 	_click_at(Vector2(4.0, 4.0))
 	check("a left click on the can throws the raised page in, with a rustle", [game.printout, carried.call("is_raised"), thrown[0]], [PackedStringArray(), false, 1])
 	check("the part stays in the hand", game.hand != null and game.hand.part == load("res://parts/fan.tres"), true)
@@ -223,3 +229,4 @@ func _check_trash_raised() -> void:
 	carried.queue_free()
 	can.queue_free()
 	await process_frame
+

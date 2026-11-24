@@ -79,6 +79,7 @@ static func _first_met(candidates: Array, number: int, flags: Dictionary[StringN
 
 static func _put_flags(flags: Dictionary[StringName, int], sets: Dictionary[StringName, int]) -> void:
 	for flag_name: StringName in sets:
+		@warning_ignore("static_called_on_instance")
 		Game.put_flag(flags, flag_name, sets[flag_name])
 
 
@@ -104,8 +105,8 @@ static func problem_presets() -> Dictionary[String, Dictionary]:
 			job["powered"] = true
 			state["connected_slot"] = 0
 			state["view"] = "Screen"
-		var name := "%s  (%s, day %d)" % [String(problem.short_name).capitalize(), customer.spoken_name() if customer != null else who[0], who[1]]
-		presets[name] = state
+		var label := "%s  (%s, day %d)" % [String(problem.short_name).capitalize(), customer.spoken_name() if customer != null else who[0], who[1]]
+		presets[label] = state
 	return presets
 
 

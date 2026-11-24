@@ -62,6 +62,7 @@ func _ready() -> void:
 	var work_screen: ScreenView = %CompuFunDBView
 	work_screen.picture_changed.connect(func() -> void: _shop.work_computer_running = work_screen.has_picture())
 	_shop.work_computer_running = work_screen.has_picture()
+	_shop.work_power_requested.connect(work_screen.power_on)
 	_dialogue.finished.connect(Game.dialogue_finished)
 	_skip_tutorial.pressed.connect(Game.skip_before_opening)
 	_dialogue.looked.connect(_look)
@@ -289,7 +290,7 @@ func _look(look: StringName) -> void:
 	var view: StringName = DialogueLine.LOOKS.get(look, &"")
 	var marker := _shop.view_marker(view)
 	if marker == null:
-		push_error("Main: the look '%s' of a line in %s names no view of the shop (%s); the view stays" % [look, Game.conversation.id if Game.conversation != null else "no conversation", view])
+		push_error("Main: the look '%s' of a line in %s names no view of the shop (%s); the view stays" % [look, String(Game.conversation.id) if Game.conversation != null else "no conversation", view])
 		return
 	_led_away = not marker.faces_customer
 	Game.go_to_view(view)

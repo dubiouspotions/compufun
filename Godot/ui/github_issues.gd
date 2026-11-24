@@ -24,10 +24,10 @@ var _agent: String
 ## Sends with [param token] (from [method read_token]) to [param repo] (owner/name; "" is
 ## [method repo_slug]). Each request runs on an HTTPRequest under [param host], which must
 ## be in the tree, and says [param agent] as its User-Agent.
-func _init(host: Node, token: String, repo: String, agent: String) -> void:
+func _init(host: Node, token: String, repo_name: String, agent: String) -> void:
 	_host = host
 	_token = token
-	_repo = repo if repo != "" else repo_slug()
+	_repo = repo_name if repo_name != "" else repo_slug()
 	_agent = agent
 
 

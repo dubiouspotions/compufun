@@ -84,11 +84,11 @@ func activate(window: Control) -> void:
 
 ## The open windows, minimized ones too, in the order of the desktop's children.
 func windows() -> Array[Control]:
-	var open: Array[Control] = []
+	var open_windows: Array[Control] = []
 	for child in get_children():
 		if child.has_signal(&"activated") and not child.is_queued_for_deletion() and (child.visible or child.get(&"is_minimized")):
-			open.append(child)
-	return open
+			open_windows.append(child)
+	return open_windows
 
 
 ## The window in front, or null when the desktop itself is active: the player clicked it, or every

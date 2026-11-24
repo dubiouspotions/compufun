@@ -15,7 +15,7 @@ func run() -> void:
 	await process_frame
 	var phone: Area3D = shop.get_node("%Phone")
 	var body: MeshInstance3D = shop.get_node("Room/PhoneProp/Body")
-	var sign: Node = shop.get_node("%OpenSign")  # OpenSign names Game, which doesn't compile under -s
+	var look: ClickableOutline = shop.get_node("%OpenSign").get("outline")  # OpenSign names Game, which doesn't compile under -s
 	var pulse: StandardMaterial3D = shop.get("_phone_pulse_outline")
 	check("restore day 1 with no computer done", game.restore(MIDDAY), "")
 	check("nothing to call about: dark", [game.can_call(), body.material_overlay == null], [false, true])
@@ -24,12 +24,13 @@ func run() -> void:
 	done["jobs"][1].merge({"hardware_fixed": true, "software_fixed": true, "tested": true})
 	check("restore with the old dude's computer done", game.restore(done), "")
 	check("a click calls: it pulses", [game.can_call(), body.material_overlay], [true, pulse])
-	check("in the Open sign's colour", [pulse.albedo_color.r, pulse.albedo_color.g, pulse.albedo_color.b], [sign.get("pulse_color").r, sign.get("pulse_color").g, sign.get("pulse_color").b])
+	check("the phone's outline looks like the Open sign's", shop.get("phone_outline"), look)
+	check("in its colour", [pulse.albedo_color.r, pulse.albedo_color.g, pulse.albedo_color.b], [look.pulse_color.r, look.pulse_color.g, look.pulse_color.b])
 	var alphas := {}
-	for i: int in int(float(sign.get("pulse_seconds")) * FPS):
+	for i: int in int(look.pulse_seconds * FPS):
 		alphas[snappedf(pulse.albedo_color.a, 0.1)] = true
 		await process_frame
-	check("from full down to the sign's low and back", [alphas.has(1.0), alphas.has(snappedf(float(sign.get("pulse_low")), 0.1))], [true, true])
+	check("from full down to the sign's low and back", [alphas.has(1.0), alphas.has(snappedf(look.pulse_low, 0.1))], [true, true])
 	phone.mouse_entered.emit()
 	check("under the mouse, the light blue outline", body.material_overlay, shop.get("_phone_outline"))
 	phone.mouse_exited.emit()

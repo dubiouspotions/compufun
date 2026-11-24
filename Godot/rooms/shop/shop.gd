@@ -14,6 +14,8 @@ signal crashed
 signal phone_requested
 ## The player pressed the Degauss button of the bench screen.
 signal degauss_requested
+## The player pressed the power button of the work computer while it was off.
+signal work_power_requested
 ## The mouse came onto the back strip ([param on] true) or left it (see [member back_strip_height]).
 signal back_strip_hovered(on: bool)
 ## A finger swiped across the world, and lifted: [param direction] is the way that it moved,
@@ -25,6 +27,8 @@ const WORKVIEW: StringName = &"Workview"
 
 ## The seconds that the camera takes to move to another view.
 @export var turn_seconds: float = 0.35
+## The tint of the work computer's power button while the mouse is over it.
+@export var work_power_hover_color: Color = Color(1.0, 0.84, 0.35)
 ## The seconds that a customer takes from the alley to the counter, and back.
 @export var walk_seconds: float = 7.0
 ## The seconds that a customer takes to turn around at the counter before walking out.
@@ -50,15 +54,17 @@ const WORKVIEW: StringName = &"Workview"
 @export var post_it_read_distance: float = 0.2
 ## The seconds that the post-it takes to come up close, and to go back onto the computer.
 @export var post_it_read_seconds: float = 0.3
-## The phone's outline while the mouse is over it and a click calls (Game.can_call), and how far
-## the outline stands out from it, in metres. While a click calls and the mouse is elsewhere, the
-## outline pulses as the Open sign's does (OpenSign.pulse_color).
-@export var phone_hover_color: Color = Color(0.75, 0.9, 1.0)
+## The phone's outline while a click calls (Game.can_call): pulsing, or the hover colour under the
+## mouse; and how far it stands out from the phone, in metres.
+@export var phone_outline: ClickableOutline = preload("res://rooms/clickable_outline.tres")
 @export var phone_outline_width: float = 0.01
 
 @onready var _camera: Camera3D = %Camera
 @onready var _views: Node3D = %Views
 @onready var _follow: PathFollow3D = %CustomerFollow
+@onready var _path: Path3D = $CustomerPath
+# By Game.AlleyEnd: the scene's customer path comes in from the right end, the left's is its mirror image.
+@onready var _alley_paths: Array[Curve3D] = [_path.curve, _mirrored(_path.curve)]
 ## How high the customer's head is above their feet, in metres, for the call-out's arrow.
 @export var head_height: float = 1.6
 
@@ -71,6 +77,7 @@ const WORKVIEW: StringName = &"Workview"
 @onready var _pipedream: Pipedream = %Pipedream
 @onready var _work_monitor: CrtMonitor = %WorkMonitor
 @onready var _work_tower: PcTower = $Room/WorkTower
+@onready var _work_power: Hotspot = %PowerHotspot
 @onready var _open_sign: OpenSign = %OpenSign
 @onready var _door_bell: AudioStreamPlayer3D = %DoorBell
 @onready var _phone_receiver: AudioStreamPlayer3D = %PhoneReceiver
@@ -110,6 +117,7 @@ var work_computer_running: bool = false:
 	set(value):
 		work_computer_running = value
 		_work_tower.running = value
+		_work_power.set_enabled(not value)
 
 var _shown_view: StringName = &""
 ## What the hand held and where the cable was at the last sync, to hear what changed since.
@@ -171,11 +179,11 @@ func _ready() -> void:
 	_the_end.view_requested.connect(view_requested.emit)
 	_the_end.crashed.connect(crashed.emit)
 	_bench.degauss_pressed.connect(degauss_requested.emit)
+	_work_power.highlight_on_hover(_work_tower.get_node(^"Power"), work_power_hover_color)
 	_open_sign.open_requested.connect(Game.open_shop)
 	_open_sign.close_requested.connect(close_requested.emit)
-	_phone_outline = Hotspot.outline_material(phone_hover_color, phone_outline_width)
-	_phone_pulse_outline = Hotspot.outline_material(_open_sign.pulse_color, phone_outline_width)
-	_phone_pulse_outline.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_phone_outline = phone_outline.hover_material(phone_outline_width)
+	_phone_pulse_outline = phone_outline.pulse_material(phone_outline_width)
 	_phone_hotspot.mouse_entered.connect(_set_phone_hovered.bind(true))
 	_phone_hotspot.mouse_exited.connect(_set_phone_hovered.bind(false))
 	Game.changed.connect(_sync)
@@ -369,9 +377,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		view_requested.emit(view_marker(Game.view).back)
 		return
-	if click != null and Game.focus != null and Game.can_stand_up(Game.focus) and _empty_workview_at(click.position):
+	if click != null and Game.focus != null and Game.focus.lying and not Game.focus.case_open and _empty_workview_at(click.position):
 		get_viewport().set_input_as_handled()  # the standing case must not take this click in picking
-		Game.stand_up(Game.focus)  # as a click on the screwdriver's outline does
+		if Game.can_stand_up(Game.focus):
+			Game.stand_up(Game.focus)  # as a click on the screwdriver's outline does
+		else:
+			_job_slots.blink_screws(Game.focus)  # a screw that is out keeps it lying
 		return
 	var mouse := event as InputEventMouse
 	if not _bench.dragging or mouse == null:
@@ -589,6 +600,7 @@ func _walk_in() -> void:
 		_walk_tween.kill()
 	_body.rotation.y = 0.0
 	_body.position = Vector3.ZERO
+	_path.curve = _alley_paths[Game.visitor_from]
 	_follow.progress_ratio = 0.0
 	var door := _door_ratio()
 	_walk_tween = create_tween()
@@ -647,6 +659,7 @@ func _walk_out(outside: bool = false) -> void:
 	_walk_out_arrival = Game.arrival
 	if _walk_tween != null:
 		_walk_tween.kill()
+	_path.curve = _alley_paths[Game.visitor_to]
 	var door := _door_ratio()
 	_walk_tween = create_tween()
 	if outside:
@@ -676,13 +689,24 @@ func _sync_phone() -> void:
 		_phone_pulse.kill()
 		_phone_pulse = null
 	if callable:
-		_phone_pulse = Hotspot.pulse(_phone_pulse_outline, _open_sign.pulse_low, _open_sign.pulse_seconds, self)
+		_phone_pulse = phone_outline.pulse(_phone_pulse_outline, self)
 
 
 ## The progress ratio of the customer path where it passes under the door bell.
 func _door_ratio() -> float:
-	var path := _follow.get_parent() as Path3D
-	return path.curve.get_closest_offset(path.to_local(_door_bell.global_position)) / path.curve.get_baked_length()
+	return _path.curve.get_closest_offset(_path.to_local(_door_bell.global_position)) / _path.curve.get_baked_length()
+
+
+# [param curve] mirrored across the path's x = 0, which runs through the door.
+static func _mirrored(curve: Curve3D) -> Curve3D:
+	var mirror := curve.duplicate() as Curve3D
+	var flip := Vector3(-1.0, 1.0, 1.0)
+	for i: int in curve.point_count:
+		mirror.set_point_position(i, curve.get_point_position(i) * flip)
+		mirror.set_point_in(i, curve.get_point_in(i) * flip)
+		mirror.set_point_out(i, curve.get_point_out(i) * flip)
+		mirror.set_point_tilt(i, -curve.get_point_tilt(i))
+	return mirror
 
 
 func _on_hotspot_clicked(hotspot: Hotspot) -> void:
@@ -696,6 +720,8 @@ func _on_hotspot_clicked(hotspot: Hotspot) -> void:
 				_open_sign.shake()  # the phone can't call before the shop opens: point at the sign
 		Hotspot.Action.TALK_TO_VISITOR:
 			Game.talk_to_visitor()
+		Hotspot.Action.POWER_WORK_COMPUTER:
+			work_power_requested.emit()
 		Hotspot.Action.TAKE_PART:
 			if Game.hand == null:
 				Game.take_new_part(hotspot.part)

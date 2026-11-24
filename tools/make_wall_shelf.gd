@@ -2,6 +2,8 @@ extends SceneTree
 ## Builds the shop's wall shelving of IT goods for sale: the goods atlas
 ## (materials/textures/shop_goods.png), the pegboard tile (materials/textures/pegboard.png) and one
 ## mesh, props/wall_shelf.tres, with three surfaces: 0 the metal frame, 1 the pegboard, 2 the goods.
+## It also draws the goods atlas of the corruption sign win95_boxes, where every box on the boards
+## is a Windows 95 box (corruption/win95_boxes/goods.png).
 ## props/wall_shelf.tscn gives each surface its material, so the whole wall costs three draw calls.
 ## The mesh's front faces +Z, X runs along the wall and the floor is at Y 0.
 ## Usage, from Godot/: godot --headless --path . -s ../tools/make_wall_shelf.gd, then --import.
@@ -9,6 +11,10 @@ extends SceneTree
 const ATLAS_PATH := "res://materials/textures/shop_goods.png"
 const PEGBOARD_PATH := "res://materials/textures/pegboard.png"
 const MESH_PATH := "res://props/wall_shelf.tres"
+const WIN95_ATLAS_PATH := "res://corruption/win95_boxes/goods.png"
+const WIN95_COVER_PATH := "res://corruption/win95_manual/cover_manual.png"
+## The flag in the manual's cover, without its clouds and text.
+const WIN95_FLAG := Rect2i(10, 16, 49, 31)
 const ATLAS_SIZE := 128.0
 
 const CARD_W := 16
@@ -71,6 +77,7 @@ func _initialize() -> void:
 	_draw_atlas()
 	var failed := _failed or not _save_png(_img, ATLAS_PATH)
 	failed = not _save_png(_pegboard_tile(), PEGBOARD_PATH) or failed
+	failed = not _draw_win95_boxes() or not _save_png(_img, WIN95_ATLAS_PATH) or failed
 	for st: SurfaceTool in [_frame, _pegboard, _goods]:
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	_build()
@@ -293,6 +300,34 @@ func _ribbon(r: Rect2i) -> void:
 	for x in range(1, r.size.x, 2):
 		_fill(Rect2i(r.position.x + x, r.position.y, 1, r.size.y), Color8(150, 150, 150))
 	_fill(Rect2i(r.position.x, r.position.y, 1, r.size.y), Color8(200, 30, 30))
+
+
+## Draws the front of every kind of goods on the boards as a Windows 95 box: the flag of the
+## Windows 95 manual's cover and "WIN95" on the cover's sky, whose colour the box's sides and top
+## show too. Run after the plain atlas is saved: it draws over it.
+func _draw_win95_boxes() -> bool:
+	var cover := Image.load_from_file(ProjectSettings.globalize_path(WIN95_COVER_PATH))
+	if cover == null or cover.is_empty():
+		push_error("make_wall_shelf: couldn't load %s" % WIN95_COVER_PATH)
+		return false
+	cover.convert(Image.FORMAT_RGBA8)
+	var kinds := {}
+	for board: Array in SHELVES:
+		for kind: String in board:
+			kinds[kind] = true
+	for kind: String in kinds:
+		var r: Rect2i = _rects[kind]
+		for y in r.size.y:
+			_fill(Rect2i(r.position.x, r.position.y + y, r.size.x, 1), cover.get_pixel(0, y * cover.get_height() / r.size.y))
+		var label := "WIN95" if _text_width("WIN95") <= r.size.x - 2 else "95"
+		var flag := cover.get_region(WIN95_FLAG)
+		var fit := minf((r.size.x - 4.0) / flag.get_width(), (r.size.y - 9.0) / flag.get_height())
+		var size := Vector2i((Vector2(flag.get_size()) * fit).round())
+		flag.resize(size.x, size.y, Image.INTERPOLATE_TRILINEAR)
+		var top := r.position.y + (r.size.y - size.y - 6) / 2
+		_img.blit_rect(flag, Rect2i(Vector2i.ZERO, size), Vector2i(r.position.x + (r.size.x - size.x) / 2, top))
+		_text(r.position.x + (r.size.x - _text_width(label)) / 2, top + size.y + 1, label, Color8(10, 10, 10))
+	return not _failed
 
 
 func _pegboard_tile() -> Image:

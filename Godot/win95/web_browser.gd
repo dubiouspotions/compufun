@@ -230,7 +230,7 @@ func _show_splash() -> void:
 # A page asked for after it wins: this one then returns false.
 func _open(to: String) -> bool:
 	_load += 1
-	var load := _load
+	var load_id := _load
 	_address.text = to
 	var html := ""
 	if to.begins_with("about:"):
@@ -252,7 +252,7 @@ func _open(to: String) -> bool:
 		set_process(true)
 		%Stop.disabled = false
 		await _go_online()
-		if load != _load:
+		if load_id != _load:
 			return false
 		_stop_meteors()
 		var cached := _cached(to)

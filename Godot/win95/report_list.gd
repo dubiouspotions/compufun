@@ -114,6 +114,7 @@ func _draw() -> void:
 		var width := _width(i, x)
 		var cell := Rect2(x, 0, width, _HEADER_HEIGHT)
 		draw_style_box(header, cell)
+		@warning_ignore("incompatible_ternary")
 		_draw_cell(cell, _columns[i].icon if _columns[i].icon else _columns[i].title, font, font_size, ink, _columns[i].right_aligned)
 		x += width
 	for r in _rows.size():

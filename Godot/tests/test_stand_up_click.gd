@@ -1,7 +1,7 @@
 extends "res://tests/test.gd"
 ## In the Workview, a click on empty space beside the lying computer stands it up, as a click on the
-## screwdriver's outline does, once the side panel is on with both screws in; with a screw out it
-## does nothing.
+## screwdriver's outline does, once the side panel is on with both screws in. With a screw out, a
+## click there or on the outline leaves it lying and blinks the ring of the screw that is out.
 
 var _shop: Node3D
 var _camera: Camera3D
@@ -28,7 +28,22 @@ func run() -> void:
 	empty = _empty_spot()
 	_click(empty)
 	check("with a screw out, a click on empty space leaves it lying", [job.lying, job.panel_screws], [true, [false, true]])
+	var case: Node = _shop.get_node("%JobSlots").find_child("OpenCase", true, false)
+	await _check_blink(case, "a click on empty space")
+	var outline: Node3D = _shop.get_node("%JobSlots").find_child("ScrewdriverOutline", true, false)
+	_click(_camera.unproject_position(outline.global_position))
+	check("with a screw out, a click on the screwdriver's outline leaves it lying", job.lying, true)
+	await _check_blink(case, "a click on the screwdriver's outline")
 	_shop.queue_free()
+
+
+# Only the ring of screw 0, which is out, blinks after [param what], and then turns back.
+func _check_blink(case: Node, what: String) -> void:
+	var screws: Array = case.get("_screws")
+	var rings: Array = [(screws[0][2] as MeshInstance3D).material_override, (screws[1][2] as MeshInstance3D).material_override]
+	check("%s blinks the ring of the screw that is out" % what, [(case.get("_blink") as Tween).is_running(), rings[0] != rings[1]], [true, true])
+	await create_timer(case.get("screw_blinks") * case.get("screw_blink_seconds") + 0.1).timeout
+	check("the blink after %s ends" % what, (screws[0][2] as MeshInstance3D).material_override, rings[1])
 
 
 # The first point, from the top of the view, that is off every computer and has nothing clickable.

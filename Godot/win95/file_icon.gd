@@ -180,12 +180,12 @@ func _sync_layout(icon_rect: TextureRect, label: Label) -> void:
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS if compact else TextServer.OVERRUN_NO_TRIMMING
 	# The name box hugs the text, as Win95 draws the selection behind the name only.
 	var font := label.get_theme_font("font")
-	var size := _sized_for
+	var font_size := _sized_for
 	if not compact:
 		# A larger scheme font widens the cell and the wrap in step, as Win95's icon spacing grows.
-		var widen := float(size) / Win95Palette.STOCK_FONT_SIZE
+		var widen := float(font_size) / Win95Palette.STOCK_FONT_SIZE
 		custom_minimum_size = Vector2(roundf(_large_minimum.x * widen), _large_minimum.y)
-		var block := font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, roundf(_WRAP_WIDTH * widen), size)
+		var block := font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, roundf(_WRAP_WIDTH * widen), font_size)
 		var box := label.get_theme_stylebox("normal")
 		label.custom_minimum_size = Vector2(ceilf(block.x) + box.get_margin(SIDE_LEFT) + box.get_margin(SIDE_RIGHT), 0)
 		return
@@ -193,9 +193,9 @@ func _sync_layout(icon_rect: TextureRect, label: Label) -> void:
 	var row := 0.0
 	for column in columns:
 		row += column.width
-	var height := ceilf(font.get_height(size)) + 4.0
+	var height := ceilf(font.get_height(font_size)) + 4.0
 	custom_minimum_size = Vector2(row if not columns.is_empty() else row_width, height)
-	var wide := ceilf(font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x) + 2.0 * _COMPACT_PAD
+	var wide := ceilf(font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x) + 2.0 * _COMPACT_PAD
 	label.custom_minimum_size = Vector2(minf(wide, name_width - _SMALL_ICON), height)
 
 

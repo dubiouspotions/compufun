@@ -6,8 +6,6 @@
 [ext_resource type="Script" path="res://customers/sticker.gd" id="4_femx8"]
 [ext_resource type="Script" path="res://win95/win95_file.gd" id="5_nkk1v"]
 [ext_resource type="Script" path="res://win95/applets/applet.gd" id="6_p70q8"]
-[ext_resource type="Texture2D" path="res://win95/theme/icons/multimedia_32.png" id="7_cw6jy"]
-[ext_resource type="AudioStream" path="res://win95/midi/passport.mp3" id="8_tu0os"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/document_text_32.png" id="9_jqhm7"]
 [ext_resource type="Resource" path="res://win95/start_menu_stock.tres" id="10_3wj3f"]
 [ext_resource type="Resource" path="res://win95/system_stock.tres" id="11_bc12k"]
@@ -34,21 +32,15 @@
 [ext_resource type="PackedScene" path="res://win95/media_player.tscn" id="32_sedmj"]
 [ext_resource type="Texture2D" path="res://win95/theme/icons/folder_closed_32.png" id="33_60txt"]
 [ext_resource type="Script" path="res://win95/email.gd" id="34_m2omy"]
-[ext_resource type="Resource" path="res://win95/theme/palette.tres" id="35_68chr"]
+[ext_resource type="Resource" path="res://win95/theme/schemes/rose.tres" id="scheme_rose"]
 [ext_resource type="Script" path="res://win95/win95_setup.gd" id="36_40syd"]
-[ext_resource type="Texture2D" path="res://win95/wallpapers/red_blocks.png" id="37_5ht67"]
+[ext_resource type="Texture2D" path="res://customers/office_girl/daisies.png" id="wallpaper_daisies"]
 [ext_resource type="Resource" path="res://people/office_girl/person.tres" id="42_o3bf6"]
 [ext_resource type="Script" path="res://customers/customer.gd" id="43_itl7v"]
 [ext_resource type="Texture2D" path="res://materials/textures/sticker_asset_tag.png" id="sticker_asset_tag"]
 
 [sub_resource type="Resource" id="Resource_pvykc"]
 script = ExtResource("2_r8lo3")
-bios_id = "03/26/96-i430VX-2A59GH2BC-00"
-cpu_mhz = 133
-hard_drive = "WDC AC31600H"
-hard_drive_mb = 1549
-cd_rom = "TOSHIBA CD-ROM XM-5302TA"
-pci_devices = PackedStringArray("7 1 8086 7010 14 IDE Controller", "11 0 5333 8811 NA Display Controller")
 
 [sub_resource type="Resource" id="Sticker_asset_tag"]
 script = ExtResource("4_femx8")
@@ -57,38 +49,48 @@ size = Vector2(0.09, 0.0375)
 
 [sub_resource type="Resource" id="Resource_50c5u"]
 script = ExtResource("5_nkk1v")
-name = "demo final.mid"
-icon = ExtResource("7_cw6jy")
-sound = ExtResource("8_tu0os")
-modified = "Monday, May 20, 1996 11:48:26 PM"
+name = "to do.txt"
+icon = ExtResource("9_jqhm7")
+contents = "TO DO
+
+- Customs papers for the Rotterdam container!!
+- Call the freight office about pallet 12 (AGAIN)
+- Order toner + yellow post-its
+- Birthday card for Margit, Friday
+- Water the ficus
+- Ask Nick about Wednesday :)
+"
+modified = "Friday, May 31, 1996 4:52:10 PM"
 
 [sub_resource type="Resource" id="Resource_f6oqf"]
 script = ExtResource("5_nkk1v")
-name = "demo final 2.mid"
-icon = ExtResource("7_cw6jy")
-sound = ExtResource("8_tu0os")
-modified = "Sunday, May 26, 1996 12:15:03 AM"
+name = "passwords.txt"
+icon = ExtResource("9_jqhm7")
+contents = "DON'T LOOK!!
+
+Windows: sunshine
+Email: sunshine2
+Bank: sunshine3
+
+Nick set up my computer all safe-like.
+He says never to write your passwords down,
+so I hid them here.
+"
+modified = "Monday, April 15, 1996 9:12:44 AM"
 
 [sub_resource type="Resource" id="Resource_57xrn"]
 script = ExtResource("5_nkk1v")
-name = "lyrics.txt"
+name = "midsummer party.txt"
 icon = ExtResource("9_jqhm7")
-contents = "DIAL TONE HEART (demo final)
+contents = "MIDSUMMER PARTY (office)
 
-I call you up at two a.m.
-The line goes beep, and beep again.
-You never pick up, you never do.
-I leave the modem on for you.
-
-  Dial tone heart, dial tone heart,
-  static where we fell apart.
-  I hear you in the hum, I hear you in the dark,
-  nothing on the line but my dial tone heart.
-
-Verse 2: ??? (Lisa has ideas)
-Bridge: la la la (FIX THIS)
+- Strawberry cake (me!)
+- Herring + new potatoes (Margit)
+- Flower crowns for everyone
+- Print the song sheets
+- Ask Nick to bring his guitar??
 "
-modified = "Tuesday, May 28, 1996 1:33:09 AM"
+modified = "Wednesday, May 29, 1996 12:07:38 PM"
 
 [sub_resource type="Resource" id="Resource_qy2mo"]
 script = ExtResource("5_nkk1v")
@@ -230,31 +232,33 @@ children = Array[Resource]([ExtResource("10_3wj3f"), ExtResource("11_bc12k"), Su
 
 [sub_resource type="Resource" id="Resource_rh5qv"]
 script = ExtResource("5_nkk1v")
-name = "setlist.txt"
+name = "customs letter.txt"
 icon = ExtResource("9_jqhm7")
-contents = "SETLIST - Thursday rehearsal
+contents = "Harbour Import AB
 
-1. Dial Tone Heart
-2. Farsta Nights
-3. Save As
-4. Lisa's song (no name yet)
-5. General Protection Fault (slow version)
-6. Dial Tone Heart again, if there's time
+To: Customs, Port of Stockholm
+
+Re: Container HBIU 447120 from Rotterdam
+
+Dear Sir or Madam,
+
+Our container HBIU 447120 has been held at the port since May 24.
+The missing invoice is enclosed. Please release the goods at your
+earliest convenience, as our customer is waiting.
+
+Kind regards,
+
+Sam Hilton
+Harbour Import AB
 "
-modified = "Monday, May 27, 1996 8:10:41 PM"
-
-[sub_resource type="Resource" id="Resource_sfsaj"]
-script = ExtResource("5_nkk1v")
-name = "rehearsal.wav"
-icon = ExtResource("7_cw6jy")
-modified = "Saturday, May 18, 1996 6:02:55 PM"
+modified = "Thursday, May 30, 1996 2:31:05 PM"
 
 [sub_resource type="Resource" id="Resource_3tcxc"]
 script = ExtResource("5_nkk1v")
 name = "My Documents"
 icon = ExtResource("33_60txt")
 is_folder = true
-children = Array[Resource]([SubResource("Resource_rh5qv"), SubResource("Resource_sfsaj")])
+children = Array[Resource]([SubResource("Resource_rh5qv"), SubResource("Resource_57xrn")])
 
 [sub_resource type="Resource" id="Resource_6vrmi"]
 script = ExtResource("34_m2omy")
@@ -277,12 +281,16 @@ read = true
 
 [sub_resource type="Resource" id="Resource_jgelc"]
 script = ExtResource("36_40syd")
-wallpaper = ExtResource("37_5ht67")
-desktop = Array[ExtResource("5_nkk1v")]([SubResource("Resource_50c5u"), SubResource("Resource_f6oqf"), SubResource("Resource_57xrn")])
+palette = ExtResource("scheme_rose")
+wallpaper = ExtResource("wallpaper_daisies")
+desktop = Array[ExtResource("5_nkk1v")]([SubResource("Resource_50c5u"), SubResource("Resource_f6oqf")])
 drive_c = Array[ExtResource("5_nkk1v")]([SubResource("Resource_jhvqk"), SubResource("Resource_3tcxc")])
 emails = Array[ExtResource("34_m2omy")]([SubResource("Resource_6vrmi"), SubResource("Resource_1vyur")])
-installed_apps = PackedStringArray("Calculator", "Notepad", "Media Player", "Sound Recorder")
-volume = 60.0
+installed_apps = PackedStringArray("Calculator", "Notepad")
+volume = 40.0
+registered_owner = "Sam Hilton"
+registered_organization = "Harbour Import AB"
+product_id = "24796-OEM-0004172-61530"
 
 [sub_resource type="Resource" id="Resource_1w7aw"]
 script = ExtResource("3_jnq3r")

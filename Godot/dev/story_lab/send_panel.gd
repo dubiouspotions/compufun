@@ -62,8 +62,8 @@ func _send_now() -> void:
 
 
 func _writer() -> String:
-	var name := GitHubIssues.reporter_name()
-	return name if name != "" else "unknown"
+	var reporter := GitHubIssues.reporter_name()
+	return reporter if reporter != "" else "unknown"
 
 
 func _done(text: String, ok: bool) -> void:

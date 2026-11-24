@@ -28,6 +28,9 @@ const IDS: Array[StringName] = [&"motherboard", &"cpu", &"fan", &"ram_1", &"ram_
 ## Plays instead of the shop's usual sound as a piece of this part comes into or leaves the hand, such
 ## as a squelch; null for the usual sound.
 @export var handle_sound: SoundSet
+## Plays from the trash can as a piece of this part lands in it, as the boot floppy's low error chord;
+## null for none.
+@export var trash_sound: SoundSet
 ## A loop that plays from a computer instead of its fans' hum while it runs with a piece of this part
 ## in it, as a wheezing lung. It must loop. null for the usual fans.
 @export var running_sound: AudioStream
@@ -71,15 +74,15 @@ static func named(part_id: StringName) -> Part:
 
 ## The box around the shown meshes of [param model], an instance of a part's [member model], in the
 ## model's own space.
-static func bounds(model: Node3D) -> AABB:
+static func bounds(root: Node3D) -> AABB:
 	var box := AABB()
 	var first := true
-	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+	for node: Node in root.find_children("*", "MeshInstance3D", true, false):
 		var mesh := node as MeshInstance3D
 		var to_model := mesh.transform
 		var shown := mesh.visible
 		var above := mesh.get_parent() as Node3D
-		while above != null and above != model:
+		while above != null and above != root:
 			to_model = above.transform * to_model
 			shown = shown and above.visible
 			above = above.get_parent() as Node3D

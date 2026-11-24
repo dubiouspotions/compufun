@@ -20,7 +20,7 @@ func load_from(computer: ComputerState) -> void:
 	(%Speed as HSlider).set_value_no_signal(setup.pointer_speed)
 	(%ShowTrails as CheckBox).set_pressed_no_signal(setup.pointer_trails > 0)
 	var length := %TrailLength as HSlider
-	length.set_value_no_signal(setup.pointer_trails if setup.pointer_trails > 0 else length.max_value)
+	length.set_value_no_signal(float(setup.pointer_trails) if setup.pointer_trails > 0 else length.max_value)
 	_sync()
 
 

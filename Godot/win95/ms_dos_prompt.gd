@@ -45,7 +45,7 @@ func _ready() -> void:
 	_sync_focus.call_deferred()
 
 
-func _unhandled_key_input(event: InputEvent) -> void:
+func _unhandled_key_input(_event: InputEvent) -> void:
 	if not _is_active():
 		return
 	get_viewport().set_input_as_handled()
@@ -114,8 +114,8 @@ func _dir() -> String:
 	return "\n".join(lines)
 
 
-func _dir_line(base: String, extension: String, is_folder: bool, size: int, when: Dictionary, long_name: String) -> String:
-	var amount := "<DIR>       " if is_folder else "%12s" % _grouped(size)
+func _dir_line(base: String, extension: String, is_folder: bool, bytes: int, when: Dictionary, long_name: String) -> String:
+	var amount := "<DIR>       " if is_folder else "%12s" % _grouped(bytes)
 	var date := ""
 	if not when.is_empty():
 		var hour: int = when.hour

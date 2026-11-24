@@ -279,6 +279,7 @@ func _count_memory() -> bool:
 	var steps := 30
 	var last := roundi(steps * memory_fail_share) if memory_fails else steps
 	for i in last + 1:
+		@warning_ignore("integer_division")
 		_post.text = before + "Memory Test :  %dK" % (hardware.memory_kb * i / steps)
 		if not await _wait(memory_test_seconds / steps) and not memory_fails:
 			return false

@@ -41,3 +41,5 @@ visible = false
 layout_mode = 0
 mouse_default_cursor_shape = 2
 script = ExtResource("2_paper")
+folded = true
+

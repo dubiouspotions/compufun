@@ -14,6 +14,7 @@ story/errands/0101_skater_bro.errand  one visit: who, which problem, the brief, 
 story/problems/dust_overheat.problem  one computer problem's text: the post-it, symptoms, steps, notes
 story/callouts/everyone.callouts      what every customer calls out while they wait
 story/callouts/skater_bro.callouts    what one customer calls out instead, by day, daypart or flags
+story/symptoms.keywords               the words that also find each symptom in CompuFunDB's search
 story/bible/storyline.md              prose that the game doesn't read: the lore, the end, the cast
 story/bible/customers.md
 ```
@@ -83,7 +84,9 @@ brief:
 - **Conversations** start with `==` and the trigger: `drop-off` (the customer arrives),
   `pick-up` (they come back for the computer, on any later day), `phone` (the player calls) and
   `event` (they pop up behind the counter; below). A trigger can have several; the first whose condition matches plays. Without a match, a pick-up
-  is a short thanks and a phone call a "Hello?". A `phone` without lines rings out: nobody
+  is a short thanks (`customers/conversations/thanks.tres`) and a phone call a "Hello?"
+  (`customers/conversations/hello.tres`). The phone says every line through a telephone
+  (`voices/effects/telephone.tres`), over the line's own voice effect. A `phone` without lines rings out: nobody
   answers, nobody comes, and the computer stays on the counter (as `0701_skater_bro`'s does once
   `skater_organs_replaced` is set). The phone calls the customers who answer first. A drop-off without lines sets its flags and says nothing, so a customer without a
   computer leaves at once.
@@ -138,7 +141,8 @@ The file name is the problem's id, the name of its `problems/<id>.tres`, which h
   its CAUSES column and the fix it prints. Without one, CompuFunDB names it by the file name.
 - `symptoms`: one per line: every complaint this cause can bring, as a customer would put it, worded
   as other problems word the same complaint ("Slow computer"), so a search offers every likely
-  cause. The player searches CompuFunDB for their words.
+  cause. The player searches CompuFunDB for their words and their keywords
+  (`story/symptoms.keywords`). Nothing goes under a symptom.
 - `checks`: one per line, `yes:` (true when this is the cause) or `no:` (false). The player ticks
   what is true. A ticked check rules out every cause that says `no:` to it, so a cause says `no:`
   only to a check that it makes false. `shows:` is how it fails in the game.
@@ -154,6 +158,20 @@ in its `.tres`: CompuFunDB finds nothing for its symptoms. With
 `empty_case = true`, as `no_parts` has, the computer comes with every place empty and runs anyway;
 taking the side panel off and putting it back on with its screws in is the repair, and the case
 stays empty.
+
+## Symptom keywords: `story/symptoms.keywords`
+
+CompuFunDB's search finds a symptom when its name and its keywords together hold every word that
+the player typed. One line per symptom, the symptom exactly as the problem files spell it:
+
+```
+Computer runs hot: heat, warm, overheating, temperature, fan
+No sound: audio, speaker, silent, mute, volume, quiet
+```
+
+A symptom without a line is found by its name alone. A line for a symptom that no problem lists is
+in the story check. In the Story Lab, a problem's symptoms have their keywords beside them; an edit
+there changes this file, so every problem with that symptom gets it.
 
 ## Call-outs: `story/callouts/<customer>.callouts`
 

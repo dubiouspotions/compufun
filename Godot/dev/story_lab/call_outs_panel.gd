@@ -40,11 +40,11 @@ func path() -> String:
 
 
 ## Opens the call-outs of [param name]: a customer's file name, or CallOuts.EVERYONE.
-func open(name: StringName) -> void:
+func open(outs_name: StringName) -> void:
 	_settle_now()
-	_path = "%s%s.callouts" % [StoryFiles.CALL_OUTS_DIR, name]
-	var everyone := name == CallOuts.EVERYONE
-	_title.text = "Everyone" if everyone else _spoken(name)
+	_path = "%s%s.callouts" % [StoryFiles.CALL_OUTS_DIR, outs_name]
+	var everyone := outs_name == CallOuts.EVERYONE
+	_title.text = "Everyone" if everyone else _spoken(outs_name)
 	_about.text = "Every customer calls these out, unless a set of their own matches." if everyone else \
 		"%s calls out the first of these sets whose day, daypart and flags match, else the one without any; with none that matches, everyone's." % _title.text
 	_code.placeholder_text = "" if everyone else "%s calls out everyone's lines. Add a set above to give them their own." % _title.text
@@ -52,7 +52,7 @@ func open(name: StringName) -> void:
 	_code.clear_undo_history()
 	_mark(PackedStringArray())
 	for i: int in _list.item_count:
-		if _list.get_item_metadata(i) == name:
+		if _list.get_item_metadata(i) == outs_name:
 			_list.select(i)
 
 
@@ -61,28 +61,28 @@ func _fill() -> void:
 	var names: Array[StringName] = [CallOuts.EVERYONE]
 	for each: String in LabUI.resource_names(StoryFormat.CUSTOMERS_DIR):
 		names.append(StringName(each))
-	for name: StringName in names:
+	for outs_name: StringName in names:
 		_list.add_item("")
-		_list.set_item_metadata(_list.item_count - 1, name)
+		_list.set_item_metadata(_list.item_count - 1, outs_name)
 		_name_item(_list.item_count - 1)
 	open(StringName(_path.get_file().get_basename()) if _path != "" else CallOuts.EVERYONE)
 
 
 # Names the customer of item [param index] and how many sets of their own they have.
 func _name_item(index: int) -> void:
-	var name: StringName = _list.get_item_metadata(index)
-	var text := _drafts.text("%s%s.callouts" % [StoryFiles.CALL_OUTS_DIR, name])
+	var outs_name: StringName = _list.get_item_metadata(index)
+	var text := _drafts.text("%s%s.callouts" % [StoryFiles.CALL_OUTS_DIR, outs_name])
 	var sets := Array(text.split("\n")).filter(func(line: String) -> bool: return line.begins_with("==")).size()
-	var shown := "Everyone" if name == CallOuts.EVERYONE else _spoken(name)
+	var shown := "Everyone" if outs_name == CallOuts.EVERYONE else _spoken(outs_name)
 	_list.set_item_text(index, "%s   %s" % [shown, ("%d set%s" % [sets, "" if sets == 1 else "s"]) if sets > 0 else "(everyone's)"])
 	_list.set_item_custom_fg_color(index, LabUI.TEXT if sets > 0 else LabUI.DIM)
 
 
-func _spoken(name: StringName) -> String:
-	var customer := load(StoryFormat.CUSTOMERS_DIR + name + ".tres") as Customer
+func _spoken(outs_name: StringName) -> String:
+	var customer := load(StoryFormat.CUSTOMERS_DIR + outs_name + ".tres") as Customer
 	if customer == null:
-		push_error("Story Lab: %s%s.tres doesn't load as a Customer" % [StoryFormat.CUSTOMERS_DIR, name])
-		return String(name)
+		push_error("Story Lab: %s%s.tres doesn't load as a Customer" % [StoryFormat.CUSTOMERS_DIR, outs_name])
+		return String(outs_name)
 	return customer.spoken_name()
 
 

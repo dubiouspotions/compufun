@@ -49,7 +49,7 @@ func _ready() -> void:
 	var thumb := _art(_THUMB)
 	for state: StringName in [&"grabber", &"grabber_highlight", &"grabber_disabled"]:
 		_slider.add_theme_icon_override(state, thumb)
-	_play.pressed.connect(func() -> void: pause() if is_playing() else play())
+	_play.pressed.connect(func() -> void: (pause if is_playing() else play).call())
 	%Stop.pressed.connect(stop)
 	%Start.pressed.connect(func() -> void: seek(0.0))
 	%Back.pressed.connect(func() -> void: seek(song_position() - skip_seconds))
@@ -157,6 +157,7 @@ func _show_state() -> void:
 
 
 static func _clock(seconds: float) -> String:
+	@warning_ignore("integer_division")
 	return "%d:%04.1f" % [int(seconds) / 60, fmod(seconds, 60.0)]
 
 

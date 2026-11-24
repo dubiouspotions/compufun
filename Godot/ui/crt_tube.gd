@@ -82,19 +82,19 @@ func set_param(uniform: StringName, value: Variant) -> void:
 ## sounds, when [param on] or [param has_signal] differ from the last call. [param warp] is the
 ## day's warp (0 to 1), which magnetises the mask. [param instant] shows the new state at once,
 ## silently, and ends the animations of earlier changes: for a [member Game.jump].
-func reconcile(on: bool, has_signal: bool, warp: float, instant: bool = false) -> void:
+func reconcile(on: bool, signal_in: bool, warp: float, instant: bool = false) -> void:
 	_warp = warp
 	if instant:
 		_on = on
-		_signal = has_signal
+		_signal = signal_in
 		for uniform: StringName in [&"crt_power", &"crt_warmup", &"crt_sync", &"crt_picture"]:
 			if _tweens.has(uniform):
 				_tweens[uniform].kill()
 				_tweens.erase(uniform)
 		_set_value(1.0 if on else 0.0, &"crt_power")
 		_set_value(1.0, &"crt_warmup")
-		_set_value(1.0 if on or has_signal else 0.0, &"crt_sync")
-		_set_value(1.0 if has_signal else 0.0, &"crt_picture")
+		_set_value(1.0 if on or signal_in else 0.0, &"crt_sync")
+		_set_value(1.0 if signal_in else 0.0, &"crt_picture")
 		return
 	if on != _on:
 		_on = on
@@ -103,12 +103,12 @@ func reconcile(on: bool, has_signal: bool, warp: float, instant: bool = false) -
 		else:
 			_play(power_off_sound)
 			_animate(&"crt_power", 0.0, power_off_seconds, Tween.EASE_OUT, Tween.TRANS_CUBIC)
-	if has_signal != _signal:
-		_signal = has_signal
-		_animate(&"crt_picture", 1.0 if has_signal else 0.0, sync_lock_seconds, Tween.EASE_IN_OUT, Tween.TRANS_SINE)
+	if signal_in != _signal:
+		_signal = signal_in
+		_animate(&"crt_picture", 1.0 if signal_in else 0.0, sync_lock_seconds, Tween.EASE_IN_OUT, Tween.TRANS_SINE)
 		if not _on:
-			_set_value(1.0 if has_signal else 0.0, &"crt_sync")
-		elif has_signal:
+			_set_value(1.0 if signal_in else 0.0, &"crt_sync")
+		elif signal_in:
 			_lock_sync()
 		else:
 			_lose_sync()
