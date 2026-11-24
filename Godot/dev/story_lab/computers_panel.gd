@@ -68,6 +68,30 @@ func show_computers(week: StoryFiles.Week, drafts: StoryDrafts) -> void:
 	_fill()
 
 
+# Every mail address in the game, sorted, each once: on every customer's computer, in every patch and
+# in this table, so a mail can come from anyone in the week.
+func _all_addresses() -> PackedStringArray:
+	var found := {}
+	var mails: Array[Email] = []
+	for each: String in LabUI.resource_names(StoryFormat.CUSTOMERS_DIR):
+		var customer := load(StoryFormat.CUSTOMERS_DIR + each + ".tres") as Customer
+		if customer != null and customer.computer != null and customer.computer.win95_setup != null:
+			mails.append_array(customer.computer.win95_setup.emails)
+	for patch: SetupPatch in _week.patches.values():
+		mails.append_array(patch.mails)
+	if _table != null:
+		mails.append_array(_table.mails)
+	if _after != null:
+		mails.append_array(_after.emails)
+	for mail: Email in mails:
+		for address: String in [mail.from, mail.to]:
+			if address.strip_edges() != "":
+				found[address] = true
+	var sorted := PackedStringArray(found.keys())
+	sorted.sort()
+	return sorted
+
+
 ## The res:// path of the open patch file, which may not exist yet.
 func path() -> String:
 	return _path
@@ -390,7 +414,7 @@ func _edit_cell() -> void:
 	if column == 0:
 		options = Array(_folder_names)
 	elif column in [1, 2] and not current.contains(","):
-		options = Array(_after.addresses()).filter(func(a: String) -> bool: return not a.contains(","))
+		options = Array(_all_addresses()).filter(func(a: String) -> bool: return not a.contains(","))
 		options.push_front(_NO_ADDRESS)
 		if current == "":
 			current = _NO_ADDRESS

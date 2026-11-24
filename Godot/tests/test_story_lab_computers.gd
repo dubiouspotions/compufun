@@ -46,6 +46,12 @@ func run() -> void:
 	first.select(1)
 	panel.call("_edit_cell")
 	check("From edits as a dropdown of her addresses, (none) and a new one", [first.get_text(1).split(",")[0], first.get_text(1).split(",")[-1]], ["(none)", "New address..."])
+	var others: Array = []
+	for each: String in ["skater_bro"]:  # his mail is from people she never wrote with
+		var setup: Win95Setup = (load("res://customers/%s.tres" % each) as Customer).computer.win95_setup
+		others.append_array(Array(setup.addresses()))
+	check("his addresses are there to offer", others.has("Kent <kent@modemlandia.se>"), true)
+	check("and offers the other customers' addresses too", others.filter(func(a: String) -> bool: return not a.contains(",")).all(func(a: String) -> bool: return a in first.get_text(1).split(",")), true)
 	var from_text: String = (first.get_metadata(0) as Email).from
 	panel.call("_close_cells")  # Esc, then a click elsewhere
 	check("a dropdown left without a pick is text again, showing the mail", [first.get_cell_mode(1), first.get_text(1)], [TreeItem.CELL_MODE_STRING, from_text])
