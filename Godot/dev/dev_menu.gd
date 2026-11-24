@@ -3,7 +3,8 @@ extends CanvasLayer
 ## The Dev menu, F3 or Cmd+3 (debug builds only): tools for making the game, as opposed to the F2 or Cmd+2 debug
 ## menu's switches for playing it. One button per tool; a tool opens over the game and closes
 ## itself. F4 or Cmd+4 shows and hides the Story Lab. A run started with "-- --story-lab" opens it,
-## and "-- --errand 0101" opens that errand in it (see [method open_from_args]).
+## "-- --errand 0101" opens that errand in it, and "-- --call-outs nice_lady" her call-outs (see
+## [method open_from_args]).
 
 ## The tools, in order; each button shows the scene's file name.
 @export var tools: Array[PackedScene] = []
@@ -46,15 +47,23 @@ func _play_drafts() -> void:
 
 ## Opens the Story Lab when [param args] (the user arguments after "--") hold "--story-lab", and
 ## with "--errand <name>" also opens, full-window, the one errand file whose name starts with
-## <name>, such as "0101" for 0101_middle_manager.errand. Returns why it opened nothing it was
-## asked to, or "".
+## <name>, such as "0101" for 0101_middle_manager.errand, and with "--call-outs <name>" the
+## call-outs of that customer (or "everyone"). Returns why it opened nothing it was asked to, or "".
 func open_from_args(args: PackedStringArray) -> String:
 	var at := args.find("--errand")
-	if not args.has("--story-lab") and at < 0:
+	var outs_at := args.find("--call-outs")
+	if not args.has("--story-lab") and at < 0 and outs_at < 0:
 		return ""
 	if story_lab == null:
 		return _refuse("no Story Lab scene is set on the Dev menu")
 	_open(story_lab)
+	if outs_at >= 0:
+		var outs_name := args[outs_at + 1] if outs_at + 1 < args.size() else ""
+		if outs_name != String(CallOuts.EVERYONE) and not ResourceLoader.exists("res://customers/%s.tres" % outs_name):
+			return _refuse("--call-outs '%s' is no customer in res://customers/, nor everyone" % outs_name)
+		var lab: Node = _child(story_lab)
+		lab.call(&"show_section", "Call-outs")
+		lab.call(&"call_outs_panel").open(StringName(outs_name))
 	if at < 0:
 		return ""
 	var wanted := args[at + 1] if at + 1 < args.size() else ""
