@@ -373,6 +373,7 @@ func _body_changed() -> void:
 
 func _add_mail() -> void:
 	if _after == null:
+		_say("Pick a computer's patch on the left first.")
 		return
 	var mail := Email.new()
 	var date: Dictionary = Game.date_of(_errand.day_number() if _errand != null else 1)
@@ -398,6 +399,7 @@ func _add_mail() -> void:
 func _delete_mail() -> void:
 	var row := _mails.get_selected()
 	if row == null:
+		_say("Pick the mail to delete first: click it in the table.")
 		return
 	_after.emails.erase(row.get_metadata(0))
 	if _save_setup(_after) == "":

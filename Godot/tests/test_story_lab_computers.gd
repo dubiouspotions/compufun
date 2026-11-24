@@ -69,6 +69,9 @@ func run() -> void:
 	panel.call("_add_mail")
 	await process_frame
 	var rows := mails.get_root().get_children()
+	mails.deselect_all()
+	panel.call("_delete_mail")
+	check("Delete mail with none picked says so", (panel.get("_errors") as ItemList).get_item_text(0).begins_with("Pick the mail to delete"), true)
 	rows[rows.size() - 2].select(0)
 	panel.call("_delete_mail")
 	await process_frame
