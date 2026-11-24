@@ -26,6 +26,8 @@ func _the_committed_starts_show_where_they_start() -> void:
 		"logo_blue day 3 AT_CLOSING",
 		"logo_cambion day 6 AT_CLOSING",
 		"no_clippy on 0303_retired_accountant.errand",
+		"pointer_escape day 3 MORNING",
+		"pointer_escape=0 day 6 MORNING",
 		"posters_bounce day 5 AT_CLOSING",
 		"win_phone day 7 MORNING",
 	])

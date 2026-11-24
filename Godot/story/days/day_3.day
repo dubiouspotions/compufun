@@ -1,5 +1,6 @@
 weather: clear
 warp: 0.3
+on start: sign_pointer_escape
 on close: sign_logo_blue
 notes:
 	Mid corruption signs start.

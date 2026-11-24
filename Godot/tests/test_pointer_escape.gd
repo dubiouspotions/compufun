@@ -1,12 +1,15 @@
 extends "res://tests/test.gd"
-## The corruption sign pointer_escape: while it shows, the Win95 arrow now and then stays the cursor
-## for a while after the mouse leaves the bench screen of a Cambion computer. The rolls repeat after
-## the same restore.
+## The corruption sign pointer_escape: day 3 starts it and day 6 ends it. While it shows, the Win95
+## arrow now and then stays the cursor for a while after the mouse leaves the bench screen of a
+## Cambion computer. The rolls repeat after the same restore.
 
 const SKATER: String = "res://customers/skater_bro.tres"
 
 
 func run() -> void:
+	check("day 3 starts the sign, and day 6 takes it back",
+			[game.day_of(3).set_flags.get(&"sign_pointer_escape"), game.day_of(6).set_flags.get(&"sign_pointer_escape")], [1, 0])
+
 	var main: Node = load("res://main.tscn").instantiate()
 	root.add_child(main)
 	await _frames(5)
