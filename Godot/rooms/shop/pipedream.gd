@@ -2,10 +2,12 @@
 class_name Pipedream
 extends Node3D
 ## Win95's 3D Pipes screensaver leaking into the shop: pipes grow out of this node's origin along
-## -Z, then turn at random on a grid inside [member bounds]. They show only while the corruption
-## sign pipedream lets them in ([member stage]); then the higher the day's warp, the more of them
-## shows. One seed always grows the same pipes; a higher warp shows more of them, never others.
-## They grow only while the camera looks away, so the player never sees them move.
+## -Z until they reach a free cell, then turn at random on a grid of free cells: inside
+## [member bounds], outside [member solids], and in front of no hotspot as [member clear_views] see
+## it. They show only while the corruption sign pipedream lets them in ([member stage]); then the
+## higher the day's warp, the more of them shows. One seed always grows the same pipes; a higher warp
+## shows more of them, never others. Each pipe grows only while the camera can't see where it grows
+## next, so the player never sees one move.
 
 const DIRS: Array[Vector3i] = [
 	Vector3i.LEFT, Vector3i.RIGHT, Vector3i.DOWN, Vector3i.UP, Vector3i.FORWARD, Vector3i.BACK,
@@ -35,28 +37,36 @@ var stage: int = 0:
 ## The share of the pipes, 0 to 1, that shows when the sign starts, up to [member from_warp]. At
 ## warp 1, all of them show.
 @export_range(0.0, 1.0, 0.01) var first_amount: float = 0.15
-## How fast new pipe grows in, in segments per second for each pipe.
-@export_range(0.05, 60.0, 0.05, "suffix:/s") var grow_speed: float = 0.25
+## How fast new pipe grows in at first, in segments per second for each pipe. The speed rises
+## evenly with the share shown, up to [member late_grow_speed] when all of them show, so the pipes
+## peek out for a while, then spread fast.
+@export_range(0.05, 60.0, 0.05, "suffix:/s") var grow_speed: float = 0.15
+@export_range(0.05, 60.0, 0.05, "suffix:/s") var late_grow_speed: float = 4.15
 
 @export_group("Shape")
 ## Change any of these, then press Regrow.
 @export_tool_button("Regrow") var regrow: Callable = _rebuild
-## The space the pipes may turn in, in metres from this node. They leave the origin straight
-## along -Z until they are inside it.
-@export var bounds: AABB = AABB(Vector3(-0.05, -0.8, -1.65), Vector3(0.5, 2.85, 1.6))
+## The space the pipes may turn in, in metres from this node.
+@export var bounds: AABB = AABB(Vector3(-0.95, -4.0, -2.75), Vector3(1.45, 4.95, 2.85))
+## The views whose clicks the pipes keep clear: no pipe passes in front of a hotspot under this
+## node's parent, as seen from each view's eye (its marker), except on the way out of the origin.
+@export var clear_views: Array[Node3D] = []
+## The things that the pipes grow around rather than through, such as the desk top: each one's
+## meshes, merged into a box.
+@export var solids: Array[Node3D] = []
 ## The grid step, and the length of one segment, in metres.
-@export_range(0.05, 1.0, 0.01, "suffix:m") var cell: float = 0.2
+@export_range(0.05, 1.0, 0.01, "suffix:m") var cell: float = 0.1
 ## One pipe per colour, at most 9.
 @export var colors: Array[Color] = [
 	Color(0.85, 0.12, 0.1), Color(0.12, 0.6, 0.2), Color(0.15, 0.3, 0.85), Color(0.9, 0.75, 0.1),
 ]
 ## The length of each pipe at warp 1, in segments. A pipe that runs into a dead end stops sooner.
-@export_range(1, 500) var segments: int = 60
+@export_range(1, 1000) var segments: int = 500
 ## The chance, 0 to 1, that a pipe turns at a cell.
-@export_range(0.0, 1.0, 0.01) var turn_chance: float = 0.3
+@export_range(0.0, 1.0, 0.01) var turn_chance: float = 0.25
 @export var pipe_seed: int = 95
-@export_range(0.005, 0.5, 0.005, "suffix:m") var radius: float = 0.035
-@export_range(0.005, 0.5, 0.005, "suffix:m") var joint_radius: float = 0.06
+@export_range(0.005, 0.5, 0.005, "suffix:m") var radius: float = 0.025
+@export_range(0.005, 0.5, 0.005, "suffix:m") var joint_radius: float = 0.04
 ## The material of the pipes; each pipe gets a copy with its colour as albedo_color.
 @export var material: ShaderMaterial
 ## The warp that the editor shows.
@@ -64,12 +74,16 @@ var stage: int = 0:
 	set(value):
 		preview_warp = value
 		if Engine.is_editor_hint() and is_node_ready():
-			_shown = amount(preview_warp)
-			_show()
+			_show_all(amount(preview_warp))
 
-var _shown: float = 0.0
-## Per pipe: [segment MultiMesh, joint MultiMesh, the segment index of each joint].
+## Per pipe: [segment MultiMesh, joint MultiMesh, the segment index of each joint, its cells, the
+## share of it that shows].
 var _pipes: Array[Array] = []
+## Per clear view: {eye: the inverse of its marker's transform, hotspots: what _project gives for
+## each hotspot in front of it}.
+var _clear: Array[Dictionary] = []
+var _solid_boxes: Array[AABB] = []
+var _free_cells: Dictionary[Vector3i, bool] = {}  # what _free found, while _grow runs
 
 
 func _ready() -> void:
@@ -79,29 +93,30 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var target := _target()
-	if _seen():
-		return
-	_shown = move_toward(_shown, target, grow_speed * delta / maxi(segments, 1))
-	_show()
-	if is_equal_approx(_shown, target):
+	var camera := get_viewport().get_camera_3d()
+	var grown := true
+	for pipe: Array in _pipes:
+		var share: float = pipe[4]
+		if share < target and not _next_seen(pipe, camera):
+			share = move_toward(share, target, lerpf(grow_speed, late_grow_speed, share) * delta / maxi(segments, 1))
+			_show_share(pipe, share)
+		grown = grown and is_equal_approx(share, target)
+	if grown:
 		set_process(false)
 
 
-## True while any part of the space the pipes take is in the current camera's view.
-func _seen() -> bool:
-	var camera := get_viewport().get_camera_3d()
+## True while the next segment of [param pipe] is in [param camera]'s view.
+func _next_seen(pipe: Array, camera: Camera3D) -> bool:
 	if camera == null:
 		return false
-	var space := global_transform * bounds.merge(AABB(Vector3.ONE * -cell, Vector3.ONE * cell * 2.0)).grow(joint_radius)
-	for plane: Plane in camera.get_frustum():
-		var outside := true
-		for i: int in 8:
-			if not plane.is_point_over(space.get_endpoint(i)):
-				outside = false
-				break
-		if outside:
-			return false
-	return true
+	var path: Array[Vector3i] = pipe[3]
+	var next := (pipe[0] as MultiMesh).visible_instance_count
+	if next + 1 >= path.size():
+		return false
+	for k: int in [next, next + 1]:
+		if camera.is_position_in_frustum(global_transform * (Vector3(path[k]) * cell)):
+			return true
+	return false
 
 
 ## The share of the pipes, 0 to 1, that shows at [param at_warp] in stage 1.
@@ -124,9 +139,12 @@ func _target() -> float:
 func _retarget() -> void:
 	if not is_node_ready() or Engine.is_editor_hint():
 		return
-	_shown = minf(_shown, _target())
-	_show()
-	set_process(not is_equal_approx(_shown, _target()))
+	var target := _target()
+	var growing := false
+	for pipe: Array in _pipes:
+		_show_share(pipe, minf(pipe[4], target))
+		growing = growing or not is_equal_approx(pipe[4], target)
+	set_process(growing)
 
 
 ## The segments that show now, over all pipes.
@@ -176,16 +194,19 @@ func _rebuild() -> void:
 			_add_multimesh(segment_mesh, segment_transforms, pipe_material),
 			_add_multimesh(joint_mesh, joint_transforms, pipe_material),
 			joint_at,
+			path,
+			0.0,
 		])
 	if Engine.is_editor_hint():
-		_shown = amount(preview_warp)
-		_show()
+		_show_all(amount(preview_warp))
 	else:
 		_retarget()
 
 
 ## The cells of each pipe, in growing order. The pipes grow in turns, so none takes all the room.
 func _grow() -> Array[Array]:
+	_collect_clear()
+	_free_cells.clear()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = pipe_seed
 	var taken: Dictionary[Vector3i, bool] = {}
@@ -207,7 +228,7 @@ func _grow() -> Array[Array]:
 			if path.size() <= step:
 				continue  # ran into a dead end, or never started
 			var here: Vector3i = path[-1]
-			var inside := bounds.has_point(Vector3(here) * cell)
+			var inside := _free(here)
 			var options: Array[Vector3i] = []
 			for dir: Vector3i in DIRS:
 				if dir != dirs[i] and dir != -dirs[i]:
@@ -219,7 +240,8 @@ func _grow() -> Array[Array]:
 				options.push_back(dirs[i])
 			for dir: Vector3i in options:
 				var next := here + dir
-				var allowed := bounds.has_point(Vector3(next) * cell) or (not inside and dir == Vector3i.FORWARD)
+				var leaving := not inside and dir == Vector3i.FORWARD and next.z * cell >= bounds.position.z
+				var allowed := leaving or _free(next)
 				if allowed and not taken.has(next):
 					taken[next] = true
 					path.append(next)
@@ -228,13 +250,99 @@ func _grow() -> Array[Array]:
 	return paths
 
 
-func _show() -> void:
+## True when a pipe may turn at [param at]: inside [member bounds], clear of [member solids], and in
+## front of no hotspot as a clear view sees it.
+func _free(at: Vector3i) -> bool:
+	if not _free_cells.has(at):
+		_free_cells[at] = _clear_of_all(at)
+	return _free_cells[at]
+
+
+func _clear_of_all(at: Vector3i) -> bool:
+	if not bounds.has_point(Vector3(at) * cell):
+		return false
+	var half := Vector3.ONE * (cell * 0.5 + joint_radius)
+	var box := global_transform * AABB(Vector3(at) * cell - half, half * 2.0)
+	for solid: AABB in _solid_boxes:
+		if solid.intersects(box):
+			return false
+	for view: Dictionary in _clear:
+		var seen := _project(view.eye, box)
+		if seen.is_empty():
+			continue
+		for hotspot: Dictionary in view.hotspots:
+			if seen.near < hotspot.far and (seen.rect as Rect2).intersects(hotspot.rect):
+				return false
+	return true
+
+
+func _collect_clear() -> void:
+	_clear.clear()
+	_solid_boxes.clear()
+	var hotspots: Array[AABB] = []
+	if get_parent() != null:
+		for area: Node in get_parent().find_children("*", "Area3D", true, false):
+			if area is Hotspot:
+				var size: Vector3 = area.get(&"size")
+				hotspots.append((area as Node3D).global_transform * AABB(-size * 0.5, size))
+	for view: Node3D in clear_views:
+		if view == null:
+			push_error("Pipedream %s: a clear view is empty" % get_path())
+			continue
+		var eye := view.global_transform.affine_inverse()
+		var in_front: Array[Dictionary] = []
+		for hotspot: AABB in hotspots:
+			var seen := _project(eye, hotspot)
+			if not seen.is_empty():
+				in_front.append(seen)
+		_clear.append({"eye": eye, "hotspots": in_front})
+	for solid: Node3D in solids:
+		if solid == null:
+			push_error("Pipedream %s: a solid is empty" % get_path())
+			continue
+		var merged := AABB()
+		var meshes := solid.find_children("*", "GeometryInstance3D", true, false)
+		if solid is GeometryInstance3D:
+			meshes.append(solid)
+		for mesh: GeometryInstance3D in meshes:
+			var box := mesh.global_transform * mesh.get_aabb()
+			merged = box if merged.size == Vector3.ZERO else merged.merge(box)
+		if merged.size == Vector3.ZERO:
+			push_error("Pipedream %s: the solid %s has no mesh" % [get_path(), solid.get_path()])
+			continue
+		_solid_boxes.append(merged)
+
+
+## [param box] as [param eye] sees it: {rect: its corners on a screen one metre ahead, near and far:
+## its nearest and farthest depth}. Empty when any corner is behind the eye.
+static func _project(eye: Transform3D, box: AABB) -> Dictionary:
+	var rect := Rect2()
+	var near := INF
+	var far := 0.0
+	for i: int in 8:
+		var local := eye * box.get_endpoint(i)
+		var depth := -local.z
+		if depth < 0.05:
+			return {}
+		var point := Vector2(local.x, local.y) / depth
+		rect = Rect2(point, Vector2.ZERO) if i == 0 else rect.expand(point)
+		near = minf(near, depth)
+		far = maxf(far, depth)
+	return {"rect": rect, "near": near, "far": far}
+
+
+func _show_all(share: float) -> void:
 	for pipe: Array in _pipes:
-		var segment_multimesh: MultiMesh = pipe[0]
-		var joint_at: Array[int] = pipe[2]
-		var count := roundi(_shown * segment_multimesh.instance_count)
-		segment_multimesh.visible_instance_count = count
-		(pipe[1] as MultiMesh).visible_instance_count = joint_at.bsearch(count, false)
+		_show_share(pipe, share)
+
+
+func _show_share(pipe: Array, share: float) -> void:
+	pipe[4] = share
+	var segment_multimesh: MultiMesh = pipe[0]
+	var joint_at: Array[int] = pipe[2]
+	var count := roundi(share * segment_multimesh.instance_count)
+	segment_multimesh.visible_instance_count = count
+	(pipe[1] as MultiMesh).visible_instance_count = joint_at.bsearch(count, false)
 
 
 func _add_multimesh(mesh: Mesh, transforms: Array[Transform3D], pipe_material: Material) -> MultiMesh:

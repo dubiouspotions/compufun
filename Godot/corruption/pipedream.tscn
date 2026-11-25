@@ -6,6 +6,6 @@
 script = ExtResource("1_sign")
 title = "The Pipedream grows in the corner"
 timing = 1
-description = "Win95 Pipes grow out of the corner right of the work desk, but only while that corner is off screen. 1: as many as the day's warp allows (all at warp 1). 2: all of them."
-hint = "Look away from the Right View for a while, then back at the corner right of the work desk."
+description = "Win95 Pipes grow out of the trash can by the work desk, only while the player can't see where they grow next. They peek out first, then spread fast over the Right View, and late into the edge of the Main View, but never in front of a thing the player clicks. While they show, the trash can doesn't open its close-up. 1: as many as the day's warp allows (all at warp 1). 2: all of them."
+hint = "Look away from the Right View for a while, then back at the trash can by the work desk."
 stages = 2

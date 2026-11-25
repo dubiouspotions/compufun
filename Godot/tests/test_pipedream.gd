@@ -14,24 +14,24 @@ func run() -> void:
 	check("all pipes on day 7", pipes.amount(_warp(7)), 1.0)
 
 	pipes.warp = _warp(7)
-	pipes.call("_process", 1000.0)
+	pipes.call("_process", 100000.0)
 	check("no pipes while the sign is off", pipes.shown_segments(), 0)
 	pipes.stage = 1
-	pipes.call("_process", 1000.0)
+	pipes.call("_process", 100000.0)
 	var all: int = pipes.shown_segments()
 	check("day 7 grows many segments", all > 100, true)
 	pipes.warp = _warp(3)
-	pipes.call("_process", 1000.0)
+	pipes.call("_process", 100000.0)
 	var day_3: int = pipes.shown_segments()
 	check("day 3 shows a part", day_3 > 0 and day_3 < all, true)
 	pipes.stage = 2
-	pipes.call("_process", 1000.0)
+	pipes.call("_process", 100000.0)
 	check("stage 2 spreads to all of them on day 3", pipes.shown_segments(), all)
 	pipes.stage = 1
 
 	twin.stage = 1
 	twin.warp = _warp(3)
-	twin.call("_process", 1000.0)
+	twin.call("_process", 100000.0)
 	check("the same seed grows the same pipes", twin.shown_segments(), day_3)
 	var a: MultiMesh = (pipes.get_child(0) as MultiMeshInstance3D).multimesh
 	var b: MultiMesh = (twin.get_child(0) as MultiMeshInstance3D).multimesh
@@ -45,10 +45,10 @@ func run() -> void:
 	camera.make_current()
 	camera.look_at_from_position(pipes.global_position + Vector3(0.5, 0.5, 2.0), pipes.global_position + Vector3(0.5, 0.5, -1.0))
 	pipes.stage = 1
-	pipes.call("_process", 1000.0)
+	pipes.call("_process", 100000.0)
 	check("no growth while the camera looks at them", pipes.shown_segments(), 0)
 	camera.look_at_from_position(pipes.global_position + Vector3(0.5, 0.5, 2.0), pipes.global_position + Vector3(0.5, 0.5, 5.0))
-	pipes.call("_process", 1000.0)
+	pipes.call("_process", 100000.0)
 	check("they grow once it looks away", pipes.shown_segments(), day_3)
 
 	game.start_day(game.day_of(6))

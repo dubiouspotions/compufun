@@ -18,6 +18,14 @@ const GROUP: StringName = &"trash_can"
 @export var outline: ClickableOutline = preload("res://rooms/clickable_outline.tres")
 ## The close-up that looks down into the can.
 @export var look_view: StringName = &"Trash"
+## Off, a click with nothing to throw does nothing, and the can takes a click only to throw something
+## in, as in [member look_view]. The corruption sign pipedream turns it off while its pipes grow out of
+## the can.
+@export var looks_in: bool = true:
+	set(value):
+		looks_in = value
+		if is_node_ready():
+			_sync()
 ## The longest side of a part in the can, in metres. A bigger part shows smaller.
 @export var shown_size: float = 0.2
 ## The height of the bottom part above the can's floor, and how far each next one lies above it.
@@ -72,7 +80,8 @@ func throw_printout() -> bool:
 func _on_clicked(_clicked: Hotspot) -> void:
 	var thrown := Game.hand
 	if not can_throw():
-		Game.go_to_view(look_view)
+		if looks_in:
+			Game.go_to_view(look_view)
 	elif thrown == null:
 		throw_printout()
 	elif Game.trash_part() and thrown.part.trash_sound != null:
@@ -87,7 +96,7 @@ func _set_hovered(on: bool) -> void:
 func _sync() -> void:
 	var throws := can_throw()
 	var looking := Game.view == look_view
-	_hotspot.set_enabled(throws or not looking)
+	_hotspot.set_enabled(throws or (looks_in and not looking))
 	_hovered = _hovered and _hotspot.input_ray_pickable
 	var pulses := throws and not looking
 	_outline.visible = not looking and (throws or _hovered)
