@@ -1,13 +1,17 @@
 extends CorruptionSign
 ## A jump scare, armed at stage 1: the next time the player enters the Storage view, the lights go
 ## out, a life-size Clippy flashes up in the dark for a blink or two, and the lights come back
-## without him. Then stage 2, done. A player who leaves the Storage view before the lights go out
-## keeps it armed; one who leaves in the dark ends it.
+## without him. Then stage 2, done. From the moment the player enters, they can't move, and the turn
+## buttons hide, until the lights are back.
 
 const STORAGE_VIEW: StringName = &"Storage"
 
 ## The seconds between entering the Storage view and the lights going out: the camera's turn.
 @export var arrive_seconds: float = 0.6
+## How the lights flicker out: seconds dark, then lit, then dark and so on, before they stay out.
+@export var flicker_seconds: PackedFloat32Array = [0.05, 0.08, 0.04, 0.14, 0.06, 0.05]
+## How the lights flicker back: seconds lit, then dark, then lit and so on, before they stay on.
+@export var return_flicker_seconds: PackedFloat32Array = [0.03, 0.05, 0.02, 0.07, 0.03, 0.03]
 ## The seconds of dark before the first flash.
 @export var dark_seconds: float = 0.8
 ## The times that Clippy flashes up.
@@ -17,7 +21,7 @@ const STORAGE_VIEW: StringName = &"Storage"
 ## The seconds of dark between two flashes.
 @export var between_seconds: float = 0.15
 ## The seconds of dark after the last flash, before the lights come back.
-@export var after_seconds: float = 0.7
+@export var after_seconds: float = 0.4
 
 var _scare: Tween
 var _dark: bool = false
@@ -35,6 +39,15 @@ func _ready() -> void:
 	super()
 
 
+# No turns, clicks or swipes while the scare runs.
+func _input(event: InputEvent) -> void:
+	if _scare == null or not _scare.is_running():
+		return
+	var turn := event.is_action(&"turn_left") or event.is_action(&"turn_right") or event.is_action(&"look_up") or event.is_action(&"go_back")
+	if turn or event is InputEventMouseButton or event is InputEventScreenTouch or event is InputEventScreenDrag:
+		get_viewport().set_input_as_handled()
+
+
 func _apply(shown_stage: int) -> void:
 	var running := _scare != null and _scare.is_running()
 	if shown_stage != 1:
@@ -50,8 +63,12 @@ func _apply(shown_stage: int) -> void:
 
 
 func _start() -> void:
+	_hold(true)
 	_scare = create_tween()
 	_scare.tween_interval(arrive_seconds)
+	for i: int in flicker_seconds.size():
+		_scare.tween_callback(_show.bind(i % 2 == 0, false))
+		_scare.tween_interval(flicker_seconds[i])
 	_scare.tween_callback(_show.bind(true, false))
 	_scare.tween_interval(dark_seconds)
 	for flash: int in flashes:
@@ -61,19 +78,34 @@ func _start() -> void:
 		_scare.tween_interval(flash_seconds)
 		_scare.tween_callback(_show.bind(true, false))
 	_scare.tween_interval(after_seconds)
+	for i: int in return_flicker_seconds.size():
+		_scare.tween_callback(_show.bind(i % 2 == 1, false))
+		_scare.tween_interval(return_flicker_seconds[i])
 	_scare.tween_callback(_finish)
 
 
 func _finish() -> void:
 	_scare = null  # done: the stage change below must not kill the tween that calls this
 	_show(false, false)
+	_hold(false)
 	set_stage(2)
 
 
 func _stop() -> void:
 	if _scare != null:
 		_scare.kill()
+		_hold(false)
 	_show(false, false)
+
+
+# Hides the turn buttons while [param on].
+func _hold(on: bool) -> void:
+	var ui := get_tree().get_first_node_in_group(&"ui_layer")
+	var nav := ui.get_node_or_null("%ViewNav") as Control if ui != null else null
+	if nav == null:
+		push_error("clippy_jumpscare: no %ViewNav under the group ui_layer")
+		return
+	nav.visible = not on
 
 
 func _show(dark: bool, clippy: bool) -> void:
