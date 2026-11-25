@@ -43,6 +43,11 @@ running computer is connected; CompuFunDB: always):
   the 3D screen's uniforms: it warms up with the picture, goes with the collapse and the lost signal,
   and is brighter with a computer's picture (`crt_picture`) than with the NO SIGNAL box. It goes
   dark with the degauss's black (`crt_blank`).
+- **The bezel's light:** `ScreenLight`, a small shadowless OmniLight3D just in front of the screen,
+  lights the monitor's own bezel and recess, which `Glow` points away from. It follows the tube like
+  `Glow`, and takes the picture's average colour and brightness: `CrtMonitor` renders the screen
+  buffer's average into a 1 x 1 viewport (`shaders/screen_average.gdshader`) and reads it back
+  every `average_seconds`, because each read waits for the GPU.
 - **Magnetised mask:** while the screen shows a computer, blotches of wrong colour build up at
   `magnetize_per_second` times the day's warp, up to the warp, so Cambion magnetises the screen as
   the week goes on. The Degauss button on the bench screen's right bezel (`Bench.degauss_pressed`)

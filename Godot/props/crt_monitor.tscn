@@ -77,6 +77,15 @@ light_specular = 0.2
 spot_range = 1.4
 spot_angle = 70.0
 
+[node name="ScreenLight" type="OmniLight3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.255, 0.22)
+visible = false
+light_energy = 0.0
+light_specular = 0.0
+omni_range = 0.45
+omni_attenuation = 1.5
+
 [node name="Hum" type="AudioStreamPlayer3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, -0.13)
