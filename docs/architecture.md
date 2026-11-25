@@ -26,7 +26,7 @@ Godot/               the Godot project: everything the game loads
   customers/         one .tres per customer, customer_body.tscn, photo_relief.gd (the upper body from the portrait), job.gd (one computer on the counter)
   customers/<name>/  the pictures and texts in that customer's files, such as pierre/castle_01.png, activist_guy/mirc_logs/ (his chat logs, docs/mirc.md) and <name>/documents/ (Office documents: .doc files hold RTF)
   voices/            one .wav per customer line, rendered by Chimera; voices.gd names and renders them
-  voices/persons/    voice persons (VoicePerson), one per people/<name>/: who speaks, a body with its build and timbre; the bottom layer
+  voices/persons/    voice persons (VoicePerson), one per people/<name>/ and Clippy's (the storage room scare): who speaks, a body with its build and timbre; the bottom layer
   voices/moods/      the voice of each mood (VoiceMood): speed, pitch, pitch swing and more; the middle layer
   voices/effects/    voice effects (VoiceEffect): a base, an alternate and a curve; the top layer
   voices/live/       the live voice: live_voice.js (web), the dictionary; tools/build-voice.sh adds the wasm, the libraries and the .gdextension

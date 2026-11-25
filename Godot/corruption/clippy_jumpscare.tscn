@@ -2,14 +2,32 @@
 
 [ext_resource type="Script" path="res://corruption/clippy_jumpscare.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://corruption/clippy_jumpscare/clippy.png" id="2_clippy"]
+[ext_resource type="Resource" path="res://voices/persons/clippy.tres" id="3_voice"]
+[ext_resource type="Script" path="res://customers/dialogue_line.gd" id="4_line"]
+[ext_resource type="Resource" path="res://voices/effects/whisper.tres" id="5_whisper"]
+[ext_resource type="Resource" path="res://voices/effects/shout.tres" id="6_shout"]
+[ext_resource type="Script" path="res://voices/voice_player.gd" id="7_player"]
+
+[sub_resource type="Resource" id="Resource_whisper"]
+script = ExtResource("4_line")
+text = "do you need"
+effect = ExtResource("5_whisper")
+
+[sub_resource type="Resource" id="Resource_shout"]
+script = ExtResource("4_line")
+text = "HELP?"
+effect = ExtResource("6_shout")
 
 [node name="ClippyJumpscare" type="Node3D"]
 script = ExtResource("1_script")
 title = "Clippy in the dark storage room"
 timing = 1
-description = "On the next visit to the Storage View the lights go out, blinks on with a life-size silhouette of Clippy and off and then turns back on; then done (2)."
+description = "On the next visit to the Storage View the lights go out and a voice whispers \"do you need\"; a life-size silhouette of Clippy blinks on, shouting \"HELP?\", and off, and the lights come back; then done (2)."
 hint = "Go to the Storage View. Then stage 2 (done)."
 stages = 2
+voice = ExtResource("3_voice")
+whisper = SubResource("Resource_whisper")
+shout = SubResource("Resource_shout")
 
 [node name="Clippy" type="Sprite3D" parent="."]
 unique_name_in_owner = true
@@ -33,3 +51,9 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0.94)
+
+[node name="Voice" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+script = ExtResource("7_player")
+rate_jitter = 0.0
+pitch_jitter = 0.0

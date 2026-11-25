@@ -12,8 +12,10 @@ const STORAGE_VIEW: StringName = &"Storage"
 @export var flicker_seconds: PackedFloat32Array = [0.05, 0.08, 0.04, 0.14, 0.06, 0.05]
 ## How the lights flicker back: seconds lit, then dark, then lit and so on, before they stay on.
 @export var return_flicker_seconds: PackedFloat32Array = [0.03, 0.05, 0.02, 0.07, 0.03, 0.03]
-## The seconds of dark before the first flash.
-@export var dark_seconds: float = 0.8
+## The seconds of dark before the whisper.
+@export var whisper_after_seconds: float = 0.8
+## The seconds of dark before the first flash, from the start of the whisper.
+@export var dark_seconds: float = 1.8
 ## The times that Clippy flashes up.
 @export var flashes: int = 2
 ## The seconds that each flash shows Clippy.
@@ -22,12 +24,19 @@ const STORAGE_VIEW: StringName = &"Storage"
 @export var between_seconds: float = 0.15
 ## The seconds of dark after the last flash, before the lights come back.
 @export var after_seconds: float = 0.4
+## Who speaks: Clippy's voice.
+@export var voice: VoicePerson
+## Said as the lights go out, with its own effect.
+@export var whisper: DialogueLine
+## Said as Clippy first flashes up, with its own effect.
+@export var shout: DialogueLine
 
 var _scare: Tween
 var _dark: bool = false
 
 @onready var _clippy: Node3D = %Clippy
 @onready var _lights_out: CanvasItem = %LightsOut
+@onready var _voice: VoicePlayer = %Voice
 
 
 func _ready() -> void:
@@ -36,6 +45,7 @@ func _ready() -> void:
 		push_error("clippy_jumpscare: no Node3D in the group storage_room")
 	else:
 		_clippy.global_transform = room.global_transform * _clippy.transform  # his scene transform is in the room's space
+	_voice.bus = &"Master"  # the Voice bus goes through the Shop bus, which pans the shop to the right while in storage
 	super()
 
 
@@ -70,11 +80,15 @@ func _start() -> void:
 		_scare.tween_callback(_show.bind(i % 2 == 0, false))
 		_scare.tween_interval(flicker_seconds[i])
 	_scare.tween_callback(_show.bind(true, false))
+	_scare.tween_interval(whisper_after_seconds)
+	_scare.tween_callback(_say.bind(whisper))
 	_scare.tween_interval(dark_seconds)
 	for flash: int in flashes:
 		if flash > 0:
 			_scare.tween_interval(between_seconds)
 		_scare.tween_callback(_show.bind(false, true))
+		if flash == 0:
+			_scare.tween_callback(_say.bind(shout))
 		_scare.tween_interval(flash_seconds)
 		_scare.tween_callback(_show.bind(true, false))
 	_scare.tween_interval(after_seconds)
@@ -91,9 +105,14 @@ func _finish() -> void:
 	set_stage(2)
 
 
+func _say(line: DialogueLine) -> void:
+	_voice.say(line, voice, line.effect)
+
+
 func _stop() -> void:
 	if _scare != null:
 		_scare.kill()
+		_voice.hush()  # cut short; a finished scare lets the shout ring out
 		_hold(false)
 	_show(false, false)
 
