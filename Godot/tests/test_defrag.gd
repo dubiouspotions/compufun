@@ -6,7 +6,8 @@ extends "res://tests/test.gd"
 ## paused, it stops. Switched off, it keeps its start: it finishes as the computer comes on after the
 ## finish, or else the next boot reopens its window, running; also after End Task on the window, a
 ## Shut Down and a restart, but not after Pause. Its window shows the share of the game's time from the
-## start to the finish, and estimates the finish; a restore keeps the run. The case churns meanwhile.
+## start to the finish, and estimates the finish; a run that is due at once plays as the short run. A restore
+## keeps the run. The case churns meanwhile.
 
 const COMPUTER_STATE_PATH := "res://win95/computer_state.gd"  # loaded at run time: it names the Game autoload
 const DEFRAG_PATH := "res://win95/defrag.tscn"
@@ -110,6 +111,12 @@ func run() -> void:
 	setup.fragmented = true
 	window.get_node("%Start").pressed.emit()
 	check("the skater's run started after day 5's afternoon finishes at once", [setup.defrag_finish_day, setup.defragmenting, setup.fragmented], [5, false, false])
+	progress = window.get_node("%Progress")
+	check("its window still plays the run, from the start", [progress.value, window.get_node("%Start").text, window.get_node("%Status").text], [0.0, "Pause", "Defragmenting file system..."])
+	await create_timer(float(window.get("run_seconds")) / 2.0).timeout
+	check("about halfway after half the run's seconds", absf(progress.value - 50.0) < 2.0, true)
+	await create_timer(float(window.get("run_seconds")) / 2.0 + 0.1).timeout
+	check("then complete", [progress.value, window.get_node("%Status").text], [100.0, "Defragmentation of drive C is complete."])
 	setup.defrag_finish_day = 0
 	setup.fragmented = true
 	window.get_node("%Start").pressed.emit()

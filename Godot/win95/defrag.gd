@@ -66,7 +66,10 @@ func _on_start_pressed() -> void:
 		if _computer.setup.defragmenting:
 			_computer.stop_defrag()
 		else:
+			_watching = false
+			_done = 0.0
 			_computer.start_defrag()
+			_running = not _fragmented()  # a run that is due already finishes at once: show it as the short run
 		_sync_computer()
 		return
 	_running = not _running
