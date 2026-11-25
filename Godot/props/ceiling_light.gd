@@ -23,8 +23,13 @@ const GROUP: StringName = &"ceiling_lights"
 @export_range(0.0, 2.0, 0.01, "suffix:s") var blink_delay: float = 0.6
 ## How long the light stays dark in [method cover] before it stutters back on.
 @export_range(0.05, 2.0, 0.01, "suffix:s") var cover_seconds: float = 0.3
+## Optional: a shadowless light that stands in for this light bouncing off the room onto faces that
+## turn away from the panel, such as the bench monitor's front. It dims, flickers and switches with
+## the panel, at its own scene energy when the panel is at full.
+@export var bounce: Light3D
 
 var _energy: float
+var _bounce_energy: float
 var _panel_material: StandardMaterial3D
 var _flicker: Tween
 var _lit: bool = false
@@ -53,6 +58,8 @@ static func cover(tree: SceneTree, in_the_dark: Callable) -> void:
 func _ready() -> void:
 	add_to_group(GROUP)
 	_energy = _light.light_energy
+	if bounce != null:
+		_bounce_energy = bounce.light_energy
 	var material := _panel.material_override as StandardMaterial3D
 	if material == null:
 		push_error("%s: Panel needs a StandardMaterial3D material_override, not %s" % [get_path(), _panel.material_override])
@@ -136,6 +143,9 @@ func _stutter(seconds: float, delay: float) -> void:
 func _set_level(level: float) -> void:
 	_light.light_energy = _energy * level
 	_light.visible = level > 0.0  # an off light skips its shadow pass
+	if bounce != null:
+		bounce.light_energy = _bounce_energy * level
+		bounce.visible = level > 0.0
 	var glow := lerpf(0.35, 1.0, level)
 	var c := _light.light_color
 	_panel_material.albedo_color = Color(c.r * glow, c.g * glow, c.b * glow)
