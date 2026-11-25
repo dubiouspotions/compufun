@@ -24,6 +24,8 @@ signal swiped(direction: Vector2i)
 
 ## The close-up of the computer in focus.
 const WORKVIEW: StringName = &"Workview"
+## The storage room, where the part boxes are.
+const STORAGE: StringName = &"Storage"
 
 ## The seconds that the camera takes to move to another view.
 @export var turn_seconds: float = 0.35
@@ -154,6 +156,7 @@ var _read_weight: float = 0.0  # 0 on the computer, 1 up close
 var _read_open: bool = false
 var _read_tween: Tween
 var _view_hotspots: Array[Hotspot] = []  # GO_TO_VIEW hotspots, off in their own view so the back strip and the cursor see past them
+var _part_hotspots: Array[Hotspot] = []  # TAKE_PART hotspots, on only in the storage room: from the shop the ray goes through its wall
 var _phone_hovered: bool = false
 var _phone_outline: StandardMaterial3D
 var _phone_pulse_outline: StandardMaterial3D
@@ -167,6 +170,8 @@ func _ready() -> void:
 			hotspot.clicked.connect(_on_hotspot_clicked)
 			if hotspot.action == Hotspot.Action.GO_TO_VIEW and hotspot.view != &"":
 				_view_hotspots.append(hotspot)  # a hotspot without a view, like the trash can's, enables itself
+			elif hotspot.action == Hotspot.Action.TAKE_PART:
+				_part_hotspots.append(hotspot)
 	_job_slots.job_clicked.connect(work_on)
 	_job_slots.computer_moved.connect(_on_computer_moved)
 	_job_slots.power_clicked.connect(func(job: Job) -> void: Game.set_powered(job, not job.powered))
@@ -554,6 +559,8 @@ func _sync() -> void:
 	_job_slots.show_jobs(Game.jobs, jumped)
 	for hotspot: Hotspot in _view_hotspots:
 		hotspot.set_enabled(hotspot.view != Game.view)
+	for hotspot: Hotspot in _part_hotspots:
+		hotspot.set_enabled(Game.view == STORAGE)
 	if _read_open and pinned_post_it() != _read_post_it:
 		_read(false)  # the player turned away or the computer left focus
 	_play_changes(jumped)
