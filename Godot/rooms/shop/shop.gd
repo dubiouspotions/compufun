@@ -165,8 +165,8 @@ func _ready() -> void:
 		var hotspot := node as Hotspot
 		if hotspot != null:
 			hotspot.clicked.connect(_on_hotspot_clicked)
-			if hotspot.action == Hotspot.Action.GO_TO_VIEW:
-				_view_hotspots.append(hotspot)
+			if hotspot.action == Hotspot.Action.GO_TO_VIEW and hotspot.view != &"":
+				_view_hotspots.append(hotspot)  # a hotspot without a view, like the trash can's, enables itself
 	_job_slots.job_clicked.connect(work_on)
 	_job_slots.computer_moved.connect(_on_computer_moved)
 	_job_slots.power_clicked.connect(func(job: Job) -> void: Game.set_powered(job, not job.powered))
