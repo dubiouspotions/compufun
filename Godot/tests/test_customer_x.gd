@@ -1,7 +1,8 @@
 extends "res://tests/test.gd"
-## The corruption sign customer_x floats its [x] over the right side of its target customer's head (the
+## The corruption sign customer_x floats its [x] above and right of its target customer's head (the
 ## young entrepreneur) wherever the camera sees him, also as he walks in, and only while
-## sign_customer_x is set; never over the dialogue portrait. A click sends him away for good.
+## sign_customer_x is set; never over his face or the dialogue portrait. It keeps its size beside the
+## head at any distance. A click sends him away for good.
 
 const GAME := preload("res://game.gd")
 
@@ -9,6 +10,7 @@ var _shop: Node3D  # untyped: Shop names Game
 var _world: SubViewportContainer
 var _close: Button
 var _offset: Vector2
+var _body: Node3D
 
 
 func run() -> void:
@@ -26,6 +28,7 @@ func run() -> void:
 	check("its target is the young entrepreneur", sign.get("target"), entrepreneur)
 	_close = sign.get_node("%Close")
 	_offset = sign.get(&"offset")
+	_body = main.get_tree().get_first_node_in_group(&"customer_bodies")
 
 	game.set_flag(&"sign_customer_x")
 	game.start_day(make_day(6, [[skater, dust], [entrepreneur, dust]]))
@@ -54,30 +57,49 @@ func run() -> void:
 
 
 # Plays the visitor's walk in to the counter; for each frame, whether the [x] showed. Checks that it
-# showed above and right of the head, and only over the target while the camera saw his head. The
-# [x] follows a frame late, so the frame where the head appears or hides doesn't count.
+# showed only over the target while the camera saw his head, clear of his face, and as wide beside the
+# head near and far. The [x] follows a frame late, so the frame where the head appears or hides
+# doesn't count.
 func _walk_in() -> Array[bool]:
 	var shown: Array[bool] = []
-	var misplaced := 0
+	var on_face := 0
 	var mismatched := 0
 	var was_expected := false
+	var ratios: Array[float] = []
+	var widths: Array[float] = []
 	var target: Customer = load("res://customers/young_entrepreneur.tres")
+	# The face's box from the middle of the head, in metres along the camera's right and up.
+	var head_width: float = _body.get(&"relief_head_width")
+	var top: float = float(_body.get(&"relief_top")) - float(_shop.get(&"head_height"))
+	var face := Rect2(-head_width / 2.0, top - 1.4 * head_width, head_width, 1.4 * head_width)
 	while game.visitor_state == GAME.VisitorState.WALKING_IN:
 		await process_frame
 		shown.append(_close.visible)
-		var head: Vector2 = _shop.call(&"visitor_head_point", Vector2.ZERO)
 		var at: Vector2 = _shop.call(&"visitor_head_point", _offset)
 		var expected: bool = game.visitor == target and at.is_finite() and Rect2(Vector2.ZERO, (_shop.get_viewport() as Viewport).get_visible_rect().size).has_point(at)
 		if expected == was_expected and _close.visible != expected:
 			mismatched += 1
 		was_expected = expected
-		var middle := _close.position + _close.size * _close.scale * 0.5
-		var head_ui := _world.get_global_transform() * (head * float(_world.stretch_shrink))
-		if _close.visible and head.is_finite() and not (middle.x > head_ui.x and middle.y < head_ui.y):
-			misplaced += 1
-	check("above and right of the head", misplaced, 0)
+		if not _close.visible or not expected:
+			continue
+		var face_ui := Rect2(_ui(face.position), Vector2.ZERO).expand(_ui(face.end)).expand(_ui(Vector2(face.position.x, face.end.y))).expand(_ui(Vector2(face.end.x, face.position.y)))
+		if Rect2(_close.position, _close.size * _close.scale).intersects(face_ui):
+			on_face += 1
+		var head_ui := _ui(Vector2(face.end.x, 0.0)).distance_to(_ui(Vector2(face.position.x, 0.0)))
+		widths.append(_close.size.x * _close.scale.x)
+		ratios.append(widths.back() / head_ui)
+	check("never over his face", on_face, 0)
 	check("shown while the camera sees his head", mismatched, 0)
+	if not ratios.is_empty():
+		check("smaller far away than at the counter", widths.min() < widths.back() * 0.8, true)
+		check("as wide beside the head near and far", ratios.max() / ratios.min() < 1.05, true)
 	return shown
+
+
+# The point [param offset] from the middle of the visitor's head, in UI pixels.
+func _ui(offset: Vector2) -> Vector2:
+	var at: Vector2 = _shop.call(&"visitor_head_point", offset)
+	return _world.get_global_transform() * (at * float(_world.stretch_shrink))
 
 
 func _frames(count: int) -> void:

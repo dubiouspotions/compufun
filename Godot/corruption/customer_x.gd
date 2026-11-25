@@ -1,14 +1,18 @@
 extends CorruptionSign
-## The close button of a Win95 window, the [x], floats over the right side of [member target]'s head
-## in the shop wherever the camera sees it: as they walk in, talk, wait and walk out. A click sends
-## them away for good ([method Game.dismiss_visitor]).
+## The close button of a Win95 window, the [x], floats above and right of [member target]'s head in
+## the shop wherever the camera sees it: as they walk in, talk, wait and walk out. It is sized as a
+## thing in the world, so it keeps its size beside the head at any distance. A click sends them away
+## for good ([method Game.dismiss_visitor]).
 
 ## The one customer whom the [x] shows over; null shows it over nobody.
 @export var target: Customer
 
 ## Where the middle of the [x] floats, from the middle of the customer's head, in metres along the
-## camera's right and up.
-@export var offset: Vector2 = Vector2(0.18, 0.12)
+## camera's right and up. Clear of the face: the head is about 0.18 m wide, and its top is about
+## 0.2 m above its middle.
+@export var offset: Vector2 = Vector2(0.16, 0.26)
+## How wide the [x] is, in metres in the world; its height follows its picture.
+@export var width: float = 0.12
 
 ## How long after a click the next customer comes in, in seconds of open shop.
 @export var next_customer_seconds: float = 6.0
@@ -65,11 +69,13 @@ func _follow() -> void:
 	if not is_processing() or not _shop.is_node_ready():
 		return
 	var head := _shop.visitor_head_point(offset)
-	var on_screen := head.is_finite() and Rect2(Vector2.ZERO, _shop.get_viewport().get_visible_rect().size).has_point(head)
+	var right := _shop.visitor_head_point(offset + Vector2(width, 0.0))
+	var on_screen := head.is_finite() and right.is_finite() and Rect2(Vector2.ZERO, _shop.get_viewport().get_visible_rect().size).has_point(head)
 	_close.visible = on_screen
 	if on_screen:
-		var at := _world.get_global_transform() * (head * float(_world.stretch_shrink))
-		_close.position = at - _close.size * _close.scale * 0.5
+		var shrink := float(_world.stretch_shrink)
+		_close.scale = Vector2.ONE * head.distance_to(right) * shrink / _close.size.x
+		_close.position = _world.get_global_transform() * (head * shrink) - _close.size * _close.scale * 0.5
 
 
 func _find_shop() -> Shop:
