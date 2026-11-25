@@ -82,9 +82,18 @@ func close() -> void:
 func _process(delta: float) -> void:
 	_done = minf(1.0, _done + delta / maxf(copy_seconds, 0.001))
 	_progress.value = _done * 100.0
-	if _done < 1.0:
+
+
+# Copies over [member copy_seconds], with the drive seeking, while _process fills the bar.
+func _copy() -> void:
+	var copied := await read_disk(copy_seconds)
+	if is_queued_for_deletion() or _page != &"COPYING":
 		return
 	set_process(false)
+	_progress.value = 100.0
+	if not copied:
+		_show(&"FAILED")
+		return
 	var source := _computer.setup.floppy_files.filter(func(file: Win95File) -> bool: return file.name.nocasecmp_to(source_name) == 0)
 	if source.is_empty():
 		_show(&"FAILED")
@@ -110,6 +119,7 @@ func _show(page_name: StringName) -> void:
 			_done = 0.0
 			_progress.value = 0.0
 			set_process(true)
+			_copy()
 		&"DONE":
 			_text.text = done_text.replace("%s", app_name)
 		&"INSTALLED":

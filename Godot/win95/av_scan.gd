@@ -68,6 +68,10 @@ func scan() -> void:
 	_status.text = scanning_text
 	set_process(true)
 	_sync()
+	if await read_disk(scan_seconds) and not is_queued_for_deletion() and is_processing():
+		_done = 1.0
+		_finish()
+		_sync()
 
 
 ## Ends the tasks of the viruses and deletes them, with [signal cleaned]. Does nothing until a scan
@@ -107,8 +111,6 @@ func _process(delta: float) -> void:
 	_done = minf(1.0, _done + delta / maxf(scan_seconds, 0.001))
 	if not _queue.is_empty():
 		_path.text = _queue[mini(int(_done * _queue.size()), _queue.size() - 1)][0]
-	if _done >= 1.0:
-		_finish()
 	_sync()
 
 

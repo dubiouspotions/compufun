@@ -59,6 +59,7 @@ func run() -> void:
 	wizard.set(&"copy_seconds", 0.2)
 	wizard.get_node("%Next").pressed.emit()
 	check("Next copies", wizard.call(&"page"), &"COPYING")
+	check("the copy reads the drive", win95.get("_loads"), 1)
 	await create_timer(0.4).timeout
 	check("Setup is complete", [wizard.call(&"page"), (wizard.call(&"text") as String).begins_with("Setup is complete.")], [&"DONE", true])
 	var installed := setup.file_at(AV_PATH)
@@ -83,7 +84,9 @@ func run() -> void:
 	scanner.get_node("%ScanNow").pressed.emit()
 	await process_frame
 	check("Scan Now shows each path as it goes", (scanner.get_node("%Path") as Label).text.begins_with("C:\\"), true)
+	check("the scan reads the drive", win95.get("_loads"), 1)
 	await create_timer(0.3).timeout
+	check("the drive is done", win95.get("_loads"), 0)
 	check("it finds BIZOPP.EXE", scanner.call(&"results"), PackedStringArray(["BIZOPP.EXE: infected with Bizopp.A"]))
 	scanner.get_node("%Clean").pressed.emit()
 	await process_frame

@@ -103,6 +103,18 @@ func close() -> void:
 	closed.emit()
 
 
+## Reads from this computer's drive for [param seconds], with the drive seeking and the pointer
+## busy (win95.gd's read_disk), or just waits them out on a desktop outside a computer. False when
+## the computer rebooted or went off meanwhile. After it, check is_queued_for_deletion(): the
+## program may have closed.
+func read_disk(seconds: float) -> bool:
+	var screen: Node = get_parent().owner if get_parent() != null else null  # win95.gd
+	if screen != null and screen.has_method(&"read_disk"):
+		return await screen.read_disk(seconds)
+	await get_tree().create_timer(seconds).timeout
+	return true
+
+
 ## Hides the window and emits minimized; restore() shows it again.
 func minimize() -> void:
 	is_minimized = true
