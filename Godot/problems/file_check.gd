@@ -77,7 +77,7 @@ func fixed_contents(contents: String) -> String:
 
 func is_fixed(setup: Win95Setup) -> bool:
 	var file := setup.file_at(path)
-	if file == null:
+	if file == null or file.is_folder:
 		return false
 	return healthy_line == "" or Array(file.contents.split("\n")).any(_is_healthy)
 

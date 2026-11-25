@@ -21,6 +21,9 @@ const _NEW_FOLDER_ICON := preload("res://win95/theme/icons/folder_closed_32.png"
 const _SYSTEM_PATH := "C:\\WINDOWS\\SYSTEM"
 const _PROGRAM_FILES_PATH := "C:\\Program Files"
 const _START_MENU_PATH := "C:\\WINDOWS\\Start Menu"
+const _WINDOWS_PATH := "C:\\WINDOWS"
+## The fresh install whose program files in C:\WINDOWS are Win95's own ([method is_protected]).
+const _CLEAN_INSTALL_PATH := "res://win95/clean_install.tres"
 
 ## The running copy; null when the computer has no Win95 setup. Change it only through the setters
 ## here, so that Game hears whether the problem is fixed.
@@ -313,7 +316,7 @@ func purge_email(email: Email) -> void:
 
 ## Moves [param files] into the Recycle Bin, and remembers where each came from; a file on the
 ## floppy in A: is gone for good. Returns why a file stayed, as Win95 says it, or "" when all went:
-## a file in use (see [method in_use]) stays.
+## a file in use (see [method in_use]) or protected ([method is_protected]) stays.
 func delete_files(files: Array[Win95File]) -> String:
 	if setup == null or files.is_empty():
 		return ""
@@ -324,9 +327,10 @@ func delete_files(files: Array[Win95File]) -> String:
 		if from == null:
 			push_error("ComputerState.delete_files: %s is not on the desktop, drive C or the floppy in A:" % file.name)
 			continue
-		if in_use(file):
+		var why := _access_denied("delete", file) if is_protected(file) else (_sharing_violation("delete", file) if in_use(file) else "")
+		if why != "":
 			if refused == "":
-				refused = _sharing_violation("delete", file)
+				refused = why
 			continue
 		(from as Array).erase(file)
 		any = true
@@ -394,6 +398,8 @@ func move_files(files: Array[Win95File], container: Array, places: Array[Vector2
 			why = "Cannot move %s: The destination folder is a subfolder of the source folder." % file.name
 		elif container.any(func(other: Win95File) -> bool: return other.name.nocasecmp_to(file.name) == 0):
 			why = "Cannot move %s: There is already a file with the same name in this location." % file.name
+		elif is_protected(file):
+			why = _access_denied("move", file)
 		elif in_use(file):
 			why = _sharing_violation("move", file)
 		if why != "":
@@ -571,6 +577,40 @@ func tasks() -> Array[BackgroundTask]:
 func in_use(file: Win95File) -> bool:
 	return tasks().any(func(task: BackgroundTask) -> bool:
 		return task.file == file or (file.is_folder and _find_container(file.children, task.file) != null))
+
+
+## True for one of Win95's own program files in C:\WINDOWS (a program that a clean install has there),
+## whatever it is named now, and for C:\WINDOWS while it holds one: Win95 refuses to delete or move
+## them, so that a problem that renames them (noimages) or needs one (Disk Defragmenter) stays
+## fixable. Renaming them works.
+func is_protected(file: Win95File) -> bool:
+	var windows := setup.file_at(_WINDOWS_PATH) if setup != null else null
+	if windows == null:
+		return false
+	if file == windows:
+		return windows.children.any(_is_own_program)
+	return windows.children.has(file) and _is_own_program(file)
+
+
+static var _own_programs: Dictionary[String, bool] = {}
+
+
+# True when [param file] runs one of the programs in a clean install's C:\WINDOWS.
+static func _is_own_program(file: Win95File) -> bool:
+	if _own_programs.is_empty():
+		var clean := load(_CLEAN_INSTALL_PATH) as Win95Setup
+		var windows := clean.file_at(_WINDOWS_PATH) if clean != null else null
+		if windows == null:
+			push_error("ComputerState: %s has no %s to tell Win95's own programs by" % [_CLEAN_INSTALL_PATH, _WINDOWS_PATH])
+			return false
+		for each: Win95File in windows.children:
+			if each.program != null:
+				_own_programs[each.program.resource_path] = true
+	return file.program != null and _own_programs.has(file.program.resource_path)
+
+
+static func _access_denied(verb: String, file: Win95File) -> String:
+	return "Cannot %s %s: Access is denied.\n\nMake sure the disk is not full or write-protected and that the file is not currently in use." % [verb, file.name]
 
 
 static func _sharing_violation(verb: String, file: Win95File) -> String:
