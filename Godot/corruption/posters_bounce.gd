@@ -1,9 +1,10 @@
 extends CorruptionSign
-## The sheets in the group solitaire_posters (the logos on the left wall and over the door, the poster
-## on the right wall) leave the wall like the cards of the Solitaire win, one after the other in
-## [member order]: each shakes on the wall, turns to face the counter, drops to the floor between the counter and
-## the door, bounces lower and lower towards the other side of the shop, and leaves a still copy of
-## itself at every step, lit like the room. As in the Solitaire win, each copy draws over every copy
+## The sheets in the group solitaire_posters (the Open sign, once it has turned over, then the logos on
+## the left wall and over the door and the poster on the right wall) leave their places like the cards
+## of the Solitaire win, one after the other in [member order]: each shakes in its place, turns to
+## face the counter, drops to the floor between the counter and the door, bounces lower and lower
+## towards the other side of the shop, and leaves a still copy of itself at every step, lit like the
+## room. As in the Solitaire win, each copy draws over every copy
 ## before it, nearer or not; the room still hides them. Once they are down, the sheets in
 ## [member fade_order] (the signs on the counter front) follow while the night fades out. Stage 1 plays
 ## it, and the night waits for the first sheets ([method busy]); then it sets stage 2: the sheets stay
@@ -18,7 +19,10 @@ const _PSX_WORLD := preload("res://shaders/psx_world.gdshader")
 const _PSX_LAYERED := preload("res://shaders/psx_world_layered.gdshader")
 
 ## The names of the sheets in the order they fall. A sheet of the group that is not named falls last.
-@export var order: Array[StringName] = [&"SignLeft", &"CommercialPoster", &"Sign"]
+@export var order: Array[StringName] = [&"OpenSign", &"SignLeft", &"CommercialPoster", &"Sign"]
+## The seconds from the start to the first sheet's shake: the Open sign turns over first, in its
+## OpenSign.flip_seconds, as the shop closes.
+@export var lead_seconds: float = 0.6
 ## The seconds from one sheet's start to the next one's.
 @export var stagger_seconds: float = 2.5
 ## The names of the sheets that fall after all the others have landed, in this order, while the night
@@ -88,6 +92,9 @@ func _ready() -> void:
 		for mesh: Node in sheet.find_children("*", "GeometryInstance3D", true, false):
 			if mesh is MeshInstance3D or mesh is Label3D:
 				meshes.append(mesh as GeometryInstance3D)
+		var to_local := sheet.global_transform.affine_inverse()
+		# Back to front, as each step's copies layer in this order: the Open sign's face over its back.
+		meshes.sort_custom(func(a: GeometryInstance3D, b: GeometryInstance3D) -> bool: return (to_local * a.global_position).z < (to_local * b.global_position).z)
 		_meshes.append(meshes)
 	set_process(false)
 	super()
@@ -165,7 +172,7 @@ func _fall() -> void:
 			_starts.append(_night_step - _shake_steps() + roundi(faded * fade_stagger_seconds / trail_step))
 			faded += 1
 		else:
-			_starts.append(roundi(index * stagger_seconds / trail_step))
+			_starts.append(roundi((lead_seconds + index * stagger_seconds) / trail_step))
 			_night_step = maxi(_night_step, _starts[index] + _shake_steps() + (_paths[index] as Array).size())
 	_fallen = false
 	_step = -1
