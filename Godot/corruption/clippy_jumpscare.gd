@@ -15,7 +15,7 @@ const STORAGE_VIEW: StringName = &"Storage"
 ## The seconds of dark before the whisper.
 @export var whisper_after_seconds: float = 0.8
 ## The seconds of dark before the first flash, from the start of the whisper.
-@export var dark_seconds: float = 1.8
+@export var dark_seconds: float = 2.6
 ## The times that Clippy flashes up.
 @export var flashes: int = 2
 ## The seconds that each flash shows Clippy.
@@ -28,8 +28,10 @@ const STORAGE_VIEW: StringName = &"Storage"
 @export var voice: VoicePerson
 ## Said as the lights go out, with its own effect.
 @export var whisper: DialogueLine
-## Said as Clippy first flashes up, with its own effect.
+## Said as Clippy first flashes up, with its own effect; null says nothing.
 @export var shout: DialogueLine
+## Plays from Clippy as he first flashes up; null plays nothing.
+@export var appear_sound: SoundSet
 
 var _scare: Tween
 var _dark: bool = false
@@ -88,7 +90,7 @@ func _start() -> void:
 			_scare.tween_interval(between_seconds)
 		_scare.tween_callback(_show.bind(false, true))
 		if flash == 0:
-			_scare.tween_callback(_say.bind(shout))
+			_scare.tween_callback(_appear)
 		_scare.tween_interval(flash_seconds)
 		_scare.tween_callback(_show.bind(true, false))
 	_scare.tween_interval(after_seconds)
@@ -106,7 +108,14 @@ func _finish() -> void:
 
 
 func _say(line: DialogueLine) -> void:
-	_voice.say(line, voice, line.effect)
+	if line != null:
+		_voice.say(line, voice, line.effect)
+
+
+func _appear() -> void:
+	_say(shout)
+	if appear_sound != null:
+		appear_sound.play_at(_clippy)
 
 
 func _stop() -> void:
