@@ -11,6 +11,9 @@ extends CorruptionSign
 ## on the floor, the trail behind them. Stage 0 hangs them back in their places.
 
 const SHEETS: StringName = &"solitaire_posters"
+## A node of a sheet in this group, such as the Open sign's string, stays where it hangs when the sheet
+## leaves its place, and leaves no copies. It shakes and turns with the sheet before that.
+const STAYS: StringName = &"solitaire_stays"
 ## A fall that never reaches the floor stops after this many steps.
 const MAX_STEPS: int = 1000
 ## How much nearer than the copy before it each copy sorts, in metres: more than the shop is deep.
@@ -62,6 +65,9 @@ const _PSX_LAYERED := preload("res://shaders/psx_world_layered.gdshader")
 var _sheets: Array[Node3D] = []
 var _homes: Array[Transform3D] = []
 var _meshes: Array = []  # one Array[GeometryInstance3D] per sheet: its meshes and labels
+var _stays: Array = []  # one Array[Node3D] per sheet: its nodes in the group STAYS
+var _stay_homes: Array = []  # one Array[Transform3D] per sheet: each stay's own transform at home
+var _stay_places: Array = []  # one Array[Transform3D] per sheet: each stay's global transform at home
 var _paths: Array = []  # one Array[Transform3D] per sheet
 var _starts: Array[int] = []  # the trail step where each sheet starts to shake
 var _night_step: int = 0  # the trail step from which the night needn't wait
@@ -86,11 +92,22 @@ func _ready() -> void:
 	_sheets.sort_custom(func(a: Node3D, b: Node3D) -> bool: return _rank(a) < _rank(b))
 	for sheet: Node3D in _sheets:
 		_homes.append(sheet.global_transform)
+		var stays: Array[Node3D] = []
+		var stay_homes: Array[Transform3D] = []
+		var stay_places: Array[Transform3D] = []
+		for node: Node in sheet.find_children("*", "Node3D", true, false):
+			if node.is_in_group(STAYS):
+				stays.append(node as Node3D)
+				stay_homes.append((node as Node3D).transform)
+				stay_places.append((node as Node3D).global_transform)
+		_stays.append(stays)
+		_stay_homes.append(stay_homes)
+		_stay_places.append(stay_places)
 		var meshes: Array[GeometryInstance3D] = []
 		if sheet is MeshInstance3D:
 			meshes.append(sheet as MeshInstance3D)
 		for mesh: Node in sheet.find_children("*", "GeometryInstance3D", true, false):
-			if mesh is MeshInstance3D or mesh is Label3D:
+			if (mesh is MeshInstance3D or mesh is Label3D) and not stays.any(func(stay: Node3D) -> bool: return stay == mesh or stay.is_ancestor_of(mesh)):
 				meshes.append(mesh as GeometryInstance3D)
 		var to_local := sheet.global_transform.affine_inverse()
 		# Back to front, as each step's copies layer in this order: the Open sign's face over its back.
@@ -143,6 +160,7 @@ func _process(delta: float) -> void:
 				_sheets[index].global_transform = _shaken(index, maxf(since, 0.0))
 				falling = true
 			elif on_path < path.size():
+				_hold_stays(index, true)
 				_sheets[index].global_transform = path[on_path]
 				_leave_copy(_meshes[index])
 				falling = true
@@ -229,9 +247,25 @@ func _bottom_of(sheet: Node3D) -> float:
 func _place(fallen: bool) -> void:
 	for index: int in _sheets.size():
 		_sheets[index].global_transform = _homes[index]
+		_hold_stays(index, false)
 	if fallen:
 		for index: int in _sheets.size():
 			_sheets[index].global_transform = _path_of(_sheets[index])[-1]
+			_hold_stays(index, true)
+
+
+# Keeps sheet [param index]'s stays where they hang at home while [param held], or back on the sheet.
+func _hold_stays(index: int, held: bool) -> void:
+	var stays: Array = _stays[index]
+	for at: int in stays.size():
+		var stay: Node3D = stays[at]
+		if stay.top_level == held:
+			continue
+		stay.top_level = held
+		if held:
+			stay.global_transform = _stay_places[index][at]
+		else:
+			stay.transform = _stay_homes[index][at]
 
 
 func _leave_copy(meshes: Array[GeometryInstance3D]) -> void:
