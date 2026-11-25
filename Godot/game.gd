@@ -1355,11 +1355,11 @@ func open_shop() -> void:
 	changed.emit()
 
 
-## True when the shop can close: it is open, nobody is in it, and nobody else comes in today without
-## a pickup first: every customer of the day came in or is gone for good, or the next one's computer
-## is still in the shop. Closing then sends the rest of the day's customers away for today.
+## True when the shop can close: it is open, nobody is in it, and every customer due today came in
+## ([method _next_due]). A customer whose computer is still in the shop is due all the same: the day
+## goes on until the player has fixed it and they picked it up.
 func can_close() -> bool:
-	return phase == Phase.OPEN and day != null and _next_arrival() < 0 and visitor == null
+	return phase == Phase.OPEN and day != null and _next_due() < 0 and visitor == null
 
 
 ## Closes the shop for the night: DAY_OVER and [constant Daypart.EVENING]. Jobs stay on the counter.
@@ -1879,17 +1879,29 @@ func coming(index: int) -> Errand:
 	return null
 
 
-## The index in today's [method Day.codes] of the next errand to come in, past those for which
-## no alternative comes ([method coming]); -1 when none is left, or while the next one brings their
-## computer and it is still in the shop: a customer has one computer, so they bring it after they
-## picked it up, and those after them wait.
-func _next_arrival() -> int:
+## The index in today's [method Day.codes] of the next errand due today, past those for which no
+## alternative comes ([method coming]) and those that bring a computer while the customer's computer
+## stays in the shop for good ([member Job.unanswered], or left without a problem): that customer never
+## comes back. -1 when none is left.
+func _next_due() -> int:
 	for i: int in range(arrivals, day.codes().size()):
 		var next := coming(i)
-		if next != null:
-			var in_shop := jobs.any(func(j: Job) -> bool: return j.customer == next.customer)
-			return -1 if in_shop and next.brings != Errand.Brings.NOTHING else i
+		if next != null and not (next.brings != Errand.Brings.NOTHING and _has_job(next.customer, func(j: Job) -> bool: return j.unanswered or j.problem == null)):
+			return i
 	return -1
+
+
+## [method _next_due], or -1 while that errand brings a computer and the customer's computer is still
+## in the shop: a customer has one computer, so they bring it after they picked it up, and those after
+## them wait.
+func _next_arrival() -> int:
+	var next := _next_due()
+	return -1 if next >= 0 and coming(next).brings != Errand.Brings.NOTHING and _has_job(coming(next).customer) else next
+
+
+# True when a job of [param who] is on the counter, and [param matching] holds for it.
+func _has_job(who: Customer, matching: Callable = func(_j: Job) -> bool: return true) -> bool:
+	return jobs.any(func(j: Job) -> bool: return j.customer == who and matching.call(j))
 
 
 ## The alternative for errand code [param count] - 1 of [param on_day] that [param who] is in for,
